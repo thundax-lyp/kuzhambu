@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler;
 
-import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
-import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
-import com.thundax.kuzhambu.ai.application.refinement.result.AiRefinementTaskResult;
+import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
+import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
+import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
 import java.util.ArrayList;

@@ -21,7 +21,7 @@ class AiModelApplicationServiceImplTest {
         AiModelApplicationServiceImpl service = new AiModelApplicationServiceImpl(
                 new FakeBusinessConfigRepository(AiModelIdCodec.toDomain(2001L)), new FakeModelRepository());
 
-        assertThatThrownBy(() -> service.delete(2001L))
+        assertThatThrownBy(() -> service.delete(new AiModelId(2001L)))
                 .isInstanceOf(BizException.class)
                 .hasMessageContaining("AI model is used by business config");
     }

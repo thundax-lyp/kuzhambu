@@ -3,6 +3,8 @@ package com.thundax.kuzhambu.ai.interfaces.admin.config.controller;
 import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.AiCapabilityCatalogApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiBusinessConfigId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.assembler.AiConfigInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.BusinessConfigResponse;
@@ -54,7 +56,8 @@ public class AiConfigController {
     @SysLogger(value = "模型读取")
     @PostMapping(value = "model/get")
     public ModelResponse getModel(@Valid @RequestBody AiConfigRequests.ModelIdRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(modelService.get(request.getId()));
+        return AiConfigInterfaceAssembler.toResponse(
+                modelService.get(AiConfigInterfaceAssembler.toModelId(request.getId())));
     }
 
     @Operation(summary = "获取AI模型列表", description = "ai:config:view")
@@ -69,7 +72,9 @@ public class AiConfigController {
     @SysLogger(value = "模型列表")
     @PostMapping(value = "model/list")
     public List<ModelResponse> listModels(@Valid @RequestBody AiConfigRequests.ModelListRequest request) {
-        return modelService.list(request.getApiSource(), request.getEnabled()).stream()
+        return modelService
+                .list(AiConfigInterfaceAssembler.toApiSource(request.getApiSource()), request.getEnabled())
+                .stream()
                 .map(AiConfigInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }
@@ -86,7 +91,7 @@ public class AiConfigController {
     @SysLogger(value = "模型新增")
     @PostMapping(value = "model/create")
     public ModelResponse createModel(@Valid @RequestBody AiConfigRequests.ModelSaveRequest request) {
-        Long id = modelService.save(AiConfigInterfaceAssembler.toModel(request));
+        AiModelId id = modelService.save(AiConfigInterfaceAssembler.toModel(request));
         return AiConfigInterfaceAssembler.toResponse(modelService.get(id));
     }
 
@@ -103,7 +108,8 @@ public class AiConfigController {
     @PostMapping(value = "model/update")
     public ModelResponse updateModel(@Valid @RequestBody AiConfigRequests.ModelSaveRequest request) {
         modelService.update(AiConfigInterfaceAssembler.toModel(request));
-        return AiConfigInterfaceAssembler.toResponse(modelService.get(request.getId()));
+        return AiConfigInterfaceAssembler.toResponse(
+                modelService.get(AiConfigInterfaceAssembler.toModelId(request.getId())));
     }
 
     @Operation(summary = "删除AI模型", description = "ai:config:edit")
@@ -118,7 +124,7 @@ public class AiConfigController {
     @SysLogger(value = "模型删除")
     @PostMapping(value = "model/delete")
     public Boolean deleteModel(@Valid @RequestBody AiConfigRequests.ModelIdRequest request) {
-        modelService.delete(request.getId());
+        modelService.delete(AiConfigInterfaceAssembler.toModelId(request.getId()));
         return true;
     }
 
@@ -152,7 +158,8 @@ public class AiConfigController {
     @SysLogger(value = "能力读取")
     @PostMapping(value = "capability/get")
     public CapabilityResponse getCapability(@Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(capabilityCatalogService.getCapability(request.getCapability()));
+        return AiConfigInterfaceAssembler.toResponse(capabilityCatalogService.getCapability(
+                AiConfigInterfaceAssembler.toBusinessCapability(request.getCapability())));
     }
 
     @Operation(summary = "获取AI业务配置", description = "ai:config:view")
@@ -168,7 +175,8 @@ public class AiConfigController {
     @PostMapping(value = "business-config/get")
     public BusinessConfigResponse getBusinessConfig(
             @Valid @RequestBody AiConfigRequests.BusinessConfigIdRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(businessConfigService.get(request.getId()));
+        return AiConfigInterfaceAssembler.toResponse(
+                businessConfigService.get(AiConfigInterfaceAssembler.toBusinessConfigId(request.getId())));
     }
 
     @Operation(summary = "获取AI业务配置列表", description = "ai:config:view")
@@ -184,7 +192,9 @@ public class AiConfigController {
     @PostMapping(value = "business-config/list")
     public List<BusinessConfigResponse> listBusinessConfigs(
             @Valid @RequestBody AiConfigRequests.BusinessConfigListRequest request) {
-        return businessConfigService.list(request.getCapability(), request.getEnabled()).stream()
+        return businessConfigService
+                .list(AiConfigInterfaceAssembler.toBusinessCapability(request.getCapability()), request.getEnabled())
+                .stream()
                 .map(AiConfigInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }
@@ -202,7 +212,7 @@ public class AiConfigController {
     @PostMapping(value = "business-config/create")
     public BusinessConfigResponse createBusinessConfig(
             @Valid @RequestBody AiConfigRequests.BusinessConfigSaveRequest request) {
-        Long id = businessConfigService.save(AiConfigInterfaceAssembler.toBusinessConfig(request));
+        AiBusinessConfigId id = businessConfigService.save(AiConfigInterfaceAssembler.toBusinessConfig(request));
         return AiConfigInterfaceAssembler.toResponse(businessConfigService.get(id));
     }
 
@@ -220,7 +230,8 @@ public class AiConfigController {
     public BusinessConfigResponse updateBusinessConfig(
             @Valid @RequestBody AiConfigRequests.BusinessConfigSaveRequest request) {
         businessConfigService.update(AiConfigInterfaceAssembler.toBusinessConfig(request));
-        return AiConfigInterfaceAssembler.toResponse(businessConfigService.get(request.getId()));
+        return AiConfigInterfaceAssembler.toResponse(
+                businessConfigService.get(AiConfigInterfaceAssembler.toBusinessConfigId(request.getId())));
     }
 
     @Operation(summary = "删除AI业务配置", description = "ai:config:edit")
@@ -235,7 +246,7 @@ public class AiConfigController {
     @SysLogger(value = "业务配置删除")
     @PostMapping(value = "business-config/delete")
     public Boolean deleteBusinessConfig(@Valid @RequestBody AiConfigRequests.BusinessConfigIdRequest request) {
-        businessConfigService.delete(request.getId());
+        businessConfigService.delete(AiConfigInterfaceAssembler.toBusinessConfigId(request.getId()));
         return true;
     }
 }

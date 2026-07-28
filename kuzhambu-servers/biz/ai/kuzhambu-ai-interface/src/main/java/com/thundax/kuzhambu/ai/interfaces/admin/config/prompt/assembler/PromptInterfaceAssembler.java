@@ -1,12 +1,15 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.assembler;
 
-import com.thundax.kuzhambu.ai.application.config.prompt.command.PromptTemplateSaveCommand;
-import com.thundax.kuzhambu.ai.application.config.prompt.query.PromptVersionCompareQuery;
-import com.thundax.kuzhambu.ai.application.config.prompt.result.PromptVersionResult;
+import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand;
+import com.thundax.kuzhambu.ai.application.config.query.PromptVersionCompareQuery;
+import com.thundax.kuzhambu.ai.application.config.result.PromptVersionResult;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVariableIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.request.PromptRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.response.PromptResponses;
 import java.util.ArrayList;
@@ -18,8 +21,8 @@ public final class PromptInterfaceAssembler {
 
     public static PromptTemplateSaveCommand toSaveCommand(PromptRequests.TemplateSaveRequest request) {
         PromptTemplateSaveCommand command = new PromptTemplateSaveCommand();
-        command.setId(request.getId());
-        command.setCapability(request.getCapability());
+        command.setId(PromptTemplateIdCodec.toDomain(request.getId()));
+        command.setCapability(AiBusinessCapability.from(request.getCapability()));
         command.setName(request.getName());
         command.setDescription(request.getDescription());
         command.setEnabled(request.getEnabled() == null || request.getEnabled());
@@ -33,10 +36,18 @@ public final class PromptInterfaceAssembler {
 
     public static PromptVersionCompareQuery toCompareQuery(PromptRequests.VersionCompareRequest request) {
         PromptVersionCompareQuery query = new PromptVersionCompareQuery();
-        query.setTemplateId(request.getId());
+        query.setTemplateId(PromptTemplateIdCodec.toDomain(request.getId()));
         query.setLeftVersionNo(request.getLeftVersionNo());
         query.setRightVersionNo(request.getRightVersionNo());
         return query;
+    }
+
+    public static PromptTemplateId toTemplateId(Long value) {
+        return PromptTemplateIdCodec.toDomain(value);
+    }
+
+    public static AiBusinessCapability toCapability(String value) {
+        return isBlank(value) ? null : AiBusinessCapability.from(value);
     }
 
     public static PromptResponses.TemplateResponse toResponse(PromptTemplate template) {
@@ -62,8 +73,8 @@ public final class PromptInterfaceAssembler {
             return PromptResponses.VersionResponse.builder().build();
         }
         return PromptResponses.VersionResponse.builder()
-                .id(result.getId())
-                .templateId(result.getTemplateId())
+                .id(PromptVersionIdCodec.toValue(result.getId()))
+                .templateId(PromptTemplateIdCodec.toValue(result.getTemplateId()))
                 .versionNo(result.getVersionNo())
                 .messageTemplatesJson(result.getMessageTemplatesJson())
                 .variablesSnapshotJson(result.getVariablesSnapshotJson())
@@ -103,5 +114,9 @@ public final class PromptInterfaceAssembler {
             items.add(item);
         }
         return items;
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

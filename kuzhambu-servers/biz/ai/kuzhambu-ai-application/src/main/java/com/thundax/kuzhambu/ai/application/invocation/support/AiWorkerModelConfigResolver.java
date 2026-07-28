@@ -81,7 +81,7 @@ public class AiWorkerModelConfigResolver {
         } else if (!matchesModel(command.getModelId(), config)) {
             config = null;
         }
-        AiModel model = modelService.get(command.getModelId());
+        AiModel model = modelService.get(new AiModelId(command.getModelId()));
         if (model == null) {
             throw new IllegalArgumentException("AI model not found: " + command.getModelId());
         }
@@ -96,7 +96,7 @@ public class AiWorkerModelConfigResolver {
     }
 
     private AiBusinessConfig resolveBusinessConfig(AiInvokeCommand command) {
-        if (isBlank(command.getCapability())) {
+        if (command.getCapability() == null) {
             return null;
         }
         List<AiBusinessConfig> configs = businessConfigService.list(command.getCapability(), true);

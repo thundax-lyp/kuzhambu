@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiBusinessConfigId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import java.util.List;
@@ -46,7 +47,8 @@ class AiWorkerModelConfigResolverTest {
     void resolveShouldRejectMissingModelId() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("translate");
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("translate"));
 
         AiWorkerModelConfigResolver resolver = newResolver(new FakeModelApplicationService());
 
@@ -64,7 +66,8 @@ class AiWorkerModelConfigResolverTest {
 
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("classics_translate");
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
 
         AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
 
@@ -82,7 +85,8 @@ class AiWorkerModelConfigResolverTest {
 
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("classics_translate");
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
 
         AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
 
@@ -100,7 +104,8 @@ class AiWorkerModelConfigResolverTest {
 
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("classics_translate");
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
 
         resolver.resolve(command);
         AiWorkerModelConfigResolver.ResolvedModelConfig resolvedAgain = resolver.resolve(command);
@@ -142,17 +147,17 @@ class AiWorkerModelConfigResolverTest {
                 null);
 
         @Override
-        public AiModel get(Long modelId) {
+        public AiModel get(AiModelId modelId) {
             return model;
         }
 
         @Override
-        public List<AiModel> list(String apiSource, Boolean enabled) {
+        public List<AiModel> list(AiApiSource apiSource, Boolean enabled) {
             return List.of(model);
         }
 
         @Override
-        public Long save(AiModel model) {
+        public AiModelId save(AiModel model) {
             return null;
         }
 
@@ -162,7 +167,7 @@ class AiWorkerModelConfigResolverTest {
         }
 
         @Override
-        public int delete(Long modelId) {
+        public int delete(AiModelId modelId) {
             return 0;
         }
     }
@@ -181,22 +186,22 @@ class AiWorkerModelConfigResolverTest {
         }
 
         @Override
-        public AiBusinessConfig get(Long id) {
+        public AiBusinessConfig get(AiBusinessConfigId id) {
             return config;
         }
 
         @Override
-        public AiBusinessConfig get(String capability) {
+        public AiBusinessConfig get(AiBusinessCapability capability) {
             return config;
         }
 
         @Override
-        public List<AiBusinessConfig> list(String capability, Boolean enabled) {
+        public List<AiBusinessConfig> list(AiBusinessCapability capability, Boolean enabled) {
             return config == null ? List.of() : List.of(config);
         }
 
         @Override
-        public Long save(AiBusinessConfig config) {
+        public AiBusinessConfigId save(AiBusinessConfig config) {
             return null;
         }
 
@@ -206,7 +211,7 @@ class AiWorkerModelConfigResolverTest {
         }
 
         @Override
-        public int delete(Long id) {
+        public int delete(AiBusinessConfigId id) {
             return 0;
         }
     }

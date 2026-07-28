@@ -13,12 +13,8 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocation
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
@@ -118,12 +114,11 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
 
     private AiInvocationLog toRunningInvocationLog(AiInvokeCommand command) {
         AiInvocationLog invocationLog = new AiInvocationLog();
-        invocationLog.setBatchId(AiBatchJobIdCodec.toDomain(command.getBatchId()));
+        invocationLog.setBatchId(command.getBatchId());
         invocationLog.setScope(command.getScope());
-        invocationLog.setCapability(
-                command.getCapability() == null ? null : AiBusinessCapability.from(command.getCapability()));
-        invocationLog.setContentRef(AiContentRefCodec.toDomain(command.getContentType(), command.getContentId()));
-        invocationLog.setTargetObjectId(AiTargetObjectIdCodec.toDomain(command.getObjectId()));
+        invocationLog.setCapability(command.getCapability());
+        invocationLog.setContentRef(command.getContentRef());
+        invocationLog.setTargetObjectId(command.getTargetObjectId());
         invocationLog.setServiceId(command.getServiceId());
         invocationLog.setServiceRole(command.getServiceRole());
         invocationLog.setModelId(AiModelIdCodec.toDomain(command.getModelId()));
@@ -204,8 +199,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         if (result.getTraceId() == null) {
             result.setTraceId(command.getTraceId());
         }
-        if (!isBlank(command.getCapability())) {
-            result.setCapability(command.getCapability());
+        if (command.getCapability() != null) {
+            result.setCapability(command.getCapability().value());
         }
         if (isBlank(result.getResultFormat())) {
             result.setResultFormat(defaultResultFormat(command, result));
@@ -219,7 +214,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     private void validateCommand(AiInvokeCommand command) {
         if (command == null
                 || isBlank(command.getScope())
-                || isBlank(command.getCapability())
+                || command.getCapability() == null
                 || isBlank(command.getRequestId())
                 || isBlank(command.getTraceId())
                 || isBlank(command.getPromptMessagesJson())

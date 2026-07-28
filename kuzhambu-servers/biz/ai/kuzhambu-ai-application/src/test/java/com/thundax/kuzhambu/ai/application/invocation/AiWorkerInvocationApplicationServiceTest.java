@@ -149,7 +149,8 @@ class AiWorkerInvocationApplicationServiceTest {
 
         AiInvokeCommand command = command();
         command.setOperation("CLASSICS_SANCAI_SUMMARY");
-        command.setCapability("classics_summary");
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_summary"));
         command.setWorkerCapability("summary");
         command.setCreateCandidate(true);
 
@@ -178,7 +179,7 @@ class AiWorkerInvocationApplicationServiceTest {
                 result.setRequestId(command.getRequestId());
                 result.setTraceId(command.getTraceId());
                 result.setStatus("FAILED");
-                result.setCapability(command.getCapability());
+                result.setCapability(command.getCapability().value());
                 result.setResultFormat("TEXT");
                 result.setResultPayload("should-be-persisted");
                 result.setErrorType("WORKER_PROTOCOL_FAILURE");
@@ -234,7 +235,7 @@ class AiWorkerInvocationApplicationServiceTest {
                 result.setRequestId(command.getRequestId());
                 result.setTraceId(command.getTraceId());
                 result.setStatus("SUCCEEDED");
-                result.setCapability(command.getCapability());
+                result.setCapability(command.getCapability().value());
                 result.setResultPayload("{\"ok\":true}");
                 result.setUsage(AiUsageSnapshot.empty());
                 return result;
@@ -267,10 +268,11 @@ class AiWorkerInvocationApplicationServiceTest {
     private AiInvokeCommand command() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("classics_translate");
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
         command.setOperation("translate");
-        command.setContentType("entry");
-        command.setContentId(10L);
+        command.setContentRef(
+                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("entry", 10L));
         command.setModelId(20L);
         command.setModelName("model-a");
         command.setRequestId("req-1");

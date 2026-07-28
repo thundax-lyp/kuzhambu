@@ -9,20 +9,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.ai.application.discovery.command.DiscoveryAiCommand;
-import com.thundax.kuzhambu.ai.application.discovery.result.DiscoveryAiInvokeResult;
-import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
-import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult.TopCapabilityResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
-import com.thundax.kuzhambu.ai.application.knowledge.command.KnowledgeAiExtractionCommand;
-import com.thundax.kuzhambu.ai.application.knowledge.result.KnowledgeAiExtractionResult;
-import com.thundax.kuzhambu.ai.application.knowledge.service.KnowledgeAiExtractionApplicationService;
-import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
-import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
-import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.application.scenario.command.DiscoveryAiCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.KnowledgeAiExtractionCommand;
+import com.thundax.kuzhambu.ai.application.scenario.result.DiscoveryAiInvokeResult;
+import com.thundax.kuzhambu.ai.application.scenario.result.KnowledgeAiExtractionResult;
+import com.thundax.kuzhambu.ai.application.scenario.service.DiscoveryAiApplicationService;
+import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
@@ -111,7 +111,7 @@ class AiFacadeImplTest {
                 mock(AiCandidateApplicationService.class));
         CreateAiBatchJobFacadeRequest request = CreateAiBatchJobFacadeRequest.builder()
                 .scope("knowledge")
-                .capability("KNOWLEDGE_GRAPH")
+                .capability("knowledge_graph_extract")
                 .contentType("WANGQI_DOCUMENT")
                 .totalCount(12)
                 .failureSummaryJson("{\"retry\":0}")
@@ -123,8 +123,8 @@ class AiFacadeImplTest {
 
         AiBatchJobCreateCommand command = captor.getValue();
         assertEquals("knowledge", command.getScope());
-        assertEquals("KNOWLEDGE_GRAPH", command.getCapability());
-        assertEquals("WANGQI_DOCUMENT", command.getContentType());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, command.getCapability());
+        assertEquals("WANGQI_DOCUMENT", command.getContentRef().contentType());
         assertEquals(12, command.getTotalCount());
         assertEquals("{\"retry\":0}", command.getFailureSummaryJson());
         assertEquals(88L, response.getBatchId());

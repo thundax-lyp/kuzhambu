@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface AiCapabilityCatalogApplicationService {
 
-    AiBusinessCapability getCapability(String capability);
+    AiBusinessCapability getCapability(AiBusinessCapability capability);
 
     List<AiBusinessCapability> listCapabilities(Boolean enabled);
 }

@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiBusinessConfigId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
@@ -136,9 +137,9 @@ class AiBusinessInvokeConfigResolverTest {
     private static AiInvokeCommand command() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability(AiBusinessCapability.CLASSICS_SUMMARY.value());
-        command.setContentType("SANCAI_ENTRY");
-        command.setContentId(300000000001L);
+        command.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
+        command.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
+                "SANCAI_ENTRY", 300000000001L));
         command.setInputPayloadJson("{\"sourceText\":\"天地玄黄\"}");
         return command;
     }
@@ -249,22 +250,22 @@ class AiBusinessInvokeConfigResolverTest {
     private static class FakeBusinessConfigApplicationService implements AiBusinessConfigApplicationService {
 
         @Override
-        public AiBusinessConfig get(Long id) {
+        public AiBusinessConfig get(AiBusinessConfigId id) {
             return config();
         }
 
         @Override
-        public AiBusinessConfig get(String capability) {
+        public AiBusinessConfig get(AiBusinessCapability capability) {
             return config();
         }
 
         @Override
-        public List<AiBusinessConfig> list(String capability, Boolean enabled) {
+        public List<AiBusinessConfig> list(AiBusinessCapability capability, Boolean enabled) {
             return List.of(config());
         }
 
         @Override
-        public Long save(AiBusinessConfig config) {
+        public AiBusinessConfigId save(AiBusinessConfig config) {
             return null;
         }
 
@@ -274,7 +275,7 @@ class AiBusinessInvokeConfigResolverTest {
         }
 
         @Override
-        public int delete(Long id) {
+        public int delete(AiBusinessConfigId id) {
             return 0;
         }
 
@@ -294,7 +295,7 @@ class AiBusinessInvokeConfigResolverTest {
     private static class FakeModelApplicationService implements AiModelApplicationService {
 
         @Override
-        public AiModel get(Long id) {
+        public AiModel get(AiModelId id) {
             return new AiModel(
                     new AiModelId(2001L),
                     AiApiSource.OPENAI,
@@ -310,12 +311,12 @@ class AiBusinessInvokeConfigResolverTest {
         }
 
         @Override
-        public List<AiModel> list(String apiSource, Boolean enabled) {
-            return List.of(get(2001L));
+        public List<AiModel> list(AiApiSource apiSource, Boolean enabled) {
+            return List.of(get(new AiModelId(2001L)));
         }
 
         @Override
-        public Long save(AiModel model) {
+        public AiModelId save(AiModel model) {
             return null;
         }
 
@@ -325,7 +326,7 @@ class AiBusinessInvokeConfigResolverTest {
         }
 
         @Override
-        public int delete(Long id) {
+        public int delete(AiModelId id) {
             return 0;
         }
     }

@@ -1,12 +1,12 @@
 package com.thundax.kuzhambu.ai.application.facade.assembler;
 
-import com.thundax.kuzhambu.ai.application.discovery.command.DiscoveryAiCommand;
-import com.thundax.kuzhambu.ai.application.discovery.result.DiscoveryAiInvokeResult;
-import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
-import com.thundax.kuzhambu.ai.application.knowledge.command.KnowledgeAiExtractionCommand;
-import com.thundax.kuzhambu.ai.application.knowledge.result.KnowledgeAiExtractionResult;
-import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
-import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult.TopCapabilityResult;
+import com.thundax.kuzhambu.ai.application.scenario.command.DiscoveryAiCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.KnowledgeAiExtractionCommand;
+import com.thundax.kuzhambu.ai.application.scenario.result.DiscoveryAiInvokeResult;
+import com.thundax.kuzhambu.ai.application.scenario.result.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;

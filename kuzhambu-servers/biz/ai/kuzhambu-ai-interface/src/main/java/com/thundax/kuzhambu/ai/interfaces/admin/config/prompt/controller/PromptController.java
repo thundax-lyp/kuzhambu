@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller;
 
 import com.thundax.kuzhambu.ai.application.config.service.PromptApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.assembler.PromptInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.request.PromptRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.response.PromptResponses.TemplateResponse;
@@ -45,7 +46,8 @@ public class PromptController {
     @SysLogger(value = "模板读取")
     @PostMapping(value = "template/get")
     public TemplateResponse getTemplate(@Valid @RequestBody PromptRequests.TemplateIdRequest request) {
-        return PromptInterfaceAssembler.toResponse(promptService.getTemplate(request.getId()));
+        return PromptInterfaceAssembler.toResponse(
+                promptService.getTemplate(PromptInterfaceAssembler.toTemplateId(request.getId())));
     }
 
     @Operation(summary = "按能力获取提示词模板", description = "ai:prompt:view")
@@ -60,7 +62,8 @@ public class PromptController {
     @SysLogger(value = "模板读取")
     @PostMapping(value = "template/get-by-capability")
     public TemplateResponse getTemplateByCapability(@Valid @RequestBody PromptRequests.TemplateQueryRequest request) {
-        return PromptInterfaceAssembler.toResponse(promptService.getTemplate(request.getCapability()));
+        return PromptInterfaceAssembler.toResponse(
+                promptService.getTemplate(PromptInterfaceAssembler.toCapability(request.getCapability())));
     }
 
     @Operation(summary = "获取提示词模板列表", description = "ai:prompt:view")
@@ -75,7 +78,9 @@ public class PromptController {
     @SysLogger(value = "模板列表")
     @PostMapping(value = "template/list")
     public List<TemplateResponse> listTemplates(@Valid @RequestBody PromptRequests.TemplateQueryRequest request) {
-        return promptService.listTemplates(request.getCapability(), request.getEnabled()).stream()
+        return promptService
+                .listTemplates(PromptInterfaceAssembler.toCapability(request.getCapability()), request.getEnabled())
+                .stream()
                 .map(PromptInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }
@@ -92,7 +97,7 @@ public class PromptController {
     @SysLogger(value = "模板保存")
     @PostMapping(value = "template/save")
     public TemplateResponse saveTemplate(@Valid @RequestBody PromptRequests.TemplateSaveRequest request) {
-        Long templateId = promptService.saveTemplate(PromptInterfaceAssembler.toSaveCommand(request));
+        PromptTemplateId templateId = promptService.saveTemplate(PromptInterfaceAssembler.toSaveCommand(request));
         return PromptInterfaceAssembler.toResponse(promptService.getTemplate(templateId));
     }
 
@@ -108,7 +113,8 @@ public class PromptController {
     @SysLogger(value = "当前版本读取")
     @PostMapping(value = "version/current")
     public VersionResponse getCurrentVersion(@Valid @RequestBody PromptRequests.TemplateIdRequest request) {
-        return PromptInterfaceAssembler.toResponse(promptService.getCurrentVersion(request.getId()));
+        return PromptInterfaceAssembler.toResponse(
+                promptService.getCurrentVersion(PromptInterfaceAssembler.toTemplateId(request.getId())));
     }
 
     @Operation(summary = "获取提示词版本列表", description = "ai:prompt:view")
@@ -123,7 +129,7 @@ public class PromptController {
     @SysLogger(value = "版本列表")
     @PostMapping(value = "version/list")
     public List<VersionResponse> listVersions(@Valid @RequestBody PromptRequests.TemplateIdRequest request) {
-        return promptService.listVersions(request.getId()).stream()
+        return promptService.listVersions(PromptInterfaceAssembler.toTemplateId(request.getId())).stream()
                 .map(PromptInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }
@@ -157,7 +163,8 @@ public class PromptController {
     @SysLogger(value = "版本回滚")
     @PostMapping(value = "version/rollback")
     public VersionResponse rollbackVersion(@Valid @RequestBody PromptRequests.VersionRollbackRequest request) {
-        return PromptInterfaceAssembler.toResponse(promptService.rollback(request.getId(), request.getVersionNo()));
+        return PromptInterfaceAssembler.toResponse(
+                promptService.rollback(PromptInterfaceAssembler.toTemplateId(request.getId()), request.getVersionNo()));
     }
 
     @Operation(summary = "获取提示词变量列表", description = "ai:prompt:view")
@@ -172,7 +179,7 @@ public class PromptController {
     @SysLogger(value = "变量列表")
     @PostMapping(value = "variable/list")
     public List<VariableResponse> listVariables(@Valid @RequestBody PromptRequests.TemplateIdRequest request) {
-        return promptService.listVariables(request.getId()).stream()
+        return promptService.listVariables(PromptInterfaceAssembler.toTemplateId(request.getId())).stream()
                 .map(PromptInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }
@@ -189,7 +196,8 @@ public class PromptController {
     @SysLogger(value = "变量校验")
     @PostMapping(value = "variable/validate")
     public Boolean validateVariables(@Valid @RequestBody PromptRequests.VariableValidateRequest request) {
-        promptService.validateRequiredVariables(request.getId(), request.getProvidedNames());
+        promptService.validateRequiredVariables(
+                PromptInterfaceAssembler.toTemplateId(request.getId()), request.getProvidedNames());
         return true;
     }
 
@@ -205,7 +213,7 @@ public class PromptController {
     @SysLogger(value = "优化建议")
     @PostMapping(value = "optimization/suggest")
     public VersionResponse buildOptimizationSuggestion(@Valid @RequestBody PromptRequests.OptimizationRequest request) {
-        return PromptInterfaceAssembler.toResponse(
-                promptService.buildOptimizationSuggestion(request.getId(), request.getChangeSummary()));
+        return PromptInterfaceAssembler.toResponse(promptService.buildOptimizationSuggestion(
+                PromptInterfaceAssembler.toTemplateId(request.getId()), request.getChangeSummary()));
     }
 }

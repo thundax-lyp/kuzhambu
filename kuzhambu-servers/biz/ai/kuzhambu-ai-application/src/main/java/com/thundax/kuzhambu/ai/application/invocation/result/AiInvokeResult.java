@@ -2,11 +2,7 @@ package com.thundax.kuzhambu.ai.application.invocation.result;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
@@ -46,10 +42,10 @@ public class AiInvokeResult {
     public AiCandidate toCandidate(AiInvokeCommand command, AiCallId effectiveCallId) {
         AiCandidate candidate = new AiCandidate();
         candidate.setCallId(effectiveCallId);
-        candidate.setBatchId(AiBatchJobIdCodec.toDomain(command.getBatchId()));
-        candidate.setCapability(AiBusinessCapability.from(command.getCapability()));
-        candidate.setContentRef(AiContentRefCodec.toDomain(command.getContentType(), command.getContentId()));
-        candidate.setTargetObjectId(AiTargetObjectIdCodec.toDomain(command.getObjectId()));
+        candidate.setBatchId(command.getBatchId());
+        candidate.setCapability(command.getCapability());
+        candidate.setContentRef(command.getContentRef());
+        candidate.setTargetObjectId(command.getTargetObjectId());
         candidate.setArtifactReferenceJson(artifactReferenceJson);
         candidate.setResultFormat(resultFormat);
         candidate.setResultPayload(resultPayload);

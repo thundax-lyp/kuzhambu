@@ -1,14 +1,16 @@
 package com.thundax.kuzhambu.ai.application.facade.impl;
 
-import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
-import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
-import com.thundax.kuzhambu.ai.application.knowledge.service.KnowledgeAiExtractionApplicationService;
-import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.application.scenario.service.DiscoveryAiApplicationService;
+import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeAiExtractionApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.DiscoveryAiStreamHandler;
@@ -132,9 +134,8 @@ public class AiFacadeImpl implements AiFacade {
         }
         Long batchId = aiBatchJobApplicationService.create(new AiBatchJobCreateCommand(
                 request.getScope(),
-                request.getCapability(),
-                request.getContentType(),
-                null,
+                AiBusinessCapability.fromAlias(request.getCapability()),
+                AiContentRef.ofNullable(request.getContentType(), null),
                 request.getTotalCount(),
                 request.getFailureSummaryJson()));
         return aiFacadeAssembler.toActionResponse(batchId);

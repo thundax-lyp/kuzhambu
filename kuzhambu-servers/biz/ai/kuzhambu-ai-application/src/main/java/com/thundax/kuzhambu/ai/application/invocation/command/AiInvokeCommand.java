@@ -1,5 +1,9 @@
 package com.thundax.kuzhambu.ai.application.invocation.command;
 
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,15 +15,14 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AiInvokeCommand {
 
-    private Long batchId;
+    private AiBatchJobId batchId;
     private String scope;
-    private String capability;
+    private AiBusinessCapability capability;
     private String workerCapability;
     private String operation;
     private String workerPath;
-    private String contentType;
-    private Long contentId;
-    private Long objectId;
+    private AiContentRef contentRef;
+    private AiTargetObjectId targetObjectId;
     private Long serviceId;
     private String serviceRole;
     private Long modelId;
