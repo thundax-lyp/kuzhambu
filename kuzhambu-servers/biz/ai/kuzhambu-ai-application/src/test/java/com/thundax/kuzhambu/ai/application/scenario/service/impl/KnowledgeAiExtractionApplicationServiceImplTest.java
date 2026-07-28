@@ -166,12 +166,14 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         public AiInvokeResult invoke(AiInvokeCommand command) {
             captured = command;
             AiInvokeResult result = new AiInvokeResult();
-            result.setCallId(101L);
-            result.setCandidateId(102L);
-            result.setRequestId(command.getRequestId());
-            result.setTraceId(command.getTraceId());
-            result.setStatus("SUCCEEDED");
-            result.setCapability(command.getCapability().value());
+            result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(101L));
+            result.setCandidateId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(102L));
+            result.setRequestId(
+                    new com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId(command.getRequestId()));
+            result.setTraceId(
+                    new com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId(command.getTraceId()));
+            result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
+            result.setCapability(command.getCapability());
             result.setResultFormat("STRUCTURED");
             result.setResultPayload("{\"nodes\":[]}");
             return result;

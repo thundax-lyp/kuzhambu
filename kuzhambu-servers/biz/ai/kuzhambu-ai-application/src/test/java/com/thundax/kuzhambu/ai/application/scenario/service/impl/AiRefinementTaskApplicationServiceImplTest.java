@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
@@ -60,7 +61,9 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         assertEquals(1, batchJobService.created.getTotalCount());
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), accepted.getCapability());
-        assertEquals("SUCCEEDED", batchJobService.get(accepted.getTaskId()).getStatus());
+        assertEquals(
+                AiBatchJobStatus.SUCCEEDED,
+                batchJobService.get(accepted.getTaskId()).getStatus());
         assertEquals(1, batchJobService.get(accepted.getTaskId()).getSuccessCount());
         assertEquals(accepted.getTaskId(), refinementService.lastCommand.getBatchId());
     }
@@ -132,14 +135,18 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiRefinementTaskResult accepted;
         try {
             accepted = service.addTask(command(AiBusinessCapability.CLASSICS_SUMMARY.value()));
-            assertEquals("RUNNING", batchJobService.get(accepted.getTaskId()).getStatus());
+            assertEquals(
+                    AiBatchJobStatus.RUNNING,
+                    batchJobService.get(accepted.getTaskId()).getStatus());
             TransactionSynchronizationManager.getSynchronizations()
                     .forEach(synchronization -> synchronization.afterCommit());
         } finally {
             TransactionSynchronizationManager.clearSynchronization();
         }
 
-        assertEquals("SUCCEEDED", batchJobService.get(accepted.getTaskId()).getStatus());
+        assertEquals(
+                AiBatchJobStatus.SUCCEEDED,
+                batchJobService.get(accepted.getTaskId()).getStatus());
     }
 
     @Test
@@ -163,7 +170,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiBatchJobResult completed = batchJobService.get(accepted.getTaskId());
 
         assertTrue(accepted.isStreamEnabled());
-        assertEquals("FAILED", completed.getStatus());
+        assertEquals(AiBatchJobStatus.FAILED, completed.getStatus());
         assertEquals(1, completed.getFailedCount());
         assertTrue(completed.getFailureSummaryJson().contains("WORKER_PROTOCOL_FAILURE"));
     }
@@ -188,7 +195,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
         AiBatchJobResult completed = batchJobService.get(accepted.getTaskId());
 
-        assertEquals("PARTIAL", completed.getStatus());
+        assertEquals(AiBatchJobStatus.PARTIAL, completed.getStatus());
         assertEquals(1, completed.getSuccessCount());
         assertTrue(completed.getFailureSummaryJson().contains("MODEL_SEMANTIC_FAILURE"));
     }
@@ -196,12 +203,11 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void taskResultShouldParseBatchFailureSummaryWhenInvocationAndCandidateAreMissing() {
         AiBatchJobResult job = new AiBatchJobResult(
-                1001L,
+                new AiBatchJobId(1001L),
                 "classics",
-                "classics_summary",
-                "SANCAI_ENTRY",
-                10L,
-                "FAILED",
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                AiContentRef.of("SANCAI_ENTRY", 10L),
+                AiBatchJobStatus.FAILED,
                 1,
                 0,
                 1,
@@ -233,7 +239,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         service.expireOrphanedRunningTasks();
 
         AiBatchJobResult expired = batchJobService.get(batchId);
-        assertEquals("FAILED", expired.getStatus());
+        assertEquals(AiBatchJobStatus.FAILED, expired.getStatus());
         assertTrue(expired.getFailureSummaryJson().contains("TASK_ORPHANED"));
     }
 
@@ -300,7 +306,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
 
         assertThrows(RuntimeException.class, () -> service.cancelTask(batchId));
-        assertEquals("RUNNING", batchJobService.get(batchId).getStatus());
+        assertEquals(AiBatchJobStatus.RUNNING, batchJobService.get(batchId).getStatus());
     }
 
     @Test
@@ -357,7 +363,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         @Override
         public AiBatchJobResult get(Long batchId) {
             return jobs.stream()
-                    .filter(job -> job.getBatchId().equals(batchId))
+                    .filter(job -> job.getBatchId().value().equals(batchId))
                     .findFirst()
                     .orElse(null);
         }
@@ -391,12 +397,11 @@ class AiRefinementTaskApplicationServiceImplTest {
             created = command;
             long batchId = sequence.incrementAndGet();
             jobs.add(new AiBatchJobResult(
-                    batchId,
+                    new AiBatchJobId(batchId),
                     command.getScope(),
-                    command.getCapability().value(),
-                    command.getContentRef().contentType(),
-                    command.getContentRef().contentId(),
-                    "RUNNING",
+                    command.getCapability(),
+                    command.getContentRef(),
+                    AiBatchJobStatus.RUNNING,
                     command.getTotalCount(),
                     0,
                     0,
@@ -424,7 +429,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         @Override
         public AiBatchJobResult recordSuccessIfRunning(Long batchId) {
             AiBatchJobResult job = get(batchId);
-            if (!"RUNNING".equals(job.getStatus())) {
+            if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
             }
             return recordSuccess(batchId);
@@ -441,7 +446,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         @Override
         public AiBatchJobResult recordFailureIfRunning(Long batchId, String failureSummaryJson) {
             AiBatchJobResult job = get(batchId);
-            if (!"RUNNING".equals(job.getStatus())) {
+            if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
             }
             return recordFailure(batchId, failureSummaryJson);
@@ -450,7 +455,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         @Override
         public AiBatchJobResult recordPartialIfRunning(Long batchId, String failureSummaryJson) {
             AiBatchJobResult job = get(batchId);
-            if (!"RUNNING".equals(job.getStatus())) {
+            if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
             }
             AiBatchJobResult updated = copy(job, "PARTIAL", 1, 0, failureSummaryJson);
@@ -467,11 +472,11 @@ class AiRefinementTaskApplicationServiceImplTest {
                 int limit) {
             int expiredCount = 0;
             for (AiBatchJobResult job : List.copyOf(jobs)) {
-                if ("RUNNING".equals(job.getStatus())
+                if (AiBatchJobStatus.RUNNING == job.getStatus()
                         && scope.equals(job.getScope())
-                        && capabilities.contains(job.getCapability())
+                        && capabilities.contains(job.getCapability().value())
                         && job.getRequestedAt().isBefore(requestedBefore)) {
-                    recordFailure(job.getBatchId(), failureSummaryJson);
+                    recordFailure(job.getBatchId().value(), failureSummaryJson);
                     expiredCount++;
                 }
             }
@@ -492,9 +497,8 @@ class AiRefinementTaskApplicationServiceImplTest {
                     job.getBatchId(),
                     job.getScope(),
                     job.getCapability(),
-                    job.getContentType(),
-                    job.getContentId(),
-                    status,
+                    job.getContentRef(),
+                    AiBatchJobStatus.valueOf(status),
                     job.getTotalCount(),
                     successCount,
                     failedCount,
@@ -516,7 +520,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 if ((scope == null || scope.equals(job.getScope()))
                         && (capabilities == null
                                 || capabilities.isEmpty()
-                                || capabilities.contains(job.getCapability()))) {
+                                || capabilities.contains(job.getCapability().value()))) {
                     records.add(job);
                 }
             }

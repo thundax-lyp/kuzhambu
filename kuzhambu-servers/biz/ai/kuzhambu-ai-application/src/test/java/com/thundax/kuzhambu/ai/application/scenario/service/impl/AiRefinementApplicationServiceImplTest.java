@@ -216,10 +216,10 @@ class AiRefinementApplicationServiceImplTest {
         public AiInvokeResult invoke(AiInvokeCommand command) {
             captured = command;
             AiInvokeResult result = new AiInvokeResult();
-            result.setRequestId("req-1");
-            result.setTraceId("trace-1");
-            result.setStatus("SUCCEEDED");
-            result.setCapability(command.getCapability().value());
+            result.setRequestId(new com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId("req-1"));
+            result.setTraceId(new com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId("trace-1"));
+            result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
+            result.setCapability(command.getCapability());
             result.setResultFormat("MARKDOWN");
             result.setResultPayload("image-analysis-body");
             result.setStreamCompleted(command.isStream());

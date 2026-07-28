@@ -38,7 +38,7 @@ class PlatformAiApplicationServiceImplTest {
         assertEquals("prompt_suggestion", capturedCommand.getWorkerCapability());
         assertFalse(capturedCommand.isStream());
         assertTrue(capturedCommand.isCreateCandidate());
-        assertEquals(AiBusinessCapability.PROMPT_SUGGEST.value(), result.getCapability());
+        assertEquals(AiBusinessCapability.PROMPT_SUGGEST, result.getCapability());
     }
 
     @Test
@@ -57,7 +57,7 @@ class PlatformAiApplicationServiceImplTest {
         assertEquals("version_summary", capturedCommand.getWorkerCapability());
         assertFalse(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
-        assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY.value(), result.getCapability());
+        assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY, result.getCapability());
     }
 
     @Test
@@ -123,12 +123,17 @@ class PlatformAiApplicationServiceImplTest {
         public AiInvokeResult invoke(AiInvokeCommand command) {
             captured = command;
             AiInvokeResult result = new AiInvokeResult();
-            result.setCallId(101L);
-            result.setCandidateId(command.isCreateCandidate() ? 102L : null);
-            result.setRequestId(command.getRequestId());
-            result.setTraceId(command.getTraceId());
-            result.setStatus("SUCCEEDED");
-            result.setCapability(command.getCapability().value());
+            result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(101L));
+            result.setCandidateId(
+                    command.isCreateCandidate()
+                            ? new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(102L)
+                            : null);
+            result.setRequestId(
+                    new com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId(command.getRequestId()));
+            result.setTraceId(
+                    new com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId(command.getTraceId()));
+            result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
+            result.setCapability(command.getCapability());
             result.setResultFormat("TEXT");
             result.setResultPayload("ok");
             return result;
