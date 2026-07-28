@@ -1,9 +1,12 @@
 package com.thundax.kuzhambu.classics.application.searchsync;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -89,5 +92,22 @@ class ClassicsSearchIndexSyncPublishSupportTest {
 
         assertTrue(exception.getMessage().contains("active transaction"));
         verifyNoInteractions(publisher);
+    }
+
+    @Test
+    void publishAfterCommitShouldNotPropagatePublisherFailure() {
+        ClassicsSearchIndexSyncPublisher publisher = mock(ClassicsSearchIndexSyncPublisher.class);
+        doThrow(new IllegalStateException("rocketmq topic invalid"))
+                .when(publisher)
+                .publish(any());
+        ClassicsSearchIndexSyncPublishSupport support = new ClassicsSearchIndexSyncPublishSupport(publisher);
+        TransactionSynchronizationManager.initSynchronization();
+
+        support.publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "1001", 3);
+
+        List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
+        assertEquals(1, synchronizations.size());
+        assertDoesNotThrow(() -> synchronizations.forEach(TransactionSynchronization::afterCommit));
+        verify(publisher).publish(any());
     }
 }
