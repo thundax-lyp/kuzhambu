@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.storage.application.facade.assembler;
 
-import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageReferenceStatusCommand;
-import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
+import com.thundax.kuzhambu.storage.application.command.AddStorageReferencesCommand;
+import com.thundax.kuzhambu.storage.application.command.ChangeStorageReferenceStatusCommand;
+import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;

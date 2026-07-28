@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
-import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
+import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifact;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.application.restore.command.OperationsRestoreExecuteCommand;
 import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreDetailQuery;
@@ -280,7 +280,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
     }
 
     private void updatePreRestoreSuccess(BackupRecord preRestoreRecord, String preRestoreTimestamp) {
-        OperationsBackupArtifactResult artifact =
+        OperationsBackupArtifact artifact =
                 scriptExecutor.loadArtifact(BackupType.PRE_RESTORE.filePrefix() + "_" + preRestoreTimestamp);
         preRestoreRecord.setFileName(artifact.getFileName());
         preRestoreRecord.setFileSizeBytes(artifact.getFileSizeBytes());
@@ -292,7 +292,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
 
     private void updatePreRestoreAfterFailure(BackupRecord preRestoreRecord, RuntimeException restoreException) {
         try {
-            OperationsBackupArtifactResult artifact =
+            OperationsBackupArtifact artifact =
                     scriptExecutor.loadArtifact(stripSqlSuffix(preRestoreRecord.getFileName()));
             preRestoreRecord.setFileName(artifact.getFileName());
             preRestoreRecord.setFileSizeBytes(artifact.getFileSizeBytes());

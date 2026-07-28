@@ -410,7 +410,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 && searchEvent.getResultTotalCount() == 0;
     }
 
-    private List<SearchStatisticsSummaryResult.TopQuery> topQueries(List<SearchEvent> searchEvents) {
+    private List<SearchStatisticsSummaryResult.TopQueryItem> topQueries(List<SearchEvent> searchEvents) {
         Map<String, Long> countByQueryText = searchEvents.stream()
                 .map(SearchEvent::getQueryText)
                 .filter(queryText -> !isBlank(queryText))
@@ -420,7 +420,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                         .reversed()
                         .thenComparing(Map.Entry::getKey))
                 .limit(10)
-                .map(entry -> new SearchStatisticsSummaryResult.TopQuery(entry.getKey(), entry.getValue()))
+                .map(entry -> new SearchStatisticsSummaryResult.TopQueryItem(entry.getKey(), entry.getValue()))
                 .toList();
     }
 

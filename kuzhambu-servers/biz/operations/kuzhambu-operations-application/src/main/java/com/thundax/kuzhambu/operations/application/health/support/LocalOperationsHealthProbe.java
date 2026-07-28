@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.application.health.support;
 
-import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeResult;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeOutcome;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,9 +26,9 @@ public class LocalOperationsHealthProbe implements OperationsHealthProbe {
     }
 
     @Override
-    public OperationsHealthProbeResult probe() {
+    public OperationsHealthProbeOutcome probe() {
         long startedAt = System.nanoTime();
         int latencyMs = (int) Math.max(0L, (System.nanoTime() - startedAt) / 1_000_000L);
-        return new OperationsHealthProbeResult("UP", latencyMs, "local process reachable", "{\"probe\":\"local\"}");
+        return new OperationsHealthProbeOutcome("UP", latencyMs, "local process reachable", "{\"probe\":\"local\"}");
     }
 }

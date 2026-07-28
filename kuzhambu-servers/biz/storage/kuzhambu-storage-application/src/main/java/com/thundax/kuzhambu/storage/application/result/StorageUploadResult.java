@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.storage.application.service.result;
+package com.thundax.kuzhambu.storage.application.result;
 
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import lombok.AccessLevel;

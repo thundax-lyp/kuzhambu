@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.knowledge.application.portal;
+package com.thundax.kuzhambu.knowledge.application.portal.result;
 
 import java.util.List;
 import lombok.AllArgsConstructor;

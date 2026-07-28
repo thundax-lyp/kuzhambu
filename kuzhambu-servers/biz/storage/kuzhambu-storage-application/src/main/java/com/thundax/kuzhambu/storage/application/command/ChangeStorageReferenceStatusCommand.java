@@ -1,6 +1,6 @@
-package com.thundax.kuzhambu.storage.application.service.command;
+package com.thundax.kuzhambu.storage.application.command;
 
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChangeStorageObjectStatusCommand {
+public class ChangeStorageReferenceStatusCommand {
     private StoredObjectId id;
-    private StoredObjectStatus objectStatus;
+    private StoredObjectReferenceStatus referenceStatus;
 }

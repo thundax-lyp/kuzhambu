@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.knowledge.interfaces.portal.quality.assembler;
 
-import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalQualityResult;
+import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalQualityResult;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.quality.controller.response.KnowledgePortalQualityResponse;
 import java.util.Collections;
 import java.util.List;

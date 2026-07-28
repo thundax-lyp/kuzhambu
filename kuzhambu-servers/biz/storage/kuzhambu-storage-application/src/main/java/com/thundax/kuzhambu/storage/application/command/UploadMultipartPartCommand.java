@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.storage.application.service.command;
+package com.thundax.kuzhambu.storage.application.command;
 
 import java.io.InputStream;
 import lombok.Getter;

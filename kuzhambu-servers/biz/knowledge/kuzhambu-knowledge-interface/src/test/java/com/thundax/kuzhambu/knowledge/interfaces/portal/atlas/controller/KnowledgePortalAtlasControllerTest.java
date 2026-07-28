@@ -8,9 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalAtlasQuery;
-import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalAtlasResult;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
+import com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery;
+import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalAtlasResult;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.response.KnowledgePortalAtlasResponse;
 import java.lang.reflect.Method;
 import java.util.List;

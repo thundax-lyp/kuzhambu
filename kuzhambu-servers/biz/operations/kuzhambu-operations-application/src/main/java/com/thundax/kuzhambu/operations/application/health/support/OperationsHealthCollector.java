@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.operations.application.health.support;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties;
 import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties.Target;
-import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeResult;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeOutcome;
 import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
@@ -68,7 +68,7 @@ public class OperationsHealthCollector {
     private HealthCheckRecord buildRecord(OperationsHealthProbe probe) {
         Date checkedAt = new Date();
         try {
-            OperationsHealthProbeResult result = probe.probe();
+            OperationsHealthProbeOutcome result = probe.probe();
             if (result == null) {
                 return failureRecord(probe, "health probe returned null result", checkedAt);
             }

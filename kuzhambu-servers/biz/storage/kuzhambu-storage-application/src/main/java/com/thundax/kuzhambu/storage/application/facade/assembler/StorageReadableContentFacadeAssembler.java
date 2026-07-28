@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.storage.application.facade.assembler;
 
+import com.thundax.kuzhambu.storage.application.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;

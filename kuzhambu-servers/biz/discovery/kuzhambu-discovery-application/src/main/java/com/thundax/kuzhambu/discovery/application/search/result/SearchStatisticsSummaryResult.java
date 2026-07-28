@@ -15,13 +15,13 @@ public class SearchStatisticsSummaryResult {
     private long failedSearchCount;
     private long zeroResultSearchCount;
     private long clickCount;
-    private List<TopQuery> topQueries;
+    private List<TopQueryItem> topQueries;
 
     @Getter
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class TopQuery {
+    public static class TopQueryItem {
         private String queryText;
         private long count;
     }

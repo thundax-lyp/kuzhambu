@@ -11,7 +11,7 @@ import static org.mockito.Mockito.verify;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties;
 import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties.Target;
-import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeResult;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeOutcome;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthTrendBucket;
@@ -137,8 +137,8 @@ class OperationsHealthCollectorTest {
             }
 
             @Override
-            public OperationsHealthProbeResult probe() {
-                return new OperationsHealthProbeResult(
+            public OperationsHealthProbeOutcome probe() {
+                return new OperationsHealthProbeOutcome(
                         status, latencyMs, "ok", "{\"component\":\"" + component + "\"}");
             }
         };
@@ -162,7 +162,7 @@ class OperationsHealthCollectorTest {
             }
 
             @Override
-            public OperationsHealthProbeResult probe() {
+            public OperationsHealthProbeOutcome probe() {
                 throw new IllegalStateException(message);
             }
         };

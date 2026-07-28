@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.storage.interfaces.admin.object.assembler;
 
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
+import com.thundax.kuzhambu.storage.application.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;

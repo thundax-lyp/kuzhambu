@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.cleanup.service;
 
+import com.thundax.kuzhambu.classics.application.cleanup.result.CleanupExecutionResult;
 import java.util.Date;
 import java.util.List;
 import lombok.AccessLevel;
@@ -19,15 +20,5 @@ public interface ClassicsCleanupApplicationService {
     class CleanupTarget {
         private final String targetType;
         private final Long targetId;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    class CleanupExecutionResult {
-        private final String targetType;
-        private final Long targetId;
-        private final boolean success;
-        private final String failureReason;
     }
 }

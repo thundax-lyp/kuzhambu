@@ -112,7 +112,7 @@ class KnowledgeQaApplicationServiceImplTest {
         when(sourceRepository.save(any(QaSource.class))).thenReturn(6101L);
         when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(6201L);
         when(enhancementProvider.enhance("这份文档说了什么？"))
-                .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
+                .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
                         List.of("礼学", "典礼"), null, List.of()));
         when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
                 .thenReturn(qaKnowledge());
@@ -189,7 +189,7 @@ class KnowledgeQaApplicationServiceImplTest {
         when(sourceRepository.save(any(QaSource.class))).thenReturn(6101L);
         when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(6201L);
         when(enhancementProvider.enhance("这份文档说了什么？"))
-                .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
+                .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
                         List.of("礼学", "典礼"), null, List.of()));
         List<String> deltas = new java.util.ArrayList<>();
 
@@ -308,7 +308,7 @@ class KnowledgeQaApplicationServiceImplTest {
         when(sessionRepository.getBySessionId(5001L)).thenReturn(openSession());
         when(messageRepository.save(any(QaMessage.class))).thenReturn(6001L, 6002L);
         when(enhancementProvider.enhance("什么是三才？"))
-                .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
+                .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
                         List.of("天地人"), null, List.of()));
         when(knowledgeBaseClient.chat(any(KnowledgeChatRequest.class)))
                 .thenThrow(new IllegalStateException("System not embedding model"));

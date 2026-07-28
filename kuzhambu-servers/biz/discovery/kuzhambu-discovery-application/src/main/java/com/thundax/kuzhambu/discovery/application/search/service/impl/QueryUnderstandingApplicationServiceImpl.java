@@ -105,7 +105,7 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
 
     private QueryUnderstandingResult toDefaultResult(
             String normalizedQueryText,
-            DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement,
+            com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement,
             SearchQuery query) {
         return new QueryUnderstandingResult(
                 normalizedQueryText,
@@ -184,7 +184,7 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
     private QueryUnderstanding toFailedEntity(
             SearchQuery query,
             String normalizedQueryText,
-            DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement,
+            com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement,
             RuntimeException exception) {
         String failureCode = exception instanceof BizException bizException && bizException.getCode() != null
                 ? bizException.getCode()

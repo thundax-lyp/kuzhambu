@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.operations.application.backup.support;
 
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptProperties.MysqlConnectionSettings;
-import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
+import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifact;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupType;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +23,7 @@ public class DefaultOperationsBackupScriptExecutor implements OperationsBackupSc
     }
 
     @Override
-    public OperationsBackupArtifactResult executeBackup(BackupType backupType, String timestamp) {
+    public OperationsBackupArtifact executeBackup(BackupType backupType, String timestamp) {
         if (backupType == null) {
             throw new IllegalArgumentException("Operations backup type must not be null.");
         }
@@ -73,7 +73,7 @@ public class DefaultOperationsBackupScriptExecutor implements OperationsBackupSc
     }
 
     @Override
-    public OperationsBackupArtifactResult loadArtifact(String baseName) {
+    public OperationsBackupArtifact loadArtifact(String baseName) {
         if (StringUtils.isBlank(baseName)) {
             throw new IllegalArgumentException("Operations backup baseName must not be blank.");
         }
@@ -95,7 +95,7 @@ public class DefaultOperationsBackupScriptExecutor implements OperationsBackupSc
             throw new IllegalStateException("Operations backup storage checksum not found: " + storageChecksumFile);
         }
         try {
-            return new OperationsBackupArtifactResult(
+            return new OperationsBackupArtifact(
                     baseName,
                     sqlFile.getFileName().toString(),
                     sqlFile,

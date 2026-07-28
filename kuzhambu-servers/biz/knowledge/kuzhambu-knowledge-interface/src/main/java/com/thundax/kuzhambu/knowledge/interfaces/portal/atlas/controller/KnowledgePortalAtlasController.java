@@ -30,7 +30,7 @@ public class KnowledgePortalAtlasController {
     public KnowledgePortalAtlasResponse getAtlas(@Valid @RequestBody KnowledgePortalAtlasQuery request) {
         KnowledgePortalAtlasQuery effectiveRequest = request == null ? new KnowledgePortalAtlasQuery() : request;
         return KnowledgePortalAtlasInterfaceAssembler.toResponse(knowledgePortalReadApplicationService.getAtlas(
-                new com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalAtlasQuery(
+                new com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery(
                         effectiveRequest.getLevel(),
                         effectiveRequest.getCategoryCode(),
                         effectiveRequest.getEntityId(),

@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.knowledge.interfaces.portal.home.assembler;
 
-import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalHomeResult;
+import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalHomeResult;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response.KnowledgePortalHomeResponse;
 import java.util.Collections;
 import java.util.List;

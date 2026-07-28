@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.storage.application.service.command;
+package com.thundax.kuzhambu.storage.application.command;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

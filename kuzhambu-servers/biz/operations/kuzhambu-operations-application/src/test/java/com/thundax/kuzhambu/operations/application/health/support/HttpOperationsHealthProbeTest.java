@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties.Target;
-import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeResult;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeOutcome;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -19,7 +19,7 @@ class HttpOperationsHealthProbeTest {
     @Test
     void probeShouldReturnUpWhenExpectedStatusIsFast() throws Exception {
         withServer(200, 0, url -> {
-            OperationsHealthProbeResult result = new HttpOperationsHealthProbe(target(url, 200, 1000), 1000).probe();
+            OperationsHealthProbeOutcome result = new HttpOperationsHealthProbe(target(url, 200, 1000), 1000).probe();
 
             assertEquals(OperationsHealthCollector.HEALTH_STATUS_UP, result.getHealthStatus());
             assertEquals("http status 200", result.getMessage());
@@ -35,7 +35,7 @@ class HttpOperationsHealthProbeTest {
     @Test
     void probeShouldReturnDegradedWhenExpectedStatusIsSlow() throws Exception {
         withServer(200, 50, url -> {
-            OperationsHealthProbeResult result = new HttpOperationsHealthProbe(target(url, 200, 1), 1000).probe();
+            OperationsHealthProbeOutcome result = new HttpOperationsHealthProbe(target(url, 200, 1), 1000).probe();
 
             assertEquals(OperationsHealthCollector.HEALTH_STATUS_DEGRADED, result.getHealthStatus());
             assertTrue(result.getMessage().contains("latency degraded"));
@@ -45,7 +45,7 @@ class HttpOperationsHealthProbeTest {
     @Test
     void probeShouldReturnDownWhenStatusDoesNotMatch() throws Exception {
         withServer(503, 0, url -> {
-            OperationsHealthProbeResult result = new HttpOperationsHealthProbe(target(url, 200, 1000), 1000).probe();
+            OperationsHealthProbeOutcome result = new HttpOperationsHealthProbe(target(url, 200, 1000), 1000).probe();
 
             assertEquals(OperationsHealthCollector.HEALTH_STATUS_DOWN, result.getHealthStatus());
             assertEquals(
@@ -59,7 +59,7 @@ class HttpOperationsHealthProbeTest {
 
     @Test
     void probeShouldReturnDownWhenRequestFails() throws Exception {
-        OperationsHealthProbeResult result =
+        OperationsHealthProbeOutcome result =
                 new HttpOperationsHealthProbe(target("http://127.0.0.1:1/internal/health", 200, 1000), 1000).probe();
 
         assertEquals(OperationsHealthCollector.HEALTH_STATUS_DOWN, result.getHealthStatus());
