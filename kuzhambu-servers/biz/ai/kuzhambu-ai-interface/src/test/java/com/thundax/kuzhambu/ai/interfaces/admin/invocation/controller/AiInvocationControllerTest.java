@@ -297,12 +297,13 @@ class AiInvocationControllerTest {
                     if ("cancel".equals(method.getName())) {
                         assertEquals(8801L, args[0]);
                         return new com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult(
-                                8801L,
+                                new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(8801L),
                                 "classics",
-                                "image_analysis",
-                                "SANCAI_ENTRY",
-                                3001L,
-                                "CANCELLED",
+                                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability
+                                        .CLASSICS_IMAGE_DESCRIBE,
+                                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.of(
+                                        "SANCAI_ENTRY", 3001L),
+                                com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus.CANCELLED,
                                 1,
                                 0,
                                 0,

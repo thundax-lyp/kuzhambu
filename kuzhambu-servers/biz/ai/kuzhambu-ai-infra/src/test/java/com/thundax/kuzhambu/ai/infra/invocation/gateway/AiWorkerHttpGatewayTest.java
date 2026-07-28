@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
@@ -120,7 +121,7 @@ class AiWorkerHttpGatewayTest {
 
         AiInvokeResult result = client.invoke(command());
 
-        assertEquals("FAILED", result.getStatus());
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
         assertEquals("WORKER_UNAVAILABLE", result.getErrorType());
         assertEquals("Worker returned HTTP 503", result.getErrorMessage());
     }
@@ -147,7 +148,7 @@ class AiWorkerHttpGatewayTest {
 
         AiInvokeResult result = client.invoke(command());
 
-        assertEquals("FAILED", result.getStatus());
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
         assertEquals("WORKER_REQUEST", result.getFailureStage());
         assertEquals("MODEL_REQUEST_REJECTED", result.getErrorType());
         assertEquals("模型拒绝请求", result.getErrorMessage());
@@ -214,7 +215,7 @@ class AiWorkerHttpGatewayTest {
         assertEquals("completed", events.get(1).getEventType());
         assertEquals("MARKDOWN", events.get(1).getResultFormat());
         assertEquals("完整结果", events.get(1).getResultPayload());
-        assertEquals("SUCCEEDED", events.get(1).getStatus());
+        assertEquals(AiInvocationStatus.SUCCEEDED, events.get(1).getStatus());
     }
 
     @Test
@@ -232,7 +233,7 @@ class AiWorkerHttpGatewayTest {
         client.stream(command(), capturedEvent::set);
 
         assertEquals("error", capturedEvent.get().getEventType());
-        assertEquals("FAILED", capturedEvent.get().getStatus());
+        assertEquals(AiInvocationStatus.FAILED, capturedEvent.get().getStatus());
         assertEquals("MODEL_TRANSPORT_FAILURE", capturedEvent.get().getErrorType());
         assertEquals("模型服务不可用", capturedEvent.get().getErrorMessage());
         assertEquals("WORKER_STREAM", capturedEvent.get().getFailureStage());

@@ -261,9 +261,9 @@ class AiRefinementTaskControllerTest {
             AiStreamEventResult event = new AiStreamEventResult();
             event.setEventType("completed");
             event.setEventId("evt-1");
-            event.setRequestId("req-1");
-            event.setTraceId("trace-1");
-            event.setStatus("SUCCEEDED");
+            event.setRequestId(new com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId("req-1"));
+            event.setTraceId(new com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId("trace-1"));
+            event.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
             eventConsumer.accept(event);
         }
 
