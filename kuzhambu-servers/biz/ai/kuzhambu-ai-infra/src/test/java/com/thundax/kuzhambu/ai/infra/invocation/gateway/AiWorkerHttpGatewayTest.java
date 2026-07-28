@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -72,6 +73,42 @@ class AiWorkerHttpGatewayTest {
                 captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Signature"));
         assertTrue(capturedBody.get().contains("\"capability\":\"summary\""));
         assertTrue(capturedBody.get().contains("\"contentType\":\"entry\""));
+    }
+
+    @Test
+    void invokeShouldAllowMissingContentReference() throws IOException {
+        AtomicReference<String> capturedBody = new AtomicReference<>();
+        startServer("/internal/ai/invoke", exchange -> {
+            capturedBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            respond(exchange, 200, succeededResponse());
+        });
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+        AiInvokeCommand command = command();
+        command.setContentRef(null);
+
+        AiInvokeResult result = client.invoke(command);
+
+        assertTrue(result.isSucceeded());
+        assertTrue(capturedBody.get().contains("\"contentType\":null"));
+        assertTrue(capturedBody.get().contains("\"contentId\":null"));
+    }
+
+    @Test
+    void invokeShouldAllowContentTypeWithoutContentId() throws IOException {
+        AtomicReference<String> capturedBody = new AtomicReference<>();
+        startServer("/internal/ai/invoke", exchange -> {
+            capturedBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            respond(exchange, 200, succeededResponse());
+        });
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+        AiInvokeCommand command = command();
+        command.setContentRef(AiContentRef.ofNullable("entry", null));
+
+        AiInvokeResult result = client.invoke(command);
+
+        assertTrue(result.isSucceeded());
+        assertTrue(capturedBody.get().contains("\"contentType\":\"entry\""));
+        assertTrue(capturedBody.get().contains("\"contentId\":null"));
     }
 
     @Test
@@ -274,6 +311,18 @@ class AiWorkerHttpGatewayTest {
             }
         });
         server.start();
+    }
+
+    private static String succeededResponse() {
+        return """
+                {
+                  "requestId":"req-1",
+                  "traceId":"trace-1",
+                  "status":"SUCCEEDED",
+                  "capability":"summary",
+                  "result":{"format":"text","payload":"done"}
+                }
+                """;
     }
 
     private AiWorkerGatewayProperties properties() {
