@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `13-validation`：13 运行格式、静态搜索和 storage 模块测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface`
-    - 处理动作：运行 RUNBOOK 指定的 formatter、测试和静态搜索验证
-    - 验收点：storage application/interface 相关验证通过，或明确记录不可运行原因和剩余风险
-    - 重要度：10/10
-
 - [ ] `14-runbook-closure`：14 清理 RUNBOOK 并收窄 TODO
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
