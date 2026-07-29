@@ -1,22 +1,16 @@
 package com.thundax.kuzhambu.system.application.core.query;
 
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CurrentUserAvatarQuery {
 
     private UserId userId;
-
-    public CurrentUserAvatarQuery() {}
-
-    public CurrentUserAvatarQuery(UserId userId) {
-        this.userId = userId;
-    }
-
-    public UserId getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UserId userId) {
-        this.userId = userId;
-    }
 }

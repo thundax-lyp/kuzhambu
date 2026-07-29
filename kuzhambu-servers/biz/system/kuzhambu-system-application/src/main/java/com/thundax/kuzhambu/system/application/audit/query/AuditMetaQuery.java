@@ -13,27 +13,4 @@ import lombok.Setter;
 public class AuditMetaQuery {
 
     private AuditObjectRef objectRef;
-
-    public String getObjectType() {
-        return objectRef == null ? null : objectRef.getObjectType();
-    }
-
-    public void setObjectType(String objectType) {
-        ensureObjectRef().setObjectType(objectType);
-    }
-
-    public String getObjectId() {
-        return objectRef == null ? null : objectRef.getObjectId();
-    }
-
-    public void setObjectId(String objectId) {
-        ensureObjectRef().setObjectId(objectId);
-    }
-
-    private AuditObjectRef ensureObjectRef() {
-        if (objectRef == null) {
-            objectRef = new AuditObjectRef();
-        }
-        return objectRef;
-    }
 }

@@ -96,7 +96,7 @@ public class AuditController {
     @PostMapping(value = "detail")
     public AuditLogDetailResponse detail(@Valid @RequestBody AuditLogDetailRequest request) {
         return AuditInterfaceAssembler.toLogDetailResponse(
-                auditService.getLog(AuditInterfaceAssembler.toLogId(request)), auditSnapshotAssemblerRegistry);
+                auditService.getLog(AuditInterfaceAssembler.toGetLogQuery(request)), auditSnapshotAssemblerRegistry);
     }
 
     @Operation(summary = "获取对象审计概览", description = "audit:view")

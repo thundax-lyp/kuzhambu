@@ -17,11 +17,6 @@ public interface AuditApplicationService {
 
     AuditLog getLog(GetAuditLogQuery query);
 
-    @Deprecated
-    default AuditLog getLog(AuditLogId id) {
-        return getLog(new GetAuditLogQuery(id));
-    }
-
     AuditMeta getMeta(AuditMetaQuery query);
 
     List<AuditLog> list(AuditMetaQuery query);

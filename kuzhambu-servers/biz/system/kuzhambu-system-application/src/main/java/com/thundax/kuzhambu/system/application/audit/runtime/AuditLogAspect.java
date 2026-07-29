@@ -5,6 +5,8 @@ import com.thundax.kuzhambu.common.audit.model.valueobject.AuditSnapshot;
 import com.thundax.kuzhambu.common.core.id.Identifier;
 import com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand;
 import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -89,15 +91,14 @@ public class AuditLogAspect {
         AuditSnapshot afterSnapshot = afterSnapshotCaptured ? after : snapshot(auditLog.type(), objectId);
 
         CreateAuditLogCommand command = new CreateAuditLogCommand();
-        command.setObjectType(auditLog.type());
-        command.setObjectId(objectId);
+        command.setObjectRef(AuditObjectRef.of(auditLog.type(), objectId));
         command.setAction(auditLog.action());
         command.setSummary(auditLog.summary());
         command.setBeforeSnapshot(beforeSnapshot);
         command.setAfterSnapshot(afterSnapshot);
         command.setRecordWhenUnchanged(auditLog.recordWhenUnchanged());
-        command.setOperatorType(AuditOperatorResolver.operatorType());
-        command.setOperatorId(AuditOperatorResolver.operatorId());
+        command.setOperatorRef(
+                AuditOperatorRef.of(AuditOperatorResolver.operatorType(), AuditOperatorResolver.operatorId()));
         command.setOperatorName(AuditOperatorResolver.operatorName());
         auditService.record(command);
     }

@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `18-audit-callers`：[18] 同步审计调用方使用强类型查询对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/AuditLogAspect.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/audit/controller/AuditController.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/audit/assembler/AuditInterfaceAssembler.java`
-    - 处理动作：同步审计切面、控制器和 assembler 构造 `AuditObjectRef`、`AuditOperatorRef`、`GetAuditLogQuery`。
-    - 验收点：审计记录、审计分页筛选、审计详情抽屉对应 HTTP 契约不变。
-    - 重要度：8/10
-
 - [ ] `19-audit-loaders`：[19] 同步审计对象加载器使用 Get*Query
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
