@@ -26,6 +26,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectRefer
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteSize;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageReferenceOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
@@ -68,10 +69,9 @@ class StorageApplicationServiceUploadTest {
                 new ByteArrayInputStream(PAYLOAD),
                 ORIGINAL_FILENAME,
                 CONTENT_TYPE,
-                PAYLOAD.length,
+                new StorageByteSize((long) PAYLOAD.length),
                 null,
-                StorageOwnerType.USER,
-                "system",
+                StorageOwnerRef.of(StorageOwnerType.USER, "system"),
                 null,
                 null,
                 null));
@@ -98,10 +98,9 @@ class StorageApplicationServiceUploadTest {
                 new ByteArrayInputStream("x".getBytes()),
                 "script.exe",
                 "application/octet-stream",
-                1L,
+                new StorageByteSize(1L),
                 List.of("jpg"),
-                StorageOwnerType.USER,
-                "u-1",
+                StorageOwnerRef.of(StorageOwnerType.USER, "u-1"),
                 null,
                 null,
                 null));
@@ -123,10 +122,9 @@ class StorageApplicationServiceUploadTest {
                 new ByteArrayInputStream(PAYLOAD),
                 ORIGINAL_FILENAME,
                 CONTENT_TYPE,
-                PAYLOAD.length,
+                new StorageByteSize((long) PAYLOAD.length),
                 null,
-                StorageOwnerType.USER,
-                "u-1",
+                StorageOwnerRef.of(StorageOwnerType.USER, "u-1"),
                 null,
                 null,
                 null));
@@ -154,10 +152,9 @@ class StorageApplicationServiceUploadTest {
                 new ByteArrayInputStream(PAYLOAD),
                 ORIGINAL_FILENAME,
                 CONTENT_TYPE,
-                PAYLOAD.length,
+                new StorageByteSize((long) PAYLOAD.length),
                 null,
-                StorageOwnerType.USER,
-                "u-1",
+                StorageOwnerRef.of(StorageOwnerType.USER, "u-1"),
                 null,
                 null,
                 null));
@@ -273,7 +270,8 @@ class StorageApplicationServiceUploadTest {
 
         when(referenceRepository.deleteByOwner(ownerRef)).thenReturn(2);
 
-        int removed = service.removeReferences(new RemoveStorageReferencesCommand(StorageOwnerType.USER, "owner-1"));
+        int removed = service.removeReferences(
+                new RemoveStorageReferencesCommand(StorageOwnerRef.of(StorageOwnerType.USER, "owner-1")));
 
         assertEquals(2, removed);
         verify(storageRepository)

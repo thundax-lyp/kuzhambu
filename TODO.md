@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `11-application-tests`：11 更新 storage application 测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/test/java/com/thundax/kuzhambu/storage/application/service/impl/{StorageApplicationServiceDeleteTest.java,StorageApplicationServiceSortTest.java,StorageApplicationServiceUploadTest.java,MultipartUploadApplicationServiceImplTest.java,MultipartUploadApplicationServiceImplAbortTest.java}`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/test/java/com/thundax/kuzhambu/storage/application/facade/impl/StorageFacadeImplTest.java`
-    - 处理动作：按新接口、强类型 Command/Query 和异常失败路径更新 application 层测试
-    - 验收点：application 相关测试不再 mock 或调用旧 application service 签名
-    - 重要度：9/10
-
 - [ ] `12-interface-tests`：12 更新 storage interface 契约测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`

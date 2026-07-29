@@ -15,9 +15,12 @@ import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadComma
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageOwnerBindingFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageReadableContentFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageUploadFacadeAssembler;
-import com.thundax.kuzhambu.storage.application.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicationService;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.application.query.ListStorageReferencesQuery;
+import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageMultipartUploadApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageObjectApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageReferenceApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageUploadApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
@@ -38,15 +41,13 @@ class StorageFacadeImplTest {
 
     @Test
     void bindOwnerShouldAddReferenceAndMarkInUse() {
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
-        StorageFacadeImpl facade = new StorageFacadeImpl(
-                storageApplicationService,
-                mock(MultipartUploadApplicationService.class),
-                new StorageReadableContentFacadeAssembler(),
-                new StorageOwnerBindingFacadeAssembler(),
-                new StorageUploadFacadeAssembler());
-        when(storageApplicationService.get(StoredObjectIdCodec.toDomain(7001L))).thenReturn(storage(7001L));
-        when(storageApplicationService.listReferences(any(StorageQuery.class))).thenReturn(List.of());
+        StorageObjectApplicationService storageObjectApplicationService = mock(StorageObjectApplicationService.class);
+        StorageReferenceApplicationService storageReferenceApplicationService =
+                mock(StorageReferenceApplicationService.class);
+        StorageFacadeImpl facade = facade(storageObjectApplicationService, storageReferenceApplicationService);
+        when(storageObjectApplicationService.get(any())).thenReturn(storage(7001L));
+        when(storageReferenceApplicationService.list(any(ListStorageReferencesQuery.class)))
+                .thenReturn(List.of());
 
         facade.bindOwner(BindStorageOwnerFacadeRequest.builder()
                 .storageObjectIds(List.of(7001L))
@@ -57,7 +58,7 @@ class StorageFacadeImplTest {
 
         ArgumentCaptor<AddStorageReferencesCommand> addCaptor =
                 ArgumentCaptor.forClass(AddStorageReferencesCommand.class);
-        verify(storageApplicationService).addReferences(addCaptor.capture());
+        verify(storageReferenceApplicationService).addReferences(addCaptor.capture());
         assertEquals(1, addCaptor.getValue().getReferences().size());
         assertEquals("400000000001", addCaptor.getValue().getReferences().get(0).getReferenceOwnerId());
         assertEquals(
@@ -66,7 +67,7 @@ class StorageFacadeImplTest {
 
         ArgumentCaptor<ChangeStorageReferenceStatusCommand> statusCaptor =
                 ArgumentCaptor.forClass(ChangeStorageReferenceStatusCommand.class);
-        verify(storageApplicationService).changeReferenceStatus(statusCaptor.capture());
+        verify(storageReferenceApplicationService).changeReferenceStatus(statusCaptor.capture());
         assertEquals(
                 StoredObjectIdCodec.toDomain(7001L), statusCaptor.getValue().getId());
         assertEquals("REFERENCED", statusCaptor.getValue().getReferenceStatus().value());
@@ -74,15 +75,12 @@ class StorageFacadeImplTest {
 
     @Test
     void bindOwnerShouldSkipDuplicateReferenceOnly() {
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
-        StorageFacadeImpl facade = new StorageFacadeImpl(
-                storageApplicationService,
-                mock(MultipartUploadApplicationService.class),
-                new StorageReadableContentFacadeAssembler(),
-                new StorageOwnerBindingFacadeAssembler(),
-                new StorageUploadFacadeAssembler());
-        when(storageApplicationService.get(StoredObjectIdCodec.toDomain(7001L))).thenReturn(storage(7001L));
-        when(storageApplicationService.listReferences(any(StorageQuery.class)))
+        StorageObjectApplicationService storageObjectApplicationService = mock(StorageObjectApplicationService.class);
+        StorageReferenceApplicationService storageReferenceApplicationService =
+                mock(StorageReferenceApplicationService.class);
+        StorageFacadeImpl facade = facade(storageObjectApplicationService, storageReferenceApplicationService);
+        when(storageObjectApplicationService.get(any())).thenReturn(storage(7001L));
+        when(storageReferenceApplicationService.list(any(ListStorageReferencesQuery.class)))
                 .thenReturn(List.of(new StoredObjectReference(
                         StoredObjectIdCodec.toDomain(7001L),
                         "400000000001",
@@ -95,21 +93,19 @@ class StorageFacadeImplTest {
                 .ownerId("400000000001")
                 .build());
 
-        verify(storageApplicationService, never()).addReferences(any(AddStorageReferencesCommand.class));
-        verify(storageApplicationService).changeReferenceStatus(any(ChangeStorageReferenceStatusCommand.class));
+        verify(storageReferenceApplicationService, never()).addReferences(any(AddStorageReferencesCommand.class));
+        verify(storageReferenceApplicationService)
+                .changeReferenceStatus(any(ChangeStorageReferenceStatusCommand.class));
     }
 
     @Test
     void bindOwnerShouldAllowExistingDifferentReference() {
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
-        StorageFacadeImpl facade = new StorageFacadeImpl(
-                storageApplicationService,
-                mock(MultipartUploadApplicationService.class),
-                new StorageReadableContentFacadeAssembler(),
-                new StorageOwnerBindingFacadeAssembler(),
-                new StorageUploadFacadeAssembler());
-        when(storageApplicationService.get(StoredObjectIdCodec.toDomain(7001L))).thenReturn(storage(7001L));
-        when(storageApplicationService.listReferences(any(StorageQuery.class)))
+        StorageObjectApplicationService storageObjectApplicationService = mock(StorageObjectApplicationService.class);
+        StorageReferenceApplicationService storageReferenceApplicationService =
+                mock(StorageReferenceApplicationService.class);
+        StorageFacadeImpl facade = facade(storageObjectApplicationService, storageReferenceApplicationService);
+        when(storageObjectApplicationService.get(any())).thenReturn(storage(7001L));
+        when(storageReferenceApplicationService.list(any(ListStorageReferencesQuery.class)))
                 .thenReturn(List.of(new StoredObjectReference(
                         StoredObjectIdCodec.toDomain(7001L),
                         "400000000002",
@@ -122,21 +118,16 @@ class StorageFacadeImplTest {
                 .ownerId("400000000001")
                 .build());
 
-        verify(storageApplicationService).addReferences(any(AddStorageReferencesCommand.class));
-        verify(storageApplicationService).changeReferenceStatus(any(ChangeStorageReferenceStatusCommand.class));
+        verify(storageReferenceApplicationService).addReferences(any(AddStorageReferencesCommand.class));
+        verify(storageReferenceApplicationService)
+                .changeReferenceStatus(any(ChangeStorageReferenceStatusCommand.class));
     }
 
     @Test
     void initMultipartUploadShouldDelegateAndReturnResponse() {
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
-        MultipartUploadApplicationService multipartUploadApplicationService =
-                mock(MultipartUploadApplicationService.class);
-        StorageFacadeImpl facade = new StorageFacadeImpl(
-                storageApplicationService,
-                multipartUploadApplicationService,
-                new StorageReadableContentFacadeAssembler(),
-                new StorageOwnerBindingFacadeAssembler(),
-                new StorageUploadFacadeAssembler());
+        StorageMultipartUploadApplicationService multipartUploadApplicationService =
+                mock(StorageMultipartUploadApplicationService.class);
+        StorageFacadeImpl facade = facade(multipartUploadApplicationService);
         when(multipartUploadApplicationService.init(any()))
                 .thenReturn(multipartSession("upload-1", MultipartUploadStatus.INITIATED, 2, 10L, 5L));
 
@@ -178,15 +169,9 @@ class StorageFacadeImplTest {
 
     @Test
     void uploadPartShouldDelegateAndReturnResponse() {
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
-        MultipartUploadApplicationService multipartUploadApplicationService =
-                mock(MultipartUploadApplicationService.class);
-        StorageFacadeImpl facade = new StorageFacadeImpl(
-                storageApplicationService,
-                multipartUploadApplicationService,
-                new StorageReadableContentFacadeAssembler(),
-                new StorageOwnerBindingFacadeAssembler(),
-                new StorageUploadFacadeAssembler());
+        StorageMultipartUploadApplicationService multipartUploadApplicationService =
+                mock(StorageMultipartUploadApplicationService.class);
+        StorageFacadeImpl facade = facade(multipartUploadApplicationService);
         when(multipartUploadApplicationService.uploadPart(any())).thenReturn(uploadPart("upload-1", 1, "etag-1", 7L));
 
         var response = facade.uploadPart(UploadMultipartPartFacadeRequest.builder()
@@ -204,15 +189,9 @@ class StorageFacadeImplTest {
 
     @Test
     void completeMultipartShouldDelegateAndReturnCompleteResponse() {
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
-        MultipartUploadApplicationService multipartUploadApplicationService =
-                mock(MultipartUploadApplicationService.class);
-        StorageFacadeImpl facade = new StorageFacadeImpl(
-                storageApplicationService,
-                multipartUploadApplicationService,
-                new StorageReadableContentFacadeAssembler(),
-                new StorageOwnerBindingFacadeAssembler(),
-                new StorageUploadFacadeAssembler());
+        StorageMultipartUploadApplicationService multipartUploadApplicationService =
+                mock(StorageMultipartUploadApplicationService.class);
+        StorageFacadeImpl facade = facade(multipartUploadApplicationService);
         when(multipartUploadApplicationService.complete(any())).thenReturn(storage(7002L));
 
         var response = facade.completeMultipart(CompleteMultipartUploadFacadeRequest.builder()
@@ -237,15 +216,9 @@ class StorageFacadeImplTest {
 
     @Test
     void abortMultipartShouldDelegateAndReturnResponse() {
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
-        MultipartUploadApplicationService multipartUploadApplicationService =
-                mock(MultipartUploadApplicationService.class);
-        StorageFacadeImpl facade = new StorageFacadeImpl(
-                storageApplicationService,
-                multipartUploadApplicationService,
-                new StorageReadableContentFacadeAssembler(),
-                new StorageOwnerBindingFacadeAssembler(),
-                new StorageUploadFacadeAssembler());
+        StorageMultipartUploadApplicationService multipartUploadApplicationService =
+                mock(StorageMultipartUploadApplicationService.class);
+        StorageFacadeImpl facade = facade(multipartUploadApplicationService);
 
         var response = facade.abortMultipart(
                 AbortMultipartUploadFacadeRequest.builder().uploadId("upload-1").build());
@@ -253,6 +226,33 @@ class StorageFacadeImplTest {
         assertEquals("upload-1", response.getUploadId());
         assertEquals(MultipartUploadStatus.ABORTED.value(), response.getUploadStatus());
         verify(multipartUploadApplicationService).abort(any());
+    }
+
+    private static StorageFacadeImpl facade(
+            StorageObjectApplicationService storageObjectApplicationService,
+            StorageReferenceApplicationService storageReferenceApplicationService) {
+        return new StorageFacadeImpl(
+                storageObjectApplicationService,
+                storageReferenceApplicationService,
+                mock(StorageContentApplicationService.class),
+                mock(StorageUploadApplicationService.class),
+                mock(StorageMultipartUploadApplicationService.class),
+                new StorageReadableContentFacadeAssembler(),
+                new StorageOwnerBindingFacadeAssembler(),
+                new StorageUploadFacadeAssembler());
+    }
+
+    private static StorageFacadeImpl facade(
+            StorageMultipartUploadApplicationService multipartUploadApplicationService) {
+        return new StorageFacadeImpl(
+                mock(StorageObjectApplicationService.class),
+                mock(StorageReferenceApplicationService.class),
+                mock(StorageContentApplicationService.class),
+                mock(StorageUploadApplicationService.class),
+                multipartUploadApplicationService,
+                new StorageReadableContentFacadeAssembler(),
+                new StorageOwnerBindingFacadeAssembler(),
+                new StorageUploadFacadeAssembler());
     }
 
     private static StoredObject storage(Long id) {

@@ -44,7 +44,7 @@ class MultipartUploadApplicationServiceImplAbortTest {
         when(multipartUploadRepository.listMultipartParts(UPLOAD_ID_REF)).thenReturn(parts());
         when(multipartUploadRepository.updateMultipartSession(session)).thenReturn(1);
 
-        int updated = service.abort(new AbortMultipartUploadCommand(UPLOAD_ID));
+        int updated = service.abort(new AbortMultipartUploadCommand(UPLOAD_ID_REF));
 
         assertEquals(1, updated);
         verify(contentRepository).delete(argThat(storage -> PART_PATH_1.equals(storage.getObjectKey())));
