@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `07-storage-object-repository-contract`：强类型化 StoredObjectRepository 平铺契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/repository/StoredObjectRepository.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/StoredObjectRepositoryImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/StorageApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/assembler/StorageInterfaceAssembler.java`
-    - 处理动作：将 `listByIds`、`list`、`page`、`listMimeTypes` 的 ID、状态、owner type、MIME 参数改为强类型且保持平铺签名。
-    - 验收点：`StoredObjectRepository` 不再暴露 `List<Long>` 对象 ID，且未引入 criteria 对象。
-    - 重要度：10/10
-
 - [ ] `08-storage-reference-repository-contract`：强类型化引用仓储契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`

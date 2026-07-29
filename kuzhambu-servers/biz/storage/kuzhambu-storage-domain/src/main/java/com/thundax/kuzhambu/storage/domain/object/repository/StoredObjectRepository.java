@@ -3,6 +3,10 @@ package com.thundax.kuzhambu.storage.domain.object.repository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.time.Instant;
 import java.util.List;
@@ -11,24 +15,24 @@ public interface StoredObjectRepository {
 
     StoredObject getById(StoredObjectId id);
 
-    List<StoredObject> listByIds(List<Long> idList);
+    List<StoredObject> listByIds(List<StoredObjectId> idList);
 
     List<StoredObject> list(
-            String mimeType,
-            String objectStatus,
-            String referenceStatus,
+            StorageMimeType mimeType,
+            StoredObjectStatus objectStatus,
+            StoredObjectReferenceStatus referenceStatus,
             String referenceOwnerId,
-            String referenceOwnerType,
+            StorageOwnerType referenceOwnerType,
             String name,
             String remarks,
             SortDirection sortDirection);
 
     PageResult<StoredObject> page(
-            String mimeType,
-            String objectStatus,
-            String referenceStatus,
+            StorageMimeType mimeType,
+            StoredObjectStatus objectStatus,
+            StoredObjectReferenceStatus referenceStatus,
             String referenceOwnerId,
-            String referenceOwnerType,
+            StorageOwnerType referenceOwnerType,
             String name,
             String remarks,
             SortDirection sortDirection,
@@ -51,7 +55,7 @@ public interface StoredObjectRepository {
 
     List<StoredObject> listExpiredDeletedUnreferenced(Instant storedBefore);
 
-    List<String> listMimeTypes();
+    List<StorageMimeType> listMimeTypes();
 
     int updateObjectStatus(StoredObject storage);
 

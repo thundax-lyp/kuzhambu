@@ -19,11 +19,14 @@ import com.thundax.kuzhambu.storage.application.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
@@ -77,18 +80,14 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Override
     public List<StoredObject> list(StorageQuery query) {
         if (query != null && query.getIds() != null) {
-            return dao.listByIds(StoredObjectIdCodec.toValues(query.getIds()));
+            return dao.listByIds(query.getIds());
         }
-        String referenceOwnerType = query == null ? null : query.getReferenceOwnerType();
+        StorageOwnerType referenceOwnerType = ownerTypeFrom(query == null ? null : query.getReferenceOwnerType());
         String referenceOwnerId = query == null ? null : query.getReferenceOwnerId();
         List<StoredObject> storages = dao.list(
-                query == null ? null : query.getContentType(),
-                query == null || query.getObjectStatus() == null
-                        ? null
-                        : query.getObjectStatus().value(),
-                query == null || query.getReferenceStatus() == null
-                        ? null
-                        : query.getReferenceStatus().value(),
+                StorageMimeTypeCodec.toDomain(query == null ? null : query.getContentType()),
+                query == null ? null : query.getObjectStatus(),
+                query == null ? null : query.getReferenceStatus(),
                 referenceOwnerId,
                 referenceOwnerType,
                 query == null ? null : query.getOriginalFilename(),
@@ -100,16 +99,12 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     @Override
     public PageResult<StoredObject> page(StorageQuery query, PageQuery page) {
-        String referenceOwnerType = query == null ? null : query.getReferenceOwnerType();
+        StorageOwnerType referenceOwnerType = ownerTypeFrom(query == null ? null : query.getReferenceOwnerType());
         String referenceOwnerId = query == null ? null : query.getReferenceOwnerId();
         PageResult<StoredObject> storagePage = dao.page(
-                query == null ? null : query.getContentType(),
-                query == null || query.getObjectStatus() == null
-                        ? null
-                        : query.getObjectStatus().value(),
-                query == null || query.getReferenceStatus() == null
-                        ? null
-                        : query.getReferenceStatus().value(),
+                StorageMimeTypeCodec.toDomain(query == null ? null : query.getContentType()),
+                query == null ? null : query.getObjectStatus(),
+                query == null ? null : query.getReferenceStatus(),
                 referenceOwnerId,
                 referenceOwnerType,
                 query == null ? null : query.getOriginalFilename(),
@@ -216,7 +211,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     @Override
     public List<String> listMimeTypes(StorageQuery query) {
-        return dao.listMimeTypes();
+        return dao.listMimeTypes().stream().map(StorageMimeType::value).collect(Collectors.toList());
     }
 
     @Override
@@ -463,6 +458,10 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
             return StorageUploadResult.builder().error("无效的后缀名").build();
         }
         return StorageUploadResult.builder().build();
+    }
+
+    private static StorageOwnerType ownerTypeFrom(String value) {
+        return StringUtils.isBlank(value) ? null : StorageOwnerType.from(value);
     }
 
     private void applyFileMetadata(String originalFilename, String contentType, StoredObject storage) {
