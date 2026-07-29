@@ -137,7 +137,9 @@ public class AiConfigController {
     @PostMapping(value = "capability/list")
     public List<CapabilityResponse> listCapabilities(
             @Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
-        return capabilityCatalogService.listCapabilities(request.getEnabled()).stream()
+        return capabilityCatalogService
+                .listCapabilities(AiConfigInterfaceAssembler.toListCapabilitiesQuery(request))
+                .stream()
                 .map(AiConfigInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }
@@ -154,8 +156,8 @@ public class AiConfigController {
     @SysLogger(value = "能力读取")
     @PostMapping(value = "capability/get")
     public CapabilityResponse getCapability(@Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(capabilityCatalogService.getCapability(
-                AiConfigInterfaceAssembler.toBusinessCapability(request.getCapability())));
+        return AiConfigInterfaceAssembler.toResponse(
+                capabilityCatalogService.get(AiConfigInterfaceAssembler.toGetCapabilityQuery(request)));
     }
 
     @Operation(summary = "获取AI业务配置", description = "ai:config:view")

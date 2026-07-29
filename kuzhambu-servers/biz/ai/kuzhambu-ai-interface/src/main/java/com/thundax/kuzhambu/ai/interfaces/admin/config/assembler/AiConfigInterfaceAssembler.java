@@ -8,8 +8,10 @@ import com.thundax.kuzhambu.ai.application.config.command.UpdateAiBusinessConfig
 import com.thundax.kuzhambu.ai.application.config.command.UpdateAiModelCommand;
 import com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigByCapabilityQuery;
 import com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigQuery;
+import com.thundax.kuzhambu.ai.application.config.query.GetAiCapabilityQuery;
 import com.thundax.kuzhambu.ai.application.config.query.GetAiModelQuery;
 import com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListAiCapabilitiesQuery;
 import com.thundax.kuzhambu.ai.application.config.query.ListAiModelsQuery;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiBusinessConfigIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
@@ -75,6 +77,14 @@ public final class AiConfigInterfaceAssembler {
 
     public static DeleteAiModelCommand toDeleteModelCommand(Long value) {
         return new DeleteAiModelCommand(AiModelIdCodec.toDomain(value));
+    }
+
+    public static GetAiCapabilityQuery toGetCapabilityQuery(AiConfigRequests.CapabilityQueryRequest request) {
+        return new GetAiCapabilityQuery(toBusinessCapability(request == null ? null : request.getCapability()));
+    }
+
+    public static ListAiCapabilitiesQuery toListCapabilitiesQuery(AiConfigRequests.CapabilityQueryRequest request) {
+        return new ListAiCapabilitiesQuery(request == null ? null : request.getEnabled());
     }
 
     public static GetAiBusinessConfigQuery toGetBusinessConfigQuery(Long value) {

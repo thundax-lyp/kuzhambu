@@ -1,11 +1,13 @@
 package com.thundax.kuzhambu.ai.application.config.service;
 
+import com.thundax.kuzhambu.ai.application.config.query.GetAiCapabilityQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListAiCapabilitiesQuery;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import java.util.List;
 
 public interface AiCapabilityCatalogApplicationService {
 
-    AiBusinessCapability getCapability(AiBusinessCapability capability);
+    AiBusinessCapability get(GetAiCapabilityQuery query);
 
-    List<AiBusinessCapability> listCapabilities(Boolean enabled);
+    List<AiBusinessCapability> listCapabilities(ListAiCapabilitiesQuery query);
 }
