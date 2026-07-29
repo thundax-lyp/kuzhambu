@@ -9,12 +9,13 @@ import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageReferenceOwnerTypeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageReferenceOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
 import com.thundax.kuzhambu.storage.infra.cache.StorageCacheSupport;
@@ -97,7 +98,7 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
             StoredObjectStatus objectStatus,
             StoredObjectReferenceStatus referenceStatus,
             String referenceOwnerId,
-            StorageOwnerType referenceOwnerType,
+            StorageReferenceOwnerType referenceOwnerType,
             String name,
             String remarks,
             SortDirection sortDirection) {
@@ -118,7 +119,7 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
             StoredObjectStatus objectStatus,
             StoredObjectReferenceStatus referenceStatus,
             String referenceOwnerId,
-            StorageOwnerType referenceOwnerType,
+            StorageReferenceOwnerType referenceOwnerType,
             String name,
             String remarks,
             SortDirection sortDirection,
@@ -304,7 +305,7 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
             StoredObjectStatus objectStatus,
             StoredObjectReferenceStatus referenceStatus,
             String referenceOwnerId,
-            StorageOwnerType referenceOwnerType,
+            StorageReferenceOwnerType referenceOwnerType,
             String name,
             String remarks,
             SortDirection sortDirection) {
@@ -342,7 +343,7 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
         return wrapper;
     }
 
-    private List<Long> findStorageIdsByBusiness(String referenceOwnerId, StorageOwnerType referenceOwnerType) {
+    private List<Long> findStorageIdsByBusiness(String referenceOwnerId, StorageReferenceOwnerType referenceOwnerType) {
         if (StringUtils.isBlank(referenceOwnerId) && referenceOwnerType == null) {
             return null;
         }
@@ -351,7 +352,9 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
             wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, referenceOwnerId);
         }
         if (referenceOwnerType != null) {
-            wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerType, referenceOwnerType.value());
+            wrapper.eq(
+                    StoredObjectReferenceDO::getReferenceOwnerType,
+                    StorageReferenceOwnerTypeCodec.toValue(referenceOwnerType));
         }
         return businessMapper.selectObjs(wrapper.select(StoredObjectReferenceDO::getObjectId)).stream()
                 .filter(Objects::nonNull)

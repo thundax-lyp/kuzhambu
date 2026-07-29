@@ -20,14 +20,15 @@ import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageReferenceOwnerTypeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageReferenceOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
@@ -82,7 +83,8 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (query != null && query.getIds() != null) {
             return dao.listByIds(query.getIds());
         }
-        StorageOwnerType referenceOwnerType = ownerTypeFrom(query == null ? null : query.getReferenceOwnerType());
+        StorageReferenceOwnerType referenceOwnerType =
+                StorageReferenceOwnerTypeCodec.toDomain(query == null ? null : query.getReferenceOwnerType());
         String referenceOwnerId = query == null ? null : query.getReferenceOwnerId();
         List<StoredObject> storages = dao.list(
                 StorageMimeTypeCodec.toDomain(query == null ? null : query.getContentType()),
@@ -99,7 +101,8 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     @Override
     public PageResult<StoredObject> page(StorageQuery query, PageQuery page) {
-        StorageOwnerType referenceOwnerType = ownerTypeFrom(query == null ? null : query.getReferenceOwnerType());
+        StorageReferenceOwnerType referenceOwnerType =
+                StorageReferenceOwnerTypeCodec.toDomain(query == null ? null : query.getReferenceOwnerType());
         String referenceOwnerId = query == null ? null : query.getReferenceOwnerId();
         PageResult<StoredObject> storagePage = dao.page(
                 StorageMimeTypeCodec.toDomain(query == null ? null : query.getContentType()),
@@ -217,7 +220,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Override
     public List<String> listReferenceOwnerTypes(StorageQuery query) {
         return businessRepository.listReferenceOwnerTypes().stream()
-                .map(StorageOwnerType::value)
+                .map(StorageReferenceOwnerType::value)
                 .collect(Collectors.toList());
     }
 
@@ -460,10 +463,6 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
             return StorageUploadResult.builder().error("无效的后缀名").build();
         }
         return StorageUploadResult.builder().build();
-    }
-
-    private static StorageOwnerType ownerTypeFrom(String value) {
-        return StringUtils.isBlank(value) ? null : StorageOwnerType.from(value);
     }
 
     private void applyFileMetadata(String originalFilename, String contentType, StoredObject storage) {

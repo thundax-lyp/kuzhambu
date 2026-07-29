@@ -13,6 +13,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.storage.application.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
@@ -25,6 +27,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageReferenceOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
@@ -299,6 +302,36 @@ class StorageApplicationServiceUploadTest {
         query.setReferenceOwnerId("owner-2");
 
         assertFalse(service.existsReadableContent(query));
+    }
+
+    @Test
+    void pageShouldPassReferenceOwnerTypeAsQueryValueObjectWithoutEnumValidation() {
+        StoredObjectRepository storageRepository = mock(StoredObjectRepository.class);
+        StoredObjectReferenceRepository referenceRepository = mock(StoredObjectReferenceRepository.class);
+        StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
+                storageRepository, referenceRepository, mock(StoredObjectContentRepository.class));
+        when(storageRepository.page(
+                        any(), any(), any(), any(), any(), any(), any(), any(), any(Integer.class), any(Integer.class)))
+                .thenReturn(new PageResult<>());
+
+        StorageQuery query = new StorageQuery();
+        query.setReferenceOwnerType("BOOK");
+        query.setReferenceOwnerId("owner-9");
+
+        service.page(query, new PageQuery(1, 20));
+
+        verify(storageRepository)
+                .page(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        argThat((StorageReferenceOwnerType value) -> value != null && "BOOK".equals(value.value())),
+                        any(),
+                        any(),
+                        any(),
+                        any(Integer.class),
+                        any(Integer.class));
     }
 
     @Test
