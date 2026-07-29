@@ -98,7 +98,7 @@ html[data-theme="dark"] .user-page {
 }
 
 .user-page-search {
-    width: 250px;
+    width: min(100%, 250px);
 }
 
 .user-page-search-shortcut {

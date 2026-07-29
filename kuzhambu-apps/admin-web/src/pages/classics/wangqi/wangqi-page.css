@@ -22,7 +22,7 @@
 }
 
 .wangqi-page-search {
-    width: 260px;
+    width: min(100%, 260px);
 }
 
 .wangqi-page-actions .wangqi-page-filter-active {

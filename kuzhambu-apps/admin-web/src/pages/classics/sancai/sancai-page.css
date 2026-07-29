@@ -41,7 +41,7 @@ html[data-theme="dark"] .sancai-form-field {
 }
 
 .sancai-page-search {
-    width: 260px;
+    width: min(100%, 260px);
 }
 
 .sancai-page-actions .sancai-page-filter-active {

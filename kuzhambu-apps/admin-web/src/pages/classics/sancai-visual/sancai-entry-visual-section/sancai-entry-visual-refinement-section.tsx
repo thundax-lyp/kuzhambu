@@ -1,6 +1,4 @@
 import { useRef } from "react";
-import { KuzhambuAlert, KuzhambuButton, KuzhambuCard } from "@/components";
-import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type {
     AiRefinementStreamEventRecord,
     AiRefinementTaskRecord
@@ -11,8 +9,6 @@ import { AiRefinementStreamPanel } from "@/pages/classics/common/ai-refinement-s
 interface SancaiEntryVisualRefinementSectionProps {
     entryId: string;
     isStreamingRefinementTask: boolean;
-    refinementTasks: AiRefinementTaskRecord[];
-    retryingRefinementTaskId: string | null;
     selectedVisualAssetId: string | null;
     streamErrorText?: string | null;
     streamEvents: AiRefinementStreamEventRecord[];
@@ -23,21 +19,9 @@ interface SancaiEntryVisualRefinementSectionProps {
     onVisualAssetCandidateChanged: () => Promise<void> | void;
 }
 
-const isVisualRefinementTask = (task: AiRefinementTaskRecord) => {
-    const capability = aiRefinementTaskService.getNormalizedTaskCapability(task.capability);
-    return (
-        capability === "image_analysis" ||
-        capability === "visual" ||
-        capability === "fusion" ||
-        capability === "image_gen"
-    );
-};
-
 export const SancaiEntryVisualRefinementSection = ({
     entryId,
     isStreamingRefinementTask,
-    refinementTasks,
-    retryingRefinementTaskId,
     selectedVisualAssetId,
     streamErrorText = null,
     streamEvents,
@@ -60,67 +44,6 @@ export const SancaiEntryVisualRefinementSection = ({
 
     return (
         <>
-            <KuzhambuCard size="small" title="AI 精修任务">
-                <div style={{ display: "grid", gap: 8 }}>
-                    {refinementTasks
-                        .filter(isVisualRefinementTask)
-                        .slice(0, 6)
-                        .map((task) => {
-                            const failureText = aiRefinementTaskService.getTaskFailureText(
-                                task.failureStage,
-                                task.errorType,
-                                task.errorMessage
-                            );
-                            return (
-                                <KuzhambuCard
-                                    key={task.taskId}
-                                    size="small"
-                                    styles={{ body: { padding: 12 } }}
-                                >
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            gap: 12,
-                                            alignItems: "center",
-                                            flexWrap: "wrap"
-                                        }}
-                                    >
-                                        <div>
-                                            {aiRefinementTaskService.getTaskCapabilityLabel(
-                                                task.capability
-                                            )}
-                                            ：{task.status}
-                                            {task.resultPreview ? ` / ${task.resultPreview}` : ""}
-                                        </div>
-                                        {aiRefinementTaskService.getTaskRetryable(
-                                            task.status,
-                                            task.capability
-                                        ) ? (
-                                            <KuzhambuButton
-                                                testId="classics-sancai-sancai-entry-retry-button"
-                                                size="small"
-                                                loading={retryingRefinementTaskId === task.taskId}
-                                                onClick={() => onRetryRefinementTask(task)}
-                                            >
-                                                重试
-                                            </KuzhambuButton>
-                                        ) : null}
-                                    </div>
-                                    {failureText ? (
-                                        <KuzhambuAlert
-                                            showIcon
-                                            type="error"
-                                            style={{ marginTop: 8 }}
-                                            title="失败原因"
-                                            description={failureText}
-                                        />
-                                    ) : null}
-                                </KuzhambuCard>
-                            );
-                        })}
-                </div>
-            </KuzhambuCard>
             {streamingRefinementTask ? (
                 <AiRefinementStreamPanel
                     events={streamEvents}

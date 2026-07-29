@@ -9,7 +9,7 @@
 }
 
 .kuzhambu-list-page-search {
-    width: 250px;
+    width: min(100%, 250px);
     transition:
         width 0.18s ease,
         opacity 0.14s ease,
