@@ -55,14 +55,6 @@
     white-space: nowrap;
 }
 
-.sancai-visual-workflow {
-    min-width: 0;
-    padding: 12px;
-    background: color-mix(in srgb, var(--sancai-panel) 86%, #fff7df 14%);
-    border: 1px solid var(--sancai-line);
-    border-radius: 8px;
-}
-
 .sancai-visual-stepper-panel {
     display: grid;
     min-width: 0;

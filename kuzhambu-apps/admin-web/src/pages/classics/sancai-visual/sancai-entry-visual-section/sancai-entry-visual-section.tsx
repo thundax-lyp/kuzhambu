@@ -1,6 +1,4 @@
 import {
-    ArrowLeftOutlined,
-    ArrowRightOutlined,
     BranchesOutlined,
     CheckOutlined,
     FileSearchOutlined,
@@ -9,22 +7,9 @@ import {
     SwapOutlined
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Col, Empty, Form, Image, Input, Row, Tag, Typography } from "antd";
+import { Col, Empty, Form, Row, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import {
-    KuzhambuForm,
-    KuzhambuFormItem,
-    KuzhambuAlert,
-    KuzhambuButton,
-    KuzhambuModal,
-    KuzhambuSpace,
-    KuzhambuStep,
-    KuzhambuTable,
-    type KuzhambuTableProps,
-    KuzhambuSelect
-} from "@/components";
 
 import type { AiCandidateApplyRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
@@ -35,25 +20,18 @@ import type {
     SancaiEntryRecord,
     SancaiVisualAssetRecord
 } from "@/pages/classics/sancai-visual/sancai-visual-types";
+import { isSameId } from "@/types/id";
 import { useSancaiEntryVisualRefinement } from "./hooks/use-sancai-entry-visual-refinement";
+import { readVisualAssetId, resolveStorageUrl } from "./sancai-entry-visual-formatters";
 import { SancaiEntryVisualRefinementSection } from "./sancai-entry-visual-refinement-section";
+import { SancaiVisualAssetMediaPanel } from "./sancai-visual-asset-media-panel";
+import {
+    SancaiVisualWorkflowCard,
+    type SancaiVisualWorkflowStepKey
+} from "./sancai-visual-workflow-card";
 import "./sancai-entry-visual-section.css";
 
 const { Text } = Typography;
-
-const readVisualAssetTitle = (asset: SancaiVisualAssetRecord | undefined | null) => {
-    if (!asset) {
-        return "未选择视觉处理";
-    }
-    if (!asset.versionNo && !asset.visualAssetId && !asset.id) {
-        return "待写入历史";
-    }
-    return `历史记录 ${asset.versionNo ?? asset.visualAssetId ?? asset.id ?? "-"}`;
-};
-
-const readVisualAssetId = (asset: SancaiVisualAssetRecord) => {
-    return asset.visualAssetId ?? asset.id ?? "";
-};
 
 const selectCurrentVisualAsset = (assets: SancaiVisualAssetRecord[]) => {
     return [...assets]
@@ -85,48 +63,6 @@ const isSameStorageObjectId = (
     return left != null && right != null && String(left) === String(right);
 };
 
-const readVisualAssetStatusLabel = (status?: string | null) => {
-    switch (status) {
-        case "READY":
-            return "已完成";
-        case "QUEUED":
-        case "PENDING":
-            return "排队中";
-        case "PROCESSING":
-        case "RUNNING":
-            return "正在处理";
-        case "DRAFT":
-            return "草稿";
-        case "FAILED":
-            return "失败";
-        default:
-            return status || "-";
-    }
-};
-
-const readVisualAssetStatusTagColor = (status?: string | null) => {
-    switch (status) {
-        case "READY":
-            return "success";
-        case "QUEUED":
-        case "PENDING":
-        case "PROCESSING":
-        case "RUNNING":
-            return "warning";
-        case "DRAFT":
-            return "default";
-        case "ERROR":
-        case "FAILED":
-            return "error";
-        default:
-            return "default";
-    }
-};
-
-const readImageTitle = (image: SancaiEntryImageRecord) => {
-    return image.title?.trim() || image.originalFilename?.trim() || `图片 ${image.id}`;
-};
-
 const hasVisualText = (value?: string | null) => Boolean(value?.trim());
 
 const readStepStatus = (done: boolean, blocked: boolean) => {
@@ -137,12 +73,6 @@ const readStepStatus = (done: boolean, blocked: boolean) => {
         return { color: "success", label: "已完成", stepStatus: "finish" as const };
     }
     return { color: "processing", label: "可执行", stepStatus: "process" as const };
-};
-
-type VisualStepKey = "source" | "image_analysis" | "fusion" | "visual" | "image_gen" | "save";
-
-const resolveStorageUrl = (url?: string | null) => {
-    return url ? toAuthenticatedResourceUrl(url) : undefined;
 };
 
 const normalizeNumberField = (value: unknown) => {
@@ -247,7 +177,7 @@ export const SancaiEntryVisualSection = ({
     const [selectedVisualAssetId, setSelectedVisualAssetId] = useState<string | null>(null);
     const [manualWorkflowStep, setManualWorkflowStep] = useState<{
         assetId: string | null;
-        stepKey: VisualStepKey;
+        stepKey: SancaiVisualWorkflowStepKey;
     } | null>(null);
     const [optimisticVisualAsset, setOptimisticVisualAsset] =
         useState<SancaiVisualAssetRecord | null>(null);
@@ -276,11 +206,16 @@ export const SancaiEntryVisualSection = ({
     }, [activeVisualAssetId, defaultSourceImage, entryId]);
     const selectedVisualAsset =
         visualAssets.find(
-            (asset) => (asset.visualAssetId ?? asset.id ?? null) === activeVisualAssetId
+            (asset) =>
+                activeVisualAssetId &&
+                isSameId(asset.visualAssetId ?? asset.id, activeVisualAssetId)
         ) ||
         (optimisticVisualAsset &&
-        (optimisticVisualAsset.visualAssetId ?? optimisticVisualAsset.id ?? null) ===
+        activeVisualAssetId &&
+        isSameId(
+            optimisticVisualAsset.visualAssetId ?? optimisticVisualAsset.id,
             activeVisualAssetId
+        )
             ? optimisticVisualAsset
             : null) ||
         currentVisualAsset ||
@@ -369,7 +304,6 @@ export const SancaiEntryVisualSection = ({
     const selectedVisualAssetResourceId = selectedVisualAsset
         ? readVisualAssetId(selectedVisualAsset) || null
         : null;
-    const isDraftVisualAsset = Boolean(selectedVisualAsset && !selectedVisualAssetResourceId);
     const selectedSourceStorageObjectId =
         visualAssetFormValue?.sourceImageStorageObjectId ??
         defaultSourceImage?.storageObjectId ??
@@ -437,23 +371,30 @@ export const SancaiEntryVisualSection = ({
         }
         await visualAssetForm.validateFields();
         const values = visualAssetForm.getFieldsValue(true);
-        const savedAsset = await onUpdateVisualAsset({
+        const assetToSave = {
             ...selectedVisualAsset,
             ...values,
             textWeight: normalizeNumberField(values.textWeight),
             imageWeight: normalizeNumberField(values.imageWeight)
-        });
+        };
+        const savedAsset = await onUpdateVisualAsset(assetToSave);
         if (savedAsset) {
-            const savedAssetId = readVisualAssetId(savedAsset);
+            const completeSavedAsset = {
+                ...assetToSave,
+                ...savedAsset
+            };
+            const savedAssetId = readVisualAssetId(completeSavedAsset);
             if (savedAssetId) {
-                setOptimisticVisualAsset(savedAsset);
+                setOptimisticVisualAsset(completeSavedAsset);
                 setSelectedVisualAssetId(savedAssetId);
             }
             visualAssetForm.setFieldsValue(
-                toVisualAssetFormValue(savedAsset, defaultSourceImage, entryId) ?? savedAsset
+                toVisualAssetFormValue(completeSavedAsset, defaultSourceImage, entryId) ??
+                    completeSavedAsset
             );
+            return completeSavedAsset;
         }
-        return savedAsset ?? null;
+        return null;
     };
     const selectVisualAsset = (asset: SancaiVisualAssetRecord) => {
         const assetId = asset.visualAssetId ?? asset.id ?? null;
@@ -693,505 +634,50 @@ export const SancaiEntryVisualSection = ({
         >
             {selectedVisualAsset ? (
                 <>
-                    <KuzhambuForm
-                        form={visualAssetForm}
-                        className="sancai-entry-edit-drawer-form"
-                        colon={false}
-                        component="div"
-                    >
-                        <Row gutter={[12, 12]} align="top">
-                            <Col xs={24} xl={15}>
-                                <div className="sancai-visual-workflow" aria-label="图文生图工作流">
-                                    <Row gutter={[12, 8]} align="top">
-                                        <Col xs={24} lg={9} xl={8}>
-                                            <div className="sancai-visual-stepper-panel">
-                                                <KuzhambuStep
-                                                    testId="classics-sancai-visual-workflow-step"
-                                                    className="sancai-visual-workflow-stepper"
-                                                    current={currentWorkflowStepIndex}
-                                                    orientation="vertical"
-                                                    responsive
-                                                    onChange={goToWorkflowStep}
-                                                    items={visualWorkflowSteps.map((step) => ({
-                                                        status: step.status.stepStatus,
-                                                        title: step.title,
-                                                        content: step.status.label
-                                                    }))}
-                                                />
-                                                <div className="sancai-visual-stepper-actions">
-                                                    <KuzhambuButton
-                                                        testId="classics-sancai-visual-workflow-prev-button"
-                                                        ariaLabel="上一步"
-                                                        icon={<ArrowLeftOutlined />}
-                                                        disabled={!canGoToPreviousWorkflowStep}
-                                                        onClick={() =>
-                                                            goToWorkflowStep(
-                                                                currentWorkflowStepIndex - 1
-                                                            )
-                                                        }
-                                                    />
-                                                    <KuzhambuButton
-                                                        testId="classics-sancai-visual-workflow-next-button"
-                                                        ariaLabel="下一步"
-                                                        icon={<ArrowRightOutlined />}
-                                                        type="primary"
-                                                        disabled={!canGoToNextWorkflowStep}
-                                                        loading={
-                                                            currentWorkflowStep.key === "source" &&
-                                                            isUpdatingVisualAsset
-                                                        }
-                                                        onClick={goToNextWorkflowStep}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </Col>
-                                        <Col xs={24} lg={15} xl={16}>
-                                            <KuzhambuSpace
-                                                orientation="vertical"
-                                                size={8}
-                                                style={{ width: "100%" }}
-                                            >
-                                                <KuzhambuAlert
-                                                    className="sancai-visual-workflow-alert"
-                                                    showIcon
-                                                    title={currentWorkflowStep.title}
-                                                    description={
-                                                        currentWorkflowStep.blockedReason ??
-                                                        currentWorkflowStep.summary
-                                                    }
-                                                    type={
-                                                        currentWorkflowStep.blockedReason
-                                                            ? "warning"
-                                                            : currentWorkflowStep.status
-                                                                    .stepStatus === "finish"
-                                                              ? "success"
-                                                              : "info"
-                                                    }
-                                                />
-                                                <div className="sancai-visual-workflow-step-form">
-                                                    {currentWorkflowStep.key === "source" ? (
-                                                        <div className="sancai-visual-asset-picker">
-                                                            <KuzhambuFormItem
-                                                                name="sourceImageStorageObjectId"
-                                                                layoutSize="large"
-                                                            >
-                                                                <KuzhambuSelect
-                                                                    aria-label="三才图会视觉处理来源图片"
-                                                                    disabled={!defaultSourceImage}
-                                                                    placeholder="选择来源图片"
-                                                                    options={entryImages.map(
-                                                                        (image) => ({
-                                                                            disabled:
-                                                                                !image.storageObjectId,
-                                                                            label: readImageTitle(
-                                                                                image
-                                                                            ),
-                                                                            value:
-                                                                                image.storageObjectId ??
-                                                                                `image:${image.id}`
-                                                                        })
-                                                                    )}
-                                                                    onChange={(value) =>
-                                                                        selectVisualSourceImageBySelectValue(
-                                                                            value
-                                                                        )
-                                                                    }
-                                                                />
-                                                            </KuzhambuFormItem>
-                                                        </div>
-                                                    ) : null}
-                                                    {currentWorkflowStep.key ===
-                                                    "image_analysis" ? (
-                                                        <KuzhambuFormItem
-                                                            name="imageAnalysisMarkdown"
-                                                            layoutSize="large"
-                                                            className="sancai-entry-edit-drawer-form-item-top"
-                                                        >
-                                                            <Input.TextArea
-                                                                aria-label="三才图会视觉处理图片理解"
-                                                                autoSize={resolveTextAreaAutoSize({
-                                                                    minRows: 2,
-                                                                    maxRows: 4
-                                                                })}
-                                                            />
-                                                        </KuzhambuFormItem>
-                                                    ) : null}
-                                                    {currentWorkflowStep.key === "fusion" ? (
-                                                        <>
-                                                            <Row gutter={[10, 10]}>
-                                                                <Col xs={24} sm={12}>
-                                                                    <KuzhambuFormItem
-                                                                        name="textWeight"
-                                                                        label="文本权重"
-                                                                        layoutSize="middle"
-                                                                    >
-                                                                        <Input aria-label="三才图会视觉处理文本权重" />
-                                                                    </KuzhambuFormItem>
-                                                                </Col>
-                                                                <Col xs={24} sm={12}>
-                                                                    <KuzhambuFormItem
-                                                                        name="imageWeight"
-                                                                        label="图片权重"
-                                                                        layoutSize="middle"
-                                                                    >
-                                                                        <Input aria-label="三才图会视觉处理图片权重" />
-                                                                    </KuzhambuFormItem>
-                                                                </Col>
-                                                            </Row>
-                                                            <KuzhambuFormItem
-                                                                name="fusionDescription"
-                                                                label="图文融合"
-                                                                layoutSize="large"
-                                                                className="sancai-entry-edit-drawer-form-item-top"
-                                                            >
-                                                                <Input.TextArea
-                                                                    aria-label="三才图会视觉处理融合描述"
-                                                                    autoSize={resolveTextAreaAutoSize(
-                                                                        {
-                                                                            minRows: 2,
-                                                                            maxRows: 4
-                                                                        }
-                                                                    )}
-                                                                />
-                                                            </KuzhambuFormItem>
-                                                        </>
-                                                    ) : null}
-                                                    {currentWorkflowStep.key === "visual" ? (
-                                                        <KuzhambuFormItem
-                                                            name="visualDescription"
-                                                            label="视觉描述"
-                                                            layoutSize="large"
-                                                            className="sancai-entry-edit-drawer-form-item-top"
-                                                        >
-                                                            <Input.TextArea
-                                                                aria-label="三才图会视觉处理视觉描述"
-                                                                autoSize={resolveTextAreaAutoSize({
-                                                                    minRows: 2,
-                                                                    maxRows: 4
-                                                                })}
-                                                            />
-                                                        </KuzhambuFormItem>
-                                                    ) : null}
-                                                    {currentWorkflowStep.key === "image_gen" ? (
-                                                        <KuzhambuFormItem
-                                                            name="generationParamsJson"
-                                                            label="生成参数"
-                                                            layoutSize="large"
-                                                            className="sancai-entry-edit-drawer-form-item-top"
-                                                        >
-                                                            <Input.TextArea
-                                                                aria-label="三才图会视觉处理生成参数"
-                                                                autoSize={resolveTextAreaAutoSize({
-                                                                    minRows: 2,
-                                                                    maxRows: 4
-                                                                })}
-                                                            />
-                                                        </KuzhambuFormItem>
-                                                    ) : null}
-                                                    {currentWorkflowStep.key === "save" ? (
-                                                        <div className="sancai-visual-save-review">
-                                                            <KuzhambuSpace wrap>
-                                                                <Tag
-                                                                    color={readVisualAssetStatusTagColor(
-                                                                        selectedVisualAsset.status
-                                                                    )}
-                                                                >
-                                                                    {readVisualAssetStatusLabel(
-                                                                        selectedVisualAsset.status
-                                                                    )}
-                                                                </Tag>
-                                                                <Text type="secondary">
-                                                                    {readVisualAssetTitle(
-                                                                        selectedVisualAsset
-                                                                    )}
-                                                                </Text>
-                                                            </KuzhambuSpace>
-                                                            <Text type="secondary">
-                                                                保存当前来源图片、图片理解、融合描述、视觉描述、生成参数和生成图状态。
-                                                            </Text>
-                                                        </div>
-                                                    ) : null}
-                                                    {currentWorkflowStep.key !== "source" ? (
-                                                        <div className="sancai-visual-workflow-card-actions">
-                                                            <KuzhambuButton
-                                                                testId={currentWorkflowStep.testId}
-                                                                icon={currentWorkflowStep.icon}
-                                                                type="primary"
-                                                                loading={
-                                                                    currentWorkflowStep.loading
-                                                                }
-                                                                disabled={Boolean(
-                                                                    currentWorkflowStep.blockedReason
-                                                                )}
-                                                                onClick={
-                                                                    currentWorkflowStep.onClick
-                                                                }
-                                                            >
-                                                                {currentWorkflowStep.buttonText}
-                                                            </KuzhambuButton>
-                                                        </div>
-                                                    ) : null}
-                                                </div>
-                                            </KuzhambuSpace>
-                                        </Col>
-                                    </Row>
-                                </div>
-                            </Col>
-                            <Col xs={24} xl={9}>
-                                <div
-                                    className="sancai-visual-asset-media"
-                                    aria-label="视觉处理图片"
-                                >
-                                    <div className="sancai-visual-asset-image-list">
-                                        <div className="sancai-visual-asset-image-frame">
-                                            <div className="sancai-visual-asset-image-stage">
-                                                {sourcePreviewUrl ? (
-                                                    <Image
-                                                        src={sourcePreviewUrl}
-                                                        alt="三才图会视觉处理来源图片"
-                                                        style={{
-                                                            width: "100%",
-                                                            height: "100%",
-                                                            objectFit: "contain"
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Empty
-                                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                                        description="未选择来源图片"
-                                                    />
-                                                )}
-                                            </div>
-                                            <div className="sancai-visual-asset-image-actions">
-                                                <Text type="secondary">
-                                                    {selectedSourceImage
-                                                        ? readImageTitle(selectedSourceImage)
-                                                        : "来源图片"}
-                                                </Text>
-                                            </div>
-                                        </div>
-                                        <div className="sancai-visual-asset-image-frame">
-                                            <div className="sancai-visual-asset-image-stage">
-                                                {generatedPreviewUrl ? (
-                                                    <Image
-                                                        src={generatedPreviewUrl}
-                                                        alt="三才图会视觉处理生成图"
-                                                        style={{
-                                                            width: "100%",
-                                                            height: "100%",
-                                                            objectFit: "contain"
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <div
-                                                        className="sancai-visual-generated-placeholder"
-                                                        role="img"
-                                                        aria-label="三才图会视觉处理生成图占位"
-                                                    >
-                                                        <PictureOutlined />
-                                                        <Text type="secondary">未生成图片</Text>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="sancai-visual-asset-image-actions">
-                                                <KuzhambuSpace wrap>
-                                                    <Text type="secondary">生成图</Text>
-                                                    <Tag
-                                                        color={readVisualAssetStatusTagColor(
-                                                            selectedVisualAsset.status
-                                                        )}
-                                                    >
-                                                        {readVisualAssetStatusLabel(
-                                                            selectedVisualAsset.status
-                                                        )}
-                                                    </Tag>
-                                                </KuzhambuSpace>
-                                                {!isDraftVisualAsset ? (
-                                                    <KuzhambuButton
-                                                        testId="classics-sancai-visual-asset-adopt-button"
-                                                        icon={<CheckOutlined />}
-                                                        type="primary"
-                                                        loading={isUpdatingVisualAsset}
-                                                        onClick={saveVisualAsset}
-                                                    >
-                                                        采纳
-                                                    </KuzhambuButton>
-                                                ) : null}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <KuzhambuButton
-                                        block
-                                        testId="classics-sancai-visual-history-button"
-                                        disabled={
-                                            !selectedSourceStorageObjectId ||
-                                            visualAssetsForSelectedSource.length === 0
-                                        }
-                                        onClick={() => setIsHistoryModalOpen(true)}
-                                    >
-                                        {visualAssetsForSelectedSource.length > 0
-                                            ? "切换历史版本"
-                                            : "暂无历史版本"}
-                                    </KuzhambuButton>
-                                    <KuzhambuModal
-                                        testId="classics-sancai-visual-history-modal"
-                                        title="选择视觉处理历史"
-                                        open={isHistoryModalOpen}
-                                        width={760}
-                                        footer={
-                                            <KuzhambuButton
-                                                testId="classics-sancai-visual-history-close-button"
-                                                onClick={() => setIsHistoryModalOpen(false)}
-                                            >
-                                                关闭
-                                            </KuzhambuButton>
-                                        }
-                                        onCancel={() => setIsHistoryModalOpen(false)}
-                                    >
-                                        <KuzhambuTable
-                                            className="sancai-visual-asset-version-table"
-                                            ariaLabel="三才图会视觉处理历史记录列表"
-                                            columns={
-                                                [
-                                                    {
-                                                        title: "历史记录",
-                                                        key: "version",
-                                                        width: 120,
-                                                        render: (_, asset) =>
-                                                            readVisualAssetTitle(asset)
-                                                    },
-                                                    {
-                                                        title: "图片",
-                                                        key: "preview",
-                                                        width: 84,
-                                                        render: (_, asset) => {
-                                                            const previewUrl = resolveStorageUrl(
-                                                                asset.generatedPreviewUrl ??
-                                                                    asset.generatedDownloadUrl
-                                                            );
-                                                            const fullImageUrl = resolveStorageUrl(
-                                                                asset.generatedDownloadUrl ??
-                                                                    asset.generatedPreviewUrl
-                                                            );
-                                                            if (
-                                                                asset.status !== "READY" ||
-                                                                !previewUrl
-                                                            ) {
-                                                                return (
-                                                                    <Text type="secondary">-</Text>
-                                                                );
-                                                            }
-                                                            return (
-                                                                <Image
-                                                                    width={56}
-                                                                    height={56}
-                                                                    className="sancai-visual-asset-table-preview"
-                                                                    src={previewUrl}
-                                                                    alt={`${readVisualAssetTitle(asset)}生成图预览`}
-                                                                    preview={{
-                                                                        src:
-                                                                            fullImageUrl ??
-                                                                            previewUrl
-                                                                    }}
-                                                                />
-                                                            );
-                                                        }
-                                                    },
-                                                    {
-                                                        title: "状态",
-                                                        dataIndex: "status",
-                                                        key: "status",
-                                                        width: 96,
-                                                        render: (status?: string | null) =>
-                                                            status ? (
-                                                                <Tag
-                                                                    color={readVisualAssetStatusTagColor(
-                                                                        status
-                                                                    )}
-                                                                >
-                                                                    {readVisualAssetStatusLabel(
-                                                                        status
-                                                                    )}
-                                                                </Tag>
-                                                            ) : (
-                                                                <Text type="secondary">-</Text>
-                                                            )
-                                                    },
-                                                    {
-                                                        title: "当前",
-                                                        dataIndex: "currentUsed",
-                                                        key: "currentUsed",
-                                                        width: 72,
-                                                        render: (currentUsed?: boolean | null) =>
-                                                            currentUsed ? (
-                                                                <CheckOutlined
-                                                                    aria-label="当前使用"
-                                                                    className="sancai-image-current-icon"
-                                                                />
-                                                            ) : (
-                                                                <Text type="secondary">-</Text>
-                                                            )
-                                                    },
-                                                    {
-                                                        inlineLimit: 2,
-                                                        key: "actions",
-                                                        options: (asset) => {
-                                                            const assetId =
-                                                                readVisualAssetId(asset);
-                                                            const selectedAssetId =
-                                                                selectedVisualAsset
-                                                                    ? readVisualAssetId(
-                                                                          selectedVisualAsset
-                                                                      )
-                                                                    : "";
-                                                            const isSelected =
-                                                                Boolean(assetId) &&
-                                                                assetId === selectedAssetId;
-                                                            return [
-                                                                {
-                                                                    key: "select",
-                                                                    text: "选择",
-                                                                    ariaLabel: `选择${readVisualAssetTitle(asset)}`,
-                                                                    testId: `sancai-visual-asset-${assetId}-select-button`,
-                                                                    disabled:
-                                                                        !selectedSourceStorageObjectId ||
-                                                                        isSelected,
-                                                                    onClick: (record) =>
-                                                                        selectHistoryVisualAsset(
-                                                                            record
-                                                                        )
-                                                                },
-                                                                {
-                                                                    key: "use",
-                                                                    text: "当前",
-                                                                    ariaLabel: `设为当前视觉处理 ${readVisualAssetTitle(asset)}`,
-                                                                    testId: `sancai-visual-asset-${assetId}-use-button`,
-                                                                    disabled:
-                                                                        !selectedSourceStorageObjectId ||
-                                                                        Boolean(asset.currentUsed),
-                                                                    onClick: (record) =>
-                                                                        handleUseHistoryVisualAsset(
-                                                                            record
-                                                                        )
-                                                                }
-                                                            ];
-                                                        }
-                                                    }
-                                                ] satisfies KuzhambuTableProps<SancaiVisualAssetRecord>["columns"]
-                                            }
-                                            dataSource={visualAssetsForSelectedSource}
-                                            pagination={false}
-                                            rowKey={(asset) => readVisualAssetId(asset)}
-                                            size="small"
-                                        />
-                                    </KuzhambuModal>
-                                </div>
-                            </Col>
-                        </Row>
-                    </KuzhambuForm>
+                    <Row gutter={[12, 12]} align="top">
+                        <Col xs={24} xl={18}>
+                            <SancaiVisualWorkflowCard
+                                form={visualAssetForm}
+                                canGoToNextWorkflowStep={canGoToNextWorkflowStep}
+                                canGoToPreviousWorkflowStep={canGoToPreviousWorkflowStep}
+                                currentWorkflowStep={currentWorkflowStep}
+                                currentWorkflowStepIndex={currentWorkflowStepIndex}
+                                defaultSourceImage={defaultSourceImage}
+                                entryImages={entryImages}
+                                isUpdatingVisualAsset={isUpdatingVisualAsset}
+                                selectedVisualAsset={selectedVisualAsset}
+                                visualWorkflowSteps={visualWorkflowSteps}
+                                onGoToNextWorkflowStep={goToNextWorkflowStep}
+                                onGoToPreviousWorkflowStep={() =>
+                                    goToWorkflowStep(currentWorkflowStepIndex - 1)
+                                }
+                                onGoToWorkflowStep={goToWorkflowStep}
+                                onSelectVisualSourceImageBySelectValue={
+                                    selectVisualSourceImageBySelectValue
+                                }
+                            />
+                        </Col>
+                        <Col xs={24} xl={6}>
+                            <SancaiVisualAssetMediaPanel
+                                generatedPreviewUrl={generatedPreviewUrl}
+                                isHistoryModalOpen={isHistoryModalOpen}
+                                isUpdatingVisualAsset={isUpdatingVisualAsset}
+                                onCloseHistoryModal={() => setIsHistoryModalOpen(false)}
+                                onOpenHistoryModal={() => setIsHistoryModalOpen(true)}
+                                onSaveVisualAsset={saveVisualAsset}
+                                onSelectHistoryVisualAsset={selectHistoryVisualAsset}
+                                onUseHistoryVisualAsset={handleUseHistoryVisualAsset}
+                                selectedSourceImage={selectedSourceImage}
+                                selectedSourceStorageObjectId={selectedSourceStorageObjectId}
+                                selectedVisualAsset={selectedVisualAsset}
+                                sourcePreviewUrl={sourcePreviewUrl}
+                                visualAssetsForSelectedSource={visualAssetsForSelectedSource}
+                            />
+                        </Col>
+                    </Row>
                 </>
             ) : (
-                <div className="sancai-visual-asset-start-empty">
+                <section className="sancai-visual-asset-start-empty">
                     <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                         description={
@@ -1208,7 +694,7 @@ export const SancaiEntryVisualSection = ({
                             </Text>
                         ) : null}
                     </Empty>
-                </div>
+                </section>
             )}
             <SancaiEntryVisualRefinementSection
                 entryId={entry.id}
