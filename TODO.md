@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `09-storage-multipart-repository-contract`：强类型化分片仓储契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/repository/MultipartUploadRepository.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/MultipartUploadRepositoryImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/MultipartUploadApplicationServiceImpl.java`
-    - 处理动作：将 `getMultipartPart(MultipartUploadId, Integer)` 改为接收 `MultipartPartNumber`。
-    - 验收点：multipart HTTP `partNumber` 仍为 number，进入 repository 前转换为强类型。
-    - 重要度：9/10
-
 - [ ] `10-storage-admin-web-contract-regression`：回归 Storage 管理页前端协议和控件操作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`

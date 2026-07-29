@@ -93,7 +93,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         }
         MultipartUploadSession session = requireActiveMultipartSession(part.getUploadIdRef());
         validateMultipartPart(session, part);
-        if (multipartUploadRepository.getMultipartPart(part.getUploadIdRef(), part.getPartNumber()) != null) {
+        if (multipartUploadRepository.getMultipartPart(part.getUploadIdRef(), part.getPartNumberRef()) != null) {
             throw new BizException("Multipart upload part already exists: " + part.getPartNumber());
         }
         part.setPartPath(resolveMultipartPartObjectKey(session, part.getPartNumber()));
