@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `19-audit-loaders`：[19] 同步审计对象加载器使用 Get*Query
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/sys/DepartmentAuditObjectLoader.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/sys/DictAuditObjectLoader.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/sys/MenuAuditObjectLoader.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/sys/RoleAuditObjectLoader.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/sys/UserAuditObjectLoader.java`
-    - 处理动作：将各审计 loader 中的 `*Service.get(*Id)` 调用改为 `*Service.get(Get*Query)`。
-    - 验收点：五个审计 loader 均不再直接调用 `get(*Id)`，审计快照加载仍返回对应领域对象。
-    - 重要度：7/10
-
 - [ ] `20-service-rename-auth-audit`：[20] 业务化重命名 auth/audit ApplicationService
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
