@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `03-multipart-commands`：03 强类型化 multipart 上传命令
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/command/{InitMultipartUploadCommand.java,UploadMultipartPartCommand.java,CompleteMultipartUploadCommand.java,AbortMultipartUploadCommand.java}`
-    - 处理动作：把 multipart upload id、part number、part size、total size、mime、bucket、object key 等字段改为本域强类型值对象
-    - 验收点：multipart 命令公开字段不再使用可替代的裸 `String`、`Long`、`Integer`
-    - 重要度：9/10
-
 - [ ] `04-storage-queries`：04 新增 storage object 查询契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`

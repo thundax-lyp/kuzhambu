@@ -26,7 +26,11 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPa
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartNumber;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadId;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler;
@@ -324,17 +328,17 @@ public class StorageObjectController {
         return request == null
                 ? null
                 : new InitMultipartUploadCommand(
-                        request.getUploadId(),
-                        StringUtils.trimToNull(request.getOwnerId()),
-                        ownerTypeFrom(request.getOwnerType()),
+                        toMultipartUploadId(request.getUploadId()),
+                        StorageOwnerRef.ofNullable(
+                                ownerTypeFrom(request.getOwnerType()), StringUtils.trimToNull(request.getOwnerId())),
                         request.getBusinessType(),
                         request.getOriginalFilename(),
-                        request.getMimeType(),
+                        toStorageMimeType(request.getMimeType()),
                         null,
                         null,
                         null,
-                        request.getTotalSize(),
-                        request.getPartSize());
+                        toStorageByteSize(request.getTotalSize()),
+                        toMultipartPartSize(request.getPartSize()));
     }
 
     private UploadMultipartPartCommand toUploadMultipartPartCommand(
@@ -343,20 +347,41 @@ public class StorageObjectController {
             return null;
         }
         return new UploadMultipartPartCommand(
-                request.getUploadId(),
-                request.getPartNumber(),
+                toMultipartUploadId(request.getUploadId()),
+                toMultipartPartNumber(request.getPartNumber()),
                 request.getEtag(),
-                request.getSize(),
+                toStorageByteSize(request.getSize()),
                 file == null ? null : file.getInputStream());
     }
 
     private CompleteMultipartUploadCommand toCompleteMultipartUploadCommand(CompleteMultipartUploadRequest request) {
         return request == null
                 ? null
-                : new CompleteMultipartUploadCommand(request.getUploadId(), null, null, null, null);
+                : new CompleteMultipartUploadCommand(
+                        toMultipartUploadId(request.getUploadId()), null, null, null, null);
     }
 
     private AbortMultipartUploadCommand toAbortMultipartUploadCommand(AbortMultipartUploadRequest request) {
-        return request == null ? null : new AbortMultipartUploadCommand(request.getUploadId());
+        return request == null ? null : new AbortMultipartUploadCommand(toMultipartUploadId(request.getUploadId()));
+    }
+
+    private static MultipartUploadId toMultipartUploadId(String value) {
+        return StringUtils.isBlank(value) ? null : new MultipartUploadId(value);
+    }
+
+    private static MultipartPartNumber toMultipartPartNumber(Integer value) {
+        return value == null ? null : new MultipartPartNumber(value);
+    }
+
+    private static StorageByteSize toStorageByteSize(Long value) {
+        return value == null ? null : new StorageByteSize(value);
+    }
+
+    private static MultipartPartSize toMultipartPartSize(Long value) {
+        return value == null ? null : new MultipartPartSize(value);
+    }
+
+    private static StorageMimeType toStorageMimeType(String value) {
+        return StringUtils.isBlank(value) ? null : new StorageMimeType(value);
     }
 }
