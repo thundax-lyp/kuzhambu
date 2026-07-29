@@ -6,11 +6,11 @@ import type {
     AiRefinementStreamEventRecord,
     AiRefinementTaskRecord
 } from "@/pages/classics/common/ai-refinement-task-types";
-import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
+import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai-visual/sancai-visual-service";
 import type {
     SancaiEntryRecord,
     SancaiVisualAssetRecord
-} from "@/pages/classics/sancai/sancai-types";
+} from "@/pages/classics/sancai-visual/sancai-visual-types";
 
 const TASK_POLL_INTERVAL_MS = 3000;
 

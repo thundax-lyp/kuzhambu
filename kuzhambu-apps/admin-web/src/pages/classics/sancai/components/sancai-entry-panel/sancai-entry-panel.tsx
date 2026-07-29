@@ -15,8 +15,9 @@ import { ClassicsContentTagPanel } from "@/pages/classics/common/components/clas
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import { SancaiEntryList } from "./sancai-entry-list";
-import { SancaiEntryEditDrawer, SancaiEntryVersionSection } from "../sancai-entry-edit-drawer";
+import { SancaiEntryEditDrawer } from "../sancai-entry-edit-drawer";
 import { SancaiEntryExportActions } from "../sancai-entry-export-actions";
+import { SancaiEntryVersionSection } from "../sancai-entry-version-section";
 import type { SancaiEntryFormValues } from "../sancai-entry-edit-drawer/sancai-entry-form-values";
 import { useSancaiEntryPanelState } from "@/pages/classics/sancai/hooks/use-sancai-entry-panel-state";
 import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
@@ -24,7 +25,6 @@ import type {
     SancaiCategoryRecord,
     SancaiContentVersionRecord,
     SancaiEntryRecord,
-    SancaiVisualAssetRecord,
     SancaiVolumeRecord
 } from "@/pages/classics/sancai/sancai-types";
 
@@ -404,27 +404,6 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "导出记录删除失败");
         }
     });
-    const updateVisualAssetMutation = useMutation({
-        mutationFn: entryService.updateVisualAsset,
-        onSuccess: async () => {
-            await Promise.all([refreshSancaiEntryDetail(), invalidateEntries()]);
-            messageApi.success("三才视觉处理已采纳");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "视觉处理采纳失败");
-        }
-    });
-    const changeCurrentVisualAssetMutation = useMutation({
-        mutationFn: entryService.changeCurrentVisualAsset,
-        onSuccess: async () => {
-            await Promise.all([refreshSancaiEntryDetail(), invalidateEntries()]);
-            messageApi.success("当前视觉处理版本已切换");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "视觉处理切换失败");
-        }
-    });
-
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
         setEditingEntry(entry);
@@ -561,35 +540,6 @@ export const SancaiEntryPanel = ({
                 })
         });
     };
-    const updateVisualAsset = (asset: SancaiVisualAssetRecord) => {
-        return updateVisualAssetMutation.mutateAsync({
-            visualAssetId: asset.visualAssetId ?? asset.id ?? null,
-            entryId: asset.entryId ?? selectedEntryId,
-            versionNo: asset.versionNo,
-            status: asset.status,
-            sourceImageStorageObjectId: asset.sourceImageStorageObjectId,
-            generatedImageStorageObjectId: asset.generatedImageStorageObjectId,
-            currentUsed: asset.currentUsed,
-            textWeight: asset.textWeight,
-            imageWeight: asset.imageWeight,
-            imageAnalysisMarkdown: asset.imageAnalysisMarkdown,
-            fusionDescription: asset.fusionDescription,
-            visualDescription: asset.visualDescription,
-            generationParamsJson: asset.generationParamsJson
-        });
-    };
-    const switchVisualAsset = (asset: SancaiVisualAssetRecord) => {
-        const visualAssetId = asset.visualAssetId ?? asset.id;
-        const entryId = asset.entryId ?? selectedEntryId;
-        if (!visualAssetId || !entryId) {
-            return;
-        }
-        changeCurrentVisualAssetMutation.mutate({
-            entryId,
-            visualAssetId
-        });
-    };
-
     const sortEntry = (
         sourceEntry: SancaiEntryRecord,
         targetEntry: SancaiEntryRecord,
@@ -683,7 +633,6 @@ export const SancaiEntryPanel = ({
                 categoryOptions={categoryOptions}
                 entry={selectedEntry}
                 isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
-                isUpdatingVisualAsset={updateVisualAssetMutation.isPending}
                 initialCategoryId={categoryId}
                 initialVolumeId={volumeId}
                 mode={isCreating ? "create" : "edit"}
@@ -691,15 +640,6 @@ export const SancaiEntryPanel = ({
                 volumes={volumes}
                 onCancel={closeModel}
                 onSubmit={submitEntry}
-                onUseVisualAsset={switchVisualAsset}
-                onUpdateVisualAsset={updateVisualAsset}
-                onVisualRefinementChanged={async () => {
-                    await Promise.all([
-                        invalidateEntries(),
-                        refreshSancaiEntryDetail(),
-                        invalidateSancaiContentGovernance()
-                    ]);
-                }}
                 onCreateTranslationTask={(draft) => createRefinementTask("translate", null, draft)}
                 onCreateSummaryTask={(draft) => createRefinementTask("summary", null, draft)}
                 isCreatingTranslationTask={creatingRefinementCapability === "translate"}

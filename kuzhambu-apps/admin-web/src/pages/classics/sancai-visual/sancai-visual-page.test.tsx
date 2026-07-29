@@ -4,8 +4,8 @@ import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { MemoryRouter } from "react-router-dom";
 import { SancaiVisualPage } from "./sancai-visual-page";
-import * as entryService from "./sancai-entry-service";
-import type { SancaiEntryRecord } from "./sancai-types";
+import * as entryService from "./sancai-visual-service";
+import type { SancaiEntryRecord } from "./sancai-visual-types";
 
 const { mockVisualSection } = vi.hoisted(() => ({
     mockVisualSection: vi.fn(({ entry }: { entry: SancaiEntryRecord }) => (
@@ -13,15 +13,15 @@ const { mockVisualSection } = vi.hoisted(() => ({
     ))
 }));
 
-vi.mock("./components/sancai-entry-edit-drawer/sancai-entry-visual-section", () => ({
+vi.mock("./components/sancai-entry-visual-section", () => ({
     SancaiEntryVisualSection: mockVisualSection
 }));
 
-vi.mock("./sancai-category-service", () => ({
+vi.mock("../sancai/sancai-category-service", () => ({
     list: vi.fn(async () => [{ categoryType: "FORMAL", id: "2", title: "天文" }])
 }));
 
-vi.mock("./sancai-entry-service", () => ({
+vi.mock("./sancai-visual-service", () => ({
     changeCurrentVisualAsset: vi.fn(),
     get: vi.fn(async (id: string) => ({
         id,
@@ -46,7 +46,7 @@ vi.mock("./sancai-entry-service", () => ({
     updateVisualAsset: vi.fn()
 }));
 
-vi.mock("./sancai-volume-service", () => ({
+vi.mock("../sancai/sancai-volume-service", () => ({
     list: vi.fn(async () => [{ categoryId: "2", id: "101", title: "天文卷一", volumeType: "MAIN" }])
 }));
 

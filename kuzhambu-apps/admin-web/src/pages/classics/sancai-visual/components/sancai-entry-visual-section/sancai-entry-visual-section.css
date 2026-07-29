@@ -1,0 +1,278 @@
+.sancai-visual-asset-field {
+    display: grid;
+    min-width: 0;
+    gap: 12px;
+}
+
+.sancai-visual-asset-toolbar {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sancai-visual-processing-layout {
+    display: grid;
+    grid-template-columns: minmax(420px, 1fr) minmax(260px, 0.58fr);
+    gap: 12px;
+    align-items: start;
+}
+
+.sancai-visual-asset-picker {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+}
+
+.sancai-visual-asset-picker .ant-form-item {
+    margin-bottom: 0;
+}
+
+.sancai-visual-asset-picker .ant-form-item-row {
+    display: block;
+    width: 100%;
+    min-width: 0;
+}
+
+.sancai-visual-asset-picker .ant-form-item-control {
+    max-width: 100%;
+    flex: 0 0 100%;
+}
+
+.sancai-visual-asset-picker .ant-form-item,
+.sancai-visual-asset-picker .ant-form-item-row,
+.sancai-visual-asset-picker .ant-form-item-control,
+.sancai-visual-asset-picker .ant-form-item-control-input,
+.sancai-visual-asset-picker .ant-form-item-control-input-content,
+.sancai-visual-asset-picker .ant-select {
+    width: 100%;
+    min-width: 0;
+}
+
+.sancai-visual-asset-picker .ant-select-selector {
+    min-width: 0;
+}
+
+.sancai-visual-asset-picker .ant-select-selection-item,
+.sancai-visual-asset-picker .ant-select-selection-placeholder {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sancai-visual-workflow {
+    display: grid;
+    grid-template-columns: minmax(180px, 0.55fr) minmax(0, 1fr);
+    min-width: 0;
+    gap: 12px;
+    align-items: start;
+    padding: 12px;
+    background: color-mix(in srgb, var(--sancai-panel) 86%, #fff7df 14%);
+    border: 1px solid var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-visual-stepper-panel {
+    display: grid;
+    grid-row: 1 / span 2;
+    min-width: 0;
+    gap: 10px;
+}
+
+.sancai-visual-workflow-stepper {
+    min-width: 0;
+}
+
+.sancai-visual-stepper-actions {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.sancai-visual-step-arrow {
+    width: 36px;
+    height: 32px;
+    padding: 0;
+}
+
+.sancai-visual-workflow-alert {
+    grid-column: 2;
+    min-width: 0;
+}
+
+.sancai-visual-workflow-step-form {
+    display: grid;
+    grid-column: 2;
+    min-width: 0;
+    gap: 12px;
+    padding: 12px;
+    background: color-mix(in srgb, var(--sancai-panel) 82%, transparent);
+    border: 1px solid var(--sancai-line);
+    border-radius: 6px;
+}
+
+.sancai-visual-workflow-card-actions {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sancai-visual-save-review {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+}
+
+.sancai-visual-weight-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.sancai-visual-asset-version-table {
+    min-width: 0;
+}
+
+.sancai-visual-asset-media {
+    display: grid;
+    min-width: 0;
+    gap: 12px;
+}
+
+.sancai-visual-asset-image-frame {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    width: 100%;
+    min-width: 0;
+    aspect-ratio: 4 / 3;
+    align-content: stretch;
+    justify-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: color-mix(in srgb, var(--sancai-panel) 86%, #fff7df 14%);
+    border: 1px solid color-mix(in srgb, var(--sancai-line) 72%, #7c5f35 28%);
+    border-radius: 6px;
+}
+
+.sancai-visual-asset-image-frame .ant-image {
+    display: grid;
+    width: 100% !important;
+    height: 100%;
+    min-height: 0;
+    place-items: center;
+    overflow: hidden;
+}
+
+.sancai-visual-asset-image-stage {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    place-items: center;
+    overflow: hidden;
+}
+
+.sancai-visual-asset-image-frame .ant-image-img,
+.sancai-visual-asset-image-frame img {
+    width: 100%;
+    height: 100% !important;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.sancai-visual-asset-table-preview {
+    object-fit: cover;
+    border: 1px solid var(--sancai-line);
+    border-radius: 6px;
+    background: var(--sancai-paper);
+}
+
+.sancai-visual-asset-empty-records {
+    padding: 8px 0;
+}
+
+.sancai-visual-asset-start-empty {
+    display: grid;
+    min-height: 180px;
+    place-items: center;
+    padding: 28px 16px;
+    background: color-mix(in srgb, var(--sancai-panel) 72%, transparent);
+    border: 1px dashed var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-visual-generated-placeholder {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    place-items: center;
+    align-content: center;
+    gap: 8px;
+    color: var(--text-tertiary);
+    background: color-mix(in srgb, var(--sancai-paper) 72%, var(--sancai-panel) 28%);
+    border: 1px dashed var(--sancai-line);
+    border-radius: 4px;
+}
+
+.sancai-visual-generated-placeholder .anticon {
+    font-size: 28px;
+}
+
+.sancai-visual-asset-image-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+}
+
+.sancai-visual-asset-image-actions {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+    .sancai-visual-processing-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sancai-visual-asset-image-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sancai-visual-weight-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sancai-visual-workflow {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sancai-visual-stepper-panel,
+    .sancai-visual-workflow-alert,
+    .sancai-visual-workflow-step-form {
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .sancai-visual-asset-image-frame {
+        padding: 8px;
+    }
+
+    .sancai-visual-asset-image-actions {
+        align-items: flex-start;
+    }
+}

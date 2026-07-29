@@ -12,7 +12,7 @@ import { SearchPage } from "../pages/discovery/search/search-page";
 import { SearchStatisticsPage } from "../pages/discovery/search-statistics/search-statistics-page";
 import { MingCustomsPage } from "../pages/classics/ming-customs/ming-customs-page";
 import { SancaiPage } from "../pages/classics/sancai/sancai-page";
-import { SancaiVisualPage } from "../pages/classics/sancai/sancai-visual-page";
+import { SancaiVisualPage } from "../pages/classics/sancai-visual/sancai-visual-page";
 import { WangqiPage } from "../pages/classics/wangqi/wangqi-page";
 import { SharingPage } from "../pages/classics/sharing/sharing-page";
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";

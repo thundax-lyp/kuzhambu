@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
-import type { SancaiVisualAssetRecord } from "@/pages/classics/sancai/sancai-types";
+import * as entryService from "@/pages/classics/sancai-visual/sancai-visual-service";
+import type { SancaiVisualAssetRecord } from "@/pages/classics/sancai-visual/sancai-visual-types";
 import type { SancaiEntryVisualPreviewState } from "../sancai-entry-visual-section";
 
 const selectCurrentVisualAsset = (assets: SancaiVisualAssetRecord[]) => {

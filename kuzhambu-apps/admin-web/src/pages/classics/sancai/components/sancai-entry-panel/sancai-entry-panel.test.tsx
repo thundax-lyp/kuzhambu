@@ -1,11 +1,14 @@
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
+import { useEffect } from "react";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as contentService from "@/pages/classics/common/classics-content-service";
+import * as visualPreviewService from "@/pages/classics/common/sancai-visual-preview-service";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { SancaiEntryPanel } from "./sancai-entry-panel";
 import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
@@ -166,6 +169,20 @@ vi.mock("@/pages/classics/common/ai-candidate-service", () => ({
         versionNo: 2
     })),
     reject: vi.fn(async () => ({}))
+}));
+
+vi.mock("@/pages/classics/common/sancai-visual-preview-service", () => ({
+    listVisualAssets: vi.fn(async () => [
+        {
+            id: "5002",
+            visualAssetId: "5002",
+            versionNo: 2,
+            currentUsed: true,
+            visualDescription: "当前版本视觉描述",
+            generatedPreviewUrl:
+                "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content"
+        }
+    ])
 }));
 
 const entryState = vi.hoisted(() => ({
@@ -493,7 +510,21 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
     }))
 }));
 
-const renderEntryPanel = ({ exportJobsDrawerOpen = false } = {}) => {
+const LocationProbe = ({ onLocationChange }: { onLocationChange: (location: string) => void }) => {
+    const location = useLocation();
+    useEffect(() => {
+        onLocationChange(`${location.pathname}${location.search}`);
+    }, [location.pathname, location.search, onLocationChange]);
+    return null;
+};
+
+const renderEntryPanel = ({
+    exportJobsDrawerOpen = false,
+    onLocationChange
+}: {
+    exportJobsDrawerOpen?: boolean;
+    onLocationChange?: (location: string) => void;
+} = {}) => {
     const client = new QueryClient({
         defaultOptions: {
             queries: {
@@ -505,41 +536,46 @@ const renderEntryPanel = ({ exportJobsDrawerOpen = false } = {}) => {
     render(
         <QueryClientProvider client={client}>
             <AntdApp>
-                <SancaiEntryPanel
-                    categories={[
-                        {
-                            categoryType: "FORMAL",
-                            id: "2",
-                            priority: 10,
-                            title: "天文"
-                        },
-                        {
-                            categoryType: "FORMAL",
-                            id: "3",
-                            priority: 20,
-                            title: "地理"
-                        }
-                    ]}
-                    categoryId="2"
-                    exportJobsDrawerOpen={exportJobsDrawerOpen}
-                    isCatalogLoading={false}
-                    refreshVersion={0}
-                    volumeId="101"
-                    volumes={[
-                        {
-                            categoryId: "2",
-                            id: "101",
-                            title: "天文卷一",
-                            volumeType: "MAIN"
-                        },
-                        {
-                            categoryId: "3",
-                            id: "202",
-                            title: "地理卷一",
-                            volumeType: "MAIN"
-                        }
-                    ]}
-                />
+                <MemoryRouter>
+                    <SancaiEntryPanel
+                        categories={[
+                            {
+                                categoryType: "FORMAL",
+                                id: "2",
+                                priority: 10,
+                                title: "天文"
+                            },
+                            {
+                                categoryType: "FORMAL",
+                                id: "3",
+                                priority: 20,
+                                title: "地理"
+                            }
+                        ]}
+                        categoryId="2"
+                        exportJobsDrawerOpen={exportJobsDrawerOpen}
+                        isCatalogLoading={false}
+                        refreshVersion={0}
+                        volumeId="101"
+                        volumes={[
+                            {
+                                categoryId: "2",
+                                id: "101",
+                                title: "天文卷一",
+                                volumeType: "MAIN"
+                            },
+                            {
+                                categoryId: "3",
+                                id: "202",
+                                title: "地理卷一",
+                                volumeType: "MAIN"
+                            }
+                        ]}
+                    />
+                    {onLocationChange ? (
+                        <LocationProbe onLocationChange={onLocationChange} />
+                    ) : null}
+                </MemoryRouter>
             </AntdApp>
         </QueryClientProvider>
     );
@@ -556,7 +592,7 @@ const openSelectAndChoose = async (label: string, optionText: string) => {
 
 const switchEntryDrawerSection = async (
     user: ReturnType<typeof userEvent.setup>,
-    sectionName: "基础信息" | "视觉处理" | "标签" | "问答" | "版本"
+    sectionName: "基础信息" | "标签" | "问答" | "版本"
 ) => {
     await user.click(
         await screen.findByText(sectionName, {
@@ -567,15 +603,6 @@ const switchEntryDrawerSection = async (
 
 const openImageSection = async (user: ReturnType<typeof userEvent.setup>) => {
     await switchEntryDrawerSection(user, "基础信息");
-};
-
-const openVisualAssetSection = async (user: ReturnType<typeof userEvent.setup>) => {
-    await switchEntryDrawerSection(user, "视觉处理");
-    return screen.findByLabelText("三才图会视觉处理面板");
-};
-
-const openRefinementSection = async (user: ReturnType<typeof userEvent.setup>) => {
-    await switchEntryDrawerSection(user, "视觉处理");
 };
 
 const openTagSection = async (user: ReturnType<typeof userEvent.setup>) => {
@@ -672,6 +699,22 @@ describe("SancaiEntryPanel batch operations", () => {
         expect(await screen.findByText("暂无待处理候选")).toBeInTheDocument();
     }, 30000);
 
+    it("opens the visual page from an entry action with the entry id", async () => {
+        const user = userEvent.setup();
+        const visitedLocations: string[] = [];
+
+        renderEntryPanel({
+            onLocationChange: (location) => visitedLocations.push(location)
+        });
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-visual-button"));
+
+        await waitFor(() => {
+            expect(visitedLocations.at(-1)).toBe("/classics/sancai/visual?entryId=3001");
+        });
+    }, 30000);
+
     it("renders lifecycle controls by entry status", async () => {
         renderEntryPanel();
 
@@ -685,7 +728,7 @@ describe("SancaiEntryPanel batch operations", () => {
             [...entryTable.querySelectorAll<HTMLButtonElement>("button[aria-label$=' 天地']")]
                 .map((button) => button.getAttribute("aria-label"))
                 .filter((label) => label !== "拖动 天地")
-        ).toEqual(["编辑 天地", "导出 天地", "下线 天地", "删除 天地"]);
+        ).toEqual(["编辑 天地", "导出 天地", "视觉处理 天地", "下线 天地", "删除 天地"]);
     }, 30000);
 
     it("moves an edited entry to the selected category volume", async () => {
@@ -794,548 +837,6 @@ describe("SancaiEntryPanel batch operations", () => {
             )
         ).toBeTruthy();
         expect(await screen.findByText("三才图会条目已下线")).toBeInTheDocument();
-    }, 30000);
-
-    it("creates image analysis task from selected visual asset and carries visual asset objectId", async () => {
-        const user = userEvent.setup();
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-
-        const visualAssetPanel = await openVisualAssetSection(user);
-        fireEvent.click(
-            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-3")
-        );
-
-        await waitFor(() => {
-            expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
-        });
-        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toMatchObject({
-            capability: "image_analysis",
-            contentType: "SANCAI_ENTRY",
-            contentId: "3001",
-            objectId: "5002",
-            locale: "zh-CN"
-        });
-        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
-            "requestedBy"
-        );
-        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
-            "serviceId"
-        );
-        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
-            "serviceRole"
-        );
-        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
-            "modelId"
-        );
-        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
-            "modelName"
-        );
-    }, 30000);
-
-    it("shows AI stream panel after creating image analysis task", async () => {
-        const user = userEvent.setup();
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-
-        const visualAssetPanel = await openVisualAssetSection(user);
-        fireEvent.click(
-            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-3")
-        );
-        await waitFor(() => {
-            expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
-            expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalled();
-        });
-
-        expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalledWith(
-            expect.objectContaining({
-                taskId: "7001"
-            })
-        );
-    }, 30000);
-
-    it("shows failed stream task details", async () => {
-        const user = userEvent.setup();
-        vi.mocked(aiRefinementTaskService.requestTaskStream).mockImplementationOnce(
-            async ({ onEvent }) => {
-                await Promise.resolve();
-                onEvent({
-                    eventType: "error",
-                    failureStage: "WORKER_STREAM",
-                    errorType: "WORKER_PROTOCOL_FAILURE",
-                    errorMessage: "bad stream"
-                });
-            }
-        );
-        vi.mocked(aiRefinementTaskService.getTask).mockResolvedValue({
-            taskId: "7001",
-            status: "FAILED",
-            capability: "image_analysis",
-            contentType: "SANCAI_ENTRY",
-            contentId: "3001",
-            objectId: "5002",
-            streamEnabled: true,
-            failureStage: "WORKER_STREAM",
-            errorType: "WORKER_PROTOCOL_FAILURE",
-            errorMessage: "bad stream",
-            requestId: "req-stream-1",
-            traceId: "trace-stream-1"
-        });
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-
-        const visualAssetPanel = await openVisualAssetSection(user);
-        await user.click(
-            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-3")
-        );
-        await waitFor(() => {
-            expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
-            expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalled();
-        });
-
-        expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalledWith(
-            expect.objectContaining({
-                taskId: "7001"
-            })
-        );
-        expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({
-            taskId: "7001"
-        });
-    }, 30000);
-
-    it("preserves edited visual asset draft when the same asset refetches", async () => {
-        const user = userEvent.setup();
-        const client = renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-
-        const visualAssetPanel = await openVisualAssetSection(user);
-        const descriptionInput =
-            within(visualAssetPanel).getByLabelText("三才图会视觉处理视觉描述");
-        await user.clear(descriptionInput);
-        await user.type(descriptionInput, "用户未保存视觉描述");
-
-        vi.mocked(entryService.listVisualAssets).mockResolvedValueOnce([
-            {
-                id: "5002",
-                visualAssetId: "5002",
-                entryId: "3001",
-                versionNo: 2,
-                status: "READY",
-                sourceImageStorageObjectId: "7001",
-                generatedImageStorageObjectId: "7002",
-                currentUsed: true,
-                textWeight: 60,
-                imageWeight: 40,
-                imageAnalysisMarkdown: "服务端刷新图片理解",
-                fusionDescription: "服务端刷新融合描述",
-                visualDescription: "服务端刷新视觉描述",
-                generationParamsJson: '{"style":"gongbi"}',
-                sourcePreviewUrl:
-                    "/api/classics/sancai/assets/visual-assets/3001/5002/source-content",
-                sourceDownloadUrl:
-                    "/api/classics/sancai/assets/visual-assets/3001/5002/source-content?download=true",
-                generatedPreviewUrl:
-                    "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content",
-                generatedDownloadUrl:
-                    "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content?download=true"
-            }
-        ]);
-        await client.invalidateQueries({
-            queryKey: ["classics", "sancai", "entries", "visual-assets", "3001"]
-        });
-
-        await waitFor(() => {
-            expect(entryService.listVisualAssets).toHaveBeenCalledTimes(2);
-        });
-        expect(descriptionInput).toHaveValue("用户未保存视觉描述");
-    }, 30000);
-
-    it("does not poll visual refinement tasks when no task is active", async () => {
-        vi.useFakeTimers({ shouldAdvanceTime: true });
-        const user = userEvent.setup();
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-        await openVisualAssetSection(user);
-        await waitFor(() => {
-            expect(aiRefinementTaskService.pageTasks).toHaveBeenCalled();
-        });
-        const callCount = vi.mocked(aiRefinementTaskService.pageTasks).mock.calls.length;
-
-        await act(async () => {
-            await vi.advanceTimersByTimeAsync(3000);
-        });
-
-        expect(aiRefinementTaskService.pageTasks).toHaveBeenCalledTimes(callCount);
-    }, 30000);
-
-    it("resumes active visual task streaming after switching drawer sections", async () => {
-        const user = userEvent.setup();
-        vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValue({
-            items: [
-                {
-                    taskId: "7001",
-                    status: "RUNNING",
-                    capability: "image_analysis",
-                    contentType: "SANCAI_ENTRY",
-                    contentId: "3001",
-                    objectId: "5002",
-                    streamEnabled: true,
-                    requestId: "req-stream-1",
-                    traceId: "trace-stream-1"
-                }
-            ],
-            total: 1,
-            pageNo: 1,
-            pageSize: 20
-        });
-        vi.mocked(aiRefinementTaskService.requestTaskStream).mockImplementation(
-            async ({ signal }) =>
-                new Promise<void>((resolve) => {
-                    signal?.addEventListener("abort", () => resolve(), { once: true });
-                })
-        );
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-
-        await openVisualAssetSection(user);
-        await waitFor(() => {
-            expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalledTimes(1);
-        });
-        await switchEntryDrawerSection(user, "基础信息");
-        await openVisualAssetSection(user);
-        await waitFor(() => {
-            expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalledTimes(2);
-        });
-        expect(aiRefinementTaskService.requestTaskStream).toHaveBeenLastCalledWith(
-            expect.objectContaining({
-                taskId: "7001"
-            })
-        );
-    }, 30000);
-
-    it("filters image analysis candidates by selected visual asset", async () => {
-        const user = userEvent.setup();
-        vi.mocked(aiCandidateService.list).mockReset();
-        vi.mocked(aiCandidateService.list)
-            .mockResolvedValueOnce([
-                {
-                    candidateId: "8001",
-                    capability: "image_analysis",
-                    contentType: "SANCAI_ENTRY",
-                    contentId: "3001",
-                    objectId: "5002",
-                    resultFormat: "TEXT",
-                    resultPayload: "候选 A",
-                    status: "PENDING",
-                    requestedAt: "2026-06-20T01:00:00.000+08:00"
-                }
-            ])
-            .mockResolvedValueOnce([
-                {
-                    candidateId: "8002",
-                    capability: "image_analysis",
-                    contentType: "SANCAI_ENTRY",
-                    contentId: "3001",
-                    objectId: "5001",
-                    resultFormat: "TEXT",
-                    resultPayload: "候选 B",
-                    status: "PENDING",
-                    requestedAt: "2026-06-20T01:00:00.000+08:00"
-                }
-            ]);
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-        await openRefinementSection(user);
-
-        await waitFor(() => {
-            expect(vi.mocked(aiCandidateService.list)).toHaveBeenCalledTimes(1);
-        });
-        expect(vi.mocked(aiCandidateService.list).mock.calls[0]?.[0]).toMatchObject({
-            contentType: "SANCAI_ENTRY",
-            contentId: "3001",
-            status: "PENDING",
-            objectId: "5002"
-        });
-
-        const visualAssetPanel = await openVisualAssetSection(user);
-        await user.click(
-            within(visualAssetPanel).getByTestId("sancai-visual-asset-5001-select-button")
-        );
-        await openRefinementSection(user);
-
-        await waitFor(() => {
-            expect(vi.mocked(aiCandidateService.list)).toHaveBeenCalledTimes(2);
-        });
-        expect(vi.mocked(aiCandidateService.list).mock.calls[1]?.[0]).toMatchObject({
-            contentType: "SANCAI_ENTRY",
-            contentId: "3001",
-            status: "PENDING",
-            objectId: "5001"
-        });
-    }, 30000);
-
-    it("keeps visual asset candidate panel scoped by capability and visual objectId", async () => {
-        const user = userEvent.setup();
-        vi.mocked(aiCandidateService.list).mockReset();
-        vi.mocked(aiCandidateService.list).mockResolvedValue([
-            {
-                candidateId: "8005",
-                capability: "image_analysis",
-                contentType: "SANCAI_ENTRY",
-                contentId: "3001",
-                objectId: "5002",
-                resultFormat: "TEXT",
-                resultPayload: "候选 画像",
-                status: "PENDING",
-                requestedAt: "2026-06-20T01:00:00.000+08:00"
-            },
-            {
-                candidateId: "8006",
-                capability: "summary",
-                contentType: "SANCAI_ENTRY",
-                contentId: "3001",
-                objectId: "5002",
-                resultFormat: "STRUCTURED",
-                resultPayload: "候选 摘要",
-                status: "PENDING",
-                requestedAt: "2026-06-20T01:00:00.000+08:00"
-            },
-            {
-                candidateId: "8007",
-                capability: "visual",
-                contentType: "SANCAI_ENTRY",
-                contentId: "3001",
-                objectId: "5001",
-                resultFormat: "TEXT",
-                resultPayload: "历史 画像",
-                status: "PENDING",
-                requestedAt: "2026-06-20T01:00:00.000+08:00"
-            }
-        ]);
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-        await openRefinementSection(user);
-
-        await waitFor(() => {
-            expect(screen.queryByText("能力：image_analysis")).toBeInTheDocument();
-        });
-        expect(screen.queryByText("能力：summary")).not.toBeInTheDocument();
-        expect(screen.queryByText("候选 画像")).toBeInTheDocument();
-        expect(screen.queryByText("候选 摘要")).not.toBeInTheDocument();
-        expect(screen.queryByText("历史 画像")).not.toBeInTheDocument();
-    }, 30000);
-
-    it("refreshes entry detail, visual assets, and candidate list after applying image analysis", async () => {
-        const user = userEvent.setup();
-        vi.mocked(aiCandidateService.list).mockReset();
-        vi.mocked(aiCandidateService.list).mockResolvedValue([
-            {
-                candidateId: "8003",
-                capability: "image_analysis",
-                contentType: "SANCAI_ENTRY",
-                contentId: "3001",
-                objectId: "5002",
-                resultFormat: "TEXT",
-                resultPayload: "候选 C",
-                status: "PENDING",
-                requestedAt: "2026-06-20T01:00:00.000+08:00"
-            }
-        ]);
-
-        const client = renderEntryPanel();
-        const invalidateSpy = vi.spyOn(client, "invalidateQueries");
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-        await openRefinementSection(user);
-
-        await waitFor(() => {
-            expect(screen.queryByText("AI 候选确认")).toBeInTheDocument();
-        });
-        const applyButton = await screen.findByTestId("classics-common-ai-candidate-action-button");
-        expect(applyButton).toBeEnabled();
-        await user.click(applyButton);
-
-        await waitFor(() => {
-            expect(vi.mocked(aiCandidateService.apply)).toHaveBeenCalledTimes(1);
-        });
-        expect(vi.mocked(aiCandidateService.apply).mock.calls[0]?.[0]).toMatchObject({
-            candidateId: "8003",
-            contentType: "SANCAI_ENTRY",
-            contentId: "3001",
-            capability: "image_analysis",
-            objectId: "5002",
-            resultFormat: "TEXT",
-            resultPayload: "候选 C",
-            changeSummary: "AI 应用：image_analysis"
-        });
-
-        expect(
-            invalidateSpy.mock.calls.some(
-                (call) =>
-                    JSON.stringify(call[0]) ===
-                    JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "detail", "3001"]
-                    })
-            )
-        ).toBeTruthy();
-        expect(
-            invalidateSpy.mock.calls.some(
-                (call) =>
-                    JSON.stringify(call[0]) ===
-                    JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "visual-assets", "3001"]
-                    })
-            )
-        ).toBeTruthy();
-        expect(
-            invalidateSpy.mock.calls.some(
-                (call) =>
-                    JSON.stringify(call[0]) ===
-                    JSON.stringify({
-                        queryKey: ["ai", "candidates", "SANCAI_ENTRY", "3001", "5002"]
-                    })
-            )
-        ).toBeTruthy();
-    }, 30000);
-
-    it("refreshes entry detail, visual assets, and candidate list after rejecting image analysis", async () => {
-        const user = userEvent.setup();
-        vi.mocked(aiCandidateService.list).mockReset();
-        vi.mocked(aiCandidateService.list).mockResolvedValue([
-            {
-                candidateId: "8004",
-                capability: "image_analysis",
-                contentType: "SANCAI_ENTRY",
-                contentId: "3001",
-                objectId: "5002",
-                resultFormat: "TEXT",
-                resultPayload: "候选 D",
-                status: "PENDING",
-                requestedAt: "2026-06-20T01:00:00.000+08:00"
-            }
-        ]);
-
-        const client = renderEntryPanel();
-        const invalidateSpy = vi.spyOn(client, "invalidateQueries");
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-        await openRefinementSection(user);
-
-        await waitFor(() => {
-            expect(screen.queryByText("AI 候选确认")).toBeInTheDocument();
-        });
-
-        const rejectButton = await screen.findByTestId(
-            "classics-common-ai-candidate-action-button-2"
-        );
-        await user.click(rejectButton);
-
-        await waitFor(() => {
-            expect(vi.mocked(aiCandidateService.reject)).toHaveBeenCalledTimes(1);
-        });
-        expect(vi.mocked(aiCandidateService.reject).mock.calls[0]?.[0]).toMatchObject({
-            candidateId: "8004",
-            errorType: "USER_REJECTED",
-            errorMessage: "用户已拒绝该 AI 候选"
-        });
-
-        expect(
-            invalidateSpy.mock.calls.some(
-                (call) =>
-                    JSON.stringify(call[0]) ===
-                    JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "detail", "3001"]
-                    })
-            )
-        ).toBeTruthy();
-        expect(
-            invalidateSpy.mock.calls.some(
-                (call) =>
-                    JSON.stringify(call[0]) ===
-                    JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "visual-assets", "3001"]
-                    })
-            )
-        ).toBeTruthy();
-        expect(
-            invalidateSpy.mock.calls.some(
-                (call) =>
-                    JSON.stringify(call[0]) ===
-                    JSON.stringify({
-                        queryKey: ["ai", "candidates", "SANCAI_ENTRY", "3001", "5002"]
-                    })
-            )
-        ).toBeTruthy();
-    }, 30000);
-
-    it("blocks image analysis task creation when visual asset has no source image", async () => {
-        vi.mocked(entryService.listImages).mockResolvedValueOnce([]);
-        vi.mocked(entryService.listVisualAssets).mockResolvedValueOnce([
-            {
-                id: "6002",
-                visualAssetId: "6002",
-                entryId: "3001",
-                versionNo: 1,
-                status: "READY",
-                sourceImageStorageObjectId: null,
-                generatedImageStorageObjectId: null,
-                currentUsed: true,
-                textWeight: 55,
-                imageWeight: 45,
-                imageAnalysisMarkdown: "无图版本图片理解",
-                fusionDescription: "无图版本融合描述",
-                visualDescription: "无图版本视觉描述",
-                generationParamsJson: '{"style":"shuimo"}',
-                sourcePreviewUrl: undefined,
-                sourceDownloadUrl: undefined,
-                generatedPreviewUrl: undefined,
-                generatedDownloadUrl: undefined
-            }
-        ]);
-        const user = userEvent.setup();
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-
-        const visualAssetPanel = await openVisualAssetSection(user);
-        expect(
-            within(visualAssetPanel).getByLabelText("三才图会视觉处理生成图占位")
-        ).toBeInTheDocument();
-        await user.click(
-            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-3")
-        );
-
-        expect(
-            await screen.findByText("当前视觉处理缺少原图，无法创建图片相关任务")
-        ).toBeInTheDocument();
-        expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
     }, 30000);
 
     it("creates batch image analysis task and shows aggregated batch status", async () => {
@@ -1897,113 +1398,6 @@ describe("SancaiEntryPanel batch operations", () => {
         );
     });
 
-    it("renders visual asset section and supports switching current version", async () => {
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格", undefined, {
-            timeout: 1000
-        });
-        fireEvent.click(
-            await within(entryTable).findByTestId("sancai-entry-3001-view-button", undefined, {
-                timeout: 1000
-            })
-        );
-
-        fireEvent.click(
-            await screen.findByText(
-                "视觉处理",
-                {
-                    selector: ".ant-segmented-item-label"
-                },
-                {
-                    timeout: 1000
-                }
-            )
-        );
-        const visualAssetPanel = await screen.findByLabelText("三才图会视觉处理面板", undefined, {
-            timeout: 1000
-        });
-        expect(within(visualAssetPanel).getByText("当前图片：sancai.png")).toBeInTheDocument();
-        expect(within(visualAssetPanel).getByText(/当前处理：处理记录 2/)).toBeInTheDocument();
-        expect(within(visualAssetPanel).getByLabelText("图文生图工作流")).toBeInTheDocument();
-        expect(within(visualAssetPanel).getAllByText("图片理解").length).toBeGreaterThan(0);
-        expect(within(visualAssetPanel).getAllByText("图文融合").length).toBeGreaterThan(0);
-        expect(within(visualAssetPanel).getAllByText("视觉描述").length).toBeGreaterThan(0);
-        expect(within(visualAssetPanel).getByText("生图")).toBeInTheDocument();
-        expect(
-            within(visualAssetPanel).getByTestId("sancai-visual-asset-5001-select-button")
-        ).toBeInTheDocument();
-        expect(within(visualAssetPanel).getByAltText("处理记录 1生成图预览")).toBeInTheDocument();
-        expect(within(visualAssetPanel).getByAltText("处理记录 2生成图预览")).toBeInTheDocument();
-        const sourceImageSelect = within(visualAssetPanel).getByRole("combobox", {
-            name: "三才图会视觉处理来源图片"
-        });
-        expect(sourceImageSelect.closest(".ant-select-content")).toHaveAttribute(
-            "title",
-            "sancai.png"
-        );
-        expect(within(visualAssetPanel).getAllByText("已完成").length).toBeGreaterThan(0);
-
-        const currentVersionButton = within(visualAssetPanel).getByTestId(
-            "sancai-visual-asset-5001-use-button"
-        );
-        expect(currentVersionButton).not.toBeDisabled();
-        fireEvent.click(currentVersionButton);
-
-        await waitFor(
-            () => {
-                expect(entryService.changeCurrentVisualAsset).toHaveBeenCalled();
-            },
-            { timeout: 1000 }
-        );
-        expect(vi.mocked(entryService.changeCurrentVisualAsset).mock.calls[0]?.[0]).toEqual({
-            entryId: "3001",
-            visualAssetId: "5001"
-        });
-    });
-
-    it("renders formal preview images for visual assets", async () => {
-        const user = userEvent.setup();
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-
-        const visualAssetPanel = await openVisualAssetSection(user);
-        expect(
-            within(visualAssetPanel).queryByLabelText("下载视觉处理来源图片")
-        ).not.toBeInTheDocument();
-        expect(
-            within(visualAssetPanel).queryByLabelText("下载视觉处理生成图")
-        ).not.toBeInTheDocument();
-        expect(within(visualAssetPanel).getByAltText("三才图会视觉处理来源图片")).toHaveAttribute(
-            "src",
-            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8001/content"
-        );
-        expect(within(visualAssetPanel).getByAltText("三才图会视觉处理生成图")).toHaveAttribute(
-            "src",
-            "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content"
-        );
-    });
-
-    it("offers a draft visual processing record when the entry has images but no visual assets", async () => {
-        vi.mocked(entryService.listVisualAssets).mockResolvedValueOnce([]);
-        const user = userEvent.setup();
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-
-        const visualAssetPanel = await openVisualAssetSection(user);
-
-        expect(within(visualAssetPanel).getByText("当前处理：新处理记录")).toBeInTheDocument();
-        expect(within(visualAssetPanel).getByText("请先创建处理记录")).toBeInTheDocument();
-        expect(
-            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-7")
-        ).toHaveTextContent("创建记录");
-    });
-
     it("previews current visual asset without opening the visual section", async () => {
         const user = userEvent.setup();
         const createObjectURL = vi.fn((object: Blob | MediaSource) => {
@@ -2031,7 +1425,7 @@ describe("SancaiEntryPanel batch operations", () => {
                 await within(entryTable).findByTestId("sancai-entry-3001-view-button")
             );
             await waitFor(() => {
-                expect(entryService.listVisualAssets).toHaveBeenCalled();
+                expect(visualPreviewService.listVisualAssets).toHaveBeenCalled();
             });
             await user.click(
                 await screen.findByTestId(
@@ -2046,7 +1440,7 @@ describe("SancaiEntryPanel batch operations", () => {
             if (!(previewBlob instanceof Blob)) {
                 throw new Error("Expected preview object URL payload to be a Blob");
             }
-            await expect(previewBlob.text()).resolves.toContain("处理记录 2");
+            await expect(previewBlob.text()).resolves.toContain("历史记录 2");
             await expect(previewBlob.text()).resolves.toContain("当前版本视觉描述");
             await expect(previewBlob.text()).resolves.toContain(
                 "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content"
@@ -2067,46 +1461,5 @@ describe("SancaiEntryPanel batch operations", () => {
             });
             openWindow.mockRestore();
         }
-    });
-
-    it("saves visual asset editable fields through the formal service contract", async () => {
-        const user = userEvent.setup();
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-
-        const visualAssetPanel = await openVisualAssetSection(user);
-        fireEvent.mouseDown(
-            within(visualAssetPanel).getByRole("combobox", {
-                name: "三才图会视觉处理来源图片"
-            })
-        );
-        await user.click((await screen.findAllByText("生成图")).at(-1)!);
-        expect(
-            within(visualAssetPanel).queryByLabelText("三才图会视觉处理记录列表")
-        ).not.toBeInTheDocument();
-        expect(within(visualAssetPanel).getByText("当前来源图片暂无处理记录")).toBeInTheDocument();
-        const descriptionInput =
-            within(visualAssetPanel).getByLabelText("三才图会视觉处理视觉描述");
-        await user.clear(descriptionInput);
-        await user.type(descriptionInput, "更新后的视觉描述");
-        await user.click(
-            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-7")
-        );
-
-        await waitFor(() => {
-            expect(entryService.updateVisualAsset).toHaveBeenCalled();
-        });
-        expect(vi.mocked(entryService.updateVisualAsset).mock.calls[0]?.[0]).toEqual(
-            expect.objectContaining({
-                visualAssetId: "5002",
-                entryId: "3001",
-                visualDescription: "更新后的视觉描述",
-                textWeight: 60,
-                imageWeight: 40,
-                sourceImageStorageObjectId: "7002"
-            })
-        );
     });
 });
