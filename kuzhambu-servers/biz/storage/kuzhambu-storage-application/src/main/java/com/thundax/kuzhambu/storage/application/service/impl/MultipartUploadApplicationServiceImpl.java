@@ -9,7 +9,6 @@ import com.thundax.kuzhambu.storage.application.command.CreateStorageCommand;
 import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
 import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicationService;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationOperations;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
@@ -39,12 +38,12 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
 
     private final MultipartUploadRepository multipartUploadRepository;
     private final StoredObjectContentRepository storedObjectContentRepository;
-    private final StorageApplicationOperations storageApplicationService;
+    private final StorageApplicationServiceImpl storageApplicationService;
 
     public MultipartUploadApplicationServiceImpl(
             MultipartUploadRepository multipartUploadRepository,
             StoredObjectContentRepository storedObjectContentRepository,
-            StorageApplicationOperations storageApplicationService) {
+            StorageApplicationServiceImpl storageApplicationService) {
         this.multipartUploadRepository = multipartUploadRepository;
         this.storedObjectContentRepository = storedObjectContentRepository;
         this.storageApplicationService = storageApplicationService;

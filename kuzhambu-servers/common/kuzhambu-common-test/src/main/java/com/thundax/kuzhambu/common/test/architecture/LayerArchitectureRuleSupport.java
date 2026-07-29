@@ -122,6 +122,10 @@ public final class LayerArchitectureRuleSupport {
         List<String> violations = new ArrayList<String>();
 
         for (JavaClass javaClass : classes) {
+            if (!isApplicationServicePackageInterface(javaClass)) {
+                continue;
+            }
+            collectApplicationServiceInterfaceNameViolation(javaClass, violations);
             if (!isApplicationServiceInterface(javaClass)) {
                 continue;
             }
@@ -265,6 +269,13 @@ public final class LayerArchitectureRuleSupport {
         violations.add(method.getFullName() + " has invalid parameter type " + type.getName());
     }
 
+    private static void collectApplicationServiceInterfaceNameViolation(JavaClass javaClass, List<String> violations) {
+        if (isApplicationServiceInterface(javaClass)) {
+            return;
+        }
+        violations.add(javaClass.getName() + " must be named *ApplicationService");
+    }
+
     private static void collectApplicationServiceParameterShapeViolation(JavaMethod method, List<String> violations) {
         List<JavaClass> parameterTypes = method.getRawParameterTypes();
         if (parameterTypes.isEmpty()) {
@@ -344,10 +355,15 @@ public final class LayerArchitectureRuleSupport {
                 && javaClass.getPackageName().contains(".service");
     }
 
-    private static boolean isApplicationServiceInterface(JavaClass javaClass) {
+    private static boolean isApplicationServicePackageInterface(JavaClass javaClass) {
         return javaClass.isInterface()
-                && javaClass.getSimpleName().endsWith("ApplicationService")
                 && javaClass.getPackageName().contains(".application.")
+                && javaClass.getPackageName().contains(".service");
+    }
+
+    private static boolean isApplicationServiceInterface(JavaClass javaClass) {
+        return isApplicationServicePackageInterface(javaClass)
+                && javaClass.getSimpleName().endsWith("ApplicationService")
                 && javaClass.getPackageName().contains(".service");
     }
 

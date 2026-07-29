@@ -4,7 +4,6 @@ import com.thundax.kuzhambu.storage.application.query.GetReadableStorageContentQ
 import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationOperations;
 import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import org.springframework.stereotype.Service;
@@ -12,9 +11,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class StorageContentApplicationServiceImpl implements StorageContentApplicationService {
 
-    private final StorageApplicationOperations storageApplicationService;
+    private final StorageApplicationServiceImpl storageApplicationService;
 
-    public StorageContentApplicationServiceImpl(StorageApplicationOperations storageApplicationService) {
+    public StorageContentApplicationServiceImpl(StorageApplicationServiceImpl storageApplicationService) {
         this.storageApplicationService = storageApplicationService;
     }
 

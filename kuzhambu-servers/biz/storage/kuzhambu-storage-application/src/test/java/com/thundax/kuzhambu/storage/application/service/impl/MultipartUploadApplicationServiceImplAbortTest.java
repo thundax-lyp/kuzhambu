@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.storage.application.command.AbortMultipartUploadCommand;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationOperations;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
@@ -35,7 +34,7 @@ class MultipartUploadApplicationServiceImplAbortTest {
         MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
         StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
         MultipartUploadSession session = session();
-        StorageApplicationOperations storageApplicationService = mock(StorageApplicationOperations.class);
+        StorageApplicationServiceImpl storageApplicationService = mock(StorageApplicationServiceImpl.class);
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository, contentRepository, storageApplicationService);
 

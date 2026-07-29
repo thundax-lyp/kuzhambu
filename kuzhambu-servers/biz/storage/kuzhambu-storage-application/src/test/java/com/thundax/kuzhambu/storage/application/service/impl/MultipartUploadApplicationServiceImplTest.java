@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.storage.application.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationOperations;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
@@ -51,7 +50,7 @@ class MultipartUploadApplicationServiceImplTest {
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository,
                 mock(StoredObjectContentRepository.class),
-                mock(StorageApplicationOperations.class));
+                mock(StorageApplicationServiceImpl.class));
 
         assertThrows(
                 RuntimeException.class,
@@ -74,7 +73,7 @@ class MultipartUploadApplicationServiceImplTest {
     void completeShouldMergeMultipartPartsAndPersistAsSingleObject() throws Exception {
         MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
         StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
-        StorageApplicationOperations storageApplicationService = mock(StorageApplicationOperations.class);
+        StorageApplicationServiceImpl storageApplicationService = mock(StorageApplicationServiceImpl.class);
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository, contentRepository, storageApplicationService);
 
@@ -125,7 +124,7 @@ class MultipartUploadApplicationServiceImplTest {
     void completeShouldRejectWhenCompletingClaimFails() throws Exception {
         MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
         StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
-        StorageApplicationOperations storageApplicationService = mock(StorageApplicationOperations.class);
+        StorageApplicationServiceImpl storageApplicationService = mock(StorageApplicationServiceImpl.class);
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository, contentRepository, storageApplicationService);
         when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID_REF))
@@ -147,7 +146,7 @@ class MultipartUploadApplicationServiceImplTest {
         MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
         StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
-                multipartUploadRepository, contentRepository, mock(StorageApplicationOperations.class));
+                multipartUploadRepository, contentRepository, mock(StorageApplicationServiceImpl.class));
         when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID_REF))
                 .thenReturn(session());
 
