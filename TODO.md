@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `07-object-reference-service-impl`：07 迁移对象和引用 application service 实现
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/{StorageApplicationServiceImpl.java,StorageObjectApplicationServiceImpl.java,StorageReferenceApplicationServiceImpl.java,StorageOrphanObjectCleanupScheduler.java}`
-    - 处理动作：把对象管理、排序、状态变更和引用增删改查迁移到业务化实现类
-    - 验收点：对象和引用用例实现编译通过，公开返回保留本域 domain entity，旧实现不再承载已迁移方法
-    - 重要度：10/10
-
 - [ ] `08-content-upload-service-impl`：08 迁移内容读取、普通上传和分片上传实现
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
