@@ -241,7 +241,6 @@ const renderEntryList = (entries: SancaiEntryRecord[]) =>
                     onDelete={vi.fn()}
                     onExport={vi.fn()}
                     onRefresh={vi.fn()}
-                    onShare={vi.fn()}
                     onSort={vi.fn()}
                     onView={vi.fn()}
                 />
@@ -348,7 +347,6 @@ describe("SancaiPage", () => {
                         onDelete={vi.fn()}
                         onExport={vi.fn()}
                         onRefresh={vi.fn()}
-                        onShare={vi.fn()}
                         onSort={vi.fn()}
                         onView={vi.fn()}
                     />

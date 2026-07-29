@@ -6,7 +6,6 @@ import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as contentService from "@/pages/classics/common/classics-content-service";
-import * as shareService from "@/pages/classics/common/classics-share-service";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { SancaiEntryPanel } from "./sancai-entry-panel";
 import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
@@ -177,37 +176,6 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
     useKuzhambuConfirm: () => ({
         danger: confirmDangerMock
     })
-}));
-
-vi.mock("@/pages/classics/common/classics-share-service", () => ({
-    createBatch: vi.fn(async () => ({
-        failureCount: 1,
-        failures: [
-            {
-                contentId: "3002",
-                contentType: "SANCAI_ENTRY",
-                failureCode: "PERMISSION_DENIED",
-                failureReason: "PERMISSION_DENIED",
-                status: "FAILED"
-            }
-        ],
-        successCount: 1,
-        successes: [
-            {
-                contentId: "3001",
-                contentType: "SANCAI_ENTRY",
-                resultId: "9001",
-                status: "ACTIVE"
-            }
-        ]
-    })),
-    create: vi.fn(async () => ({
-        id: "9001",
-        shareToken: "abc123_-",
-        shareUrl: "http://localhost:5174/share/abc123_-",
-        title: "天地 分享",
-        visibility: "PUBLIC"
-    }))
 }));
 
 vi.mock("@/pages/classics/common/classics-export-service", () => ({
@@ -622,7 +590,7 @@ const openVersionSection = async (user: ReturnType<typeof userEvent.setup>) => {
     await switchEntryDrawerSection(user, "版本");
 };
 
-describe("SancaiEntryPanel sharing", () => {
+describe("SancaiEntryPanel batch operations", () => {
     beforeEach(() => {
         replacePermissions([
             "classics:sancai:view",
@@ -641,58 +609,6 @@ describe("SancaiEntryPanel sharing", () => {
         localStorage.removeItem("kuzhambu.admin.accessToken");
         clearPermissions();
     });
-
-    it("creates a public share from an entry reference", async () => {
-        const user = userEvent.setup();
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-share-button"));
-
-        await waitFor(() => {
-            expect(shareService.create).toHaveBeenCalled();
-        });
-        expect(vi.mocked(shareService.create).mock.calls[0]?.[0]).toEqual({
-            targets: [
-                {
-                    contentId: "3001",
-                    contentType: "SANCAI_ENTRY"
-                }
-            ],
-            title: "天地 分享",
-            visibility: "PUBLIC"
-        });
-    }, 30000);
-
-    it("creates public shares from selected entries and shows item failures", async () => {
-        const user = userEvent.setup();
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
-        await user.click(rowCheckbox);
-        await user.click(screen.getByTestId("classics-sancai-sancai-entry-share-button"));
-
-        await waitFor(() => {
-            expect(shareService.createBatch).toHaveBeenCalled();
-        });
-        expect(vi.mocked(shareService.createBatch).mock.calls[0]?.[0]).toEqual({
-            privateContentConfirmed: false,
-            status: "ACTIVE",
-            targets: [
-                {
-                    contentId: "3001",
-                    contentType: "SANCAI_ENTRY"
-                }
-            ],
-            titlePrefix: "三才图会批量分享 - ",
-            visibility: "PUBLIC"
-        });
-        expect(await screen.findByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
-        expect(await screen.findByText("SANCAI_ENTRY#3002: PERMISSION_DENIED")).toBeInTheDocument();
-    }, 30000);
 
     it("changes selected entries visibility and shows item failures", async () => {
         const user = userEvent.setup();
@@ -716,7 +632,7 @@ describe("SancaiEntryPanel sharing", () => {
         expect(await screen.findByText("SANCAI_ENTRY#3002: PERMISSION_DENIED")).toBeInTheDocument();
     }, 30000);
 
-    it("disables share export and visibility controls without content permissions", async () => {
+    it("disables export and visibility controls without content permissions", async () => {
         clearPermissions();
 
         renderEntryPanel();
@@ -730,14 +646,13 @@ describe("SancaiEntryPanel sharing", () => {
             );
 
         await waitFor(() => {
-            expect(readEntryButton("sancai-entry-3001-share-button")).toBeDisabled();
+            expect(readEntryButton("sancai-entry-3001-export-button")).toBeDisabled();
         });
         expect(readEntryButton("sancai-entry-3001-view-button")).toBeEnabled();
         expect(readEntryButton("sancai-entry-3001-export-button")).toBeDisabled();
         expect(readEntryButton("sancai-entry-3001-lifecycle-button")).toBeDisabled();
         expect(readEntryButton("sancai-entry-3002-lifecycle-button")).toBeDisabled();
         expect(readEntryButton("sancai-entry-3003-lifecycle-button")).toBeDisabled();
-        expect(readButtonByText("分享")).toBeDisabled();
         expect(readButtonByText("公开")).toBeDisabled();
         expect(readButtonByText("私有")).toBeDisabled();
         expect(readButtonByText("候选治理")).toBeDisabled();
@@ -770,7 +685,7 @@ describe("SancaiEntryPanel sharing", () => {
             [...entryTable.querySelectorAll<HTMLButtonElement>("button[aria-label$=' 天地']")]
                 .map((button) => button.getAttribute("aria-label"))
                 .filter((label) => label !== "拖动 天地")
-        ).toEqual(["编辑 天地", "分享 天地", "导出 天地", "下线 天地", "删除 天地"]);
+        ).toEqual(["编辑 天地", "导出 天地", "下线 天地", "删除 天地"]);
     }, 30000);
 
     it("moves an edited entry to the selected category volume", async () => {

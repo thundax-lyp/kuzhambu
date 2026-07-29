@@ -8,7 +8,6 @@ import { hasPermission } from "@/auth/permission-storage";
 import { isSameId } from "@/types/id";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
-import * as shareService from "@/pages/classics/common/classics-share-service";
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
@@ -356,20 +355,6 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "生命周期变更失败");
         }
     });
-    const shareEntryMutation = useMutation({
-        mutationFn: shareService.create,
-        onSuccess: (share) => {
-            if (typeof navigator.clipboard?.writeText === "function") {
-                void navigator.clipboard.writeText(share.shareUrl);
-                messageApi.success("分享链接已复制");
-                return;
-            }
-            messageApi.success(`分享链接：${share.shareUrl}`);
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "分享创建失败");
-        }
-    });
     const resetVersionMutation = useMutation({
         mutationFn: ({ entryId, versionId }: { entryId: string; versionId: string }) =>
             entryService.resetVersion(entryId, versionId),
@@ -522,20 +507,6 @@ export const SancaiEntryPanel = ({
         });
     };
 
-    const shareEntry = (entry: SancaiEntryRecord) => {
-        const title = entry.title?.trim() || `条目 ${entry.id}`;
-        shareEntryMutation.mutate({
-            targets: [
-                {
-                    contentId: entry.id,
-                    contentType: "SANCAI_ENTRY"
-                }
-            ],
-            title: `${title} 分享`,
-            visibility: "PUBLIC"
-        });
-    };
-
     const exportEntry = (entry: SancaiEntryRecord) => {
         exportEntryMutation.mutate(entry);
     };
@@ -661,7 +632,6 @@ export const SancaiEntryPanel = ({
                 onRefresh={() => {
                     void entriesQuery.refetch();
                 }}
-                onShare={shareEntry}
                 onBatchCandidateGovernance={openBatchCandidateDrawer}
                 onSort={sortEntry}
                 onView={selectEntry}

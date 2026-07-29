@@ -12,7 +12,6 @@ import {
 } from "@/components";
 
 import * as contentService from "@/pages/classics/common/classics-content-service";
-import * as shareService from "@/pages/classics/common/classics-share-service";
 import {
     hasClassicsContentPermission,
     type ClassicsBatchOperationRecord
@@ -33,7 +32,6 @@ interface SancaiEntryListProps {
     onDelete: (entry: SancaiEntryRecord) => void;
     onExport: (entry: SancaiEntryRecord) => void;
     onRefresh: () => void;
-    onShare: (entry: SancaiEntryRecord) => void;
     onBatchCandidateGovernance: (entries: SancaiEntryRecord[]) => void;
     onSort: (
         sourceEntry: SancaiEntryRecord,
@@ -155,7 +153,6 @@ export const SancaiEntryList = ({
     onDelete,
     onExport,
     onRefresh,
-    onShare,
     onBatchCandidateGovernance,
     onSort,
     onView,
@@ -168,12 +165,8 @@ export const SancaiEntryList = ({
         scopeKey: string;
     }>({ keys: [], scopeKey: "" });
     const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
-    const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
-        null
-    );
     const [batchVisibilityResult, setBatchVisibilityResult] =
         useState<ClassicsBatchOperationRecord | null>(null);
-    const canShareEntries = hasClassicsContentPermission("SANCAI_ENTRY", "share", hasPermission);
     const canExportEntries = hasClassicsContentPermission("SANCAI_ENTRY", "export", hasPermission);
     const canChangeEntryVisibility = hasClassicsContentPermission(
         "SANCAI_ENTRY",
@@ -212,19 +205,6 @@ export const SancaiEntryList = ({
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "批量任务取消失败");
-        }
-    });
-
-    const createBatchShareMutation = useMutation({
-        mutationFn: shareService.createBatch,
-        onSuccess: (result) => {
-            setBatchShareResult(result);
-            messageApi.success(
-                `批量分享完成：成功 ${result.successCount}，失败 ${result.failureCount}`
-            );
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "批量分享创建失败");
         }
     });
 
@@ -275,27 +255,6 @@ export const SancaiEntryList = ({
             capability,
             contentType: "SANCAI_ENTRY",
             totalCount: selectedEntries.length
-        });
-    };
-
-    const startBatchShare = () => {
-        if (!canShareEntries) {
-            messageApi.warning("当前账号缺少三才图会分享权限");
-            return;
-        }
-        if (!selectedEntries.length) {
-            messageApi.warning("请先选择当前页要批量分享的条目");
-            return;
-        }
-        createBatchShareMutation.mutate({
-            privateContentConfirmed: false,
-            status: "ACTIVE",
-            targets: selectedEntries.map((entry) => ({
-                contentId: entry.id,
-                contentType: "SANCAI_ENTRY"
-            })),
-            titlePrefix: "三才图会批量分享 - ",
-            visibility: "PUBLIC"
         });
     };
 
@@ -388,14 +347,6 @@ export const SancaiEntryList = ({
                         onClick: () => onView(entry)
                     },
                     {
-                        key: "share",
-                        text: "分享",
-                        ariaLabel: `分享 ${readTitle(entry, "条目")}`,
-                        testId: `sancai-entry-${entry.id}-share-button`,
-                        disabled: !canShareEntries,
-                        onClick: () => onShare(entry)
-                    },
-                    {
                         key: "export",
                         text: "导出",
                         ariaLabel: `导出 ${readTitle(entry, "条目")}`,
@@ -431,24 +382,6 @@ export const SancaiEntryList = ({
 
     return (
         <div className="sancai-entry-table-wrap">
-            {batchShareResult ? (
-                <KuzhambuAlert
-                    showIcon
-                    type={batchShareResult.failureCount > 0 ? "warning" : "success"}
-                    style={{ marginBottom: 12 }}
-                    title={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
-                    description={
-                        batchShareResult.failures.length
-                            ? batchShareResult.failures
-                                  .map(
-                                      (item) =>
-                                          `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
-                                  )
-                                  .join("；")
-                            : "全部选中条目已创建分享记录。"
-                    }
-                />
-            ) : null}
             {batchVisibilityResult ? (
                 <KuzhambuAlert
                     showIcon
@@ -505,13 +438,6 @@ export const SancaiEntryList = ({
                             disabled: !selectedEntries.length,
                             loading: createBatchMutation.isPending,
                             action: () => startBatch("visual")
-                        },
-                        {
-                            testId: "classics-sancai-sancai-entry-share-button",
-                            title: "分享",
-                            disabled: !selectedEntries.length || !canShareEntries,
-                            loading: createBatchShareMutation.isPending,
-                            action: startBatchShare
                         },
                         {
                             testId: "classics-sancai-sancai-entry-action-button-3",
