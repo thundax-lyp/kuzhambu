@@ -3,7 +3,7 @@ import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { KuzhambuButton, KuzhambuSpace, KuzhambuSpaceCompact } from "@/components";
 
-import type { AiCapabilityMappingRecord } from "../capability-mappings-types";
+import type { AiCapabilityMappingRecord } from "./capability-mappings-types";
 
 export interface MappingTableRow extends AiCapabilityMappingRecord {
     capabilityName: string;

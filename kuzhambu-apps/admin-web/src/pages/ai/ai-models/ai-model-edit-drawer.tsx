@@ -8,8 +8,8 @@ import {
     KuzhambuSelect
 } from "@/components";
 
-import type { AiModelChangeCommand } from "../ai-models-service";
-import type { AiModelRecord } from "../ai-models-types";
+import type { AiModelChangeCommand } from "./ai-models-service";
+import type { AiModelRecord } from "./ai-models-types";
 
 import {
     API_SOURCE_OPTIONS,
@@ -18,7 +18,7 @@ import {
     normalizeJsonText,
     readApiSourceMeta,
     readCapabilityMeta
-} from "../ai-models-metadata";
+} from "./ai-models-metadata";
 
 type AiModelFormValues = AiModelChangeCommand;
 

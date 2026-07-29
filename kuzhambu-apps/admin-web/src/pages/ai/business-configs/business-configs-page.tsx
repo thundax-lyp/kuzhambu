@@ -15,7 +15,7 @@ import {
 } from "@/components";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 
-import { BusinessConfigEditDrawer } from "./components";
+import { BusinessConfigEditDrawer } from "./business-config-edit-drawer";
 import * as service from "./business-configs-service";
 import type {
     AiBusinessConfigChangeCommand,

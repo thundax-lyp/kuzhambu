@@ -8,8 +8,8 @@ import {
     type KuzhambuTableBatchActionBarProps
 } from "@/components";
 
-import { API_SOURCE_OPTIONS, readApiSourceMeta } from "../ai-models-metadata";
-import type { AiModelRecord } from "../ai-models-types";
+import { API_SOURCE_OPTIONS, readApiSourceMeta } from "./ai-models-metadata";
+import type { AiModelRecord } from "./ai-models-types";
 
 export interface ModelFilters {
     apiSource?: string | null;

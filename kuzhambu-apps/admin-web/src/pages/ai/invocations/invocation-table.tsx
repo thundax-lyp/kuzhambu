@@ -3,7 +3,7 @@ import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import dayjs from "dayjs";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/types/page";
 import type { Page } from "@/types/page";
-import type { AiInvocationLogRecord } from "../invocations-types";
+import type { AiInvocationLogRecord } from "./invocations-types";
 
 const DATE_TIME_FORMAT = "YYYYMMDD HH:mm";
 

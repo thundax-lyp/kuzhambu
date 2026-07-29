@@ -1,6 +1,6 @@
 import type { Key } from "react";
 import { type KuzhambuTagType } from "@/components";
-import type { AiPromptTemplateRecord } from "../prompts-types";
+import type { AiPromptTemplateRecord } from "./prompts-types";
 
 export interface PromptFilters {
     capability?: string | null;

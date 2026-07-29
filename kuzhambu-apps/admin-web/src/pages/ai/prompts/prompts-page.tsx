@@ -3,14 +3,14 @@ import type { Key } from "react";
 import { App } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { PromptsPageContent } from "./components/prompts-page-content";
+import { PromptsPageContent } from "./prompts-page-content";
 import {
     DEFAULT_PROMPT_FILTERS,
     readCapabilityLabel,
     readPromptDisplayName,
     readTemplateRowKey
-} from "./components/prompts-page-content-support";
-import type { PromptFilters } from "./components/prompts-page-content-support";
+} from "./prompts-page-content-support";
+import type { PromptFilters } from "./prompts-page-content-support";
 import * as service from "./prompts-service";
 import type { AiPromptTemplateQuery } from "./prompts-service";
 import type { AiPromptTemplateRecord } from "./prompts-types";

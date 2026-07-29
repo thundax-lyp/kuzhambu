@@ -10,13 +10,13 @@ import {
     KuzhambuSwitch
 } from "@/components";
 
-import type { AiBusinessConfigChangeCommand } from "../business-configs-service";
+import type { AiBusinessConfigChangeCommand } from "./business-configs-service";
 import type {
     AiBusinessConfigCapabilityRecord,
     AiBusinessConfigModelRecord,
     AiBusinessConfigPromptRecord,
     AiBusinessConfigRecord
-} from "../business-configs-types";
+} from "./business-configs-types";
 
 export type BusinessConfigFormValues = AiBusinessConfigChangeCommand;
 

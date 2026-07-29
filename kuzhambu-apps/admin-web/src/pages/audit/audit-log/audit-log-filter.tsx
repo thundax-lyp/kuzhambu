@@ -1,6 +1,6 @@
 import { GlobalOutlined, IdcardOutlined } from "@ant-design/icons";
 import { Input } from "antd";
-import type { AuditOptionKeys } from "../audit-log-service";
+import type { AuditOptionKeys } from "./audit-log-service";
 import { KuzhambuSelect, type KuzhambuListPageFilterField, type OptionsRecord } from "@/components";
 
 export interface AuditLogFilters {

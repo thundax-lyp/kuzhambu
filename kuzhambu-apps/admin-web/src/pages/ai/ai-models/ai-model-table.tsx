@@ -8,8 +8,8 @@ import {
     KuzhambuTag
 } from "@/components";
 
-import { readApiSourceMeta, readCapabilityMeta } from "../ai-models-metadata";
-import type { AiModelRecord } from "../ai-models-types";
+import { readApiSourceMeta, readCapabilityMeta } from "./ai-models-metadata";
+import type { AiModelRecord } from "./ai-models-types";
 
 const { Text } = Typography;
 

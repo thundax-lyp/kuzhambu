@@ -17,7 +17,7 @@ import {
     type KuzhambuTableProps
 } from "@/components";
 
-import type { AiPromptCapabilityRecord, AiPromptTemplateRecord } from "../prompts-types";
+import type { AiPromptCapabilityRecord, AiPromptTemplateRecord } from "./prompts-types";
 import {
     readCapabilityDomainTag,
     readCapabilityLabel,

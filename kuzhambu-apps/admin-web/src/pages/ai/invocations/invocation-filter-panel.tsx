@@ -10,7 +10,7 @@ import {
     KuzhambuCard
 } from "@/components";
 
-import type { AiInvocationLogPageQuery, AiInvocationSummaryQuery } from "../invocations-service";
+import type { AiInvocationLogPageQuery, AiInvocationSummaryQuery } from "./invocations-service";
 
 const { RangePicker } = DatePicker;
 const DATE_TIME_FORMAT = "YYYYMMDD HH:mm";

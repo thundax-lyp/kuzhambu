@@ -1,6 +1,6 @@
 import { Descriptions } from "antd";
 import { KuzhambuDrawer } from "@/components";
-import type { AiInvocationLogRecord } from "../invocations-types";
+import type { AiInvocationLogRecord } from "./invocations-types";
 
 const formatWarnings = (value?: string | null) => {
     if (!value) {

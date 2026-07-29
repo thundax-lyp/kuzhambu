@@ -30,16 +30,16 @@ import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/us
 import {
     findUnsupportedPromptVariableNames,
     getPromptCapabilityVariables
-} from "../prompt-capability-variables";
-import type { PromptCapabilityVariableDefinition } from "../prompt-capability-variables";
-import type { AiPromptTemplateChangeCommand } from "../prompts-service";
-import * as service from "../prompts-service";
+} from "./prompt-capability-variables";
+import type { PromptCapabilityVariableDefinition } from "./prompt-capability-variables";
+import type { AiPromptTemplateChangeCommand } from "./prompts-service";
+import * as service from "./prompts-service";
 
 import type {
     AiPromptTemplateRecord,
     AiPromptVariableRecord,
     AiPromptVersionRecord
-} from "../prompts-types";
+} from "./prompts-types";
 
 type PromptFormValues = Omit<AiPromptTemplateChangeCommand, "variables" | "enabled"> & {
     outputStructure?: PromptOutputStructure | null;
