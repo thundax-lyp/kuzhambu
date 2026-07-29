@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `01-storage-governance-runbook`：确认 Storage 强类型化治理口径和执行手册
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`docs/00-governance/SERVERS-UNIFIED-ID-DESIGN.md`、`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
-    - 处理动作：确认 Storage 实体 ID 保持 `BaseLongId`，并保持 RUNBOOK 作为本轮唯一执行清单。
-    - 验收点：治理文档不再声明 Storage 对象标识默认 `String`，RUNBOOK 决策与 TODO 编号任务一致。
-    - 重要度：10/10
-
 - [ ] `02-storage-valueobject-core`：新增第一批 Storage 核心值对象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
