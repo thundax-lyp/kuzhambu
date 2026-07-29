@@ -139,14 +139,6 @@ public class DictApplicationServiceImpl implements DictApplicationService {
         return dict;
     }
 
-    private List<Long> toValues(List<DictId> ids) {
-        List<Long> values = new ArrayList<>(ids.size());
-        for (DictId id : ids) {
-            values.add(id.value());
-        }
-        return values;
-    }
-
     private void updatePriorityOrThrow(DictId id, int priority, String message) {
         Dict dict = new Dict();
         dict.setId(id);

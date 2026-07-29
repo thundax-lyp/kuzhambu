@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T06 Core application call sites`：移除 core application 到 repository 的基础 ID 转换
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/UserApplicationServiceImpl.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/RoleApplicationServiceImpl.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/MenuApplicationServiceImpl.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/DepartmentApplicationServiceImpl.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/DictApplicationServiceImpl.java`
-    - 处理动作：删除仅为调用本域 repository 服务的 `*IdCodec.toValue(...)` / `toValues(...)`，并直接传递强类型 ID。
-    - 验收点：这 5 个 application service 不再为了调用本域 repository 把本域 ID 转成基础类型。
-    - 重要度：10/10
-
 - [ ] `T07 Log application and core tests`：修复日志调用点与菜单仓储测试桩
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
