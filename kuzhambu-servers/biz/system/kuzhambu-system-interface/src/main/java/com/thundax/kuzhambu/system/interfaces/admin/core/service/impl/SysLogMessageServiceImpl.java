@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqMessage;
 import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqSender;
 import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
+import com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
@@ -80,7 +81,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
         LogQuery query = new LogQuery();
         query.setBeginDate(DateUtils.addDays(new Date(), -9999));
         query.setEndDate(DateUtils.addDays(new Date(), -logProperties().getAliveDays()));
-        logService.deleteByCondition(query);
+        logService.deleteByCondition(new DeleteLogCommand(query));
     }
 
     private KuzhambuProperties.LogProperties logProperties() {

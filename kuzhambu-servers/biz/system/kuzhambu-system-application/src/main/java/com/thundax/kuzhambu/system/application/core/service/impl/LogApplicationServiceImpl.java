@@ -4,6 +4,8 @@ import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
+import com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetLogQuery;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
@@ -27,7 +29,8 @@ public class LogApplicationServiceImpl implements LogApplicationService {
     }
 
     @Override
-    public Log get(LogId id) {
+    public Log get(GetLogQuery query) {
+        LogId id = query == null ? null : query.getId();
         if (id == null) {
             return null;
         }
@@ -72,7 +75,8 @@ public class LogApplicationServiceImpl implements LogApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int deleteByCondition(LogQuery query) {
+    public int deleteByCondition(DeleteLogCommand command) {
+        LogQuery query = command == null ? null : command.getQuery();
         return dao.batchDelete(
                 query == null ? null : typeValue(query.getType()),
                 query == null ? null : query.getRemoteAddr(),

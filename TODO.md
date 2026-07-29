@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `14-core-log-contract`：[14] 强类型化 Log get/delete 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/GetLogQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/DeleteLogCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/LogApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/LogApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/LogController.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/service/impl/SysLogMessageServiceImpl.java`
-    - 处理动作：新增 `GetLogQuery.id` 和 `DeleteLogCommand.query`，替换 `get(LogId)` 与 `deleteByCondition(LogQuery)`。
-    - 验收点：Log application service 的 get/delete 均使用 Query/Command，日志查询和清理 HTTP 契约不变。
-    - 重要度：8/10
-
 - [ ] `15-create-log-user-id`：[15] 强类型化 CreateLogCommand.userId 字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

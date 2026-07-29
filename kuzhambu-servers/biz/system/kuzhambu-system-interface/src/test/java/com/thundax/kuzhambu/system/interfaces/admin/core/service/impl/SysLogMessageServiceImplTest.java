@@ -11,6 +11,8 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqMessage;
 import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqSender;
 import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
+import com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetLogQuery;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
@@ -93,7 +95,7 @@ class SysLogMessageServiceImplTest {
         private CreateLogCommand command;
 
         @Override
-        public Log get(LogId id) {
+        public Log get(GetLogQuery query) {
             return null;
         }
 
@@ -114,7 +116,7 @@ class SysLogMessageServiceImplTest {
         }
 
         @Override
-        public int deleteByCondition(LogQuery query) {
+        public int deleteByCondition(DeleteLogCommand command) {
             return 0;
         }
     }
