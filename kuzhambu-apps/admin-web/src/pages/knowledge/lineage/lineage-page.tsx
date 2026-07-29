@@ -4,11 +4,11 @@ import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuPage, KuzhambuSpace, KuzhambuAlert } from "@/components";
 
-import { LineageCanvas } from "./components/lineage-canvas";
-import { LineageDetailPanel } from "./components/lineage-detail-panel";
-import { LineageFilterBar } from "./components/lineage-filter-bar";
-import { LineageNodeTable } from "./components/lineage-node-table";
-import { LineageRelationTable } from "./components/lineage-relation-table";
+import { LineageCanvas } from "./lineage-canvas";
+import { LineageDetailPanel } from "./lineage-detail-panel";
+import { LineageFilterBar } from "./lineage-filter-bar";
+import { LineageNodeTable } from "./lineage-node-table";
+import { LineageRelationTable } from "./lineage-relation-table";
 import * as service from "./lineage-service";
 import type { LineageCanvasQuery } from "./lineage-service";
 import type {

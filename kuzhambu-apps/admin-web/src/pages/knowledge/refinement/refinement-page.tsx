@@ -6,14 +6,14 @@ import { KuzhambuSpace, KuzhambuPage, KuzhambuCard } from "@/components";
 import * as currentUserService from "@/service/current-user-service";
 import { isPositiveDecimalId } from "@/types/id";
 
-import { RefinementEntityDeleteModal } from "./components/refinement-entity-delete-modal";
-import { RefinementEntityEditModal } from "./components/refinement-entity-edit-modal";
-import { RefinementFilterForm } from "./components/refinement-filter-form";
-import { RefinementQualityAnnotationDrawer } from "./components/refinement-quality-annotation-drawer";
-import { RefinementRelationDeleteModal } from "./components/refinement-relation-delete-modal";
-import { RefinementRelationEditModal } from "./components/refinement-relation-edit-modal";
-import { RefinementTaskDrawer } from "./components/refinement-task-drawer";
-import { RefinementWorkbenchTable } from "./components/refinement-workbench-table";
+import { RefinementEntityDeleteModal } from "./refinement-entity-delete-modal";
+import { RefinementEntityEditModal } from "./refinement-entity-edit-modal";
+import { RefinementFilterForm } from "./refinement-filter-form";
+import { RefinementQualityAnnotationDrawer } from "./refinement-quality-annotation-drawer";
+import { RefinementRelationDeleteModal } from "./refinement-relation-delete-modal";
+import { RefinementRelationEditModal } from "./refinement-relation-edit-modal";
+import { RefinementTaskDrawer } from "./refinement-task-drawer";
+import { RefinementWorkbenchTable } from "./refinement-workbench-table";
 import * as service from "./refinement-service";
 import type {
     QualityAnnotationRecord,

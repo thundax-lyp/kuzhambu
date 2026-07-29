@@ -13,10 +13,10 @@ import {
 import { isPositiveDecimalId, normalizeId } from "@/types/id";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 
-import { GraphExtractionManuscriptDetail } from "./components/graph-extraction-manuscript-detail";
-import { GraphExtractionManuscriptTree } from "./components/graph-extraction-manuscript-tree";
-import { GraphExtractionTaskDetail } from "./components/graph-extraction-task-detail";
-import { GraphExtractionTaskTable } from "./components/graph-extraction-task-table";
+import { GraphExtractionManuscriptDetail } from "./graph-extraction-manuscript-detail";
+import { GraphExtractionManuscriptTree } from "./graph-extraction-manuscript-tree";
+import { GraphExtractionTaskDetail } from "./graph-extraction-task-detail";
+import { GraphExtractionTaskTable } from "./graph-extraction-task-table";
 import * as service from "./graph-extraction-service";
 import type {
     GraphExtractionRegenerateCommand,
