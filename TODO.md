@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `05-storage-content-reference-queries`：05 新增引用和内容读取查询契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/query/{ListStorageReferencesQuery.java,GetReadableStorageContentQuery.java,OpenReadableStorageContentQuery.java,StorageQuery.java}`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/command/RemoveStorageObjectCommand.java`
-    - 处理动作：新增引用列表、可读内容校验、内容打开和删除对象命令，并收窄或淘汰泛化 `StorageQuery`
-    - 验收点：application service 公开入参不再出现裸 `StoredObjectId` 或 `PageQuery`
-    - 重要度：9/10
-
 - [ ] `06-application-service-interfaces`：06 拆分业务化 application service 接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`

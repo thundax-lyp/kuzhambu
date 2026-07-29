@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.storage.application.query;
 
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
@@ -21,8 +20,6 @@ public class StorageQuery {
     private String contentType;
     private String referenceOwnerId;
     private String referenceOwnerType;
-    private String ownerId;
-    private StorageOwnerType ownerType;
     private StoredObjectStatus objectStatus;
     private StoredObjectReferenceStatus referenceStatus;
     private String originalFilename;
