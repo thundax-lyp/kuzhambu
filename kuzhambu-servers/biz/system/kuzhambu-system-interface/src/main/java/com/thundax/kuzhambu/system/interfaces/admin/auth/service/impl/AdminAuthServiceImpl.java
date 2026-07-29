@@ -141,7 +141,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             AuthTokenRefreshResult result =
                     toInterfaceResult(adminTokenService.refreshAccessToken(new RefreshAdminAccessTokenCommand(
                             PrincipalClientIdCodec.toDomain(command.getClientId()),
-                            PrincipalRefreshTokenCode.ofNullable(command.getRefreshToken()),
+                            PrincipalRefreshTokenCode.ofNullable(blankToNull(command.getRefreshToken())),
                             command.getIp(),
                             command.getUserAgent())));
             if (result != null && result.getAccessToken() != null) {
@@ -408,7 +408,11 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private PrincipalAccessTokenCode accessTokenCode(String token) {
-        return PrincipalAccessTokenCode.ofNullable(token);
+        return PrincipalAccessTokenCode.ofNullable(blankToNull(token));
+    }
+
+    private String blankToNull(String value) {
+        return StringUtils.isBlank(value) ? null : value;
     }
 
     private AuthTokenQueryResult toInterfaceResult(AdminTokenQueryResult result) {
