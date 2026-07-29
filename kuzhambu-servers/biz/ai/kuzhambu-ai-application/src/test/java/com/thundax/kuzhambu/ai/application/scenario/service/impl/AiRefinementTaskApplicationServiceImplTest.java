@@ -291,6 +291,33 @@ class AiRefinementTaskApplicationServiceImplTest {
     }
 
     @Test
+    void taskResultShouldMergePartialContentRefByFieldPrecedence() {
+        AiBatchJobResult job = new AiBatchJobResult(
+                new AiBatchJobId(1001L),
+                "classics",
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                AiContentRef.ofNullable("SANCAI_ENTRY", 20L),
+                AiBatchJobStatus.SUCCEEDED,
+                1,
+                1,
+                0,
+                0,
+                null,
+                Instant.parse("2026-01-01T00:00:00Z"),
+                null,
+                Instant.parse("2026-01-01T00:01:00Z"));
+        AiInvocationLog invocationLog =
+                RecordingInvocationRepository.invocationLog(1001L, 201L, null, "2026-01-01T00:00:30Z");
+        AiCandidate candidate = RecordingInvocationRepository.candidate(1001L, 301L, 201L, 10L, "2026-01-01T00:00:40Z");
+        candidate.setContentRef(AiContentRef.ofNullable(null, 10L));
+
+        AiRefinementTaskResult result = AiRefinementTaskResult.fromBatchJob(job, invocationLog, candidate);
+
+        assertEquals("SANCAI_ENTRY", result.getContentRef().contentType());
+        assertEquals(10L, result.getContentRef().contentId());
+    }
+
+    @Test
     void expireOrphanedRunningTasksShouldFailStaleRefinementBatches() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(

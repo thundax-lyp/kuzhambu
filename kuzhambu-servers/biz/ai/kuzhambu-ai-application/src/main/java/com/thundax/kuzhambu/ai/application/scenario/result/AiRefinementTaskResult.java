@@ -104,10 +104,32 @@ public class AiRefinementTaskResult {
     }
 
     private static AiContentRef contentRef(AiBatchJobResult job, AiInvocationLog invocationLog, AiCandidate candidate) {
-        if (invocationLog != null && invocationLog.getContentRef() != null) {
-            return invocationLog.getContentRef();
+        AiContentRef invocationContentRef = invocationLog == null ? null : invocationLog.getContentRef();
+        AiContentRef candidateContentRef = candidate == null ? null : candidate.getContentRef();
+        AiContentRef jobContentRef = job.getContentRef();
+        return AiContentRef.ofNullable(
+                firstContentType(invocationContentRef, candidateContentRef, jobContentRef),
+                firstContentId(invocationContentRef, candidateContentRef, jobContentRef));
+    }
+
+    private static String firstContentType(AiContentRef invocation, AiContentRef candidate, AiContentRef job) {
+        if (invocation != null && invocation.contentType() != null) {
+            return invocation.contentType();
         }
-        return candidate == null || candidate.getContentRef() == null ? job.getContentRef() : candidate.getContentRef();
+        if (candidate != null && candidate.contentType() != null) {
+            return candidate.contentType();
+        }
+        return job == null ? null : job.contentType();
+    }
+
+    private static Long firstContentId(AiContentRef invocation, AiContentRef candidate, AiContentRef job) {
+        if (invocation != null && invocation.contentId() != null) {
+            return invocation.contentId();
+        }
+        if (candidate != null && candidate.contentId() != null) {
+            return candidate.contentId();
+        }
+        return job == null ? null : job.contentId();
     }
 
     private static AiTargetObjectId targetObjectId(AiInvocationLog invocationLog, AiCandidate candidate) {
