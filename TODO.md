@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T11 Backend verification`：运行 system 后端验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-domain`；`kuzhambu-servers/biz/system/kuzhambu-system-application`；`kuzhambu-servers/biz/system/kuzhambu-system-infra`；`kuzhambu-servers/biz/system/kuzhambu-system-interface`
-    - 处理动作：运行 RUNBOOK 中列出的后端 Maven 格式化、静态检查、测试和 domain 残留基础 ID 扫描。
-    - 验收点：后端验证通过；若存在失败，TODO 收窄为失败模块或失败文件对应的剩余任务。
-    - 重要度：10/10
-
 - [ ] `T12 Frontend verification`：运行 admin-web 前端验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
