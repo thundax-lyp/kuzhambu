@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import java.util.List;
 
-public interface DepartmentApplicationService {
+public interface DepartmentManagementApplicationService {
 
     Department get(GetDepartmentQuery query);
 

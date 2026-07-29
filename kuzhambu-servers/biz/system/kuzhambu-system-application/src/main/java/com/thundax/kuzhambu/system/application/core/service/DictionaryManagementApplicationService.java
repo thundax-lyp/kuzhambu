@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
 import java.util.List;
 
-public interface DictApplicationService {
+public interface DictionaryManagementApplicationService {
 
     Dict get(GetDictQuery query);
 

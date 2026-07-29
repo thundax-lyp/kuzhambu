@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
 import com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand;
 import com.thundax.kuzhambu.system.application.core.query.GetLogQuery;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
-import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.SystemLogApplicationService;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
@@ -19,11 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class LogApplicationServiceImpl implements LogApplicationService {
+public class SystemLogApplicationServiceImpl implements SystemLogApplicationService {
 
     private final LogRepository dao;
 
-    public LogApplicationServiceImpl(LogRepository dao) {
+    public SystemLogApplicationServiceImpl(LogRepository dao) {
         this.dao = dao;
     }
 

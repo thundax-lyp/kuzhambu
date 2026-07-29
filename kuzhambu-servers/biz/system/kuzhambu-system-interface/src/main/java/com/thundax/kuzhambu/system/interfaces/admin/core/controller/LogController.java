@@ -13,8 +13,8 @@ import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApp
 import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.SystemLogApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
@@ -44,17 +44,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class LogController {
 
-    private final LogApplicationService logService;
+    private final SystemLogApplicationService logService;
     private final UserManagementApplicationService userService;
     private final PrincipalIdentityApplicationService principalIdentityService;
-    private final DepartmentApplicationService departmentService;
+    private final DepartmentManagementApplicationService departmentService;
 
     @Autowired
     public LogController(
-            LogApplicationService logService,
+            SystemLogApplicationService logService,
             UserManagementApplicationService userService,
             PrincipalIdentityApplicationService principalIdentityService,
-            DepartmentApplicationService departmentService) {
+            DepartmentManagementApplicationService departmentService) {
         this.logService = logService;
         this.userService = userService;
         this.principalIdentityService = principalIdentityService;

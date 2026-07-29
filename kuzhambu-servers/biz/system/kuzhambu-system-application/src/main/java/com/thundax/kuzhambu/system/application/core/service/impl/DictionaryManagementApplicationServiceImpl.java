@@ -15,7 +15,7 @@ import com.thundax.kuzhambu.system.application.core.command.DictSortCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveDictCommand;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetDictQuery;
-import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
 import com.thundax.kuzhambu.system.domain.core.repository.DictRepository;
@@ -29,13 +29,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class DictApplicationServiceImpl implements DictApplicationService {
+public class DictionaryManagementApplicationServiceImpl implements DictionaryManagementApplicationService {
 
     private static final int PRIORITY_STEP = 1;
 
     private final DictRepository dao;
 
-    public DictApplicationServiceImpl(DictRepository dao) {
+    public DictionaryManagementApplicationServiceImpl(DictRepository dao) {
         this.dao = dao;
     }
 

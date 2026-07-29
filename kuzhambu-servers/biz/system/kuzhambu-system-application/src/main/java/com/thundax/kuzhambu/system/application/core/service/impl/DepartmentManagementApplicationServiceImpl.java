@@ -11,7 +11,7 @@ import com.thundax.kuzhambu.system.application.core.command.MoveDepartmentComman
 import com.thundax.kuzhambu.system.application.core.command.RemoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.repository.DepartmentRepository;
@@ -22,11 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class DepartmentApplicationServiceImpl implements DepartmentApplicationService {
+public class DepartmentManagementApplicationServiceImpl implements DepartmentManagementApplicationService {
 
     private final DepartmentRepository dao;
 
-    public DepartmentApplicationServiceImpl(DepartmentRepository dao) {
+    public DepartmentManagementApplicationServiceImpl(DepartmentRepository dao) {
         this.dao = dao;
     }
 

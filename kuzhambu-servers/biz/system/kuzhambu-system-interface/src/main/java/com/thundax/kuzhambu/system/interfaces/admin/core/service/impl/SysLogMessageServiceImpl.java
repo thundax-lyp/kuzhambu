@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqSender;
 import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
 import com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
-import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.SystemLogApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
@@ -38,7 +38,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
 
     private final KuzhambuMqSender mqSender;
     private final KuzhambuProperties kuzhambuProperties;
-    private final LogApplicationService logService;
+    private final SystemLogApplicationService logService;
     private final ObjectMapper objectMapper;
 
     @Override

@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.system.application.core.command.DictSortCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveDictCommand;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetDictQuery;
-import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
@@ -45,9 +45,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class DictController {
 
-    private final DictApplicationService dictService;
+    private final DictionaryManagementApplicationService dictService;
 
-    public DictController(DictApplicationService dictService) {
+    public DictController(DictionaryManagementApplicationService dictService) {
         this.dictService = dictService;
     }
 

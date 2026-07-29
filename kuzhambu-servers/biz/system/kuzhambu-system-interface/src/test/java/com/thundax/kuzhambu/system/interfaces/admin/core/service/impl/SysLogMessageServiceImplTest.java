@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
 import com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand;
 import com.thundax.kuzhambu.system.application.core.query.GetLogQuery;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
-import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.SystemLogApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
@@ -37,7 +37,7 @@ class SysLogMessageServiceImplTest {
     @Test
     void shouldUseDtoPayloadForMqLogMessages() throws Exception {
         CapturingMqSender mqSender = new CapturingMqSender();
-        CapturingLogApplicationService logService = new CapturingLogApplicationService();
+        CapturingSystemLogApplicationService logService = new CapturingSystemLogApplicationService();
         SysLogMessageServiceImpl service =
                 new SysLogMessageServiceImpl(mqSender, properties(), logService, OBJECT_MAPPER);
         Date logDate = new Date(1778513052000L);
@@ -90,7 +90,7 @@ class SysLogMessageServiceImplTest {
         }
     }
 
-    private static final class CapturingLogApplicationService implements LogApplicationService {
+    private static final class CapturingSystemLogApplicationService implements SystemLogApplicationService {
 
         private CreateLogCommand command;
 

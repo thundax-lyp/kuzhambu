@@ -40,8 +40,8 @@ import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.RoleManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.utils.SysApiUtils;
@@ -122,8 +122,8 @@ public class UserController {
     private static final String USER_STATUS_DICT_TYPE = "user_status";
 
     private final UserManagementApplicationService userService;
-    private final DepartmentApplicationService departmentService;
-    private final DictApplicationService dictService;
+    private final DepartmentManagementApplicationService departmentService;
+    private final DictionaryManagementApplicationService dictService;
     private final RoleManagementApplicationService roleService;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final PrincipalCredentialApplicationService principalCredentialService;
@@ -135,8 +135,8 @@ public class UserController {
     @Autowired
     public UserController(
             UserManagementApplicationService userService,
-            DepartmentApplicationService departmentService,
-            DictApplicationService dictService,
+            DepartmentManagementApplicationService departmentService,
+            DictionaryManagementApplicationService dictService,
             RoleManagementApplicationService roleService,
             PrincipalIdentityApplicationService principalIdentityService,
             PrincipalCredentialApplicationService principalCredentialService,

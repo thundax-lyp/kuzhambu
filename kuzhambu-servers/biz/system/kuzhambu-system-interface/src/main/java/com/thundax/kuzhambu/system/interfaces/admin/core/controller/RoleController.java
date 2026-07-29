@@ -23,8 +23,8 @@ import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.MenuManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.RoleManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
@@ -86,8 +86,8 @@ public class RoleController {
 
     private final RoleManagementApplicationService roleService;
     private final MenuManagementApplicationService menuService;
-    private final DepartmentApplicationService departmentService;
-    private final DictApplicationService dictService;
+    private final DepartmentManagementApplicationService departmentService;
+    private final DictionaryManagementApplicationService dictService;
     private final UserManagementApplicationService userService;
     private final PrincipalIdentityApplicationService principalIdentityService;
 
@@ -95,8 +95,8 @@ public class RoleController {
     public RoleController(
             RoleManagementApplicationService roleService,
             MenuManagementApplicationService menuService,
-            DepartmentApplicationService departmentService,
-            DictApplicationService dictService,
+            DepartmentManagementApplicationService departmentService,
+            DictionaryManagementApplicationService dictService,
             UserManagementApplicationService userService,
             PrincipalIdentityApplicationService principalIdentityService) {
 

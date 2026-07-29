@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.system.application.core.command.MoveDepartmentComman
 import com.thundax.kuzhambu.system.application.core.command.RemoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
@@ -43,10 +43,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class DepartmentController {
 
-    private final DepartmentApplicationService departmentService;
+    private final DepartmentManagementApplicationService departmentService;
 
     @Autowired
-    public DepartmentController(DepartmentApplicationService departmentService) {
+    public DepartmentController(DepartmentManagementApplicationService departmentService) {
         this.departmentService = departmentService;
     }
 

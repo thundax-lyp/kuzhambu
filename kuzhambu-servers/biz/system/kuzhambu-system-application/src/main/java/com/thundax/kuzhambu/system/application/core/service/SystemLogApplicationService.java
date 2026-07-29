@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
 import java.util.List;
 
-public interface LogApplicationService {
+public interface SystemLogApplicationService {
 
     Log get(GetLogQuery query);
 

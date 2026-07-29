@@ -2,16 +2,16 @@ package com.thundax.kuzhambu.system.application.audit.runtime.sys;
 
 import com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoader;
 import com.thundax.kuzhambu.system.application.core.query.GetDictQuery;
-import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DictAuditObjectLoader implements AuditObjectLoader {
 
-    private final DictApplicationService dictService;
+    private final DictionaryManagementApplicationService dictService;
 
-    public DictAuditObjectLoader(DictApplicationService dictService) {
+    public DictAuditObjectLoader(DictionaryManagementApplicationService dictService) {
         this.dictService = dictService;
     }
 
