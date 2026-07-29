@@ -4,11 +4,11 @@ import com.thundax.kuzhambu.system.application.auth.command.CreatePreAuthSession
 import com.thundax.kuzhambu.system.application.auth.command.RefreshPreAuthSessionCommand;
 import com.thundax.kuzhambu.system.application.auth.command.ReleasePreAuthSessionCommand;
 import com.thundax.kuzhambu.system.application.auth.command.UpsertPreAuthSessionValueCommand;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueValidateQuery;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
-import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
 
 public interface PreAuthSessionApplicationService {
 
@@ -16,11 +16,11 @@ public interface PreAuthSessionApplicationService {
 
     PreAuthSession create(CreatePreAuthSessionCommand command);
 
-    PreAuthSessionId getIdByToken(PreAuthSessionToken token);
+    PreAuthSessionId getIdByToken(PreAuthSessionQuery query);
 
-    PreAuthSessionId getIdByRefreshToken(PreAuthSessionToken refreshToken);
+    PreAuthSessionId getIdByRefreshToken(PreAuthSessionQuery query);
 
-    PreAuthSession get(PreAuthSessionId id);
+    PreAuthSession get(PreAuthSessionQuery query);
 
     PreAuthSession refresh(RefreshPreAuthSessionCommand command);
 

@@ -12,17 +12,22 @@ import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.MenuManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.RoleManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
@@ -31,11 +36,13 @@ import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler;
@@ -77,20 +84,20 @@ public class RoleController {
     private static final String ROLE_PRIVILEGE_DICT_TYPE = "role_privilege";
     private static final String ROLE_STATUS_DICT_TYPE = "role_status";
 
-    private final RoleApplicationService roleService;
-    private final MenuApplicationService menuService;
-    private final DepartmentApplicationService departmentService;
-    private final DictApplicationService dictService;
-    private final UserApplicationService userService;
+    private final RoleManagementApplicationService roleService;
+    private final MenuManagementApplicationService menuService;
+    private final DepartmentManagementApplicationService departmentService;
+    private final DictionaryManagementApplicationService dictService;
+    private final UserManagementApplicationService userService;
     private final PrincipalIdentityApplicationService principalIdentityService;
 
     @Autowired
     public RoleController(
-            RoleApplicationService roleService,
-            MenuApplicationService menuService,
-            DepartmentApplicationService departmentService,
-            DictApplicationService dictService,
-            UserApplicationService userService,
+            RoleManagementApplicationService roleService,
+            MenuManagementApplicationService menuService,
+            DepartmentManagementApplicationService departmentService,
+            DictionaryManagementApplicationService dictService,
+            UserManagementApplicationService userService,
             PrincipalIdentityApplicationService principalIdentityService) {
 
         this.roleService = roleService;
@@ -113,7 +120,7 @@ public class RoleController {
     @SysLogger(value = "读取")
     @PostMapping(value = "get")
     public RoleResponse get(@Valid @RequestBody RoleIdRequest request) {
-        Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+        Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -176,7 +183,7 @@ public class RoleController {
         validateMenus(request.getMenuList());
 
         if (request.getId() != null) {
-            Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+            Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
             if (bean != null) {
                 throw AdminResponseExceptions.objectExists();
             }
@@ -202,7 +209,7 @@ public class RoleController {
     public RoleResponse update(@Valid @RequestBody RoleSaveRequest request) {
         validateMenus(request.getMenuList());
 
-        Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+        Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -228,7 +235,7 @@ public class RoleController {
     public Boolean updateStatus(@Valid @RequestBody List<RoleStatusRequest> list) {
         List<ChangeRoleStatusCommand> commandList = new ArrayList<>();
         for (RoleStatusRequest request : RequestListHelper.present(list)) {
-            Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+            Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -288,7 +295,7 @@ public class RoleController {
     public Boolean delete(@Valid @RequestBody List<RoleIdRequest> list) {
         List<RoleId> idList = new ArrayList<>();
         for (RoleIdRequest request : RequestListHelper.present(list)) {
-            Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+            Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -298,7 +305,7 @@ public class RoleController {
             throw AdminResponseExceptions.invalidParameter("list");
         }
 
-        idList.forEach(roleService::remove);
+        idList.forEach(id -> roleService.remove(new RemoveRoleCommand(id)));
 
         return true;
     }
@@ -344,8 +351,8 @@ public class RoleController {
                         DEPARTMENT_ID_PREFIX,
                         user,
                         getAccountLoginName(user),
-                        departmentService.get(user.getDepartmentId()),
-                        departmentService::get))
+                        getDepartment(user.getDepartmentId()),
+                        this::getDepartment))
                 .collect(Collectors.toList()));
 
         return list;
@@ -363,13 +370,13 @@ public class RoleController {
     @IgnoreSysLogger
     @PostMapping(value = "user/list")
     public List<RoleUserResponse> userList(@Valid @RequestBody RoleIdRequest request) {
-        Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+        Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
 
         return roleService.listRoleUsers(roleQuery(request.getId())).stream()
-                .map(user -> toUserResponse(userService.get(user.getId())))
+                .map(user -> toUserResponse(userService.get(new GetUserQuery(user.getId()))))
                 .collect(Collectors.toList());
     }
 
@@ -402,7 +409,7 @@ public class RoleController {
 
     private RoleUserResponse toUserResponse(User user) {
         return RoleInterfaceAssembler.toUserResponse(
-                user, getAccountLoginName(user), departmentService.get(user.getDepartmentId()), departmentService::get);
+                user, getAccountLoginName(user), getDepartment(user.getDepartmentId()), this::getDepartment);
     }
 
     private String getAccountLoginName(User user) {
@@ -423,7 +430,7 @@ public class RoleController {
     }
 
     private void validateAssignUser(RoleAssignUserRequest request) {
-        Role roleBean = roleService.get(RoleIdCodec.toDomain(request.getRoleId()));
+        Role roleBean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getRoleId())));
         if (roleBean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -433,7 +440,7 @@ public class RoleController {
         }
 
         for (RoleUserRequest userRequest : request.getUsers()) {
-            User userBean = userService.get(UserIdCodec.toDomain(userRequest.getId()));
+            User userBean = userService.get(new GetUserQuery(UserIdCodec.toDomain(userRequest.getId())));
             if (userBean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -452,6 +459,14 @@ public class RoleController {
 
     private RoleQuery roleQuery(Role role) {
         return roleQuery(RoleIdCodec.toValue(role.getId()));
+    }
+
+    private GetRoleQuery getRoleQuery(RoleId roleId) {
+        return new GetRoleQuery(roleId);
+    }
+
+    private Department getDepartment(DepartmentId departmentId) {
+        return departmentService.get(new GetDepartmentQuery(departmentId));
     }
 
     private RoleQuery roleQuery(String roleId) {
@@ -475,7 +490,7 @@ public class RoleController {
                 throw AdminResponseExceptions.invalidParameter("menus.id");
 
             } else {
-                Menu bean = menuService.get(MenuIdCodec.toDomain(request.getId()));
+                Menu bean = menuService.get(new GetMenuQuery(MenuIdCodec.toDomain(request.getId())));
                 if (bean == null) {
                     throw AdminResponseExceptions.objectNotFound();
                 }

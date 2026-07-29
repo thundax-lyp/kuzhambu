@@ -1,0 +1,37 @@
+package com.thundax.kuzhambu.system.application.core.service;
+
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand;
+import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
+import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
+import com.thundax.kuzhambu.system.application.core.query.UserQuery;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
+import java.util.List;
+
+public interface UserManagementApplicationService {
+
+    User get(GetUserQuery query);
+
+    List<User> list(UserQuery query);
+
+    PageResult<User> page(UserQuery query, PageQuery page);
+
+    boolean existsEmail(UserQuery query);
+
+    boolean existsMobile(UserQuery query);
+
+    UserId create(CreateUserCommand command);
+
+    void changeInfo(ChangeUserInfoCommand command);
+
+    int remove(RemoveUserCommand command);
+
+    int changeStatus(ChangeUserStatusCommand command);
+
+    List<Role> listUserRoles(UserQuery query);
+}

@@ -10,8 +10,10 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.system.application.core.command.ChangeMenuVisibilityCommand;
 import com.thundax.kuzhambu.system.application.core.command.MoveMenuCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveMenuCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
-import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.MenuManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.enums.MenuVisibility;
@@ -44,10 +46,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class MenuController {
 
-    private final MenuApplicationService menuService;
+    private final MenuManagementApplicationService menuService;
 
     @Autowired
-    public MenuController(MenuApplicationService menuService) {
+    public MenuController(MenuManagementApplicationService menuService) {
         this.menuService = menuService;
     }
 
@@ -63,7 +65,7 @@ public class MenuController {
     @SysLogger(value = "读取")
     @PostMapping(value = "get")
     public MenuResponse get(@Valid @RequestBody MenuIdRequest request) {
-        Menu bean = menuService.get(MenuIdCodec.toDomain(request.getId()));
+        Menu bean = menuService.get(getMenuQuery(MenuIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -103,14 +105,14 @@ public class MenuController {
     public MenuResponse add(@Valid @RequestBody MenuSaveRequest request) {
         Menu entity = MenuInterfaceAssembler.toDomain(new Menu(), request);
         if (entity.getId() != null) {
-            Menu bean = menuService.get(entity.getId());
+            Menu bean = menuService.get(getMenuQuery(entity.getId()));
             if (bean != null) {
                 throw AdminResponseExceptions.objectExists();
             }
         }
 
         if (entity.getParentId() != null) {
-            Menu parent = menuService.get(entity.getParentId());
+            Menu parent = menuService.get(getMenuQuery(entity.getParentId()));
             if (parent == null) {
                 throw AdminResponseExceptions.invalidParameter("parentId");
             }
@@ -133,13 +135,13 @@ public class MenuController {
     @SysLogger(value = "修改")
     @PostMapping(value = "update")
     public MenuResponse update(@Valid @RequestBody MenuSaveRequest request) {
-        Menu bean = menuService.get(MenuIdCodec.toDomain(request.getId()));
+        Menu bean = menuService.get(getMenuQuery(MenuIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.invalidParameter("id");
         }
 
         if (request.getParentId() != null) {
-            Menu parent = menuService.get(MenuIdCodec.toDomain(request.getParentId()));
+            Menu parent = menuService.get(getMenuQuery(MenuIdCodec.toDomain(request.getParentId())));
             if (parent == null) {
                 throw AdminResponseExceptions.invalidParameter("parentId");
             }
@@ -166,7 +168,7 @@ public class MenuController {
     public Boolean updateVisibility(@Valid @RequestBody List<MenuDisplayRequest> list) {
         List<ChangeMenuVisibilityCommand> commandList = new ArrayList<>();
         for (MenuDisplayRequest request : RequestListHelper.present(list)) {
-            Menu bean = menuService.get(MenuIdCodec.toDomain(request.getId()));
+            Menu bean = menuService.get(getMenuQuery(MenuIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -197,7 +199,7 @@ public class MenuController {
     public Boolean delete(@Valid @RequestBody List<MenuIdRequest> list) {
         List<MenuId> idList = new ArrayList<>();
         for (MenuIdRequest request : RequestListHelper.present(list)) {
-            Menu bean = menuService.get(MenuIdCodec.toDomain(request.getId()));
+            Menu bean = menuService.get(getMenuQuery(MenuIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -207,7 +209,7 @@ public class MenuController {
             throw AdminResponseExceptions.invalidParameter("list");
         }
 
-        idList.forEach(menuService::remove);
+        idList.forEach(id -> menuService.remove(new RemoveMenuCommand(id)));
 
         return true;
     }
@@ -268,12 +270,12 @@ public class MenuController {
     @SysLogger(value = "排序")
     @PostMapping(value = "move")
     public Boolean move(@Valid @RequestBody MenuMoveRequest request) {
-        Menu fromBean = menuService.get(MenuIdCodec.toDomain(request.getFromNodeId()));
+        Menu fromBean = menuService.get(getMenuQuery(MenuIdCodec.toDomain(request.getFromNodeId())));
         if (fromBean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
 
-        Menu toBean = menuService.get(MenuIdCodec.toDomain(request.getToNodeId()));
+        Menu toBean = menuService.get(getMenuQuery(MenuIdCodec.toDomain(request.getToNodeId())));
         if (toBean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -305,5 +307,9 @@ public class MenuController {
         query.setChildId(child.getId());
         query.setAncestorId(ancestor.getId());
         return query;
+    }
+
+    private GetMenuQuery getMenuQuery(MenuId menuId) {
+        return new GetMenuQuery(menuId);
     }
 }

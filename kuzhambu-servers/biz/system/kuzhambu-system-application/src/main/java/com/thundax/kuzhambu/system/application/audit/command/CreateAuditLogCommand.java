@@ -2,7 +2,8 @@ package com.thundax.kuzhambu.system.application.audit.command;
 
 import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.common.audit.model.valueobject.AuditSnapshot;
-import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,12 +11,10 @@ import lombok.Setter;
 @Setter
 public class CreateAuditLogCommand {
 
-    private String objectType;
-    private String objectId;
+    private AuditObjectRef objectRef;
     private AuditAction action;
     private String idempotencyKey;
-    private AuditOperatorType operatorType;
-    private String operatorId;
+    private AuditOperatorRef operatorRef;
     private String operatorName;
     private String source;
     private String requestId;

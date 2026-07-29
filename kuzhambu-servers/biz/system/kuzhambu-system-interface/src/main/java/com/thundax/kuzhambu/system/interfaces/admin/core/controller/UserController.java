@@ -14,8 +14,11 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
-import com.thundax.kuzhambu.system.application.auth.command.PrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalCredentialCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
@@ -26,16 +29,21 @@ import com.thundax.kuzhambu.system.application.auth.utils.PasswordHelper;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
-import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.CurrentUserProfileApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.RoleManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.utils.SysApiUtils;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
@@ -58,6 +66,8 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.UserInterfaceAssembler;
@@ -111,28 +121,28 @@ public class UserController {
     private static final String USER_RANK_DICT_TYPE = "user_rank";
     private static final String USER_STATUS_DICT_TYPE = "user_status";
 
-    private final UserApplicationService userService;
-    private final DepartmentApplicationService departmentService;
-    private final DictApplicationService dictService;
-    private final RoleApplicationService roleService;
+    private final UserManagementApplicationService userService;
+    private final DepartmentManagementApplicationService departmentService;
+    private final DictionaryManagementApplicationService dictService;
+    private final RoleManagementApplicationService roleService;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final PrincipalCredentialApplicationService principalCredentialService;
     private final PreAuthSessionApplicationService preAuthSessionService;
     private final CurrentUserResolver currentUserResolver;
-    private final CurrentUserApplicationService currentUserService;
+    private final CurrentUserProfileApplicationService currentUserService;
     private final AdminAvatarUrlBuilder avatarUrlBuilder;
 
     @Autowired
     public UserController(
-            UserApplicationService userService,
-            DepartmentApplicationService departmentService,
-            DictApplicationService dictService,
-            RoleApplicationService roleService,
+            UserManagementApplicationService userService,
+            DepartmentManagementApplicationService departmentService,
+            DictionaryManagementApplicationService dictService,
+            RoleManagementApplicationService roleService,
             PrincipalIdentityApplicationService principalIdentityService,
             PrincipalCredentialApplicationService principalCredentialService,
             PreAuthSessionApplicationService preAuthSessionService,
             CurrentUserResolver currentUserResolver,
-            CurrentUserApplicationService currentUserService,
+            CurrentUserProfileApplicationService currentUserService,
             AdminAvatarUrlBuilder avatarUrlBuilder) {
 
         this.userService = userService;
@@ -160,7 +170,7 @@ public class UserController {
     @PostMapping(value = "get")
     @WrappedApiResponse
     public UserResponse get(@Valid @RequestBody UserIdRequest request) {
-        User bean = userService.get(UserIdCodec.toDomain(request.getId()));
+        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -264,7 +274,7 @@ public class UserController {
         String encryptedPassword = PasswordHelper.encrypt(request.getLoginPass());
 
         if (entity.getId() != null) {
-            User bean = userService.get(entity.getId());
+            User bean = userService.get(getUserQuery(entity.getId()));
             if (bean != null) {
                 throw AdminResponseExceptions.objectExists();
             }
@@ -306,7 +316,7 @@ public class UserController {
         }
         validateUniqueContact(request);
 
-        User bean = userService.get(UserIdCodec.toDomain(request.getId()));
+        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -345,7 +355,7 @@ public class UserController {
     @PostMapping(value = "avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @WrappedApiResponse
     public Boolean uploadAvatar(@RequestParam("id") String id, MultipartFile avatar) {
-        User bean = userService.get(UserIdCodec.toDomain(Long.valueOf(id)));
+        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(Long.valueOf(id))));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -372,7 +382,7 @@ public class UserController {
     @PostMapping(value = "avatar/delete")
     @WrappedApiResponse
     public Boolean deleteAvatar(@Valid @RequestBody UserAvatarRequest request) {
-        User bean = userService.get(UserIdCodec.toDomain(request.getId()));
+        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -413,7 +423,7 @@ public class UserController {
 
         List<ChangeUserStatusCommand> commandList = new ArrayList<>();
         for (UserStatusRequest request : RequestListHelper.present(list)) {
-            User bean = userService.get(UserIdCodec.toDomain(request.getId()));
+            User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -449,7 +459,7 @@ public class UserController {
 
         List<UserId> idList = new ArrayList<>();
         for (UserIdRequest request : RequestListHelper.present(list)) {
-            User bean = userService.get(UserIdCodec.toDomain(request.getId()));
+            User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -460,7 +470,7 @@ public class UserController {
             throw AdminResponseExceptions.invalidParameter("list");
         }
 
-        idList.forEach(userService::remove);
+        idList.forEach(id -> userService.remove(new RemoveUserCommand(id)));
 
         return true;
     }
@@ -495,7 +505,7 @@ public class UserController {
     @WrappedApiResponse
     public List<UserDepartmentResponse> departmentTree() {
         return departmentService.list(new DepartmentQuery()).stream()
-                .map(department -> UserInterfaceAssembler.toDepartmentResponse(department, departmentService::get))
+                .map(department -> UserInterfaceAssembler.toDepartmentResponse(department, this::getDepartment))
                 .collect(Collectors.toList());
     }
 
@@ -538,8 +548,9 @@ public class UserController {
             return;
         }
 
-        UserAvatarResult avatar = currentUserService.getAvatar(UserIdCodec.toDomain(Long.valueOf(userId)));
-        InputStream inputStream = currentUserService.getAvatarInputStream(UserIdCodec.toDomain(Long.valueOf(userId)));
+        CurrentUserAvatarQuery avatarQuery = new CurrentUserAvatarQuery(UserIdCodec.toDomain(Long.valueOf(userId)));
+        UserAvatarResult avatar = currentUserService.getAvatar(avatarQuery);
+        InputStream inputStream = currentUserService.getAvatarInputStream(avatarQuery);
         if (avatar == null || inputStream == null) {
             response.sendError(HttpStatus.NOT_FOUND.value());
             return;
@@ -564,7 +575,7 @@ public class UserController {
         UserQuery query = UserInterfaceAssembler.toQuery(request);
 
         if (request.getDepartmentId() != null) {
-            Department department = departmentService.get(DepartmentIdCodec.toDomain(request.getDepartmentId()));
+            Department department = getDepartment(DepartmentIdCodec.toDomain(request.getDepartmentId()));
             if (department == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -580,7 +591,7 @@ public class UserController {
             throw AdminResponseExceptions.invalidParameter("department.id");
 
         } else {
-            Department bean = departmentService.get(DepartmentIdCodec.toDomain(request.getId()));
+            Department bean = getDepartment(DepartmentIdCodec.toDomain(request.getId()));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -596,7 +607,7 @@ public class UserController {
                 throw AdminResponseExceptions.invalidParameter("roles.id");
 
             } else {
-                Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+                Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
                 if (bean == null) {
                     throw AdminResponseExceptions.objectNotFound();
                 }
@@ -698,14 +709,14 @@ public class UserController {
     }
 
     private UserResponse toResponse(User user) {
-        Department department = departmentService.get(user.getDepartmentId());
+        Department department = getDepartment(user.getDepartmentId());
         return UserInterfaceAssembler.toResponse(
                 user,
                 getAccountLoginName(user.getId()),
                 department,
                 loadUserRoles(user),
                 readAvatarUrl(user.getId()),
-                departmentService::get);
+                this::getDepartment);
     }
 
     private List<Role> loadUserRoles(User user) {
@@ -714,7 +725,7 @@ public class UserController {
             return new ArrayList<>();
         }
         return userRoles.stream()
-                .map(role -> role == null ? null : roleService.get(role.getId()))
+                .map(role -> role == null ? null : roleService.get(getRoleQuery(role.getId())))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
@@ -723,6 +734,18 @@ public class UserController {
         UserQuery query = new UserQuery();
         query.setId(userId);
         return query;
+    }
+
+    private GetUserQuery getUserQuery(UserId userId) {
+        return new GetUserQuery(userId);
+    }
+
+    private GetRoleQuery getRoleQuery(RoleId roleId) {
+        return new GetRoleQuery(roleId);
+    }
+
+    private Department getDepartment(DepartmentId departmentId) {
+        return departmentService.get(new GetDepartmentQuery(departmentId));
     }
 
     private String getAccountLoginName(UserId userId) {
@@ -754,7 +777,7 @@ public class UserController {
             credential.setNeedChangePassword(false);
             credential.setFailedCount(0);
             credential.setFailedLimit(DEFAULT_PASSWORD_FAILED_LIMIT);
-            principalCredentialService.create(new PrincipalCredentialCommand(credential));
+            principalCredentialService.create(createCredentialCommand(credential));
             return;
         }
         credential.setCredentialValue(encryptedPassword);
@@ -763,7 +786,38 @@ public class UserController {
         credential.setFailedCount(0);
         credential.setLockedUntil(null);
         credential.setLastVerifiedAt(null);
-        principalCredentialService.change(new PrincipalCredentialCommand(credential));
+        principalCredentialService.change(changeCredentialCommand(credential));
+    }
+
+    private CreatePrincipalCredentialCommand createCredentialCommand(PrincipalCredential credential) {
+        return new CreatePrincipalCredentialCommand(
+                credential.getPrincipalKey(),
+                credential.getIdentityId(),
+                credential.getCredentialType(),
+                credential.getCredentialValue(),
+                credential.getStatus(),
+                credential.isNeedChangePassword(),
+                credential.getFailedCount(),
+                credential.getFailedLimit(),
+                credential.getLockedUntil(),
+                credential.getExpiresAt(),
+                credential.getLastVerifiedAt());
+    }
+
+    private ChangePrincipalCredentialCommand changeCredentialCommand(PrincipalCredential credential) {
+        return new ChangePrincipalCredentialCommand(
+                credential.getId(),
+                credential.getPrincipalKey(),
+                credential.getIdentityId(),
+                credential.getCredentialType(),
+                credential.getCredentialValue(),
+                credential.getStatus(),
+                credential.isNeedChangePassword(),
+                credential.getFailedCount(),
+                credential.getFailedLimit(),
+                credential.getLockedUntil(),
+                credential.getExpiresAt(),
+                credential.getLastVerifiedAt());
     }
 
     private PrincipalIdentity upsertAccountIdentity(User user, String loginName) {
@@ -778,7 +832,7 @@ public class UserController {
             accountIdentity.setType(PrincipalIdentityType.USER_ACCOUNT);
             accountIdentity.setIdentityValue(loginName);
             accountIdentity.setStatus(PrincipalIdentityStatus.ENABLED);
-            accountIdentity.setId(principalIdentityService.create(new PrincipalIdentityCommand(accountIdentity)));
+            accountIdentity.setId(principalIdentityService.create(createIdentityCommand(accountIdentity)));
             return accountIdentity;
         }
 
@@ -786,8 +840,22 @@ public class UserController {
         accountIdentity.setType(PrincipalIdentityType.USER_ACCOUNT);
         accountIdentity.setIdentityValue(loginName);
         accountIdentity.setStatus(PrincipalIdentityStatus.ENABLED);
-        principalIdentityService.change(new PrincipalIdentityCommand(accountIdentity));
+        principalIdentityService.change(changeIdentityCommand(accountIdentity));
         return accountIdentity;
+    }
+
+    private CreatePrincipalIdentityCommand createIdentityCommand(PrincipalIdentity identity) {
+        return new CreatePrincipalIdentityCommand(
+                identity.getPrincipalKey(), identity.getType(), identity.getIdentityValue(), identity.getStatus());
+    }
+
+    private ChangePrincipalIdentityCommand changeIdentityCommand(PrincipalIdentity identity) {
+        return new ChangePrincipalIdentityCommand(
+                identity.getId(),
+                identity.getPrincipalKey(),
+                identity.getType(),
+                identity.getIdentityValue(),
+                identity.getStatus());
     }
 
     private void validatePassword(String password) {
@@ -819,7 +887,8 @@ public class UserController {
     }
 
     private String getPrivateKey(String token) {
-        PreAuthSessionId sessionId = preAuthSessionService.getIdByToken(PreAuthSessionToken.of(token));
+        PreAuthSessionId sessionId =
+                preAuthSessionService.getIdByToken(new PreAuthSessionQuery(null, PreAuthSessionToken.of(token), null));
         if (sessionId == null) {
             throw AdminResponseExceptions.invalidToken();
         }
@@ -831,7 +900,7 @@ public class UserController {
     }
 
     private String readAvatarUrl(UserId userId) {
-        if (!currentUserService.existsAvatar(userId)) {
+        if (!currentUserService.existsAvatar(new CurrentUserAvatarQuery(userId))) {
             return null;
         }
         return avatarUrlBuilder.build(UserIdCodec.toStringValue(userId));
