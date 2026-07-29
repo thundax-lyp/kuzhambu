@@ -77,13 +77,20 @@ System 不拥有业务内容、文件对象、AI 任务、知识库检索问答�
 
 ## Application Layer
 
-- `UserApplicationService`
-- `RoleApplicationService`
-- `MenuApplicationService`
-- `PermissionApplicationService`
-- `AuthApplicationService`
-- `SessionApplicationService`
-- `AuditApplicationService`
+- `UserManagementApplicationService`
+- `RoleManagementApplicationService`
+- `MenuManagementApplicationService`
+- `DepartmentManagementApplicationService`
+- `DictionaryManagementApplicationService`
+- `SystemLogApplicationService`
+- `CurrentUserProfileApplicationService`
+- `PrincipalAuthenticationApplicationService`
+- `AdminSessionTokenApplicationService`
+- `PrincipalPermissionApplicationService`
+- `PrincipalIdentityApplicationService`
+- `PrincipalCredentialApplicationService`
+- `PreAuthSessionApplicationService`
+- `AuditTrailApplicationService`
 
 Application 层负责事务边界、认证资料同步、权限集合计算、token 生命周期、审计写入和跨域审计入口。
 
