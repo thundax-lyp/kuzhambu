@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,6 +39,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiReportBucketType;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
@@ -66,7 +68,10 @@ class AiFacadeImplTest {
         AiReportApplicationService aiReportApplicationService = mock(AiReportApplicationService.class);
         Date periodStart = Date.from(Instant.parse("2025-01-01T00:00:00Z"));
         Date periodEnd = Date.from(Instant.parse("2025-01-31T23:59:59Z"));
-        when(aiReportApplicationService.summary(periodStart.toInstant(), periodEnd.toInstant(), AiReportBucketType.DAY))
+        when(aiReportApplicationService.summary(argThat(query -> query != null
+                        && periodStart.toInstant().equals(query.getPeriodStart())
+                        && periodEnd.toInstant().equals(query.getPeriodEnd())
+                        && AiReportBucketType.DAY == query.getBucketType())))
                 .thenReturn(new AiReportSummaryResult(
                         periodStart,
                         periodEnd,
@@ -143,11 +148,11 @@ class AiFacadeImplTest {
             DiscoveryAiCommand command = invocation.getArgument(0);
             assertEquals(21L, command.getServiceId());
             assertEquals("DISCOVERY", command.getServiceRole());
-            assertEquals(31L, command.getModelId());
-            assertEquals("gpt-5", command.getModelName());
-            assertEquals(41L, command.getPromptVersionId());
-            assertEquals("req-1", command.getRequestId());
-            assertEquals("trace-1", command.getTraceId());
+            assertEquals(new AiModelId(31L), command.getModelId());
+            assertEquals(AiModelName.of("gpt-5"), command.getModelName());
+            assertEquals(new PromptVersionId(41L), command.getPromptVersionId());
+            assertEquals(RequestIdCodec.toDomain("req-1"), command.getRequestId());
+            assertEquals(TraceIdCodec.toDomain("trace-1"), command.getTraceId());
             assertEquals("[\"prompt\"]", command.getPromptMessagesJson());
             assertEquals("{\"lang\":\"zh\"}", command.getPromptVariablesJson());
             assertEquals("hash-1", command.getPromptHash());
@@ -156,11 +161,11 @@ class AiFacadeImplTest {
             assertTrue(command.isStream());
             assertTrue(command.isForceJson());
             assertEquals("zh-CN", command.getLocale());
-            return new DiscoveryAiInvokeResult(
+            return discoveryResult(
                     501L,
                     601L,
-                    "SUCCEEDED",
-                    "DISCOVERY_UNDERSTAND_QUERY",
+                    AiInvocationStatus.SUCCEEDED,
+                    AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING,
                     "JSON",
                     "{\"intent\":\"search\"}",
                     null,
@@ -195,7 +200,7 @@ class AiFacadeImplTest {
         assertEquals(501L, response.getCallId());
         assertEquals(601L, response.getCandidateId());
         assertEquals("SUCCEEDED", response.getStatus());
-        assertEquals("DISCOVERY_UNDERSTAND_QUERY", response.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING.value(), response.getCapability());
         assertEquals("JSON", response.getResultFormat());
         assertEquals("{\"intent\":\"search\"}", response.getResultPayload());
         assertNull(response.getErrorType());
@@ -209,11 +214,11 @@ class AiFacadeImplTest {
             DiscoveryAiCommand command = invocation.getArgument(0);
             assertEquals(21L, command.getServiceId());
             assertEquals("DISCOVERY", command.getServiceRole());
-            assertEquals(31L, command.getModelId());
-            assertEquals("gpt-5", command.getModelName());
-            assertEquals(41L, command.getPromptVersionId());
-            assertEquals("req-answer", command.getRequestId());
-            assertEquals("trace-answer", command.getTraceId());
+            assertEquals(new AiModelId(31L), command.getModelId());
+            assertEquals(AiModelName.of("gpt-5"), command.getModelName());
+            assertEquals(new PromptVersionId(41L), command.getPromptVersionId());
+            assertEquals(RequestIdCodec.toDomain("req-answer"), command.getRequestId());
+            assertEquals(TraceIdCodec.toDomain("trace-answer"), command.getTraceId());
             assertEquals("[\"answer-prompt\"]", command.getPromptMessagesJson());
             assertEquals("{\"lang\":\"zh\"}", command.getPromptVariablesJson());
             assertEquals("answer-hash", command.getPromptHash());
@@ -222,11 +227,11 @@ class AiFacadeImplTest {
             assertFalse(command.isStream());
             assertTrue(command.isForceJson());
             assertEquals("zh-CN", command.getLocale());
-            return new DiscoveryAiInvokeResult(
+            return discoveryResult(
                     701L,
                     null,
-                    "FAILED",
-                    AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(),
+                    AiInvocationStatus.FAILED,
+                    AiBusinessCapability.DISCOVERY_ANSWER_GENERATION,
                     "JSON",
                     null,
                     "WORKER_STREAM",
@@ -273,17 +278,17 @@ class AiFacadeImplTest {
         DiscoveryAiApplicationService discoveryAiApplicationService = mock(DiscoveryAiApplicationService.class);
         when(discoveryAiApplicationService.streamAnswer(any(), any())).thenAnswer(invocation -> {
             DiscoveryAiCommand command = invocation.getArgument(0);
-            assertEquals("req-answer", command.getRequestId());
+            assertEquals(RequestIdCodec.toDomain("req-answer"), command.getRequestId());
             assertFalse(command.isStream());
             @SuppressWarnings("unchecked")
             java.util.function.Consumer<AiStreamEventResult> eventConsumer = invocation.getArgument(1);
             eventConsumer.accept(deltaEvent("王圻"));
             eventConsumer.accept(deltaEvent("文档答案"));
-            return new DiscoveryAiInvokeResult(
+            return discoveryResult(
                     702L,
                     null,
-                    "SUCCEEDED",
-                    AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(),
+                    AiInvocationStatus.SUCCEEDED,
+                    AiBusinessCapability.DISCOVERY_ANSWER_GENERATION,
                     "JSON",
                     "{\"answer\":\"王圻文档答案\"}",
                     null,
@@ -326,32 +331,32 @@ class AiFacadeImplTest {
         KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService =
                 mock(KnowledgeAiExtractionApplicationService.class);
         when(knowledgeAiExtractionApplicationService.extractGraph(any())).thenAnswer(invocation -> {
-            KnowledgeAiExtractionCommand input = invocation.getArgument(0);
-            assertEquals("GRAPH", input.getTaskType());
-            assertEquals("ENTRY", input.getScopeType());
-            assertEquals("{\"entryId\":9}", input.getScopeJson());
-            assertEquals("CLASSICS_CONTENT", input.getSourceContentType());
-            assertEquals(101L, input.getSourceContentId());
-            assertEquals(201L, input.getRequestedBy());
-            assertEquals(301L, input.getServiceId());
-            assertEquals("KNOWLEDGE", input.getServiceRole());
-            assertEquals(401L, input.getModelId());
-            assertEquals("kimi-k2", input.getModelName());
-            assertEquals(501L, input.getPromptVersionId());
-            assertEquals("req-graph", input.getRequestId());
-            assertEquals("trace-graph", input.getTraceId());
-            assertEquals("[\"graph-prompt\"]", input.getPromptMessagesJson());
-            assertEquals("{\"style\":\"full\"}", input.getPromptVariablesJson());
-            assertEquals("graph-hash", input.getPromptHash());
-            assertEquals("{\"content\":\"x\"}", input.getInputPayloadJson());
-            assertEquals("{\"type\":\"graph\"}", input.getOutputSchemaJson());
-            assertFalse(input.isForceJson());
-            assertEquals("zh-CN", input.getLocale());
+            KnowledgeAiExtractionCommand command = invocation.getArgument(0);
+            assertEquals("GRAPH", command.getTaskType());
+            assertEquals("ENTRY", command.getScopeType());
+            assertEquals("{\"entryId\":9}", command.getScopeJson());
+            assertEquals("CLASSICS_CONTENT", command.getSourceContentType());
+            assertEquals(101L, command.getSourceContentId());
+            assertEquals(201L, command.getRequestedBy());
+            assertEquals(301L, command.getServiceId());
+            assertEquals("KNOWLEDGE", command.getServiceRole());
+            assertEquals(new AiModelId(401L), command.getModelId());
+            assertEquals(AiModelName.of("kimi-k2"), command.getModelName());
+            assertEquals(new PromptVersionId(501L), command.getPromptVersionId());
+            assertEquals(RequestIdCodec.toDomain("req-graph"), command.getRequestId());
+            assertEquals(TraceIdCodec.toDomain("trace-graph"), command.getTraceId());
+            assertEquals("[\"graph-prompt\"]", command.getPromptMessagesJson());
+            assertEquals("{\"style\":\"full\"}", command.getPromptVariablesJson());
+            assertEquals("graph-hash", command.getPromptHash());
+            assertEquals("{\"content\":\"x\"}", command.getInputPayloadJson());
+            assertEquals("{\"type\":\"graph\"}", command.getOutputSchemaJson());
+            assertFalse(command.isForceJson());
+            assertEquals("zh-CN", command.getLocale());
             return new KnowledgeAiExtractionResult(
-                    701L,
-                    801L,
-                    "SUCCEEDED",
-                    AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT.value(),
+                    new AiCallId(701L),
+                    new AiCandidateId(801L),
+                    AiInvocationStatus.SUCCEEDED,
+                    AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
                     "JSON",
                     "{\"nodes\":1}",
                     null,
@@ -401,29 +406,36 @@ class AiFacadeImplTest {
         KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService =
                 mock(KnowledgeAiExtractionApplicationService.class);
         when(knowledgeAiExtractionApplicationService.extractTags(any())).thenAnswer(invocation -> {
-            KnowledgeAiExtractionCommand input = invocation.getArgument(0);
-            assertEquals("TAG", input.getTaskType());
-            assertEquals("CONTENT", input.getScopeType());
-            assertEquals("{\"contentType\":\"SANCAI_ENTRY\",\"contentIds\":[1001]}", input.getScopeJson());
-            assertEquals("SANCAI_ENTRY", input.getSourceContentType());
-            assertEquals(1001L, input.getSourceContentId());
-            assertEquals(2001L, input.getRequestedBy());
-            assertEquals(3001L, input.getServiceId());
-            assertEquals("KNOWLEDGE", input.getServiceRole());
-            assertEquals(4001L, input.getModelId());
-            assertEquals("gpt-5", input.getModelName());
-            assertEquals(5001L, input.getPromptVersionId());
-            assertEquals("req-tag", input.getRequestId());
-            assertEquals("trace-tag", input.getTraceId());
-            assertEquals("[\"tag-prompt\"]", input.getPromptMessagesJson());
-            assertEquals("{\"maxTags\":10}", input.getPromptVariablesJson());
-            assertEquals("tag-hash", input.getPromptHash());
-            assertEquals("{\"contentText\":\"正文\"}", input.getInputPayloadJson());
-            assertEquals("{\"type\":\"object\",\"required\":[\"tags\"]}", input.getOutputSchemaJson());
-            assertTrue(input.isForceJson());
-            assertEquals("zh-CN", input.getLocale());
+            KnowledgeAiExtractionCommand command = invocation.getArgument(0);
+            assertEquals("TAG", command.getTaskType());
+            assertEquals("CONTENT", command.getScopeType());
+            assertEquals("{\"contentType\":\"SANCAI_ENTRY\",\"contentIds\":[1001]}", command.getScopeJson());
+            assertEquals("SANCAI_ENTRY", command.getSourceContentType());
+            assertEquals(1001L, command.getSourceContentId());
+            assertEquals(2001L, command.getRequestedBy());
+            assertEquals(3001L, command.getServiceId());
+            assertEquals("KNOWLEDGE", command.getServiceRole());
+            assertEquals(new AiModelId(4001L), command.getModelId());
+            assertEquals(AiModelName.of("gpt-5"), command.getModelName());
+            assertEquals(new PromptVersionId(5001L), command.getPromptVersionId());
+            assertEquals(RequestIdCodec.toDomain("req-tag"), command.getRequestId());
+            assertEquals(TraceIdCodec.toDomain("trace-tag"), command.getTraceId());
+            assertEquals("[\"tag-prompt\"]", command.getPromptMessagesJson());
+            assertEquals("{\"maxTags\":10}", command.getPromptVariablesJson());
+            assertEquals("tag-hash", command.getPromptHash());
+            assertEquals("{\"contentText\":\"正文\"}", command.getInputPayloadJson());
+            assertEquals("{\"type\":\"object\",\"required\":[\"tags\"]}", command.getOutputSchemaJson());
+            assertTrue(command.isForceJson());
+            assertEquals("zh-CN", command.getLocale());
             return new KnowledgeAiExtractionResult(
-                    711L, 811L, "SUCCEEDED", "KNOWLEDGE_TAG_EXTRACTION", "STRUCTURED", "{\"tags\":[]}", null, null);
+                    new AiCallId(711L),
+                    new AiCandidateId(811L),
+                    AiInvocationStatus.SUCCEEDED,
+                    AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT,
+                    "STRUCTURED",
+                    "{\"tags\":[]}",
+                    null,
+                    null);
         });
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -459,7 +471,7 @@ class AiFacadeImplTest {
         assertEquals(711L, response.getCallId());
         assertEquals(811L, response.getCandidateId());
         assertEquals("SUCCEEDED", response.getStatus());
-        assertEquals("KNOWLEDGE_TAG_EXTRACTION", response.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT.value(), response.getCapability());
         assertEquals("STRUCTURED", response.getResultFormat());
         assertEquals("{\"tags\":[]}", response.getResultPayload());
         assertNull(response.getErrorType());
@@ -500,11 +512,11 @@ class AiFacadeImplTest {
     @Test
     void requirePendingCandidateShouldMapApplyCheckAndCandidateDto() {
         AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
-        when(aiCandidateApplicationService.requirePendingForApply(
-                        new AiCandidateId(901L),
-                        AiContentRef.of("CLASSICS_CONTENT", 902L),
-                        AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
-                        new AiTargetObjectId(903L)))
+        when(aiCandidateApplicationService.requirePendingForApply(argThat(query -> query != null
+                        && new AiCandidateId(901L).equals(query.getCandidateId())
+                        && AiContentRef.of("CLASSICS_CONTENT", 902L).equals(query.getContentRef())
+                        && AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT == query.getCapability()
+                        && new AiTargetObjectId(903L).equals(query.getTargetObjectId()))))
                 .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -540,7 +552,10 @@ class AiFacadeImplTest {
     @Test
     void rejectCandidateShouldDelegateToDomainServiceAndMapDto() {
         AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
-        when(aiCandidateApplicationService.reject(new AiCandidateId(901L), "USER_REJECTED", "not useful"))
+        when(aiCandidateApplicationService.reject(argThat(command -> command != null
+                        && new AiCandidateId(901L).equals(command.getCandidateId())
+                        && "USER_REJECTED".equals(command.getErrorType())
+                        && "not useful".equals(command.getErrorMessage()))))
                 .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -557,7 +572,11 @@ class AiFacadeImplTest {
                 .build());
 
         assertEquals(901L, response.getCandidateId());
-        verify(aiCandidateApplicationService).reject(new AiCandidateId(901L), "USER_REJECTED", "not useful");
+        verify(aiCandidateApplicationService)
+                .reject(argThat(command -> command != null
+                        && new AiCandidateId(901L).equals(command.getCandidateId())
+                        && "USER_REJECTED".equals(command.getErrorType())
+                        && "not useful".equals(command.getErrorMessage())));
     }
 
     private static AiFacadeImpl newFacade(
@@ -575,6 +594,26 @@ class AiFacadeImplTest {
                 aiCandidateApplicationService,
                 aiInvocationRepository,
                 new AiFacadeAssembler());
+    }
+
+    private static DiscoveryAiInvokeResult discoveryResult(
+            Long callId,
+            Long candidateId,
+            AiInvocationStatus status,
+            AiBusinessCapability capability,
+            String resultFormat,
+            String resultPayload,
+            String errorType,
+            String errorMessage) {
+        return new DiscoveryAiInvokeResult(
+                callId == null ? null : new AiCallId(callId),
+                candidateId == null ? null : new AiCandidateId(candidateId),
+                status,
+                capability,
+                resultFormat,
+                resultPayload,
+                errorType,
+                errorMessage);
     }
 
     private static AiInvocationLog invocationLog() {

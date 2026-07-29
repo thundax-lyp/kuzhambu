@@ -15,6 +15,14 @@ import com.thundax.kuzhambu.ai.application.scenario.command.DiscoveryAiCommand;
 import com.thundax.kuzhambu.ai.application.scenario.result.DiscoveryAiInvokeResult;
 import com.thundax.kuzhambu.ai.application.scenario.support.DiscoveryAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -42,8 +50,8 @@ class DiscoveryAiApplicationServiceImplTest {
         assertEquals("DISCOVERY_QUERY", capturedCommand.getContentRef().contentType());
         assertFalse(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
-        assertEquals("SUCCEEDED", result.getStatus());
-        assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING.value(), result.getCapability());
+        assertEquals(AiInvocationStatus.SUCCEEDED, result.getStatus());
+        assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING, result.getCapability());
     }
 
     @Test
@@ -66,8 +74,8 @@ class DiscoveryAiApplicationServiceImplTest {
         assertEquals("answer_generation", capturedCommand.getWorkerCapability());
         assertTrue(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
-        assertEquals("SUCCEEDED", result.getStatus());
-        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), result.getCapability());
+        assertEquals(AiInvocationStatus.SUCCEEDED, result.getStatus());
+        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION, result.getCapability());
     }
 
     @Test
@@ -85,10 +93,10 @@ class DiscoveryAiApplicationServiceImplTest {
         assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION, capturedCommand.getCapability());
         assertFalse(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
-        assertEquals(101L, result.getCallId());
-        assertEquals(102L, result.getCandidateId());
-        assertEquals("SUCCEEDED", result.getStatus());
-        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), result.getCapability());
+        assertEquals(new AiCallId(101L), result.getCallId());
+        assertEquals(new AiCandidateId(102L), result.getCandidateId());
+        assertEquals(AiInvocationStatus.SUCCEEDED, result.getStatus());
+        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION, result.getCapability());
     }
 
     @Test
@@ -101,8 +109,8 @@ class DiscoveryAiApplicationServiceImplTest {
         DiscoveryAiInvokeResult result = service.generateAnswer(command(false));
 
         assertNotNull(result);
-        assertEquals(101L, result.getCallId());
-        assertEquals("FAILED", result.getStatus());
+        assertEquals(new AiCallId(101L), result.getCallId());
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
         assertEquals("WORKER_STREAM", result.getErrorType());
         assertEquals("stream interrupted", result.getErrorMessage());
     }
@@ -135,11 +143,11 @@ class DiscoveryAiApplicationServiceImplTest {
         return new DiscoveryAiCommand(
                 3L,
                 "discovery-portal",
-                10L,
-                "model-a",
-                20L,
-                "req-1",
-                "trace-1",
+                new AiModelId(10L),
+                AiModelName.of("model-a"),
+                new PromptVersionId(20L),
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
                 "[{\"role\":\"user\",\"content\":\"hello\"}]",
                 "{\"locale\":\"zh-CN\"}",
                 "hash-a",

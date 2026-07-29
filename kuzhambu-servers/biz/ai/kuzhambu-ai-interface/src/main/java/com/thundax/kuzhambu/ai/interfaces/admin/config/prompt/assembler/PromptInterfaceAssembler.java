@@ -1,6 +1,15 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.assembler;
 
+import com.thundax.kuzhambu.ai.application.config.command.BuildPromptOptimizationSuggestionCommand;
 import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand;
+import com.thundax.kuzhambu.ai.application.config.command.RollbackPromptVersionCommand;
+import com.thundax.kuzhambu.ai.application.config.command.ValidatePromptVariablesCommand;
+import com.thundax.kuzhambu.ai.application.config.query.GetCurrentPromptVersionQuery;
+import com.thundax.kuzhambu.ai.application.config.query.GetPromptByCapabilityQuery;
+import com.thundax.kuzhambu.ai.application.config.query.GetPromptQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListPromptVariablesQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListPromptVersionsQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListPromptsQuery;
 import com.thundax.kuzhambu.ai.application.config.query.PromptVersionCompareQuery;
 import com.thundax.kuzhambu.ai.application.config.result.PromptVersionResult;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
@@ -19,6 +28,25 @@ public final class PromptInterfaceAssembler {
 
     private PromptInterfaceAssembler() {}
 
+    public static GetPromptQuery toGetPromptQuery(PromptRequests.TemplateIdRequest request) {
+        return new GetPromptQuery(toTemplateId(request == null ? null : request.getId()));
+    }
+
+    public static GetPromptQuery toGetPromptQuery(PromptTemplateId templateId) {
+        return new GetPromptQuery(templateId);
+    }
+
+    public static GetPromptByCapabilityQuery toGetPromptByCapabilityQuery(PromptRequests.TemplateQueryRequest request) {
+        return new GetPromptByCapabilityQuery(toCapability(request == null ? null : request.getCapability()));
+    }
+
+    public static ListPromptsQuery toListPromptsQuery(PromptRequests.TemplateQueryRequest request) {
+        if (request == null) {
+            return new ListPromptsQuery(null, null);
+        }
+        return new ListPromptsQuery(toCapability(request.getCapability()), request.getEnabled());
+    }
+
     public static PromptTemplateSaveCommand toSaveCommand(PromptRequests.TemplateSaveRequest request) {
         PromptTemplateSaveCommand command = new PromptTemplateSaveCommand();
         command.setId(PromptTemplateIdCodec.toDomain(request.getId()));
@@ -34,12 +62,49 @@ public final class PromptInterfaceAssembler {
         return command;
     }
 
+    public static GetCurrentPromptVersionQuery toGetCurrentPromptVersionQuery(
+            PromptRequests.TemplateIdRequest request) {
+        return new GetCurrentPromptVersionQuery(toTemplateId(request == null ? null : request.getId()));
+    }
+
+    public static ListPromptVersionsQuery toListPromptVersionsQuery(PromptRequests.TemplateIdRequest request) {
+        return new ListPromptVersionsQuery(toTemplateId(request == null ? null : request.getId()));
+    }
+
     public static PromptVersionCompareQuery toCompareQuery(PromptRequests.VersionCompareRequest request) {
         PromptVersionCompareQuery query = new PromptVersionCompareQuery();
         query.setTemplateId(PromptTemplateIdCodec.toDomain(request.getId()));
         query.setLeftVersionNo(request.getLeftVersionNo());
         query.setRightVersionNo(request.getRightVersionNo());
         return query;
+    }
+
+    public static RollbackPromptVersionCommand toRollbackPromptVersionCommand(
+            PromptRequests.VersionRollbackRequest request) {
+        if (request == null) {
+            return new RollbackPromptVersionCommand(null, 0);
+        }
+        return new RollbackPromptVersionCommand(toTemplateId(request.getId()), request.getVersionNo());
+    }
+
+    public static ListPromptVariablesQuery toListPromptVariablesQuery(PromptRequests.TemplateIdRequest request) {
+        return new ListPromptVariablesQuery(toTemplateId(request == null ? null : request.getId()));
+    }
+
+    public static ValidatePromptVariablesCommand toValidatePromptVariablesCommand(
+            PromptRequests.VariableValidateRequest request) {
+        if (request == null) {
+            return new ValidatePromptVariablesCommand(null, null);
+        }
+        return new ValidatePromptVariablesCommand(toTemplateId(request.getId()), request.getProvidedNames());
+    }
+
+    public static BuildPromptOptimizationSuggestionCommand toBuildOptimizationSuggestionCommand(
+            PromptRequests.OptimizationRequest request) {
+        if (request == null) {
+            return new BuildPromptOptimizationSuggestionCommand(null, null);
+        }
+        return new BuildPromptOptimizationSuggestionCommand(toTemplateId(request.getId()), request.getChangeSummary());
     }
 
     public static PromptTemplateId toTemplateId(Long value) {

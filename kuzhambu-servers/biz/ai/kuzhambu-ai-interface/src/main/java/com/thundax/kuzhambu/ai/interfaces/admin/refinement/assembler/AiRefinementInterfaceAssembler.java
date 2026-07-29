@@ -1,10 +1,28 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler;
 
 import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.query.GetAiRefinementTaskQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.PageAiRefinementTasksQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,22 +34,30 @@ public final class AiRefinementInterfaceAssembler {
         return toCommand(request, request == null ? null : request.getCapability());
     }
 
+    public static SubmitAiRefinementTaskCommand toSubmitTaskCommand(AiRefinementRequests.RefinementRequest request) {
+        return toCommand(
+                new SubmitAiRefinementTaskCommand(), request, request == null ? null : request.getCapability());
+    }
+
     public static AiRefinementRequestCommand toCommand(
             AiRefinementRequests.RefinementRequest request, String capability) {
-        AiRefinementRequestCommand command = new AiRefinementRequestCommand();
-        command.setCapability(capability);
+        return toCommand(new AiRefinementRequestCommand(), request, capability);
+    }
+
+    private static <T extends AiRefinementRequestCommand> T toCommand(
+            T command, AiRefinementRequests.RefinementRequest request, String capability) {
+        command.setCapability(toCapability(capability));
         command.setScope(request.getScope());
         command.setOperation(request.getOperation());
-        command.setContentType(request.getContentType());
-        command.setContentId(request.getContentId());
-        command.setObjectId(request.getObjectId());
+        command.setContentRef(AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()));
+        command.setTargetObjectId(AiTargetObjectIdCodec.toDomain(request.getObjectId()));
         command.setServiceId(request.getServiceId());
         command.setServiceRole(request.getServiceRole());
-        command.setModelId(request.getModelId());
-        command.setModelName(request.getModelName());
-        command.setPromptVersionId(request.getPromptVersionId());
-        command.setRequestId(request.getRequestId());
-        command.setTraceId(request.getTraceId());
+        command.setModelId(AiModelIdCodec.toDomain(request.getModelId()));
+        command.setModelName(AiModelNameCodec.toDomain(request.getModelName()));
+        command.setPromptVersionId(PromptVersionIdCodec.toDomain(request.getPromptVersionId()));
+        command.setRequestId(RequestIdCodec.toDomain(request.getRequestId()));
+        command.setTraceId(TraceIdCodec.toDomain(request.getTraceId()));
         command.setPromptMessagesJson(request.getPromptMessagesJson());
         command.setPromptVariablesJson(request.getPromptVariablesJson());
         command.setPromptHash(request.getPromptHash());
@@ -42,17 +68,42 @@ public final class AiRefinementInterfaceAssembler {
         return command;
     }
 
+    public static GetAiRefinementTaskQuery toGetTaskQuery(Long taskId) {
+        return new GetAiRefinementTaskQuery(AiBatchJobIdCodec.toDomain(taskId));
+    }
+
+    public static SubscribeAiRefinementTaskEventsQuery toSubscribeTaskEventsQuery(Long taskId) {
+        return new SubscribeAiRefinementTaskEventsQuery(AiBatchJobIdCodec.toDomain(taskId));
+    }
+
+    public static PageAiRefinementTasksQuery toPageTasksQuery(AiRefinementRequests.TaskPageRequest request) {
+        return new PageAiRefinementTasksQuery(
+                toCapability(request == null ? null : request.getCapability()),
+                toTaskStatus(request == null ? null : request.getStatus()),
+                AiContentRefCodec.toDomain(
+                        request == null ? null : request.getContentType(),
+                        request == null ? null : request.getContentId()),
+                PageInterfaceAssembler.toPageQuery(request));
+    }
+
+    public static CancelAiRefinementTaskCommand toCancelTaskCommand(Long taskId) {
+        return new CancelAiRefinementTaskCommand(AiBatchJobIdCodec.toDomain(taskId));
+    }
+
     public static AiRefinementResponses.CandidateResultResponse toResponse(AiCandidateResult result) {
         if (result == null) {
             return AiRefinementResponses.CandidateResultResponse.builder().build();
         }
         return AiRefinementResponses.CandidateResultResponse.builder()
-                .callId(result.getCallId())
-                .callIdText(longText(result.getCallId()))
-                .candidateId(result.getCandidateId())
-                .candidateIdText(longText(result.getCandidateId()))
-                .status(result.getStatus())
-                .capability(result.getCapability())
+                .callId(AiCallIdCodec.toValue(result.getCallId()))
+                .callIdText(longText(AiCallIdCodec.toValue(result.getCallId())))
+                .candidateId(AiCandidateIdCodec.toValue(result.getCandidateId()))
+                .candidateIdText(longText(AiCandidateIdCodec.toValue(result.getCandidateId())))
+                .status(result.getStatus() == null ? null : result.getStatus().name())
+                .capability(
+                        result.getCapability() == null
+                                ? null
+                                : result.getCapability().value())
                 .failureStage(result.getFailureStage())
                 .resultFormat(result.getResultFormat())
                 .resultPayload(result.getResultPayload())
@@ -65,25 +116,31 @@ public final class AiRefinementInterfaceAssembler {
         if (task == null) {
             return AiRefinementResponses.TaskDetailResponse.builder().build();
         }
+        Long taskId = AiBatchJobIdCodec.toValue(task.getTaskId());
+        Long callId = AiCallIdCodec.toValue(task.getCallId());
+        Long candidateId = AiCandidateIdCodec.toValue(task.getCandidateId());
         return AiRefinementResponses.TaskDetailResponse.builder()
-                .taskId(task.getTaskId())
-                .taskIdText(longText(task.getTaskId()))
-                .status(task.getStatus())
+                .taskId(taskId)
+                .taskIdText(longText(taskId))
+                .status(task.getStatus() == null ? null : task.getStatus().name())
                 .scope(task.getScope())
-                .capability(task.getCapability())
-                .contentType(task.getContentType())
-                .contentId(task.getContentId())
-                .objectId(task.getObjectId())
+                .capability(
+                        task.getCapability() == null
+                                ? null
+                                : task.getCapability().value())
+                .contentType(AiContentRefCodec.toContentType(task.getContentRef()))
+                .contentId(AiContentRefCodec.toContentId(task.getContentRef()))
+                .objectId(AiTargetObjectIdCodec.toValue(task.getTargetObjectId()))
                 .serviceRole(task.getServiceRole())
-                .modelId(task.getModelId())
-                .modelName(task.getModelName())
-                .promptVersionId(task.getPromptVersionId())
-                .requestId(task.getRequestId())
-                .traceId(task.getTraceId())
-                .callId(task.getCallId())
-                .callIdText(longText(task.getCallId()))
-                .candidateId(task.getCandidateId())
-                .candidateIdText(longText(task.getCandidateId()))
+                .modelId(AiModelIdCodec.toValue(task.getModelId()))
+                .modelName(AiModelNameCodec.toValue(task.getModelName()))
+                .promptVersionId(PromptVersionIdCodec.toValue(task.getPromptVersionId()))
+                .requestId(RequestIdCodec.toValue(task.getRequestId()))
+                .traceId(TraceIdCodec.toValue(task.getTraceId()))
+                .callId(callId)
+                .callIdText(longText(callId))
+                .candidateId(candidateId)
+                .candidateIdText(longText(candidateId))
                 .failureStage(task.getFailureStage())
                 .errorType(task.getErrorType())
                 .errorMessage(task.getErrorMessage())
@@ -101,13 +158,17 @@ public final class AiRefinementInterfaceAssembler {
         if (task == null) {
             return AiRefinementResponses.TaskAcceptedResponse.builder().build();
         }
+        Long taskId = AiBatchJobIdCodec.toValue(task.getTaskId());
         return AiRefinementResponses.TaskAcceptedResponse.builder()
-                .taskId(task.getTaskId())
-                .taskIdText(longText(task.getTaskId()))
-                .status(task.getStatus())
-                .capability(task.getCapability())
-                .contentType(task.getContentType())
-                .contentId(task.getContentId())
+                .taskId(taskId)
+                .taskIdText(longText(taskId))
+                .status(task.getStatus() == null ? null : task.getStatus().name())
+                .capability(
+                        task.getCapability() == null
+                                ? null
+                                : task.getCapability().value())
+                .contentType(AiContentRefCodec.toContentType(task.getContentRef()))
+                .contentId(AiContentRefCodec.toContentId(task.getContentRef()))
                 .requestedAt(task.getRequestedAt())
                 .build();
     }
@@ -116,10 +177,11 @@ public final class AiRefinementInterfaceAssembler {
         if (task == null) {
             return AiRefinementResponses.TaskCancelResponse.builder().build();
         }
+        Long taskId = AiBatchJobIdCodec.toValue(task.getTaskId());
         return AiRefinementResponses.TaskCancelResponse.builder()
-                .taskId(task.getTaskId())
-                .taskIdText(longText(task.getTaskId()))
-                .status(task.getStatus())
+                .taskId(taskId)
+                .taskIdText(longText(taskId))
+                .status(task.getStatus() == null ? null : task.getStatus().name())
                 .cancelledAt(task.getCancelledAt())
                 .build();
     }
@@ -142,5 +204,13 @@ public final class AiRefinementInterfaceAssembler {
 
     private static String longText(Long value) {
         return value == null ? null : String.valueOf(value);
+    }
+
+    private static AiBusinessCapability toCapability(String capability) {
+        return capability == null || capability.trim().isEmpty() ? null : AiBusinessCapability.fromAlias(capability);
+    }
+
+    private static AiBatchJobStatus toTaskStatus(String status) {
+        return status == null || status.trim().isEmpty() ? null : AiBatchJobStatus.from(status);
     }
 }

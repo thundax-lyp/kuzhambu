@@ -1,16 +1,22 @@
 package com.thundax.kuzhambu.ai.application.config.service.impl;
 
+import com.thundax.kuzhambu.ai.application.config.command.CreateAiBusinessConfigCommand;
+import com.thundax.kuzhambu.ai.application.config.command.DeleteAiBusinessConfigCommand;
+import com.thundax.kuzhambu.ai.application.config.command.UpdateAiBusinessConfigCommand;
+import com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigByCapabilityQuery;
+import com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery;
 import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiBusinessConfigId;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,23 +40,25 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
     }
 
     @Override
-    public AiBusinessConfig get(AiBusinessConfigId id) {
-        return aiBusinessConfigRepository.get(id);
+    public AiBusinessConfig get(GetAiBusinessConfigQuery query) {
+        return aiBusinessConfigRepository.get(query == null ? null : query.getBusinessConfigId());
     }
 
     @Override
-    public AiBusinessConfig get(AiBusinessCapability capability) {
-        return aiBusinessConfigRepository.get(capability);
+    public AiBusinessConfig getByCapability(GetAiBusinessConfigByCapabilityQuery query) {
+        return aiBusinessConfigRepository.get(query == null ? null : query.getCapability());
     }
 
     @Override
-    public List<AiBusinessConfig> list(AiBusinessCapability capability, Boolean enabled) {
-        return aiBusinessConfigRepository.list(capability, enabled);
+    public List<AiBusinessConfig> list(ListAiBusinessConfigsQuery query) {
+        return aiBusinessConfigRepository.list(
+                query == null ? null : query.getCapability(), query == null ? null : query.getEnabled());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiBusinessConfigId save(AiBusinessConfig config) {
+    public AiBusinessConfigId create(CreateAiBusinessConfigCommand command) {
+        AiBusinessConfig config = toConfig(command);
         validateConfig(config);
         if (config.getId() == null) {
             config.setPriority(aiBusinessConfigRepository.maxPriority() + 1);
@@ -64,7 +72,8 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int update(AiBusinessConfig config) {
+    public int update(UpdateAiBusinessConfigCommand command) {
+        AiBusinessConfig config = toConfig(command);
         if (config == null || config.getId() == null) {
             throw new BizException("AI business config id is required");
         }
@@ -79,11 +88,12 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int delete(AiBusinessConfigId id) {
-        if (id == null) {
+    public int delete(DeleteAiBusinessConfigCommand command) {
+        AiBusinessConfigId businessConfigId = command == null ? null : command.getBusinessConfigId();
+        if (businessConfigId == null) {
             return 0;
         }
-        return aiBusinessConfigRepository.delete(id);
+        return aiBusinessConfigRepository.delete(businessConfigId);
     }
 
     private void validateConfig(AiBusinessConfig config) {
@@ -98,5 +108,35 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
         if (!config.promptMatches(promptTemplate) || !config.modelMatches(model)) {
             throw new BizException("AI business config does not match prompt template or model capability");
         }
+    }
+
+    private AiBusinessConfig toConfig(CreateAiBusinessConfigCommand command) {
+        if (command == null) {
+            return null;
+        }
+        AiBusinessConfig config = new AiBusinessConfig();
+        config.setId(command.getId());
+        config.setCapability(command.getCapability());
+        config.setPromptTemplateId(command.getPromptTemplateId());
+        config.setModelId(command.getModelId());
+        config.setDefaultParamsJson(command.getDefaultParamsJson());
+        config.setEnabled(command.getEnabled() == null || command.getEnabled());
+        config.setConfiguredAt(Instant.now());
+        return config;
+    }
+
+    private AiBusinessConfig toConfig(UpdateAiBusinessConfigCommand command) {
+        if (command == null) {
+            return null;
+        }
+        AiBusinessConfig config = new AiBusinessConfig();
+        config.setId(command.getId());
+        config.setCapability(command.getCapability());
+        config.setPromptTemplateId(command.getPromptTemplateId());
+        config.setModelId(command.getModelId());
+        config.setDefaultParamsJson(command.getDefaultParamsJson());
+        config.setEnabled(command.getEnabled() == null || command.getEnabled());
+        config.setConfiguredAt(Instant.now());
+        return config;
     }
 }

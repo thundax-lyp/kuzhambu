@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.RequireAiCandidateForApplyQuery;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
@@ -36,11 +39,11 @@ class AiCandidateApplicationServiceImplTest {
         AiCandidateApplicationServiceImpl service =
                 new AiCandidateApplicationServiceImpl(new FakeRepository(candidate));
 
-        AiCandidate actual = service.requirePendingForApply(
+        AiCandidate actual = service.requirePendingForApply(new RequireAiCandidateForApplyQuery(
                 new AiCandidateId(1L),
                 AiContentRef.of("SANCAI_ENTRY", 2L),
                 AiBusinessCapability.CLASSICS_SUMMARY,
-                null);
+                null));
 
         assertSame(candidate, actual);
     }
@@ -60,11 +63,11 @@ class AiCandidateApplicationServiceImplTest {
         AiCandidateApplicationServiceImpl service =
                 new AiCandidateApplicationServiceImpl(new FakeRepository(candidate));
 
-        AiCandidate actual = service.requirePendingForApply(
+        AiCandidate actual = service.requirePendingForApply(new RequireAiCandidateForApplyQuery(
                 new AiCandidateId(1L),
                 AiContentRef.of("SANCAI_ENTRY", 2L),
                 AiBusinessCapability.fromAlias(legacyCapability),
-                null);
+                null));
 
         assertSame(candidate, actual);
     }
@@ -81,11 +84,11 @@ class AiCandidateApplicationServiceImplTest {
         AiCandidateApplicationServiceImpl service =
                 new AiCandidateApplicationServiceImpl(new FakeRepository(candidate));
 
-        AiCandidate actual = service.requirePendingForApply(
+        AiCandidate actual = service.requirePendingForApply(new RequireAiCandidateForApplyQuery(
                 new AiCandidateId(1L),
                 AiContentRef.of("SANCAI_ENTRY", 2L),
                 AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE,
-                new AiTargetObjectId(111L));
+                new AiTargetObjectId(111L)));
 
         assertSame(candidate, actual);
     }
@@ -99,11 +102,11 @@ class AiCandidateApplicationServiceImplTest {
 
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> service.requirePendingForApply(
+                () -> service.requirePendingForApply(new RequireAiCandidateForApplyQuery(
                         new AiCandidateId(1L),
                         AiContentRef.of("WANGQI_DOCUMENT", 2L),
                         AiBusinessCapability.CLASSICS_SUMMARY,
-                        null));
+                        null)));
 
         assertEquals("AI-INVOCATION-409", exception.getCode());
         assertEquals("ai.candidate.target-mismatch", exception.getMessageKey());
@@ -117,7 +120,8 @@ class AiCandidateApplicationServiceImplTest {
         AiCandidateApplicationServiceImpl service = new AiCandidateApplicationServiceImpl(repository);
         Instant appliedAt = Instant.parse("2026-06-22T02:00:00Z");
 
-        AiCandidate actual = service.markApplied(new AiCandidateId(1L), "JSON", "{\"text\":\"ok\"}", appliedAt);
+        AiCandidate actual = service.markApplied(
+                new ApplyAiCandidateCommand(new AiCandidateId(1L), "JSON", "{\"text\":\"ok\"}", appliedAt));
 
         assertSame(candidate, actual);
         assertEquals(AiCandidateStatus.APPLIED, actual.getStatus());
@@ -137,8 +141,8 @@ class AiCandidateApplicationServiceImplTest {
         AiCandidateApplicationServiceImpl service =
                 new AiCandidateApplicationServiceImpl(new FakeRepository(candidate));
 
-        AiCandidate actual =
-                service.markApplied(new AiCandidateId(1L), null, null, Instant.parse("2026-06-22T02:00:00Z"));
+        AiCandidate actual = service.markApplied(
+                new ApplyAiCandidateCommand(new AiCandidateId(1L), null, null, Instant.parse("2026-06-22T02:00:00Z")));
 
         assertEquals("TEXT", actual.getResultFormat());
         assertEquals("existing", actual.getResultPayload());
@@ -152,7 +156,9 @@ class AiCandidateApplicationServiceImplTest {
         AiCandidateApplicationServiceImpl service = new AiCandidateApplicationServiceImpl(repository);
 
         DomainException exception = assertThrows(
-                DomainException.class, () -> service.reject(new AiCandidateId(1L), "USER_REJECTED", "not useful"));
+                DomainException.class,
+                () -> service.reject(
+                        new RejectAiCandidateCommand(new AiCandidateId(1L), "USER_REJECTED", "not useful")));
 
         assertEquals("AI-INVOCATION-409", exception.getCode());
         assertEquals("ai.candidate.not-pending", exception.getMessageKey());

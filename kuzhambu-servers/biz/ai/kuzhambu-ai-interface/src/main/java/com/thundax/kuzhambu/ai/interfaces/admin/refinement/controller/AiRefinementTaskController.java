@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.configuration.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
@@ -16,7 +18,6 @@ import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
-import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -67,7 +68,7 @@ public class AiRefinementTaskController {
     public AiRefinementResponses.TaskAcceptedResponse addTask(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
         return AiRefinementInterfaceAssembler.toTaskAcceptedResponse(
-                taskApplicationService.addTask(AiRefinementInterfaceAssembler.toCommand(request)));
+                taskApplicationService.submit(AiRefinementInterfaceAssembler.toSubmitTaskCommand(request)));
     }
 
     @Operation(summary = "获取AI精修任务", description = "ai:refinement:view")
@@ -83,7 +84,8 @@ public class AiRefinementTaskController {
     @PostMapping(value = "get")
     public AiRefinementResponses.TaskDetailResponse getTask(
             @Valid @RequestBody AiRefinementRequests.TaskIdRequest request) {
-        return AiRefinementInterfaceAssembler.toTaskDetailResponse(taskApplicationService.getTask(request.getTaskId()));
+        return AiRefinementInterfaceAssembler.toTaskDetailResponse(
+                taskApplicationService.get(AiRefinementInterfaceAssembler.toGetTaskQuery(request.getTaskId())));
     }
 
     @Operation(summary = "订阅AI精修任务流式过程", description = "ai:refinement:view")
@@ -102,7 +104,9 @@ public class AiRefinementTaskController {
         SseEmitter emitter = new SseEmitter(600_000L);
         Runnable subscription = () -> {
             try {
-                taskApplicationService.streamTaskEvents(taskId, event -> sendEvent(emitter, event));
+                taskApplicationService.subscribeEvents(
+                        AiRefinementInterfaceAssembler.toSubscribeTaskEventsQuery(taskId),
+                        event -> sendEvent(emitter, event));
                 emitter.complete();
             } catch (RuntimeException exception) {
                 emitter.completeWithError(exception);
@@ -125,12 +129,7 @@ public class AiRefinementTaskController {
     @PostMapping(value = "page")
     public AiRefinementResponses.TaskPageResponse pageTasks(
             @Valid @RequestBody AiRefinementRequests.TaskPageRequest request) {
-        var page = taskApplicationService.pageTasks(
-                request.getCapability(),
-                request.getStatus(),
-                request.getContentType(),
-                request.getContentId(),
-                PageInterfaceAssembler.toPageQuery(request));
+        var page = taskApplicationService.page(AiRefinementInterfaceAssembler.toPageTasksQuery(request));
         return AiRefinementInterfaceAssembler.toTaskPageResponse(
                 page.getPageNo(), page.getPageSize(), page.getTotalCount(), page.getRecords());
     }
@@ -149,7 +148,7 @@ public class AiRefinementTaskController {
     public AiRefinementResponses.TaskCancelResponse cancelTask(
             @Valid @RequestBody AiRefinementRequests.TaskCancelRequest request) {
         return AiRefinementInterfaceAssembler.toTaskCancelResponse(
-                taskApplicationService.cancelTask(request.getTaskId()));
+                taskApplicationService.cancel(AiRefinementInterfaceAssembler.toCancelTaskCommand(request.getTaskId())));
     }
 
     @Operation(summary = "创建AI精修批量任务", description = "ai:refinement:edit")
@@ -172,7 +171,7 @@ public class AiRefinementTaskController {
         command.setTotalCount(request.getTotalCount());
         command.setFailureSummaryJson(request.getFailureSummaryJson());
         var batchId = batchJobApplicationService.create(command);
-        return toBatchResponse(batchJobApplicationService.get(batchId));
+        return toBatchResponse(batchJobApplicationService.get(new GetAiBatchJobQuery(batchId)));
     }
 
     @Operation(summary = "获取AI精修批量任务", description = "ai:refinement:view")
@@ -188,7 +187,8 @@ public class AiRefinementTaskController {
     @PostMapping(value = "batch/get")
     public AiRefinementResponses.BatchJobResponse getBatch(
             @Valid @RequestBody AiRefinementRequests.BatchIdRequest request) {
-        return toBatchResponse(batchJobApplicationService.get(AiBatchJobIdCodec.toDomain(request.getBatchId())));
+        return toBatchResponse(batchJobApplicationService.get(
+                new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(request.getBatchId()))));
     }
 
     @Operation(summary = "取消AI精修批量任务", description = "ai:refinement:edit")
@@ -204,7 +204,8 @@ public class AiRefinementTaskController {
     @PostMapping(value = "batch/cancel")
     public AiRefinementResponses.BatchJobResponse cancelBatch(
             @Valid @RequestBody AiRefinementRequests.BatchIdRequest request) {
-        return toBatchResponse(batchJobApplicationService.cancel(AiBatchJobIdCodec.toDomain(request.getBatchId())));
+        return toBatchResponse(batchJobApplicationService.cancel(
+                new CancelAiBatchJobCommand(AiBatchJobIdCodec.toDomain(request.getBatchId()))));
     }
 
     private static AiRefinementResponses.BatchJobResponse toBatchResponse(

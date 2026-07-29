@@ -12,6 +12,12 @@ import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestC
 import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.support.ClassicsAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
@@ -195,13 +201,12 @@ class AiRefinementApplicationServiceImplTest {
         AiRefinementRequestCommand command = new AiRefinementRequestCommand();
         command.setScope("classics");
         command.setOperation(operation);
-        command.setContentType(contentType);
-        command.setContentId(10L);
-        command.setModelId(20L);
-        command.setModelName("model-a");
-        command.setPromptVersionId(30L);
-        command.setRequestId("req-1");
-        command.setTraceId("trace-1");
+        command.setContentRef(AiContentRef.ofNullable(contentType, 10L));
+        command.setModelId(new AiModelId(20L));
+        command.setModelName(AiModelName.of("model-a"));
+        command.setPromptVersionId(new PromptVersionId(30L));
+        command.setRequestId(new RequestId("req-1"));
+        command.setTraceId(new TraceId("trace-1"));
         command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
         command.setInputPayloadJson("{\"text\":\"hello\"}");
         return command;

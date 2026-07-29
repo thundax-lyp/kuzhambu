@@ -133,11 +133,11 @@ public class AiFacadeAssembler {
         return new DiscoveryAiCommand(
                 request.getServiceId(),
                 request.getServiceRole(),
-                request.getModelId(),
-                request.getModelName(),
-                request.getPromptVersionId(),
-                request.getRequestId(),
-                request.getTraceId(),
+                AiModelIdCodec.toDomain(request.getModelId()),
+                AiModelNameCodec.toDomain(request.getModelName()),
+                PromptVersionIdCodec.toDomain(request.getPromptVersionId()),
+                RequestIdCodec.toDomain(request.getRequestId()),
+                TraceIdCodec.toDomain(request.getTraceId()),
                 request.getPromptMessagesJson(),
                 request.getPromptVariablesJson(),
                 request.getPromptHash(),
@@ -153,10 +153,14 @@ public class AiFacadeAssembler {
             return null;
         }
         return DiscoveryAiFacadeResponse.builder()
-                .callId(result.getCallId())
-                .candidateId(result.getCandidateId())
-                .status(result.getStatus())
-                .capability(result.getCapability())
+                .callId(com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec.toValue(result.getCallId()))
+                .candidateId(com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec.toValue(
+                        result.getCandidateId()))
+                .status(result.getStatus() == null ? null : result.getStatus().name())
+                .capability(
+                        result.getCapability() == null
+                                ? null
+                                : result.getCapability().value())
                 .resultFormat(result.getResultFormat())
                 .resultPayload(result.getResultPayload())
                 .errorType(result.getErrorType())
@@ -177,11 +181,11 @@ public class AiFacadeAssembler {
                 request.getRequestedBy(),
                 request.getServiceId(),
                 request.getServiceRole(),
-                request.getModelId(),
-                request.getModelName(),
-                request.getPromptVersionId(),
-                request.getRequestId(),
-                request.getTraceId(),
+                AiModelIdCodec.toDomain(request.getModelId()),
+                AiModelNameCodec.toDomain(request.getModelName()),
+                PromptVersionIdCodec.toDomain(request.getPromptVersionId()),
+                RequestIdCodec.toDomain(request.getRequestId()),
+                TraceIdCodec.toDomain(request.getTraceId()),
                 request.getPromptMessagesJson(),
                 request.getPromptVariablesJson(),
                 request.getPromptHash(),
@@ -196,10 +200,13 @@ public class AiFacadeAssembler {
             return null;
         }
         return KnowledgeAiExtractionFacadeResponse.builder()
-                .callId(record.getCallId())
-                .candidateId(record.getCandidateId())
-                .status(record.getStatus())
-                .capability(record.getCapability())
+                .callId(AiCallIdCodec.toValue(record.getCallId()))
+                .candidateId(AiCandidateIdCodec.toValue(record.getCandidateId()))
+                .status(record.getStatus() == null ? null : record.getStatus().name())
+                .capability(
+                        record.getCapability() == null
+                                ? null
+                                : record.getCapability().value())
                 .resultFormat(record.getResultFormat())
                 .resultPayload(record.getResultPayload())
                 .errorType(record.getErrorType())

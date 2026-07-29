@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.ai.application.config.service.impl;
 
+import com.thundax.kuzhambu.ai.application.config.query.GetAiCapabilityQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListAiCapabilitiesQuery;
 import com.thundax.kuzhambu.ai.application.config.service.AiCapabilityCatalogApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -14,13 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class AiCapabilityCatalogApplicationServiceImpl implements AiCapabilityCatalogApplicationService {
 
     @Override
-    public AiBusinessCapability getCapability(AiBusinessCapability capability) {
-        return capability;
+    public AiBusinessCapability get(GetAiCapabilityQuery query) {
+        return query == null ? null : query.getCapability();
     }
 
     @Override
-    public List<AiBusinessCapability> listCapabilities(Boolean enabled) {
-        if (Boolean.FALSE.equals(enabled)) {
+    public List<AiBusinessCapability> list(ListAiCapabilitiesQuery query) {
+        if (Boolean.FALSE.equals(query == null ? null : query.getEnabled())) {
             return List.of();
         }
         return Arrays.asList(AiBusinessCapability.values());

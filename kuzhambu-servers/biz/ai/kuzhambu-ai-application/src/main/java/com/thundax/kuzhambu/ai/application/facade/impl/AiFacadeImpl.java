@@ -2,6 +2,15 @@ package com.thundax.kuzhambu.ai.application.facade.impl;
 
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiReportSummaryQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.RequireAiCandidateForApplyQuery;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiReportApplicationService;
@@ -72,12 +81,12 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeResponse(aiReportApplicationService.summary(
+        return aiFacadeAssembler.toFacadeResponse(aiReportApplicationService.summary(new AiReportSummaryQuery(
                 request.getPeriodStart() == null
                         ? null
                         : request.getPeriodStart().toInstant(),
                 request.getPeriodEnd() == null ? null : request.getPeriodEnd().toInstant(),
-                request.getBucketType() == null ? null : AiReportBucketType.from(request.getBucketType())));
+                request.getBucketType() == null ? null : AiReportBucketType.from(request.getBucketType()))));
     }
 
     @Override
@@ -131,7 +140,7 @@ public class AiFacadeImpl implements AiFacade {
     @Transactional(readOnly = true)
     public AiBatchJobFacadeResponse getBatchJob(Long batchId) {
         return aiFacadeAssembler.toFacadeResponse(
-                aiBatchJobApplicationService.get(AiBatchJobIdCodec.toDomain(batchId)));
+                aiBatchJobApplicationService.get(new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(batchId))));
     }
 
     @Override
@@ -152,14 +161,15 @@ public class AiFacadeImpl implements AiFacade {
     @Override
     @Transactional(readOnly = true)
     public boolean canDispatchNextBatchUnit(Long batchId) {
-        return aiBatchJobApplicationService.canDispatchNextUnit(AiBatchJobIdCodec.toDomain(batchId));
+        return aiBatchJobApplicationService.canDispatchNextUnit(
+                new CanDispatchNextAiBatchUnitQuery(AiBatchJobIdCodec.toDomain(batchId)));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobFacadeResponse recordBatchSuccess(Long batchId) {
-        return aiFacadeAssembler.toFacadeResponse(
-                aiBatchJobApplicationService.recordSuccess(AiBatchJobIdCodec.toDomain(batchId)));
+        return aiFacadeAssembler.toFacadeResponse(aiBatchJobApplicationService.recordSuccess(
+                new RecordAiBatchJobCommand(AiBatchJobIdCodec.toDomain(batchId))));
     }
 
     @Override
@@ -168,15 +178,16 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeResponse(aiBatchJobApplicationService.recordFailure(
-                AiBatchJobIdCodec.toDomain(request.getBatchId()), request.getFailureSummaryJson()));
+        return aiFacadeAssembler.toFacadeResponse(
+                aiBatchJobApplicationService.recordFailure(new RecordAiBatchJobFailureCommand(
+                        AiBatchJobIdCodec.toDomain(request.getBatchId()), request.getFailureSummaryJson())));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobFacadeResponse cancelBatchJob(Long batchId) {
         return aiFacadeAssembler.toFacadeResponse(
-                aiBatchJobApplicationService.cancel(AiBatchJobIdCodec.toDomain(batchId)));
+                aiBatchJobApplicationService.cancel(new CancelAiBatchJobCommand(AiBatchJobIdCodec.toDomain(batchId))));
     }
 
     @Override
@@ -205,11 +216,12 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeDto(aiCandidateApplicationService.requirePendingForApply(
-                AiCandidateIdCodec.toDomain(request.getCandidateId()),
-                AiContentRef.ofNullable(request.getContentType(), request.getContentId()),
-                AiBusinessCapability.fromAlias(request.getCapability()),
-                AiTargetObjectIdCodec.toDomain(request.getObjectId())));
+        return aiFacadeAssembler.toFacadeDto(
+                aiCandidateApplicationService.requirePendingForApply(new RequireAiCandidateForApplyQuery(
+                        AiCandidateIdCodec.toDomain(request.getCandidateId()),
+                        AiContentRef.ofNullable(request.getContentType(), request.getContentId()),
+                        AiBusinessCapability.fromAlias(request.getCapability()),
+                        AiTargetObjectIdCodec.toDomain(request.getObjectId()))));
     }
 
     @Override
@@ -218,11 +230,11 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeDto(aiCandidateApplicationService.markApplied(
+        return aiFacadeAssembler.toFacadeDto(aiCandidateApplicationService.markApplied(new ApplyAiCandidateCommand(
                 AiCandidateIdCodec.toDomain(request.getCandidateId()),
                 request.getResultFormat(),
                 request.getResultPayload(),
-                request.getAppliedAt()));
+                request.getAppliedAt())));
     }
 
     @Override
@@ -231,10 +243,10 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeDto(aiCandidateApplicationService.reject(
+        return aiFacadeAssembler.toFacadeDto(aiCandidateApplicationService.reject(new RejectAiCandidateCommand(
                 AiCandidateIdCodec.toDomain(request.getCandidateId()),
                 request.getErrorType(),
-                request.getErrorMessage()));
+                request.getErrorMessage())));
     }
 
     private UnsupportedOperationException unsupported() {

@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.interfaces.admin.config.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.thundax.kuzhambu.ai.application.config.query.ListAiCapabilitiesQuery;
 import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.AiCapabilityCatalogApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
@@ -50,8 +51,8 @@ class AiConfigControllerTest {
 
     private static AiCapabilityCatalogApplicationService capabilityListService() {
         return proxy(AiCapabilityCatalogApplicationService.class, (proxy, method, args) -> {
-            if ("listCapabilities".equals(method.getName())) {
-                assertEquals(true, args[0]);
+            if ("list".equals(method.getName())) {
+                assertEquals(true, ((ListAiCapabilitiesQuery) args[0]).getEnabled());
                 return List.of(AiBusinessCapability.CLASSICS_TRANSLATE);
             }
             throw new UnsupportedOperationException(

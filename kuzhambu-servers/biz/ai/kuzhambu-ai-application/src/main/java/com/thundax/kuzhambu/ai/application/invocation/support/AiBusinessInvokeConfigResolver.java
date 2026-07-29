@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery;
 import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
@@ -88,7 +89,7 @@ public class AiBusinessInvokeConfigResolver {
     }
 
     private AiBusinessConfig resolveBusinessConfig(AiBusinessCapability capability) {
-        List<AiBusinessConfig> configs = businessConfigService.list(capability, true);
+        List<AiBusinessConfig> configs = businessConfigService.list(new ListAiBusinessConfigsQuery(capability, true));
         if (configs == null || configs.isEmpty()) {
             throw new BizException("AI business config is not configured: " + capability);
         }

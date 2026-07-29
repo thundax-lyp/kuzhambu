@@ -10,15 +10,9 @@ import com.thundax.kuzhambu.ai.application.scenario.result.DiscoveryAiInvokeResu
 import com.thundax.kuzhambu.ai.application.scenario.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.support.DiscoveryAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.scenario.support.DiscoveryAiWorkerUsecaseSpec;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
-import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.util.function.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -95,11 +89,11 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
                 CONTENT_TYPE_DISCOVERY_QUERY, null));
         invokeCommand.setServiceId(command.getServiceId());
         invokeCommand.setServiceRole(command.getServiceRole());
-        invokeCommand.setModelId(AiModelIdCodec.toDomain(command.getModelId()));
-        invokeCommand.setModelName(AiModelNameCodec.toDomain(command.getModelName()));
-        invokeCommand.setPromptVersionId(PromptVersionIdCodec.toDomain(command.getPromptVersionId()));
-        invokeCommand.setRequestId(RequestIdCodec.toDomain(command.getRequestId()));
-        invokeCommand.setTraceId(TraceIdCodec.toDomain(command.getTraceId()));
+        invokeCommand.setModelId(command.getModelId());
+        invokeCommand.setModelName(command.getModelName());
+        invokeCommand.setPromptVersionId(command.getPromptVersionId());
+        invokeCommand.setRequestId(command.getRequestId());
+        invokeCommand.setTraceId(command.getTraceId());
         invokeCommand.setPromptMessagesJson(command.getPromptMessagesJson());
         invokeCommand.setPromptVariablesJson(command.getPromptVariablesJson());
         invokeCommand.setPromptHash(command.getPromptHash());
@@ -121,8 +115,8 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
 
     private void validateCommand(DiscoveryAiCommand command) {
         if (command == null
-                || isBlank(command.getRequestId())
-                || isBlank(command.getTraceId())
+                || command.getRequestId() == null
+                || command.getTraceId() == null
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("Discovery AI command is incomplete");
         }
@@ -137,7 +131,7 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
             return new DiscoveryAiInvokeResult(
                     null,
                     null,
-                    "FAILED",
+                    AiInvocationStatus.FAILED,
                     null,
                     null,
                     null,
@@ -145,10 +139,10 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
                     "Discovery AI result is missing");
         }
         return new DiscoveryAiInvokeResult(
-                AiCallIdCodec.toValue(result.getCallId()),
-                AiCandidateIdCodec.toValue(result.getCandidateId()),
-                result.getStatus() == null ? null : result.getStatus().name(),
-                result.getCapability() == null ? null : result.getCapability().value(),
+                result.getCallId(),
+                result.getCandidateId(),
+                result.getStatus(),
+                result.getCapability(),
                 result.getResultFormat(),
                 result.getResultPayload(),
                 result.getErrorType(),

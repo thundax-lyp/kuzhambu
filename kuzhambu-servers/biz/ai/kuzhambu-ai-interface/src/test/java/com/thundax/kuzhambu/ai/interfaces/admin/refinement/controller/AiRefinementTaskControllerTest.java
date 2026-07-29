@@ -4,19 +4,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.ExpireRunningAiBatchJobsCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsByCapabilitiesQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
-import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.query.GetAiRefinementTaskQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.PageAiRefinementTasksQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import java.lang.reflect.Method;
@@ -117,7 +125,7 @@ class AiRefinementTaskControllerTest {
         AiRefinementResponses.TaskCancelResponse cancelled = controller.cancelTask(cancelRequest);
 
         assertEquals(7001L, accepted.getTaskId());
-        assertEquals("PENDING", accepted.getStatus());
+        assertEquals("RUNNING", accepted.getStatus());
         assertNotNull(controller.streamTask(7001L));
         assertEquals(9001L, detail.getCallId());
         assertEquals(9002L, detail.getCandidateId());
@@ -165,27 +173,17 @@ class AiRefinementTaskControllerTest {
     private static final class NoOpBatchJobService implements AiBatchJobApplicationService {
 
         @Override
-        public AiBatchJobResult get(AiBatchJobId batchId) {
+        public AiBatchJobResult get(GetAiBatchJobQuery query) {
             return null;
         }
 
         @Override
-        public PageResult<AiBatchJobResult> page(
-                String scope,
-                AiBusinessCapability capability,
-                AiBatchJobStatus status,
-                AiContentRef contentRef,
-                PageQuery pageQuery) {
+        public PageResult<AiBatchJobResult> page(PageAiBatchJobsQuery query) {
             return PageResult.of(1, 10, 0, List.of());
         }
 
         @Override
-        public PageResult<AiBatchJobResult> pageByCapabilities(
-                String scope,
-                List<AiBusinessCapability> capabilities,
-                AiBatchJobStatus status,
-                AiContentRef contentRef,
-                PageQuery pageQuery) {
+        public PageResult<AiBatchJobResult> pageByCapabilities(PageAiBatchJobsByCapabilitiesQuery query) {
             return PageResult.of(1, 10, 0, List.of());
         }
 
@@ -195,47 +193,42 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
-        public boolean canDispatchNextUnit(AiBatchJobId batchId) {
+        public boolean canDispatchNextUnit(CanDispatchNextAiBatchUnitQuery query) {
             return false;
         }
 
         @Override
-        public AiBatchJobResult recordSuccess(AiBatchJobId batchId) {
+        public AiBatchJobResult recordSuccess(RecordAiBatchJobCommand command) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordSuccessIfRunning(AiBatchJobId batchId) {
+        public AiBatchJobResult recordSuccessIfRunning(RecordAiBatchJobCommand command) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordFailure(AiBatchJobId batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailure(RecordAiBatchJobFailureCommand command) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordFailureIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailureIfRunning(RecordAiBatchJobFailureCommand command) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordPartialIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordPartialIfRunning(RecordAiBatchJobFailureCommand command) {
             return null;
         }
 
         @Override
-        public int expireRunning(
-                String scope,
-                List<AiBusinessCapability> capabilities,
-                Instant requestedBefore,
-                String failureSummaryJson,
-                int limit) {
+        public int expireRunning(ExpireRunningAiBatchJobsCommand command) {
             return 0;
         }
 
         @Override
-        public AiBatchJobResult cancel(AiBatchJobId batchId) {
+        public AiBatchJobResult cancel(CancelAiBatchJobCommand command) {
             return null;
         }
     }
@@ -243,23 +236,29 @@ class AiRefinementTaskControllerTest {
     private static final class FakeTaskApplicationService implements AiRefinementTaskApplicationService {
 
         @Override
-        public AiRefinementTaskResult addTask(AiRefinementRequestCommand command) {
-            return task("PENDING", command.getCapability(), null, null);
+        public AiRefinementTaskResult submit(SubmitAiRefinementTaskCommand command) {
+            return task(
+                    "RUNNING",
+                    command.getCapability() == null
+                            ? null
+                            : command.getCapability().value(),
+                    null,
+                    null);
         }
 
         @Override
-        public AiRefinementTaskResult getTask(Long taskId) {
+        public AiRefinementTaskResult get(GetAiRefinementTaskQuery query) {
             return task("SUCCEEDED", "summary", 9001L, 9002L);
         }
 
         @Override
-        public PageResult<AiRefinementTaskResult> pageTasks(
-                String capability, String status, String contentType, Long contentId, PageQuery pageQuery) {
-            return PageResult.of(1, 10, 1, List.of(getTask(7001L)));
+        public PageResult<AiRefinementTaskResult> page(PageAiRefinementTasksQuery query) {
+            return PageResult.of(1, 10, 1, List.of(get(new GetAiRefinementTaskQuery(new AiBatchJobId(7001L)))));
         }
 
         @Override
-        public void streamTaskEvents(Long taskId, Consumer<AiStreamEventResult> eventConsumer) {
+        public void subscribeEvents(
+                SubscribeAiRefinementTaskEventsQuery query, Consumer<AiStreamEventResult> eventConsumer) {
             AiStreamEventResult event = new AiStreamEventResult();
             event.setEventType("completed");
             event.setEventId("evt-1");
@@ -270,27 +269,32 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
-        public AiRefinementTaskResult cancelTask(Long taskId) {
+        public AiRefinementTaskResult cancel(CancelAiRefinementTaskCommand command) {
             return task("CANCELLED", "summary", null, null);
         }
 
         private AiRefinementTaskResult task(String status, String capability, Long callId, Long candidateId) {
             return new AiRefinementTaskResult(
-                    7001L,
+                    new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(7001L),
                     "classics",
-                    capability,
-                    "SANCAI_ENTRY",
-                    101L,
+                    com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias(capability),
+                    com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
+                            "SANCAI_ENTRY", 101L),
                     null,
-                    "req-1",
-                    "trace-1",
-                    status,
+                    new com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId("req-1"),
+                    new com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId("trace-1"),
+                    com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus.valueOf(status),
                     null,
-                    201L,
-                    "gpt-test",
-                    301L,
-                    callId,
-                    candidateId,
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(201L),
+                    com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("gpt-test"),
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(301L),
+                    callId == null
+                            ? null
+                            : new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(callId),
+                    candidateId == null
+                            ? null
+                            : new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(
+                                    candidateId),
                     "TEXT",
                     "摘要",
                     null,

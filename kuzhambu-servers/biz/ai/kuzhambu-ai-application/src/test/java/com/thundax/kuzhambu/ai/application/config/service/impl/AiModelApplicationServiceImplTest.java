@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.application.config.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.thundax.kuzhambu.ai.application.config.command.DeleteAiModelCommand;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
@@ -21,7 +22,7 @@ class AiModelApplicationServiceImplTest {
         AiModelApplicationServiceImpl service = new AiModelApplicationServiceImpl(
                 new FakeBusinessConfigRepository(AiModelIdCodec.toDomain(2001L)), new FakeModelRepository());
 
-        assertThatThrownBy(() -> service.delete(new AiModelId(2001L)))
+        assertThatThrownBy(() -> service.delete(new DeleteAiModelCommand(new AiModelId(2001L))))
                 .isInstanceOf(BizException.class)
                 .hasMessageContaining("AI model is used by business config");
     }

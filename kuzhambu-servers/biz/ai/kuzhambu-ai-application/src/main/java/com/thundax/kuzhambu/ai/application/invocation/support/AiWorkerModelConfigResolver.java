@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.thundax.kuzhambu.ai.application.config.query.GetAiModelQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery;
 import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
@@ -80,7 +82,7 @@ public class AiWorkerModelConfigResolver {
         } else if (!matchesModel(command.getModelId(), config)) {
             config = null;
         }
-        AiModel model = modelService.get(command.getModelId());
+        AiModel model = modelService.get(new GetAiModelQuery(command.getModelId()));
         if (model == null) {
             throw new IllegalArgumentException("AI model not found: " + command.getModelId());
         }
@@ -98,7 +100,8 @@ public class AiWorkerModelConfigResolver {
         if (command.getCapability() == null) {
             return null;
         }
-        List<AiBusinessConfig> configs = businessConfigService.list(command.getCapability(), true);
+        List<AiBusinessConfig> configs =
+                businessConfigService.list(new ListAiBusinessConfigsQuery(command.getCapability(), true));
         return configs.isEmpty() ? null : configs.get(0);
     }
 

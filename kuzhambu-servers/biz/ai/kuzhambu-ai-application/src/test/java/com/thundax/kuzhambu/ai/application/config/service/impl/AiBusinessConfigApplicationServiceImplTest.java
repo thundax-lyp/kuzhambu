@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.application.config.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.thundax.kuzhambu.ai.application.config.command.UpdateAiBusinessConfigCommand;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
@@ -35,7 +36,8 @@ class AiBusinessConfigApplicationServiceImplTest {
                 new FakeAiModelRepository());
 
         BizException exception = assertThrows(
-                BizException.class, () -> service.update(businessConfig(AiBusinessCapability.CLASSICS_TRANSLATE)));
+                BizException.class,
+                () -> service.update(businessConfigCommand(AiBusinessCapability.CLASSICS_TRANSLATE)));
 
         assertEquals("AI business config capability cannot be changed", exception.getMessage());
         assertEquals(0, businessConfigRepository.updateCount);
@@ -51,6 +53,16 @@ class AiBusinessConfigApplicationServiceImplTest {
                 true,
                 10,
                 null);
+    }
+
+    private static UpdateAiBusinessConfigCommand businessConfigCommand(AiBusinessCapability capability) {
+        return new UpdateAiBusinessConfigCommand(
+                new AiBusinessConfigId(9001L),
+                capability,
+                new PromptTemplateId(930001L),
+                new AiModelId(910001L),
+                "{}",
+                true);
     }
 
     private static class FakeBusinessConfigRepository implements AiBusinessConfigRepository {

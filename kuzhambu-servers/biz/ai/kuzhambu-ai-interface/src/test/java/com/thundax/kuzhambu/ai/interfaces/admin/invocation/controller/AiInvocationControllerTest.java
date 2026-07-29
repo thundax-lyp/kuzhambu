@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.RequireAiCandidateForApplyQuery;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
@@ -296,7 +300,7 @@ class AiInvocationControllerTest {
                 new Class<?>[] {AiBatchJobApplicationService.class},
                 (proxy, method, args) -> {
                     if ("cancel".equals(method.getName())) {
-                        assertEquals(new AiBatchJobId(8801L), args[0]);
+                        assertEquals(new AiBatchJobId(8801L), ((CancelAiBatchJobCommand) args[0]).getBatchId());
                         return new com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult(
                                 new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(8801L),
                                 "classics",
@@ -322,24 +326,19 @@ class AiInvocationControllerTest {
     private static AiCandidateApplicationService noDomainService() {
         return new AiCandidateApplicationService() {
             @Override
-            public AiCandidate requirePendingForApply(
-                    AiCandidateId candidateId,
-                    AiContentRef contentRef,
-                    AiBusinessCapability capability,
-                    AiTargetObjectId targetObjectId) {
+            public AiCandidate requirePendingForApply(RequireAiCandidateForApplyQuery query) {
                 throw new UnsupportedOperationException(
                         "candidate application service should not be called in this test");
             }
 
             @Override
-            public AiCandidate markApplied(
-                    AiCandidateId candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
+            public AiCandidate markApplied(ApplyAiCandidateCommand command) {
                 throw new UnsupportedOperationException(
                         "candidate application service should not be called in this test");
             }
 
             @Override
-            public AiCandidate reject(AiCandidateId candidateId, String errorType, String errorMessage) {
+            public AiCandidate reject(RejectAiCandidateCommand command) {
                 throw new UnsupportedOperationException(
                         "candidate application service should not be called in this test");
             }
@@ -349,25 +348,20 @@ class AiInvocationControllerTest {
     private static AiCandidateApplicationService rejectCandidateService() {
         return new AiCandidateApplicationService() {
             @Override
-            public AiCandidate requirePendingForApply(
-                    AiCandidateId candidateId,
-                    AiContentRef contentRef,
-                    AiBusinessCapability capability,
-                    AiTargetObjectId targetObjectId) {
+            public AiCandidate requirePendingForApply(RequireAiCandidateForApplyQuery query) {
                 throw new UnsupportedOperationException("requirePendingForApply should not be called in this test");
             }
 
             @Override
-            public AiCandidate markApplied(
-                    AiCandidateId candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
+            public AiCandidate markApplied(ApplyAiCandidateCommand command) {
                 throw new UnsupportedOperationException("markApplied should not be called in this test");
             }
 
             @Override
-            public AiCandidate reject(AiCandidateId candidateId, String errorType, String errorMessage) {
-                assertEquals(new AiCandidateId(11L), candidateId);
-                assertEquals("TIMEOUT", errorType);
-                assertEquals("执行超时", errorMessage);
+            public AiCandidate reject(RejectAiCandidateCommand command) {
+                assertEquals(new AiCandidateId(11L), command.getCandidateId());
+                assertEquals("TIMEOUT", command.getErrorType());
+                assertEquals("执行超时", command.getErrorMessage());
                 return rejectedCandidate();
             }
         };
@@ -376,26 +370,21 @@ class AiInvocationControllerTest {
     private static AiCandidateApplicationService markAppliedCandidateService() {
         return new AiCandidateApplicationService() {
             @Override
-            public AiCandidate requirePendingForApply(
-                    AiCandidateId candidateId,
-                    AiContentRef contentRef,
-                    AiBusinessCapability capability,
-                    AiTargetObjectId targetObjectId) {
+            public AiCandidate requirePendingForApply(RequireAiCandidateForApplyQuery query) {
                 throw new UnsupportedOperationException("requirePendingForApply should not be called in this test");
             }
 
             @Override
-            public AiCandidate markApplied(
-                    AiCandidateId candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
-                assertEquals(new AiCandidateId(22L), candidateId);
-                assertEquals(null, resultFormat);
-                assertEquals(null, resultPayload);
-                assertEquals(null, appliedAt);
+            public AiCandidate markApplied(ApplyAiCandidateCommand command) {
+                assertEquals(new AiCandidateId(22L), command.getCandidateId());
+                assertEquals(null, command.getResultFormat());
+                assertEquals(null, command.getResultPayload());
+                assertEquals(null, command.getAppliedAt());
                 return appliedCandidate();
             }
 
             @Override
-            public AiCandidate reject(AiCandidateId candidateId, String errorType, String errorMessage) {
+            public AiCandidate reject(RejectAiCandidateCommand command) {
                 throw new UnsupportedOperationException("reject should not be called in this test");
             }
         };

@@ -1,8 +1,10 @@
 package com.thundax.kuzhambu.ai.application.scenario.result;
 
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,10 +12,10 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AiCandidateResult {
 
-    private final Long callId;
-    private final Long candidateId;
-    private final String status;
-    private final String capability;
+    private final AiCallId callId;
+    private final AiCandidateId candidateId;
+    private final AiInvocationStatus status;
+    private final AiBusinessCapability capability;
     private final String failureStage;
     private final String resultFormat;
     private final String resultPayload;
@@ -25,10 +27,10 @@ public class AiCandidateResult {
             return null;
         }
         return new AiCandidateResult(
-                AiCallIdCodec.toValue(result.getCallId()),
-                AiCandidateIdCodec.toValue(result.getCandidateId()),
-                result.getStatus() == null ? null : result.getStatus().name(),
-                result.getCapability() == null ? null : result.getCapability().value(),
+                result.getCallId(),
+                result.getCandidateId(),
+                result.getStatus(),
+                result.getCapability(),
                 result.getFailureStage(),
                 result.getResultFormat(),
                 result.getResultPayload(),

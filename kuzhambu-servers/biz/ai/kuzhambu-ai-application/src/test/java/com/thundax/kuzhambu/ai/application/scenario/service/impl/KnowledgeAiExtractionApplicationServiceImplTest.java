@@ -13,6 +13,14 @@ import com.thundax.kuzhambu.ai.application.scenario.command.KnowledgeAiExtractio
 import com.thundax.kuzhambu.ai.application.scenario.result.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.application.scenario.support.KnowledgeAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
@@ -89,9 +97,10 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
 
         KnowledgeAiExtractionResult result = extractGraph(repository);
 
-        assertEquals(101L, result.getCallId());
-        assertEquals(102L, result.getCandidateId());
-        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals(new AiCallId(101L), result.getCallId());
+        assertEquals(new AiCandidateId(102L), result.getCandidateId());
+        assertEquals(AiInvocationStatus.SUCCEEDED, result.getStatus());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, result.getCapability());
     }
 
     @Test
@@ -100,15 +109,15 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
         KnowledgeAiExtractionApplicationServiceImpl repository =
                 new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, businessResolver);
-        KnowledgeAiExtractionCommand input = input();
-        input.setServiceId(null);
-        input.setServiceRole(null);
-        input.setModelId(null);
-        input.setModelName(null);
-        input.setPromptVersionId(null);
-        input.setPromptMessagesJson(null);
+        KnowledgeAiExtractionCommand command = command();
+        command.setServiceId(null);
+        command.setServiceRole(null);
+        command.setModelId(null);
+        command.setModelName(null);
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
 
-        repository.extractGraph(input);
+        repository.extractGraph(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals(capturedCommand, businessResolver.capturedCommand());
@@ -119,22 +128,22 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     }
 
     private KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionApplicationServiceImpl repository) {
-        return repository.extractGraph(input());
+        return repository.extractGraph(command());
     }
 
     private KnowledgeAiExtractionResult extractRelations(KnowledgeAiExtractionApplicationServiceImpl repository) {
-        return repository.extractRelations(input());
+        return repository.extractRelations(command());
     }
 
     private KnowledgeAiExtractionResult extractLineage(KnowledgeAiExtractionApplicationServiceImpl repository) {
-        return repository.extractLineage(input());
+        return repository.extractLineage(command());
     }
 
     private KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionApplicationServiceImpl repository) {
-        return repository.extractTags(input());
+        return repository.extractTags(command());
     }
 
-    private KnowledgeAiExtractionCommand input() {
+    private KnowledgeAiExtractionCommand command() {
         return new KnowledgeAiExtractionCommand(
                 "GRAPH",
                 "ENTRY",
@@ -144,11 +153,11 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
                 2L,
                 3L,
                 "knowledge-admin",
-                10L,
-                "model-a",
-                20L,
-                "req-1",
-                "trace-1",
+                new AiModelId(10L),
+                AiModelName.of("model-a"),
+                new PromptVersionId(20L),
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
                 "[{\"role\":\"user\",\"content\":\"hello\"}]",
                 null,
                 null,

@@ -3,21 +3,23 @@ package com.thundax.kuzhambu.ai.application.scenario.result;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
-import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
-import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.time.Instant;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -28,26 +30,23 @@ import lombok.Getter;
 public class AiRefinementTaskResult {
 
     private static final String CONTENT_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
-    private static final String CAPABILITY_IMAGE_ANALYSIS = "classics_image_describe";
-    private static final String CAPABILITY_IMAGE_GEN = "classics_image_generate";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final TypeReference<Map<String, String>> FAILURE_SUMMARY_TYPE = new TypeReference<>() {};
 
-    private final Long taskId;
+    private final AiBatchJobId taskId;
     private final String scope;
-    private final String capability;
-    private final String contentType;
-    private final Long contentId;
-    private final Long objectId;
-    private final String requestId;
-    private final String traceId;
-    private final String status;
+    private final AiBusinessCapability capability;
+    private final AiContentRef contentRef;
+    private final AiTargetObjectId targetObjectId;
+    private final RequestId requestId;
+    private final TraceId traceId;
+    private final AiBatchJobStatus status;
     private final String serviceRole;
-    private final Long modelId;
-    private final String modelName;
-    private final Long promptVersionId;
-    private final Long callId;
-    private final Long candidateId;
+    private final AiModelId modelId;
+    private final AiModelName modelName;
+    private final PromptVersionId promptVersionId;
+    private final AiCallId callId;
+    private final AiCandidateId candidateId;
     private final String resultFormat;
     private final String resultPreview;
     private final String failureStage;
@@ -70,21 +69,20 @@ public class AiRefinementTaskResult {
         }
         FailureSummary failureSummary = FailureSummary.from(job.getFailureSummaryJson());
         return new AiRefinementTaskResult(
-                AiBatchJobIdCodec.toValue(job.getBatchId()),
+                job.getBatchId(),
                 job.getScope(),
-                job.getCapability() == null ? null : job.getCapability().value(),
-                contentType(job, invocationLog, candidate),
-                contentId(job, invocationLog, candidate),
-                objectId(invocationLog, candidate),
-                RequestIdCodec.toValue(invocationLog == null ? null : invocationLog.getRequestId()),
-                TraceIdCodec.toValue(invocationLog == null ? null : invocationLog.getTraceId()),
-                job.getStatus() == null ? null : job.getStatus().name(),
+                job.getCapability(),
+                contentRef(job, invocationLog, candidate),
+                targetObjectId(invocationLog, candidate),
+                invocationLog == null ? null : invocationLog.getRequestId(),
+                invocationLog == null ? null : invocationLog.getTraceId(),
+                job.getStatus(),
                 invocationLog == null ? null : invocationLog.getServiceRole(),
-                AiModelIdCodec.toValue(invocationLog == null ? null : invocationLog.getModelId()),
-                AiModelNameCodec.toValue(modelName(invocationLog, candidate)),
+                invocationLog == null ? null : invocationLog.getModelId(),
+                modelName(invocationLog, candidate),
                 promptVersionId(invocationLog, candidate),
-                AiCallIdCodec.toValue(callId(invocationLog, candidate)),
-                AiCandidateIdCodec.toValue(candidate == null ? null : candidate.getId()),
+                callId(invocationLog, candidate),
+                candidate == null ? null : candidate.getId(),
                 resultFormat(invocationLog, candidate),
                 resultPayload(invocationLog, candidate),
                 failureStage(invocationLog, candidate, failureSummary),
@@ -101,40 +99,43 @@ public class AiRefinementTaskResult {
         if (job == null || !CONTENT_TYPE_SANCAI_ENTRY.equals(AiContentRefCodec.toContentType(job.getContentRef()))) {
             return false;
         }
-        return CAPABILITY_IMAGE_ANALYSIS.equals(job.getCapability().value())
-                || CAPABILITY_IMAGE_GEN.equals(job.getCapability().value());
+        return AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE == job.getCapability()
+                || AiBusinessCapability.CLASSICS_IMAGE_GENERATE == job.getCapability();
     }
 
-    private static String contentType(AiBatchJobResult job, AiInvocationLog invocationLog, AiCandidate candidate) {
-        String invocationContentType =
-                AiContentRefCodec.toContentType(invocationLog == null ? null : invocationLog.getContentRef());
-        if (invocationContentType != null) {
-            return invocationContentType;
+    private static AiContentRef contentRef(AiBatchJobResult job, AiInvocationLog invocationLog, AiCandidate candidate) {
+        AiContentRef invocationContentRef = invocationLog == null ? null : invocationLog.getContentRef();
+        AiContentRef candidateContentRef = candidate == null ? null : candidate.getContentRef();
+        AiContentRef jobContentRef = job.getContentRef();
+        return AiContentRef.ofNullable(
+                firstContentType(invocationContentRef, candidateContentRef, jobContentRef),
+                firstContentId(invocationContentRef, candidateContentRef, jobContentRef));
+    }
+
+    private static String firstContentType(AiContentRef invocation, AiContentRef candidate, AiContentRef job) {
+        if (invocation != null && invocation.contentType() != null) {
+            return invocation.contentType();
         }
-        String candidateContentType =
-                AiContentRefCodec.toContentType(candidate == null ? null : candidate.getContentRef());
-        return candidateContentType == null
-                ? AiContentRefCodec.toContentType(job.getContentRef())
-                : candidateContentType;
+        if (candidate != null && candidate.contentType() != null) {
+            return candidate.contentType();
+        }
+        return job == null ? null : job.contentType();
     }
 
-    private static Long contentId(AiBatchJobResult job, AiInvocationLog invocationLog, AiCandidate candidate) {
-        Long invocationContentId =
-                AiContentRefCodec.toContentId(invocationLog == null ? null : invocationLog.getContentRef());
-        return invocationContentId == null ? contentId(job, candidate) : invocationContentId;
+    private static Long firstContentId(AiContentRef invocation, AiContentRef candidate, AiContentRef job) {
+        if (invocation != null && invocation.contentId() != null) {
+            return invocation.contentId();
+        }
+        if (candidate != null && candidate.contentId() != null) {
+            return candidate.contentId();
+        }
+        return job == null ? null : job.contentId();
     }
 
-    private static Long contentId(AiBatchJobResult job, AiCandidate candidate) {
-        Long candidateContentId = AiContentRefCodec.toContentId(candidate == null ? null : candidate.getContentRef());
-        return candidateContentId == null ? AiContentRefCodec.toContentId(job.getContentRef()) : candidateContentId;
-    }
-
-    private static Long objectId(AiInvocationLog invocationLog, AiCandidate candidate) {
-        Long invocationObjectId =
-                AiTargetObjectIdCodec.toValue(invocationLog == null ? null : invocationLog.getTargetObjectId());
-        return invocationObjectId == null
-                ? AiTargetObjectIdCodec.toValue(candidate == null ? null : candidate.getTargetObjectId())
-                : invocationObjectId;
+    private static AiTargetObjectId targetObjectId(AiInvocationLog invocationLog, AiCandidate candidate) {
+        return invocationLog == null || invocationLog.getTargetObjectId() == null
+                ? candidate == null ? null : candidate.getTargetObjectId()
+                : invocationLog.getTargetObjectId();
     }
 
     private static AiModelName modelName(AiInvocationLog invocationLog, AiCandidate candidate) {
@@ -143,12 +144,12 @@ public class AiRefinementTaskResult {
                 : invocationLog.getModelName();
     }
 
-    private static Long promptVersionId(AiInvocationLog invocationLog, AiCandidate candidate) {
-        Long invocationPromptVersionId =
-                PromptVersionIdCodec.toValue(invocationLog == null ? null : invocationLog.getPromptVersionId());
-        return invocationPromptVersionId == null
-                ? AiPromptVersionIdCodec.toValue(candidate == null ? null : candidate.getPromptVersionId())
-                : invocationPromptVersionId;
+    private static PromptVersionId promptVersionId(AiInvocationLog invocationLog, AiCandidate candidate) {
+        if (invocationLog != null && invocationLog.getPromptVersionId() != null) {
+            return invocationLog.getPromptVersionId();
+        }
+        return PromptVersionIdCodec.toDomain(
+                AiPromptVersionIdCodec.toValue(candidate == null ? null : candidate.getPromptVersionId()));
     }
 
     private static AiCallId callId(AiInvocationLog invocationLog, AiCandidate candidate) {
