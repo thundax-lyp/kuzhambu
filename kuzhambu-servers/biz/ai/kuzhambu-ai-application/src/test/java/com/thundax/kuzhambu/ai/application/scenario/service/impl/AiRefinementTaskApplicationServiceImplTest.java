@@ -8,6 +8,11 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCo
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.query.GetAiRefinementTaskQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.PageAiRefinementTasksQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementApplicationService;
@@ -61,7 +66,8 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiRefinementTaskApplicationServiceImpl service =
                 new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
 
-        AiRefinementTaskResult accepted = service.addTask(command(AiBusinessCapability.CLASSICS_TRANSLATE.value()));
+        AiRefinementTaskResult accepted =
+                service.submitRefinementTask(command(AiBusinessCapability.CLASSICS_TRANSLATE.value()));
 
         assertEquals(1, batchJobService.created.getTotalCount());
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, accepted.getCapability());
@@ -87,9 +93,9 @@ class AiRefinementTaskApplicationServiceImplTest {
                 null));
         AiRefinementTaskApplicationServiceImpl service =
                 new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
-        AiRefinementRequestCommand command = command("translate");
+        SubmitAiRefinementTaskCommand command = command("translate");
 
-        service.addTask(command);
+        service.submitRefinementTask(command);
 
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, command.getCapability());
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, batchJobService.created.getCapability());
@@ -110,9 +116,9 @@ class AiRefinementTaskApplicationServiceImplTest {
                 null));
         AiRefinementTaskApplicationServiceImpl service =
                 new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
-        AiRefinementRequestCommand command = command("fusion");
+        SubmitAiRefinementTaskCommand command = command("fusion");
 
-        service.addTask(command);
+        service.submitRefinementTask(command);
 
         assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, command.getCapability());
         assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, batchJobService.created.getCapability());
@@ -138,7 +144,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         TransactionSynchronizationManager.initSynchronization();
         AiRefinementTaskResult accepted;
         try {
-            accepted = service.addTask(command(AiBusinessCapability.CLASSICS_SUMMARY.value()));
+            accepted = service.submitRefinementTask(command(AiBusinessCapability.CLASSICS_SUMMARY.value()));
             assertEquals(
                     AiBatchJobStatus.RUNNING,
                     batchJobService.get(accepted.getTaskId()).getStatus());
@@ -170,7 +176,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
 
         AiRefinementTaskResult accepted =
-                service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
+                service.submitRefinementTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
         AiBatchJobResult completed = batchJobService.get(accepted.getTaskId());
 
         assertTrue(accepted.isStreamEnabled());
@@ -196,7 +202,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
 
         AiRefinementTaskResult accepted =
-                service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
+                service.submitRefinementTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
         AiBatchJobResult completed = batchJobService.get(accepted.getTaskId());
 
         assertEquals(AiBatchJobStatus.PARTIAL, completed.getStatus());
@@ -223,10 +229,11 @@ class AiRefinementTaskApplicationServiceImplTest {
                 new RecordingInvocationRepository(List.of(), List.of()),
                 DIRECT_EXECUTOR);
         AiRefinementTaskResult accepted =
-                service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
+                service.submitRefinementTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
         List<com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult> events = new ArrayList<>();
 
-        service.streamTaskEvents(AiBatchJobIdCodec.toValue(accepted.getTaskId()), events::add);
+        service.subscribeRefinementTaskEvents(
+                new SubscribeAiRefinementTaskEventsQuery(accepted.getTaskId()), events::add);
 
         assertEquals(1, events.size());
         assertEquals(AiInvocationStatus.PARTIAL, events.get(0).getStatus());
@@ -246,10 +253,11 @@ class AiRefinementTaskApplicationServiceImplTest {
                 new StubRefinementApplicationService(null),
                 new RecordingInvocationRepository(List.of(), List.of()),
                 DIRECT_EXECUTOR);
-        service.cancelTask(taskId);
+        service.cancelRefinementTask(new CancelAiRefinementTaskCommand(AiBatchJobIdCodec.toDomain(taskId)));
         List<com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult> events = new ArrayList<>();
 
-        service.streamTaskEvents(taskId, events::add);
+        service.subscribeRefinementTaskEvents(
+                new SubscribeAiRefinementTaskEventsQuery(AiBatchJobIdCodec.toDomain(taskId)), events::add);
 
         assertEquals(1, events.size());
         assertEquals(AiInvocationStatus.CANCELLED, events.get(0).getStatus());
@@ -324,7 +332,8 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
                 batchJobService, new StubRefinementApplicationService(null), invocationRepository, DIRECT_EXECUTOR);
 
-        PageResult<AiRefinementTaskResult> page = service.pageTasks(null, null, "SANCAI_ENTRY", 10L, new PageQuery());
+        PageResult<AiRefinementTaskResult> page = service.pageRefinementTasks(new PageAiRefinementTasksQuery(
+                null, null, AiContentRef.ofNullable("SANCAI_ENTRY", 10L), new PageQuery()));
 
         assertEquals(2, page.getRecords().size());
         assertEquals(1, invocationRepository.contentInvocationQueryCount);
@@ -345,7 +354,9 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
                 batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
 
-        assertThrows(RuntimeException.class, () -> service.getTask(batchId));
+        assertThrows(
+                RuntimeException.class,
+                () -> service.getRefinementTask(new GetAiRefinementTaskQuery(AiBatchJobIdCodec.toDomain(batchId))));
     }
 
     @Test
@@ -360,7 +371,10 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
                 batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
 
-        assertThrows(RuntimeException.class, () -> service.cancelTask(batchId));
+        assertThrows(
+                RuntimeException.class,
+                () -> service.cancelRefinementTask(
+                        new CancelAiRefinementTaskCommand(AiBatchJobIdCodec.toDomain(batchId))));
         assertEquals(AiBatchJobStatus.RUNNING, batchJobService.get(batchId).getStatus());
     }
 
@@ -383,7 +397,8 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
                 batchJobService, new StubRefinementApplicationService(null), invocationRepository, DIRECT_EXECUTOR);
 
-        PageResult<AiRefinementTaskResult> page = service.pageTasks(null, null, "SANCAI_ENTRY", 10L, new PageQuery());
+        PageResult<AiRefinementTaskResult> page = service.pageRefinementTasks(new PageAiRefinementTasksQuery(
+                null, null, AiContentRef.ofNullable("SANCAI_ENTRY", 10L), new PageQuery()));
 
         assertEquals(1, page.getRecords().size());
         assertEquals(10L, page.getRecords().get(0).getContentRef().contentId());
@@ -391,8 +406,8 @@ class AiRefinementTaskApplicationServiceImplTest {
         assertEquals(201L, page.getRecords().get(0).getCallId().value());
     }
 
-    private AiRefinementRequestCommand command(String capability) {
-        AiRefinementRequestCommand command = new AiRefinementRequestCommand();
+    private SubmitAiRefinementTaskCommand command(String capability) {
+        SubmitAiRefinementTaskCommand command = new SubmitAiRefinementTaskCommand();
         command.setCapability(AiBusinessCapability.fromAlias(capability));
         command.setScope("classics");
         command.setOperation(capability);

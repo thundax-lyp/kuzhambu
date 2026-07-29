@@ -16,7 +16,6 @@ import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
-import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,8 +65,8 @@ public class AiRefinementTaskController {
     @PostMapping(value = "add")
     public AiRefinementResponses.TaskAcceptedResponse addTask(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
-        return AiRefinementInterfaceAssembler.toTaskAcceptedResponse(
-                taskApplicationService.addTask(AiRefinementInterfaceAssembler.toCommand(request)));
+        return AiRefinementInterfaceAssembler.toTaskAcceptedResponse(taskApplicationService.submitRefinementTask(
+                AiRefinementInterfaceAssembler.toSubmitTaskCommand(request)));
     }
 
     @Operation(summary = "获取AI精修任务", description = "ai:refinement:view")
@@ -83,7 +82,8 @@ public class AiRefinementTaskController {
     @PostMapping(value = "get")
     public AiRefinementResponses.TaskDetailResponse getTask(
             @Valid @RequestBody AiRefinementRequests.TaskIdRequest request) {
-        return AiRefinementInterfaceAssembler.toTaskDetailResponse(taskApplicationService.getTask(request.getTaskId()));
+        return AiRefinementInterfaceAssembler.toTaskDetailResponse(taskApplicationService.getRefinementTask(
+                AiRefinementInterfaceAssembler.toGetTaskQuery(request.getTaskId())));
     }
 
     @Operation(summary = "订阅AI精修任务流式过程", description = "ai:refinement:view")
@@ -102,7 +102,9 @@ public class AiRefinementTaskController {
         SseEmitter emitter = new SseEmitter(600_000L);
         Runnable subscription = () -> {
             try {
-                taskApplicationService.streamTaskEvents(taskId, event -> sendEvent(emitter, event));
+                taskApplicationService.subscribeRefinementTaskEvents(
+                        AiRefinementInterfaceAssembler.toSubscribeTaskEventsQuery(taskId),
+                        event -> sendEvent(emitter, event));
                 emitter.complete();
             } catch (RuntimeException exception) {
                 emitter.completeWithError(exception);
@@ -125,12 +127,7 @@ public class AiRefinementTaskController {
     @PostMapping(value = "page")
     public AiRefinementResponses.TaskPageResponse pageTasks(
             @Valid @RequestBody AiRefinementRequests.TaskPageRequest request) {
-        var page = taskApplicationService.pageTasks(
-                request.getCapability(),
-                request.getStatus(),
-                request.getContentType(),
-                request.getContentId(),
-                PageInterfaceAssembler.toPageQuery(request));
+        var page = taskApplicationService.pageRefinementTasks(AiRefinementInterfaceAssembler.toPageTasksQuery(request));
         return AiRefinementInterfaceAssembler.toTaskPageResponse(
                 page.getPageNo(), page.getPageSize(), page.getTotalCount(), page.getRecords());
     }
@@ -148,8 +145,8 @@ public class AiRefinementTaskController {
     @PostMapping(value = "cancel")
     public AiRefinementResponses.TaskCancelResponse cancelTask(
             @Valid @RequestBody AiRefinementRequests.TaskCancelRequest request) {
-        return AiRefinementInterfaceAssembler.toTaskCancelResponse(
-                taskApplicationService.cancelTask(request.getTaskId()));
+        return AiRefinementInterfaceAssembler.toTaskCancelResponse(taskApplicationService.cancelRefinementTask(
+                AiRefinementInterfaceAssembler.toCancelTaskCommand(request.getTaskId())));
     }
 
     @Operation(summary = "创建AI精修批量任务", description = "ai:refinement:edit")

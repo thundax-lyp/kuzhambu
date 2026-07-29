@@ -7,16 +7,16 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCo
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
-import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.query.GetAiRefinementTaskQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.PageAiRefinementTasksQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import java.lang.reflect.Method;
@@ -243,7 +243,7 @@ class AiRefinementTaskControllerTest {
     private static final class FakeTaskApplicationService implements AiRefinementTaskApplicationService {
 
         @Override
-        public AiRefinementTaskResult addTask(AiRefinementRequestCommand command) {
+        public AiRefinementTaskResult submitRefinementTask(SubmitAiRefinementTaskCommand command) {
             return task(
                     "RUNNING",
                     command.getCapability() == null
@@ -254,18 +254,19 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
-        public AiRefinementTaskResult getTask(Long taskId) {
+        public AiRefinementTaskResult getRefinementTask(GetAiRefinementTaskQuery query) {
             return task("SUCCEEDED", "summary", 9001L, 9002L);
         }
 
         @Override
-        public PageResult<AiRefinementTaskResult> pageTasks(
-                String capability, String status, String contentType, Long contentId, PageQuery pageQuery) {
-            return PageResult.of(1, 10, 1, List.of(getTask(7001L)));
+        public PageResult<AiRefinementTaskResult> pageRefinementTasks(PageAiRefinementTasksQuery query) {
+            return PageResult.of(
+                    1, 10, 1, List.of(getRefinementTask(new GetAiRefinementTaskQuery(new AiBatchJobId(7001L)))));
         }
 
         @Override
-        public void streamTaskEvents(Long taskId, Consumer<AiStreamEventResult> eventConsumer) {
+        public void subscribeRefinementTaskEvents(
+                SubscribeAiRefinementTaskEventsQuery query, Consumer<AiStreamEventResult> eventConsumer) {
             AiStreamEventResult event = new AiStreamEventResult();
             event.setEventType("completed");
             event.setEventId("evt-1");
@@ -276,7 +277,7 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
-        public AiRefinementTaskResult cancelTask(Long taskId) {
+        public AiRefinementTaskResult cancelRefinementTask(CancelAiRefinementTaskCommand command) {
             return task("CANCELLED", "summary", null, null);
         }
 

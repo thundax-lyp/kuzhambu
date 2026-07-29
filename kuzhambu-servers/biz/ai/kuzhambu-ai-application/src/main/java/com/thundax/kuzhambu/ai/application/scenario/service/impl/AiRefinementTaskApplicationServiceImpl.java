@@ -7,7 +7,12 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand;
 import com.thundax.kuzhambu.ai.application.scenario.configuration.AiRefinementExecutorConfiguration;
+import com.thundax.kuzhambu.ai.application.scenario.query.GetAiRefinementTaskQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.PageAiRefinementTasksQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementApplicationService;
@@ -92,7 +97,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiRefinementTaskResult addTask(AiRefinementRequestCommand command) {
+    public AiRefinementTaskResult submitRefinementTask(SubmitAiRefinementTaskCommand command) {
         validateAddCommand(command);
         validateRefinementBatchOwnership(command.getScope(), capabilityValue(command.getCapability()));
         refinementApplicationService.snapshotInvokeConfig(command);
@@ -104,30 +109,23 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     @Override
-    public AiRefinementTaskResult getTask(Long taskId) {
-        AiBatchJobResult job = batchJobApplicationService.get(AiBatchJobIdCodec.toDomain(taskId));
+    public AiRefinementTaskResult getRefinementTask(GetAiRefinementTaskQuery query) {
+        AiBatchJobResult job = batchJobApplicationService.get(query == null ? null : query.getTaskId());
         validateRefinementBatchOwnership(job);
         return toTaskResult(job);
     }
 
     @Override
-    public PageResult<AiRefinementTaskResult> pageTasks(
-            String capability, String status, String contentType, Long contentId, PageQuery pageQuery) {
-        String normalizedCapability = normalizeCapability(capability);
-        AiContentRef contentRef = AiContentRef.ofNullable(contentType, contentId);
-        PageResult<AiBatchJobResult> page = isBlank(normalizedCapability)
+    public PageResult<AiRefinementTaskResult> pageRefinementTasks(PageAiRefinementTasksQuery query) {
+        AiBusinessCapability capability = query == null ? null : query.getCapability();
+        AiBatchJobStatus status = query == null ? null : query.getStatus();
+        AiContentRef contentRef = query == null ? null : query.getContentRef();
+        PageQuery pageQuery = query == null ? null : query.getPageQuery();
+        PageResult<AiBatchJobResult> page = capability == null
                 ? batchJobApplicationService.pageByCapabilities(
-                        REFINEMENT_SCOPE,
-                        REFINEMENT_CAPABILITIES,
-                        isBlank(status) ? null : AiBatchJobStatus.from(status),
-                        contentRef,
-                        pageQuery)
+                        REFINEMENT_SCOPE, REFINEMENT_CAPABILITIES, status, contentRef, pageQuery)
                 : batchJobApplicationService.page(
-                        REFINEMENT_SCOPE,
-                        validateRefinementCapability(normalizedCapability),
-                        isBlank(status) ? null : AiBatchJobStatus.from(status),
-                        contentRef,
-                        pageQuery);
+                        REFINEMENT_SCOPE, validateRefinementCapability(capability), status, contentRef, pageQuery);
         Map<Long, AiInvocationLog> invocationLogsByBatch = latestInvocationLogsByBatch(page.getRecords(), contentRef);
         Map<Long, AiCandidate> candidatesByBatch = latestCandidatesByBatch(page.getRecords(), contentRef);
         List<AiRefinementTaskResult> records = new ArrayList<>();
@@ -141,32 +139,35 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     @Override
-    public void streamTaskEvents(Long taskId, Consumer<AiStreamEventResult> eventConsumer) {
-        AiBatchJobResult job = batchJobApplicationService.get(AiBatchJobIdCodec.toDomain(taskId));
+    public void subscribeRefinementTaskEvents(
+            SubscribeAiRefinementTaskEventsQuery query, Consumer<AiStreamEventResult> eventConsumer) {
+        AiBatchJobId taskId = query == null ? null : query.getTaskId();
+        AiBatchJobResult job = batchJobApplicationService.get(taskId);
         validateRefinementBatchOwnership(job);
         if (!isStreamEnabledTask(job)) {
             throw new BizException("AI refinement task stream is not enabled: " + taskId);
         }
-        TaskStreamHub hub = streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub());
+        Long taskIdValue = AiBatchJobIdCodec.toValue(taskId);
+        TaskStreamHub hub = streamHubs.computeIfAbsent(taskIdValue, ignored -> new TaskStreamHub());
         publishSnapshotIfTerminal(hub, toTaskResult(job));
         try {
             hub.subscribe(eventConsumer, STREAM_SUBSCRIBE_TIMEOUT);
         } finally {
             if (hub.hasTerminalEvent()) {
-                streamHubs.remove(taskId, hub);
+                streamHubs.remove(taskIdValue, hub);
             }
         }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiRefinementTaskResult cancelTask(Long taskId) {
-        AiBatchJobId batchId = AiBatchJobIdCodec.toDomain(taskId);
-        AiBatchJobResult job = batchJobApplicationService.get(batchId);
+    public AiRefinementTaskResult cancelRefinementTask(CancelAiRefinementTaskCommand command) {
+        AiBatchJobId taskId = command == null ? null : command.getTaskId();
+        AiBatchJobResult job = batchJobApplicationService.get(taskId);
         validateRefinementBatchOwnership(job);
-        AiBatchJobResult cancelled = batchJobApplicationService.cancel(batchId);
+        AiBatchJobResult cancelled = batchJobApplicationService.cancel(taskId);
         AiRefinementTaskResult task = toTaskResult(cancelled);
-        publishTerminalEvent(taskId, task, null);
+        publishTerminalEvent(AiBatchJobIdCodec.toValue(taskId), task, null);
         return task;
     }
 
@@ -316,24 +317,6 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         throw new BizException("unsupported ai refinement capability: " + capabilityValue(capability));
     }
 
-    private String normalizeCapability(String capability) {
-        if (capability == null) {
-            return null;
-        }
-        return switch (capability) {
-            case "translate" -> "classics_translate";
-            case "summary" -> "classics_summary";
-            case "tags" -> "classics_tags";
-            case "qa" -> "classics_qa";
-            case "image_analysis" -> "classics_image_describe";
-            case "fusion" -> "classics_image_prompt_fusion";
-            case "visual" -> "classics_visual_describe";
-            case "image_gen" -> "classics_image_generate";
-            case "split" -> "classics_split";
-            default -> capability;
-        };
-    }
-
     private void validateAddCommand(AiRefinementRequestCommand command) {
         if (command == null
                 || command.getCapability() == null
@@ -372,12 +355,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         }
     }
 
-    private AiBusinessCapability validateRefinementCapability(String capability) {
-        AiBusinessCapability parsedCapability = AiBusinessCapability.from(capability);
-        if (!REFINEMENT_CAPABILITIES.contains(parsedCapability)) {
+    private AiBusinessCapability validateRefinementCapability(AiBusinessCapability capability) {
+        if (!REFINEMENT_CAPABILITIES.contains(capability)) {
             throw new BizException("unsupported ai refinement capability: " + capability);
         }
-        return parsedCapability;
+        return capability;
     }
 
     private boolean isStreamEnabledTask(AiRefinementRequestCommand command) {

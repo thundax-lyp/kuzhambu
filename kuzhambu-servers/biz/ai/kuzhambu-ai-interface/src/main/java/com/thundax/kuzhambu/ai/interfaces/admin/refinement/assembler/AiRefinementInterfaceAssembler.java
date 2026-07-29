@@ -1,6 +1,11 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler;
 
 import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.query.GetAiRefinementTaskQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.PageAiRefinementTasksQuery;
+import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
@@ -12,10 +17,12 @@ import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,9 +34,18 @@ public final class AiRefinementInterfaceAssembler {
         return toCommand(request, request == null ? null : request.getCapability());
     }
 
+    public static SubmitAiRefinementTaskCommand toSubmitTaskCommand(AiRefinementRequests.RefinementRequest request) {
+        return toCommand(
+                new SubmitAiRefinementTaskCommand(), request, request == null ? null : request.getCapability());
+    }
+
     public static AiRefinementRequestCommand toCommand(
             AiRefinementRequests.RefinementRequest request, String capability) {
-        AiRefinementRequestCommand command = new AiRefinementRequestCommand();
+        return toCommand(new AiRefinementRequestCommand(), request, capability);
+    }
+
+    private static <T extends AiRefinementRequestCommand> T toCommand(
+            T command, AiRefinementRequests.RefinementRequest request, String capability) {
         command.setCapability(toCapability(capability));
         command.setScope(request.getScope());
         command.setOperation(request.getOperation());
@@ -50,6 +66,28 @@ public final class AiRefinementInterfaceAssembler {
         command.setForceJson(Boolean.TRUE.equals(request.getForceJson()));
         command.setLocale(request.getLocale());
         return command;
+    }
+
+    public static GetAiRefinementTaskQuery toGetTaskQuery(Long taskId) {
+        return new GetAiRefinementTaskQuery(AiBatchJobIdCodec.toDomain(taskId));
+    }
+
+    public static SubscribeAiRefinementTaskEventsQuery toSubscribeTaskEventsQuery(Long taskId) {
+        return new SubscribeAiRefinementTaskEventsQuery(AiBatchJobIdCodec.toDomain(taskId));
+    }
+
+    public static PageAiRefinementTasksQuery toPageTasksQuery(AiRefinementRequests.TaskPageRequest request) {
+        return new PageAiRefinementTasksQuery(
+                toCapability(request == null ? null : request.getCapability()),
+                toTaskStatus(request == null ? null : request.getStatus()),
+                AiContentRefCodec.toDomain(
+                        request == null ? null : request.getContentType(),
+                        request == null ? null : request.getContentId()),
+                PageInterfaceAssembler.toPageQuery(request));
+    }
+
+    public static CancelAiRefinementTaskCommand toCancelTaskCommand(Long taskId) {
+        return new CancelAiRefinementTaskCommand(AiBatchJobIdCodec.toDomain(taskId));
     }
 
     public static AiRefinementResponses.CandidateResultResponse toResponse(AiCandidateResult result) {
@@ -170,5 +208,9 @@ public final class AiRefinementInterfaceAssembler {
 
     private static AiBusinessCapability toCapability(String capability) {
         return capability == null || capability.trim().isEmpty() ? null : AiBusinessCapability.fromAlias(capability);
+    }
+
+    private static AiBatchJobStatus toTaskStatus(String status) {
+        return status == null || status.trim().isEmpty() ? null : AiBatchJobStatus.from(status);
     }
 }
