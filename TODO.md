@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `06-application-service-interfaces`：06 拆分业务化 application service 接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/{StorageObjectApplicationService.java,StorageReferenceApplicationService.java,StorageContentApplicationService.java,StorageUploadApplicationService.java,StorageMultipartUploadApplicationService.java}`
-    - 处理动作：用业务化接口替换现有大而全 `StorageApplicationService` 和 multipart 接口公开签名
-    - 验收点：公开方法参数为无参或单个 Command/Query，`create` 返回 `StoredObject`，`count` 返回 primitive `long`，无 `save*` 方法
-    - 重要度：10/10
-
 - [ ] `07-object-reference-service-impl`：07 迁移对象和引用 application service 实现
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
