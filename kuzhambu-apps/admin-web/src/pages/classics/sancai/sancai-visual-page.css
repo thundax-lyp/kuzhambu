@@ -1,0 +1,124 @@
+.sancai-visual-page {
+    --kuzhambu-page-padding: 20px 0 0;
+}
+
+.sancai-visual-page-title small {
+    margin-left: 8px;
+    color: var(--sancai-copy);
+    font-size: 0.52em;
+    font-weight: 600;
+}
+
+.sancai-visual-main-panel {
+    display: grid;
+    gap: 12px;
+    width: min(100%, 1120px);
+    min-width: 0;
+}
+
+.sancai-visual-entry-context {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+    padding: 16px 18px;
+    background: var(--sancai-panel);
+    border: 1px solid var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-visual-entry-context > div {
+    min-width: 0;
+}
+
+.sancai-visual-entry-summary {
+    margin: 8px 0 0;
+}
+
+.sancai-visual-empty {
+    padding: 96px 0;
+}
+
+.sancai-visual-page .sancai-visual-asset-field.sancai-detail-card {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.sancai-visual-entry-picker {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+}
+
+.sancai-visual-entry-picker-tree {
+    min-width: 0;
+    max-height: min(54vh, 460px);
+    overflow: auto;
+    padding: 8px;
+    background: color-mix(in srgb, var(--sancai-panel) 86%, #fff7df 14%);
+    border: 1px solid var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-visual-entry-picker-tree .ant-tree {
+    max-width: 100%;
+}
+
+.sancai-visual-entry-picker-hint {
+    min-height: 22px;
+}
+
+.sancai-visual-entry-picker-modal .ant-modal-content {
+    max-height: calc(100vh - 48px);
+    overflow: hidden;
+}
+
+.sancai-visual-entry-picker-modal .ant-modal-body {
+    overflow: visible;
+}
+
+.sancai-visual-entry-picker-modal .ant-modal-footer {
+    margin-top: 12px;
+}
+
+@media (max-width: 700px) {
+    .sancai-visual-page {
+        --kuzhambu-page-padding: 16px 0 0;
+    }
+
+    .sancai-visual-main-panel {
+        gap: 10px;
+    }
+
+    .sancai-visual-entry-context {
+        display: grid;
+        padding: 14px;
+    }
+
+    .sancai-visual-entry-context .ant-btn {
+        justify-self: start;
+    }
+
+    .sancai-visual-entry-picker-modal .ant-modal {
+        max-width: calc(100vw - 16px);
+    }
+
+    .sancai-visual-entry-picker-modal .ant-modal-content {
+        max-height: calc(100vh - 32px);
+    }
+
+    .sancai-visual-entry-picker-modal .ant-modal-body {
+        max-height: calc(100vh - 170px);
+        overflow: auto;
+        padding-inline: 16px;
+    }
+
+    .sancai-visual-entry-picker-tree {
+        max-height: min(58vh, 500px);
+        padding: 6px;
+    }
+}
