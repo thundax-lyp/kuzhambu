@@ -175,6 +175,10 @@ export const SancaiEntryList = ({
         "edit",
         hasPermission
     );
+    const canRunVisualProcessing =
+        canChangeEntryVisibility &&
+        hasPermission("ai:refinement:edit") &&
+        hasPermission("classics:content:edit");
 
     const activeBatchQuery = useQuery({
         queryKey: ["classics", "sancai", "refinement", "batch", activeBatchId],
@@ -248,6 +252,10 @@ export const SancaiEntryList = ({
         (activeBatch.status === "PENDING" || activeBatch.status === "RUNNING");
 
     const startBatch = (capability: "image_analysis" | "visual") => {
+        if (!canRunVisualProcessing) {
+            messageApi.warning("当前账号缺少视觉处理权限");
+            return;
+        }
         if (!selectedEntries.length) {
             messageApi.warning("请先选择当前页要批量处理的条目");
             return;
@@ -361,6 +369,7 @@ export const SancaiEntryList = ({
                         text: "视觉",
                         ariaLabel: `视觉处理 ${readTitle(entry, "条目")}`,
                         testId: `sancai-entry-${entry.id}-visual-button`,
+                        disabled: !canRunVisualProcessing,
                         onClick: () => onVisual(entry)
                     },
                     ...(lifecycleAction
@@ -437,14 +446,14 @@ export const SancaiEntryList = ({
                         {
                             testId: "classics-sancai-sancai-entry-action-button",
                             title: "图片理解",
-                            disabled: !selectedEntries.length,
+                            disabled: !selectedEntries.length || !canRunVisualProcessing,
                             loading: createBatchMutation.isPending,
                             action: () => startBatch("image_analysis")
                         },
                         {
                             testId: "classics-sancai-sancai-entry-action-button-2",
                             title: "视觉处理",
-                            disabled: !selectedEntries.length,
+                            disabled: !selectedEntries.length || !canRunVisualProcessing,
                             loading: createBatchMutation.isPending,
                             action: () => startBatch("visual")
                         },

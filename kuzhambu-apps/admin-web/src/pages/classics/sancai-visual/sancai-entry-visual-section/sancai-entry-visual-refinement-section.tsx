@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import type { AiCandidateApplyRecord } from "@/pages/classics/common/ai-candidate-types";
 import type {
     AiRefinementStreamEventRecord,
     AiRefinementTaskRecord
@@ -16,7 +17,7 @@ interface SancaiEntryVisualRefinementSectionProps {
     onCloseStreamingRefinementTask: () => void;
     onRefreshVisualAssetCandidates: (objectId?: string | null) => void;
     onRetryRefinementTask: (task: AiRefinementTaskRecord) => void;
-    onVisualAssetCandidateChanged: () => Promise<void> | void;
+    onVisualAssetCandidateChanged: (result?: AiCandidateApplyRecord) => Promise<void> | void;
 }
 
 export const SancaiEntryVisualRefinementSection = ({

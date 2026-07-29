@@ -11,7 +11,11 @@ import {
 } from "@/components";
 
 import * as aiCandidateService from "./ai-candidate-service";
-import type { AiCandidateCapability, AiCandidateRecord } from "./ai-candidate-types";
+import type {
+    AiCandidateApplyRecord,
+    AiCandidateCapability,
+    AiCandidateRecord
+} from "./ai-candidate-types";
 import * as aiRefinementTaskService from "./ai-refinement-task-service";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
 
@@ -22,7 +26,7 @@ interface AiCandidatePanelProps {
     contentId: string;
     contentType: CandidateContentType;
     objectId?: string | null;
-    onApplied?: () => void;
+    onApplied?: (result: AiCandidateApplyRecord) => void;
     onRejected?: () => void;
 }
 
@@ -135,10 +139,10 @@ export const AiCandidatePanel = ({
         onMutate: (command) => {
             setApplyingCandidateId(command.candidateId);
         },
-        onSuccess: async () => {
+        onSuccess: async (result) => {
             await refreshCandidates();
             if (onApplied) {
-                onApplied();
+                onApplied(result);
             }
             messageApi.success("候选已应用");
         },

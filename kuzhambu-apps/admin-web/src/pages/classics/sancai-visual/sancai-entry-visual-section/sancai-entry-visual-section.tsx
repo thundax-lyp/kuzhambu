@@ -26,6 +26,7 @@ import {
     KuzhambuSelect
 } from "@/components";
 
+import type { AiCandidateApplyRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as entryService from "@/pages/classics/sancai-visual/sancai-visual-service";
 import type {
@@ -377,8 +378,11 @@ export const SancaiEntryVisualSection = ({
         () =>
             selectedSourceStorageObjectId == null
                 ? []
-                : orderedVisualAssets.filter(
-                      (asset) => asset.sourceImageStorageObjectId === selectedSourceStorageObjectId
+                : orderedVisualAssets.filter((asset) =>
+                      isSameStorageObjectId(
+                          asset.sourceImageStorageObjectId,
+                          selectedSourceStorageObjectId
+                      )
                   ),
         [orderedVisualAssets, selectedSourceStorageObjectId]
     );
@@ -505,6 +509,13 @@ export const SancaiEntryVisualSection = ({
         visualAssetFormValue,
         onRefinementChanged
     });
+    const handleVisualAssetCandidateChanged = async (result?: AiCandidateApplyRecord) => {
+        await refreshAfterVisualAssetCandidateHandled();
+        if (result?.versionId) {
+            setOptimisticVisualAsset(null);
+            setSelectedVisualAssetId(String(result.versionId));
+        }
+    };
     const imageAnalysisDone = hasVisualText(visualAssetFormValue?.imageAnalysisMarkdown);
     const fusionDone = hasVisualText(visualAssetFormValue?.fusionDescription);
     const visualDescriptionDone = hasVisualText(visualAssetFormValue?.visualDescription);
@@ -1209,7 +1220,7 @@ export const SancaiEntryVisualSection = ({
                 onCloseStreamingRefinementTask={closeStreamingRefinementTask}
                 onRefreshVisualAssetCandidates={refreshVisualAssetCandidates}
                 onRetryRefinementTask={retryRefinementTask}
-                onVisualAssetCandidateChanged={refreshAfterVisualAssetCandidateHandled}
+                onVisualAssetCandidateChanged={handleVisualAssetCandidateChanged}
             />
         </section>
     );

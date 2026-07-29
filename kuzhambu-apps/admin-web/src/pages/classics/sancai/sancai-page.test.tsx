@@ -2,6 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
+import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
 import { SancaiEntryList } from "./sancai-entry-panel/sancai-entry-list";
 import { SancaiPage } from "./sancai-page";
@@ -255,6 +256,12 @@ describe("SancaiPage", () => {
         mockCategories = [{ categoryType: "FORMAL", id: "2", title: "天文" }];
         mockVolumes = [{ categoryId: "2", id: "101", title: "天文卷一", volumeType: "MAIN" }];
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+        replacePermissions([
+            "classics:sancai:view",
+            "classics:sancai:edit",
+            "classics:content:edit",
+            "ai:refinement:edit"
+        ]);
         installFetchMock();
     });
 
@@ -262,6 +269,7 @@ describe("SancaiPage", () => {
         cleanup();
         queryClient.clear();
         localStorage.clear();
+        clearPermissions();
         vi.restoreAllMocks();
     });
 

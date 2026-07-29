@@ -623,7 +623,9 @@ describe("SancaiEntryPanel batch operations", () => {
             "classics:sancai:view",
             "classics:sancai:edit",
             "classics:sharing:edit",
-            "classics:content:export"
+            "classics:content:export",
+            "classics:content:edit",
+            "ai:refinement:edit"
         ]);
     });
 
@@ -677,12 +679,15 @@ describe("SancaiEntryPanel batch operations", () => {
         });
         expect(readEntryButton("sancai-entry-3001-view-button")).toBeEnabled();
         expect(readEntryButton("sancai-entry-3001-export-button")).toBeDisabled();
+        expect(readEntryButton("sancai-entry-3001-visual-button")).toBeDisabled();
         expect(readEntryButton("sancai-entry-3001-lifecycle-button")).toBeDisabled();
         expect(readEntryButton("sancai-entry-3002-lifecycle-button")).toBeDisabled();
         expect(readEntryButton("sancai-entry-3003-lifecycle-button")).toBeDisabled();
         expect(readButtonByText("公开")).toBeDisabled();
         expect(readButtonByText("私有")).toBeDisabled();
         expect(readButtonByText("候选治理")).toBeDisabled();
+        expect(readButtonByText("图片理解")).toBeDisabled();
+        expect(readButtonByText("视觉处理")).toBeDisabled();
     });
 
     it("opens batch candidate governance drawer from selected entries", async () => {
