@@ -10,7 +10,7 @@ public interface LogRepository {
 
     Log getById(LogId id);
 
-    List<Log> listByIds(List<String> idList);
+    List<Log> listByIds(List<LogId> idList);
 
     List<Log> list(
             String type,

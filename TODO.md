@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T05 Dict and Log repository contracts`：强类型化字典与日志仓储契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/core/repository/DictRepository.java`；`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/core/repository/LogRepository.java`；`kuzhambu-servers/biz/system/kuzhambu-system-infra/src/main/java/com/thundax/kuzhambu/system/infra/core/repository/impl/DictRepositoryImpl.java`；`kuzhambu-servers/biz/system/kuzhambu-system-infra/src/main/java/com/thundax/kuzhambu/system/infra/core/repository/impl/LogRepositoryImpl.java`
-    - 处理动作：把 `DictRepository.listByIds` 改为接收 `List<DictId>`，把 `LogRepository.listByIds` 改为接收 `List<LogId>`。
-    - 验收点：core repository 中 `listByIds(...)` 全部接收对应 `List<*Id>`，日志批量读取不再使用 `List<String>`。
-    - 重要度：8/10
-
 - [ ] `T06 Core application call sites`：移除 core application 到 repository 的基础 ID 转换
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
