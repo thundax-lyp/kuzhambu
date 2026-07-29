@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.web.exception.KuzhambuException;
+import com.thundax.kuzhambu.common.web.exception.WebErrorCode;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageMultipartUploadApplicationService;
@@ -59,15 +62,20 @@ class StorageObjectUploadContractTest {
     void uploadShouldRejectEmptyFileAndUnsupportedSuffix() {
         StorageObjectController controller = controller();
 
-        assertThrows(
-                RuntimeException.class,
+        KuzhambuException emptyFileException = assertThrows(
+                KuzhambuException.class,
                 () -> controller.upload(new InMemoryMultipartFile("empty.png", "image/png", new byte[0]), null, null));
-        assertThrows(
-                RuntimeException.class,
+        assertEquals(WebErrorCode.BAD_REQUEST, emptyFileException.getErrorCode());
+        assertEquals("无效的参数: 文件不能为空", emptyFileException.getDefaultMessage());
+
+        KuzhambuException unsupportedSuffixException = assertThrows(
+                KuzhambuException.class,
                 () -> controller.upload(
                         new InMemoryMultipartFile("virus.exe", "application/octet-stream", "x".getBytes()),
                         null,
                         null));
+        assertEquals(WebErrorCode.BAD_REQUEST, unsupportedSuffixException.getErrorCode());
+        assertEquals("无效的参数: 无效的后缀名", unsupportedSuffixException.getDefaultMessage());
     }
 
     private static StorageObjectController controller() {
@@ -139,10 +147,10 @@ class StorageObjectUploadContractTest {
                     || command.getInputStream() == null
                     || command.getSize() == null
                     || command.getSize().value() <= 0L) {
-                throw new RuntimeException("文件不能为空");
+                throw new BizException("文件不能为空");
             }
             if (!"png".equalsIgnoreCase(extension(command.getOriginalFilename()))) {
-                throw new RuntimeException("无效的后缀名");
+                throw new BizException("无效的后缀名");
             }
             assertEquals("sancai.png", command.getOriginalFilename());
             assertEquals("image/png", command.getContentType());

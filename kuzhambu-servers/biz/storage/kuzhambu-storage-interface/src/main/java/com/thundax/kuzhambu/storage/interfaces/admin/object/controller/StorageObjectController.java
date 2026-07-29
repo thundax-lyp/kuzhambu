@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.storage.interfaces.admin.object.controller;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
@@ -270,6 +271,8 @@ public class StorageObjectController {
                     null));
             applyDefaultAccessEndpoint(storage);
             return StorageInterfaceAssembler.toResponse(storage);
+        } catch (BizException exception) {
+            throw AdminResponseExceptions.invalidParameter(exception.getMessage());
         } catch (IOException exception) {
             throw AdminResponseExceptions.system(exception.getMessage());
         }
