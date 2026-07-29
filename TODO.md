@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `08-storage-reference-repository-contract`：强类型化引用仓储契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/repository/StoredObjectReferenceRepository.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/StoredObjectReferenceRepositoryImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/StorageApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/assembler/StorageOwnerBindingFacadeAssembler.java`
-    - 处理动作：将 `deleteByObjectId` 改为 `StoredObjectId` 参数，并将 `listReferenceOwnerTypes` 改为返回 `StorageOwnerType`。
-    - 验收点：`StorageOwnerRef.ownerId` 仍为 `String`，application 对外需要 `List<String>` 时显式转换。
-    - 重要度：9/10
-
 - [ ] `09-storage-multipart-repository-contract`：强类型化分片仓储契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`

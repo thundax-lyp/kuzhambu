@@ -205,7 +205,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (deleted <= 0) {
             return 0;
         }
-        businessRepository.deleteByObjectId(String.valueOf(id.value()));
+        businessRepository.deleteByObjectId(id);
         return deleted;
     }
 
@@ -216,7 +216,9 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     @Override
     public List<String> listReferenceOwnerTypes(StorageQuery query) {
-        return businessRepository.listReferenceOwnerTypes();
+        return businessRepository.listReferenceOwnerTypes().stream()
+                .map(StorageOwnerType::value)
+                .collect(Collectors.toList());
     }
 
     @Override
