@@ -34,8 +34,8 @@ class PlatformAiControllerTest {
         InvokeResponse response = controller.buildPromptSuggestion(request());
 
         assertEquals("prompt", service.lastMethod);
-        assertEquals("req-1", service.lastCommand.getRequestId());
-        assertEquals("trace-1", service.lastCommand.getTraceId());
+        assertEquals("req-1", service.lastCommand.getRequestId().value());
+        assertEquals("trace-1", service.lastCommand.getTraceId().value());
         assertEquals("prompt_suggestion", response.getCapability());
         assertEquals(102L, response.getCandidateId());
     }

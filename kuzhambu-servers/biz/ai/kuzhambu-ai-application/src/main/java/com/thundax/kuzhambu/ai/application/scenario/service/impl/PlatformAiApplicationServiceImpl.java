@@ -8,13 +8,8 @@ import com.thundax.kuzhambu.ai.application.scenario.command.PlatformAiInvokeComm
 import com.thundax.kuzhambu.ai.application.scenario.service.PlatformAiApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.support.PlatformAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.scenario.support.PlatformAiWorkerUsecaseSpec;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
-import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -60,17 +55,15 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
         command.setWorkerCapability(spec.workerCapability());
         command.setOperation(spec.operation());
         command.setWorkerPath(spec.workerPath());
-        command.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
-                source.getContentType(), source.getContentId()));
-        command.setTargetObjectId(
-                com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec.toDomain(source.getObjectId()));
+        command.setContentRef(source.getContentRef());
+        command.setTargetObjectId(source.getTargetObjectId());
         command.setServiceId(source.getServiceId());
         command.setServiceRole(source.getServiceRole());
-        command.setModelId(AiModelIdCodec.toDomain(source.getModelId()));
-        command.setModelName(AiModelNameCodec.toDomain(source.getModelName()));
-        command.setPromptVersionId(PromptVersionIdCodec.toDomain(source.getPromptVersionId()));
-        command.setRequestId(RequestIdCodec.toDomain(source.getRequestId()));
-        command.setTraceId(TraceIdCodec.toDomain(source.getTraceId()));
+        command.setModelId(source.getModelId());
+        command.setModelName(source.getModelName());
+        command.setPromptVersionId(source.getPromptVersionId());
+        command.setRequestId(source.getRequestId());
+        command.setTraceId(source.getTraceId());
         command.setPromptMessagesJson(source.getPromptMessagesJson());
         command.setPromptVariablesJson(source.getPromptVariablesJson());
         command.setPromptHash(source.getPromptHash());
@@ -94,8 +87,8 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
 
     private void validateCommand(PlatformAiInvokeCommand command) {
         if (command == null
-                || isBlank(command.getRequestId())
-                || isBlank(command.getTraceId())
+                || command.getRequestId() == null
+                || command.getTraceId() == null
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("Platform AI invoke command is incomplete");
         }

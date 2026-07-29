@@ -2,8 +2,13 @@ package com.thundax.kuzhambu.ai.interfaces.admin.platform.assembler;
 
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.scenario.command.PlatformAiInvokeCommand;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.request.PlatformAiRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.response.PlatformAiResponses;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
@@ -15,16 +20,15 @@ public final class PlatformAiInterfaceAssembler {
 
     public static PlatformAiInvokeCommand toCommand(PlatformAiRequests.InvokeRequest request) {
         PlatformAiInvokeCommand command = new PlatformAiInvokeCommand();
-        command.setContentType(request.getContentType());
-        command.setContentId(request.getContentId());
-        command.setObjectId(request.getObjectId());
+        command.setContentRef(AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()));
+        command.setTargetObjectId(AiTargetObjectIdCodec.toDomain(request.getObjectId()));
         command.setServiceId(request.getServiceId());
         command.setServiceRole(request.getServiceRole());
-        command.setModelId(request.getModelId());
-        command.setModelName(request.getModelName());
-        command.setPromptVersionId(request.getPromptVersionId());
-        command.setRequestId(request.getRequestId());
-        command.setTraceId(request.getTraceId());
+        command.setModelId(AiModelIdCodec.toDomain(request.getModelId()));
+        command.setModelName(AiModelNameCodec.toDomain(request.getModelName()));
+        command.setPromptVersionId(PromptVersionIdCodec.toDomain(request.getPromptVersionId()));
+        command.setRequestId(RequestIdCodec.toDomain(request.getRequestId()));
+        command.setTraceId(TraceIdCodec.toDomain(request.getTraceId()));
         command.setPromptMessagesJson(request.getPromptMessagesJson());
         command.setPromptVariablesJson(request.getPromptVariablesJson());
         command.setPromptHash(request.getPromptHash());

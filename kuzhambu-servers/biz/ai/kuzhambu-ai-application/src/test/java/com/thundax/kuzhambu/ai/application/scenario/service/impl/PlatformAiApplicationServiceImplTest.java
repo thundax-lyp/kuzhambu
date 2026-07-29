@@ -14,6 +14,13 @@ import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeCo
 import com.thundax.kuzhambu.ai.application.scenario.command.PlatformAiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.scenario.support.PlatformAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
@@ -99,14 +106,13 @@ class PlatformAiApplicationServiceImplTest {
 
     private PlatformAiInvokeCommand command() {
         PlatformAiInvokeCommand command = new PlatformAiInvokeCommand();
-        command.setContentType("PROMPT_TEMPLATE");
-        command.setContentId(10L);
-        command.setObjectId(20L);
-        command.setModelId(30L);
-        command.setModelName("model-a");
-        command.setPromptVersionId(40L);
-        command.setRequestId("req-1");
-        command.setTraceId("trace-1");
+        command.setContentRef(AiContentRef.ofNullable("PROMPT_TEMPLATE", 10L));
+        command.setTargetObjectId(new AiTargetObjectId(20L));
+        command.setModelId(new AiModelId(30L));
+        command.setModelName(AiModelName.of("model-a"));
+        command.setPromptVersionId(new PromptVersionId(40L));
+        command.setRequestId(new RequestId("req-1"));
+        command.setTraceId(new TraceId("trace-1"));
         command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
         command.setInputPayloadJson("{\"template\":\"hello\"}");
         command.setOutputSchemaJson("{\"type\":\"object\"}");
