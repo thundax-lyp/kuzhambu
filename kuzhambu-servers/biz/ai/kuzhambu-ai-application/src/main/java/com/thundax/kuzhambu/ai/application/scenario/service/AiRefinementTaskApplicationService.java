@@ -12,14 +12,13 @@ import java.util.function.Consumer;
 
 public interface AiRefinementTaskApplicationService {
 
-    AiRefinementTaskResult submitRefinementTask(SubmitAiRefinementTaskCommand command);
+    AiRefinementTaskResult submit(SubmitAiRefinementTaskCommand command);
 
-    AiRefinementTaskResult getRefinementTask(GetAiRefinementTaskQuery query);
+    AiRefinementTaskResult get(GetAiRefinementTaskQuery query);
 
-    PageResult<AiRefinementTaskResult> pageRefinementTasks(PageAiRefinementTasksQuery query);
+    PageResult<AiRefinementTaskResult> page(PageAiRefinementTasksQuery query);
 
-    void subscribeRefinementTaskEvents(
-            SubscribeAiRefinementTaskEventsQuery query, Consumer<AiStreamEventResult> eventConsumer);
+    void subscribeEvents(SubscribeAiRefinementTaskEventsQuery query, Consumer<AiStreamEventResult> eventConsumer);
 
-    AiRefinementTaskResult cancelRefinementTask(CancelAiRefinementTaskCommand command);
+    AiRefinementTaskResult cancel(CancelAiRefinementTaskCommand command);
 }

@@ -236,7 +236,7 @@ class AiRefinementTaskControllerTest {
     private static final class FakeTaskApplicationService implements AiRefinementTaskApplicationService {
 
         @Override
-        public AiRefinementTaskResult submitRefinementTask(SubmitAiRefinementTaskCommand command) {
+        public AiRefinementTaskResult submit(SubmitAiRefinementTaskCommand command) {
             return task(
                     "RUNNING",
                     command.getCapability() == null
@@ -247,18 +247,17 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
-        public AiRefinementTaskResult getRefinementTask(GetAiRefinementTaskQuery query) {
+        public AiRefinementTaskResult get(GetAiRefinementTaskQuery query) {
             return task("SUCCEEDED", "summary", 9001L, 9002L);
         }
 
         @Override
-        public PageResult<AiRefinementTaskResult> pageRefinementTasks(PageAiRefinementTasksQuery query) {
-            return PageResult.of(
-                    1, 10, 1, List.of(getRefinementTask(new GetAiRefinementTaskQuery(new AiBatchJobId(7001L)))));
+        public PageResult<AiRefinementTaskResult> page(PageAiRefinementTasksQuery query) {
+            return PageResult.of(1, 10, 1, List.of(get(new GetAiRefinementTaskQuery(new AiBatchJobId(7001L)))));
         }
 
         @Override
-        public void subscribeRefinementTaskEvents(
+        public void subscribeEvents(
                 SubscribeAiRefinementTaskEventsQuery query, Consumer<AiStreamEventResult> eventConsumer) {
             AiStreamEventResult event = new AiStreamEventResult();
             event.setEventType("completed");
@@ -270,7 +269,7 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
-        public AiRefinementTaskResult cancelRefinementTask(CancelAiRefinementTaskCommand command) {
+        public AiRefinementTaskResult cancel(CancelAiRefinementTaskCommand command) {
             return task("CANCELLED", "summary", null, null);
         }
 

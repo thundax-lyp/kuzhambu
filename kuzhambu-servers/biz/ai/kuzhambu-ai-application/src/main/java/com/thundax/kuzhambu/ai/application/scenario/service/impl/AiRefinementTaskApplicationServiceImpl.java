@@ -104,7 +104,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiRefinementTaskResult submitRefinementTask(SubmitAiRefinementTaskCommand command) {
+    public AiRefinementTaskResult submit(SubmitAiRefinementTaskCommand command) {
         validateAddCommand(command);
         validateRefinementBatchOwnership(command.getScope(), capabilityValue(command.getCapability()));
         refinementApplicationService.snapshotInvokeConfig(command);
@@ -120,7 +120,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     @Override
-    public AiRefinementTaskResult getRefinementTask(GetAiRefinementTaskQuery query) {
+    public AiRefinementTaskResult get(GetAiRefinementTaskQuery query) {
         AiBatchJobResult job =
                 batchJobApplicationService.get(new GetAiBatchJobQuery(query == null ? null : query.getTaskId()));
         validateRefinementBatchOwnership(job);
@@ -128,7 +128,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     @Override
-    public PageResult<AiRefinementTaskResult> pageRefinementTasks(PageAiRefinementTasksQuery query) {
+    public PageResult<AiRefinementTaskResult> page(PageAiRefinementTasksQuery query) {
         AiBusinessCapability capability = query == null ? null : query.getCapability();
         AiBatchJobStatus status = query == null ? null : query.getStatus();
         AiContentRef contentRef = query == null ? null : query.getContentRef();
@@ -151,7 +151,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     @Override
-    public void subscribeRefinementTaskEvents(
+    public void subscribeEvents(
             SubscribeAiRefinementTaskEventsQuery query, Consumer<AiStreamEventResult> eventConsumer) {
         AiBatchJobId taskId = query == null ? null : query.getTaskId();
         AiBatchJobResult job = batchJobApplicationService.get(new GetAiBatchJobQuery(taskId));
@@ -173,7 +173,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiRefinementTaskResult cancelRefinementTask(CancelAiRefinementTaskCommand command) {
+    public AiRefinementTaskResult cancel(CancelAiRefinementTaskCommand command) {
         AiBatchJobId taskId = command == null ? null : command.getTaskId();
         AiBatchJobResult job = batchJobApplicationService.get(new GetAiBatchJobQuery(taskId));
         validateRefinementBatchOwnership(job);
