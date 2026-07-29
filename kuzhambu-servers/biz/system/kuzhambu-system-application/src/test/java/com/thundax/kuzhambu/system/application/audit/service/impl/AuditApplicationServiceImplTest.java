@@ -38,8 +38,7 @@ class AuditApplicationServiceImplTest {
         when(auditMetaRepository.updateIfVersion(any(AuditMeta.class), eq(7L))).thenReturn(0);
 
         CreateAuditLogCommand command = new CreateAuditLogCommand();
-        command.setObjectType("USER");
-        command.setObjectId("1");
+        command.setObjectRef(AuditObjectRef.of("USER", "1"));
         command.setAction(AuditAction.UPDATE);
         command.setRecordWhenUnchanged(true);
 

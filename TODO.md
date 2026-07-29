@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `17-audit-object-ref`：[17] 强类型化审计对象和操作人引用
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/command/CreateAuditLogCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/query/AuditLogQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/query/AuditMetaQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/query/GetAuditLogQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/service/AuditApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/service/impl/AuditApplicationServiceImpl.java`
-    - 处理动作：将审计 Command/Query 的 `objectType/objectId/operatorType/operatorId/operatorName` 收敛为 `AuditObjectRef` 和 `AuditOperatorRef`，并用 `GetAuditLogQuery.id` 替换 `getLog(AuditLogId)`。
-    - 验收点：审计 application 契约不再暴露裸对象引用字段，审计日志分页和详情查询结果不变。
-    - 重要度：8/10
-
 - [ ] `18-audit-callers`：[18] 同步审计调用方使用强类型查询对象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

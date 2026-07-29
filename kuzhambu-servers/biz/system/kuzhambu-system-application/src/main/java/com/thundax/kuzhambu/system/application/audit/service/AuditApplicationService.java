@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand;
 import com.thundax.kuzhambu.system.application.audit.query.AuditLogQuery;
 import com.thundax.kuzhambu.system.application.audit.query.AuditMetaQuery;
+import com.thundax.kuzhambu.system.application.audit.query.GetAuditLogQuery;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
@@ -14,7 +15,12 @@ public interface AuditApplicationService {
 
     AuditLogId record(CreateAuditLogCommand command);
 
-    AuditLog getLog(AuditLogId id);
+    AuditLog getLog(GetAuditLogQuery query);
+
+    @Deprecated
+    default AuditLog getLog(AuditLogId id) {
+        return getLog(new GetAuditLogQuery(id));
+    }
 
     AuditMeta getMeta(AuditMetaQuery query);
 

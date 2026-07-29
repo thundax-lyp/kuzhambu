@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand;
 import com.thundax.kuzhambu.system.application.audit.query.AuditLogQuery;
 import com.thundax.kuzhambu.system.application.audit.query.AuditMetaQuery;
+import com.thundax.kuzhambu.system.application.audit.query.GetAuditLogQuery;
 import com.thundax.kuzhambu.system.application.audit.runtime.AuditExpressionEvaluator;
 import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
@@ -41,9 +42,8 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AuditLogId record(CreateAuditLogCommand command) {
-        if (command == null
-                || StringUtils.isBlank(command.getObjectType())
-                || StringUtils.isBlank(command.getObjectId())) {
+        AuditObjectRef objectRef = command == null ? null : command.getObjectRef();
+        if (objectRef == null || !objectRef.isValid()) {
             return null;
         }
         if (StringUtils.isNotBlank(command.getIdempotencyKey())) {
@@ -59,25 +59,23 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
             return null;
         }
 
-        AuditObjectRef objectRef = new AuditObjectRef(command.getObjectType(), command.getObjectId());
         AuditMeta meta = auditMetaRepository.getByObjectRef(objectRef);
         long previousVersion = meta == null || meta.getVersion() == null ? 0L : meta.getVersion();
         Date occurredAt = new Date();
         String idempotencyKey = StringUtils.defaultIfBlank(
                 command.getIdempotencyKey(),
-                command.getObjectType() + ":" + command.getObjectId() + ":" + command.getAction() + ":"
+                objectRef.getObjectType() + ":" + objectRef.getObjectId() + ":" + command.getAction() + ":"
                         + occurredAt.getTime());
+        AuditOperatorRef operatorRef = operatorRef(command.getOperatorRef());
 
         AuditLog log = new AuditLog();
         log.setMetaId(meta == null ? null : meta.getId());
-        log.setObjectType(command.getObjectType());
-        log.setObjectId(command.getObjectId());
+        log.setObjectRef(objectRef);
         log.setPreviousVersion(previousVersion);
         log.setVersion(previousVersion + 1);
         log.setAction(command.getAction() == null ? AuditAction.UPDATE : command.getAction());
         log.setIdempotencyKey(idempotencyKey);
-        log.setOperatorType(command.getOperatorType() == null ? AuditOperatorType.UNKNOWN : command.getOperatorType());
-        log.setOperatorId(command.getOperatorId());
+        log.setOperatorRef(operatorRef);
         log.setOperatorName(command.getOperatorName());
         log.setSource(StringUtils.defaultIfBlank(command.getSource(), "SERVICE"));
         log.setRequestId(command.getRequestId());
@@ -91,12 +89,10 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
 
         if (meta == null) {
             meta = new AuditMeta();
-            meta.setObjectType(command.getObjectType());
-            meta.setObjectId(command.getObjectId());
+            meta.setObjectRef(objectRef);
             meta.setVersion(0L);
             meta.setLastAction(log.getAction());
-            meta.setLastOperatorType(log.getOperatorType());
-            meta.setLastOperatorId(log.getOperatorId());
+            meta.setLastOperatorRef(log.getOperatorRef());
             meta.setLastOperatorName(log.getOperatorName());
             meta.setLastOperatedAt(log.getOccurredAt());
             meta.setCreatedAt(occurredAt);
@@ -108,8 +104,7 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
 
         meta.setLastLogId(logId);
         meta.setLastAction(log.getAction());
-        meta.setLastOperatorType(log.getOperatorType());
-        meta.setLastOperatorId(log.getOperatorId());
+        meta.setLastOperatorRef(log.getOperatorRef());
         meta.setLastOperatorName(log.getOperatorName());
         meta.setLastOperatedAt(log.getOccurredAt());
         meta.setVersion(log.getVersion());
@@ -123,7 +118,8 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
     }
 
     @Override
-    public AuditLog getLog(AuditLogId id) {
+    public AuditLog getLog(GetAuditLogQuery query) {
+        AuditLogId id = query == null ? null : query.getId();
         if (id == null) {
             return null;
         }
@@ -135,12 +131,12 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
         if (query == null) {
             return null;
         }
-        return auditMetaRepository.getByObjectRef(new AuditObjectRef(query.getObjectType(), query.getObjectId()));
+        return auditMetaRepository.getByObjectRef(query.getObjectRef());
     }
 
     @Override
     public List<AuditLog> list(AuditMetaQuery query) {
-        return auditLogRepository.listByObject(new AuditObjectRef(query.getObjectType(), query.getObjectId()));
+        return auditLogRepository.listByObject(query == null ? null : query.getObjectRef());
     }
 
     @Override
@@ -158,10 +154,20 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
     }
 
     private AuditObjectRef objectRef(AuditLogQuery query) {
-        return query == null ? null : new AuditObjectRef(query.getObjectType(), query.getObjectId());
+        return query == null ? null : query.getObjectRef();
     }
 
     private AuditOperatorRef operatorRef(AuditLogQuery query) {
-        return query == null ? null : new AuditOperatorRef(query.getOperatorType(), query.getOperatorId());
+        return query == null ? null : query.getOperatorRef();
+    }
+
+    private AuditOperatorRef operatorRef(AuditOperatorRef operatorRef) {
+        if (operatorRef == null) {
+            return new AuditOperatorRef(AuditOperatorType.UNKNOWN, null);
+        }
+        if (operatorRef.getOperatorType() == null) {
+            operatorRef.setOperatorType(AuditOperatorType.UNKNOWN);
+        }
+        return operatorRef;
     }
 }
