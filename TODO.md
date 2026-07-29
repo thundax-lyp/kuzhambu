@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `06-storage-multipart-entity`：强类型化分片上传实体字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/entity/MultipartUploadSession.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/entity/MultipartUploadPart.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/persistence/assembler/StoragePersistenceAssembler.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/MultipartUploadRepositoryImpl.java`
-    - 处理动作：将分片会话和分片记录的 MIME、bucket、object key、size、part size、part number 改为值对象。
-    - 验收点：`getUploadId()`、`setUploadId(String)` 兼容行为保留，MyBatis 查询使用 codec 转基础值。
-    - 重要度：10/10
-
 - [ ] `07-storage-object-repository-contract`：强类型化 StoredObjectRepository 平铺契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`

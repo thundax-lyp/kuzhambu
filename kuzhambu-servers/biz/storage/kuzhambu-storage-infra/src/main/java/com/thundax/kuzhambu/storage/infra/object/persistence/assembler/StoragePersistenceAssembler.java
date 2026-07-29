@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.storage.infra.object.persistence.assembler;
 
+import com.thundax.kuzhambu.storage.domain.object.codec.MultipartPartNumberCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.MultipartPartSizeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadPartIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadSessionIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageBucketNameCodec;
@@ -167,12 +169,12 @@ public final class StoragePersistenceAssembler {
         dataObject.setOwnerType(ownerTypeValue(entity.getOwnerType()));
         dataObject.setBusinessType(entity.getBusinessType());
         dataObject.setOriginalFilename(entity.getOriginalFilename());
-        dataObject.setMimeType(entity.getMimeType());
-        dataObject.setBucketName(entity.getBucketName());
-        dataObject.setObjectKey(entity.getObjectKey());
+        dataObject.setMimeType(StorageMimeTypeCodec.toValue(entity.getMimeTypeRef()));
+        dataObject.setBucketName(StorageBucketNameCodec.toValue(entity.getBucketNameRef()));
+        dataObject.setObjectKey(StorageObjectKeyCodec.toValue(entity.getObjectKeyRef()));
         dataObject.setProviderUploadId(entity.getProviderUploadId());
-        dataObject.setTotalSize(entity.getTotalSize());
-        dataObject.setPartSize(entity.getPartSize());
+        dataObject.setTotalSize(StorageByteSizeCodec.toValue(entity.getTotalSizeRef()));
+        dataObject.setPartSize(MultipartPartSizeCodec.toValue(entity.getPartSizeRef()));
         dataObject.setUploadedPartCount(uploadedPartCountOrDefault(entity.getUploadedPartCount()));
         dataObject.setUploadStatus(uploadStatusValue(entity.getUploadStatus()));
         dataObject.setCompletedDate(entity.getCompletedDate());
@@ -191,12 +193,12 @@ public final class StoragePersistenceAssembler {
         entity.setOwnerType(ownerTypeFrom(dataObject.getOwnerType()));
         entity.setBusinessType(dataObject.getBusinessType());
         entity.setOriginalFilename(dataObject.getOriginalFilename());
-        entity.setMimeType(dataObject.getMimeType());
-        entity.setBucketName(dataObject.getBucketName());
-        entity.setObjectKey(dataObject.getObjectKey());
+        entity.setMimeTypeRef(StorageMimeTypeCodec.toDomain(dataObject.getMimeType()));
+        entity.setBucketNameRef(StorageBucketNameCodec.toDomain(dataObject.getBucketName()));
+        entity.setObjectKeyRef(StorageObjectKeyCodec.toDomain(dataObject.getObjectKey()));
         entity.setProviderUploadId(dataObject.getProviderUploadId());
-        entity.setTotalSize(dataObject.getTotalSize());
-        entity.setPartSize(dataObject.getPartSize());
+        entity.setTotalSizeRef(StorageByteSizeCodec.toDomain(dataObject.getTotalSize()));
+        entity.setPartSizeRef(MultipartPartSizeCodec.toDomain(dataObject.getPartSize()));
         entity.setUploadedPartCount(uploadedPartCountOrDefault(dataObject.getUploadedPartCount()));
         entity.setUploadStatus(uploadStatusFrom(dataObject.getUploadStatus()));
         entity.setCompletedDate(dataObject.getCompletedDate());
@@ -211,10 +213,10 @@ public final class StoragePersistenceAssembler {
         MultipartUploadPartDO dataObject = new MultipartUploadPartDO();
         dataObject.setId(MultipartUploadPartIdCodec.toValue(entity.getId()));
         dataObject.setUploadId(entity.getUploadId());
-        dataObject.setPartPath(entity.getPartPath());
-        dataObject.setPartNumber(entity.getPartNumber());
+        dataObject.setPartPath(StorageObjectKeyCodec.toValue(entity.getPartPathRef()));
+        dataObject.setPartNumber(MultipartPartNumberCodec.toValue(entity.getPartNumberRef()));
         dataObject.setEtag(entity.getEtag());
-        dataObject.setSize(entity.getSize());
+        dataObject.setSize(StorageByteSizeCodec.toValue(entity.getSizeRef()));
         return dataObject;
     }
 
@@ -225,10 +227,10 @@ public final class StoragePersistenceAssembler {
         MultipartUploadPart entity = new MultipartUploadPart();
         entity.setId(MultipartUploadPartIdCodec.toDomain(dataObject.getId()));
         entity.setUploadId(dataObject.getUploadId());
-        entity.setPartPath(dataObject.getPartPath());
-        entity.setPartNumber(dataObject.getPartNumber());
+        entity.setPartPathRef(StorageObjectKeyCodec.toDomain(dataObject.getPartPath()));
+        entity.setPartNumberRef(MultipartPartNumberCodec.toDomain(dataObject.getPartNumber()));
         entity.setEtag(dataObject.getEtag());
-        entity.setSize(dataObject.getSize());
+        entity.setSizeRef(StorageByteSizeCodec.toDomain(dataObject.getSize()));
         return entity;
     }
 

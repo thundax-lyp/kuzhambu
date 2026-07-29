@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.storage.infra.object.repository.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.storage.domain.object.codec.MultipartPartNumberCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadPartIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadSessionIdCodec;
@@ -96,7 +97,9 @@ public class MultipartUploadRepositoryImpl implements MultipartUploadRepository 
     public MultipartUploadPart getMultipartPart(MultipartUploadId uploadId, Integer partNumber) {
         LambdaQueryWrapper<MultipartUploadPartDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MultipartUploadPartDO::getUploadId, MultipartUploadIdCodec.toValue(uploadId));
-        wrapper.eq(MultipartUploadPartDO::getPartNumber, partNumber);
+        wrapper.eq(
+                MultipartUploadPartDO::getPartNumber,
+                MultipartPartNumberCodec.toValue(MultipartPartNumberCodec.toDomain(partNumber)));
         return StoragePersistenceAssembler.toMultipartPartDomain(partMapper.selectOne(wrapper));
     }
 
