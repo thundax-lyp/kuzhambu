@@ -21,10 +21,100 @@
     border-radius: 6px;
 }
 
-.sancai-visual-workflow {
+.sancai-visual-asset-summary-meta {
     display: flex;
     min-width: 0;
+    gap: 8px 14px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.sancai-visual-asset-context {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.7fr) minmax(360px, 1.3fr);
+    gap: 12px;
+    align-items: start;
+}
+
+.sancai-visual-asset-picker {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+    padding: 12px;
+    background: color-mix(in srgb, var(--sancai-panel) 86%, #fff7df 14%);
+    border: 1px solid var(--sancai-line);
+    border-radius: 6px;
+}
+
+.sancai-visual-workflow {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+    min-width: 0;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.sancai-visual-workflow-step {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 10px;
+    min-width: 0;
+    padding: 12px;
+    background: color-mix(in srgb, var(--sancai-panel) 88%, #fff7df 12%);
+    border: 1px solid var(--sancai-line);
+    border-radius: 6px;
+}
+
+.sancai-visual-workflow-step-index {
+    display: inline-grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    color: var(--sancai-accent);
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--sancai-accent-soft);
+    border: 1px solid var(--sancai-accent-line);
+    border-radius: 999px;
+}
+
+.sancai-visual-workflow-step-body {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+}
+
+.sancai-visual-workflow-step-title {
+    display: flex;
+    min-width: 0;
+    gap: 8px;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.sancai-visual-workflow-step .ant-btn {
+    justify-self: start;
+}
+
+.sancai-visual-process-fields {
+    display: grid;
+    min-width: 0;
+    gap: 10px;
+}
+
+.sancai-visual-process-field {
+    min-width: 0;
+    padding: 12px;
+    background: color-mix(in srgb, var(--sancai-panel) 82%, transparent);
+    border: 1px solid var(--sancai-line);
+    border-radius: 6px;
+}
+
+.sancai-visual-weight-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    gap: 10px;
 }
 
 .sancai-visual-workflow-arrow {
@@ -106,7 +196,13 @@
 }
 
 @media (max-width: 900px) {
+    .sancai-visual-asset-context,
+    .sancai-visual-workflow,
     .sancai-visual-asset-image-list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sancai-visual-weight-grid {
         grid-template-columns: minmax(0, 1fr);
     }
 }

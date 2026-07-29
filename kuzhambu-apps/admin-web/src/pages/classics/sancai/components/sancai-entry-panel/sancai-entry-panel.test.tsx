@@ -2008,7 +2008,13 @@ describe("SancaiEntryPanel sharing", () => {
         const visualAssetPanel = await screen.findByLabelText("三才图会视觉处理面板", undefined, {
             timeout: 1000
         });
+        expect(within(visualAssetPanel).getByText("当前图片：sancai.png")).toBeInTheDocument();
         expect(within(visualAssetPanel).getByText(/当前处理：处理记录 2/)).toBeInTheDocument();
+        expect(within(visualAssetPanel).getByLabelText("图文生图工作流")).toBeInTheDocument();
+        expect(within(visualAssetPanel).getAllByText("图片理解").length).toBeGreaterThan(0);
+        expect(within(visualAssetPanel).getAllByText("图文融合").length).toBeGreaterThan(0);
+        expect(within(visualAssetPanel).getAllByText("视觉描述").length).toBeGreaterThan(0);
+        expect(within(visualAssetPanel).getByText("生图")).toBeInTheDocument();
         expect(
             within(visualAssetPanel).getByTestId("sancai-visual-asset-5001-select-button")
         ).toBeInTheDocument();
@@ -2063,6 +2069,24 @@ describe("SancaiEntryPanel sharing", () => {
             "src",
             "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content"
         );
+    });
+
+    it("offers a draft visual processing record when the entry has images but no visual assets", async () => {
+        vi.mocked(entryService.listVisualAssets).mockResolvedValueOnce([]);
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+
+        const visualAssetPanel = await openVisualAssetSection(user);
+
+        expect(within(visualAssetPanel).getByText("当前处理：新处理记录")).toBeInTheDocument();
+        expect(within(visualAssetPanel).getByText("请先创建处理记录")).toBeInTheDocument();
+        expect(
+            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-7")
+        ).toHaveTextContent("创建记录");
     });
 
     it("previews current visual asset without opening the visual section", async () => {
