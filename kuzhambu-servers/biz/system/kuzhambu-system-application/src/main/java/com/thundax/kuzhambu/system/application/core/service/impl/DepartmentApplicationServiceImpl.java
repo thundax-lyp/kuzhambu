@@ -8,7 +8,9 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.command.ChangeDepartmentInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.command.MoveDepartmentCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
@@ -28,7 +30,8 @@ public class DepartmentApplicationServiceImpl implements DepartmentApplicationSe
         this.dao = dao;
     }
 
-    public Department get(DepartmentId id) {
+    public Department get(GetDepartmentQuery query) {
+        DepartmentId id = query == null ? null : query.getId();
         if (id == null) {
             return null;
         }
@@ -71,11 +74,12 @@ public class DepartmentApplicationServiceImpl implements DepartmentApplicationSe
     @Transactional(rollbackFor = Exception.class)
     @AuditLog(
             type = "Department",
-            id = "#id == null ? null : #id.value()",
+            id = "#command.id == null ? null : #command.id.value()",
             action = AuditAction.DELETE,
             summary = "删除部门")
-    public int remove(DepartmentId id) {
-        Department bean = this.get(id);
+    public int remove(RemoveDepartmentCommand command) {
+        DepartmentId id = command == null ? null : command.getId();
+        Department bean = this.get(new GetDepartmentQuery(id));
         if (bean == null) {
             return 0;
         }

@@ -25,6 +25,7 @@ import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialA
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
@@ -39,7 +40,6 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserPrivilege;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
-import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -193,7 +193,7 @@ class CurrentUserApplicationServiceImplTest {
 
         assertEquals(List.of(grantedMenu), menus);
         verify(menuService).list(any(MenuQuery.class));
-        verify(menuService, never()).get(any(MenuId.class));
+        verify(menuService, never()).get(any(GetMenuQuery.class));
     }
 
     private static CurrentUserApplicationServiceImpl service(StorageFacade storageFacade) {

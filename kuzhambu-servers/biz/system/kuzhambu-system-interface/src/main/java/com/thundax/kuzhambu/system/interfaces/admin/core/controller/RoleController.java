@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
@@ -35,11 +36,13 @@ import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler;
@@ -348,8 +351,8 @@ public class RoleController {
                         DEPARTMENT_ID_PREFIX,
                         user,
                         getAccountLoginName(user),
-                        departmentService.get(user.getDepartmentId()),
-                        departmentService::get))
+                        getDepartment(user.getDepartmentId()),
+                        this::getDepartment))
                 .collect(Collectors.toList()));
 
         return list;
@@ -406,7 +409,7 @@ public class RoleController {
 
     private RoleUserResponse toUserResponse(User user) {
         return RoleInterfaceAssembler.toUserResponse(
-                user, getAccountLoginName(user), departmentService.get(user.getDepartmentId()), departmentService::get);
+                user, getAccountLoginName(user), getDepartment(user.getDepartmentId()), this::getDepartment);
     }
 
     private String getAccountLoginName(User user) {
@@ -460,6 +463,10 @@ public class RoleController {
 
     private GetRoleQuery getRoleQuery(RoleId roleId) {
         return new GetRoleQuery(roleId);
+    }
+
+    private Department getDepartment(DepartmentId departmentId) {
+        return departmentService.get(new GetDepartmentQuery(departmentId));
     }
 
     private RoleQuery roleQuery(String roleId) {

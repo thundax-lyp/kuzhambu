@@ -32,6 +32,7 @@ import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAva
 import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
@@ -64,6 +65,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver;
@@ -502,7 +504,7 @@ public class UserController {
     @WrappedApiResponse
     public List<UserDepartmentResponse> departmentTree() {
         return departmentService.list(new DepartmentQuery()).stream()
-                .map(department -> UserInterfaceAssembler.toDepartmentResponse(department, departmentService::get))
+                .map(department -> UserInterfaceAssembler.toDepartmentResponse(department, this::getDepartment))
                 .collect(Collectors.toList());
     }
 
@@ -571,7 +573,7 @@ public class UserController {
         UserQuery query = UserInterfaceAssembler.toQuery(request);
 
         if (request.getDepartmentId() != null) {
-            Department department = departmentService.get(DepartmentIdCodec.toDomain(request.getDepartmentId()));
+            Department department = getDepartment(DepartmentIdCodec.toDomain(request.getDepartmentId()));
             if (department == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -587,7 +589,7 @@ public class UserController {
             throw AdminResponseExceptions.invalidParameter("department.id");
 
         } else {
-            Department bean = departmentService.get(DepartmentIdCodec.toDomain(request.getId()));
+            Department bean = getDepartment(DepartmentIdCodec.toDomain(request.getId()));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -705,14 +707,14 @@ public class UserController {
     }
 
     private UserResponse toResponse(User user) {
-        Department department = departmentService.get(user.getDepartmentId());
+        Department department = getDepartment(user.getDepartmentId());
         return UserInterfaceAssembler.toResponse(
                 user,
                 getAccountLoginName(user.getId()),
                 department,
                 loadUserRoles(user),
                 readAvatarUrl(user.getId()),
-                departmentService::get);
+                this::getDepartment);
     }
 
     private List<Role> loadUserRoles(User user) {
@@ -738,6 +740,10 @@ public class UserController {
 
     private GetRoleQuery getRoleQuery(RoleId roleId) {
         return new GetRoleQuery(roleId);
+    }
+
+    private Department getDepartment(DepartmentId departmentId) {
+        return departmentService.get(new GetDepartmentQuery(departmentId));
     }
 
     private String getAccountLoginName(UserId userId) {

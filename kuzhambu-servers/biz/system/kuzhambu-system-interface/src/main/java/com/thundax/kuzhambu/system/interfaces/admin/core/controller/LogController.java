@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
+import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
@@ -23,6 +24,7 @@ import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.LogInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.LogPageRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.LogResponse;
@@ -79,9 +81,8 @@ public class LogController {
 
     private LogResponse toResponse(Log log) {
         User user = getLogUser(log);
-        Department department = user == null ? null : departmentService.get(user.getDepartmentId());
-        return LogInterfaceAssembler.toResponse(
-                log, user, getAccountLoginName(user), department, departmentService::get);
+        Department department = user == null ? null : getDepartment(user.getDepartmentId());
+        return LogInterfaceAssembler.toResponse(log, user, getAccountLoginName(user), department, this::getDepartment);
     }
 
     private User getLogUser(Log log) {
@@ -106,5 +107,9 @@ public class LogController {
         query.setPrincipalKey(principalKey);
         query.setIdentityType(identityType);
         return query;
+    }
+
+    private Department getDepartment(DepartmentId departmentId) {
+        return departmentService.get(new GetDepartmentQuery(departmentId));
     }
 }

@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `12-core-department-contract`：[12] 强类型化 Department get/remove 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/GetDepartmentQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/RemoveDepartmentCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/DepartmentApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/DepartmentApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/DepartmentController.java`
-    - 处理动作：新增 `GetDepartmentQuery.id` 和 `RemoveDepartmentCommand.id`，替换 `get(DepartmentId)` 与 `remove(DepartmentId)`。
-    - 验收点：Department application service 的 get/remove 均使用 Query/Command，部门详情、删除部门接口保持 HTTP 契约不变。
-    - 重要度：8/10
-
 - [ ] `13-core-dict-contract`：[13] 强类型化 Dict get/remove 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
