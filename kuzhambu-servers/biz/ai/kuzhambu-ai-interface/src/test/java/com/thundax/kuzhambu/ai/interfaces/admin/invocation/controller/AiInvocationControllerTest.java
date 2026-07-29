@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.query.RequireAiCandidateForApplyQuery;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
@@ -299,7 +300,7 @@ class AiInvocationControllerTest {
                 new Class<?>[] {AiBatchJobApplicationService.class},
                 (proxy, method, args) -> {
                     if ("cancel".equals(method.getName())) {
-                        assertEquals(new AiBatchJobId(8801L), args[0]);
+                        assertEquals(new AiBatchJobId(8801L), ((CancelAiBatchJobCommand) args[0]).getBatchId());
                         return new com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult(
                                 new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(8801L),
                                 "classics",

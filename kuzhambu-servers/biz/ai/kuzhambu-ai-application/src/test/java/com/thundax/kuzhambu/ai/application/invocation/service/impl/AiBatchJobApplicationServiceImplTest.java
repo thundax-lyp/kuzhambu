@@ -3,6 +3,10 @@ package com.thundax.kuzhambu.ai.application.invocation.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
@@ -94,7 +98,7 @@ public class AiBatchJobApplicationServiceImplTest {
         AiBatchJob job = cancelledJob();
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        AiBatchJobResult result = service.recordSuccess(new AiBatchJobId(1L));
+        AiBatchJobResult result = service.recordSuccess(new RecordAiBatchJobCommand(new AiBatchJobId(1L)));
 
         assertEquals(2, result.getSuccessCount());
         assertEquals(1, result.getFailedCount());
@@ -107,7 +111,8 @@ public class AiBatchJobApplicationServiceImplTest {
         AiBatchJob job = cancelledJob();
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        AiBatchJobResult result = service.recordFailure(new AiBatchJobId(1L), "{\"failed\":true}");
+        AiBatchJobResult result =
+                service.recordFailure(new RecordAiBatchJobFailureCommand(new AiBatchJobId(1L), "{\"failed\":true}"));
 
         assertEquals(1, result.getSuccessCount());
         assertEquals(2, result.getFailedCount());
@@ -124,7 +129,7 @@ public class AiBatchJobApplicationServiceImplTest {
         job.setCancelledCount(0);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        AiBatchJobResult result = service.recordSuccess(new AiBatchJobId(1L));
+        AiBatchJobResult result = service.recordSuccess(new RecordAiBatchJobCommand(new AiBatchJobId(1L)));
 
         assertEquals(9, result.getSuccessCount());
         assertEquals(1, result.getFailedCount());
@@ -144,7 +149,7 @@ public class AiBatchJobApplicationServiceImplTest {
         job.setSuccessCount(1);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        AiBatchJobResult result = service.cancel(new AiBatchJobId(1L));
+        AiBatchJobResult result = service.cancel(new CancelAiBatchJobCommand(new AiBatchJobId(1L)));
 
         assertEquals(AiBatchJobStatus.SUCCEEDED, result.getStatus());
         assertEquals(1, result.getSuccessCount());
@@ -164,7 +169,7 @@ public class AiBatchJobApplicationServiceImplTest {
         repository.failNextConditionalUpdateWith(AiBatchJobStatus.CANCELLED);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
 
-        AiBatchJobResult result = service.recordSuccessIfRunning(new AiBatchJobId(1L));
+        AiBatchJobResult result = service.recordSuccessIfRunning(new RecordAiBatchJobCommand(new AiBatchJobId(1L)));
 
         assertEquals(AiBatchJobStatus.CANCELLED, result.getStatus());
         assertEquals(0, result.getSuccessCount());
@@ -181,8 +186,8 @@ public class AiBatchJobApplicationServiceImplTest {
         job.setTotalCount(1);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        AiBatchJobResult result =
-                service.recordPartialIfRunning(new AiBatchJobId(1L), "{\"errorType\":\"MODEL_SEMANTIC_FAILURE\"}");
+        AiBatchJobResult result = service.recordPartialIfRunning(
+                new RecordAiBatchJobFailureCommand(new AiBatchJobId(1L), "{\"errorType\":\"MODEL_SEMANTIC_FAILURE\"}"));
 
         assertEquals(AiBatchJobStatus.PARTIAL, result.getStatus());
         assertEquals(1, result.getSuccessCount());
@@ -201,12 +206,12 @@ public class AiBatchJobApplicationServiceImplTest {
         job.setTotalCount(1);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        PageResult<AiBatchJobResult> page = service.page(
+        PageResult<AiBatchJobResult> page = service.page(new PageAiBatchJobsQuery(
                 "classics",
                 AiBusinessCapability.CLASSICS_SUMMARY,
                 null,
                 AiContentRef.ofNullable("SANCAI_ENTRY", 3001L),
-                new PageQuery(1, 10));
+                new PageQuery(1, 10)));
 
         assertEquals(1, page.getTotalCount());
         assertEquals(3001L, page.getRecords().get(0).getContentRef().contentId());

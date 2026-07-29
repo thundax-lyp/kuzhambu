@@ -1,9 +1,16 @@
 package com.thundax.kuzhambu.ai.application.invocation.service.impl;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.ExpireRunningAiBatchJobsCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsByCapabilitiesQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiBatchJob;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.query.AiBatchJobQuery;
@@ -33,22 +40,18 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     }
 
     @Override
-    public AiBatchJobResult get(AiBatchJobId batchId) {
-        return AiBatchJobResult.from(getRequired(batchId));
+    public AiBatchJobResult get(GetAiBatchJobQuery query) {
+        return AiBatchJobResult.from(getRequired(query == null ? null : query.getBatchId()));
     }
 
     @Override
-    public PageResult<AiBatchJobResult> page(
-            String scope,
-            AiBusinessCapability capability,
-            AiBatchJobStatus status,
-            AiContentRef contentRef,
-            PageQuery pageQuery) {
-        PageQuery effectivePage = effectivePage(pageQuery);
+    public PageResult<AiBatchJobResult> page(PageAiBatchJobsQuery query) {
+        PageQuery effectivePage = effectivePage(query == null ? null : query.getPageQuery());
+        AiContentRef contentRef = query == null ? null : query.getContentRef();
         return page(new AiBatchJobQuery(
-                scope,
-                capability,
-                status,
+                query == null ? null : query.getScope(),
+                query == null ? null : query.getCapability(),
+                query == null ? null : query.getStatus(),
                 contentRef == null ? null : contentRef.contentType(),
                 contentRef == null ? null : contentRef.contentId(),
                 effectivePage.getPageNo(),
@@ -56,17 +59,13 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     }
 
     @Override
-    public PageResult<AiBatchJobResult> pageByCapabilities(
-            String scope,
-            List<AiBusinessCapability> capabilities,
-            AiBatchJobStatus status,
-            AiContentRef contentRef,
-            PageQuery pageQuery) {
-        PageQuery effectivePage = effectivePage(pageQuery);
+    public PageResult<AiBatchJobResult> pageByCapabilities(PageAiBatchJobsByCapabilitiesQuery query) {
+        PageQuery effectivePage = effectivePage(query == null ? null : query.getPageQuery());
+        AiContentRef contentRef = query == null ? null : query.getContentRef();
         return page(new AiBatchJobQuery(
-                scope,
-                capabilities,
-                status,
+                query == null ? null : query.getScope(),
+                query == null ? null : query.getCapabilities(),
+                query == null ? null : query.getStatus(),
                 contentRef == null ? null : contentRef.contentType(),
                 contentRef == null ? null : contentRef.contentId(),
                 effectivePage.getPageNo(),
@@ -96,7 +95,8 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     }
 
     @Override
-    public boolean canDispatchNextUnit(AiBatchJobId batchId) {
+    public boolean canDispatchNextUnit(CanDispatchNextAiBatchUnitQuery query) {
+        AiBatchJobId batchId = query == null ? null : query.getBatchId();
         AiBatchJob job = getRequired(batchId);
         return AiBatchJobStatus.CANCELLED != job.getStatus()
                 && job.getSuccessCount() + job.getFailedCount() + job.getCancelledCount() < job.getTotalCount();
@@ -104,7 +104,8 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiBatchJobResult recordSuccess(AiBatchJobId batchId) {
+    public AiBatchJobResult recordSuccess(RecordAiBatchJobCommand command) {
+        AiBatchJobId batchId = command == null ? null : command.getBatchId();
         AiBatchJob job = getRequired(batchId);
         if (AiBatchJobStatus.CANCELLED == job.getStatus()) {
             consumeCancelledSlot(job);
@@ -120,14 +121,16 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiBatchJobResult recordSuccessIfRunning(AiBatchJobId batchId) {
-        return recordIfRunning(batchId, AiBatchJob::recordSuccess);
+    public AiBatchJobResult recordSuccessIfRunning(RecordAiBatchJobCommand command) {
+        return recordIfRunning(command == null ? null : command.getBatchId(), AiBatchJob::recordSuccess);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiBatchJobResult recordFailure(AiBatchJobId batchId, String failureSummaryJson) {
+    public AiBatchJobResult recordFailure(RecordAiBatchJobFailureCommand command) {
+        AiBatchJobId batchId = command == null ? null : command.getBatchId();
         AiBatchJob job = getRequired(batchId);
+        String failureSummaryJson = command == null ? null : command.getFailureSummaryJson();
         job.setFailureSummaryJson(failureSummaryJson);
         if (AiBatchJobStatus.CANCELLED == job.getStatus()) {
             consumeCancelledSlot(job);
@@ -143,7 +146,9 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiBatchJobResult recordFailureIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
+    public AiBatchJobResult recordFailureIfRunning(RecordAiBatchJobFailureCommand command) {
+        AiBatchJobId batchId = command == null ? null : command.getBatchId();
+        String failureSummaryJson = command == null ? null : command.getFailureSummaryJson();
         return recordIfRunning(batchId, job -> {
             job.setFailureSummaryJson(failureSummaryJson);
             job.recordFailure();
@@ -152,7 +157,9 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiBatchJobResult recordPartialIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
+    public AiBatchJobResult recordPartialIfRunning(RecordAiBatchJobFailureCommand command) {
+        AiBatchJobId batchId = command == null ? null : command.getBatchId();
+        String failureSummaryJson = command == null ? null : command.getFailureSummaryJson();
         return recordIfRunning(batchId, job -> {
             job.setFailureSummaryJson(failureSummaryJson);
             job.recordPartial();
@@ -161,19 +168,15 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int expireRunning(
-            String scope,
-            List<AiBusinessCapability> capabilities,
-            Instant requestedBefore,
-            String failureSummaryJson,
-            int limit) {
+    public int expireRunning(ExpireRunningAiBatchJobsCommand command) {
+        Instant requestedBefore = command == null ? null : command.getRequestedBefore();
         if (requestedBefore == null) {
             throw new BizException("AI batch job expire cutoff is required");
         }
         int expiredCount = 0;
-        for (AiBatchJob job :
-                aiBatchJobRepository.listRunningJobsRequestedBefore(scope, capabilities, requestedBefore, limit)) {
-            job.setFailureSummaryJson(failureSummaryJson);
+        for (AiBatchJob job : aiBatchJobRepository.listRunningJobsRequestedBefore(
+                command.getScope(), command.getCapabilities(), requestedBefore, command.getLimit())) {
+            job.setFailureSummaryJson(command.getFailureSummaryJson());
             job.recordFailure();
             expiredCount += aiBatchJobRepository.updateIfStatus(job, AiBatchJobStatus.RUNNING);
         }
@@ -182,7 +185,8 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiBatchJobResult cancel(AiBatchJobId batchId) {
+    public AiBatchJobResult cancel(CancelAiBatchJobCommand command) {
+        AiBatchJobId batchId = command == null ? null : command.getBatchId();
         AiBatchJob job = getRequired(batchId);
         if (isTerminal(job.getStatus())) {
             return AiBatchJobResult.from(job);

@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.configuration.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
@@ -169,7 +171,7 @@ public class AiRefinementTaskController {
         command.setTotalCount(request.getTotalCount());
         command.setFailureSummaryJson(request.getFailureSummaryJson());
         var batchId = batchJobApplicationService.create(command);
-        return toBatchResponse(batchJobApplicationService.get(batchId));
+        return toBatchResponse(batchJobApplicationService.get(new GetAiBatchJobQuery(batchId)));
     }
 
     @Operation(summary = "获取AI精修批量任务", description = "ai:refinement:view")
@@ -185,7 +187,8 @@ public class AiRefinementTaskController {
     @PostMapping(value = "batch/get")
     public AiRefinementResponses.BatchJobResponse getBatch(
             @Valid @RequestBody AiRefinementRequests.BatchIdRequest request) {
-        return toBatchResponse(batchJobApplicationService.get(AiBatchJobIdCodec.toDomain(request.getBatchId())));
+        return toBatchResponse(batchJobApplicationService.get(
+                new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(request.getBatchId()))));
     }
 
     @Operation(summary = "取消AI精修批量任务", description = "ai:refinement:edit")
@@ -201,7 +204,8 @@ public class AiRefinementTaskController {
     @PostMapping(value = "batch/cancel")
     public AiRefinementResponses.BatchJobResponse cancelBatch(
             @Valid @RequestBody AiRefinementRequests.BatchIdRequest request) {
-        return toBatchResponse(batchJobApplicationService.cancel(AiBatchJobIdCodec.toDomain(request.getBatchId())));
+        return toBatchResponse(batchJobApplicationService.cancel(
+                new CancelAiBatchJobCommand(AiBatchJobIdCodec.toDomain(request.getBatchId()))));
     }
 
     private static AiRefinementResponses.BatchJobResponse toBatchResponse(

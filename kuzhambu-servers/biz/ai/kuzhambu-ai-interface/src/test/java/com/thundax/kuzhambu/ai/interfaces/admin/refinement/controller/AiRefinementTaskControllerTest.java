@@ -4,6 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.ExpireRunningAiBatchJobsCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsByCapabilitiesQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
@@ -14,13 +22,9 @@ import com.thundax.kuzhambu.ai.application.scenario.query.PageAiRefinementTasksQ
 import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import java.lang.reflect.Method;
@@ -169,27 +173,17 @@ class AiRefinementTaskControllerTest {
     private static final class NoOpBatchJobService implements AiBatchJobApplicationService {
 
         @Override
-        public AiBatchJobResult get(AiBatchJobId batchId) {
+        public AiBatchJobResult get(GetAiBatchJobQuery query) {
             return null;
         }
 
         @Override
-        public PageResult<AiBatchJobResult> page(
-                String scope,
-                AiBusinessCapability capability,
-                AiBatchJobStatus status,
-                AiContentRef contentRef,
-                PageQuery pageQuery) {
+        public PageResult<AiBatchJobResult> page(PageAiBatchJobsQuery query) {
             return PageResult.of(1, 10, 0, List.of());
         }
 
         @Override
-        public PageResult<AiBatchJobResult> pageByCapabilities(
-                String scope,
-                List<AiBusinessCapability> capabilities,
-                AiBatchJobStatus status,
-                AiContentRef contentRef,
-                PageQuery pageQuery) {
+        public PageResult<AiBatchJobResult> pageByCapabilities(PageAiBatchJobsByCapabilitiesQuery query) {
             return PageResult.of(1, 10, 0, List.of());
         }
 
@@ -199,47 +193,42 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
-        public boolean canDispatchNextUnit(AiBatchJobId batchId) {
+        public boolean canDispatchNextUnit(CanDispatchNextAiBatchUnitQuery query) {
             return false;
         }
 
         @Override
-        public AiBatchJobResult recordSuccess(AiBatchJobId batchId) {
+        public AiBatchJobResult recordSuccess(RecordAiBatchJobCommand command) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordSuccessIfRunning(AiBatchJobId batchId) {
+        public AiBatchJobResult recordSuccessIfRunning(RecordAiBatchJobCommand command) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordFailure(AiBatchJobId batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailure(RecordAiBatchJobFailureCommand command) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordFailureIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailureIfRunning(RecordAiBatchJobFailureCommand command) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordPartialIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordPartialIfRunning(RecordAiBatchJobFailureCommand command) {
             return null;
         }
 
         @Override
-        public int expireRunning(
-                String scope,
-                List<AiBusinessCapability> capabilities,
-                Instant requestedBefore,
-                String failureSummaryJson,
-                int limit) {
+        public int expireRunning(ExpireRunningAiBatchJobsCommand command) {
             return 0;
         }
 
         @Override
-        public AiBatchJobResult cancel(AiBatchJobId batchId) {
+        public AiBatchJobResult cancel(CancelAiBatchJobCommand command) {
             return null;
         }
     }

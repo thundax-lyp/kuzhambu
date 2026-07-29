@@ -3,8 +3,13 @@ package com.thundax.kuzhambu.ai.application.facade.impl;
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.query.AiReportSummaryQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.RequireAiCandidateForApplyQuery;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
@@ -135,7 +140,7 @@ public class AiFacadeImpl implements AiFacade {
     @Transactional(readOnly = true)
     public AiBatchJobFacadeResponse getBatchJob(Long batchId) {
         return aiFacadeAssembler.toFacadeResponse(
-                aiBatchJobApplicationService.get(AiBatchJobIdCodec.toDomain(batchId)));
+                aiBatchJobApplicationService.get(new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(batchId))));
     }
 
     @Override
@@ -156,14 +161,15 @@ public class AiFacadeImpl implements AiFacade {
     @Override
     @Transactional(readOnly = true)
     public boolean canDispatchNextBatchUnit(Long batchId) {
-        return aiBatchJobApplicationService.canDispatchNextUnit(AiBatchJobIdCodec.toDomain(batchId));
+        return aiBatchJobApplicationService.canDispatchNextUnit(
+                new CanDispatchNextAiBatchUnitQuery(AiBatchJobIdCodec.toDomain(batchId)));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobFacadeResponse recordBatchSuccess(Long batchId) {
-        return aiFacadeAssembler.toFacadeResponse(
-                aiBatchJobApplicationService.recordSuccess(AiBatchJobIdCodec.toDomain(batchId)));
+        return aiFacadeAssembler.toFacadeResponse(aiBatchJobApplicationService.recordSuccess(
+                new RecordAiBatchJobCommand(AiBatchJobIdCodec.toDomain(batchId))));
     }
 
     @Override
@@ -172,15 +178,16 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeResponse(aiBatchJobApplicationService.recordFailure(
-                AiBatchJobIdCodec.toDomain(request.getBatchId()), request.getFailureSummaryJson()));
+        return aiFacadeAssembler.toFacadeResponse(
+                aiBatchJobApplicationService.recordFailure(new RecordAiBatchJobFailureCommand(
+                        AiBatchJobIdCodec.toDomain(request.getBatchId()), request.getFailureSummaryJson())));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobFacadeResponse cancelBatchJob(Long batchId) {
         return aiFacadeAssembler.toFacadeResponse(
-                aiBatchJobApplicationService.cancel(AiBatchJobIdCodec.toDomain(batchId)));
+                aiBatchJobApplicationService.cancel(new CancelAiBatchJobCommand(AiBatchJobIdCodec.toDomain(batchId))));
     }
 
     @Override

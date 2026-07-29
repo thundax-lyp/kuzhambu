@@ -5,6 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.ExpireRunningAiBatchJobsCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsByCapabilitiesQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
@@ -430,7 +438,8 @@ class AiRefinementTaskApplicationServiceImplTest {
         private AiBatchJobCreateCommand created;
 
         @Override
-        public AiBatchJobResult get(AiBatchJobId batchId) {
+        public AiBatchJobResult get(GetAiBatchJobQuery query) {
+            AiBatchJobId batchId = query == null ? null : query.getBatchId();
             return jobs.stream()
                     .filter(job -> job.getBatchId().equals(batchId))
                     .findFirst()
@@ -438,27 +447,25 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         private AiBatchJobResult get(Long batchId) {
-            return get(AiBatchJobIdCodec.toDomain(batchId));
+            return get(new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(batchId)));
+        }
+
+        private AiBatchJobResult get(AiBatchJobId batchId) {
+            return get(new GetAiBatchJobQuery(batchId));
         }
 
         @Override
-        public PageResult<AiBatchJobResult> page(
-                String scope,
-                AiBusinessCapability capability,
-                AiBatchJobStatus status,
-                AiContentRef contentRef,
-                PageQuery pageQuery) {
+        public PageResult<AiBatchJobResult> page(PageAiBatchJobsQuery query) {
+            String scope = query == null ? null : query.getScope();
+            AiBusinessCapability capability = query == null ? null : query.getCapability();
             List<AiBatchJobResult> records = filtered(scope, capability == null ? List.of() : List.of(capability));
             return PageResult.of(1, 10, records.size(), records);
         }
 
         @Override
-        public PageResult<AiBatchJobResult> pageByCapabilities(
-                String scope,
-                List<AiBusinessCapability> capabilities,
-                AiBatchJobStatus status,
-                AiContentRef contentRef,
-                PageQuery pageQuery) {
+        public PageResult<AiBatchJobResult> pageByCapabilities(PageAiBatchJobsByCapabilitiesQuery query) {
+            String scope = query == null ? null : query.getScope();
+            List<AiBusinessCapability> capabilities = query == null ? null : query.getCapabilities();
             List<AiBatchJobResult> records = filtered(scope, capabilities);
             return PageResult.of(1, 10, records.size(), records);
         }
@@ -489,12 +496,13 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public boolean canDispatchNextUnit(AiBatchJobId batchId) {
+        public boolean canDispatchNextUnit(CanDispatchNextAiBatchUnitQuery query) {
             return true;
         }
 
         @Override
-        public AiBatchJobResult recordSuccess(AiBatchJobId batchId) {
+        public AiBatchJobResult recordSuccess(RecordAiBatchJobCommand command) {
+            AiBatchJobId batchId = command == null ? null : command.getBatchId();
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "SUCCEEDED", 1, 0, null);
             replace(updated);
@@ -502,16 +510,19 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJobResult recordSuccessIfRunning(AiBatchJobId batchId) {
+        public AiBatchJobResult recordSuccessIfRunning(RecordAiBatchJobCommand command) {
+            AiBatchJobId batchId = command == null ? null : command.getBatchId();
             AiBatchJobResult job = get(batchId);
             if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
             }
-            return recordSuccess(batchId);
+            return recordSuccess(command);
         }
 
         @Override
-        public AiBatchJobResult recordFailure(AiBatchJobId batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailure(RecordAiBatchJobFailureCommand command) {
+            AiBatchJobId batchId = command == null ? null : command.getBatchId();
+            String failureSummaryJson = command == null ? null : command.getFailureSummaryJson();
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "FAILED", 0, 1, failureSummaryJson);
             replace(updated);
@@ -519,16 +530,19 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJobResult recordFailureIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailureIfRunning(RecordAiBatchJobFailureCommand command) {
+            AiBatchJobId batchId = command == null ? null : command.getBatchId();
             AiBatchJobResult job = get(batchId);
             if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
             }
-            return recordFailure(batchId, failureSummaryJson);
+            return recordFailure(command);
         }
 
         @Override
-        public AiBatchJobResult recordPartialIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordPartialIfRunning(RecordAiBatchJobFailureCommand command) {
+            AiBatchJobId batchId = command == null ? null : command.getBatchId();
+            String failureSummaryJson = command == null ? null : command.getFailureSummaryJson();
             AiBatchJobResult job = get(batchId);
             if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
@@ -539,19 +553,15 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public int expireRunning(
-                String scope,
-                List<AiBusinessCapability> capabilities,
-                Instant requestedBefore,
-                String failureSummaryJson,
-                int limit) {
+        public int expireRunning(ExpireRunningAiBatchJobsCommand command) {
             int expiredCount = 0;
             for (AiBatchJobResult job : List.copyOf(jobs)) {
                 if (AiBatchJobStatus.RUNNING == job.getStatus()
-                        && scope.equals(job.getScope())
-                        && capabilities.contains(job.getCapability())
-                        && job.getRequestedAt().isBefore(requestedBefore)) {
-                    recordFailure(job.getBatchId(), failureSummaryJson);
+                        && command.getScope().equals(job.getScope())
+                        && command.getCapabilities().contains(job.getCapability())
+                        && job.getRequestedAt().isBefore(command.getRequestedBefore())) {
+                    recordFailure(
+                            new RecordAiBatchJobFailureCommand(job.getBatchId(), command.getFailureSummaryJson()));
                     expiredCount++;
                 }
             }
@@ -559,7 +569,8 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJobResult cancel(AiBatchJobId batchId) {
+        public AiBatchJobResult cancel(CancelAiBatchJobCommand command) {
+            AiBatchJobId batchId = command == null ? null : command.getBatchId();
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "CANCELLED", job.getSuccessCount(), job.getFailedCount(), null);
             replace(updated);
