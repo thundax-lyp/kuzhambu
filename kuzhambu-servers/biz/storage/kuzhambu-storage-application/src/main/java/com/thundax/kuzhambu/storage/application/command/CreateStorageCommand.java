@@ -1,8 +1,12 @@
 package com.thundax.kuzhambu.storage.application.command;
 
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageBucketName;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageObjectKey;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,12 +23,11 @@ public class CreateStorageCommand {
     private String contentType;
     private String name;
     private String extendName;
-    private String mimeType;
-    private String ownerId;
-    private StorageOwnerType ownerType;
-    private String bucketName;
-    private String objectKey;
-    private Long size;
+    private StorageMimeType mimeType;
+    private StorageOwnerRef ownerRef;
+    private StorageBucketName bucketName;
+    private StorageObjectKey objectKey;
+    private StorageByteSize size;
     private String accessEndpoint;
     private StoredObjectStatus objectStatus;
     private StoredObjectReferenceStatus referenceStatus;

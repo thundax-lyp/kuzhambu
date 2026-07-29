@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
@@ -39,9 +40,9 @@ public class StorageOwnerBindingFacadeAssembler {
         if (request == null) {
             return null;
         }
-        return new RemoveStorageReferencesCommand(
+        return new RemoveStorageReferencesCommand(StorageOwnerRef.ofNullable(
                 isBlank(request.getOwnerType()) ? null : StorageOwnerType.from(request.getOwnerType()),
-                request.getOwnerId());
+                request.getOwnerId()));
     }
 
     public StorageOwnerType toOwnerType(BindStorageOwnerFacadeRequest request) {

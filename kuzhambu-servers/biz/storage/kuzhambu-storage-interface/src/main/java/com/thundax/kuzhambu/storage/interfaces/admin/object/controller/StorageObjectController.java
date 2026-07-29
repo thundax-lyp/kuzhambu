@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.storage.interfaces.admin.object.controller;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
-import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
@@ -13,19 +13,29 @@ import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.storage.application.command.AbortMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.command.RemoveStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
-import com.thundax.kuzhambu.storage.application.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicationService;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
+import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
+import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
+import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
+import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageMultipartUploadApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageObjectApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageUploadApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartNumber;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadId;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.AbortMultipartUploadRequest;
@@ -75,20 +85,24 @@ public class StorageObjectController {
     private static final List<String> ALLOWED_UPLOAD_SUFFIXES = List.of(
             "jpg", "jpeg", "png", "gif", "webp", "pdf", "txt", "md", "csv", "json", "html", "zip", "docx", "xlsx",
             "pptx");
+    private static final List<String> UPLOAD_VALIDATION_FAILURE_MESSAGES =
+            List.of("文件不能为空", "文件大小超过限制", "无效的后缀名", "文件大小与声明大小不一致");
 
-    private final StorageApplicationService storageApplicationService;
-    private final MultipartUploadApplicationService multipartUploadApplicationService;
-
-    public StorageObjectController(StorageApplicationService storageApplicationService) {
-        this(storageApplicationService, null);
-    }
+    private final StorageObjectApplicationService storageObjectApplicationService;
+    private final StorageContentApplicationService storageContentApplicationService;
+    private final StorageUploadApplicationService storageUploadApplicationService;
+    private final StorageMultipartUploadApplicationService storageMultipartUploadApplicationService;
 
     @Autowired
     public StorageObjectController(
-            StorageApplicationService storageApplicationService,
-            MultipartUploadApplicationService multipartUploadApplicationService) {
-        this.storageApplicationService = storageApplicationService;
-        this.multipartUploadApplicationService = multipartUploadApplicationService;
+            StorageObjectApplicationService storageObjectApplicationService,
+            StorageContentApplicationService storageContentApplicationService,
+            StorageUploadApplicationService storageUploadApplicationService,
+            StorageMultipartUploadApplicationService storageMultipartUploadApplicationService) {
+        this.storageObjectApplicationService = storageObjectApplicationService;
+        this.storageContentApplicationService = storageContentApplicationService;
+        this.storageUploadApplicationService = storageUploadApplicationService;
+        this.storageMultipartUploadApplicationService = storageMultipartUploadApplicationService;
     }
 
     @Operation(summary = "获取存储对象分页列表", description = "storage:object:view")
@@ -103,10 +117,9 @@ public class StorageObjectController {
     @SysLogger(value = "分页")
     @PostMapping(value = "page")
     public PageResponse<StorageObjectResponse> page(@Valid @RequestBody StoragePageRequest request) {
-        StorageQuery query = StorageInterfaceAssembler.toQuery(request);
+        StorageObjectPageQuery query = StorageInterfaceAssembler.toPageQuery(request);
         return PageResponseHelper.fromPageResult(
-                storageApplicationService.page(query, PageInterfaceAssembler.toPageQuery(request)),
-                StorageInterfaceAssembler::toResponse);
+                storageObjectApplicationService.page(query), StorageInterfaceAssembler::toResponse);
     }
 
     @Operation(summary = "排序存储对象", description = "storage:object:edit")
@@ -121,7 +134,7 @@ public class StorageObjectController {
     @SysLogger(value = "排序")
     @PostMapping(value = "sort")
     public Boolean sort(@Valid @RequestBody StorageSortRequest request) {
-        storageApplicationService.sort(new StorageSortCommand(RequestListHelper.map(
+        storageObjectApplicationService.sort(new StorageSortCommand(RequestListHelper.map(
                 RequestListHelper.presentUnique(
                         request == null ? null : request.getOrderedIds(),
                         "orderedIds",
@@ -145,14 +158,15 @@ public class StorageObjectController {
         List<StoredObjectId> idList = new ArrayList<>();
         for (Long id : RequestListHelper.presentUnique(
                 request == null ? null : request.getIds(), "ids", AdminResponseExceptions::invalidParameter)) {
-            StoredObject bean = storageApplicationService.get(StoredObjectIdCodec.toDomain(id));
+            StoredObjectId storedObjectId = StoredObjectIdCodec.toDomain(id);
+            StoredObject bean = storageObjectApplicationService.get(new GetStorageObjectQuery(storedObjectId));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
             idList.add(bean.getId());
         }
 
-        idList.forEach(storageApplicationService::remove);
+        idList.forEach(id -> storageObjectApplicationService.remove(new RemoveStorageObjectCommand(id)));
         return true;
     }
 
@@ -168,7 +182,8 @@ public class StorageObjectController {
     @SysLogger(value = "分片上传-初始化")
     @PostMapping(value = "multipart/initiate")
     public InitMultipartUploadResponse initiate(@Valid @RequestBody InitMultipartUploadRequest request) {
-        MultipartUploadSession session = multipartUploadApplicationService.init(toInitMultipartUploadCommand(request));
+        MultipartUploadSession session =
+                storageMultipartUploadApplicationService.init(toInitMultipartUploadCommand(request));
         return StorageInterfaceAssembler.toResponse(session);
     }
 
@@ -188,7 +203,7 @@ public class StorageObjectController {
             @Valid UploadMultipartPartRequest request, @RequestParam("file") MultipartFile file) {
         try {
             MultipartUploadPart part =
-                    multipartUploadApplicationService.uploadPart(toUploadMultipartPartCommand(request, file));
+                    storageMultipartUploadApplicationService.uploadPart(toUploadMultipartPartCommand(request, file));
             return StorageInterfaceAssembler.toResponse(part);
         } catch (IOException exception) {
             throw AdminResponseExceptions.system(exception.getMessage());
@@ -207,7 +222,8 @@ public class StorageObjectController {
     @SysLogger(value = "分片上传-完成")
     @PostMapping(value = "multipart/complete")
     public CompleteMultipartUploadResponse complete(@Valid @RequestBody CompleteMultipartUploadRequest request) {
-        StoredObject storage = multipartUploadApplicationService.complete(toCompleteMultipartUploadCommand(request));
+        StoredObject storage =
+                storageMultipartUploadApplicationService.complete(toCompleteMultipartUploadCommand(request));
         applyDefaultAccessEndpoint(storage);
         return StorageInterfaceAssembler.toResponse(storage, request.getUploadId());
     }
@@ -224,7 +240,7 @@ public class StorageObjectController {
     @SysLogger(value = "分片上传-中止")
     @PostMapping(value = "multipart/abort")
     public AbortMultipartUploadResponse abort(@Valid @RequestBody AbortMultipartUploadRequest request) {
-        multipartUploadApplicationService.abort(toAbortMultipartUploadCommand(request));
+        storageMultipartUploadApplicationService.abort(toAbortMultipartUploadCommand(request));
         return StorageInterfaceAssembler.toResponse(request.getUploadId());
     }
 
@@ -245,26 +261,31 @@ public class StorageObjectController {
             @RequestParam(value = "ownerType", required = false) String ownerType,
             @RequestParam(value = "ownerId", required = false) String ownerId) {
         try {
-            StorageUploadResult result = storageApplicationService.upload(new UploadStorageObjectCommand(
+            StoredObject storage = storageUploadApplicationService.upload(new UploadStorageObjectCommand(
                     file == null ? null : file.getInputStream(),
                     file == null ? null : file.getOriginalFilename(),
                     file == null ? null : file.getContentType(),
-                    file == null ? 0L : file.getSize(),
+                    file == null ? null : new StorageByteSize(file.getSize()),
                     ALLOWED_UPLOAD_SUFFIXES,
-                    ownerTypeFrom(ownerType),
-                    StringUtils.trimToNull(ownerId),
+                    StorageOwnerRef.ofNullable(ownerTypeFrom(ownerType), StringUtils.trimToNull(ownerId)),
                     null,
                     null,
                     null));
-            if (result.hasError()) {
-                throw AdminResponseExceptions.invalidParameter(result.getError());
-            }
-            StoredObject storage = result.getStorage();
             applyDefaultAccessEndpoint(storage);
             return StorageInterfaceAssembler.toResponse(storage);
+        } catch (BizException exception) {
+            if (!isUploadValidationFailure(exception)) {
+                throw AdminResponseExceptions.system(exception.getMessage());
+            }
+            throw AdminResponseExceptions.invalidParameter(exception.getMessage());
         } catch (IOException exception) {
             throw AdminResponseExceptions.system(exception.getMessage());
         }
+    }
+
+    private boolean isUploadValidationFailure(BizException exception) {
+        return exception.getCode() == null
+                && UPLOAD_VALIDATION_FAILURE_MESSAGES.contains(exception.getDefaultMessage());
     }
 
     @Operation(summary = "读取存储对象内容", description = "storage:object:view")
@@ -284,7 +305,8 @@ public class StorageObjectController {
             @RequestParam(value = "download", required = false) Boolean download,
             HttpServletResponse response)
             throws IOException {
-        StoredObjectContent content = storageApplicationService.openReadableContent(StoredObjectIdCodec.toDomain(id));
+        StoredObjectContentResult content = storageContentApplicationService.openReadableContent(
+                new OpenReadableStorageContentQuery(StoredObjectIdCodec.toDomain(id)));
         StoredObject storage = content.getStorage();
         response.setContentType(
                 StringUtils.defaultIfBlank(storage.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
@@ -323,17 +345,17 @@ public class StorageObjectController {
         return request == null
                 ? null
                 : new InitMultipartUploadCommand(
-                        request.getUploadId(),
-                        StringUtils.trimToNull(request.getOwnerId()),
-                        ownerTypeFrom(request.getOwnerType()),
+                        toMultipartUploadId(request.getUploadId()),
+                        StorageOwnerRef.ofNullable(
+                                ownerTypeFrom(request.getOwnerType()), StringUtils.trimToNull(request.getOwnerId())),
                         request.getBusinessType(),
                         request.getOriginalFilename(),
-                        request.getMimeType(),
+                        toStorageMimeType(request.getMimeType()),
                         null,
                         null,
                         null,
-                        request.getTotalSize(),
-                        request.getPartSize());
+                        toStorageByteSize(request.getTotalSize()),
+                        toMultipartPartSize(request.getPartSize()));
     }
 
     private UploadMultipartPartCommand toUploadMultipartPartCommand(
@@ -342,20 +364,41 @@ public class StorageObjectController {
             return null;
         }
         return new UploadMultipartPartCommand(
-                request.getUploadId(),
-                request.getPartNumber(),
+                toMultipartUploadId(request.getUploadId()),
+                toMultipartPartNumber(request.getPartNumber()),
                 request.getEtag(),
-                request.getSize(),
+                toStorageByteSize(request.getSize()),
                 file == null ? null : file.getInputStream());
     }
 
     private CompleteMultipartUploadCommand toCompleteMultipartUploadCommand(CompleteMultipartUploadRequest request) {
         return request == null
                 ? null
-                : new CompleteMultipartUploadCommand(request.getUploadId(), null, null, null, null);
+                : new CompleteMultipartUploadCommand(
+                        toMultipartUploadId(request.getUploadId()), null, null, null, null);
     }
 
     private AbortMultipartUploadCommand toAbortMultipartUploadCommand(AbortMultipartUploadRequest request) {
-        return request == null ? null : new AbortMultipartUploadCommand(request.getUploadId());
+        return request == null ? null : new AbortMultipartUploadCommand(toMultipartUploadId(request.getUploadId()));
+    }
+
+    private static MultipartUploadId toMultipartUploadId(String value) {
+        return StringUtils.isBlank(value) ? null : new MultipartUploadId(value);
+    }
+
+    private static MultipartPartNumber toMultipartPartNumber(Integer value) {
+        return value == null ? null : new MultipartPartNumber(value);
+    }
+
+    private static StorageByteSize toStorageByteSize(Long value) {
+        return value == null ? null : new StorageByteSize(value);
+    }
+
+    private static MultipartPartSize toMultipartPartSize(Long value) {
+        return value == null ? null : new MultipartPartSize(value);
+    }
+
+    private static StorageMimeType toStorageMimeType(String value) {
+        return StringUtils.isBlank(value) ? null : new StorageMimeType(value);
     }
 }

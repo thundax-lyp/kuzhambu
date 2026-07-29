@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.storage.application.command;
 
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadId;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +10,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AbortMultipartUploadCommand {
-    private MultipartUploadId uploadId;
+public class RemoveStorageObjectCommand {
+    private StoredObjectId id;
 }

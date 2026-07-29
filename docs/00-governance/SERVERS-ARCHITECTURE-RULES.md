@@ -54,7 +54,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_APPLICATION_COMMAND_PACKAGE`：`*-application` 模块中的 `*Command` 必须位于 `application/**/command/`。
 - `SERVERS_APPLICATION_QUERY_PACKAGE`：`*-application` 模块中的 `*Query` 必须位于 `application/**/query/`。
 - `SERVERS_APPLICATION_RESULT_PACKAGE`：`*-application` 模块中的 `*Result` 必须位于 `application/**/result/`。
-- `SERVERS_NAMING_APPLICATION_OUTPUT`：应用层输出模型必须以 `Result`、`DTO` 或 `PageResult` 结尾；默认用例输出优先使用 `*Result`，`*DTO` 只用于稳定通用传输对象。
+- `SERVERS_NAMING_APPLICATION_OUTPUT`：应用层非 domain entity 输出模型必须以 `Result`、`DTO` 或 `PageResult` 结尾；默认用例输出优先使用本域 domain entity 或强类型值对象，`*Result` 只用于不存在自然 domain entity 的复合结果、跨资源聚合结果或明确的非领域输出，`*DTO` 只用于稳定通用传输对象。
 - `SERVERS_NAMING_DOMAIN_ID`：强类型业务 ID 必须以 `Id` 结尾，必须是 `final class`，必须继承 common 基础 ID 类型，并位于对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject`。
 - `SERVERS_VALUE_OBJECT_ID_NO_STATIC_METHODS`：`valueobject` 包下以 `Id` 结尾的值对象不得声明 `static` 方法；基础类型创建、nullable 处理和字符串转换必须放入对应 `*Codec`；每个包含 `valueobject/*Id.java` 的 domain 模块必须在架构测试中挂载该 source scan。
 - `SERVERS_VALUE_OBJECT_DOMAIN_ONLY`：`valueobject` 包只能出现在对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject`；`infra`、`application`、`interfaces` 不得定义 `valueobject` 包。
@@ -72,9 +72,10 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 
 ### Application Service API
 
-- `SERVERS_APP_SERVICE_INPUT_SHAPE`：`*ApplicationService` 的公开用例方法入参只能是无参、单个 `*Command`、单个 `*Query`、单个 `*PageQuery`，或少量 Java plain type 参数。
-- `SERVERS_APP_SERVICE_RETURN_SHAPE`：`*ApplicationService` 的公开用例方法返回值只能是 `void`、`*Result`、`*DTO`、`List<*Result>`、`List<*DTO>`、`PageResult<*Result>`、`PageResult<*DTO>` 或 Java plain type。
-- `SERVERS_APP_SERVICE_PLAIN_TYPE_SET`：Java plain type 指 JDK 基础类型、包装类型、`String`、`Instant`、`BigDecimal`、枚举，以及这些类型的集合。
+- `SERVERS_APP_SERVICE_INPUT_SHAPE`：`*ApplicationService` 的公开用例方法入参只能是无参、单个 `*Command`、单个 `*Query` 或单个 `*PageQuery`；`*Command` / `*Query` 字段可以持有本域 domain entity 或强类型值对象。
+- `SERVERS_APP_SERVICE_RETURN_SHAPE`：`*ApplicationService` 的公开用例方法返回值只能是 `void`、本域 domain entity、强类型值对象、`*Result`、`*DTO`、`List<本域 domain entity>`、`List<*Result>`、`List<*DTO>`、`PageResult<本域 domain entity>`、`PageResult<*Result>`、`PageResult<*DTO>` 或 Java primitive / 明确允许的基础类型。
+- `SERVERS_APP_SERVICE_COUNT_RETURN_LONG`：`*ApplicationService` 中以 `count` 命名的公开查询方法必须返回 primitive `long`，不得返回 `Long`、`*Result` 或其他包装对象。
+- `SERVERS_APP_SERVICE_PLAIN_TYPE_SET`：Application service 允许的基础类型指 Java primitive、`String`、`Instant`、`BigDecimal`、枚举，以及这些类型的集合；计数类返回必须使用 primitive `long`。
 
 ### Persistence Boundary
 

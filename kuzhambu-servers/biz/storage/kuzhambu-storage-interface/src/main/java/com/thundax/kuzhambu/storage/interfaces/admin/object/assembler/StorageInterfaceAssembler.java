@@ -1,14 +1,18 @@
 package com.thundax.kuzhambu.storage.interfaces.admin.object.assembler;
 
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.query.StorageQuery;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
+import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StoragePageRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.AbortMultipartUploadResponse;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.CompleteMultipartUploadResponse;
@@ -23,17 +27,19 @@ public final class StorageInterfaceAssembler {
     private StorageInterfaceAssembler() {}
 
     @NonNull
-    public static StorageQuery toQuery(@NonNull StoragePageRequest request) {
-        StorageQuery query = new StorageQuery();
-        query.setContentType(emptyToNull(request.getContentType()));
-        query.setReferenceOwnerId(emptyToNull(request.getReferenceOwnerId()));
-        query.setReferenceOwnerType(emptyToNull(request.getReferenceOwnerType()));
-        query.setObjectStatus(objectStatusFrom(request.getObjectStatus()));
-        query.setReferenceStatus(referenceStatusFrom(request.getReferenceStatus()));
-        query.setOriginalFilename(emptyToNull(request.getOriginalFilename()));
-        query.setRemarks(emptyToNull(request.getRemarks()));
-        query.setSortDirection(sortDirectionFrom(request.getSortDirection()));
-        return query;
+    public static StorageObjectPageQuery toPageQuery(@NonNull StoragePageRequest request) {
+        com.thundax.kuzhambu.common.core.page.PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
+        return new StorageObjectPageQuery(
+                mimeTypeFrom(request.getContentType()),
+                objectStatusFrom(request.getObjectStatus()),
+                referenceStatusFrom(request.getReferenceStatus()),
+                StorageOwnerRef.ofNullable(
+                        ownerTypeFrom(request.getReferenceOwnerType()), emptyToNull(request.getReferenceOwnerId())),
+                emptyToNull(request.getOriginalFilename()),
+                emptyToNull(request.getRemarks()),
+                sortDirectionFrom(request.getSortDirection()),
+                pageQuery.getPageNo(),
+                pageQuery.getPageSize());
     }
 
     @NonNull
@@ -117,6 +123,14 @@ public final class StorageInterfaceAssembler {
 
     private static StoredObjectReferenceStatus referenceStatusFrom(String value) {
         return StringUtils.isBlank(value) ? null : StoredObjectReferenceStatus.from(value);
+    }
+
+    private static StorageOwnerType ownerTypeFrom(String value) {
+        return StringUtils.isBlank(value) ? null : StorageOwnerType.from(value);
+    }
+
+    private static StorageMimeType mimeTypeFrom(String value) {
+        return StringUtils.isBlank(value) ? null : new StorageMimeType(value);
     }
 
     private static SortDirection sortDirectionFrom(String value) {

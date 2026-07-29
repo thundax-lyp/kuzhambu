@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.storage.application.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
@@ -23,7 +22,11 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSe
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartNumber;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartSize;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadId;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
 import com.thundax.kuzhambu.storage.domain.object.repository.MultipartUploadRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import java.io.ByteArrayInputStream;
@@ -47,12 +50,21 @@ class MultipartUploadApplicationServiceImplTest {
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository,
                 mock(StoredObjectContentRepository.class),
-                mock(StorageApplicationService.class));
+                mock(StorageApplicationServiceImpl.class));
 
         assertThrows(
                 RuntimeException.class,
                 () -> service.init(new InitMultipartUploadCommand(
-                        UPLOAD_ID, null, null, "biz", "multipart-file.txt", "text/plain", null, null, null, 9L, 3L)));
+                        UPLOAD_ID_REF,
+                        null,
+                        "biz",
+                        "multipart-file.txt",
+                        new StorageMimeType("text/plain"),
+                        null,
+                        null,
+                        null,
+                        new StorageByteSize(9L),
+                        new MultipartPartSize(3L))));
 
         verify(multipartUploadRepository, never()).insertMultipartSession(any());
     }
@@ -61,7 +73,7 @@ class MultipartUploadApplicationServiceImplTest {
     void completeShouldMergeMultipartPartsAndPersistAsSingleObject() throws Exception {
         MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
         StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        StorageApplicationServiceImpl storageApplicationService = mock(StorageApplicationServiceImpl.class);
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository, contentRepository, storageApplicationService);
 
@@ -93,7 +105,8 @@ class MultipartUploadApplicationServiceImplTest {
         });
         when(storageApplicationService.create(any())).thenReturn(StoredObjectIdCodec.toDomain(11L));
 
-        StoredObject storage = service.complete(new CompleteMultipartUploadCommand(UPLOAD_ID, null, null, null, null));
+        StoredObject storage =
+                service.complete(new CompleteMultipartUploadCommand(UPLOAD_ID_REF, null, null, null, null));
 
         assertNotNull(storage);
         assertEquals(StoredObjectIdCodec.toDomain(11L), storage.getId());
@@ -111,7 +124,7 @@ class MultipartUploadApplicationServiceImplTest {
     void completeShouldRejectWhenCompletingClaimFails() throws Exception {
         MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
         StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        StorageApplicationServiceImpl storageApplicationService = mock(StorageApplicationServiceImpl.class);
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository, contentRepository, storageApplicationService);
         when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID_REF))
@@ -122,7 +135,7 @@ class MultipartUploadApplicationServiceImplTest {
 
         assertThrows(
                 RuntimeException.class,
-                () -> service.complete(new CompleteMultipartUploadCommand(UPLOAD_ID, null, null, null, null)));
+                () -> service.complete(new CompleteMultipartUploadCommand(UPLOAD_ID_REF, null, null, null, null)));
 
         verify(contentRepository, never()).save(any(), any());
         verify(storageApplicationService, never()).create(any());
@@ -133,14 +146,18 @@ class MultipartUploadApplicationServiceImplTest {
         MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
         StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
-                multipartUploadRepository, contentRepository, mock(StorageApplicationService.class));
+                multipartUploadRepository, contentRepository, mock(StorageApplicationServiceImpl.class));
         when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID_REF))
                 .thenReturn(session());
 
         assertThrows(
                 RuntimeException.class,
                 () -> service.uploadPart(new UploadMultipartPartCommand(
-                        UPLOAD_ID, 1, "etag-1", 4L, new ByteArrayInputStream("data".getBytes()))));
+                        UPLOAD_ID_REF,
+                        new MultipartPartNumber(1),
+                        "etag-1",
+                        new StorageByteSize(4L),
+                        new ByteArrayInputStream("data".getBytes()))));
 
         verify(contentRepository, never()).save(any(), any());
     }

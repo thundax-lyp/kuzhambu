@@ -16,9 +16,7 @@ import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesC
 import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageReferenceOwnerTypeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
@@ -52,7 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class StorageApplicationServiceImpl implements StorageApplicationService {
+public class StorageApplicationServiceImpl {
 
     private static final long MAX_UPLOAD_SIZE = 20L * 1024L * 1024L;
     private static final int PRIORITY_STEP = 1;
@@ -70,7 +68,6 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         this.storedObjectContentRepository = storedObjectContentRepository;
     }
 
-    @Override
     public StoredObject get(StoredObjectId id) {
         if (id == null) {
             return null;
@@ -78,7 +75,6 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         return dao.getById(id);
     }
 
-    @Override
     public List<StoredObject> list(StorageQuery query) {
         if (query != null && query.getIds() != null) {
             return dao.listByIds(query.getIds());
@@ -99,7 +95,6 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         return storages;
     }
 
-    @Override
     public PageResult<StoredObject> page(StorageQuery query, PageQuery page) {
         StorageReferenceOwnerType referenceOwnerType =
                 StorageReferenceOwnerTypeCodec.toDomain(query == null ? null : query.getReferenceOwnerType());
@@ -151,7 +146,6 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         }
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public StoredObjectId create(CreateStorageCommand command) {
         if (command == null) {
@@ -163,7 +157,6 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         return storage.getId();
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void sort(StorageSortCommand command) {
         List<StoredObjectId> orderedIdList =
@@ -185,13 +178,11 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
                 this::updatePriorityOrThrow);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void change(ChangeStorageCommand command) {
         dao.update(toStoredObject(command));
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public int remove(StoredObjectId id) {
         if (id == null) {
@@ -212,19 +203,16 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         return deleted;
     }
 
-    @Override
     public List<String> listMimeTypes(StorageQuery query) {
         return dao.listMimeTypes().stream().map(StorageMimeType::value).collect(Collectors.toList());
     }
 
-    @Override
     public List<String> listReferenceOwnerTypes(StorageQuery query) {
         return businessRepository.listReferenceOwnerTypes().stream()
                 .map(StorageReferenceOwnerType::value)
                 .collect(Collectors.toList());
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public int changeObjectStatus(ChangeStorageObjectStatusCommand command) {
         StoredObject storage = new StoredObject();
@@ -233,7 +221,6 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         return dao.updateObjectStatus(storage);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public int changeReferenceStatus(ChangeStorageReferenceStatusCommand command) {
         if (command == null || command.getId() == null) {
@@ -242,20 +229,18 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         return updateReferenceStatusByObjectId(command.getId());
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public int removeReferences(RemoveStorageReferencesCommand command) {
         if (command == null) {
             return 0;
         }
-        StorageOwnerRef ownerRef = StorageOwnerRef.ofNullable(command.getOwnerType(), command.getOwnerId());
+        StorageOwnerRef ownerRef = command.getOwnerRef();
         Set<StoredObjectId> impactedObjectIds = impactedObjectIdsByOwner(ownerRef);
         int removed = businessRepository.deleteByOwner(ownerRef);
         updateReferenceStatusByObjectId(impactedObjectIds);
         return removed;
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void addReferences(AddStorageReferencesCommand command) {
         if (command == null) {
@@ -349,17 +334,15 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
                 + ":" + reference.getReferenceOwnerId();
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
-    public StorageUploadResult upload(UploadStorageObjectCommand command) {
-        StorageUploadResult validatedResult = validateUploadFile(
+    public StoredObject upload(UploadStorageObjectCommand command) {
+        validateUploadFile(
                 command == null ? null : command.getInputStream(),
                 command == null ? null : command.getOriginalFilename(),
-                command == null ? 0L : command.getSize(),
+                command == null || command.getSize() == null
+                        ? 0L
+                        : command.getSize().value(),
                 command == null ? null : command.getAllowedSuffixes());
-        if (validatedResult.hasError()) {
-            return validatedResult;
-        }
 
         StoredObject storage = new StoredObject();
         storage.setObjectStatus(command.getObjectStatus());
@@ -367,29 +350,28 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         storage.setRemarks(command.getRemarks());
         applyFileMetadata(command.getOriginalFilename(), command.getContentType(), storage);
         try {
+            long declaredSize = command.getSize().value();
             applyStoredObject(
                     storage,
                     storedObjectContentRepository.save(
-                            storage, StorageInputStreamLimiter.limit(command.getInputStream(), command.getSize())));
+                            storage, StorageInputStreamLimiter.limit(command.getInputStream(), declaredSize)));
         } catch (IOException exception) {
-            return StorageUploadResult.builder().error(exception.getMessage()).build();
+            throw new BizException(exception.getMessage());
         }
-        if (!Long.valueOf(command.getSize()).equals(storage.getSize())) {
+        if (!command.getSize().value().equals(storage.getSize())) {
             deleteStoredObjectContent(storage);
-            return StorageUploadResult.builder().error("文件大小与声明大小不一致").build();
+            throw new BizException("文件大小与声明大小不一致");
         }
         storage.setId(create(toCreateStorageCommand(storage)));
-        return StorageUploadResult.builder().storage(storage).build();
+        return storage;
     }
 
-    @Override
     public List<StoredObjectReference> listReferences(StorageQuery query) {
         StoredObject entity = new StoredObject();
         entity.setId(query.getId());
         return businessRepository.listReferences(entity);
     }
 
-    @Override
     public boolean existsReadableContent(StorageQuery query) {
         StoredObject storage = query == null ? null : get(query.getId());
         if (storage == null) {
@@ -411,8 +393,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         return StoredObjectReferenceStatus.REFERENCED == storage.getReferenceStatus();
     }
 
-    @Override
-    public StoredObjectContent openReadableContent(StoredObjectId id) {
+    public StoredObjectContentResult openReadableContent(StoredObjectId id) {
         if (id == null) {
             throw new BizException("Storage object id can not be empty");
         }
@@ -424,7 +405,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
             throw new BizException("Storage object is not active: " + StoredObjectIdCodec.toStringValue(id));
         }
         try {
-            return new StoredObjectContent(storage, storedObjectContentRepository.open(storage));
+            return new StoredObjectContentResult(storage, storedObjectContentRepository.open(storage));
         } catch (IOException exception) {
             throw new BizException("Storage object content open failed: " + exception.getMessage());
         }
@@ -450,19 +431,18 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         }
     }
 
-    private StorageUploadResult validateUploadFile(
+    private void validateUploadFile(
             InputStream inputStream, String originalFilename, long size, List<String> allowedSuffixes) {
         if (inputStream == null || size <= 0L) {
-            return StorageUploadResult.builder().error("文件不能为空").build();
+            throw new BizException("文件不能为空");
         }
         if (size > MAX_UPLOAD_SIZE) {
-            return StorageUploadResult.builder().error("文件大小超过限制").build();
+            throw new BizException("文件大小超过限制");
         }
         String extendName = StringUtils.lowerCase(FilenameUtils.getExtension(originalFilename));
         if (allowedSuffixes != null && !allowedSuffixes.isEmpty() && !allowedSuffixes.contains(extendName)) {
-            return StorageUploadResult.builder().error("无效的后缀名").build();
+            throw new BizException("无效的后缀名");
         }
-        return StorageUploadResult.builder().build();
     }
 
     private void applyFileMetadata(String originalFilename, String contentType, StoredObject storage) {
@@ -488,10 +468,10 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         command.setContentType(storage.getContentType());
         command.setName(storage.getName());
         command.setExtendName(storage.getExtendName());
-        command.setMimeType(storage.getMimeType());
-        command.setBucketName(storage.getBucketName());
-        command.setObjectKey(storage.getObjectKey());
-        command.setSize(storage.getSize());
+        command.setMimeType(storage.getMimeTypeRef());
+        command.setBucketName(storage.getBucketNameRef());
+        command.setObjectKey(storage.getObjectKeyRef());
+        command.setSize(storage.getSizeRef());
         command.setAccessEndpoint(storage.getAccessEndpoint());
         command.setObjectStatus(storage.getObjectStatus());
         command.setReferenceStatus(storage.getReferenceStatus());
@@ -506,10 +486,10 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         storage.setContentType(command.getContentType());
         storage.setName(command.getName());
         storage.setExtendName(command.getExtendName());
-        storage.setMimeType(command.getMimeType());
-        storage.setBucketName(command.getBucketName());
-        storage.setObjectKey(command.getObjectKey());
-        storage.setSize(command.getSize());
+        storage.setMimeTypeRef(command.getMimeType());
+        storage.setBucketNameRef(command.getBucketName());
+        storage.setObjectKeyRef(command.getObjectKey());
+        storage.setSizeRef(command.getSize());
         storage.setAccessEndpoint(command.getAccessEndpoint());
         storage.setObjectStatus(command.getObjectStatus());
         storage.setReferenceStatus(command.getReferenceStatus());
@@ -524,10 +504,10 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         storage.setContentType(command.getContentType());
         storage.setName(command.getName());
         storage.setExtendName(command.getExtendName());
-        storage.setMimeType(command.getMimeType());
-        storage.setBucketName(command.getBucketName());
-        storage.setObjectKey(command.getObjectKey());
-        storage.setSize(command.getSize());
+        storage.setMimeTypeRef(command.getMimeType());
+        storage.setBucketNameRef(command.getBucketName());
+        storage.setObjectKeyRef(command.getObjectKey());
+        storage.setSizeRef(command.getSize());
         storage.setAccessEndpoint(command.getAccessEndpoint());
         storage.setObjectStatus(command.getObjectStatus());
         storage.setReferenceStatus(command.getReferenceStatus());

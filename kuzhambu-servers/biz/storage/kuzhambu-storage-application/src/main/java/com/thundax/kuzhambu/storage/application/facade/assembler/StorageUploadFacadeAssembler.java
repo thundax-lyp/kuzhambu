@@ -1,15 +1,23 @@
 package com.thundax.kuzhambu.storage.application.facade.assembler;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.storage.application.command.AbortMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
+import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartNumber;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadId;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.facade.request.AbortMultipartUploadFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.CompleteMultipartUploadFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.InitMultipartUploadFacadeRequest;
@@ -20,38 +28,54 @@ import com.thundax.kuzhambu.storage.facade.response.CompleteMultipartUploadFacad
 import com.thundax.kuzhambu.storage.facade.response.InitMultipartUploadFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadMultipartPartFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StorageUploadFacadeAssembler {
 
+    public UploadStorageObjectCommand toUploadStorageObjectCommand(UploadStorageFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new UploadStorageObjectCommand(
+                request.getInputStream(),
+                request.getOriginalFilename(),
+                request.getContentType(),
+                toStorageByteSize(request.getSizeBytes()),
+                request.getAllowedSuffixes(),
+                StorageOwnerRef.ofNullable(toOwnerType(request), request.getOwnerId()),
+                toObjectStatus(request),
+                toReferenceStatus(request),
+                request.getRemarks());
+    }
+
     public InitMultipartUploadCommand toInitMultipartUploadCommand(InitMultipartUploadFacadeRequest request) {
         if (request == null) {
             return null;
         }
         return new InitMultipartUploadCommand(
-                request.getUploadId(),
-                request.getOwnerId(),
-                toOwnerType(request.getOwnerType()),
+                toMultipartUploadId(request.getUploadId()),
+                StorageOwnerRef.ofNullable(toOwnerType(request.getOwnerType()), request.getOwnerId()),
                 request.getBusinessType(),
                 request.getOriginalFilename(),
-                request.getMimeType(),
+                StringUtils.isBlank(request.getMimeType()) ? null : new StorageMimeType(request.getMimeType()),
                 null,
                 null,
                 null,
-                request.getTotalSize(),
-                request.getPartSize());
+                toStorageByteSize(request.getTotalSize()),
+                toMultipartPartSize(request.getPartSize()));
     }
 
     public UploadMultipartPartCommand toUploadMultipartPartCommand(UploadMultipartPartFacadeRequest request) {
         return request == null
                 ? null
                 : new UploadMultipartPartCommand(
-                        request.getUploadId(),
-                        request.getPartNumber(),
+                        toMultipartUploadId(request.getUploadId()),
+                        toMultipartPartNumber(request.getPartNumber()),
                         request.getEtag(),
-                        request.getSize(),
+                        toStorageByteSize(request.getSize()),
                         request.getInputStream());
     }
 
@@ -59,11 +83,12 @@ public class StorageUploadFacadeAssembler {
             CompleteMultipartUploadFacadeRequest request) {
         return request == null
                 ? null
-                : new CompleteMultipartUploadCommand(request.getUploadId(), null, null, null, null);
+                : new CompleteMultipartUploadCommand(
+                        toMultipartUploadId(request.getUploadId()), null, null, null, null);
     }
 
     public AbortMultipartUploadCommand toAbortMultipartUploadCommand(AbortMultipartUploadFacadeRequest request) {
-        return request == null ? null : new AbortMultipartUploadCommand(request.getUploadId());
+        return request == null ? null : new AbortMultipartUploadCommand(toMultipartUploadId(request.getUploadId()));
     }
 
     public InitMultipartUploadFacadeResponse toResponse(MultipartUploadSession session) {
@@ -170,6 +195,30 @@ public class StorageUploadFacadeAssembler {
 
     private String valueOf(MultipartUploadStatus value) {
         return value == null ? null : value.value();
+    }
+
+    private MultipartUploadId toMultipartUploadId(String value) {
+        return StringUtils.isBlank(value) ? null : toBizValueObject(() -> new MultipartUploadId(value));
+    }
+
+    private MultipartPartNumber toMultipartPartNumber(Integer value) {
+        return value == null ? null : toBizValueObject(() -> new MultipartPartNumber(value));
+    }
+
+    private StorageByteSize toStorageByteSize(Long value) {
+        return value == null ? null : toBizValueObject(() -> new StorageByteSize(value));
+    }
+
+    private MultipartPartSize toMultipartPartSize(Long value) {
+        return value == null ? null : toBizValueObject(() -> new MultipartPartSize(value));
+    }
+
+    private <T> T toBizValueObject(Supplier<T> supplier) {
+        try {
+            return supplier.get();
+        } catch (IllegalArgumentException exception) {
+            throw new BizException(exception.getMessage());
+        }
     }
 
     public UploadStorageFacadeResponse toResponse(StoredObject storage) {

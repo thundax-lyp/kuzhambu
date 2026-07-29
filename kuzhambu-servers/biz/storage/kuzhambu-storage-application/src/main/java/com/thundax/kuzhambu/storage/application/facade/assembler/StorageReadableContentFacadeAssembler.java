@@ -1,11 +1,15 @@
 package com.thundax.kuzhambu.storage.application.facade.assembler;
 
-import com.thundax.kuzhambu.storage.application.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.application.query.GetReadableStorageContentQuery;
+import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
+import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
+import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
@@ -21,19 +25,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class StorageReadableContentFacadeAssembler {
 
-    public StorageQuery toQuery(OpenStorageFacadeRequest request) {
+    public GetReadableStorageContentQuery toReadableContentQuery(OpenStorageFacadeRequest request) {
         if (request == null) {
             return null;
         }
-        StorageQuery query = new StorageQuery();
-        query.setId(toStoredObjectId(request));
-        query.setReferenceOwnerId(request.getOwnerId());
-        query.setReferenceOwnerType(request.getOwnerType());
-        query.setReferenceStatus(
+        return new GetReadableStorageContentQuery(
+                toStoredObjectId(request),
                 StringUtils.isBlank(request.getReferenceStatus())
                         ? null
-                        : StoredObjectReferenceStatus.from(request.getReferenceStatus()));
-        return query;
+                        : StoredObjectReferenceStatus.from(request.getReferenceStatus()),
+                toOwnerRef(request.getOwnerType(), request.getOwnerId()));
+    }
+
+    public OpenReadableStorageContentQuery toOpenReadableContentQuery(OpenStorageFacadeRequest request) {
+        return request == null ? null : new OpenReadableStorageContentQuery(toStoredObjectId(request));
     }
 
     public StoredObjectId toStoredObjectId(OpenStorageFacadeRequest request) {
@@ -43,26 +48,26 @@ public class StorageReadableContentFacadeAssembler {
         return StoredObjectIdCodec.toDomain(request.getStorageObjectId());
     }
 
-    public StorageQuery toQuery(ListStorageFacadeRequest request) {
+    public ListStorageObjectsQuery toListStorageObjectsQuery(ListStorageFacadeRequest request) {
         if (request == null) {
             return null;
         }
-        StorageQuery query = new StorageQuery();
-        query.setReferenceOwnerId(request.getOwnerId());
-        query.setReferenceOwnerType(request.getOwnerType());
-        query.setObjectStatus(
+        return new ListStorageObjectsQuery(
+                null,
+                null,
                 StringUtils.isBlank(request.getObjectStatus())
                         ? null
-                        : StoredObjectStatus.from(request.getObjectStatus()));
-        query.setReferenceStatus(
+                        : StoredObjectStatus.from(request.getObjectStatus()),
                 StringUtils.isBlank(request.getReferenceStatus())
                         ? null
-                        : StoredObjectReferenceStatus.from(request.getReferenceStatus()));
-        query.setRemarks(request.getRemarks());
-        return query;
+                        : StoredObjectReferenceStatus.from(request.getReferenceStatus()),
+                toOwnerRef(request.getOwnerType(), request.getOwnerId()),
+                null,
+                request.getRemarks(),
+                null);
     }
 
-    public OpenStorageFacadeResponse toResponse(StoredObjectContent content) {
+    public OpenStorageFacadeResponse toResponse(StoredObjectContentResult content) {
         if (content == null) {
             return null;
         }
@@ -100,5 +105,10 @@ public class StorageReadableContentFacadeAssembler {
                                 : storage.getReferenceStatus().value())
                 .remarks(storage.getRemarks())
                 .build();
+    }
+
+    private StorageOwnerRef toOwnerRef(String ownerType, String ownerId) {
+        return StorageOwnerRef.ofNullable(
+                StringUtils.isBlank(ownerType) ? null : StorageOwnerType.from(ownerType), ownerId);
     }
 }

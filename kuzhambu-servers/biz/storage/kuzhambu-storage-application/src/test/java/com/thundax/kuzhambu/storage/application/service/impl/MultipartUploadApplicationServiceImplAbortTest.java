@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.storage.application.command.AbortMultipartUploadCommand;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
@@ -35,7 +34,7 @@ class MultipartUploadApplicationServiceImplAbortTest {
         MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
         StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
         MultipartUploadSession session = session();
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        StorageApplicationServiceImpl storageApplicationService = mock(StorageApplicationServiceImpl.class);
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository, contentRepository, storageApplicationService);
 
@@ -44,7 +43,7 @@ class MultipartUploadApplicationServiceImplAbortTest {
         when(multipartUploadRepository.listMultipartParts(UPLOAD_ID_REF)).thenReturn(parts());
         when(multipartUploadRepository.updateMultipartSession(session)).thenReturn(1);
 
-        int updated = service.abort(new AbortMultipartUploadCommand(UPLOAD_ID));
+        int updated = service.abort(new AbortMultipartUploadCommand(UPLOAD_ID_REF));
 
         assertEquals(1, updated);
         verify(contentRepository).delete(argThat(storage -> PART_PATH_1.equals(storage.getObjectKey())));

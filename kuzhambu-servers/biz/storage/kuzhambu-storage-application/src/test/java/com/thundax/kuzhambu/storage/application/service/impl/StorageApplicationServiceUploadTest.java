@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -13,19 +12,20 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.storage.application.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteSize;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageReferenceOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
@@ -64,27 +64,24 @@ class StorageApplicationServiceUploadTest {
             return storage;
         });
 
-        StorageUploadResult result = service.upload(new UploadStorageObjectCommand(
+        StoredObject storage = service.upload(new UploadStorageObjectCommand(
                 new ByteArrayInputStream(PAYLOAD),
                 ORIGINAL_FILENAME,
                 CONTENT_TYPE,
-                PAYLOAD.length,
+                new StorageByteSize((long) PAYLOAD.length),
                 null,
-                StorageOwnerType.USER,
-                "system",
+                StorageOwnerRef.of(StorageOwnerType.USER, "system"),
                 null,
                 null,
                 null));
 
-        assertNotNull(result);
-        assertFalse(result.hasError());
-        assertNotNull(result.getStorage());
-        assertEquals(CONTENT_TYPE, result.getStorage().getContentType());
-        assertEquals(ORIGINAL_FILENAME, result.getStorage().getOriginalFilename());
-        assertEquals("zip", result.getStorage().getExtendName());
-        assertEquals(PAYLOAD.length, result.getStorage().getSize());
-        assertEquals("/api/storage/object/100/content", result.getStorage().getAccessEndpoint());
-        assertEquals(StoredObjectIdCodec.toDomain(100L), result.getStorage().getId());
+        assertNotNull(storage);
+        assertEquals(CONTENT_TYPE, storage.getContentType());
+        assertEquals(ORIGINAL_FILENAME, storage.getOriginalFilename());
+        assertEquals("zip", storage.getExtendName());
+        assertEquals(PAYLOAD.length, storage.getSize());
+        assertEquals("/api/storage/object/100/content", storage.getAccessEndpoint());
+        assertEquals(StoredObjectIdCodec.toDomain(100L), storage.getId());
     }
 
     @Test
@@ -94,20 +91,20 @@ class StorageApplicationServiceUploadTest {
                 mock(StoredObjectReferenceRepository.class),
                 mock(StoredObjectContentRepository.class));
 
-        StorageUploadResult result = service.upload(new UploadStorageObjectCommand(
-                new ByteArrayInputStream("x".getBytes()),
-                "script.exe",
-                "application/octet-stream",
-                1L,
-                List.of("jpg"),
-                StorageOwnerType.USER,
-                "u-1",
-                null,
-                null,
-                null));
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.upload(new UploadStorageObjectCommand(
+                        new ByteArrayInputStream("x".getBytes()),
+                        "script.exe",
+                        "application/octet-stream",
+                        new StorageByteSize(1L),
+                        List.of("jpg"),
+                        StorageOwnerRef.of(StorageOwnerType.USER, "u-1"),
+                        null,
+                        null,
+                        null)));
 
-        assertTrue(result.hasError());
-        assertEquals("无效的后缀名", result.getError());
+        assertEquals("无效的后缀名", exception.getMessage());
     }
 
     @Test
@@ -119,20 +116,20 @@ class StorageApplicationServiceUploadTest {
                 new StorageApplicationServiceImpl(repository, referenceRepository, contentRepository);
         when(contentRepository.save(any(), any())).thenThrow(new IOException("write failed"));
 
-        StorageUploadResult result = service.upload(new UploadStorageObjectCommand(
-                new ByteArrayInputStream(PAYLOAD),
-                ORIGINAL_FILENAME,
-                CONTENT_TYPE,
-                PAYLOAD.length,
-                null,
-                StorageOwnerType.USER,
-                "u-1",
-                null,
-                null,
-                null));
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.upload(new UploadStorageObjectCommand(
+                        new ByteArrayInputStream(PAYLOAD),
+                        ORIGINAL_FILENAME,
+                        CONTENT_TYPE,
+                        new StorageByteSize((long) PAYLOAD.length),
+                        null,
+                        StorageOwnerRef.of(StorageOwnerType.USER, "u-1"),
+                        null,
+                        null,
+                        null)));
 
-        assertTrue(result.hasError());
-        assertEquals("write failed", result.getError());
+        assertEquals("write failed", exception.getMessage());
     }
 
     @Test
@@ -150,20 +147,20 @@ class StorageApplicationServiceUploadTest {
             return storage;
         });
 
-        StorageUploadResult result = service.upload(new UploadStorageObjectCommand(
-                new ByteArrayInputStream(PAYLOAD),
-                ORIGINAL_FILENAME,
-                CONTENT_TYPE,
-                PAYLOAD.length,
-                null,
-                StorageOwnerType.USER,
-                "u-1",
-                null,
-                null,
-                null));
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.upload(new UploadStorageObjectCommand(
+                        new ByteArrayInputStream(PAYLOAD),
+                        ORIGINAL_FILENAME,
+                        CONTENT_TYPE,
+                        new StorageByteSize((long) PAYLOAD.length),
+                        null,
+                        StorageOwnerRef.of(StorageOwnerType.USER, "u-1"),
+                        null,
+                        null,
+                        null)));
 
-        assertTrue(result.hasError());
-        assertEquals("文件大小与声明大小不一致", result.getError());
+        assertEquals("文件大小与声明大小不一致", exception.getMessage());
         verify(contentRepository).delete(any());
         verify(repository, never()).insert(any());
     }
@@ -273,7 +270,8 @@ class StorageApplicationServiceUploadTest {
 
         when(referenceRepository.deleteByOwner(ownerRef)).thenReturn(2);
 
-        int removed = service.removeReferences(new RemoveStorageReferencesCommand(StorageOwnerType.USER, "owner-1"));
+        int removed = service.removeReferences(
+                new RemoveStorageReferencesCommand(StorageOwnerRef.of(StorageOwnerType.USER, "owner-1")));
 
         assertEquals(2, removed);
         verify(storageRepository)
