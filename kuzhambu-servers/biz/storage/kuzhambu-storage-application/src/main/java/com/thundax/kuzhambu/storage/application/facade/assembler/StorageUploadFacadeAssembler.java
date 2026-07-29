@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.storage.application.command.AbortMultipartUploadComm
 import com.thundax.kuzhambu.storage.application.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
+import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
@@ -31,6 +32,22 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class StorageUploadFacadeAssembler {
+
+    public UploadStorageObjectCommand toUploadStorageObjectCommand(UploadStorageFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new UploadStorageObjectCommand(
+                request.getInputStream(),
+                request.getOriginalFilename(),
+                request.getContentType(),
+                toStorageByteSize(request.getSizeBytes()),
+                request.getAllowedSuffixes(),
+                StorageOwnerRef.ofNullable(toOwnerType(request), request.getOwnerId()),
+                toObjectStatus(request),
+                toReferenceStatus(request),
+                request.getRemarks());
+    }
 
     public InitMultipartUploadCommand toInitMultipartUploadCommand(InitMultipartUploadFacadeRequest request) {
         if (request == null) {

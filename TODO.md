@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `09-application-facade-callers`：09 迁移 storage application facade 调用方
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/impl/StorageFacadeImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/assembler/{StorageReadableContentFacadeAssembler.java,StorageOwnerBindingFacadeAssembler.java,StorageUploadFacadeAssembler.java}`
-    - 处理动作：把 facade request 到 Command/Query 的转换改为强类型，并改用拆分后的业务化 application service
-    - 验收点：facade 对外协议不变，application facade 不再依赖旧 `StorageApplicationService`
-    - 重要度：9/10
-
 - [ ] `10-admin-interface-callers`：10 迁移 storage admin interface 调用方
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
