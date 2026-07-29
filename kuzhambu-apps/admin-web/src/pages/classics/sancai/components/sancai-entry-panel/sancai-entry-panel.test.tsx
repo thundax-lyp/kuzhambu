@@ -1551,6 +1551,10 @@ describe("SancaiEntryPanel sharing", () => {
             contentId: "3001",
             locale: "zh-CN"
         });
+        const command = vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0];
+        expect(JSON.parse(command?.inputPayloadJson || "{}")).toMatchObject({
+            sourceText: "天地玄黄"
+        });
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
             "requestedBy"
         );
