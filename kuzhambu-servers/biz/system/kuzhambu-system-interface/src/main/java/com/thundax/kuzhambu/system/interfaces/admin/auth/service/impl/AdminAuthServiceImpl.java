@@ -5,6 +5,10 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticateIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticatePasswordCommand;
 import com.thundax.kuzhambu.system.application.auth.command.CreateAdminAccessTokenCommand;
+import com.thundax.kuzhambu.system.application.auth.command.DeleteAdminAccessTokenCommand;
+import com.thundax.kuzhambu.system.application.auth.command.InvalidateAdminSessionCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalLoginFailureCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RefreshAdminAccessTokenCommand;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
 import com.thundax.kuzhambu.system.application.auth.query.AdminAccessTokenQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
@@ -16,6 +20,7 @@ import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthApplica
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalLoginEvent;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
@@ -24,6 +29,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
@@ -103,7 +109,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public int deleteAccessTokensByUserId(AdminAuthCommand command) {
-        return adminTokenService.deleteAccessTokensByUserId(command.getUserId());
+        return adminTokenService.deleteAccessTokensByUserId(
+                new DeleteAdminAccessTokenCommand(null, command.getUserId(), null, null));
     }
 
     @Override
@@ -118,8 +125,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public void deleteAccessToken(AdminAuthCommand command) {
-        adminTokenService.deleteAccessToken(
-                tokenValue(command.getAccessToken()), command.getIp(), command.getUserAgent());
+        adminTokenService.deleteAccessToken(new DeleteAdminAccessTokenCommand(
+                accessTokenCode(tokenValue(command.getAccessToken())), null, command.getIp(), command.getUserAgent()));
     }
 
     @Override
@@ -130,8 +137,12 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     public AuthTokenRefreshResult refreshAccessToken(AdminAuthCommand command) {
         try {
-            AuthTokenRefreshResult result = toInterfaceResult(adminTokenService.refreshAccessToken(
-                    command.getClientId(), command.getRefreshToken(), command.getIp(), command.getUserAgent()));
+            AuthTokenRefreshResult result =
+                    toInterfaceResult(adminTokenService.refreshAccessToken(new RefreshAdminAccessTokenCommand(
+                            PrincipalClientIdCodec.toDomain(command.getClientId()),
+                            PrincipalRefreshTokenCode.ofNullable(command.getRefreshToken()),
+                            command.getIp(),
+                            command.getUserAgent())));
             if (result != null && result.getAccessToken() != null) {
                 permissionService.createPermissions(
                         result.getAccessToken().getToken(),
@@ -145,12 +156,14 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public void invalidateSessionByToken(AdminAuthCommand command) {
-        adminTokenService.invalidateSessionByToken(command.getToken(), command.getReason());
+        adminTokenService.invalidateSessionByToken(
+                new InvalidateAdminSessionCommand(accessTokenCode(command.getToken()), null, command.getReason()));
     }
 
     @Override
     public int invalidateSessionsByUserId(AdminAuthCommand command) {
-        return adminTokenService.invalidateSessionsByUserId(command.getUserId(), command.getReason());
+        return adminTokenService.invalidateSessionsByUserId(
+                new InvalidateAdminSessionCommand(null, command.getUserId(), command.getReason()));
     }
 
     @Override
@@ -176,12 +189,13 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public void recordLoginFailed(AdminAuthCommand command) {
-        adminTokenService.recordLoginFailed(
+        adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+                null,
                 command.getAuthenticationMethod(),
                 command.getIdentityType(),
                 command.getIp(),
                 command.getUserAgent(),
-                command.getReason());
+                command.getReason()));
     }
 
     @Override
@@ -203,23 +217,25 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                     plainPassword,
                     passwordPolicy()));
         } catch (InvalidPasswordException e) {
-            adminTokenService.recordLoginFailed(
+            adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+                    null,
                     PrincipalAuthenticationMethod.PASSWORD,
                     PrincipalIdentityType.USER_ACCOUNT,
                     ip,
                     userAgent,
-                    PrincipalLoginEvent.REASON_INVALID_CREDENTIAL);
+                    PrincipalLoginEvent.REASON_INVALID_CREDENTIAL));
             throw AdminResponseExceptions.invalidUsernamePassword();
         }
 
         User user = getUser(UserIdCodec.toDomain(identity.getPrincipalKey().getPrincipalId()));
         if (user == null) {
-            adminTokenService.recordLoginFailed(
+            adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+                    null,
                     PrincipalAuthenticationMethod.PASSWORD,
                     PrincipalIdentityType.USER_ACCOUNT,
                     ip,
                     userAgent,
-                    PrincipalLoginEvent.REASON_PRINCIPAL_NOT_FOUND);
+                    PrincipalLoginEvent.REASON_PRINCIPAL_NOT_FOUND));
             throw AdminResponseExceptions.invalidUsernamePassword();
         }
         if (!user.isEnable()) {
@@ -298,14 +314,24 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             identity = principalAuthService.authenticateIdentity(
                     new AuthenticateIdentityCommand(identityType, identityValue));
         } catch (InvalidPasswordException e) {
-            adminTokenService.recordLoginFailed(
-                    authenticationMethod, identityType, ip, userAgent, PrincipalLoginEvent.REASON_IDENTITY_NOT_FOUND);
+            adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+                    null,
+                    authenticationMethod,
+                    identityType,
+                    ip,
+                    userAgent,
+                    PrincipalLoginEvent.REASON_IDENTITY_NOT_FOUND));
             throw AdminResponseExceptions.invalidUsernamePassword();
         }
         User user = getUser(UserIdCodec.toDomain(identity.getPrincipalKey().getPrincipalId()));
         if (user == null) {
-            adminTokenService.recordLoginFailed(
-                    authenticationMethod, identityType, ip, userAgent, PrincipalLoginEvent.REASON_PRINCIPAL_NOT_FOUND);
+            adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+                    null,
+                    authenticationMethod,
+                    identityType,
+                    ip,
+                    userAgent,
+                    PrincipalLoginEvent.REASON_PRINCIPAL_NOT_FOUND));
             throw AdminResponseExceptions.invalidUsernamePassword();
         }
         if (!user.isEnable()) {
@@ -328,7 +354,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             String ip,
             String userAgent,
             String reason) {
-        adminTokenService.recordLoginFailed(principalKey, authenticationMethod, identityType, ip, userAgent, reason);
+        adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+                principalKey, authenticationMethod, identityType, ip, userAgent, reason));
     }
 
     private User getUser(UserId userId) {
@@ -376,7 +403,11 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private AdminAccessTokenQuery accessTokenQuery(String token) {
-        return new AdminAccessTokenQuery(PrincipalAccessTokenCode.ofNullable(token));
+        return new AdminAccessTokenQuery(accessTokenCode(token));
+    }
+
+    private PrincipalAccessTokenCode accessTokenCode(String token) {
+        return PrincipalAccessTokenCode.ofNullable(token);
     }
 
     private AuthTokenQueryResult toInterfaceResult(AdminTokenQueryResult result) {

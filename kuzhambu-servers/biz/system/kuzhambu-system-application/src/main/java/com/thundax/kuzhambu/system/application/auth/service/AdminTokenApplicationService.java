@@ -1,14 +1,14 @@
 package com.thundax.kuzhambu.system.application.auth.service;
 
 import com.thundax.kuzhambu.system.application.auth.command.CreateAdminAccessTokenCommand;
+import com.thundax.kuzhambu.system.application.auth.command.DeleteAdminAccessTokenCommand;
+import com.thundax.kuzhambu.system.application.auth.command.InvalidateAdminSessionCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalLoginFailureCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RefreshAdminAccessTokenCommand;
 import com.thundax.kuzhambu.system.application.auth.query.AdminAccessTokenQuery;
 import com.thundax.kuzhambu.system.application.auth.result.AdminAccessTokenResult;
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenQueryResult;
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenRefreshResult;
-import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
-import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
-import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
-import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 
 public interface AdminTokenApplicationService {
 
@@ -16,34 +16,21 @@ public interface AdminTokenApplicationService {
 
     AdminAccessTokenResult getAccessToken(AdminAccessTokenQuery query);
 
-    int deleteAccessTokensByUserId(UserId userId);
+    int deleteAccessTokensByUserId(DeleteAdminAccessTokenCommand command);
 
     boolean validateToken(AdminAccessTokenQuery query);
 
     void activeAccessToken(AdminAccessTokenQuery query);
 
-    void deleteAccessToken(String token, String ip, String userAgent);
+    void deleteAccessToken(DeleteAdminAccessTokenCommand command);
 
     AdminTokenQueryResult getTokenInfo(AdminAccessTokenQuery query);
 
-    AdminTokenRefreshResult refreshAccessToken(String clientId, String refreshToken, String ip, String userAgent);
+    AdminTokenRefreshResult refreshAccessToken(RefreshAdminAccessTokenCommand command);
 
-    void invalidateSessionByToken(String token, String reason);
+    void invalidateSessionByToken(InvalidateAdminSessionCommand command);
 
-    int invalidateSessionsByUserId(UserId userId, String reason);
+    int invalidateSessionsByUserId(InvalidateAdminSessionCommand command);
 
-    void recordLoginFailed(
-            PrincipalAuthenticationMethod authenticationMethod,
-            PrincipalIdentityType identityType,
-            String ip,
-            String userAgent,
-            String reason);
-
-    void recordLoginFailed(
-            PrincipalKey principalKey,
-            PrincipalAuthenticationMethod authenticationMethod,
-            PrincipalIdentityType identityType,
-            String ip,
-            String userAgent,
-            String reason);
+    void recordLoginFailed(RecordPrincipalLoginFailureCommand command);
 }

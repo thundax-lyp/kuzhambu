@@ -3,6 +3,10 @@ package com.thundax.kuzhambu.system.application.auth.service.impl;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.id.UuidHelper;
 import com.thundax.kuzhambu.system.application.auth.command.CreateAdminAccessTokenCommand;
+import com.thundax.kuzhambu.system.application.auth.command.DeleteAdminAccessTokenCommand;
+import com.thundax.kuzhambu.system.application.auth.command.InvalidateAdminSessionCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalLoginFailureCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RefreshAdminAccessTokenCommand;
 import com.thundax.kuzhambu.system.application.auth.configure.AuthProperties;
 import com.thundax.kuzhambu.system.application.auth.query.AdminAccessTokenQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
@@ -137,7 +141,8 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
     }
 
     @Override
-    public int deleteAccessTokensByUserId(UserId userId) {
+    public int deleteAccessTokensByUserId(DeleteAdminAccessTokenCommand command) {
+        UserId userId = command == null ? null : command.getUserId();
         List<PrincipalAccessToken> tokens = requirePrincipalAccessTokenRepository()
                 .listByPrincipalKeyAndClientIdAndStatus(
                         PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(userId)),
@@ -173,8 +178,8 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
     }
 
     @Override
-    public void deleteAccessToken(String token, String ip, String userAgent) {
-        AdminAccessTokenResult accessToken = getAccessToken(accessTokenQuery(token));
+    public void deleteAccessToken(DeleteAdminAccessTokenCommand command) {
+        AdminAccessTokenResult accessToken = getAccessToken(accessTokenQuery(command));
         if (accessToken == null) {
             return;
         }
@@ -191,8 +196,8 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
                     PrincipalLoginEventType.LOGOUT,
                     PrincipalAuthenticationMethod.PASSWORD,
                     null,
-                    ip,
-                    userAgent,
+                    command == null ? null : command.getIp(),
+                    command == null ? null : command.getUserAgent(),
                     PrincipalLoginEvent.REASON_USER_LOGOUT);
         }
     }
@@ -217,16 +222,17 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
     }
 
     @Override
-    public AdminTokenRefreshResult refreshAccessToken(
-            String clientId, String refreshToken, String ip, String userAgent) {
+    public AdminTokenRefreshResult refreshAccessToken(RefreshAdminAccessTokenCommand command) {
         PrincipalRefreshTokenRepository refreshTokenRepository =
                 principalRefreshTokenRepositoryProvider.getIfAvailable();
         if (refreshTokenRepository == null) {
             throw invalidToken();
         }
-        PrincipalClientId requestedClientId =
-                PrincipalClientIdCodec.toDomain(StringUtils.defaultIfBlank(clientId, ADMIN_CLIENT_ID.value()));
-        PrincipalRefreshToken current = refreshTokenRepository.getByToken(refreshToken);
+        PrincipalClientId requestedClientId = command == null ? null : command.getClientId();
+        if (requestedClientId == null) {
+            requestedClientId = ADMIN_CLIENT_ID;
+        }
+        PrincipalRefreshToken current = refreshTokenRepository.getByToken(refreshTokenValue(command));
         Date now = new Date();
         if (current == null || !current.canRefresh(now) || !requestedClientId.equals(current.getClientId())) {
             throw invalidToken();
@@ -236,56 +242,46 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
         }
 
         AdminAccessTokenResult accessToken = createAccessToken(new CreateAdminAccessTokenCommand(
-                UserIdCodec.toDomain(current.getPrincipalKey().getPrincipalId()), null, ip, userAgent, null, null));
+                UserIdCodec.toDomain(current.getPrincipalKey().getPrincipalId()),
+                null,
+                command == null ? null : command.getIp(),
+                command == null ? null : command.getUserAgent(),
+                null,
+                null));
         writeLoginEvent(
                 current.getPrincipalKey(),
                 requestedClientId,
                 PrincipalLoginEventType.TOKEN_REFRESH,
                 PrincipalAuthenticationMethod.REFRESH_TOKEN,
                 null,
-                ip,
-                userAgent,
+                command == null ? null : command.getIp(),
+                command == null ? null : command.getUserAgent(),
                 PrincipalLoginEvent.REASON_NONE);
         return new AdminTokenRefreshResult(accessToken, accessToken.getRefreshToken());
     }
 
     @Override
-    public void invalidateSessionByToken(String token, String reason) {
-        invalidatePrincipalAuthSession(token);
+    public void invalidateSessionByToken(InvalidateAdminSessionCommand command) {
+        invalidatePrincipalAuthSession(tokenValue(command));
     }
 
     @Override
-    public int invalidateSessionsByUserId(UserId userId, String reason) {
-        return deleteAccessTokensByUserId(userId);
+    public int invalidateSessionsByUserId(InvalidateAdminSessionCommand command) {
+        return deleteAccessTokensByUserId(
+                new DeleteAdminAccessTokenCommand(null, command == null ? null : command.getUserId(), null, null));
     }
 
     @Override
-    public void recordLoginFailed(
-            PrincipalAuthenticationMethod authenticationMethod,
-            PrincipalIdentityType identityType,
-            String ip,
-            String userAgent,
-            String reason) {
-        recordLoginFailed(null, authenticationMethod, identityType, ip, userAgent, reason);
-    }
-
-    @Override
-    public void recordLoginFailed(
-            PrincipalKey principalKey,
-            PrincipalAuthenticationMethod authenticationMethod,
-            PrincipalIdentityType identityType,
-            String ip,
-            String userAgent,
-            String reason) {
+    public void recordLoginFailed(RecordPrincipalLoginFailureCommand command) {
         writeLoginEvent(
-                principalKey,
+                command == null ? null : command.getPrincipalKey(),
                 ADMIN_CLIENT_ID,
                 PrincipalLoginEventType.LOGIN_FAILED,
-                authenticationMethod,
-                identityType,
-                ip,
-                userAgent,
-                reason);
+                command == null ? null : command.getAuthenticationMethod(),
+                command == null ? null : command.getIdentityType(),
+                command == null ? null : command.getIp(),
+                command == null ? null : command.getUserAgent(),
+                command == null ? null : command.getReason());
     }
 
     private PrincipalAuthSession getActivePrincipalAuthSession(PrincipalAccessToken accessToken, Date now) {
@@ -435,11 +431,32 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
         return new AdminAccessTokenQuery(PrincipalAccessTokenCode.ofNullable(token));
     }
 
+    private AdminAccessTokenQuery accessTokenQuery(DeleteAdminAccessTokenCommand command) {
+        if (command == null) {
+            return new AdminAccessTokenQuery();
+        }
+        return new AdminAccessTokenQuery(command.getToken());
+    }
+
     private String tokenValue(AdminAccessTokenQuery query) {
         if (query == null || query.getToken() == null) {
             return null;
         }
         return query.getToken().asString();
+    }
+
+    private String tokenValue(InvalidateAdminSessionCommand command) {
+        if (command == null || command.getToken() == null) {
+            return null;
+        }
+        return command.getToken().asString();
+    }
+
+    private String refreshTokenValue(RefreshAdminAccessTokenCommand command) {
+        if (command == null || command.getRefreshToken() == null) {
+            return null;
+        }
+        return command.getRefreshToken().asString();
     }
 
     private BizException invalidToken() {

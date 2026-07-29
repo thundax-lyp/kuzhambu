@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `03-admin-token-write-session`：[03] 强类型化 AdminToken 刷新、删除、失效和失败记录参数
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/RefreshAdminAccessTokenCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/DeleteAdminAccessTokenCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/InvalidateAdminSessionCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/RecordPrincipalLoginFailureCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/AdminTokenApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/impl/AdminTokenApplicationServiceImpl.java`
-    - 处理动作：新增刷新、删除、失效和登录失败记录 Command，替换多参数基础类型方法和 `recordLoginFailed(...)` 重载。
-    - 验收点：`clientId` 为 `PrincipalClientId`，access token 为 `PrincipalAccessTokenCode`，refresh token 为 `PrincipalRefreshTokenCode`，失效和失败记录入口只接收 Command。
-    - 重要度：9/10
-
 - [ ] `04-permission-contract`：[04] 强类型化权限 ApplicationService 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
