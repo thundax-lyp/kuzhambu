@@ -12,9 +12,13 @@ import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
@@ -101,17 +105,12 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiRefinementTaskResult addTask(AiRefinementRequestCommand command) {
-        normalizeCommandCapability(command);
         validateAddCommand(command);
-        validateRefinementBatchOwnership(command.getScope(), command.getCapability());
+        validateRefinementBatchOwnership(command.getScope(), capabilityValue(command.getCapability()));
         refinementApplicationService.snapshotInvokeConfig(command);
         Long taskId = AiBatchJobIdCodec.toValue(batchJobApplicationService.create(new AiBatchJobCreateCommand(
-                command.getScope(),
-                AiBusinessCapability.fromAlias(command.getCapability()),
-                AiContentRef.ofNullable(command.getContentType(), command.getContentId()),
-                1,
-                null)));
-        command.setBatchId(taskId);
+                command.getScope(), command.getCapability(), command.getContentRef(), 1, null)));
+        command.setBatchId(AiBatchJobIdCodec.toDomain(taskId));
         scheduleTaskExecution(taskId, command);
         return toTaskResult(taskId, batchJobApplicationService.get(AiBatchJobIdCodec.toDomain(taskId)), command, null);
     }
@@ -208,7 +207,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                     null,
                     null,
                     STATUS_FAILED,
-                    command.getCapability(),
+                    capabilityValue(command.getCapability()),
                     "WORKER_REQUEST",
                     null,
                     null,
@@ -295,46 +294,39 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private AiCandidateResult invoke(Long taskId, AiRefinementRequestCommand command, boolean streamEnabled) {
-        String capability = command.getCapability();
-        if ("classics_translate".equals(capability)) {
+        AiBusinessCapability capability = command.getCapability();
+        if (AiBusinessCapability.CLASSICS_TRANSLATE == capability) {
             return refinementApplicationService.translate(command);
         }
-        if ("classics_summary".equals(capability)) {
+        if (AiBusinessCapability.CLASSICS_SUMMARY == capability) {
             return refinementApplicationService.summarize(command);
         }
-        if ("classics_tags".equals(capability)) {
+        if (AiBusinessCapability.CLASSICS_TAG_EXTRACT == capability) {
             return refinementApplicationService.generateTags(command);
         }
-        if ("classics_qa".equals(capability)) {
+        if (AiBusinessCapability.CLASSICS_QA == capability) {
             return refinementApplicationService.generateQa(command);
         }
-        if ("classics_image_describe".equals(capability)) {
+        if (AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE == capability) {
             return streamEnabled
                     ? refinementApplicationService.analyzeImage(command, event -> publishStreamEvent(taskId, event))
                     : refinementApplicationService.analyzeImage(command);
         }
-        if ("classics_visual_describe".equals(capability)) {
+        if (AiBusinessCapability.CLASSICS_VISUAL_DESCRIBE == capability) {
             return refinementApplicationService.describeVisual(command);
         }
-        if ("classics_image_prompt_fusion".equals(capability)) {
+        if (AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION == capability) {
             return refinementApplicationService.fuseVisualContext(command);
         }
-        if ("classics_image_generate".equals(capability)) {
+        if (AiBusinessCapability.CLASSICS_IMAGE_GENERATE == capability) {
             return streamEnabled
                     ? refinementApplicationService.generateImage(command, event -> publishStreamEvent(taskId, event))
                     : refinementApplicationService.generateImage(command);
         }
-        if ("classics_split".equals(capability)) {
+        if (AiBusinessCapability.CLASSICS_SPLIT == capability) {
             return refinementApplicationService.splitEntry(command);
         }
-        throw new BizException("unsupported ai refinement capability: " + capability);
-    }
-
-    private void normalizeCommandCapability(AiRefinementRequestCommand command) {
-        if (command == null) {
-            return;
-        }
-        command.setCapability(normalizeCapability(command.getCapability()));
+        throw new BizException("unsupported ai refinement capability: " + capabilityValue(capability));
     }
 
     private String normalizeCapability(String capability) {
@@ -357,12 +349,13 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     private void validateAddCommand(AiRefinementRequestCommand command) {
         if (command == null
-                || isBlank(command.getCapability())
+                || command.getCapability() == null
                 || isBlank(command.getScope())
-                || isBlank(command.getRequestId())
-                || isBlank(command.getTraceId())
-                || isBlank(command.getContentType())
-                || command.getContentId() == null
+                || command.getRequestId() == null
+                || command.getTraceId() == null
+                || command.getContentRef() == null
+                || isBlank(command.getContentRef().contentType())
+                || command.getContentRef().contentId() == null
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("AI refinement task add command is incomplete");
         }
@@ -401,11 +394,12 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private boolean isStreamEnabledTask(AiRefinementRequestCommand command) {
-        if (command == null || !CONTENT_TYPE_SANCAI_ENTRY.equals(command.getContentType())) {
+        if (command == null
+                || !CONTENT_TYPE_SANCAI_ENTRY.equals(AiContentRefCodec.toContentType(command.getContentRef()))) {
             return false;
         }
-        return CAPABILITY_IMAGE_ANALYSIS.equals(command.getCapability())
-                || CAPABILITY_IMAGE_GEN.equals(command.getCapability());
+        return AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE == command.getCapability()
+                || AiBusinessCapability.CLASSICS_IMAGE_GENERATE == command.getCapability();
     }
 
     private boolean isStreamEnabledTask(AiBatchJobResult job) {
@@ -521,21 +515,21 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                         ? (job == null || job.getCapability() == null
                                 ? null
                                 : job.getCapability().value())
-                        : command.getCapability(),
+                        : capabilityValue(command.getCapability()),
                 command == null
                         ? (job == null ? null : AiContentRefCodec.toContentType(job.getContentRef()))
-                        : command.getContentType(),
+                        : AiContentRefCodec.toContentType(command.getContentRef()),
                 command == null
                         ? (job == null ? null : AiContentRefCodec.toContentId(job.getContentRef()))
-                        : command.getContentId(),
-                command == null ? null : command.getObjectId(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
+                        : AiContentRefCodec.toContentId(command.getContentRef()),
+                command == null ? null : AiTargetObjectIdCodec.toValue(command.getTargetObjectId()),
+                command == null ? null : RequestIdCodec.toValue(command.getRequestId()),
+                command == null ? null : TraceIdCodec.toValue(command.getTraceId()),
                 status,
                 command == null ? null : command.getServiceRole(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getPromptVersionId(),
+                command == null ? null : AiModelIdCodec.toValue(command.getModelId()),
+                command == null ? null : AiModelNameCodec.toValue(command.getModelName()),
+                command == null ? null : PromptVersionIdCodec.toValue(command.getPromptVersionId()),
                 result == null ? null : result.getCallId(),
                 result == null || (command != null && isStreamEnabledTask(command)) ? null : result.getCandidateId(),
                 result == null ? null : result.getResultFormat(),
@@ -664,6 +658,10 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     private String nullToEmpty(String value) {
         return value == null ? "" : value;
+    }
+
+    private String capabilityValue(AiBusinessCapability capability) {
+        return capability == null ? null : capability.value();
     }
 
     private static final class TaskStreamHub {

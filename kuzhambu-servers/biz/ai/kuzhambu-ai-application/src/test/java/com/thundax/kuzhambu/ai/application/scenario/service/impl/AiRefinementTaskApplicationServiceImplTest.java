@@ -12,7 +12,9 @@ import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
@@ -29,6 +31,8 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjec
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,11 +69,11 @@ class AiRefinementTaskApplicationServiceImplTest {
                 AiBatchJobStatus.SUCCEEDED,
                 batchJobService.get(accepted.getTaskId()).getStatus());
         assertEquals(1, batchJobService.get(accepted.getTaskId()).getSuccessCount());
-        assertEquals(accepted.getTaskId(), refinementService.lastCommand.getBatchId());
+        assertEquals(accepted.getTaskId(), AiBatchJobIdCodec.toValue(refinementService.lastCommand.getBatchId()));
     }
 
     @Test
-    void addTaskShouldNormalizeLegacyCapabilityBeforeCreatingBatchJob() {
+    void addTaskShouldUseTypedCapabilityBeforeCreatingBatchJob() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
                 101L,
@@ -87,12 +91,12 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         service.addTask(command);
 
-        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), command.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, command.getCapability());
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, batchJobService.created.getCapability());
     }
 
     @Test
-    void addTaskShouldNormalizeLegacyFusionCapabilityAndInvokeFusionUseCase() {
+    void addTaskShouldUseTypedFusionCapabilityAndInvokeFusionUseCase() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
                 101L,
@@ -110,7 +114,7 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         service.addTask(command);
 
-        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION.value(), command.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, command.getCapability());
         assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, batchJobService.created.getCapability());
         assertEquals(1, refinementService.fusionInvokeCount);
     }
@@ -389,17 +393,16 @@ class AiRefinementTaskApplicationServiceImplTest {
 
     private AiRefinementRequestCommand command(String capability) {
         AiRefinementRequestCommand command = new AiRefinementRequestCommand();
-        command.setCapability(capability);
+        command.setCapability(AiBusinessCapability.fromAlias(capability));
         command.setScope("classics");
         command.setOperation(capability);
-        command.setContentType("SANCAI_ENTRY");
-        command.setContentId(10L);
-        command.setObjectId(20L);
-        command.setModelId(40L);
-        command.setModelName("model-a");
-        command.setPromptVersionId(50L);
-        command.setRequestId("req-1");
-        command.setTraceId("trace-1");
+        command.setContentRef(AiContentRef.ofNullable("SANCAI_ENTRY", 10L));
+        command.setTargetObjectId(new AiTargetObjectId(20L));
+        command.setModelId(new AiModelId(40L));
+        command.setModelName(AiModelName.of("model-a"));
+        command.setPromptVersionId(new PromptVersionId(50L));
+        command.setRequestId(new RequestId("req-1"));
+        command.setTraceId(new TraceId("trace-1"));
         command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
         command.setInputPayloadJson("{\"text\":\"hello\"}");
         return command;

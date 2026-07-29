@@ -3,8 +3,16 @@ package com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler;
 import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,19 +27,18 @@ public final class AiRefinementInterfaceAssembler {
     public static AiRefinementRequestCommand toCommand(
             AiRefinementRequests.RefinementRequest request, String capability) {
         AiRefinementRequestCommand command = new AiRefinementRequestCommand();
-        command.setCapability(capability);
+        command.setCapability(toCapability(capability));
         command.setScope(request.getScope());
         command.setOperation(request.getOperation());
-        command.setContentType(request.getContentType());
-        command.setContentId(request.getContentId());
-        command.setObjectId(request.getObjectId());
+        command.setContentRef(AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()));
+        command.setTargetObjectId(AiTargetObjectIdCodec.toDomain(request.getObjectId()));
         command.setServiceId(request.getServiceId());
         command.setServiceRole(request.getServiceRole());
-        command.setModelId(request.getModelId());
-        command.setModelName(request.getModelName());
-        command.setPromptVersionId(request.getPromptVersionId());
-        command.setRequestId(request.getRequestId());
-        command.setTraceId(request.getTraceId());
+        command.setModelId(AiModelIdCodec.toDomain(request.getModelId()));
+        command.setModelName(AiModelNameCodec.toDomain(request.getModelName()));
+        command.setPromptVersionId(PromptVersionIdCodec.toDomain(request.getPromptVersionId()));
+        command.setRequestId(RequestIdCodec.toDomain(request.getRequestId()));
+        command.setTraceId(TraceIdCodec.toDomain(request.getTraceId()));
         command.setPromptMessagesJson(request.getPromptMessagesJson());
         command.setPromptVariablesJson(request.getPromptVariablesJson());
         command.setPromptHash(request.getPromptHash());
@@ -142,5 +149,9 @@ public final class AiRefinementInterfaceAssembler {
 
     private static String longText(Long value) {
         return value == null ? null : String.valueOf(value);
+    }
+
+    private static AiBusinessCapability toCapability(String capability) {
+        return capability == null || capability.trim().isEmpty() ? null : AiBusinessCapability.fromAlias(capability);
     }
 }

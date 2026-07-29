@@ -9,13 +9,9 @@ import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestC
 import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.support.ClassicsAiWorkerUsecaseResolver;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
-import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.util.function.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -117,25 +113,33 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     }
 
     private AiCandidateResult invokeCandidate(AiRefinementRequestCommand command, String capability) {
-        return invokeCandidate(command, capability, event -> {});
+        return invokeCandidate(command, AiBusinessCapability.fromAlias(capability), event -> {});
     }
 
     private AiCandidateResult invokeCandidate(
             AiRefinementRequestCommand command, String capability, Consumer<AiStreamEventResult> eventConsumer) {
+        return invokeCandidate(command, AiBusinessCapability.fromAlias(capability), eventConsumer);
+    }
+
+    private AiCandidateResult invokeCandidate(
+            AiRefinementRequestCommand command,
+            AiBusinessCapability capability,
+            Consumer<AiStreamEventResult> eventConsumer) {
         AiInvokeCommand invokeCommand = prepareInvokeCommand(command, capability);
-        if (CAPABILITY_IMAGE_ANALYSIS.equals(capability) || CAPABILITY_IMAGE_GEN.equals(capability)) {
+        if (isStreamingCapability(capability)) {
             invokeCommand.setStream(true);
         }
-        AiInvokeResult result = CAPABILITY_IMAGE_ANALYSIS.equals(capability) || CAPABILITY_IMAGE_GEN.equals(capability)
+        AiInvokeResult result = isStreamingCapability(capability)
                 ? invocationApplicationService.stream(
                         invokeCommand, eventConsumer == null ? event -> {} : eventConsumer)
                 : invocationApplicationService.invoke(invokeCommand);
         return AiCandidateResult.from(result);
     }
 
-    private AiInvokeCommand prepareInvokeCommand(AiRefinementRequestCommand command, String capability) {
+    private AiInvokeCommand prepareInvokeCommand(AiRefinementRequestCommand command, AiBusinessCapability capability) {
         validateCommand(command);
-        var spec = classicsAiWorkerUsecaseResolver.resolve(command.getContentType(), capability);
+        var spec =
+                classicsAiWorkerUsecaseResolver.resolve(command.getContentRef().contentType(), capability.value());
         AiInvokeCommand invokeCommand = toInvokeCommand(command, capability);
         invokeCommand.setOperation(spec.operation());
         invokeCommand.setWorkerPath(spec.workerPath());
@@ -145,25 +149,21 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         return invokeCommand;
     }
 
-    private AiInvokeCommand toInvokeCommand(AiRefinementRequestCommand source, String capability) {
+    private AiInvokeCommand toInvokeCommand(AiRefinementRequestCommand source, AiBusinessCapability capability) {
         AiInvokeCommand command = new AiInvokeCommand();
-        command.setBatchId(
-                com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec.toDomain(source.getBatchId()));
+        command.setBatchId(source.getBatchId());
         command.setScope(source.getScope());
-        command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias(capability));
+        command.setCapability(capability);
         command.setOperation(source.getOperation());
-        command.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
-                source.getContentType(), source.getContentId()));
-        command.setTargetObjectId(
-                com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec.toDomain(source.getObjectId()));
+        command.setContentRef(source.getContentRef());
+        command.setTargetObjectId(source.getTargetObjectId());
         command.setServiceId(source.getServiceId());
         command.setServiceRole(source.getServiceRole());
-        command.setModelId(AiModelIdCodec.toDomain(source.getModelId()));
-        command.setModelName(AiModelNameCodec.toDomain(source.getModelName()));
-        command.setPromptVersionId(PromptVersionIdCodec.toDomain(source.getPromptVersionId()));
-        command.setRequestId(RequestIdCodec.toDomain(source.getRequestId()));
-        command.setTraceId(TraceIdCodec.toDomain(source.getTraceId()));
+        command.setModelId(source.getModelId());
+        command.setModelName(source.getModelName());
+        command.setPromptVersionId(source.getPromptVersionId());
+        command.setRequestId(source.getRequestId());
+        command.setTraceId(source.getTraceId());
         command.setPromptMessagesJson(source.getPromptMessagesJson());
         command.setPromptVariablesJson(source.getPromptVariablesJson());
         command.setPromptHash(source.getPromptHash());
@@ -173,6 +173,11 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         command.setLocale(source.getLocale());
         command.setCreateCandidate(true);
         return command;
+    }
+
+    private boolean isStreamingCapability(AiBusinessCapability capability) {
+        return AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE == capability
+                || AiBusinessCapability.CLASSICS_IMAGE_GENERATE == capability;
     }
 
     private void enrichBusinessInvokeConfig(AiInvokeCommand command) {
@@ -197,9 +202,9 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     private void copyResolvedInvokeConfig(AiRefinementRequestCommand command, AiInvokeCommand invokeCommand) {
         command.setServiceId(invokeCommand.getServiceId());
         command.setServiceRole(invokeCommand.getServiceRole());
-        command.setModelId(AiModelIdCodec.toValue(invokeCommand.getModelId()));
-        command.setModelName(AiModelNameCodec.toValue(invokeCommand.getModelName()));
-        command.setPromptVersionId(PromptVersionIdCodec.toValue(invokeCommand.getPromptVersionId()));
+        command.setModelId(invokeCommand.getModelId());
+        command.setModelName(invokeCommand.getModelName());
+        command.setPromptVersionId(invokeCommand.getPromptVersionId());
         command.setPromptMessagesJson(invokeCommand.getPromptMessagesJson());
         command.setPromptVariablesJson(invokeCommand.getPromptVariablesJson());
         command.setOutputSchemaJson(invokeCommand.getOutputSchemaJson());
@@ -208,10 +213,11 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     private void validateCommand(AiRefinementRequestCommand command) {
         if (command == null
                 || isBlank(command.getScope())
-                || isBlank(command.getRequestId())
-                || isBlank(command.getTraceId())
-                || isBlank(command.getContentType())
-                || command.getContentId() == null
+                || command.getRequestId() == null
+                || command.getTraceId() == null
+                || command.getContentRef() == null
+                || isBlank(command.getContentRef().contentType())
+                || command.getContentRef().contentId() == null
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("AI refinement request is incomplete");
         }

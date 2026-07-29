@@ -244,7 +244,13 @@ class AiRefinementTaskControllerTest {
 
         @Override
         public AiRefinementTaskResult addTask(AiRefinementRequestCommand command) {
-            return task("PENDING", command.getCapability(), null, null);
+            return task(
+                    "PENDING",
+                    command.getCapability() == null
+                            ? null
+                            : command.getCapability().value(),
+                    null,
+                    null);
         }
 
         @Override
