@@ -30,7 +30,7 @@ import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
-import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.CurrentUserProfileApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.MenuManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.RoleManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
@@ -68,7 +68,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class CurrentUserApplicationServiceImpl implements CurrentUserApplicationService {
+public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProfileApplicationService {
 
     private static final int DEFAULT_PASSWORD_FAILED_LIMIT = 0;
     private static final String AVATAR_REMARKS = "avatar";
@@ -91,7 +91,7 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     private final PrincipalCredentialApplicationService principalCredentialService;
     private final StorageFacade storageFacade;
 
-    public CurrentUserApplicationServiceImpl(
+    public CurrentUserProfileApplicationServiceImpl(
             UserManagementApplicationService userService,
             RoleManagementApplicationService roleService,
             MenuManagementApplicationService menuService,

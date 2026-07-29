@@ -39,7 +39,7 @@ import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
-import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.CurrentUserProfileApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.RoleManagementApplicationService;
@@ -129,7 +129,7 @@ public class UserController {
     private final PrincipalCredentialApplicationService principalCredentialService;
     private final PreAuthSessionApplicationService preAuthSessionService;
     private final CurrentUserResolver currentUserResolver;
-    private final CurrentUserApplicationService currentUserService;
+    private final CurrentUserProfileApplicationService currentUserService;
     private final AdminAvatarUrlBuilder avatarUrlBuilder;
 
     @Autowired
@@ -142,7 +142,7 @@ public class UserController {
             PrincipalCredentialApplicationService principalCredentialService,
             PreAuthSessionApplicationService preAuthSessionService,
             CurrentUserResolver currentUserResolver,
-            CurrentUserApplicationService currentUserService,
+            CurrentUserProfileApplicationService currentUserService,
             AdminAvatarUrlBuilder avatarUrlBuilder) {
 
         this.userService = userService;

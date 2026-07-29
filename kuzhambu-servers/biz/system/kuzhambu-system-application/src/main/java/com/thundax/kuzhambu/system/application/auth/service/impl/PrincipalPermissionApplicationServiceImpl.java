@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalPermissionApplicationService;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
-import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.CurrentUserProfileApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.impl.MenuManagementApplicationServiceImpl;
 import com.thundax.kuzhambu.system.application.core.service.impl.RoleManagementApplicationServiceImpl;
@@ -51,7 +51,7 @@ public class PrincipalPermissionApplicationServiceImpl
     private final PrincipalAccessTokenRepository principalAccessTokenRepository;
     private final PrincipalAuthSessionRepository principalAuthSessionRepository;
     private final UserManagementApplicationService userService;
-    private final CurrentUserApplicationService currentUserService;
+    private final CurrentUserProfileApplicationService currentUserService;
     private final PermissionMatcher permissionMatcher = new PrefixPermissionMatcher();
     private final AtomicLong permissionVersion = new AtomicLong();
 
@@ -59,7 +59,7 @@ public class PrincipalPermissionApplicationServiceImpl
             PrincipalAccessTokenRepository principalAccessTokenRepository,
             PrincipalAuthSessionRepository principalAuthSessionRepository,
             UserManagementApplicationService userService,
-            CurrentUserApplicationService currentUserService) {
+            CurrentUserProfileApplicationService currentUserService) {
         this.principalAccessTokenRepository = principalAccessTokenRepository;
         this.principalAuthSessionRepository = principalAuthSessionRepository;
         this.userService = userService;

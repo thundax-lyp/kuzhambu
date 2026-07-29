@@ -9,7 +9,7 @@ import com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalCrede
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
-import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthApplicationService;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthenticationApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
@@ -23,12 +23,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 @BizExceptionBoundary
-public class PrincipalAuthApplicationServiceImpl implements PrincipalAuthApplicationService {
+public class PrincipalAuthenticationApplicationServiceImpl implements PrincipalAuthenticationApplicationService {
 
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final PrincipalCredentialApplicationService principalCredentialService;
 
-    public PrincipalAuthApplicationServiceImpl(
+    public PrincipalAuthenticationApplicationServiceImpl(
             PrincipalIdentityApplicationService principalIdentityService,
             PrincipalCredentialApplicationService principalCredentialService) {
         this.principalIdentityService = principalIdentityService;

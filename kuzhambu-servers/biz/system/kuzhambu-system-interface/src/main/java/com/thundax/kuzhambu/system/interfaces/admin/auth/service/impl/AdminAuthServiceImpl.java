@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.system.application.auth.result.AdminAccessTokenResul
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenQueryResult;
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenRefreshResult;
 import com.thundax.kuzhambu.system.application.auth.service.AdminSessionTokenApplicationService;
-import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthApplicationService;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthenticationApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
@@ -54,7 +54,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     private final LoginProperties loginProperties;
     private final PermissionService permissionService;
     private final AdminSessionTokenApplicationService adminTokenService;
-    private final PrincipalAuthApplicationService principalAuthService;
+    private final PrincipalAuthenticationApplicationService principalAuthService;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final UserManagementApplicationService userService;
 
@@ -68,7 +68,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             LoginProperties loginProperties,
             PermissionService permissionService,
             AdminSessionTokenApplicationService adminTokenService,
-            PrincipalAuthApplicationService principalAuthService,
+            PrincipalAuthenticationApplicationService principalAuthService,
             PrincipalIdentityApplicationService principalIdentityService,
             UserManagementApplicationService userService) {
         this.loginProperties = loginProperties;

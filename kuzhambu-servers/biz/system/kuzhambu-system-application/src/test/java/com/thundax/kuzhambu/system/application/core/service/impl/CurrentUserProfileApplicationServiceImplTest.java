@@ -51,14 +51,14 @@ import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-class CurrentUserApplicationServiceImplTest {
+class CurrentUserProfileApplicationServiceImplTest {
 
     private static final int TOO_LARGE_AVATAR_BYTES = 5 * 1024 * 1024 + 1;
 
     @Test
     void getAvatarInputStreamShouldUseStorageFacade() throws Exception {
         StorageFacade storageFacade = mock(StorageFacade.class);
-        CurrentUserApplicationServiceImpl service = service(storageFacade);
+        CurrentUserProfileApplicationServiceImpl service = service(storageFacade);
         StorageObjectFacadeDto avatar = avatar(100L, 7001L);
         InputStream inputStream = new ByteArrayInputStream(new byte[] {1});
 
@@ -87,7 +87,7 @@ class CurrentUserApplicationServiceImplTest {
     @Test
     void getAvatarInputStreamShouldReturnNullWhenFacadeReportsUnreadable() {
         StorageFacade storageFacade = mock(StorageFacade.class);
-        CurrentUserApplicationServiceImpl service = service(storageFacade);
+        CurrentUserProfileApplicationServiceImpl service = service(storageFacade);
 
         when(storageFacade.list(any(ListStorageFacadeRequest.class)))
                 .thenReturn(ListStorageFacadeResponse.builder()
@@ -102,7 +102,7 @@ class CurrentUserApplicationServiceImplTest {
     @Test
     void changeAvatarShouldUseStorageFacade() {
         StorageFacade storageFacade = mock(StorageFacade.class);
-        CurrentUserApplicationServiceImpl service = service(storageFacade);
+        CurrentUserProfileApplicationServiceImpl service = service(storageFacade);
 
         when(storageFacade.list(any(ListStorageFacadeRequest.class)))
                 .thenReturn(ListStorageFacadeResponse.builder()
@@ -133,7 +133,7 @@ class CurrentUserApplicationServiceImplTest {
     @Test
     void changeAvatarShouldRejectOversizedUploadBeforeDecoding() {
         StorageFacade storageFacade = mock(StorageFacade.class);
-        CurrentUserApplicationServiceImpl service = service(storageFacade);
+        CurrentUserProfileApplicationServiceImpl service = service(storageFacade);
 
         when(storageFacade.list(any(ListStorageFacadeRequest.class)))
                 .thenReturn(ListStorageFacadeResponse.builder()
@@ -152,7 +152,7 @@ class CurrentUserApplicationServiceImplTest {
     @Test
     void removeAvatarShouldUseStorageFacade() {
         StorageFacade storageFacade = mock(StorageFacade.class);
-        CurrentUserApplicationServiceImpl service = service(storageFacade);
+        CurrentUserProfileApplicationServiceImpl service = service(storageFacade);
 
         when(storageFacade.list(any(ListStorageFacadeRequest.class)))
                 .thenReturn(ListStorageFacadeResponse.builder()
@@ -174,7 +174,7 @@ class CurrentUserApplicationServiceImplTest {
         UserManagementApplicationService userService = mock(UserManagementApplicationService.class);
         RoleManagementApplicationService roleService = mock(RoleManagementApplicationService.class);
         MenuManagementApplicationService menuService = mock(MenuManagementApplicationService.class);
-        CurrentUserApplicationServiceImpl service =
+        CurrentUserProfileApplicationServiceImpl service =
                 service(userService, roleService, menuService, mock(StorageFacade.class));
 
         Role role = new Role();
@@ -197,7 +197,7 @@ class CurrentUserApplicationServiceImplTest {
         verify(menuService, never()).get(any(GetMenuQuery.class));
     }
 
-    private static CurrentUserApplicationServiceImpl service(StorageFacade storageFacade) {
+    private static CurrentUserProfileApplicationServiceImpl service(StorageFacade storageFacade) {
         return service(
                 mock(UserManagementApplicationService.class),
                 mock(RoleManagementApplicationService.class),
@@ -205,12 +205,12 @@ class CurrentUserApplicationServiceImplTest {
                 storageFacade);
     }
 
-    private static CurrentUserApplicationServiceImpl service(
+    private static CurrentUserProfileApplicationServiceImpl service(
             UserManagementApplicationService userService,
             RoleManagementApplicationService roleService,
             MenuManagementApplicationService menuService,
             StorageFacade storageFacade) {
-        return new CurrentUserApplicationServiceImpl(
+        return new CurrentUserProfileApplicationServiceImpl(
                 userService,
                 roleService,
                 menuService,

@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import java.io.InputStream;
 import java.util.List;
 
-public interface CurrentUserApplicationService {
+public interface CurrentUserProfileApplicationService {
 
     User changeInfo(ChangeCurrentUserInfoCommand command);
 

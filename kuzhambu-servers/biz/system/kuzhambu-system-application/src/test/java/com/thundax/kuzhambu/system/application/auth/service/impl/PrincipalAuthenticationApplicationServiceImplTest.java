@@ -26,15 +26,15 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityStat
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import org.junit.jupiter.api.Test;
 
-class PrincipalAuthApplicationServiceImplTest {
+class PrincipalAuthenticationApplicationServiceImplTest {
 
     @Test
     void authenticatePasswordShouldUseLatestFailureCount() {
         PrincipalIdentityApplicationService principalIdentityService = mock(PrincipalIdentityApplicationService.class);
         PrincipalCredentialApplicationService principalCredentialService =
                 mock(PrincipalCredentialApplicationService.class);
-        PrincipalAuthApplicationServiceImpl service =
-                new PrincipalAuthApplicationServiceImpl(principalIdentityService, principalCredentialService);
+        PrincipalAuthenticationApplicationServiceImpl service =
+                new PrincipalAuthenticationApplicationServiceImpl(principalIdentityService, principalCredentialService);
 
         PrincipalIdentity identity = new PrincipalIdentity();
         identity.setId(PrincipalIdentityIdCodec.toDomain(100L));

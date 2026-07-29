@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
-import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.CurrentUserProfileApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAuthSessionIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
@@ -39,7 +39,7 @@ class PrincipalPermissionApplicationServiceImplTest {
         PrincipalAccessTokenRepository accessTokenRepository = mock(PrincipalAccessTokenRepository.class);
         PrincipalAuthSessionRepository authSessionRepository = mock(PrincipalAuthSessionRepository.class);
         UserManagementApplicationService userService = mock(UserManagementApplicationService.class);
-        CurrentUserApplicationService currentUserService = mock(CurrentUserApplicationService.class);
+        CurrentUserProfileApplicationService currentUserService = mock(CurrentUserProfileApplicationService.class);
         PrincipalPermissionApplicationServiceImpl permissionService = new PrincipalPermissionApplicationServiceImpl(
                 accessTokenRepository, authSessionRepository, userService, currentUserService);
 

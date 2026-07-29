@@ -19,7 +19,7 @@ import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserPas
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
-import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.CurrentUserProfileApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
@@ -60,14 +60,14 @@ public class CurrentUserController {
 
     private static final String PRIVATE_KEY_ITEM = "privateKey";
 
-    private final CurrentUserApplicationService currentUserService;
+    private final CurrentUserProfileApplicationService currentUserService;
     private final CurrentUserResolver currentUserResolver;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final PreAuthSessionApplicationService preAuthSessionService;
     private final AdminAvatarUrlBuilder avatarUrlBuilder;
 
     public CurrentUserController(
-            CurrentUserApplicationService currentUserService,
+            CurrentUserProfileApplicationService currentUserService,
             CurrentUserResolver currentUserResolver,
             PrincipalIdentityApplicationService principalIdentityService,
             PreAuthSessionApplicationService preAuthSessionService,
