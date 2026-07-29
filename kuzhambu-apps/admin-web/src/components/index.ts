@@ -13,6 +13,7 @@ export * from "./kuzhambu-rich-content-viewer";
 export * from "./kuzhambu-segmented-drawer";
 export * from "./kuzhambu-select";
 export * from "./kuzhambu-space";
+export * from "./kuzhambu-step";
 export * from "./kuzhambu-switch";
 export * from "./kuzhambu-sync-task-modal";
 export * from "./kuzhambu-table";
