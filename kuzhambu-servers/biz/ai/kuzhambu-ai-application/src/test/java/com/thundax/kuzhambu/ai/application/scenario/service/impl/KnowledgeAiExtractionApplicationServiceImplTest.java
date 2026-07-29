@@ -13,6 +13,11 @@ import com.thundax.kuzhambu.ai.application.scenario.command.KnowledgeAiExtractio
 import com.thundax.kuzhambu.ai.application.scenario.result.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.application.scenario.support.KnowledgeAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
@@ -144,11 +149,11 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
                 2L,
                 3L,
                 "knowledge-admin",
-                10L,
-                "model-a",
-                20L,
-                "req-1",
-                "trace-1",
+                new AiModelId(10L),
+                AiModelName.of("model-a"),
+                new PromptVersionId(20L),
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
                 "[{\"role\":\"user\",\"content\":\"hello\"}]",
                 null,
                 null,

@@ -9,15 +9,10 @@ import com.thundax.kuzhambu.ai.application.scenario.result.KnowledgeAiExtraction
 import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.support.KnowledgeAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.scenario.support.KnowledgeAiWorkerUsecaseSpec;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
-import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,11 +68,11 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
                 input.getSourceContentType(), input.getSourceContentId()));
         command.setServiceId(input.getServiceId());
         command.setServiceRole(input.getServiceRole());
-        command.setModelId(AiModelIdCodec.toDomain(input.getModelId()));
-        command.setModelName(AiModelNameCodec.toDomain(input.getModelName()));
-        command.setPromptVersionId(PromptVersionIdCodec.toDomain(input.getPromptVersionId()));
-        command.setRequestId(RequestIdCodec.toDomain(input.getRequestId()));
-        command.setTraceId(TraceIdCodec.toDomain(input.getTraceId()));
+        command.setModelId(input.getModelId());
+        command.setModelName(input.getModelName());
+        command.setPromptVersionId(input.getPromptVersionId());
+        command.setRequestId(input.getRequestId());
+        command.setTraceId(input.getTraceId());
         command.setPromptMessagesJson(input.getPromptMessagesJson());
         command.setPromptVariablesJson(input.getPromptVariablesJson());
         command.setPromptHash(input.getPromptHash());
@@ -103,8 +98,8 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
         if (input == null
                 || isBlank(input.getSourceContentType())
                 || input.getSourceContentId() == null
-                || isBlank(input.getRequestId())
-                || isBlank(input.getTraceId())
+                || input.getRequestId() == null
+                || input.getTraceId() == null
                 || isBlank(input.getInputPayloadJson())) {
             throw new BizException("Knowledge AI extraction request is incomplete");
         }
