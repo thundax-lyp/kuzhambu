@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-class PermissionApplicationServiceImplTest {
+class PrincipalPermissionApplicationServiceImplTest {
 
     @Test
     void shouldReloadPermissionsWhenPermissionVersionChanged() {
@@ -40,7 +40,7 @@ class PermissionApplicationServiceImplTest {
         PrincipalAuthSessionRepository authSessionRepository = mock(PrincipalAuthSessionRepository.class);
         UserApplicationService userService = mock(UserApplicationService.class);
         CurrentUserApplicationService currentUserService = mock(CurrentUserApplicationService.class);
-        PermissionApplicationServiceImpl permissionService = new PermissionApplicationServiceImpl(
+        PrincipalPermissionApplicationServiceImpl permissionService = new PrincipalPermissionApplicationServiceImpl(
                 accessTokenRepository, authSessionRepository, userService, currentUserService);
 
         PrincipalAuthSessionId sessionId = PrincipalAuthSessionIdCodec.toDomain("session-1");

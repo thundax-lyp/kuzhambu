@@ -11,7 +11,7 @@ import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
 import java.util.List;
 
-public interface AuditApplicationService {
+public interface AuditTrailApplicationService {
 
     AuditLogId record(CreateAuditLogCommand command);
 

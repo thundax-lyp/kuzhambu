@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.common.security.permission.PermissionMatcher;
 import com.thundax.kuzhambu.common.security.permission.PrefixPermissionMatcher;
 import com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
-import com.thundax.kuzhambu.system.application.auth.service.PermissionApplicationService;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalPermissionApplicationService;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
@@ -39,8 +39,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 @Service
-public class PermissionApplicationServiceImpl
-        implements PermissionApplicationService,
+public class PrincipalPermissionApplicationServiceImpl
+        implements PrincipalPermissionApplicationService,
                 RoleApplicationServiceImpl.CacheChangedListener,
                 MenuApplicationServiceImpl.CacheChangedListener {
 
@@ -55,7 +55,7 @@ public class PermissionApplicationServiceImpl
     private final PermissionMatcher permissionMatcher = new PrefixPermissionMatcher();
     private final AtomicLong permissionVersion = new AtomicLong();
 
-    public PermissionApplicationServiceImpl(
+    public PrincipalPermissionApplicationServiceImpl(
             PrincipalAccessTokenRepository principalAccessTokenRepository,
             PrincipalAuthSessionRepository principalAuthSessionRepository,
             UserApplicationService userService,

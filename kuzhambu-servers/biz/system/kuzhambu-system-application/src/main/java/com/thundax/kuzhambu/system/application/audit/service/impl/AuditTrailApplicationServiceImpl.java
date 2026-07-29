@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.system.application.audit.query.AuditLogQuery;
 import com.thundax.kuzhambu.system.application.audit.query.AuditMetaQuery;
 import com.thundax.kuzhambu.system.application.audit.query.GetAuditLogQuery;
 import com.thundax.kuzhambu.system.application.audit.runtime.AuditExpressionEvaluator;
-import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
+import com.thundax.kuzhambu.system.application.audit.service.AuditTrailApplicationService;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
@@ -29,12 +29,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @BizExceptionBoundary
-public class AuditApplicationServiceImpl implements AuditApplicationService {
+public class AuditTrailApplicationServiceImpl implements AuditTrailApplicationService {
 
     private final AuditMetaRepository auditMetaRepository;
     private final AuditLogRepository auditLogRepository;
 
-    public AuditApplicationServiceImpl(AuditMetaRepository auditMetaRepository, AuditLogRepository auditLogRepository) {
+    public AuditTrailApplicationServiceImpl(
+            AuditMetaRepository auditMetaRepository, AuditLogRepository auditLogRepository) {
         this.auditMetaRepository = auditMetaRepository;
         this.auditLogRepository = auditLogRepository;
     }

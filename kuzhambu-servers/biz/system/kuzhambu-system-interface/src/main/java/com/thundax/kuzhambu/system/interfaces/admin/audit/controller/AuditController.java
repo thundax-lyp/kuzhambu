@@ -11,7 +11,7 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
+import com.thundax.kuzhambu.system.application.audit.service.AuditTrailApplicationService;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.assembler.AuditInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogDetailRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogPageRequest;
@@ -40,11 +40,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class AuditController {
 
-    private final AuditApplicationService auditService;
+    private final AuditTrailApplicationService auditService;
     private final AuditSnapshotAssemblerRegistry auditSnapshotAssemblerRegistry;
 
     public AuditController(
-            AuditApplicationService auditService, AuditSnapshotAssemblerRegistry auditSnapshotAssemblerRegistry) {
+            AuditTrailApplicationService auditService, AuditSnapshotAssemblerRegistry auditSnapshotAssemblerRegistry) {
         this.auditService = auditService;
         this.auditSnapshotAssemblerRegistry = auditSnapshotAssemblerRegistry;
     }

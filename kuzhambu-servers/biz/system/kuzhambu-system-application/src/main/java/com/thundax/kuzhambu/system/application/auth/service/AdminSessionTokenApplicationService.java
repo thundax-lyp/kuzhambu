@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.system.application.auth.result.AdminAccessTokenResul
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenQueryResult;
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenRefreshResult;
 
-public interface AdminTokenApplicationService {
+public interface AdminSessionTokenApplicationService {
 
     AdminAccessTokenResult createAccessToken(CreateAdminAccessTokenCommand command);
 

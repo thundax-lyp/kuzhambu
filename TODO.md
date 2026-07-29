@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `20-service-rename-auth-audit`：[20] 业务化重命名 auth/audit ApplicationService
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/service/AuditApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/service/impl/AuditApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/AdminTokenApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/impl/AdminTokenApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/PermissionApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/impl/PermissionApplicationServiceImpl.java`
-    - 处理动作：将 `AuditApplicationService`、`AdminTokenApplicationService`、`PermissionApplicationService` 分别重命名为业务化接口和实现类。
-    - 验收点：类名、文件名、实现类名、import 和 Spring 注入类型一致，编译通过。
-    - 重要度：7/10
-
 - [ ] `21-service-rename-core`：[21] 业务化重命名 core 管理 ApplicationService
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

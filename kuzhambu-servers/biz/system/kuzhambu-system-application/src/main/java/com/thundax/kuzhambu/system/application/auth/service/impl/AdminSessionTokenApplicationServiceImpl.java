@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery
 import com.thundax.kuzhambu.system.application.auth.result.AdminAccessTokenResult;
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenQueryResult;
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenRefreshResult;
-import com.thundax.kuzhambu.system.application.auth.service.AdminTokenApplicationService;
+import com.thundax.kuzhambu.system.application.auth.service.AdminSessionTokenApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
@@ -49,7 +49,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationService {
+public class AdminSessionTokenApplicationServiceImpl implements AdminSessionTokenApplicationService {
 
     private static final int SESSION_RUNTIME_SAFETY_SECONDS = 10;
     private static final PrincipalClientId ADMIN_CLIENT_ID = PrincipalClientIdCodec.toDomain("admin-api");
@@ -62,7 +62,7 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
     private final ObjectProvider<PrincipalRefreshTokenRepository> principalRefreshTokenRepositoryProvider;
     private final ObjectProvider<PrincipalLoginEventRepository> principalLoginEventRepositoryProvider;
 
-    public AdminTokenApplicationServiceImpl(
+    public AdminSessionTokenApplicationServiceImpl(
             AuthProperties properties,
             PrincipalAuthSessionRepository principalAuthSessionRepository,
             PrincipalIdentityApplicationService principalIdentityService,

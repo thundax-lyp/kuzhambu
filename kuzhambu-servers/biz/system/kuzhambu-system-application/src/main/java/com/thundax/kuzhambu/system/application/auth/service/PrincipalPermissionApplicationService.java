@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode;
 import java.util.Set;
 
-public interface PermissionApplicationService {
+public interface PrincipalPermissionApplicationService {
 
     Set<PermissionCode> createPermissions(CreatePermissionsCommand command);
 

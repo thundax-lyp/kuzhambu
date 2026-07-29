@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
-import com.thundax.kuzhambu.system.application.auth.service.PermissionApplicationService;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalPermissionApplicationService;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,8 @@ class PermissionServiceImplTest {
 
     @Test
     void shouldDelegatePermissionLookupToApplicationService() {
-        PermissionApplicationService permissionApplicationService = mock(PermissionApplicationService.class);
+        PrincipalPermissionApplicationService permissionApplicationService =
+                mock(PrincipalPermissionApplicationService.class);
         PermissionServiceImpl permissionService = new PermissionServiceImpl(permissionApplicationService);
 
         when(permissionApplicationService.getPermissions(any(PermissionQuery.class)))

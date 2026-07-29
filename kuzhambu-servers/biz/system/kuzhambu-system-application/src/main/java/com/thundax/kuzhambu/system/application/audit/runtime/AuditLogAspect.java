@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.audit.annotation.AuditLog;
 import com.thundax.kuzhambu.common.audit.model.valueobject.AuditSnapshot;
 import com.thundax.kuzhambu.common.core.id.Identifier;
 import com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand;
-import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
+import com.thundax.kuzhambu.system.application.audit.service.AuditTrailApplicationService;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
 import java.lang.reflect.Array;
@@ -27,12 +27,12 @@ public class AuditLogAspect {
 
     static final String SERVICE_METHOD_POINTCUT = "execution(public * com.thundax.kuzhambu..service..*.*(..))";
 
-    private final AuditApplicationService auditService;
+    private final AuditTrailApplicationService auditService;
     private final com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoaderRegistry loaderRegistry;
     private final com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssemblerRegistry assemblerRegistry;
 
     public AuditLogAspect(
-            AuditApplicationService auditService,
+            AuditTrailApplicationService auditService,
             com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoaderRegistry loaderRegistry,
             com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssemblerRegistry assemblerRegistry) {
         this.auditService = auditService;

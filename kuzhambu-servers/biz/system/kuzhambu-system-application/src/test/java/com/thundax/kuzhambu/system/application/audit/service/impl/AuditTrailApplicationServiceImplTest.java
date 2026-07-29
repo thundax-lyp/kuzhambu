@@ -19,13 +19,14 @@ import com.thundax.kuzhambu.system.domain.audit.repository.AuditLogRepository;
 import com.thundax.kuzhambu.system.domain.audit.repository.AuditMetaRepository;
 import org.junit.jupiter.api.Test;
 
-class AuditApplicationServiceImplTest {
+class AuditTrailApplicationServiceImplTest {
 
     @Test
     void recordShouldRejectConcurrentMetaVersionChange() {
         AuditMetaRepository auditMetaRepository = mock(AuditMetaRepository.class);
         AuditLogRepository auditLogRepository = mock(AuditLogRepository.class);
-        AuditApplicationServiceImpl service = new AuditApplicationServiceImpl(auditMetaRepository, auditLogRepository);
+        AuditTrailApplicationServiceImpl service =
+                new AuditTrailApplicationServiceImpl(auditMetaRepository, auditLogRepository);
 
         AuditMeta meta = new AuditMeta();
         meta.setId(AuditMetaIdCodec.toDomain(100L));

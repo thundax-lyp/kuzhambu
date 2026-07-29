@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl;
 
 import com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
-import com.thundax.kuzhambu.system.application.auth.service.PermissionApplicationService;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalPermissionApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenCode;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode;
@@ -14,9 +14,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class PermissionServiceImpl implements PermissionService {
 
-    private final PermissionApplicationService permissionApplicationService;
+    private final PrincipalPermissionApplicationService permissionApplicationService;
 
-    public PermissionServiceImpl(PermissionApplicationService permissionApplicationService) {
+    public PermissionServiceImpl(PrincipalPermissionApplicationService permissionApplicationService) {
         this.permissionApplicationService = permissionApplicationService;
     }
 
