@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.storage.application.facade.assembler;
 import com.thundax.kuzhambu.storage.application.query.GetReadableStorageContentQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
 import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
@@ -67,7 +67,7 @@ public class StorageReadableContentFacadeAssembler {
                 null);
     }
 
-    public OpenStorageFacadeResponse toResponse(StoredObjectContent content) {
+    public OpenStorageFacadeResponse toResponse(StoredObjectContentResult content) {
         if (content == null) {
             return null;
         }

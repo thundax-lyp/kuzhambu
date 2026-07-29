@@ -6,7 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.application.command.RemoveStorageObjectCommand;
+import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
+import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageMultipartUploadApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageObjectApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageUploadApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
@@ -46,7 +51,7 @@ class StorageObjectDeleteContractTest {
     @Test
     void deleteShouldRemoveExistingObjects() {
         List<StoredObjectId> removedIds = new ArrayList<>();
-        StorageObjectController controller = new StorageObjectController(storageService(removedIds));
+        StorageObjectController controller = controller(storageService(removedIds));
         StorageDeleteRequest request = new StorageDeleteRequest();
         request.setIds(List.of(1L, 2L));
 
@@ -58,7 +63,7 @@ class StorageObjectDeleteContractTest {
     @Test
     void deleteShouldAllowUnreferencedObject() {
         List<StoredObjectId> removedIds = new ArrayList<>();
-        StorageObjectController controller = new StorageObjectController(storageService(removedIds));
+        StorageObjectController controller = controller(storageService(removedIds));
         StorageDeleteRequest request = new StorageDeleteRequest();
         request.setIds(List.of(101L));
 
@@ -68,7 +73,7 @@ class StorageObjectDeleteContractTest {
 
     @Test
     void deleteShouldRejectMissingOrEmptyIds() {
-        StorageObjectController controller = new StorageObjectController(storageService(new ArrayList<>()));
+        StorageObjectController controller = controller(storageService(new ArrayList<>()));
 
         StorageDeleteRequest missingRequest = new StorageDeleteRequest();
         missingRequest.setIds(List.of(404L));
@@ -82,8 +87,7 @@ class StorageObjectDeleteContractTest {
     @Test
     void deleteShouldRejectReferencedObject() {
         List<StoredObjectId> removedIds = new ArrayList<>();
-        StorageObjectController controller =
-                new StorageObjectController(storageService(removedIds, Arrays.asList(100L)));
+        StorageObjectController controller = controller(storageService(removedIds, Arrays.asList(100L)));
         StorageDeleteRequest request = new StorageDeleteRequest();
         request.setIds(List.of(100L));
 
@@ -91,17 +95,27 @@ class StorageObjectDeleteContractTest {
         assertTrue(removedIds.isEmpty());
     }
 
-    private static StorageApplicationService storageService(List<StoredObjectId> removedIds) {
+    private static StorageObjectController controller(StorageObjectApplicationService storageObjectApplicationService) {
+        return new StorageObjectController(
+                storageObjectApplicationService,
+                unused(StorageContentApplicationService.class),
+                unused(StorageUploadApplicationService.class),
+                unused(StorageMultipartUploadApplicationService.class));
+    }
+
+    private static StorageObjectApplicationService storageService(List<StoredObjectId> removedIds) {
         return storageService(removedIds, List.of());
     }
 
-    private static StorageApplicationService storageService(List<StoredObjectId> removedIds, List<Long> referencedIds) {
-        return (StorageApplicationService) Proxy.newProxyInstance(
-                StorageApplicationService.class.getClassLoader(),
-                new Class<?>[] {StorageApplicationService.class},
+    private static StorageObjectApplicationService storageService(
+            List<StoredObjectId> removedIds, List<Long> referencedIds) {
+        return (StorageObjectApplicationService) Proxy.newProxyInstance(
+                StorageObjectApplicationService.class.getClassLoader(),
+                new Class<?>[] {StorageObjectApplicationService.class},
                 (proxy, method, args) -> {
                     if ("get".equals(method.getName())) {
-                        StoredObjectId id = (StoredObjectId) args[0];
+                        GetStorageObjectQuery query = (GetStorageObjectQuery) args[0];
+                        StoredObjectId id = query == null ? null : query.getId();
                         if (id == null || id.value() == 404L) {
                             return null;
                         }
@@ -115,13 +129,22 @@ class StorageObjectDeleteContractTest {
                         return object;
                     }
                     if ("remove".equals(method.getName())) {
-                        StoredObjectId id = (StoredObjectId) args[0];
+                        RemoveStorageObjectCommand command = (RemoveStorageObjectCommand) args[0];
+                        StoredObjectId id = command == null ? null : command.getId();
                         if (referencedIds.contains(id.value())) {
                             throw new RuntimeException("Storage 对象已被其他业务引用，无法删除");
                         }
-                        removedIds.add((StoredObjectId) args[0]);
+                        removedIds.add(id);
                         return 1;
                     }
+                    throw new UnsupportedOperationException(method.getName());
+                });
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T unused(Class<T> serviceType) {
+        return (T) Proxy.newProxyInstance(
+                serviceType.getClassLoader(), new Class<?>[] {serviceType}, (proxy, method, args) -> {
                     throw new UnsupportedOperationException(method.getName());
                 });
     }

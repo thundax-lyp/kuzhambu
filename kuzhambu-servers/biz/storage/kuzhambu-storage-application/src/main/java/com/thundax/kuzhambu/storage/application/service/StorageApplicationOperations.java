@@ -13,13 +13,13 @@ import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.util.List;
 
-public interface StorageApplicationService {
+public interface StorageApplicationOperations {
 
     StoredObject get(StoredObjectId id);
 
@@ -56,7 +56,7 @@ public interface StorageApplicationService {
     boolean existsReadableContent(StorageQuery query);
 
     @LayerPublicApi(reason = "存储对象内容读取的业务入口")
-    StoredObjectContent openReadableContent(StoredObjectId id);
+    StoredObjectContentResult openReadableContent(StoredObjectId id);
 
     void sort(StorageSortCommand command);
 }

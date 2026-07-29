@@ -3,18 +3,18 @@ package com.thundax.kuzhambu.storage.application.service.impl;
 import com.thundax.kuzhambu.storage.application.query.GetReadableStorageContentQuery;
 import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationOperations;
 import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import org.springframework.stereotype.Service;
 
 @Service
 public class StorageContentApplicationServiceImpl implements StorageContentApplicationService {
 
-    private final StorageApplicationService storageApplicationService;
+    private final StorageApplicationOperations storageApplicationService;
 
-    public StorageContentApplicationServiceImpl(StorageApplicationService storageApplicationService) {
+    public StorageContentApplicationServiceImpl(StorageApplicationOperations storageApplicationService) {
         this.storageApplicationService = storageApplicationService;
     }
 
@@ -24,7 +24,7 @@ public class StorageContentApplicationServiceImpl implements StorageContentAppli
     }
 
     @Override
-    public StoredObjectContent openReadableContent(OpenReadableStorageContentQuery query) {
+    public StoredObjectContentResult openReadableContent(OpenReadableStorageContentQuery query) {
         return storageApplicationService.openReadableContent(query == null ? null : query.getId());
     }
 

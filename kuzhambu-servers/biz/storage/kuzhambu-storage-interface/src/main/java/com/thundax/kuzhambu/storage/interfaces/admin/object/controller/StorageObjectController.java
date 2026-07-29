@@ -19,11 +19,11 @@ import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectComma
 import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
 import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
 import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
+import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageMultipartUploadApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageObjectApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageUploadApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
@@ -292,7 +292,7 @@ public class StorageObjectController {
             @RequestParam(value = "download", required = false) Boolean download,
             HttpServletResponse response)
             throws IOException {
-        StoredObjectContent content = storageContentApplicationService.openReadableContent(
+        StoredObjectContentResult content = storageContentApplicationService.openReadableContent(
                 new OpenReadableStorageContentQuery(StoredObjectIdCodec.toDomain(id)));
         StoredObject storage = content.getStorage();
         response.setContentType(

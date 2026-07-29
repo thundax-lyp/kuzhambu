@@ -7,12 +7,12 @@ import com.thundax.kuzhambu.storage.application.facade.assembler.StorageReadable
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageUploadFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageReferencesQuery;
+import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageMultipartUploadApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageObjectApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageReferenceApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageUploadApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
@@ -90,7 +90,7 @@ public class StorageFacadeImpl implements StorageFacade {
         if (storedObjectId == null) {
             return null;
         }
-        StoredObjectContent content = storageContentApplicationService.openReadableContent(
+        StoredObjectContentResult content = storageContentApplicationService.openReadableContent(
                 readableContentFacadeAssembler.toOpenReadableContentQuery(request));
         return readableContentFacadeAssembler.toResponse(content);
     }

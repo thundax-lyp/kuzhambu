@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `12-interface-tests`：12 更新 storage interface 契约测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/test/java/com/thundax/kuzhambu/storage/interfaces/admin/{StorageObjectContentContractTest.java,StorageObjectDeleteContractTest.java,StorageObjectMultipartUploadContractTest.java,StorageObjectUploadContractTest.java}`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/test/java/com/thundax/kuzhambu/storage/interfaces/StorageInterfaceArchitectureTest.java`
-    - 处理动作：按新 application service 注入和强类型契约更新 HTTP 契约测试
-    - 验收点：storage interface 契约测试仍验证原 HTTP JSON 和文件内容行为
-    - 重要度：8/10
-
 - [ ] `13-validation`：13 运行格式、静态搜索和 storage 模块测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`

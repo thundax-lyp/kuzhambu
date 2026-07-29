@@ -17,8 +17,8 @@ import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationOperations;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageReferenceOwnerTypeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
@@ -52,7 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class StorageApplicationServiceImpl implements StorageApplicationService {
+public class StorageApplicationServiceImpl implements StorageApplicationOperations {
 
     private static final long MAX_UPLOAD_SIZE = 20L * 1024L * 1024L;
     private static final int PRIORITY_STEP = 1;
@@ -415,7 +415,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     }
 
     @Override
-    public StoredObjectContent openReadableContent(StoredObjectId id) {
+    public StoredObjectContentResult openReadableContent(StoredObjectId id) {
         if (id == null) {
             throw new BizException("Storage object id can not be empty");
         }
@@ -427,7 +427,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
             throw new BizException("Storage object is not active: " + StoredObjectIdCodec.toStringValue(id));
         }
         try {
-            return new StoredObjectContent(storage, storedObjectContentRepository.open(storage));
+            return new StoredObjectContentResult(storage, storedObjectContentRepository.open(storage));
         } catch (IOException exception) {
             throw new BizException("Storage object content open failed: " + exception.getMessage());
         }

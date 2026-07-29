@@ -11,8 +11,10 @@ import com.thundax.kuzhambu.storage.application.command.AbortMultipartUploadComm
 import com.thundax.kuzhambu.storage.application.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
-import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicationService;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageMultipartUploadApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageObjectApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageUploadApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
@@ -52,8 +54,7 @@ class StorageObjectMultipartUploadContractTest {
     @Test
     void initiateShouldMapRequestAndKeepResponseContract() throws Exception {
         AtomicReference<InitMultipartUploadCommand> commandRef = new AtomicReference<>();
-        StorageObjectController controller =
-                new StorageObjectController(storageService(), multipartUploadApplicationServiceForInitiate(commandRef));
+        StorageObjectController controller = controller(multipartUploadApplicationServiceForInitiate(commandRef));
 
         InitMultipartUploadRequest request = new InitMultipartUploadRequest();
         request.setUploadId("upload-1");
@@ -72,17 +73,17 @@ class StorageObjectMultipartUploadContractTest {
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
 
         InitMultipartUploadCommand command = commandRef.get();
-        assertEquals("upload-1", command.getUploadId());
+        assertEquals("upload-1", command.getUploadId().value());
         assertEquals("bizA", command.getBusinessType());
-        assertEquals(StorageOwnerType.USER, command.getOwnerType());
-        assertEquals("owner-1", command.getOwnerId());
+        assertEquals(StorageOwnerType.USER, command.getOwnerRef().ownerType());
+        assertEquals("owner-1", command.getOwnerRef().ownerId());
         assertEquals("sancai.png", command.getOriginalFilename());
-        assertEquals("image/png", command.getMimeType());
+        assertEquals("image/png", command.getMimeType().value());
         assertNull(command.getBucketName());
         assertNull(command.getObjectKey());
         assertNull(command.getProviderUploadId());
-        assertEquals(100L, command.getTotalSize());
-        assertEquals(5L, command.getPartSize());
+        assertEquals(100L, command.getTotalSize().value());
+        assertEquals(5L, command.getPartSize().value());
 
         assertEquals("upload-1", json.get("uploadId").asText());
         assertEquals(false, json.has("providerUploadId"));
@@ -112,8 +113,7 @@ class StorageObjectMultipartUploadContractTest {
     @Test
     void uploadPartShouldMapRequestAndKeepResponseContract() throws Exception {
         AtomicReference<UploadMultipartPartCommand> commandRef = new AtomicReference<>();
-        StorageObjectController controller = new StorageObjectController(
-                storageService(), multipartUploadApplicationServiceForUploadPart(commandRef));
+        StorageObjectController controller = controller(multipartUploadApplicationServiceForUploadPart(commandRef));
 
         UploadMultipartPartRequest request = new UploadMultipartPartRequest();
         request.setUploadId("upload-1");
@@ -127,10 +127,10 @@ class StorageObjectMultipartUploadContractTest {
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
 
         UploadMultipartPartCommand command = commandRef.get();
-        assertEquals("upload-1", command.getUploadId());
-        assertEquals(2, command.getPartNumber());
+        assertEquals("upload-1", command.getUploadId().value());
+        assertEquals(2, command.getPartNumber().value());
         assertEquals("etag-2", command.getEtag());
-        assertEquals(16L, command.getSize());
+        assertEquals(16L, command.getSize().value());
         assertNotNull(command.getInputStream());
         assertTrue(command.getInputStream().available() > 0);
 
@@ -152,8 +152,7 @@ class StorageObjectMultipartUploadContractTest {
     @Test
     void completeShouldMapRequestAndKeepResponseContract() throws Exception {
         AtomicReference<CompleteMultipartUploadCommand> commandRef = new AtomicReference<>();
-        StorageObjectController controller =
-                new StorageObjectController(storageService(), multipartUploadApplicationServiceForComplete(commandRef));
+        StorageObjectController controller = controller(multipartUploadApplicationServiceForComplete(commandRef));
 
         CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest();
         request.setUploadId("upload-2");
@@ -166,7 +165,7 @@ class StorageObjectMultipartUploadContractTest {
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
 
         CompleteMultipartUploadCommand command = commandRef.get();
-        assertEquals("upload-2", command.getUploadId());
+        assertEquals("upload-2", command.getUploadId().value());
         assertNull(command.getBucketName());
         assertNull(command.getObjectKey());
         assertNull(command.getSize());
@@ -200,8 +199,7 @@ class StorageObjectMultipartUploadContractTest {
     @Test
     void abortShouldMapRequestAndKeepResponseContract() throws Exception {
         AtomicReference<AbortMultipartUploadCommand> commandRef = new AtomicReference<>();
-        StorageObjectController controller =
-                new StorageObjectController(storageService(), multipartUploadApplicationServiceForAbort(commandRef));
+        StorageObjectController controller = controller(multipartUploadApplicationServiceForAbort(commandRef));
 
         AbortMultipartUploadRequest request = new AbortMultipartUploadRequest();
         request.setUploadId("upload-3");
@@ -210,72 +208,81 @@ class StorageObjectMultipartUploadContractTest {
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
 
         AbortMultipartUploadCommand command = commandRef.get();
-        assertEquals("upload-3", command.getUploadId());
+        assertEquals("upload-3", command.getUploadId().value());
 
         assertEquals("upload-3", json.get("uploadId").asText());
         assertEquals(
                 MultipartUploadStatus.ABORTED.value(), json.get("uploadStatus").asText());
     }
 
-    private static StorageApplicationService storageService() {
-        return (StorageApplicationService) Proxy.newProxyInstance(
-                StorageApplicationService.class.getClassLoader(),
-                new Class<?>[] {StorageApplicationService.class},
-                (proxy, method, args) -> {
-                    throw new UnsupportedOperationException(method.getName());
-                });
+    private static StorageObjectController controller(
+            StorageMultipartUploadApplicationService multipartUploadApplicationService) {
+        return new StorageObjectController(
+                unused(StorageObjectApplicationService.class),
+                unused(StorageContentApplicationService.class),
+                unused(StorageUploadApplicationService.class),
+                multipartUploadApplicationService);
     }
 
-    private static MultipartUploadApplicationService multipartUploadApplicationServiceForInitiate(
+    private static StorageMultipartUploadApplicationService multipartUploadApplicationServiceForInitiate(
             AtomicReference<InitMultipartUploadCommand> commandRef) {
-        return (MultipartUploadApplicationService) Proxy.newProxyInstance(
-                MultipartUploadApplicationService.class.getClassLoader(),
-                new Class<?>[] {MultipartUploadApplicationService.class},
+        return (StorageMultipartUploadApplicationService) Proxy.newProxyInstance(
+                StorageMultipartUploadApplicationService.class.getClassLoader(),
+                new Class<?>[] {StorageMultipartUploadApplicationService.class},
                 (proxy, method, args) -> {
                     if ("init".equals(method.getName())) {
                         InitMultipartUploadCommand command = (InitMultipartUploadCommand) args[0];
                         commandRef.set(command);
                         MultipartUploadSession session = new MultipartUploadSession();
-                        session.setUploadId(command.getUploadId());
-                        session.setProviderUploadId(command.getProviderUploadId());
+                        session.setUploadId(command.getUploadId().value());
+                        session.setProviderUploadId(
+                                command.getProviderUploadId() == null
+                                        ? null
+                                        : command.getProviderUploadId().value());
                         session.setBusinessType(command.getBusinessType());
                         session.setOriginalFilename(command.getOriginalFilename());
-                        session.setMimeType(command.getMimeType());
-                        session.setBucketName(command.getBucketName());
-                        session.setObjectKey(command.getObjectKey());
-                        session.setTotalSize(command.getTotalSize());
-                        session.setPartSize(command.getPartSize());
+                        session.setMimeType(command.getMimeType().value());
+                        session.setBucketName(
+                                command.getBucketName() == null
+                                        ? null
+                                        : command.getBucketName().value());
+                        session.setObjectKey(
+                                command.getObjectKey() == null
+                                        ? null
+                                        : command.getObjectKey().value());
+                        session.setTotalSize(command.getTotalSize().value());
+                        session.setPartSize(command.getPartSize().value());
                         return session;
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
     }
 
-    private static MultipartUploadApplicationService multipartUploadApplicationServiceForUploadPart(
+    private static StorageMultipartUploadApplicationService multipartUploadApplicationServiceForUploadPart(
             AtomicReference<UploadMultipartPartCommand> commandRef) {
-        return (MultipartUploadApplicationService) Proxy.newProxyInstance(
-                MultipartUploadApplicationService.class.getClassLoader(),
-                new Class<?>[] {MultipartUploadApplicationService.class},
+        return (StorageMultipartUploadApplicationService) Proxy.newProxyInstance(
+                StorageMultipartUploadApplicationService.class.getClassLoader(),
+                new Class<?>[] {StorageMultipartUploadApplicationService.class},
                 (proxy, method, args) -> {
                     if ("uploadPart".equals(method.getName())) {
                         UploadMultipartPartCommand command = (UploadMultipartPartCommand) args[0];
                         commandRef.set(command);
                         MultipartUploadPart part = new MultipartUploadPart();
-                        part.setUploadId(command.getUploadId());
-                        part.setPartNumber(command.getPartNumber());
+                        part.setUploadId(command.getUploadId().value());
+                        part.setPartNumber(command.getPartNumber().value());
                         part.setEtag(command.getEtag());
-                        part.setSize(command.getSize());
+                        part.setSize(command.getSize().value());
                         return part;
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
     }
 
-    private static MultipartUploadApplicationService multipartUploadApplicationServiceForComplete(
+    private static StorageMultipartUploadApplicationService multipartUploadApplicationServiceForComplete(
             AtomicReference<CompleteMultipartUploadCommand> commandRef) {
-        return (MultipartUploadApplicationService) Proxy.newProxyInstance(
-                MultipartUploadApplicationService.class.getClassLoader(),
-                new Class<?>[] {MultipartUploadApplicationService.class},
+        return (StorageMultipartUploadApplicationService) Proxy.newProxyInstance(
+                StorageMultipartUploadApplicationService.class.getClassLoader(),
+                new Class<?>[] {StorageMultipartUploadApplicationService.class},
                 (proxy, method, args) -> {
                     if ("complete".equals(method.getName())) {
                         CompleteMultipartUploadCommand command = (CompleteMultipartUploadCommand) args[0];
@@ -296,17 +303,25 @@ class StorageObjectMultipartUploadContractTest {
                 });
     }
 
-    private static MultipartUploadApplicationService multipartUploadApplicationServiceForAbort(
+    private static StorageMultipartUploadApplicationService multipartUploadApplicationServiceForAbort(
             AtomicReference<AbortMultipartUploadCommand> commandRef) {
-        return (MultipartUploadApplicationService) Proxy.newProxyInstance(
-                MultipartUploadApplicationService.class.getClassLoader(),
-                new Class<?>[] {MultipartUploadApplicationService.class},
+        return (StorageMultipartUploadApplicationService) Proxy.newProxyInstance(
+                StorageMultipartUploadApplicationService.class.getClassLoader(),
+                new Class<?>[] {StorageMultipartUploadApplicationService.class},
                 (proxy, method, args) -> {
                     if ("abort".equals(method.getName())) {
                         AbortMultipartUploadCommand command = (AbortMultipartUploadCommand) args[0];
                         commandRef.set(command);
                         return 1;
                     }
+                    throw new UnsupportedOperationException(method.getName());
+                });
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T unused(Class<T> serviceType) {
+        return (T) Proxy.newProxyInstance(
+                serviceType.getClassLoader(), new Class<?>[] {serviceType}, (proxy, method, args) -> {
                     throw new UnsupportedOperationException(method.getName());
                 });
     }

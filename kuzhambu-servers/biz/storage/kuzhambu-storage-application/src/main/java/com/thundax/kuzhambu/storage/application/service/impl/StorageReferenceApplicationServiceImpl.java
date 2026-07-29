@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.storage.application.command.ChangeStorageReferenceSt
 import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.query.ListStorageReferencesQuery;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationOperations;
 import com.thundax.kuzhambu.storage.application.service.StorageReferenceApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import java.util.List;
@@ -14,9 +14,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class StorageReferenceApplicationServiceImpl implements StorageReferenceApplicationService {
 
-    private final StorageApplicationService storageApplicationService;
+    private final StorageApplicationOperations storageApplicationService;
 
-    public StorageReferenceApplicationServiceImpl(StorageApplicationService storageApplicationService) {
+    public StorageReferenceApplicationServiceImpl(StorageApplicationOperations storageApplicationService) {
         this.storageApplicationService = storageApplicationService;
     }
 

@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageReferenceOwnerTypesQuery;
 import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationOperations;
 import com.thundax.kuzhambu.storage.application.service.StorageObjectApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
@@ -24,9 +24,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class StorageObjectApplicationServiceImpl implements StorageObjectApplicationService {
 
-    private final StorageApplicationService storageApplicationService;
+    private final StorageApplicationOperations storageApplicationService;
 
-    public StorageObjectApplicationServiceImpl(StorageApplicationService storageApplicationService) {
+    public StorageObjectApplicationServiceImpl(StorageApplicationOperations storageApplicationService) {
         this.storageApplicationService = storageApplicationService;
     }
 

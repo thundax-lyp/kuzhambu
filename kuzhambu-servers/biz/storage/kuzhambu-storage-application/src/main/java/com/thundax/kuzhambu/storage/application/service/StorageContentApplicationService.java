@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.storage.application.service;
 import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
 import com.thundax.kuzhambu.storage.application.query.GetReadableStorageContentQuery;
 import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 
 public interface StorageContentApplicationService {
 
@@ -11,5 +11,5 @@ public interface StorageContentApplicationService {
     boolean existsReadableContent(GetReadableStorageContentQuery query);
 
     @LayerPublicApi(reason = "存储对象内容读取的业务入口")
-    StoredObjectContent openReadableContent(OpenReadableStorageContentQuery query);
+    StoredObjectContentResult openReadableContent(OpenReadableStorageContentQuery query);
 }

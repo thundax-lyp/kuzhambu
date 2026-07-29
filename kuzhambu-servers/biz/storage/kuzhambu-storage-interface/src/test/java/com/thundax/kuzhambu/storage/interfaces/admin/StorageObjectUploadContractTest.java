@@ -5,28 +5,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.storage.application.command.AddStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.command.ChangeStorageCommand;
-import com.thundax.kuzhambu.storage.application.command.ChangeStorageObjectStatusCommand;
-import com.thundax.kuzhambu.storage.application.command.ChangeStorageReferenceStatusCommand;
-import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
-import com.thundax.kuzhambu.storage.application.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageMultipartUploadApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageObjectApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageUploadApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.StorageObjectController;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.StorageObjectResponse;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.util.List;
+import java.lang.reflect.Proxy;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -79,7 +71,11 @@ class StorageObjectUploadContractTest {
     }
 
     private static StorageObjectController controller() {
-        return new StorageObjectController(new FakeStorageApplicationService());
+        return new StorageObjectController(
+                unused(StorageObjectApplicationService.class),
+                unused(StorageContentApplicationService.class),
+                new FakeStorageUploadApplicationService(),
+                unused(StorageMultipartUploadApplicationService.class));
     }
 
     private static final class InMemoryMultipartFile implements MultipartFile {
@@ -135,110 +131,32 @@ class StorageObjectUploadContractTest {
         }
     }
 
-    private static final class FakeStorageApplicationService implements StorageApplicationService {
+    private static final class FakeStorageUploadApplicationService implements StorageUploadApplicationService {
 
         @Override
-        public StorageUploadResult upload(UploadStorageObjectCommand command) {
-            if (command == null || command.getInputStream() == null || command.getSize() <= 0L) {
-                return StorageUploadResult.builder().error("文件不能为空").build();
+        public StoredObject upload(UploadStorageObjectCommand command) {
+            if (command == null
+                    || command.getInputStream() == null
+                    || command.getSize() == null
+                    || command.getSize().value() <= 0L) {
+                throw new RuntimeException("文件不能为空");
             }
             if (!"png".equalsIgnoreCase(extension(command.getOriginalFilename()))) {
-                return StorageUploadResult.builder().error("无效的后缀名").build();
+                throw new RuntimeException("无效的后缀名");
             }
             assertEquals("sancai.png", command.getOriginalFilename());
             assertEquals("image/png", command.getContentType());
-            assertEquals(5L, command.getSize());
-            assertEquals(StorageOwnerType.USER, command.getOwnerType());
-            assertEquals("user-1", command.getOwnerId());
+            assertEquals(5L, command.getSize().value());
+            assertEquals(StorageOwnerType.USER, command.getOwnerRef().ownerType());
+            assertEquals("user-1", command.getOwnerRef().ownerId());
 
             StoredObject storage = new StoredObject();
             storage.setId(StoredObjectIdCodec.toDomain(10L));
             storage.setOriginalFilename(command.getOriginalFilename());
             storage.setContentType(command.getContentType());
-            storage.setSize(command.getSize());
+            storage.setSize(command.getSize().value());
             storage.setAccessEndpoint("/api/storage/object/10/content");
-            return StorageUploadResult.builder().storage(storage).build();
-        }
-
-        @Override
-        public StoredObject get(StoredObjectId id) {
-            throw new UnsupportedOperationException("get");
-        }
-
-        @Override
-        public List<StoredObject> list(StorageQuery query) {
-            throw new UnsupportedOperationException("list");
-        }
-
-        @Override
-        public com.thundax.kuzhambu.common.core.page.PageResult<StoredObject> page(
-                StorageQuery query, com.thundax.kuzhambu.common.core.page.PageQuery page) {
-            throw new UnsupportedOperationException("page");
-        }
-
-        @Override
-        public StoredObjectId create(com.thundax.kuzhambu.storage.application.command.CreateStorageCommand command) {
-            throw new UnsupportedOperationException("create");
-        }
-
-        @Override
-        public void change(ChangeStorageCommand command) {
-            throw new UnsupportedOperationException("change");
-        }
-
-        @Override
-        public int remove(StoredObjectId id) {
-            throw new UnsupportedOperationException("remove");
-        }
-
-        @Override
-        public List<String> listMimeTypes(StorageQuery query) {
-            throw new UnsupportedOperationException("listMimeTypes");
-        }
-
-        @Override
-        public List<String> listReferenceOwnerTypes(StorageQuery query) {
-            throw new UnsupportedOperationException("listReferenceOwnerTypes");
-        }
-
-        @Override
-        public int changeObjectStatus(ChangeStorageObjectStatusCommand command) {
-            throw new UnsupportedOperationException("changeObjectStatus");
-        }
-
-        @Override
-        public int changeReferenceStatus(ChangeStorageReferenceStatusCommand command) {
-            throw new UnsupportedOperationException("changeReferenceStatus");
-        }
-
-        @Override
-        public int removeReferences(RemoveStorageReferencesCommand command) {
-            throw new UnsupportedOperationException("removeReferences");
-        }
-
-        @Override
-        public void addReferences(AddStorageReferencesCommand command) {
-            throw new UnsupportedOperationException("addReferences");
-        }
-
-        @Override
-        public List<StoredObjectReference> listReferences(StorageQuery query) {
-            throw new UnsupportedOperationException("listReferences");
-        }
-
-        @Override
-        public boolean existsReadableContent(StorageQuery query) {
-            throw new UnsupportedOperationException("existsReadableContent");
-        }
-
-        @Override
-        public StoredObjectContent openReadableContent(StoredObjectId id) {
-            throw new UnsupportedOperationException("openReadableContent");
-        }
-
-        @Override
-        public void sort(StorageSortCommand command) {
-            throw new UnsupportedOperationException("sort");
+            return storage;
         }
 
         private String extension(String filename) {
@@ -247,5 +165,13 @@ class StorageObjectUploadContractTest {
             }
             return filename.substring(filename.lastIndexOf('.') + 1);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T unused(Class<T> serviceType) {
+        return (T) Proxy.newProxyInstance(
+                serviceType.getClassLoader(), new Class<?>[] {serviceType}, (proxy, method, args) -> {
+                    throw new UnsupportedOperationException(method.getName());
+                });
     }
 }
