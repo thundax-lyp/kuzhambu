@@ -59,18 +59,18 @@ class MenuApplicationServiceImplTest {
         }
 
         @Override
-        public List<Menu> listByIds(List<Long> idList) {
+        public List<Menu> listByIds(List<MenuId> idList) {
             return new ArrayList<>();
         }
 
         @Override
-        public List<Menu> list(Long parentId, String visibility, Integer maxRank) {
+        public List<Menu> list(MenuId parentId, String visibility, Integer maxRank) {
             this.lastMaxRank = maxRank;
             return new ArrayList<>();
         }
 
         @Override
-        public PageResult<Menu> page(Long parentId, String visibility, Integer maxRank, int pageNo, int pageSize) {
+        public PageResult<Menu> page(MenuId parentId, String visibility, Integer maxRank, int pageNo, int pageSize) {
             this.lastMaxRank = maxRank;
             return PageResult.of(pageNo, pageSize, 0, new ArrayList<>());
         }
@@ -91,10 +91,10 @@ class MenuApplicationServiceImplTest {
         }
 
         @Override
-        public void moveTreeNode(Long fromId, Long toId, TreeNodeMoveType moveType) {}
+        public void moveTreeNode(MenuId fromId, MenuId toId, TreeNodeMoveType moveType) {}
 
         @Override
-        public boolean isChildOf(Long childId, Long parentId) {
+        public boolean isChildOf(MenuId childId, MenuId parentId) {
             return false;
         }
 
@@ -104,6 +104,6 @@ class MenuApplicationServiceImplTest {
         }
 
         @Override
-        public void deleteMenuRole(Long menuId) {}
+        public void deleteMenuRole(MenuId menuId) {}
     }
 }

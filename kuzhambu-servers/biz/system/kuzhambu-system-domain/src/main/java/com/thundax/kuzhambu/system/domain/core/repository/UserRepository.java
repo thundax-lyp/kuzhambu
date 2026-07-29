@@ -4,6 +4,8 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserPrivilege;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import java.util.List;
 
@@ -11,12 +13,13 @@ public interface UserRepository {
 
     User getById(UserId id);
 
-    List<User> listByIds(List<Long> idList);
+    List<User> listByIds(List<UserId> idList);
 
-    List<User> list(Long departmentId, String loginName, String name, UserStatus status, UserPrivilege privilege);
+    List<User> list(
+            DepartmentId departmentId, String loginName, String name, UserStatus status, UserPrivilege privilege);
 
     PageResult<User> page(
-            Long departmentId,
+            DepartmentId departmentId,
             String loginName,
             String name,
             UserStatus status,
@@ -36,9 +39,9 @@ public interface UserRepository {
 
     int updateStatus(User user);
 
-    List<Long> listUserRoles(Long userId);
+    List<RoleId> listUserRoles(UserId userId);
 
-    void deleteUserRole(Long userId);
+    void deleteUserRole(UserId userId);
 
-    void insertUserRole(Long userId, List<Long> roleIdList);
+    void insertUserRole(UserId userId, List<RoleId> roleIdList);
 }

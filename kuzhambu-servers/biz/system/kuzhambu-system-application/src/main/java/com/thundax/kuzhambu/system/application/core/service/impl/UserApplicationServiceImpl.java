@@ -11,9 +11,6 @@ import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.handler.UserDeleteCascadeHandler;
-import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
-import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
-import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
@@ -55,7 +52,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     public List<User> list(UserQuery query) {
         return dao.list(
-                query == null ? null : DepartmentIdCodec.toValue(query.getDepartmentId()),
+                query == null ? null : query.getDepartmentId(),
                 query == null ? null : query.getLoginName(),
                 query == null ? null : query.getName(),
                 query == null ? null : query.getStatus(),
@@ -64,7 +61,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     public PageResult<User> page(UserQuery query, PageQuery page) {
         return dao.page(
-                query == null ? null : DepartmentIdCodec.toValue(query.getDepartmentId()),
+                query == null ? null : query.getDepartmentId(),
                 query == null ? null : query.getLoginName(),
                 query == null ? null : query.getName(),
                 query == null ? null : query.getStatus(),
@@ -109,9 +106,9 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     private void rewriteUserRoles(UserId userId, List<RoleId> roleIdList) {
         if (roleIdList != null) {
-            dao.deleteUserRole(UserIdCodec.toValue(userId));
+            dao.deleteUserRole(userId);
             if (!roleIdList.isEmpty()) {
-                dao.insertUserRole(UserIdCodec.toValue(userId), RoleIdCodec.toValues(roleIdList));
+                dao.insertUserRole(userId, roleIdList);
             }
             notifyRoleCacheChanged();
         }
@@ -162,7 +159,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         for (UserDeleteCascadeHandler deleteCascadeHandler : deleteCascadeHandlers) {
             deleteCascadeHandler.beforeDelete(user);
         }
-        dao.deleteUserRole(UserIdCodec.toValue(id));
+        dao.deleteUserRole(id);
         notifyRoleCacheChanged();
 
         return dao.deleteById(id);
@@ -170,14 +167,12 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     @Override
     public List<Role> listUserRoles(UserQuery query) {
-        return dao.listUserRoles(UserIdCodec.toValue(query.getId())).stream()
-                .map(this::newRole)
-                .collect(Collectors.toList());
+        return dao.listUserRoles(query.getId()).stream().map(this::newRole).collect(Collectors.toList());
     }
 
-    private Role newRole(Long id) {
+    private Role newRole(RoleId id) {
         Role role = new Role();
-        role.setId(RoleIdCodec.toDomain(id));
+        role.setId(id);
         return role;
     }
 

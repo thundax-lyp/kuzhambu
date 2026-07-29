@@ -34,12 +34,8 @@ public class LogRepositoryImpl implements LogRepository {
     }
 
     @Override
-    public List<Log> listByIds(List<String> idList) {
-        List<Long> longIdList = new ArrayList<>();
-        for (String id : idList) {
-            longIdList.add(Long.valueOf(id));
-        }
-        return LogPersistenceAssembler.toDomainList(mapper.selectBatchIds(longIdList));
+    public List<Log> listByIds(List<LogId> idList) {
+        return LogPersistenceAssembler.toDomainList(mapper.selectBatchIds(LogIdCodec.toValues(idList)));
     }
 
     @Override

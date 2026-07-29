@@ -49,12 +49,12 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
     }
 
     @Override
-    public List<Department> listByIds(List<Long> idList) {
+    public List<Department> listByIds(List<DepartmentId> idList) {
         if (idList == null || idList.isEmpty()) {
             return new ArrayList<>();
         }
         LambdaQueryWrapper<DepartmentDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(DepartmentDO::getId, idList).orderByAsc(DepartmentDO::getLft);
+        wrapper.in(DepartmentDO::getId, DepartmentIdCodec.toValues(idList)).orderByAsc(DepartmentDO::getLft);
         List<Department> departments = DepartmentPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
         for (Department department : departments) {
             cacheSupport.putById(department);
@@ -63,15 +63,15 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
     }
 
     @Override
-    public List<Department> list(Long parentId, String name, String remarks) {
+    public List<Department> list(DepartmentId parentId, String name, String remarks) {
         return DepartmentPersistenceAssembler.toDomainList(
-                mapper.selectList(buildListWrapper(parentId, name, remarks)));
+                mapper.selectList(buildListWrapper(DepartmentIdCodec.toValue(parentId), name, remarks)));
     }
 
     @Override
-    public PageResult<Department> page(Long parentId, String name, String remarks, int pageNo, int pageSize) {
-        IPage<DepartmentDO> dataObjectPage =
-                mapper.selectPage(new Page<>(pageNo, pageSize), buildListWrapper(parentId, name, remarks));
+    public PageResult<Department> page(DepartmentId parentId, String name, String remarks, int pageNo, int pageSize) {
+        IPage<DepartmentDO> dataObjectPage = mapper.selectPage(
+                new Page<>(pageNo, pageSize), buildListWrapper(DepartmentIdCodec.toValue(parentId), name, remarks));
         return PageResult.of(
                 (int) dataObjectPage.getCurrent(),
                 (int) dataObjectPage.getSize(),
@@ -128,9 +128,11 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
     }
 
     @Override
-    public void moveTreeNode(Long fromId, Long toId, TreeNodeMoveType moveType) {
-        DepartmentDO fromNode = getTreeNode(fromId);
-        DepartmentDO toNode = getTreeNode(toId);
+    public void moveTreeNode(DepartmentId fromId, DepartmentId toId, TreeNodeMoveType moveType) {
+        Long fromIdValue = DepartmentIdCodec.toValue(fromId);
+        Long toIdValue = DepartmentIdCodec.toValue(toId);
+        DepartmentDO fromNode = getTreeNode(fromIdValue);
+        DepartmentDO toNode = getTreeNode(toIdValue);
 
         int newPosition;
         Long newParentId;
@@ -142,23 +144,24 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
             newParentId = toNode.getParentId();
         } else if (moveType == TreeNodeMoveType.INSIDE) {
             newPosition = toNode.getLft() + 1;
-            newParentId = toId;
+            newParentId = toIdValue;
         } else {
             newPosition = toNode.getRgt();
-            newParentId = toId;
+            newParentId = toIdValue;
         }
 
         moveTreeLfts(newPosition, treeSpan(fromNode));
         moveTreeRgts(newPosition, treeSpan(fromNode));
 
-        fromNode = getTreeNode(fromId);
+        fromNode = getTreeNode(fromIdValue);
         int offset = newPosition - fromNode.getLft();
         moveTreeNodes(fromNode.getLft(), fromNode.getRgt(), offset);
 
         moveTreeLfts(fromNode.getLft(), -treeSpan(fromNode));
         moveTreeRgts(fromNode.getLft(), -treeSpan(fromNode));
 
-        DepartmentDO parentUpdateDataObject = DepartmentPersistenceAssembler.toParentUpdateObject(fromId, newParentId);
+        DepartmentDO parentUpdateDataObject =
+                DepartmentPersistenceAssembler.toParentUpdateObject(fromIdValue, newParentId);
         mapper.update(
                 null,
                 buildIdUpdateWrapper(parentUpdateDataObject)
@@ -167,9 +170,9 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
     }
 
     @Override
-    public boolean isChildOf(Long childId, Long parentId) {
-        DepartmentDO child = getTreeNode(childId);
-        DepartmentDO parent = getTreeNode(parentId);
+    public boolean isChildOf(DepartmentId childId, DepartmentId parentId) {
+        DepartmentDO child = getTreeNode(DepartmentIdCodec.toValue(childId));
+        DepartmentDO parent = getTreeNode(DepartmentIdCodec.toValue(parentId));
         return child != null && parent != null && child.getLft() > parent.getLft() && child.getRgt() < parent.getRgt();
     }
 

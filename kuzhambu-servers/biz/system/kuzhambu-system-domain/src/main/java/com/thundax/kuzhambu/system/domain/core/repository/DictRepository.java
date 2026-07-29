@@ -10,7 +10,7 @@ public interface DictRepository {
 
     Dict getById(DictId id);
 
-    List<Dict> listByIds(List<Long> idList);
+    List<Dict> listByIds(List<DictId> idList);
 
     List<Dict> list(String type, String label, String remarks);
 

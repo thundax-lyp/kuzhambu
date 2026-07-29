@@ -46,14 +46,15 @@ public class DictRepositoryImpl implements DictRepository {
     }
 
     @Override
-    public List<Dict> listByIds(List<Long> idList) {
+    public List<Dict> listByIds(List<DictId> idList) {
         List<Dict> dictList = new ArrayList<>();
         List<Long> uncachedIdList = new ArrayList<>();
-        for (Long id : idList) {
-            Optional<Dict> cachedDict = cacheSupport.getById(id);
+        for (DictId id : idList) {
+            Long value = DictIdCodec.toValue(id);
+            Optional<Dict> cachedDict = cacheSupport.getById(value);
             cachedDict.ifPresent(dictList::add);
             if (!cachedDict.isPresent()) {
-                uncachedIdList.add(id);
+                uncachedIdList.add(value);
             }
         }
 

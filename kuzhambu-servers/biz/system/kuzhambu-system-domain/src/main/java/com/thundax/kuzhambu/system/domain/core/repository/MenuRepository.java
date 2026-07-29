@@ -10,11 +10,11 @@ public interface MenuRepository {
 
     Menu getById(MenuId id);
 
-    List<Menu> listByIds(List<Long> idList);
+    List<Menu> listByIds(List<MenuId> idList);
 
-    List<Menu> list(Long parentId, String visibility, Integer maxRank);
+    List<Menu> list(MenuId parentId, String visibility, Integer maxRank);
 
-    PageResult<Menu> page(Long parentId, String visibility, Integer maxRank, int pageNo, int pageSize);
+    PageResult<Menu> page(MenuId parentId, String visibility, Integer maxRank, int pageNo, int pageSize);
 
     MenuId insert(Menu menu);
 
@@ -22,11 +22,11 @@ public interface MenuRepository {
 
     int deleteById(MenuId id);
 
-    void moveTreeNode(Long fromId, Long toId, TreeNodeMoveType moveType);
+    void moveTreeNode(MenuId fromId, MenuId toId, TreeNodeMoveType moveType);
 
-    boolean isChildOf(Long childId, Long parentId);
+    boolean isChildOf(MenuId childId, MenuId parentId);
 
     int updateVisibility(Menu menu);
 
-    void deleteMenuRole(Long menuId);
+    void deleteMenuRole(MenuId menuId);
 }

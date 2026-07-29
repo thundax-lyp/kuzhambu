@@ -10,11 +10,11 @@ public interface DepartmentRepository {
 
     Department getById(DepartmentId id);
 
-    List<Department> listByIds(List<Long> idList);
+    List<Department> listByIds(List<DepartmentId> idList);
 
-    List<Department> list(Long parentId, String name, String remarks);
+    List<Department> list(DepartmentId parentId, String name, String remarks);
 
-    PageResult<Department> page(Long parentId, String name, String remarks, int pageNo, int pageSize);
+    PageResult<Department> page(DepartmentId parentId, String name, String remarks, int pageNo, int pageSize);
 
     DepartmentId insert(Department department);
 
@@ -22,7 +22,7 @@ public interface DepartmentRepository {
 
     int deleteById(DepartmentId id);
 
-    void moveTreeNode(Long fromId, Long toId, TreeNodeMoveType moveType);
+    void moveTreeNode(DepartmentId fromId, DepartmentId toId, TreeNodeMoveType moveType);
 
-    boolean isChildOf(Long childId, Long parentId);
+    boolean isChildOf(DepartmentId childId, DepartmentId parentId);
 }

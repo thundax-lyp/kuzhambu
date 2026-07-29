@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditChangedFi
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditMetaId;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
 import com.thundax.kuzhambu.system.domain.audit.repository.AuditLogRepository;
 import com.thundax.kuzhambu.system.domain.audit.repository.AuditMetaRepository;
 import java.util.Date;
@@ -139,22 +140,28 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
 
     @Override
     public List<AuditLog> list(AuditMetaQuery query) {
-        return auditLogRepository.listByObject(query.getObjectType(), query.getObjectId());
+        return auditLogRepository.listByObject(new AuditObjectRef(query.getObjectType(), query.getObjectId()));
     }
 
     @Override
     public PageResult<AuditLog> page(AuditLogQuery query, PageQuery pageQuery) {
         return auditLogRepository.page(
-                query == null ? null : query.getObjectType(),
-                query == null ? null : query.getObjectId(),
+                objectRef(query),
                 query == null ? null : query.getAction(),
-                query == null ? null : query.getOperatorType(),
-                query == null ? null : query.getOperatorId(),
+                operatorRef(query),
                 query == null ? null : query.getSource(),
                 query == null ? null : query.getRequestId(),
                 query == null ? null : query.getBeginDate(),
                 query == null ? null : query.getEndDate(),
                 pageQuery.getPageNo(),
                 pageQuery.getPageSize());
+    }
+
+    private AuditObjectRef objectRef(AuditLogQuery query) {
+        return query == null ? null : new AuditObjectRef(query.getObjectType(), query.getObjectId());
+    }
+
+    private AuditOperatorRef operatorRef(AuditLogQuery query) {
+        return query == null ? null : new AuditOperatorRef(query.getOperatorType(), query.getOperatorId());
     }
 }

@@ -10,7 +10,6 @@ import com.thundax.kuzhambu.system.application.core.command.CreateDepartmentComm
 import com.thundax.kuzhambu.system.application.core.command.MoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
-import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.repository.DepartmentRepository;
@@ -38,14 +37,14 @@ public class DepartmentApplicationServiceImpl implements DepartmentApplicationSe
 
     public List<Department> list(DepartmentQuery query) {
         return dao.list(
-                query == null ? null : DepartmentIdCodec.toValue(query.getParentId()),
+                query == null ? null : query.getParentId(),
                 query == null ? null : query.getName(),
                 query == null ? null : query.getRemarks());
     }
 
     public PageResult<Department> page(DepartmentQuery query, PageQuery page) {
         return dao.page(
-                query == null ? null : DepartmentIdCodec.toValue(query.getParentId()),
+                query == null ? null : query.getParentId(),
                 query == null ? null : query.getName(),
                 query == null ? null : query.getRemarks(),
                 page.getPageNo(),
@@ -90,10 +89,7 @@ public class DepartmentApplicationServiceImpl implements DepartmentApplicationSe
     @Transactional(rollbackFor = Exception.class)
     @AuditLog(type = "Department", id = "#command.fromId.value()", action = AuditAction.UPDATE, summary = "移动部门")
     public void move(MoveDepartmentCommand command) {
-        dao.moveTreeNode(
-                DepartmentIdCodec.toValue(command.getFromId()),
-                DepartmentIdCodec.toValue(command.getToId()),
-                command.getMoveType());
+        dao.moveTreeNode(command.getFromId(), command.getToId(), command.getMoveType());
     }
 
     @Override
@@ -101,9 +97,7 @@ public class DepartmentApplicationServiceImpl implements DepartmentApplicationSe
         return query != null
                 && query.getChildId() != null
                 && query.getAncestorId() != null
-                && dao.isChildOf(
-                        DepartmentIdCodec.toValue(query.getChildId()),
-                        DepartmentIdCodec.toValue(query.getAncestorId()));
+                && dao.isChildOf(query.getChildId(), query.getAncestorId());
     }
 
     private Department toDepartment(CreateDepartmentCommand command) {

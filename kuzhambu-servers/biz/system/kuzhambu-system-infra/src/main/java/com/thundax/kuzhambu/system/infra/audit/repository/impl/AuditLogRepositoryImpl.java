@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.system.domain.audit.codec.AuditLogIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
 import com.thundax.kuzhambu.system.domain.audit.repository.AuditLogRepository;
 import com.thundax.kuzhambu.system.infra.audit.persistence.assembler.AuditLogPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.audit.persistence.dataobject.AuditLogDO;
@@ -52,29 +54,27 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
     }
 
     @Override
-    public List<AuditLog> listByObject(String objectType, String objectId) {
+    public List<AuditLog> listByObject(AuditObjectRef objectRef) {
         LambdaQueryWrapper<AuditLogDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(AuditLogDO::getObjectType, objectType);
-        wrapper.eq(AuditLogDO::getObjectId, objectId);
+        wrapper.eq(AuditLogDO::getObjectType, objectType(objectRef));
+        wrapper.eq(AuditLogDO::getObjectId, objectId(objectRef));
         wrapper.orderByDesc(AuditLogDO::getVersion);
         return AuditLogPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
     }
 
     @Override
     public PageResult<AuditLog> page(
-            String objectType,
-            String objectId,
+            AuditObjectRef objectRef,
             AuditAction action,
-            AuditOperatorType operatorType,
-            String operatorId,
+            AuditOperatorRef operatorRef,
             String source,
             String requestId,
             Date beginDate,
             Date endDate,
             int pageNo,
             int pageSize) {
-        LambdaQueryWrapper<AuditLogDO> wrapper = buildWrapper(
-                objectType, objectId, action, operatorType, operatorId, source, requestId, beginDate, endDate);
+        LambdaQueryWrapper<AuditLogDO> wrapper =
+                buildWrapper(objectRef, action, operatorRef, source, requestId, beginDate, endDate);
         wrapper.orderByDesc(AuditLogDO::getOccurredAt, AuditLogDO::getId);
         Page<AuditLogDO> dataObjectPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
         return PageResult.of(
@@ -85,26 +85,44 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
     }
 
     private LambdaQueryWrapper<AuditLogDO> buildWrapper(
-            String objectType,
-            String objectId,
+            AuditObjectRef objectRef,
             AuditAction action,
-            AuditOperatorType operatorType,
-            String operatorId,
+            AuditOperatorRef operatorRef,
             String source,
             String requestId,
             Date beginDate,
             Date endDate) {
         LambdaQueryWrapper<AuditLogDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(objectType), AuditLogDO::getObjectType, objectType);
-        wrapper.eq(StringUtils.isNotBlank(objectId), AuditLogDO::getObjectId, objectId);
+        wrapper.eq(StringUtils.isNotBlank(objectType(objectRef)), AuditLogDO::getObjectType, objectType(objectRef));
+        wrapper.eq(StringUtils.isNotBlank(objectId(objectRef)), AuditLogDO::getObjectId, objectId(objectRef));
         wrapper.eq(action != null, AuditLogDO::getAction, action == null ? null : action.value());
         wrapper.eq(
-                operatorType != null, AuditLogDO::getOperatorType, operatorType == null ? null : operatorType.value());
-        wrapper.eq(StringUtils.isNotBlank(operatorId), AuditLogDO::getOperatorId, operatorId);
+                operatorType(operatorRef) != null,
+                AuditLogDO::getOperatorType,
+                operatorType(operatorRef) == null
+                        ? null
+                        : operatorType(operatorRef).value());
+        wrapper.eq(StringUtils.isNotBlank(operatorId(operatorRef)), AuditLogDO::getOperatorId, operatorId(operatorRef));
         wrapper.eq(StringUtils.isNotBlank(source), AuditLogDO::getSource, source);
         wrapper.eq(StringUtils.isNotBlank(requestId), AuditLogDO::getRequestId, requestId);
         wrapper.ge(beginDate != null, AuditLogDO::getOccurredAt, beginDate);
         wrapper.le(endDate != null, AuditLogDO::getOccurredAt, endDate);
         return wrapper;
+    }
+
+    private String objectType(AuditObjectRef objectRef) {
+        return objectRef == null ? null : objectRef.getObjectType();
+    }
+
+    private String objectId(AuditObjectRef objectRef) {
+        return objectRef == null ? null : objectRef.getObjectId();
+    }
+
+    private AuditOperatorType operatorType(AuditOperatorRef operatorRef) {
+        return operatorRef == null ? null : operatorRef.getOperatorType();
+    }
+
+    private String operatorId(AuditOperatorRef operatorRef) {
+        return operatorRef == null ? null : operatorRef.getOperatorId();
     }
 }
