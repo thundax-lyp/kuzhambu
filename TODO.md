@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `08-content-upload-service-impl`：08 迁移内容读取、普通上传和分片上传实现
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/{StorageContentApplicationServiceImpl.java,StorageUploadApplicationServiceImpl.java,MultipartUploadApplicationServiceImpl.java,StorageInputStreamLimiter.java}`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/result/StorageUploadResult.java`
-    - 处理动作：拆出内容读取和上传实现，删除或停用 `StorageUploadResult`，失败路径改抛 `BizException`
-    - 验收点：普通上传成功返回 `StoredObject`，分片上传继续返回本域 domain entity，上传失败不再通过 `Result.error` 表达
-    - 重要度：10/10
-
 - [ ] `09-application-facade-callers`：09 迁移 storage application facade 调用方
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
