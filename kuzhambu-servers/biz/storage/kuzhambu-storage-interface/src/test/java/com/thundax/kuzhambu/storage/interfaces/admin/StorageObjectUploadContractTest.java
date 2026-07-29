@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundaryAspect;
 import com.thundax.kuzhambu.common.web.exception.KuzhambuException;
 import com.thundax.kuzhambu.common.web.exception.WebErrorCode;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
@@ -76,6 +77,18 @@ class StorageObjectUploadContractTest {
                         null));
         assertEquals(WebErrorCode.BAD_REQUEST, unsupportedSuffixException.getErrorCode());
         assertEquals("无效的参数: 无效的后缀名", unsupportedSuffixException.getDefaultMessage());
+    }
+
+    @Test
+    void uploadShouldKeepTechnicalBizExceptionAsSystemError() {
+        StorageObjectController controller = controller();
+
+        KuzhambuException exception = assertThrows(
+                KuzhambuException.class,
+                () -> controller.upload(
+                        new InMemoryMultipartFile("technical.png", "image/png", "x".getBytes()), null, null));
+        assertEquals(WebErrorCode.SYSTEM_ERROR, exception.getErrorCode());
+        assertEquals(BizExceptionBoundaryAspect.TECHNICAL_FAILURE_MESSAGE, exception.getDefaultMessage());
     }
 
     private static StorageObjectController controller() {
@@ -151,6 +164,12 @@ class StorageObjectUploadContractTest {
             }
             if (!"png".equalsIgnoreCase(extension(command.getOriginalFilename()))) {
                 throw new BizException("无效的后缀名");
+            }
+            if ("technical.png".equals(command.getOriginalFilename())) {
+                throw new BizException(
+                        BizExceptionBoundaryAspect.TECHNICAL_FAILURE_CODE,
+                        BizExceptionBoundaryAspect.TECHNICAL_FAILURE_MESSAGE_KEY,
+                        BizExceptionBoundaryAspect.TECHNICAL_FAILURE_MESSAGE);
             }
             assertEquals("sancai.png", command.getOriginalFilename());
             assertEquals("image/png", command.getContentType());

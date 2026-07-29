@@ -85,6 +85,8 @@ public class StorageObjectController {
     private static final List<String> ALLOWED_UPLOAD_SUFFIXES = List.of(
             "jpg", "jpeg", "png", "gif", "webp", "pdf", "txt", "md", "csv", "json", "html", "zip", "docx", "xlsx",
             "pptx");
+    private static final List<String> UPLOAD_VALIDATION_FAILURE_MESSAGES =
+            List.of("文件不能为空", "文件大小超过限制", "无效的后缀名", "文件大小与声明大小不一致");
 
     private final StorageObjectApplicationService storageObjectApplicationService;
     private final StorageContentApplicationService storageContentApplicationService;
@@ -272,10 +274,18 @@ public class StorageObjectController {
             applyDefaultAccessEndpoint(storage);
             return StorageInterfaceAssembler.toResponse(storage);
         } catch (BizException exception) {
+            if (!isUploadValidationFailure(exception)) {
+                throw AdminResponseExceptions.system(exception.getMessage());
+            }
             throw AdminResponseExceptions.invalidParameter(exception.getMessage());
         } catch (IOException exception) {
             throw AdminResponseExceptions.system(exception.getMessage());
         }
+    }
+
+    private boolean isUploadValidationFailure(BizException exception) {
+        return exception.getCode() == null
+                && UPLOAD_VALIDATION_FAILURE_MESSAGES.contains(exception.getDefaultMessage());
     }
 
     @Operation(summary = "读取存储对象内容", description = "storage:object:view")
