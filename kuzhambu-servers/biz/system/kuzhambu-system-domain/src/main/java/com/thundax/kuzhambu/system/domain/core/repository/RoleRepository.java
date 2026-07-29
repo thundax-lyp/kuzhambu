@@ -3,14 +3,16 @@ package com.thundax.kuzhambu.system.domain.core.repository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import java.util.List;
 
 public interface RoleRepository {
 
     Role getById(RoleId id);
 
-    List<Role> listByIds(List<Long> idList);
+    List<Role> listByIds(List<RoleId> idList);
 
     List<Role> list(String status);
 
@@ -30,15 +32,15 @@ public interface RoleRepository {
 
     int updateStatus(Role role);
 
-    List<Long> listRoleMenus(Long roleId);
+    List<MenuId> listRoleMenus(RoleId roleId);
 
-    void deleteRoleMenu(Long roleId);
+    void deleteRoleMenu(RoleId roleId);
 
-    void insertRoleMenu(Long roleId, List<Long> menuIdList);
+    void insertRoleMenu(RoleId roleId, List<MenuId> menuIdList);
 
-    List<Long> listRoleUsers(Long roleId);
+    List<UserId> listRoleUsers(RoleId roleId);
 
-    void deleteRoleUser(Long roleId);
+    void deleteRoleUser(RoleId roleId);
 
-    void insertRoleUser(Long roleId, List<Long> userIdList);
+    void insertRoleUser(RoleId roleId, List<UserId> userIdList);
 }

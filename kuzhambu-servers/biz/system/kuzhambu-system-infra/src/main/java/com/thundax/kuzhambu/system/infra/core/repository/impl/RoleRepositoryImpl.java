@@ -7,9 +7,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.domain.core.repository.RoleRepository;
 import com.thundax.kuzhambu.system.infra.core.cache.RoleCacheSupport;
 import com.thundax.kuzhambu.system.infra.core.cache.UserCacheSupport;
@@ -61,13 +65,14 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
-    public List<Role> listByIds(List<Long> idList) {
+    public List<Role> listByIds(List<RoleId> idList) {
         List<Role> roleList = new ArrayList<>();
         List<Long> uncachedIdList = new ArrayList<>();
-        for (Long id : idList) {
-            Role role = cacheSupport.getById(id);
+        for (RoleId id : idList) {
+            Long value = RoleIdCodec.toValue(id);
+            Role role = cacheSupport.getById(value);
             if (role == null) {
-                uncachedIdList.add(id);
+                uncachedIdList.add(value);
             } else {
                 roleList.add(role);
             }
@@ -170,63 +175,69 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
-    public List<Long> listRoleMenus(Long roleId) {
-        List<Long> menuIds = cacheSupport.getRoleMenuIds(roleId);
+    public List<MenuId> listRoleMenus(RoleId roleId) {
+        Long roleIdValue = RoleIdCodec.toValue(roleId);
+        List<Long> menuIds = cacheSupport.getRoleMenuIds(roleIdValue);
         if (menuIds == null) {
             LambdaQueryWrapper<MenuRoleDO> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(MenuRoleDO::getRoleId, roleId);
+            wrapper.eq(MenuRoleDO::getRoleId, roleIdValue);
             menuIds = menuRoleMapper.selectList(wrapper).stream()
                     .map(MenuRoleDO::getMenuId)
                     .collect(Collectors.toList());
-            cacheSupport.putRoleMenuIds(roleId, menuIds);
+            cacheSupport.putRoleMenuIds(roleIdValue, menuIds);
         }
-        return menuIds;
+        return MenuIdCodec.toDomains(menuIds);
     }
 
     @Override
-    public void deleteRoleMenu(Long roleId) {
+    public void deleteRoleMenu(RoleId roleId) {
+        Long roleIdValue = RoleIdCodec.toValue(roleId);
         LambdaQueryWrapper<MenuRoleDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MenuRoleDO::getRoleId, roleId);
+        wrapper.eq(MenuRoleDO::getRoleId, roleIdValue);
         menuRoleMapper.delete(wrapper);
-        removeRoleCaches(roleId);
+        removeRoleCaches(roleIdValue);
     }
 
     @Override
-    public void insertRoleMenu(Long roleId, List<Long> menuIdList) {
-        for (Long menuId : menuIdList) {
-            menuRoleMapper.insert(RolePersistenceAssembler.toMenuRoleObject(roleId, menuId));
+    public void insertRoleMenu(RoleId roleId, List<MenuId> menuIdList) {
+        Long roleIdValue = RoleIdCodec.toValue(roleId);
+        for (Long menuId : MenuIdCodec.toValues(menuIdList)) {
+            menuRoleMapper.insert(RolePersistenceAssembler.toMenuRoleObject(roleIdValue, menuId));
         }
-        removeRoleCaches(roleId);
+        removeRoleCaches(roleIdValue);
     }
 
     @Override
-    public List<Long> listRoleUsers(Long roleId) {
-        List<Long> userIds = cacheSupport.getRoleUserIds(roleId);
+    public List<UserId> listRoleUsers(RoleId roleId) {
+        Long roleIdValue = RoleIdCodec.toValue(roleId);
+        List<Long> userIds = cacheSupport.getRoleUserIds(roleIdValue);
         if (userIds == null) {
             LambdaQueryWrapper<UserRoleDO> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(UserRoleDO::getRoleId, roleId);
+            wrapper.eq(UserRoleDO::getRoleId, roleIdValue);
             userIds = userRoleMapper.selectList(wrapper).stream()
                     .map(UserRoleDO::getUserId)
                     .collect(Collectors.toList());
-            cacheSupport.putRoleUserIds(roleId, userIds);
+            cacheSupport.putRoleUserIds(roleIdValue, userIds);
         }
-        return userIds;
+        return UserIdCodec.toDomains(userIds);
     }
 
     @Override
-    public void deleteRoleUser(Long roleId) {
+    public void deleteRoleUser(RoleId roleId) {
+        Long roleIdValue = RoleIdCodec.toValue(roleId);
         LambdaQueryWrapper<UserRoleDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserRoleDO::getRoleId, roleId);
+        wrapper.eq(UserRoleDO::getRoleId, roleIdValue);
         userRoleMapper.delete(wrapper);
-        removeRoleCaches(roleId);
+        removeRoleCaches(roleIdValue);
     }
 
     @Override
-    public void insertRoleUser(Long roleId, List<Long> userIdList) {
-        for (Long userId : userIdList) {
-            userRoleMapper.insert(RolePersistenceAssembler.toUserRoleObject(userId, roleId));
+    public void insertRoleUser(RoleId roleId, List<UserId> userIdList) {
+        Long roleIdValue = RoleIdCodec.toValue(roleId);
+        for (Long userId : UserIdCodec.toValues(userIdList)) {
+            userRoleMapper.insert(RolePersistenceAssembler.toUserRoleObject(userId, roleIdValue));
         }
-        removeRoleCaches(roleId);
+        removeRoleCaches(roleIdValue);
     }
 
     private LambdaUpdateWrapper<RoleDO> buildIdUpdateWrapper(RoleDO dataObject) {

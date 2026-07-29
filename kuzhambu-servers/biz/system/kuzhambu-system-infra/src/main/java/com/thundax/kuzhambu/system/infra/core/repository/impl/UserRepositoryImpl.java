@@ -6,10 +6,14 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserPrivilege;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.domain.core.repository.UserRepository;
 import com.thundax.kuzhambu.system.infra.core.cache.RoleCacheSupport;
@@ -64,13 +68,14 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<User> listByIds(List<Long> idList) {
+    public List<User> listByIds(List<UserId> idList) {
         List<User> userList = new ArrayList<>();
         List<Long> uncachedIdList = new ArrayList<>();
-        for (Long id : idList) {
-            User user = cacheSupport.getById(id);
+        for (UserId id : idList) {
+            Long value = UserIdCodec.toValue(id);
+            User user = cacheSupport.getById(value);
             if (user == null) {
-                uncachedIdList.add(id);
+                uncachedIdList.add(value);
             } else {
                 userList.add(user);
             }
@@ -87,14 +92,14 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<User> list(
-            Long departmentId, String loginName, String name, UserStatus status, UserPrivilege privilege) {
-        return UserPersistenceAssembler.toDomainList(
-                mapper.selectList(buildListWrapper(departmentId, loginName, name, status, privilege)));
+            DepartmentId departmentId, String loginName, String name, UserStatus status, UserPrivilege privilege) {
+        return UserPersistenceAssembler.toDomainList(mapper.selectList(
+                buildListWrapper(DepartmentIdCodec.toValue(departmentId), loginName, name, status, privilege)));
     }
 
     @Override
     public PageResult<User> page(
-            Long departmentId,
+            DepartmentId departmentId,
             String loginName,
             String name,
             UserStatus status,
@@ -102,7 +107,8 @@ public class UserRepositoryImpl implements UserRepository {
             int pageNo,
             int pageSize) {
         Page<UserDO> dataObjectPage = mapper.selectPage(
-                new Page<>(pageNo, pageSize), buildListWrapper(departmentId, loginName, name, status, privilege));
+                new Page<>(pageNo, pageSize),
+                buildListWrapper(DepartmentIdCodec.toValue(departmentId), loginName, name, status, privilege));
         return PageResult.of(
                 (int) dataObjectPage.getCurrent(),
                 (int) dataObjectPage.getSize(),
@@ -166,33 +172,36 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<Long> listUserRoles(Long userId) {
-        List<Long> roleIds = cacheSupport.getUserRoleIds(userId);
+    public List<RoleId> listUserRoles(UserId userId) {
+        Long userIdValue = UserIdCodec.toValue(userId);
+        List<Long> roleIds = cacheSupport.getUserRoleIds(userIdValue);
         if (roleIds == null) {
             LambdaQueryWrapper<UserRoleDO> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(UserRoleDO::getUserId, userId);
+            wrapper.eq(UserRoleDO::getUserId, userIdValue);
             roleIds = userRoleMapper.selectList(wrapper).stream()
                     .map(UserRoleDO::getRoleId)
                     .collect(Collectors.toList());
-            cacheSupport.putUserRoleIds(userId, roleIds);
+            cacheSupport.putUserRoleIds(userIdValue, roleIds);
         }
-        return roleIds;
+        return RoleIdCodec.toDomains(roleIds);
     }
 
     @Override
-    public void deleteUserRole(Long userId) {
+    public void deleteUserRole(UserId userId) {
+        Long userIdValue = UserIdCodec.toValue(userId);
         LambdaQueryWrapper<UserRoleDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserRoleDO::getUserId, userId);
+        wrapper.eq(UserRoleDO::getUserId, userIdValue);
         userRoleMapper.delete(wrapper);
-        removeUserCaches(userId);
+        removeUserCaches(userIdValue);
     }
 
     @Override
-    public void insertUserRole(Long userId, List<Long> roleIdList) {
-        for (Long roleId : roleIdList) {
-            userRoleMapper.insert(UserPersistenceAssembler.toUserRoleObject(userId, roleId));
+    public void insertUserRole(UserId userId, List<RoleId> roleIdList) {
+        Long userIdValue = UserIdCodec.toValue(userId);
+        for (Long roleId : RoleIdCodec.toValues(roleIdList)) {
+            userRoleMapper.insert(UserPersistenceAssembler.toUserRoleObject(userIdValue, roleId));
         }
-        removeUserCaches(userId);
+        removeUserCaches(userIdValue);
     }
 
     private LambdaUpdateWrapper<UserDO> buildIdUpdateWrapper(UserDO dataObject) {

@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T02 User and Role repository contracts`：强类型化用户与角色仓储契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/core/repository/UserRepository.java`；`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/core/repository/RoleRepository.java`；`kuzhambu-servers/biz/system/kuzhambu-system-infra/src/main/java/com/thundax/kuzhambu/system/infra/core/repository/impl/UserRepositoryImpl.java`；`kuzhambu-servers/biz/system/kuzhambu-system-infra/src/main/java/com/thundax/kuzhambu/system/infra/core/repository/impl/RoleRepositoryImpl.java`
-    - 处理动作：把用户、角色仓储端口中的用户 ID、角色 ID、菜单 ID、部门 ID 改为对应强类型，并在 infra impl 内完成基础类型转换。
-    - 验收点：`UserRepository`、`RoleRepository` 不再用 `Long` 表达已有业务 ID，关联 ID 查询返回 `List<RoleId>`、`List<MenuId>` 或 `List<UserId>`。
-    - 重要度：10/10
-
 - [ ] `T03 Menu repository contract`：强类型化菜单仓储契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`

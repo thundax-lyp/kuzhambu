@@ -16,14 +16,12 @@ import com.thundax.kuzhambu.system.application.core.command.CreateRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
-import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
-import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
-import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.domain.core.repository.RoleRepository;
 import java.util.Collections;
 import java.util.List;
@@ -120,9 +118,9 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     }
 
     private void afterWrite(Role role, List<MenuId> menuIdList) {
-        dao.deleteRoleMenu(RoleIdCodec.toValue(role.getId()));
+        dao.deleteRoleMenu(role.getId());
         if (menuIdList != null && !menuIdList.isEmpty()) {
-            dao.insertRoleMenu(RoleIdCodec.toValue(role.getId()), MenuIdCodec.toValues(menuIdList));
+            dao.insertRoleMenu(role.getId(), menuIdList);
         }
 
         notifyCacheChanged();
@@ -137,12 +135,10 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
             summary = "分配角色用户",
             recordWhenUnchanged = true)
     public void assignUsers(AssignRoleUsersCommand command) {
-        dao.deleteRoleUser(RoleIdCodec.toValue(command.getRoleId()));
+        dao.deleteRoleUser(command.getRoleId());
 
         if (command.getUserIds() != null && !command.getUserIds().isEmpty()) {
-            dao.insertRoleUser(
-                    RoleIdCodec.toValue(command.getRoleId()),
-                    command.getUserIds().stream().map(UserIdCodec::toValue).collect(Collectors.toList()));
+            dao.insertRoleUser(command.getRoleId(), command.getUserIds());
         }
 
         notifyCacheChanged();
@@ -175,8 +171,8 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
             return 0;
         }
 
-        dao.deleteRoleMenu(RoleIdCodec.toValue(id));
-        dao.deleteRoleUser(RoleIdCodec.toValue(id));
+        dao.deleteRoleMenu(id);
+        dao.deleteRoleUser(id);
         int retVal = dao.deleteById(id);
 
         notifyCacheChanged();
@@ -186,25 +182,25 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
     @Override
     public List<User> listRoleUsers(RoleQuery query) {
-        List<Long> userIdList = dao.listRoleUsers(RoleIdCodec.toValue(query.getId()));
+        List<UserId> userIdList = dao.listRoleUsers(query.getId());
         return userIdList.stream().map(this::newUser).collect(Collectors.toList());
     }
 
     @Override
     public List<Menu> listRoleMenus(RoleQuery query) {
-        List<Long> menuIdList = dao.listRoleMenus(RoleIdCodec.toValue(query.getId()));
+        List<MenuId> menuIdList = dao.listRoleMenus(query.getId());
         return menuIdList.stream().map(this::newMenu).collect(Collectors.toList());
     }
 
-    private User newUser(Long id) {
+    private User newUser(UserId id) {
         User user = new User();
-        user.setId(UserIdCodec.toDomain(id));
+        user.setId(id);
         return user;
     }
 
-    private Menu newMenu(Long id) {
+    private Menu newMenu(MenuId id) {
         Menu menu = new Menu();
-        menu.setId(MenuIdCodec.toDomain(id));
+        menu.setId(id);
         return menu;
     }
 
