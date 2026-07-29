@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `04-storage-queries`：04 新增 storage object 查询契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/query/{GetStorageObjectQuery.java,ListStorageObjectsQuery.java,StorageObjectPageQuery.java,ListStorageMimeTypesQuery.java,ListStorageReferenceOwnerTypesQuery.java}`
-    - 处理动作：新增对象读取、列表、分页和枚举列表查询对象，并迁移 `StorageQuery` 中对应字段
-    - 验收点：`StorageObjectPageQuery.pageNo` 和 `pageSize` 使用 primitive `int`，分页 service 方法只接收单个 query
-    - 重要度：9/10
-
 - [ ] `05-storage-content-reference-queries`：05 新增引用和内容读取查询契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
