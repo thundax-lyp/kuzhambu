@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T13 Runbook cleanup`：清理临时 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 处理动作：在实现、验证和必要文档沉淀完成后删除临时 RUNBOOK。
-    - 验收点：强类型化闭环完成后仓库不再保留该 RUNBOOK；如发现长期规则，已先迁移到对应治理文档。
-    - 重要度：9/10
-
 ## 待审阅任务项
 
 ## 待讨论项
