@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `25-system-contract-validation`：[25] 运行 system 契约强类型化后端验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application`、`kuzhambu-servers/biz/system/kuzhambu-system-interface`、`kuzhambu-servers/biz/system`
-    - 处理动作：运行 RUNBOOK 规定的 Maven 窄测试、编译、格式检查、checkstyle 和最终 system 测试。
-    - 验收点：`mvn -pl biz/system/kuzhambu-system-application -Dtest='*ApplicationServiceImplTest,SystemApplicationArchitectureTest' test`、`mvn -pl biz/system/kuzhambu-system-interface -am -DskipTests compile`、`mvn spotless:check`、`mvn checkstyle:check`、`mvn -pl biz/system -am test` 均通过或有明确记录。
-    - 重要度：9/10
-
 - [ ] `26-runbook-closure`：[26] 收口并清理强类型契约 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
