@@ -1,4 +1,5 @@
 import { ADMIN_API_BASE_URL, postJson } from "@/api/http";
+import { normalizeId, normalizeNullableId } from "@/types/id";
 import type {
     SancaiEntryImageContentMode,
     SancaiEntryImageRecord,
@@ -9,6 +10,28 @@ import type {
 const ENTRIES_PATH = "/classics/sancai/entries";
 const ASSET_IMAGES_PATH = "/classics/sancai/assets/images";
 const ASSET_VISUAL_ASSETS_PATH = "/classics/sancai/assets/visual-assets";
+
+const normalizeEntryRecord = (record: SancaiEntryRecord): SancaiEntryRecord => ({
+    ...record,
+    id: normalizeId(record.id),
+    volumeId: normalizeNullableId(record.volumeId)
+});
+
+const normalizeEntryImageRecord = (record: SancaiEntryImageRecord): SancaiEntryImageRecord => ({
+    ...record,
+    id: normalizeId(record.id),
+    entryId: normalizeNullableId(record.entryId),
+    storageObjectId: normalizeNullableId(record.storageObjectId)
+});
+
+const normalizeVisualAssetRecord = (record: SancaiVisualAssetRecord): SancaiVisualAssetRecord => ({
+    ...record,
+    id: normalizeNullableId(record.id),
+    visualAssetId: normalizeNullableId(record.visualAssetId),
+    entryId: normalizeNullableId(record.entryId),
+    sourceImageStorageObjectId: normalizeNullableId(record.sourceImageStorageObjectId),
+    generatedImageStorageObjectId: normalizeNullableId(record.generatedImageStorageObjectId)
+});
 
 export interface SancaiEntryQuery {
     categoryId?: string | null;
@@ -68,19 +91,19 @@ export type SancaiVisualAssetRefinementCapability =
 export const list = (request: SancaiEntryQuery = {}) => {
     return postJson<SancaiEntryRecord[], SancaiEntryQuery>(`${ENTRIES_PATH}/list`, {
         body: request
-    });
+    }).then((records) => records.map(normalizeEntryRecord));
 };
 
 export const get = (id: string) => {
     return postJson<SancaiEntryRecord, SancaiEntryCommand>(`${ENTRIES_PATH}/get`, {
         body: { id }
-    });
+    }).then(normalizeEntryRecord);
 };
 
 export const listImages = (entryId: string) => {
     return postJson<SancaiEntryImageRecord[], { entryId: string }>(`${ASSET_IMAGES_PATH}/list`, {
         body: { entryId }
-    });
+    }).then((records) => records.map(normalizeEntryImageRecord));
 };
 
 export const listVisualAssets = (entryId: string) => {
@@ -89,7 +112,7 @@ export const listVisualAssets = (entryId: string) => {
         {
             body: { entryId }
         }
-    );
+    ).then((records) => records.map(normalizeVisualAssetRecord));
 };
 
 export const getImageContentUrl = (request: SancaiEntryImageContentUrlCommand) => {
@@ -111,7 +134,7 @@ export const updateVisualAsset = (command: SancaiVisualAssetCommand) => {
         {
             body: command
         }
-    );
+    ).then(normalizeVisualAssetRecord);
 };
 
 export const changeCurrentVisualAsset = (command: SancaiVisualAssetUseCommand) => {
