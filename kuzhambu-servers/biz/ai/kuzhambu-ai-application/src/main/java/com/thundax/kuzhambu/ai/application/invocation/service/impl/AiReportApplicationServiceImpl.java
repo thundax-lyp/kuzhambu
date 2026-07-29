@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.ai.application.invocation.service.impl;
 
+import com.thundax.kuzhambu.ai.application.invocation.query.AiReportSummaryQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult.TopCapabilityResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiReportApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
-import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiReportBucketType;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.math.BigDecimal;
@@ -31,7 +31,9 @@ public class AiReportApplicationServiceImpl implements AiReportApplicationServic
     }
 
     @Override
-    public AiReportSummaryResult summary(Instant periodStart, Instant periodEnd, AiReportBucketType bucketType) {
+    public AiReportSummaryResult summary(AiReportSummaryQuery query) {
+        Instant periodStart = query == null ? null : query.getPeriodStart();
+        Instant periodEnd = query == null ? null : query.getPeriodEnd();
         List<AiInvocationLog> invocationLogs = aiInvocationRepository.listInvocationLogs(periodStart, periodEnd);
         long invocationCount = invocationLogs.size();
         long succeededInvocationCount = invocationLogs.stream()

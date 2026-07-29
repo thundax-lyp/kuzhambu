@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.ai.application.invocation.query.AiReportSummaryQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
@@ -34,8 +35,8 @@ class AiReportApplicationServiceImplTest {
                                 180,
                                 "2.00")));
 
-        AiReportSummaryResult result = service.summary(
-                Instant.parse("2024-06-01T00:00:00Z"), Instant.parse("2024-06-30T23:59:59Z"), AiReportBucketType.DAY);
+        AiReportSummaryResult result = service.summary(new AiReportSummaryQuery(
+                Instant.parse("2024-06-01T00:00:00Z"), Instant.parse("2024-06-30T23:59:59Z"), AiReportBucketType.DAY));
 
         assertEquals(3L, result.getInvocationCount());
         assertEquals(2L, result.getSucceededInvocationCount());

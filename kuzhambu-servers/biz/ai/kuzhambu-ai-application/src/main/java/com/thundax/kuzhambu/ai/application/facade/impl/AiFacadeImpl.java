@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiReportSummaryQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.RequireAiCandidateForApplyQuery;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
@@ -75,12 +76,12 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeResponse(aiReportApplicationService.summary(
+        return aiFacadeAssembler.toFacadeResponse(aiReportApplicationService.summary(new AiReportSummaryQuery(
                 request.getPeriodStart() == null
                         ? null
                         : request.getPeriodStart().toInstant(),
                 request.getPeriodEnd() == null ? null : request.getPeriodEnd().toInstant(),
-                request.getBucketType() == null ? null : AiReportBucketType.from(request.getBucketType())));
+                request.getBucketType() == null ? null : AiReportBucketType.from(request.getBucketType()))));
     }
 
     @Override

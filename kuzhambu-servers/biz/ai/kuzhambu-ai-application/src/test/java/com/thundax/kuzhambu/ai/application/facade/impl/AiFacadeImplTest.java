@@ -68,7 +68,10 @@ class AiFacadeImplTest {
         AiReportApplicationService aiReportApplicationService = mock(AiReportApplicationService.class);
         Date periodStart = Date.from(Instant.parse("2025-01-01T00:00:00Z"));
         Date periodEnd = Date.from(Instant.parse("2025-01-31T23:59:59Z"));
-        when(aiReportApplicationService.summary(periodStart.toInstant(), periodEnd.toInstant(), AiReportBucketType.DAY))
+        when(aiReportApplicationService.summary(argThat(query -> query != null
+                        && periodStart.toInstant().equals(query.getPeriodStart())
+                        && periodEnd.toInstant().equals(query.getPeriodEnd())
+                        && AiReportBucketType.DAY == query.getBucketType())))
                 .thenReturn(new AiReportSummaryResult(
                         periodStart,
                         periodEnd,
