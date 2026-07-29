@@ -109,15 +109,15 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
         KnowledgeAiExtractionApplicationServiceImpl repository =
                 new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, businessResolver);
-        KnowledgeAiExtractionCommand input = input();
-        input.setServiceId(null);
-        input.setServiceRole(null);
-        input.setModelId(null);
-        input.setModelName(null);
-        input.setPromptVersionId(null);
-        input.setPromptMessagesJson(null);
+        KnowledgeAiExtractionCommand command = command();
+        command.setServiceId(null);
+        command.setServiceRole(null);
+        command.setModelId(null);
+        command.setModelName(null);
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
 
-        repository.extractGraph(input);
+        repository.extractGraph(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals(capturedCommand, businessResolver.capturedCommand());
@@ -128,22 +128,22 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     }
 
     private KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionApplicationServiceImpl repository) {
-        return repository.extractGraph(input());
+        return repository.extractGraph(command());
     }
 
     private KnowledgeAiExtractionResult extractRelations(KnowledgeAiExtractionApplicationServiceImpl repository) {
-        return repository.extractRelations(input());
+        return repository.extractRelations(command());
     }
 
     private KnowledgeAiExtractionResult extractLineage(KnowledgeAiExtractionApplicationServiceImpl repository) {
-        return repository.extractLineage(input());
+        return repository.extractLineage(command());
     }
 
     private KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionApplicationServiceImpl repository) {
-        return repository.extractTags(input());
+        return repository.extractTags(command());
     }
 
-    private KnowledgeAiExtractionCommand input() {
+    private KnowledgeAiExtractionCommand command() {
         return new KnowledgeAiExtractionCommand(
                 "GRAPH",
                 "ENTRY",

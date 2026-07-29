@@ -5,11 +5,11 @@ import com.thundax.kuzhambu.ai.application.scenario.result.KnowledgeAiExtraction
 
 public interface KnowledgeAiExtractionApplicationService {
 
-    KnowledgeAiExtractionResult extractRelations(KnowledgeAiExtractionCommand input);
+    KnowledgeAiExtractionResult extractRelations(KnowledgeAiExtractionCommand command);
 
-    KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionCommand input);
+    KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionCommand command);
 
-    KnowledgeAiExtractionResult extractLineage(KnowledgeAiExtractionCommand input);
+    KnowledgeAiExtractionResult extractLineage(KnowledgeAiExtractionCommand command);
 
-    KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionCommand input);
+    KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionCommand command);
 }

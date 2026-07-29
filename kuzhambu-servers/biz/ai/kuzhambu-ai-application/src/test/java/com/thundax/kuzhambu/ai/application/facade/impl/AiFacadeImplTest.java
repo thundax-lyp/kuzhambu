@@ -331,27 +331,27 @@ class AiFacadeImplTest {
         KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService =
                 mock(KnowledgeAiExtractionApplicationService.class);
         when(knowledgeAiExtractionApplicationService.extractGraph(any())).thenAnswer(invocation -> {
-            KnowledgeAiExtractionCommand input = invocation.getArgument(0);
-            assertEquals("GRAPH", input.getTaskType());
-            assertEquals("ENTRY", input.getScopeType());
-            assertEquals("{\"entryId\":9}", input.getScopeJson());
-            assertEquals("CLASSICS_CONTENT", input.getSourceContentType());
-            assertEquals(101L, input.getSourceContentId());
-            assertEquals(201L, input.getRequestedBy());
-            assertEquals(301L, input.getServiceId());
-            assertEquals("KNOWLEDGE", input.getServiceRole());
-            assertEquals(new AiModelId(401L), input.getModelId());
-            assertEquals(AiModelName.of("kimi-k2"), input.getModelName());
-            assertEquals(new PromptVersionId(501L), input.getPromptVersionId());
-            assertEquals(RequestIdCodec.toDomain("req-graph"), input.getRequestId());
-            assertEquals(TraceIdCodec.toDomain("trace-graph"), input.getTraceId());
-            assertEquals("[\"graph-prompt\"]", input.getPromptMessagesJson());
-            assertEquals("{\"style\":\"full\"}", input.getPromptVariablesJson());
-            assertEquals("graph-hash", input.getPromptHash());
-            assertEquals("{\"content\":\"x\"}", input.getInputPayloadJson());
-            assertEquals("{\"type\":\"graph\"}", input.getOutputSchemaJson());
-            assertFalse(input.isForceJson());
-            assertEquals("zh-CN", input.getLocale());
+            KnowledgeAiExtractionCommand command = invocation.getArgument(0);
+            assertEquals("GRAPH", command.getTaskType());
+            assertEquals("ENTRY", command.getScopeType());
+            assertEquals("{\"entryId\":9}", command.getScopeJson());
+            assertEquals("CLASSICS_CONTENT", command.getSourceContentType());
+            assertEquals(101L, command.getSourceContentId());
+            assertEquals(201L, command.getRequestedBy());
+            assertEquals(301L, command.getServiceId());
+            assertEquals("KNOWLEDGE", command.getServiceRole());
+            assertEquals(new AiModelId(401L), command.getModelId());
+            assertEquals(AiModelName.of("kimi-k2"), command.getModelName());
+            assertEquals(new PromptVersionId(501L), command.getPromptVersionId());
+            assertEquals(RequestIdCodec.toDomain("req-graph"), command.getRequestId());
+            assertEquals(TraceIdCodec.toDomain("trace-graph"), command.getTraceId());
+            assertEquals("[\"graph-prompt\"]", command.getPromptMessagesJson());
+            assertEquals("{\"style\":\"full\"}", command.getPromptVariablesJson());
+            assertEquals("graph-hash", command.getPromptHash());
+            assertEquals("{\"content\":\"x\"}", command.getInputPayloadJson());
+            assertEquals("{\"type\":\"graph\"}", command.getOutputSchemaJson());
+            assertFalse(command.isForceJson());
+            assertEquals("zh-CN", command.getLocale());
             return new KnowledgeAiExtractionResult(
                     new AiCallId(701L),
                     new AiCandidateId(801L),
@@ -406,27 +406,27 @@ class AiFacadeImplTest {
         KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService =
                 mock(KnowledgeAiExtractionApplicationService.class);
         when(knowledgeAiExtractionApplicationService.extractTags(any())).thenAnswer(invocation -> {
-            KnowledgeAiExtractionCommand input = invocation.getArgument(0);
-            assertEquals("TAG", input.getTaskType());
-            assertEquals("CONTENT", input.getScopeType());
-            assertEquals("{\"contentType\":\"SANCAI_ENTRY\",\"contentIds\":[1001]}", input.getScopeJson());
-            assertEquals("SANCAI_ENTRY", input.getSourceContentType());
-            assertEquals(1001L, input.getSourceContentId());
-            assertEquals(2001L, input.getRequestedBy());
-            assertEquals(3001L, input.getServiceId());
-            assertEquals("KNOWLEDGE", input.getServiceRole());
-            assertEquals(new AiModelId(4001L), input.getModelId());
-            assertEquals(AiModelName.of("gpt-5"), input.getModelName());
-            assertEquals(new PromptVersionId(5001L), input.getPromptVersionId());
-            assertEquals(RequestIdCodec.toDomain("req-tag"), input.getRequestId());
-            assertEquals(TraceIdCodec.toDomain("trace-tag"), input.getTraceId());
-            assertEquals("[\"tag-prompt\"]", input.getPromptMessagesJson());
-            assertEquals("{\"maxTags\":10}", input.getPromptVariablesJson());
-            assertEquals("tag-hash", input.getPromptHash());
-            assertEquals("{\"contentText\":\"正文\"}", input.getInputPayloadJson());
-            assertEquals("{\"type\":\"object\",\"required\":[\"tags\"]}", input.getOutputSchemaJson());
-            assertTrue(input.isForceJson());
-            assertEquals("zh-CN", input.getLocale());
+            KnowledgeAiExtractionCommand command = invocation.getArgument(0);
+            assertEquals("TAG", command.getTaskType());
+            assertEquals("CONTENT", command.getScopeType());
+            assertEquals("{\"contentType\":\"SANCAI_ENTRY\",\"contentIds\":[1001]}", command.getScopeJson());
+            assertEquals("SANCAI_ENTRY", command.getSourceContentType());
+            assertEquals(1001L, command.getSourceContentId());
+            assertEquals(2001L, command.getRequestedBy());
+            assertEquals(3001L, command.getServiceId());
+            assertEquals("KNOWLEDGE", command.getServiceRole());
+            assertEquals(new AiModelId(4001L), command.getModelId());
+            assertEquals(AiModelName.of("gpt-5"), command.getModelName());
+            assertEquals(new PromptVersionId(5001L), command.getPromptVersionId());
+            assertEquals(RequestIdCodec.toDomain("req-tag"), command.getRequestId());
+            assertEquals(TraceIdCodec.toDomain("trace-tag"), command.getTraceId());
+            assertEquals("[\"tag-prompt\"]", command.getPromptMessagesJson());
+            assertEquals("{\"maxTags\":10}", command.getPromptVariablesJson());
+            assertEquals("tag-hash", command.getPromptHash());
+            assertEquals("{\"contentText\":\"正文\"}", command.getInputPayloadJson());
+            assertEquals("{\"type\":\"object\",\"required\":[\"tags\"]}", command.getOutputSchemaJson());
+            assertTrue(command.isForceJson());
+            assertEquals("zh-CN", command.getLocale());
             return new KnowledgeAiExtractionResult(
                     new AiCallId(711L),
                     new AiCandidateId(811L),
