@@ -1,25 +1,18 @@
 import { App, Empty } from "antd";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { KuzhambuSegmentedDrawer, KuzhambuButton } from "@/components";
 
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
+import { useSancaiEntryVisualPreviewState } from "@/pages/classics/common/hooks/use-sancai-entry-visual-preview-state";
 
 import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
 import { openSancaiEntryPreviewWindow } from "./sancai-entry-preview-window";
-import {
-    SancaiEntryVisualSection,
-    type SancaiEntryVisualPreviewState
-} from "./sancai-entry-visual-section";
-import { useSancaiEntryVisualPreviewState } from "./sancai-entry-visual-section/hooks/use-sancai-entry-visual-preview-state";
 import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-entry-form-values";
-import type {
-    SancaiEntryRecord,
-    SancaiVisualAssetRecord
-} from "@/pages/classics/sancai/sancai-types";
+import type { SancaiEntryRecord } from "@/pages/classics/sancai/sancai-types";
 import "./sancai-entry-edit-drawer.css";
 
-type SancaiEntryEditDrawerSection = "basic" | "visual" | "tags" | "qa" | "versions";
+type SancaiEntryEditDrawerSection = "basic" | "tags" | "qa" | "versions";
 
 interface SancaiEntryBasicPreviewState {
     imageUrl?: string;
@@ -34,14 +27,10 @@ interface SancaiEntryEditDrawerProps {
     initialCategoryId?: string | null;
     initialVolumeId?: string | null;
     isSubmitting: boolean;
-    isUpdatingVisualAsset?: boolean;
     mode?: "create" | "edit";
     open: boolean;
     onCancel: () => void;
     onSubmit: (values: SancaiEntryFormValues) => void;
-    onUseVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
-    onUpdateVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
-    onVisualRefinementChanged?: () => Promise<void> | void;
     onCreateTranslationTask?: (draft: SancaiEntryFormValues) => void;
     onCreateSummaryTask?: (draft: SancaiEntryFormValues) => void;
     isCreatingTranslationTask?: boolean;
@@ -60,14 +49,10 @@ export const SancaiEntryEditDrawer = ({
     initialCategoryId = null,
     initialVolumeId = null,
     isSubmitting,
-    isUpdatingVisualAsset = false,
     mode = "edit",
     open,
     onCancel,
     onSubmit,
-    onUseVisualAsset,
-    onUpdateVisualAsset,
-    onVisualRefinementChanged = () => {},
     onCreateTranslationTask,
     onCreateSummaryTask,
     isCreatingTranslationTask = false,
@@ -82,21 +67,8 @@ export const SancaiEntryEditDrawer = ({
     );
     const [activeSection, setActiveSection] = useState<SancaiEntryEditDrawerSection>("basic");
     const [basicPreviewState, setBasicPreviewState] = useState<SancaiEntryBasicPreviewState>({});
-    const [visualPreviewState, setVisualPreviewState] = useState<SancaiEntryVisualPreviewState>({
-        currentVisualAsset: null
-    });
     const entryId = mode === "edit" ? entry?.id : undefined;
-    const fallbackVisualPreviewState = useSancaiEntryVisualPreviewState(entryId);
-    const [hasVisualSectionPreviewState, setHasVisualSectionPreviewState] = useState(false);
-    const shouldUseVisualSectionPreviewState =
-        activeSection === "visual" && hasVisualSectionPreviewState;
-    const effectiveVisualPreviewState = shouldUseVisualSectionPreviewState
-        ? visualPreviewState
-        : fallbackVisualPreviewState;
-    const updateVisualPreviewState = useCallback((state: SancaiEntryVisualPreviewState) => {
-        setHasVisualSectionPreviewState(true);
-        setVisualPreviewState(state);
-    }, []);
+    const visualPreviewState = useSancaiEntryVisualPreviewState(entryId);
 
     const submitForm = () => {
         if (!entryDraft.volumeId) {
@@ -128,25 +100,13 @@ export const SancaiEntryEditDrawer = ({
         />
     );
 
-    const visualAssetContent =
-        entryId && entry ? (
-            <SancaiEntryVisualSection
-                entry={entry}
-                isUpdatingVisualAsset={isUpdatingVisualAsset}
-                onRefinementChanged={onVisualRefinementChanged}
-                onPreviewStateChange={updateVisualPreviewState}
-                onUpdateVisualAsset={onUpdateVisualAsset}
-                onUseVisualAsset={onUseVisualAsset}
-            />
-        ) : null;
-
     const openPreviewWindow = () => {
         openSancaiEntryPreviewWindow({
-            currentVisualAsset: effectiveVisualPreviewState.currentVisualAsset,
+            currentVisualAsset: visualPreviewState.currentVisualAsset,
             form: entryDraft,
             imageUrl: basicPreviewState.imageUrl,
-            visualDescription: effectiveVisualPreviewState.visualDescription,
-            visualUrl: effectiveVisualPreviewState.generatedPreviewUrl
+            visualDescription: visualPreviewState.visualDescription,
+            visualUrl: visualPreviewState.generatedPreviewUrl
         });
     };
 
@@ -155,12 +115,6 @@ export const SancaiEntryEditDrawer = ({
             label: "基础信息",
             value: "basic",
             content: basicContent
-        },
-        {
-            label: "视觉处理",
-            value: "visual",
-            content: visualAssetContent,
-            visible: mode === "edit"
         },
         {
             label: "标签",

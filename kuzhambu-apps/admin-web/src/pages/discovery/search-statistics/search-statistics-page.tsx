@@ -4,9 +4,9 @@ import type { ColumnsType } from "antd/es/table";
 import type { Key } from "react";
 import { useState } from "react";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { SearchStatisticsFilterPanel } from "./components/search-statistics-filter-panel";
-import type { SearchStatisticsDateRangeValue } from "./components/search-statistics-filter-panel";
-import { SearchTrendPanel } from "./components/search-trend-panel";
+import { SearchStatisticsFilterPanel } from "./search-statistics-filter-panel";
+import type { SearchStatisticsDateRangeValue } from "./search-statistics-filter-panel";
+import { SearchTrendPanel } from "./search-trend-panel";
 import * as service from "./search-statistics-service";
 import type {
     DiscoverySearchEventPageQuery,

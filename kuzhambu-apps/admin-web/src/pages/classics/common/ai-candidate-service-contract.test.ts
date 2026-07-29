@@ -33,29 +33,47 @@ const readFetchBody = (body: BodyInit | null | undefined) => {
     return JSON.parse(String(body));
 };
 
+const readMockResponseData = (path: string) => {
+    const candidate = {
+        candidateId: 7001,
+        contentType: "SANCAI_ENTRY",
+        contentId: 3001,
+        objectId: 5001,
+        candidateIdList: [7001],
+        capability: "summary",
+        resultFormat: "TEXT",
+        status: "PENDING",
+        resultPayload: "ok"
+    };
+    if (path.endsWith("/list")) {
+        return [candidate];
+    }
+    if (path.endsWith("/change")) {
+        return {
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            versionId: 5002,
+            versionNo: 2
+        };
+    }
+    return candidate;
+};
+
 const installFetchRecorder = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
         const url = readFetchUrl(input);
+        const path = url.replace(API_PREFIX, "").replace(DEV_PROXY_PREFIX, "");
         capturedCalls.push({
             body: readFetchBody(init?.body),
             method: init?.method,
-            path: url.replace(API_PREFIX, "").replace(DEV_PROXY_PREFIX, "")
+            path
         });
 
         return new Response(
             JSON.stringify({
                 code: "COMMON-00000",
                 message: "success",
-                data: {
-                    candidateId: "7001",
-                    contentType: "SANCAI_ENTRY",
-                    contentId: "3001",
-                    candidateIdList: [7001],
-                    capability: "summary",
-                    resultFormat: "TEXT",
-                    status: "PENDING",
-                    resultPayload: "ok"
-                }
+                data: readMockResponseData(path)
             }),
             {
                 headers: {
@@ -84,7 +102,7 @@ describe("AI candidate service request contracts", () => {
     });
 
     it("lists candidates by content type and id", async () => {
-        await aiCandidateService.list({
+        const candidates = await aiCandidateService.list({
             contentType: "SANCAI_ENTRY",
             contentId: "3001",
             objectId: "5001",
@@ -92,6 +110,13 @@ describe("AI candidate service request contracts", () => {
             status: "PENDING"
         });
 
+        expect(candidates[0]).toEqual(
+            expect.objectContaining({
+                candidateId: "7001",
+                contentId: "3001",
+                objectId: "5001"
+            })
+        );
         expect(capturedCalls.at(-1)).toEqual({
             body: {
                 contentType: "SANCAI_ENTRY",
@@ -131,8 +156,14 @@ describe("AI candidate service request contracts", () => {
             changeSummary: "AI 应用：摘要"
         };
 
-        await aiCandidateService.apply(command);
+        const result = await aiCandidateService.apply(command);
 
+        expect(result).toEqual(
+            expect.objectContaining({
+                contentId: "3001",
+                versionId: "5002"
+            })
+        );
         expect(capturedCalls.at(-1)).toEqual({
             body: command,
             method: "POST",

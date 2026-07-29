@@ -36,31 +36,31 @@ const componentMocks = vi.hoisted(() => ({
     mockRefinementRelationTable: () => null
 }));
 
-vi.mock("./components/refinement-entity-edit-modal", () => ({
+vi.mock("./refinement-entity-edit-modal", () => ({
     RefinementEntityEditModal: componentMocks.mockRefinementEntityEditModal
 }));
-vi.mock("./components/refinement-entity-delete-modal", () => ({
+vi.mock("./refinement-entity-delete-modal", () => ({
     RefinementEntityDeleteModal: componentMocks.mockRefinementEntityDeleteModal
 }));
-vi.mock("./components/refinement-relation-edit-modal", () => ({
+vi.mock("./refinement-relation-edit-modal", () => ({
     RefinementRelationEditModal: componentMocks.mockRefinementRelationEditModal
 }));
-vi.mock("./components/refinement-relation-delete-modal", () => ({
+vi.mock("./refinement-relation-delete-modal", () => ({
     RefinementRelationDeleteModal: componentMocks.mockRefinementRelationDeleteModal
 }));
-vi.mock("./components/refinement-filter-form", () => ({
+vi.mock("./refinement-filter-form", () => ({
     RefinementFilterForm: componentMocks.mockRefinementFilterForm
 }));
-vi.mock("./components/refinement-progress-summary", () => ({
+vi.mock("./refinement-progress-summary", () => ({
     RefinementProgressSummaryPanel: componentMocks.mockRefinementProgressSummaryPanel
 }));
-vi.mock("./components/refinement-workbench-table", () => ({
+vi.mock("./refinement-workbench-table", () => ({
     RefinementWorkbenchTable: componentMocks.mockRefinementWorkbenchTable
 }));
-vi.mock("./components/refinement-entity-table", () => ({
+vi.mock("./refinement-entity-table", () => ({
     RefinementEntityTable: componentMocks.mockRefinementEntityTable
 }));
-vi.mock("./components/refinement-relation-table", () => ({
+vi.mock("./refinement-relation-table", () => ({
     RefinementRelationTable: componentMocks.mockRefinementRelationTable
 }));
 

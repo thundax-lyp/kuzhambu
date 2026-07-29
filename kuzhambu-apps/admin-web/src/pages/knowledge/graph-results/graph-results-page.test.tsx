@@ -71,7 +71,7 @@ vi.mock("./graph-results-service", () => ({
     ...serviceMocks
 }));
 
-vi.mock("./components/graph-version-table", () => ({
+vi.mock("./graph-version-table", () => ({
     GraphVersionTable: (({
         versions,
         onOpenResults
@@ -96,31 +96,31 @@ vi.mock("./components/graph-version-table", () => ({
     }>
 }));
 
-vi.mock("./components/graph-version-detail", () => ({
+vi.mock("./graph-version-detail", () => ({
     GraphVersionDetail: (() => null) as ComponentType
 }));
-vi.mock("./components/graph-entity-table", () => ({
+vi.mock("./graph-entity-table", () => ({
     GraphEntityTable: (() => null) as ComponentType
 }));
-vi.mock("./components/graph-entity-detail", () => ({
+vi.mock("./graph-entity-detail", () => ({
     GraphEntityDetail: (() => null) as ComponentType
 }));
-vi.mock("./components/graph-relation-table", () => ({
+vi.mock("./graph-relation-table", () => ({
     GraphRelationTable: (() => null) as ComponentType
 }));
-vi.mock("./components/graph-relation-detail", () => ({
+vi.mock("./graph-relation-detail", () => ({
     GraphRelationDetail: (() => null) as ComponentType
 }));
-vi.mock("./components/graph-lineage-node-table", () => ({
+vi.mock("./graph-lineage-node-table", () => ({
     GraphLineageNodeTable: (() => null) as ComponentType
 }));
-vi.mock("./components/graph-lineage-node-detail", () => ({
+vi.mock("./graph-lineage-node-detail", () => ({
     GraphLineageNodeDetail: (() => null) as ComponentType
 }));
-vi.mock("./components/graph-lineage-relation-table", () => ({
+vi.mock("./graph-lineage-relation-table", () => ({
     GraphLineageRelationTable: (() => null) as ComponentType
 }));
-vi.mock("./components/graph-lineage-relation-detail", () => ({
+vi.mock("./graph-lineage-relation-detail", () => ({
     GraphLineageRelationDetail: (() => null) as ComponentType
 }));
 

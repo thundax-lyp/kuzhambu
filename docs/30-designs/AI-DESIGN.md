@@ -24,19 +24,23 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 
 ## DDD Model
 
-- `AiServiceConfig`
 - `AiModel`
-- `AiCapability`
-- `AiCapabilityMapping`
+- `AiBusinessConfig`
 - `PromptTemplate`
 - `PromptVersion`
 - `PromptVariable`
-- `AiActionStatus`
 - `AiInvocationLog`
 - `AiCandidate`
 - `AiBatchJob`
 - `AiWorkerInvocation`
 - `AiStreamEvent`
+
+AI 域当前领域模型职责：
+
+- `AiModel` 表达可调用模型端点，包含 `apiSource + modelName + baseUrl + encryptedApiKey` 等服务接入信息。
+- `AiBusinessConfig` 表达业务能力到模型和提示词的路由，`capability` 是跨业务域、提示词和 workers 映射使用的稳定能力编码。
+- 能力目录属于代码和接口契约，不在数据库中维护可变主数据；新增能力必须同步更新 interface、workers capability 映射、默认提示词和初始化数据。
+- 状态模型由 `AiBatchJob.status`、`AiInvocationLog.status` 和 `AiCandidate.status` 分别表达任务生命周期、worker 调用终态和候选确认状态。
 
 ## Data Model
 
@@ -44,18 +48,32 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 
 核心表：
 
-- `ai_service_config`
 - `ai_model`
-- `ai_model_check_record`
-- `ai_capability`
-- `ai_capability_mapping`
+- `ai_business_config`
 - `ai_prompt_template`
 - `ai_prompt_version`
 - `ai_prompt_variable`
-- `ai_action_status`
 - `ai_invocation_log`
 - `ai_candidate`
 - `ai_batch_job`
+
+AI 域数据模型采用“配置、调用、候选、任务”四类事实源：
+
+- 配置事实源：`ai_model` 保存可调用模型端点和模型默认参数；`ai_business_config` 保存业务 capability 到模型、提示词和业务默认参数的选择关系。
+- 提示词事实源：`ai_prompt_template` 保存 capability 归属和当前版本号；`ai_prompt_version` 保存每次提示词正文、变量快照和输出 schema；`ai_prompt_variable` 保存模板创建时的变量基线和展示顺序。
+- 调用事实源：`ai_invocation_log` 保存每次 workers 调用的请求归属、模型快照、提示词版本、链路追踪、用量、结果和失败信息。
+- 候选与任务事实源：`ai_candidate` 保存待人工确认或应用的 AI 结果；`ai_batch_job` 统一表达单条、批量和精修任务生命周期。
+
+当前表与职责对照：
+
+- `ai_model`：模型端点、服务接入信息、模型能力和默认参数。
+- `ai_business_config`：业务 capability、模型、提示词模板和业务默认参数的启用路由。
+- `ai_prompt_template`、`ai_prompt_version`、`ai_prompt_variable`：提示词归属、版本正文、输出 schema 和变量基线。
+- `ai_invocation_log`：worker 调用、模型快照、提示词版本、链路追踪、用量、结果和失败信息。
+- `ai_candidate`：文本、结构化结果和文件类 artifact 引用的待确认候选。
+- `ai_batch_job`：单条、批量和精修任务的生命周期、计数和失败摘要。
+
+数据库结构以 `db/schema/ai.sql` 为实现真相源，初始化数据以 `db/data/ai.sql` 为事实源。
 
 数据模型必须记录 worker 调用所需的稳定追踪信息，包括模型、服务、能力、提示词版本、请求标识、链路标识、耗时、用量、失败类型和降级状态。stream 片段不是业务事实，默认不逐片段持久化；最终结果、失败或部分失败状态必须进入调用记录。
 
@@ -188,14 +206,13 @@ Admin Web 交互流程：
 - `modelId`、`promptVersionId`、`promptMessagesJson`、`workerCapability` 和 `workerPath` 不属于默认外部运行时协议。
 - Java AI 域对外响应和持久化字段始终使用业务 capability；workers canonical capability 只存在于 Java AI 域到 workers 的内部请求。
 
-精修任务保留流程：
+精修任务流程：
 
-1. 精修任务不再拥有独立 `ai_refinement_task` 事实源。
-2. `ai_batch_job` 保存任务生命周期、批量计数和单内容任务的 `contentId`；单任务精修以 `totalCount = 1` 表达，批量多内容任务的业务内容明细由调用记录与候选归档承载。
-3. `ai_invocation_log` 保存 worker 调用、失败阶段、失败类型和链路追踪。
-4. `ai_candidate` 保存待确认候选结果。
-5. `task/get` 和 `task/page` 的读模型由 `ai_batch_job` 关联最近一次 `ai_invocation_log` 与 `ai_candidate` 组装，不再按客户端传入的请求人过滤。
-6. 任务历史保留和清理应按 `ai_batch_job` 统一治理，不在 refinement 维度单独调度。
+1. `ai_batch_job` 保存精修任务生命周期、批量计数和单内容任务的 `contentId`；单任务精修以 `totalCount = 1` 表达，批量多内容任务的业务内容明细由调用记录与候选归档承载。
+2. `ai_invocation_log` 保存 worker 调用、失败阶段、失败类型和链路追踪。
+3. `ai_candidate` 保存待确认候选结果。
+4. `task/get` 和 `task/page` 的读模型由 `ai_batch_job` 关联最近一次 `ai_invocation_log` 与 `ai_candidate` 组装，读权限按任务查询接口的业务权限规则判定。
+5. 任务历史保留和清理按 `ai_batch_job` 统一治理。
 
 前端 SSE 的适用边界：
 
@@ -225,9 +242,9 @@ Admin Web 交互流程：
 
 Admin 入口：
 
-- AI 服务和模型配置。
-- 模型检测历史。
-- 能力映射。
+- AI 模型端点配置。
+- 模型可用性检测。
+- 业务能力路由配置。
 - 提示词编辑、版本对比和回滚。
 - AI 功能动作状态面板。
 - AI 调用统计。
@@ -261,7 +278,7 @@ Discovery 调用入口：
 
 - `WorkerAiClient` 适配 Python workers 内部 HTTP、SSE 和临时 artifact 下载接口。
 - AI 域向 workers 传入主服务或备用服务的模型配置、调用参数、渲染后 messages、结构化输出 schema 和完整上下文。
-- Knowledge 抽取能力通过统一 workers AI 接口 `/internal/ai/invoke` 或 `/internal/ai/stream` 执行；业务差异由 AI 域选择的业务配置、提示词版本、模型配置、辅助参数和输出 schema 表达，不再依赖 workers 业务专项 path。
+- Knowledge 抽取能力通过统一 workers AI 接口 `/internal/ai/invoke` 或 `/internal/ai/stream` 执行；业务差异由 AI 域选择的业务配置、提示词版本、模型配置、辅助参数和输出 schema 表达。
 - workers 内部执行 LangGraph；AI 域不直接依赖 workers 内部 graph 实现。
 - AI 域与 workers 的协议见 [`WORKERS-AI-INTERFACE.md`](../20-interfaces/WORKERS-AI-INTERFACE.md)。
 - Repository 持久化 AI 配置、提示词、调用记录和候选结果。
@@ -277,7 +294,7 @@ Discovery 问答会话、消息和来源由 Discovery 写入；QA trace 可以�
 
 ## Observability
 
-- 记录 AI 调用延迟、失败、成本、服务降级状态和模型检测历史。
+- 记录 AI 调用延迟、失败、成本、服务降级状态和模型可用性检测结果。
 - AI Key 不输出到前端、日志或审计。
 - 记录 worker 请求标识、链路标识、stream 是否完成、失败分类、失败阶段、降级状态和用量摘要。
 

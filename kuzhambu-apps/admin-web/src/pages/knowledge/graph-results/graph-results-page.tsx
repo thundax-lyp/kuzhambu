@@ -3,8 +3,8 @@ import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace, KuzhambuPage, KuzhambuAlert } from "@/components";
 
-import { GraphResultsTabs } from "./components/graph-results-tabs";
-import { GraphResultsToolbar } from "./components/graph-results-toolbar";
+import { GraphResultsTabs } from "./graph-results-tabs";
+import { GraphResultsToolbar } from "./graph-results-toolbar";
 import * as service from "./graph-results-service";
 import type { GraphVersionRecord } from "./graph-results-types";
 import { useGraphResultsQueryState } from "./hooks/use-graph-results-query-state";

@@ -16,7 +16,7 @@ import {
     type KuzhambuTableProps,
     type KuzhambuTableSortPosition
 } from "@/components";
-import { DepartmentEditDrawer } from "./components/department-edit-drawer";
+import { DepartmentEditDrawer } from "./department-edit-drawer";
 import * as service from "./department-service";
 import type { DepartmentMoveCommand, DepartmentSaveCommand } from "./department-service";
 import type { DepartmentNode, DepartmentTableNode } from "./department-types";

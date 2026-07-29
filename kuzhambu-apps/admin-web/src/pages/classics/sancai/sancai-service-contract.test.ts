@@ -40,20 +40,47 @@ const readFetchBody = (body: BodyInit | null | undefined) => {
     return JSON.parse(String(body));
 };
 
+const readMockResponseData = (path: string) => {
+    if (path.endsWith("/ai/invocation/candidate/list")) {
+        return [
+            {
+                candidateId: 7001,
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: 5001,
+                capability: "image_analysis",
+                resultFormat: "TEXT",
+                resultPayload: "图片理解内容",
+                status: "PENDING"
+            }
+        ];
+    }
+    if (path.endsWith("/classics/content/ai-candidates/change")) {
+        return {
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            versionId: 5002,
+            versionNo: 2
+        };
+    }
+    return true;
+};
+
 const installFetchRecorder = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
         const url = readFetchUrl(input);
+        const path = url.replace(API_PREFIX, "").replace(DEV_PROXY_PREFIX, "");
         capturedCalls.push({
             body: readFetchBody(init?.body),
             method: init?.method,
-            path: url.replace(API_PREFIX, "").replace(DEV_PROXY_PREFIX, "")
+            path
         });
 
         return new Response(
             JSON.stringify({
                 code: "COMMON-00000",
                 message: "success",
-                data: true
+                data: readMockResponseData(path)
             }),
             {
                 headers: {

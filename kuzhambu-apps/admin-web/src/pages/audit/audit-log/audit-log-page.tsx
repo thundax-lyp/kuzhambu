@@ -14,9 +14,9 @@ import {
     KuzhambuTag,
     type KuzhambuTableProps
 } from "@/components";
-import { AuditLogDetail } from "./components/audit-log-detail";
-import { createAuditLogFilterFields } from "./components/audit-log-filter";
-import type { AuditLogFilters } from "./components/audit-log-filter";
+import { AuditLogDetail } from "./audit-log-detail";
+import { createAuditLogFilterFields } from "./audit-log-filter";
+import type { AuditLogFilters } from "./audit-log-filter";
 import * as service from "./audit-log-service";
 import type { AuditLogPageQuery } from "./audit-log-service";
 import type { AuditLogRecord } from "./audit-log-types";

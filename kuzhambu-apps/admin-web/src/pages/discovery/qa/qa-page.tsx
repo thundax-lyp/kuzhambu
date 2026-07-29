@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { QaMessagePanel, type QaTimelineMessage } from "./components/qa-message-panel";
-import { QaSessionDetailDrawer } from "./components/qa-session-detail-drawer";
-import { QaSessionTable } from "./components/qa-session-table";
+import { QaMessagePanel, type QaTimelineMessage } from "./qa-message-panel";
+import { QaSessionDetailDrawer } from "./qa-session-detail-drawer";
+import { QaSessionTable } from "./qa-session-table";
 import * as service from "./qa-service";
 import type {
     DiscoveryQaChatCompletionRecord,

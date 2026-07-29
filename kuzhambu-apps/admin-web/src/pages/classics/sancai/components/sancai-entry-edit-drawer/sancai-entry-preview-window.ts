@@ -22,7 +22,7 @@ const readVisualAssetTitle = (asset: SancaiVisualAssetRecord | undefined | null)
     if (!asset) {
         return "未选择视觉处理";
     }
-    return `处理记录 ${asset.versionNo ?? asset.visualAssetId ?? asset.id ?? "-"}`;
+    return `历史记录 ${asset.versionNo ?? asset.visualAssetId ?? asset.id ?? "-"}`;
 };
 
 const toPreviewUrl = (url?: string) => {
@@ -79,7 +79,7 @@ img{display:block;max-width:100%;height:auto;border:1px solid rgba(124,93,59,.24
 <h1>${escapeHtml(form.title || "未命名条目")}</h1>
 <div class="meta">
 <span>可见性：${escapeHtml(form.visibility)}</span>
-<span>当前视觉处理记录：${escapeHtml(readVisualAssetTitle(currentVisualAsset))}</span>
+<span>当前视觉处理历史：${escapeHtml(readVisualAssetTitle(currentVisualAsset))}</span>
 </div>
 <section class="paper">
 <h2>原文</h2><p>${escapeHtml(form.originalText || "-")}</p>

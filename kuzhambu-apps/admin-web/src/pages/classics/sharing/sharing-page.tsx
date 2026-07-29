@@ -5,10 +5,10 @@ import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage, KuzhambuButton } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { DEFAULT_FILTERS, type ShareFilters } from "./components/sharing-filter-config";
-import { SharingDetailDrawer } from "./components/sharing-detail-drawer";
-import { SharingFilterPanel } from "./components/sharing-filter-panel";
-import { createSharingTableColumns } from "./components/sharing-table";
+import { DEFAULT_FILTERS, type ShareFilters } from "./sharing-filter-config";
+import { SharingDetailDrawer } from "./sharing-detail-drawer";
+import { SharingFilterPanel } from "./sharing-filter-panel";
+import { createSharingTableColumns } from "./sharing-table";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import type { ClassicsShareQuery } from "@/pages/classics/common/classics-share-service";
 import type {

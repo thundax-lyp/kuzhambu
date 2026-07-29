@@ -4,17 +4,17 @@ import { useMemo } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { normalizeId } from "@/types/id";
-import { CategoryEditDrawer } from "./components/category-edit-drawer";
-import { SynonymEditDrawer } from "./components/synonym-edit-drawer";
-import { TagBatchReviewPanel } from "./components/tag-batch-review-panel";
-import { TagDetailDrawer } from "./components/tag-detail-drawer";
-import { TagEditDrawer } from "./components/tag-edit-drawer";
-import { TagExtractionDrawer } from "./components/tag-extraction-drawer";
-import { TagBatchMergePanel } from "./components/tag-batch-merge-panel";
-import { TaxonomyCategorySection } from "./components/taxonomy-category-section";
-import { TaxonomyGovernanceSection } from "./components/taxonomy-governance-section";
-import { TaxonomySynonymSection } from "./components/taxonomy-synonym-section";
-import { TaxonomyTagSection } from "./components/taxonomy-tag-section";
+import { CategoryEditDrawer } from "./category-edit-drawer";
+import { SynonymEditDrawer } from "./synonym-edit-drawer";
+import { TagBatchReviewPanel } from "./tag-batch-review-panel";
+import { TagDetailDrawer } from "./tag-detail-drawer";
+import { TagEditDrawer } from "./tag-edit-drawer";
+import { TagExtractionDrawer } from "./tag-extraction-drawer";
+import { TagBatchMergePanel } from "./tag-batch-merge-panel";
+import { TaxonomyCategorySection } from "./taxonomy-category-section";
+import { TaxonomyGovernanceSection } from "./taxonomy-governance-section";
+import { TaxonomySynonymSection } from "./taxonomy-synonym-section";
+import { TaxonomyTagSection } from "./taxonomy-tag-section";
 import * as service from "./taxonomy-service";
 import type {
     TagBatchMergeCommand,

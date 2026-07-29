@@ -3,7 +3,7 @@ import { App } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
+import { AiCandidateBatchDrawer } from "@/pages/classics/common/ai-candidate-batch-drawer";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskCapability } from "@/pages/classics/common/ai-refinement-task-types";
 import * as contentService from "@/pages/classics/common/classics-content-service";
@@ -18,17 +18,17 @@ import type {
     ClassicsExportJobRecord,
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
-import { MingCustomsAiActions } from "./components/ming-customs-ai-actions";
-import { MingCustomsEditDrawer } from "./components/ming-customs-edit-drawer";
-import { MingCustomsExportActions } from "./components/ming-customs-export-actions";
-import { MingCustomsTable } from "./components/ming-customs-table";
+import { MingCustomsAiActions } from "./ming-customs-ai-actions";
+import { MingCustomsEditDrawer } from "./components/ming-customs-edit-drawer/ming-customs-edit-drawer";
+import { MingCustomsExportActions } from "./ming-customs-export-actions";
+import { MingCustomsTable } from "./ming-customs-table";
 import {
     MingCustomsToolbar,
     type MingCustomsFilters,
     type MingCustomsSelectedTagFilter,
     type MingCustomsVisibilityFilter
-} from "./components/ming-customs-toolbar";
-import { MingCustomsVersionPanel } from "./components/ming-customs-version-panel";
+} from "./ming-customs-toolbar";
+import { MingCustomsVersionPanel } from "./ming-customs-version-panel";
 import * as service from "./ming-customs-service";
 import type { MingCustomsCommand, MingCustomsQuery } from "./ming-customs-service";
 import type {

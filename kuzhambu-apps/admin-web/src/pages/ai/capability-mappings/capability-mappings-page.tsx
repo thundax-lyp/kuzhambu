@@ -13,10 +13,10 @@ import {
     KuzhambuCard
 } from "@/components";
 
-import { CapabilityMappingDrawer } from "./components/capability-mapping-drawer";
-import type { MappingFormValues } from "./components/capability-mapping-drawer";
-import { CapabilityMappingTable } from "./components/capability-mapping-table";
-import type { MappingTableRow } from "./components/capability-mapping-table";
+import { CapabilityMappingDrawer } from "./components/capability-mapping-drawer/capability-mapping-drawer";
+import type { MappingFormValues } from "./components/capability-mapping-drawer/capability-mapping-drawer";
+import { CapabilityMappingTable } from "./capability-mapping-table";
+import type { MappingTableRow } from "./capability-mapping-table";
 import * as service from "./capability-mappings-service";
 import type { AiCapabilityQuery } from "./capability-mappings-service";
 import type {

@@ -70,17 +70,19 @@ const buildTreeNodes = (
     ];
 };
 
-export const useSancaiCatalogState = () => {
+export const useSancaiCatalogState = ({ enabled = true }: { enabled?: boolean } = {}) => {
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
     const categoriesQuery = useQuery({
         queryKey: ["classics", "sancai", "categories"],
         queryFn: categoryService.list,
+        enabled,
         retry: false
     });
     const volumesQuery = useQuery({
         queryKey: ["classics", "sancai", "volumes"],
         queryFn: () => volumeService.list(),
+        enabled,
         retry: false
     });
     const categories = categoriesQuery.data ?? EMPTY_CATEGORIES;

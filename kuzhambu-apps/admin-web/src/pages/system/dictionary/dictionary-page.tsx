@@ -12,7 +12,7 @@ import {
     KuzhambuTag,
     type KuzhambuTableProps
 } from "@/components";
-import { DictionaryEditDrawer } from "./components/dictionary-edit-drawer";
+import { DictionaryEditDrawer } from "./dictionary-edit-drawer";
 import * as dictionaryService from "./dictionary-service";
 import type { DictPageQuery, DictSaveCommand } from "./dictionary-service";
 import type { DictRecord } from "./dictionary-types";

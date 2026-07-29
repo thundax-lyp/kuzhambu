@@ -5,10 +5,10 @@ import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import { WangqiPage } from "./wangqi-page";
-import { WangqiVersionPanel } from "./components/wangqi-version-panel";
+import { WangqiVersionPanel } from "./wangqi-version-panel";
 import type { WangqiContentVersionRecord } from "./wangqi-types";
 
-vi.mock("@/pages/classics/common/components/ai-candidate-panel", () => {
+vi.mock("@/pages/classics/common/ai-candidate-panel", () => {
     const aiCandidatePanelMock = ({
         onApplied,
         onRejected

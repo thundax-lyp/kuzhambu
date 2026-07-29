@@ -36,7 +36,7 @@ import {
     toWangqiDocumentCommand,
     toWangqiDocumentFormValues,
     type WangqiDocumentFormValues
-} from "../wangqi-document-form-values";
+} from "./wangqi-document-form-values";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";

@@ -8,14 +8,14 @@ import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuPage, KuzhambuTabs, KuzhambuButton, KuzhambuCard } from "@/components";
 
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { InvocationDetailDrawer } from "./components/invocation-detail-drawer";
+import { InvocationDetailDrawer } from "./invocation-detail-drawer";
 import {
     InvocationFilterPanel,
     type InvocationLogFilterValues,
     type InvocationDateRangeValue,
     type InvocationSummaryFilterValues
-} from "./components/invocation-filter-panel";
-import { InvocationTable } from "./components/invocation-table";
+} from "./invocation-filter-panel";
+import { InvocationTable } from "./invocation-table";
 import * as service from "./invocations-service";
 import type { AiInvocationLogPageQuery, AiInvocationSummaryQuery } from "./invocations-service";
 import type { AiInvocationLogRecord } from "./invocations-types";

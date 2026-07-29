@@ -13,12 +13,12 @@ import {
 
 import { isPositiveDecimalId, normalizeNullableId } from "@/types/id";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { QualityReportGenerateForm } from "./components/quality-report-generate-form";
-import { QualityReportAnnotationTable } from "./components/quality-report-annotation-table";
-import { QualityReportHistoryTable } from "./components/quality-report-history-table";
-import { QualityReportIssueTable } from "./components/quality-report-issue-table";
-import { QualityReportSourceTable } from "./components/quality-report-source-table";
-import { QualityReportSummary } from "./components/quality-report-summary";
+import { QualityReportGenerateForm } from "./quality-report-generate-form";
+import { QualityReportAnnotationTable } from "./quality-report-annotation-table";
+import { QualityReportHistoryTable } from "./quality-report-history-table";
+import { QualityReportIssueTable } from "./quality-report-issue-table";
+import { QualityReportSourceTable } from "./quality-report-source-table";
+import { QualityReportSummary } from "./quality-report-summary";
 import * as service from "./quality-report-service";
 import type {
     QualityReportDetailRecord,

@@ -146,6 +146,7 @@ const buildInputPayloadJson = (
         contentType: "SANCAI_ENTRY",
         objectId,
         originalText: entry.originalText,
+        sourceText: entry.originalText,
         summary: entry.summary,
         title: entry.title,
         translationText: entry.translationText

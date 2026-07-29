@@ -12,7 +12,7 @@ import {
     type KuzhambuTableProps,
     type KuzhambuTableSortPosition
 } from "@/components";
-import { MenuEditDrawer } from "./components/menu-edit-drawer";
+import { MenuEditDrawer } from "./menu-edit-drawer";
 import * as service from "./menu-service";
 import type { MenuMoveCommand, MenuSaveCommand } from "./menu-service";
 import type { MenuNode, MenuTableNode } from "./menu-types";

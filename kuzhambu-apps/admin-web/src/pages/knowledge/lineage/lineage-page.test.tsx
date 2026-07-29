@@ -21,7 +21,7 @@ vi.mock("./lineage-service", () => ({
 }));
 
 /* eslint-disable @typescript-eslint/naming-convention */
-vi.mock("./components/lineage-filter-bar", () => ({
+vi.mock("./lineage-filter-bar", () => ({
     LineageFilterBar: ({
         filters,
         onChange,
@@ -75,7 +75,7 @@ vi.mock("./components/lineage-filter-bar", () => ({
     )
 }));
 
-vi.mock("./components/lineage-canvas", () => ({
+vi.mock("./lineage-canvas", () => ({
     LineageCanvas: ({
         nodes,
         onSelectNode,
@@ -106,7 +106,7 @@ vi.mock("./components/lineage-canvas", () => ({
     )
 }));
 
-vi.mock("./components/lineage-node-table", () => ({
+vi.mock("./lineage-node-table", () => ({
     LineageNodeTable: ({
         nodes,
         onSelectNode
@@ -124,7 +124,7 @@ vi.mock("./components/lineage-node-table", () => ({
     )
 }));
 
-vi.mock("./components/lineage-relation-table", () => ({
+vi.mock("./lineage-relation-table", () => ({
     LineageRelationTable: ({
         onSelectRelation,
         relations
@@ -146,7 +146,7 @@ vi.mock("./components/lineage-relation-table", () => ({
     )
 }));
 
-vi.mock("./components/lineage-detail-panel", () => ({
+vi.mock("./lineage-detail-panel", () => ({
     LineageDetailPanel: ({
         node,
         relation

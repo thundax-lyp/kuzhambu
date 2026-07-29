@@ -16,7 +16,7 @@ import {
     type KuzhambuTableSortPosition,
     type OptionsRecord
 } from "@/components";
-import { RoleEditDrawer } from "./components/role-edit-drawer";
+import { RoleEditDrawer } from "./role-edit-drawer";
 import * as service from "./role-service";
 import type { RoleOptionKeys, RoleSaveCommand } from "./role-service";
 import type { RoleMenuNode, RoleMenuTreeNode, RoleRecord } from "./role-types";

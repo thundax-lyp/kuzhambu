@@ -155,7 +155,7 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
     useKuzhambuConfirm: () => ({ danger: confirmDangerMock })
 }));
 
-vi.mock("./components/quality-report-source-table", () => qualityReportSourceTableModuleMock);
+vi.mock("./quality-report-source-table", () => qualityReportSourceTableModuleMock);
 
 vi.mock("./quality-report-service", () => ({
     ...qualityReportServiceMock

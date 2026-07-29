@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
-import { MingCustomsVersionHistoryPanel } from "./components/ming-customs-version-history-panel";
+import { MingCustomsVersionHistoryPanel } from "./ming-customs-version-history-panel";
 import { MingCustomsPage } from "./ming-customs-page";
 import type { MingCustomsContentVersionRecord } from "./ming-customs-types";
 
@@ -18,7 +18,7 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
     })
 }));
 
-vi.mock("@/pages/classics/common/components/ai-candidate-panel", () => {
+vi.mock("@/pages/classics/common/ai-candidate-panel", () => {
     const aiCandidatePanelMock = ({
         onApplied,
         onRejected
