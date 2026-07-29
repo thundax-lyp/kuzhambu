@@ -8,14 +8,28 @@ import * as entryService from "./sancai-visual-service";
 import type { SancaiEntryRecord } from "./sancai-visual-types";
 
 const { mockVisualSection } = vi.hoisted(() => ({
-    mockVisualSection: vi.fn(({ entry }: { entry: SancaiEntryRecord }) => (
-        <section aria-label="视觉处理组件">{`visual:${entry.id}:${entry.title ?? ""}`}</section>
-    ))
+    mockVisualSection: vi.fn()
 }));
 
-vi.mock("./sancai-entry-visual-section", () => ({
-    SancaiEntryVisualSection: mockVisualSection
-}));
+vi.mock("./sancai-entry-visual-section", async () => {
+    const React = await vi.importActual<typeof import("react")>("react");
+    return {
+        SancaiEntryVisualSection: mockVisualSection.mockImplementation(
+            ({ entry }: { entry: SancaiEntryRecord }) => {
+                const [stateText, setStateText] = React.useState("clean");
+                return (
+                    <section aria-label="视觉处理组件">
+                        <span>{`visual:${entry.id}:${entry.title ?? ""}`}</span>
+                        <button type="button" onClick={() => setStateText("dirty")}>
+                            标记视觉状态
+                        </button>
+                        <span>{`visual-state:${stateText}`}</span>
+                    </section>
+                );
+            }
+        )
+    };
+});
 
 vi.mock("../sancai/sancai-category-service", () => ({
     list: vi.fn(async () => [{ categoryType: "FORMAL", id: "2", title: "天文" }])
@@ -93,6 +107,9 @@ describe("SancaiVisualPage", () => {
         const user = userEvent.setup();
         renderVisualPage();
 
+        await user.click(await screen.findByText("标记视觉状态"));
+        expect(screen.getByText("visual-state:dirty")).toBeInTheDocument();
+
         await user.click(
             await screen.findByTestId("classics-sancai-visual-entry-context-switch-button")
         );
@@ -108,6 +125,7 @@ describe("SancaiVisualPage", () => {
         await waitFor(() => {
             expect(screen.getByText("visual:3002:山川")).toBeInTheDocument();
         });
+        expect(screen.getByText("visual-state:clean")).toBeInTheDocument();
         expect(entryService.get).toHaveBeenCalledWith("3002");
         expect(entryService.list).toHaveBeenCalledWith(
             expect.objectContaining({

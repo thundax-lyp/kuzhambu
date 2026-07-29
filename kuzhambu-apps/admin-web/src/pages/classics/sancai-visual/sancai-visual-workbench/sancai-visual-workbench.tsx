@@ -33,6 +33,7 @@ export const SancaiVisualWorkbench = ({
                 <>
                     <SancaiVisualEntryContext entry={entry} onSelectEntry={onSelectEntry} />
                     <SancaiEntryVisualSection
+                        key={entry.id}
                         entry={entry}
                         isUpdatingVisualAsset={isUpdatingVisualAsset}
                         onPreviewStateChange={() => undefined}
