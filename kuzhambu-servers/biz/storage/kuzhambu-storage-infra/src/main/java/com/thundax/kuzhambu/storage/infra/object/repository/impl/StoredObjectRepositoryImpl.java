@@ -8,10 +8,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageReferenceOwnerTypeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageReferenceOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
 import com.thundax.kuzhambu.storage.infra.cache.StorageCacheSupport;
@@ -61,13 +65,14 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
     }
 
     @Override
-    public List<StoredObject> listByIds(List<Long> idList) {
+    public List<StoredObject> listByIds(List<StoredObjectId> idList) {
         List<StoredObject> storageList = new ArrayList<>();
         List<Long> uncachedIdList = new ArrayList<>();
-        for (Long id : idList) {
-            StoredObject storage = cacheSupport.getById(String.valueOf(id));
+        for (StoredObjectId id : idList) {
+            Long idValue = StoredObjectIdCodec.toValue(id);
+            StoredObject storage = cacheSupport.getById(String.valueOf(idValue));
             if (storage == null) {
-                uncachedIdList.add(id);
+                uncachedIdList.add(idValue);
             } else {
                 storageList.add(storage);
             }
@@ -89,11 +94,11 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
 
     @Override
     public List<StoredObject> list(
-            String mimeType,
-            String objectStatus,
-            String referenceStatus,
+            StorageMimeType mimeType,
+            StoredObjectStatus objectStatus,
+            StoredObjectReferenceStatus referenceStatus,
             String referenceOwnerId,
-            String referenceOwnerType,
+            StorageReferenceOwnerType referenceOwnerType,
             String name,
             String remarks,
             SortDirection sortDirection) {
@@ -110,11 +115,11 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
 
     @Override
     public PageResult<StoredObject> page(
-            String mimeType,
-            String objectStatus,
-            String referenceStatus,
+            StorageMimeType mimeType,
+            StoredObjectStatus objectStatus,
+            StoredObjectReferenceStatus referenceStatus,
             String referenceOwnerId,
-            String referenceOwnerType,
+            StorageReferenceOwnerType referenceOwnerType,
             String name,
             String remarks,
             SortDirection sortDirection,
@@ -247,7 +252,7 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
     }
 
     @Override
-    public List<String> listMimeTypes() {
+    public List<StorageMimeType> listMimeTypes() {
         return mapper
                 .selectObjs(new QueryWrapper<StoredObjectDO>()
                         .select("mime_type")
@@ -257,6 +262,8 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
                 .stream()
                 .filter(Objects::nonNull)
                 .map(String::valueOf)
+                .map(StorageMimeTypeCodec::toDomain)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -294,16 +301,16 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
     }
 
     private LambdaQueryWrapper<StoredObjectDO> buildListWrapper(
-            String mimeType,
-            String objectStatus,
-            String referenceStatus,
+            StorageMimeType mimeType,
+            StoredObjectStatus objectStatus,
+            StoredObjectReferenceStatus referenceStatus,
             String referenceOwnerId,
-            String referenceOwnerType,
+            StorageReferenceOwnerType referenceOwnerType,
             String name,
             String remarks,
             SortDirection sortDirection) {
         LambdaQueryWrapper<StoredObjectDO> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.isBlank(objectStatus)) {
+        if (objectStatus == null) {
             wrapper.ne(StoredObjectDO::getObjectStatus, StoredObjectStatus.DELETED.value());
         }
         List<Long> storageIds = findStorageIdsByBusiness(referenceOwnerId, referenceOwnerType);
@@ -312,14 +319,14 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
         } else if (storageIds != null) {
             wrapper.in(StoredObjectDO::getId, storageIds);
         }
-        if (StringUtils.isNotBlank(mimeType)) {
-            wrapper.eq(StoredObjectDO::getMimeType, mimeType);
+        if (mimeType != null) {
+            wrapper.eq(StoredObjectDO::getMimeType, StorageMimeTypeCodec.toValue(mimeType));
         }
-        if (StringUtils.isNotBlank(objectStatus)) {
-            wrapper.eq(StoredObjectDO::getObjectStatus, objectStatus);
+        if (objectStatus != null) {
+            wrapper.eq(StoredObjectDO::getObjectStatus, objectStatus.value());
         }
-        if (StringUtils.isNotBlank(referenceStatus)) {
-            wrapper.eq(StoredObjectDO::getReferenceStatus, referenceStatus);
+        if (referenceStatus != null) {
+            wrapper.eq(StoredObjectDO::getReferenceStatus, referenceStatus.value());
         }
         if (StringUtils.isNotBlank(name)) {
             wrapper.like(StoredObjectDO::getName, name);
@@ -336,16 +343,18 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
         return wrapper;
     }
 
-    private List<Long> findStorageIdsByBusiness(String referenceOwnerId, String referenceOwnerType) {
-        if (StringUtils.isBlank(referenceOwnerId) && StringUtils.isBlank(referenceOwnerType)) {
+    private List<Long> findStorageIdsByBusiness(String referenceOwnerId, StorageReferenceOwnerType referenceOwnerType) {
+        if (StringUtils.isBlank(referenceOwnerId) && referenceOwnerType == null) {
             return null;
         }
         LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(referenceOwnerId)) {
             wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, referenceOwnerId);
         }
-        if (StringUtils.isNotBlank(referenceOwnerType)) {
-            wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerType, referenceOwnerType);
+        if (referenceOwnerType != null) {
+            wrapper.eq(
+                    StoredObjectReferenceDO::getReferenceOwnerType,
+                    StorageReferenceOwnerTypeCodec.toValue(referenceOwnerType));
         }
         return businessMapper.selectObjs(wrapper.select(StoredObjectReferenceDO::getObjectId)).stream()
                 .filter(Objects::nonNull)

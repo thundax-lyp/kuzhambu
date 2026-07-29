@@ -1,9 +1,17 @@
 package com.thundax.kuzhambu.storage.domain.object.model.entity;
 
 import com.thundax.kuzhambu.common.core.sort.Sortable;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageBucketNameCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageByteSizeCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageObjectKeyCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageBucketName;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageObjectKey;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -27,10 +35,10 @@ public class StoredObject implements Sortable {
     private String contentType;
     private String name;
     private String extendName;
-    private String mimeType;
-    private String bucketName;
-    private String objectKey;
-    private Long size;
+    private StorageMimeType mimeType;
+    private StorageBucketName bucketName;
+    private StorageObjectKey objectKey;
+    private StorageByteSize size;
     private String accessEndpoint;
     private Instant storedAt;
     private StoredObjectStatus objectStatus = StoredObjectStatus.ACTIVE;
@@ -44,12 +52,76 @@ public class StoredObject implements Sortable {
     }
 
     public String getContentType() {
-        return isBlank(contentType) ? mimeType : contentType;
+        return isBlank(contentType) ? getMimeType() : contentType;
     }
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
-        this.mimeType = contentType;
+        setMimeType(contentType);
+    }
+
+    public String getMimeType() {
+        return StorageMimeTypeCodec.toValue(mimeType);
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = StorageMimeTypeCodec.toDomain(mimeType);
+    }
+
+    public StorageMimeType getMimeTypeRef() {
+        return mimeType;
+    }
+
+    public void setMimeTypeRef(StorageMimeType mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    public String getBucketName() {
+        return StorageBucketNameCodec.toValue(bucketName);
+    }
+
+    public void setBucketName(String bucketName) {
+        this.bucketName = StorageBucketNameCodec.toDomain(bucketName);
+    }
+
+    public StorageBucketName getBucketNameRef() {
+        return bucketName;
+    }
+
+    public void setBucketNameRef(StorageBucketName bucketName) {
+        this.bucketName = bucketName;
+    }
+
+    public String getObjectKey() {
+        return StorageObjectKeyCodec.toValue(objectKey);
+    }
+
+    public void setObjectKey(String objectKey) {
+        this.objectKey = StorageObjectKeyCodec.toDomain(objectKey);
+    }
+
+    public StorageObjectKey getObjectKeyRef() {
+        return objectKey;
+    }
+
+    public void setObjectKeyRef(StorageObjectKey objectKey) {
+        this.objectKey = objectKey;
+    }
+
+    public Long getSize() {
+        return StorageByteSizeCodec.toValue(size);
+    }
+
+    public void setSize(Long size) {
+        this.size = StorageByteSizeCodec.toDomain(size);
+    }
+
+    public StorageByteSize getSizeRef() {
+        return size;
+    }
+
+    public void setSizeRef(StorageByteSize size) {
+        this.size = size;
     }
 
     public boolean isEnable() {

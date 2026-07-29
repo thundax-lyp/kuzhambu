@@ -2,10 +2,12 @@ package com.thundax.kuzhambu.storage.infra.object.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageReferenceOwnerTypeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageReferenceOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
 import com.thundax.kuzhambu.storage.infra.object.persistence.assembler.StoragePersistenceAssembler;
@@ -27,7 +29,7 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
     }
 
     @Override
-    public List<String> listReferenceOwnerTypes() {
+    public List<StorageReferenceOwnerType> listReferenceOwnerTypes() {
         return mapper
                 .selectObjs(new QueryWrapper<StoredObjectReferenceDO>()
                         .select("reference_owner_type")
@@ -36,6 +38,8 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
                 .stream()
                 .filter(Objects::nonNull)
                 .map(String::valueOf)
+                .map(StorageReferenceOwnerTypeCodec::toDomain)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -119,9 +123,12 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
     }
 
     @Override
-    public void deleteByObjectId(String id) {
+    public void deleteByObjectId(StoredObjectId objectId) {
+        if (objectId == null) {
+            return;
+        }
         LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StoredObjectReferenceDO::getObjectId, Long.valueOf(id));
+        wrapper.eq(StoredObjectReferenceDO::getObjectId, objectId.value());
         mapper.delete(wrapper);
     }
 

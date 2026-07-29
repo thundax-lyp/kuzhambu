@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageReferenceOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
@@ -221,17 +223,17 @@ class StorageOrphanObjectCleanupSchedulerTest {
         }
 
         @Override
-        public List<StoredObject> listByIds(List<Long> idList) {
+        public List<StoredObject> listByIds(List<StoredObjectId> idList) {
             return List.of();
         }
 
         @Override
         public List<StoredObject> list(
-                String mimeType,
-                String objectStatus,
-                String referenceStatus,
+                StorageMimeType mimeType,
+                StoredObjectStatus objectStatus,
+                StoredObjectReferenceStatus referenceStatus,
                 String referenceOwnerId,
-                String referenceOwnerType,
+                StorageReferenceOwnerType referenceOwnerType,
                 String name,
                 String remarks,
                 SortDirection sortDirection) {
@@ -240,11 +242,11 @@ class StorageOrphanObjectCleanupSchedulerTest {
 
         @Override
         public PageResult<StoredObject> page(
-                String mimeType,
-                String objectStatus,
-                String referenceStatus,
+                StorageMimeType mimeType,
+                StoredObjectStatus objectStatus,
+                StoredObjectReferenceStatus referenceStatus,
                 String referenceOwnerId,
-                String referenceOwnerType,
+                StorageReferenceOwnerType referenceOwnerType,
                 String name,
                 String remarks,
                 SortDirection sortDirection,
@@ -308,7 +310,7 @@ class StorageOrphanObjectCleanupSchedulerTest {
         }
 
         @Override
-        public List<String> listMimeTypes() {
+        public List<StorageMimeType> listMimeTypes() {
             return List.of();
         }
 

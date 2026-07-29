@@ -50,7 +50,7 @@ class StorageApplicationServiceDeleteTest {
         assertEquals(1, deleted);
         InOrder inOrder = inOrder(repository, referenceRepository);
         inOrder.verify(repository).deleteById(StoredObjectIdCodec.toDomain(100L));
-        inOrder.verify(referenceRepository).deleteByObjectId("100");
+        inOrder.verify(referenceRepository).deleteByObjectId(StoredObjectIdCodec.toDomain(100L));
     }
 
     @Test
