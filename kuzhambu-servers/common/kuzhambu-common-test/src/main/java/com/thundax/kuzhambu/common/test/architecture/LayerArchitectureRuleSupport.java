@@ -118,6 +118,26 @@ public final class LayerArchitectureRuleSupport {
                 violations.isEmpty());
     }
 
+    public static void assertApplicationServiceUseCaseMethodShapeClean(JavaClasses classes) {
+        List<String> violations = new ArrayList<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (!isApplicationServiceInterface(javaClass)) {
+                continue;
+            }
+            for (JavaMethod method : javaClass.getMethods()) {
+                collectApplicationServiceParameterShapeViolation(method, violations);
+                collectApplicationServiceCountReturnViolation(method, violations);
+            }
+        }
+
+        assertTrue(
+                "*ApplicationService public use case methods must use zero or one *Command/*Query/*PageQuery "
+                        + "parameter, and count* methods must return primitive long. Violations: "
+                        + violations,
+                violations.isEmpty());
+    }
+
     public static void assertRepositoryBoundaryTypesClean(JavaClasses classes) {
         List<String> violations = new ArrayList<String>();
 
@@ -245,6 +265,34 @@ public final class LayerArchitectureRuleSupport {
         violations.add(method.getFullName() + " has invalid parameter type " + type.getName());
     }
 
+    private static void collectApplicationServiceParameterShapeViolation(JavaMethod method, List<String> violations) {
+        List<JavaClass> parameterTypes = method.getRawParameterTypes();
+        if (parameterTypes.isEmpty()) {
+            return;
+        }
+        if (parameterTypes.size() > 1) {
+            violations.add(method.getFullName() + " has too many parameters " + parameterTypes.size());
+            return;
+        }
+        JavaClass parameterType = parameterTypes.get(0);
+        if (isServiceCommand(parameterType) || isServiceQuery(parameterType) || isPageQuery(parameterType)) {
+            return;
+        }
+        violations.add(method.getFullName() + " has invalid use case parameter " + parameterType.getName());
+    }
+
+    private static void collectApplicationServiceCountReturnViolation(JavaMethod method, List<String> violations) {
+        if (!method.getName().startsWith("count")) {
+            return;
+        }
+        JavaClass returnType = method.getRawReturnType();
+        if ("long".equals(returnType.getName())) {
+            return;
+        }
+        violations.add(
+                method.getFullName() + " count method must return primitive long instead of " + returnType.getName());
+    }
+
     private static void collectRepositoryReturnViolation(JavaMethod method, JavaClass type, List<String> violations) {
         if (isAllowedRepositoryResultType(method, type)) {
             return;
@@ -293,6 +341,13 @@ public final class LayerArchitectureRuleSupport {
     private static boolean isServiceInterface(JavaClass javaClass) {
         return javaClass.isInterface()
                 && javaClass.getSimpleName().endsWith("Service")
+                && javaClass.getPackageName().contains(".service");
+    }
+
+    private static boolean isApplicationServiceInterface(JavaClass javaClass) {
+        return javaClass.isInterface()
+                && javaClass.getSimpleName().endsWith("ApplicationService")
+                && javaClass.getPackageName().contains(".application.")
                 && javaClass.getPackageName().contains(".service");
     }
 

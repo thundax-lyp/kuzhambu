@@ -60,7 +60,7 @@
 - 接口层协议转换：`InterfaceAssembler`
 - 用例编排入口：`ApplicationService`
 - 应用层输入：`Command` / `Query` / `PageQuery`
-- 应用层输出：`Result` / `DTO` / `PageResult`
+- 应用层输出：本域 domain entity / 强类型值对象 / `Result` / `DTO` / `PageResult`
 - 应用层内部复用：`Helper` / `Factory` / `Resolver` / `Executor`
 - 核心领域规则：`DomainService`
 - 领域读写端口：`Repository`
@@ -183,8 +183,8 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 
 - `application/`：用例编排、事务边界、跨域协调、命令、查询和结果对象。
 - `application` 层公开方法输入默认使用 `*Command` / `*Query` / `PageQuery`。
-- `application` 层 `*Command` / `*Query` 是纯契约对象，只定义字段；对象创建、值对象转换和领域模型装配放在 `*InterfaceAssembler`、application assembler 或应用服务编排代码中。
-- `application` 层公开方法输出默认使用 `*Result`；仅在稳定通用传输对象场景下使用 `*DTO`；分页输出统一使用 `PageResult<...>`。
+- `application` 层 `*Command` / `*Query` 是纯契约对象，只定义字段；字段可以持有本域 domain entity 或强类型值对象；对象创建、值对象转换和领域模型装配放在 `*InterfaceAssembler`、application assembler 或应用服务编排代码中。
+- `application` 层公开方法输出优先使用本域 domain entity 或强类型值对象；`*Result` 用于不存在自然 domain entity 的复合结果、跨资源聚合结果或明确的非领域输出；仅在稳定通用传输对象场景下使用 `*DTO`；分页输出统一使用 `PageResult<...>`。
 - `application/<subdomain>/service/`：应用用例入口接口，命名为 `*ApplicationService`。
 - `application/<subdomain>/service/impl/`：应用用例入口实现，命名为 `*ApplicationServiceImpl`。
 - `application/<subdomain>/command/`：写入用例输入模型。

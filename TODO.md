@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `01-governance-archunit`：01 同步 application service 契约治理规则和 ArchUnit testcase
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`docs/00-governance/SERVERS-ARCHITECTURE.md`、`docs/00-governance/SERVERS-ARCHITECTURE-RULES.md`、`kuzhambu-servers/common/kuzhambu-common-test/src/main/java/com/thundax/kuzhambu/common/test/architecture/LayerArchitectureRuleSupport.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/test/java/com/thundax/kuzhambu/storage/application/StorageApplicationArchitectureTest.java`
-    - 处理动作：同步本域 domain entity 可作为 application service 返回、count 固定 primitive `long`、公开入参单 Command/Query 的治理与架构测试口径
-    - 验收点：storage application 架构测试挂载 service boundary 检查，治理文档与 ArchUnit 规则口径一致
-    - 重要度：10/10
-
 - [ ] `02-storage-object-commands`：02 强类型化 storage object 写入命令
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
