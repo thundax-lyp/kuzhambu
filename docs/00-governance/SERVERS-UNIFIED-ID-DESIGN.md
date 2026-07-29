@@ -58,7 +58,8 @@
 - 一个具体 ID 类型只能固定一种底层值类型。
 - Core 用户、角色、菜单标识默认使用 `String`。
 - Auth 登录标识、凭据、认证事件标识默认使用 `String`。
-- Storage 对象标识默认使用 `String`。
+- Storage 文件对象、分片上传会话和分片记录的实体身份沿用数据库 `bigint id`，在 domain 中使用 `BaseLongId` 的强类型包装，例如 `StoredObjectId`、`MultipartUploadSessionId`、`MultipartUploadPartId`。
+- Storage 分片上传对外会话标识 `MultipartUploadId` 是业务过程标识，默认使用 `String`。
 - 数据库字段默认使用 `varchar(64)` 保存文本型领域标识。
 
 ## Generation Rules
