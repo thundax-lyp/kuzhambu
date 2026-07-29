@@ -8,6 +8,8 @@ import static com.thundax.kuzhambu.system.domain.core.model.valueobject.Permissi
 import com.thundax.kuzhambu.common.core.arch.OneLineMethodAllowed;
 import com.thundax.kuzhambu.common.security.permission.PermissionMatcher;
 import com.thundax.kuzhambu.common.security.permission.PrefixPermissionMatcher;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCommand;
+import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PermissionApplicationService;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
@@ -64,7 +66,9 @@ public class PermissionApplicationServiceImpl
     }
 
     @Override
-    public Set<String> createPermissions(String token, String userId) {
+    public Set<PermissionCode> createPermissions(CreatePermissionsCommand command) {
+        String token = tokenValue(command);
+        String userId = UserIdCodec.toStringValue(command == null ? null : command.getUserId());
         Assert.hasText(token, "token can not be empty");
         Assert.hasText(userId, "userId can not be empty");
 
@@ -72,13 +76,14 @@ public class PermissionApplicationServiceImpl
         if (session == null) {
             return Collections.emptySet();
         }
-        Set<String> permissions = new HashSet<>(loadPermissions(userId));
+        Set<PermissionCode> permissions = new HashSet<>(loadPermissions(userId));
         savePermissions(session, permissions);
         return new HashSet<>(permissions);
     }
 
     @Override
-    public Set<String> getPermissions(String token) {
+    public Set<PermissionCode> getPermissions(PermissionQuery query) {
+        String token = tokenValue(query);
         PrincipalAuthSession session = getActiveSession(token);
         if (session == null) {
             return null;
@@ -90,8 +95,12 @@ public class PermissionApplicationServiceImpl
     }
 
     @Override
-    public boolean isPermitted(String token, String permission) {
-        return permissionMatcher.matches(getPermissions(token), permission);
+    public boolean isPermitted(PermissionQuery query) {
+        return permissionMatcher.matches(
+                toPermissionValues(getPermissions(query)),
+                query == null || query.getPermission() == null
+                        ? null
+                        : query.getPermission().asString());
     }
 
     @Override
@@ -104,18 +113,18 @@ public class PermissionApplicationServiceImpl
         permissionVersion.incrementAndGet();
     }
 
-    private Set<String> refreshPermissions(PrincipalAuthSession session) {
+    private Set<PermissionCode> refreshPermissions(PrincipalAuthSession session) {
         if (session.getPrincipalKey() == null || session.getPrincipalKey().getPrincipalId() == null) {
             return Collections.emptySet();
         }
-        Set<String> permissions = new HashSet<>(
+        Set<PermissionCode> permissions = new HashSet<>(
                 loadPermissions(String.valueOf(session.getPrincipalKey().getPrincipalId())));
         savePermissions(session, permissions);
         return new HashSet<>(permissions);
     }
 
-    private void savePermissions(PrincipalAuthSession session, Set<String> permissions) {
-        session.getValues().put(SESSION_VALUE_PERMISSIONS, new HashSet<>(permissions));
+    private void savePermissions(PrincipalAuthSession session, Set<PermissionCode> permissions) {
+        session.getValues().put(SESSION_VALUE_PERMISSIONS, toPermissionValues(permissions));
         session.getValues().put(SESSION_VALUE_PERMISSION_VERSION, permissionVersion.get());
         principalAuthSessionRepository.insert(session, expiredSeconds(session));
     }
@@ -125,11 +134,11 @@ public class PermissionApplicationServiceImpl
         return sessionVersion instanceof Number && ((Number) sessionVersion).longValue() == permissionVersion.get();
     }
 
-    private Set<String> loadPermissions(String userId) {
+    private Set<PermissionCode> loadPermissions(String userId) {
         User user = userService.get(UserIdCodec.toDomain(Long.valueOf(userId)));
         Assert.notNull(user, "user can not be null");
 
-        Set<String> permissions = new HashSet<>();
+        Set<PermissionCode> permissions = new HashSet<>();
         CurrentUserQuery currentUserQuery =
                 new CurrentUserQuery(user.getId(), user.getPrivilege(), user.getStatus(), user.getRank());
         List<Menu> menuList = currentUserService.listAccessibleMenus(currentUserQuery);
@@ -138,19 +147,19 @@ public class PermissionApplicationServiceImpl
                 if (StringUtils.isNotBlank(menu.getPerms())) {
                     for (String permission : StringUtils.split(menu.getPerms(), SEPARATOR)) {
                         if (!PermissionCode.isBuiltIn(permission)) {
-                            permissions.add(permission);
+                            permissions.add(PermissionCode.of(permission));
                         }
                     }
                 }
             });
         }
 
-        permissions.add(USER);
+        permissions.add(PermissionCode.of(USER));
         if (user.isSuper()) {
-            permissions.add(SUPER);
-            permissions.add(ADMIN);
+            permissions.add(PermissionCode.of(SUPER));
+            permissions.add(PermissionCode.of(ADMIN));
         } else if (user.isAdmin()) {
-            permissions.add(ADMIN);
+            permissions.add(PermissionCode.of(ADMIN));
         }
 
         return permissions;
@@ -171,17 +180,44 @@ public class PermissionApplicationServiceImpl
         return session;
     }
 
-    private Set<String> toPermissionSet(Object value) {
+    private Set<PermissionCode> toPermissionSet(Object value) {
         if (!(value instanceof Collection)) {
             return null;
         }
-        Set<String> permissions = new HashSet<>();
+        Set<PermissionCode> permissions = new HashSet<>();
         for (Object item : snapshotCollection((Collection<?>) value)) {
             if (item != null) {
-                permissions.add(String.valueOf(item));
+                permissions.add(PermissionCode.of(String.valueOf(item)));
             }
         }
         return permissions;
+    }
+
+    private Set<String> toPermissionValues(Set<PermissionCode> permissions) {
+        if (permissions == null) {
+            return null;
+        }
+        Set<String> values = new HashSet<>();
+        for (PermissionCode permission : permissions) {
+            if (permission != null) {
+                values.add(permission.asString());
+            }
+        }
+        return values;
+    }
+
+    private String tokenValue(CreatePermissionsCommand command) {
+        if (command == null || command.getToken() == null) {
+            return null;
+        }
+        return command.getToken().asString();
+    }
+
+    private String tokenValue(PermissionQuery query) {
+        if (query == null || query.getToken() == null) {
+            return null;
+        }
+        return query.getToken().asString();
     }
 
     private Collection<?> snapshotCollection(Collection<?> source) {

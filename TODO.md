@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `04-permission-contract`：[04] 强类型化权限 ApplicationService 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/CreatePermissionsCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/query/PermissionQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/PermissionApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/impl/PermissionApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/service/impl/PermissionServiceImpl.java`
-    - 处理动作：新增权限 Command/Query，将 `String token/userId/permission` 改为 `PrincipalAccessTokenCode`、`UserId`、`PermissionCode`，返回 `Set<PermissionCode>`。
-    - 验收点：权限 application service 不再暴露 `Set<String>` 或 `String token/userId/permission` 参数，interface 层仍向前端提供字符串权限码。
-    - 重要度：9/10
-
 - [ ] `05-pre-auth-session-query`：[05] 强类型化预认证会话查询参数
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

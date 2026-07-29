@@ -1,12 +1,15 @@
 package com.thundax.kuzhambu.system.application.auth.service;
 
+import com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCommand;
+import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode;
 import java.util.Set;
 
 public interface PermissionApplicationService {
 
-    Set<String> createPermissions(String token, String userId);
+    Set<PermissionCode> createPermissions(CreatePermissionsCommand command);
 
-    Set<String> getPermissions(String token);
+    Set<PermissionCode> getPermissions(PermissionQuery query);
 
-    boolean isPermitted(String token, String permission);
+    boolean isPermitted(PermissionQuery query);
 }

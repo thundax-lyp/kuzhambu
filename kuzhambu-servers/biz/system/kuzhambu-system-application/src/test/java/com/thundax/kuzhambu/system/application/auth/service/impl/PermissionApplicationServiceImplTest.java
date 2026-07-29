@@ -7,12 +7,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCommand;
+import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAuthSessionIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAccessTokenRepository;
@@ -22,6 +25,7 @@ import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -62,11 +66,13 @@ class PermissionApplicationServiceImplTest {
                 .thenReturn(List.of(menu("system:user:view")))
                 .thenReturn(List.of(menu("system:role:view")));
 
-        permissionService.createPermissions("token", "1");
+        permissionService.createPermissions(
+                new CreatePermissionsCommand(PrincipalAccessTokenCode.of("token"), UserIdCodec.toDomain(1L)));
         permissionService.onRoleCacheChanged();
-        Set<String> permissions = permissionService.getPermissions("token");
+        Set<PermissionCode> permissions =
+                permissionService.getPermissions(new PermissionQuery(PrincipalAccessTokenCode.of("token"), null));
 
-        assertTrue(permissions.contains("system:role:view"));
+        assertTrue(permissions.contains(PermissionCode.of("system:role:view")));
         verify(currentUserService, times(2)).listAccessibleMenus(any());
         verify(authSessionRepository, times(2)).insert(any(PrincipalAuthSession.class), any(Integer.class));
     }
