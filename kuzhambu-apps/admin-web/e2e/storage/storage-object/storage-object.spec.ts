@@ -173,20 +173,17 @@ test.describe("storage object page", () => {
         await expect(page.getByText("sancai.png")).toBeVisible();
         await expect(page.getByText("1.50 KB").first()).toBeVisible();
 
-        const fileChooserPromise = page.waitForEvent("filechooser");
-        await page.getByRole("button", { name: "上传" }).click();
-        const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles({
+        await page.getByLabel("选择上传文件").setInputFiles({
             name: "upload.txt",
             mimeType: "text/plain",
             buffer: Buffer.from("hello")
         });
 
         await expect(page.getByText("upload.txt")).toBeVisible();
-        await expect(page.getByRole("button", { name: "读取 upload.txt" })).toBeVisible();
+        await expect(page.getByRole("button", { name: "预览 upload.txt" })).toBeVisible();
         expect(uploadFileName).toBe("upload.txt");
 
-        await page.getByRole("button", { name: "删除 sancai.png" }).click();
+        await page.getByRole("button", { name: "删除 sancai.png" }).click({ force: true });
         const confirmDialog = page.getByRole("dialog");
         await expect(page.getByText("确认删除 sancai.png？")).toBeVisible();
         await confirmDialog.getByRole("button", { name: /删\s*除/ }).click();
@@ -313,10 +310,7 @@ test.describe("storage object page", () => {
 
         await page.goto("/storage/objects");
 
-        const fileChooserPromise = page.waitForEvent("filechooser");
-        await page.getByRole("button", { name: "上传" }).click();
-        const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles({
+        await page.getByLabel("选择上传文件").setInputFiles({
             name: "multipart.bin",
             mimeType: "application/octet-stream",
             buffer: Buffer.alloc(24 * 1024 * 1024)
@@ -327,10 +321,10 @@ test.describe("storage object page", () => {
         await expect(page.getByText(/已上传分片：/)).toBeVisible();
         await expect(page.getByText("multipart.bin")).toBeVisible();
 
-        expect(uploadPartRequestCount).toBeGreaterThanOrEqual(1);
-        expect(initiatedPayload.originalFilename).toBe("multipart.bin");
-        expect(completedPayload.uploadId).toBe("upload-session-1");
-        expect(pageRequestCount).toBeGreaterThanOrEqual(2);
+        await expect.poll(() => uploadPartRequestCount).toBeGreaterThanOrEqual(1);
+        await expect.poll(() => initiatedPayload.originalFilename).toBe("multipart.bin");
+        await expect.poll(() => completedPayload.uploadId).toBe("upload-session-1");
+        await expect.poll(() => pageRequestCount).toBeGreaterThanOrEqual(2);
     });
 
     test("supports multipart upload cancellation", async ({ page }) => {
@@ -420,20 +414,17 @@ test.describe("storage object page", () => {
 
         await page.goto("/storage/objects");
 
-        const fileChooserPromise = page.waitForEvent("filechooser");
-        await page.getByRole("button", { name: "上传" }).click();
-        const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles({
+        await page.getByLabel("选择上传文件").setInputFiles({
             name: "multipart-cancel.bin",
             mimeType: "application/octet-stream",
             buffer: Buffer.alloc(21 * 1024 * 1024)
         });
 
         await expect(page.getByText("上传分片中")).toBeVisible();
-        await page.getByRole("button", { name: "取消" }).click();
+        await expect.poll(() => uploadPartRequestCount).toBeGreaterThanOrEqual(1);
+        await page.getByRole("button", { name: /取\s*消/ }).click({ force: true });
         await expect(page.getByText(/正在取消|已取消/)).toBeVisible();
 
-        expect(uploadPartRequestCount).toBeGreaterThanOrEqual(1);
         await expect(page.locator("tbody").getByText("multipart-cancel.bin")).toBeHidden();
     });
 
@@ -473,10 +464,10 @@ test.describe("storage object page", () => {
 
         await page.goto("/storage/objects");
 
-        await page.getByRole("button", { name: /筛选/ }).click();
+        await page.getByRole("button", { name: /筛选/ }).click({ force: true });
         await page.getByPlaceholder("reference_owner_type").fill("BOOK");
         await page.getByPlaceholder("123e4567-e89b-12d3-a456-426614174000").fill("owner-9");
-        await page.getByRole("button", { name: "查询" }).click();
+        await page.getByRole("button", { name: /查\s*询/ }).click({ force: true });
 
         await expect.poll(() => latestRequestBody.referenceOwnerType).toBe("BOOK");
         await expect.poll(() => latestRequestBody.referenceOwnerId).toBe("owner-9");

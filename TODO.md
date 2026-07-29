@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `10-storage-admin-web-contract-regression`：回归 Storage 管理页前端协议和控件操作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-types.ts`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-service.ts`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-page.tsx`、`kuzhambu-apps/admin-web/e2e/storage/storage-object/storage-object.spec.ts`
-    - 处理动作：确认 Storage 管理页 request/response 字段保持基础类型，并回归搜索、筛选、上传、取消、预览、下载、删除、批量删除、拖拽排序和分页。
-    - 验收点：前端 `id`、`contentType`、`size`、`referenceOwnerType`、`partNumber` 等协议字段保持现有类型，E2E 覆盖的控件操作通过。
-    - 重要度：8/10
-
 - [ ] `11-storage-strong-typing-closure`：执行全量验证并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
