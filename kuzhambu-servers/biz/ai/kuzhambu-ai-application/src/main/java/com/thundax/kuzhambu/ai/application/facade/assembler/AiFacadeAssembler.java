@@ -153,10 +153,14 @@ public class AiFacadeAssembler {
             return null;
         }
         return DiscoveryAiFacadeResponse.builder()
-                .callId(result.getCallId())
-                .candidateId(result.getCandidateId())
-                .status(result.getStatus())
-                .capability(result.getCapability())
+                .callId(com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec.toValue(result.getCallId()))
+                .candidateId(com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec.toValue(
+                        result.getCandidateId()))
+                .status(result.getStatus() == null ? null : result.getStatus().name())
+                .capability(
+                        result.getCapability() == null
+                                ? null
+                                : result.getCapability().value())
                 .resultFormat(result.getResultFormat())
                 .resultPayload(result.getResultPayload())
                 .errorType(result.getErrorType())

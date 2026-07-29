@@ -10,8 +10,7 @@ import com.thundax.kuzhambu.ai.application.scenario.result.DiscoveryAiInvokeResu
 import com.thundax.kuzhambu.ai.application.scenario.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.support.DiscoveryAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.scenario.support.DiscoveryAiWorkerUsecaseSpec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.util.function.Consumer;
@@ -132,7 +131,7 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
             return new DiscoveryAiInvokeResult(
                     null,
                     null,
-                    "FAILED",
+                    AiInvocationStatus.FAILED,
                     null,
                     null,
                     null,
@@ -140,10 +139,10 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
                     "Discovery AI result is missing");
         }
         return new DiscoveryAiInvokeResult(
-                AiCallIdCodec.toValue(result.getCallId()),
-                AiCandidateIdCodec.toValue(result.getCandidateId()),
-                result.getStatus() == null ? null : result.getStatus().name(),
-                result.getCapability() == null ? null : result.getCapability().value(),
+                result.getCallId(),
+                result.getCandidateId(),
+                result.getStatus(),
+                result.getCapability(),
                 result.getResultFormat(),
                 result.getResultPayload(),
                 result.getErrorType(),
