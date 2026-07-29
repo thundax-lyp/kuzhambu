@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T10 Frontend menu department audit regression`：回归菜单、部门和审计筛选控件协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/system/menu/menu-page.tsx`；`kuzhambu-apps/admin-web/src/pages/system/menu/components/menu-edit-drawer.tsx`；`kuzhambu-apps/admin-web/src/pages/system/department/department-page.tsx`；`kuzhambu-apps/admin-web/src/pages/system/department/components/department-edit-drawer.tsx`；`kuzhambu-apps/admin-web/src/pages/audit/audit-log/components/audit-log-filter.tsx`
-    - 处理动作：回归菜单新增/编辑/显示开关/移动、部门新增/编辑/移动，以及审计对象和操作者筛选。
-    - 验收点：菜单和部门请求 ID 仍为 string 或 null，审计筛选请求 `objectId` 与 `operatorId` 仍为 string。
-    - 重要度：7/10
-
 - [ ] `T11 Backend verification`：运行 system 后端验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
