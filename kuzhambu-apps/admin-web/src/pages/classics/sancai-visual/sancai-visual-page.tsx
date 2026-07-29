@@ -4,8 +4,8 @@ import { App } from "antd";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { KuzhambuAlert, KuzhambuButton, KuzhambuPage, KuzhambuSpace } from "@/components";
-import { SancaiVisualEntryPickerModal } from "./components/sancai-visual-entry-picker-modal";
-import { SancaiVisualWorkbench } from "./components/sancai-visual-workbench";
+import { SancaiVisualEntryPickerModal } from "./sancai-visual-entry-picker-modal";
+import { SancaiVisualWorkbench } from "./sancai-visual-workbench";
 import * as entryService from "./sancai-visual-service";
 import type { SancaiEntryRecord, SancaiVisualAssetRecord } from "./sancai-visual-types";
 

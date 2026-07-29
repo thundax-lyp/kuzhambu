@@ -13,7 +13,7 @@ const { mockVisualSection } = vi.hoisted(() => ({
     ))
 }));
 
-vi.mock("./components/sancai-entry-visual-section", () => ({
+vi.mock("./sancai-entry-visual-section", () => ({
     SancaiEntryVisualSection: mockVisualSection
 }));
 
