@@ -33,6 +33,7 @@ interface SancaiEntryListProps {
     onExport: (entry: SancaiEntryRecord) => void;
     onRefresh: () => void;
     onBatchCandidateGovernance: (entries: SancaiEntryRecord[]) => void;
+    onVisual: (entry: SancaiEntryRecord) => void;
     onSort: (
         sourceEntry: SancaiEntryRecord,
         targetEntry: SancaiEntryRecord,
@@ -154,6 +155,7 @@ export const SancaiEntryList = ({
     onExport,
     onRefresh,
     onBatchCandidateGovernance,
+    onVisual,
     onSort,
     onView,
     volumes
@@ -353,6 +355,13 @@ export const SancaiEntryList = ({
                         testId: `sancai-entry-${entry.id}-export-button`,
                         disabled: !canExportEntries,
                         onClick: () => onExport(entry)
+                    },
+                    {
+                        key: "visual",
+                        text: "视觉",
+                        ariaLabel: `视觉处理 ${readTitle(entry, "条目")}`,
+                        testId: `sancai-entry-${entry.id}-visual-button`,
+                        onClick: () => onVisual(entry)
                     },
                     ...(lifecycleAction
                         ? [

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App } from "antd";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { type KuzhambuTableSortPosition, KuzhambuAlert } from "@/components";
 
@@ -75,6 +76,7 @@ export const SancaiEntryPanel = ({
     const { message: messageApi, modal: modalApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
     const [isCreating, setIsCreating] = useState(defaultCreateOpen);
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
@@ -510,6 +512,9 @@ export const SancaiEntryPanel = ({
     const exportEntry = (entry: SancaiEntryRecord) => {
         exportEntryMutation.mutate(entry);
     };
+    const openVisualPage = (entry: SancaiEntryRecord) => {
+        navigate(`/classics/sancai/visual?entryId=${encodeURIComponent(entry.id)}`);
+    };
     const deleteExportJob = (job: ClassicsExportJobRecord) => {
         if (!job.id) {
             return;
@@ -557,7 +562,7 @@ export const SancaiEntryPanel = ({
         });
     };
     const updateVisualAsset = (asset: SancaiVisualAssetRecord) => {
-        updateVisualAssetMutation.mutate({
+        return updateVisualAssetMutation.mutateAsync({
             visualAssetId: asset.visualAssetId ?? asset.id ?? null,
             entryId: asset.entryId ?? selectedEntryId,
             versionNo: asset.versionNo,
@@ -633,6 +638,7 @@ export const SancaiEntryPanel = ({
                     void entriesQuery.refetch();
                 }}
                 onBatchCandidateGovernance={openBatchCandidateDrawer}
+                onVisual={openVisualPage}
                 onSort={sortEntry}
                 onView={selectEntry}
             />
