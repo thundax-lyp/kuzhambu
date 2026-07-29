@@ -110,7 +110,8 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
                     userAgent,
                     PrincipalLoginEvent.REASON_NONE);
         }
-        return new AdminAccessTokenResult(token, refreshToken, accessToken);
+        return new AdminAccessTokenResult(
+                PrincipalAccessTokenCode.of(token), PrincipalRefreshTokenCode.of(refreshToken), accessToken);
     }
 
     @Override
@@ -129,7 +130,7 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
         if (session == null) {
             return null;
         }
-        return new AdminAccessTokenResult(token, null, accessToken);
+        return new AdminAccessTokenResult(PrincipalAccessTokenCode.of(token), null, accessToken);
     }
 
     @Override
@@ -197,17 +198,18 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
     public AdminTokenQueryResult getTokenInfo(String token) {
         AdminAccessTokenResult accessToken = getAccessToken(token);
         if (accessToken == null || !validateToken(token)) {
-            return AdminTokenQueryResult.inactive(token);
+            return AdminTokenQueryResult.inactive(PrincipalAccessTokenCode.ofNullable(token));
         }
         PrincipalAuthSession session = getActivePrincipalAuthSession(accessToken.getPrincipalAccessToken(), new Date());
         if (session == null) {
-            return AdminTokenQueryResult.inactive(token);
+            return AdminTokenQueryResult.inactive(PrincipalAccessTokenCode.ofNullable(token));
         }
         User user = getUser(UserIdCodec.toDomain(session.getPrincipalKey().getPrincipalId()));
         if (user == null || !user.isEnable()) {
-            return AdminTokenQueryResult.inactive(token);
+            return AdminTokenQueryResult.inactive(PrincipalAccessTokenCode.ofNullable(token));
         }
-        return AdminTokenQueryResult.active(token, session, user, getAccountLoginName(user.getId()));
+        return AdminTokenQueryResult.active(
+                PrincipalAccessTokenCode.of(token), session, user, getAccountLoginName(user.getId()));
     }
 
     @Override

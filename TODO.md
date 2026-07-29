@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `01-auth-token-result`：[01] 强类型化后台 token Result 字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/result/AdminAccessTokenResult.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/result/AdminTokenQueryResult.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/result/AdminTokenRefreshResult.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/assembler/AuthInterfaceAssembler.java`
-    - 处理动作：将 token/result 字段从 `String` 改为 `PrincipalAccessTokenCode` 或 `PrincipalRefreshTokenCode`，并在 interface assembler 输出 HTTP 字符串。
-    - 验收点：`AdminAccessTokenResult.token`、`AdminAccessTokenResult.refreshToken`、`AdminTokenQueryResult.token`、`AdminTokenRefreshResult.refreshToken` 均为强类型值对象且前端 JSON 字段名不变。
-    - 重要度：9/10
-
 - [ ] `02-admin-token-read-create`：[02] 强类型化 AdminToken 创建和读取参数
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

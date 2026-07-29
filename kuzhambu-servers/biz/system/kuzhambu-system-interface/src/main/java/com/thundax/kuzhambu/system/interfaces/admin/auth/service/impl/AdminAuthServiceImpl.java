@@ -356,7 +356,12 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         if (result == null) {
             return null;
         }
-        return new AuthAccessTokenResult(result.getToken(), result.getRefreshToken(), result.getPrincipalAccessToken());
+        return new AuthAccessTokenResult(
+                result.getToken().asString(),
+                result.getRefreshToken() == null
+                        ? null
+                        : result.getRefreshToken().asString(),
+                result.getPrincipalAccessToken());
     }
 
     private String tokenValue(AuthAccessTokenResult result) {
@@ -371,10 +376,11 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             return null;
         }
         if (!result.isActive()) {
-            return AuthTokenQueryResult.inactive(result.getToken());
+            return AuthTokenQueryResult.inactive(
+                    result.getToken() == null ? null : result.getToken().asString());
         }
         return AuthTokenQueryResult.active(
-                result.getToken(), result.getSession(), result.getUser(), result.getUsername());
+                result.getToken().asString(), result.getSession(), result.getUser(), result.getUsername());
     }
 
     private AuthTokenRefreshResult toInterfaceResult(AdminTokenRefreshResult result) {
@@ -382,6 +388,10 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             return null;
         }
         AuthAccessTokenResult accessToken = toInterfaceResult(result.getAccessToken());
-        return new AuthTokenRefreshResult(accessToken, result.getRefreshToken());
+        return new AuthTokenRefreshResult(
+                accessToken,
+                result.getRefreshToken() == null
+                        ? null
+                        : result.getRefreshToken().asString());
     }
 }
