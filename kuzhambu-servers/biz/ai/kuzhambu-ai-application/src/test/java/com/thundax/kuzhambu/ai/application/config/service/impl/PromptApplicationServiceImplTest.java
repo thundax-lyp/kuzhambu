@@ -24,7 +24,7 @@ class PromptApplicationServiceImplTest {
     void saveTemplateShouldConvertVersionUniqueConflictToBusinessException() {
         PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(new ConflictPromptRepository());
 
-        assertThatThrownBy(() -> service.saveTemplate(saveCommand()))
+        assertThatThrownBy(() -> service.save(saveCommand()))
                 .isInstanceOf(BizException.class)
                 .hasMessageContaining("Prompt version conflict, please retry: 1001#2");
     }
@@ -35,7 +35,7 @@ class PromptApplicationServiceImplTest {
         PromptTemplateSaveCommand command = saveCommand();
         command.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE);
 
-        assertThatThrownBy(() -> service.saveTemplate(command))
+        assertThatThrownBy(() -> service.save(command))
                 .isInstanceOf(BizException.class)
                 .hasMessageContaining("Prompt template capability can not be changed: 1001");
     }
@@ -45,7 +45,7 @@ class PromptApplicationServiceImplTest {
         RecordingPromptRepository repository = new RecordingPromptRepository();
         PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(repository);
 
-        service.saveTemplate(saveCommand());
+        service.save(saveCommand());
 
         assertThat(repository.replaceVariablesCount).isZero();
         assertThat(repository.insertVersionCount).isEqualTo(1);
@@ -58,7 +58,7 @@ class PromptApplicationServiceImplTest {
         PromptTemplateSaveCommand command = saveCommand();
         command.setId(null);
 
-        service.saveTemplate(command);
+        service.save(command);
 
         assertThat(repository.replaceVariablesCount).isEqualTo(1);
         assertThat(repository.insertVersionCount).isEqualTo(1);

@@ -3,6 +3,10 @@ package com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.assembler;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand;
+import com.thundax.kuzhambu.ai.application.config.command.RollbackPromptVersionCommand;
+import com.thundax.kuzhambu.ai.application.config.query.GetPromptByCapabilityQuery;
+import com.thundax.kuzhambu.ai.application.config.query.GetPromptQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListPromptsQuery;
 import com.thundax.kuzhambu.ai.application.config.query.PromptVersionCompareQuery;
 import com.thundax.kuzhambu.ai.application.config.result.PromptVersionResult;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
@@ -24,6 +28,32 @@ class PromptInterfaceAssemblerTest {
 
         assertThat(command.getId()).isEqualTo(new PromptTemplateId(1001L));
         assertThat(command.getCapability()).isEqualTo(AiBusinessCapability.CLASSICS_SUMMARY);
+    }
+
+    @Test
+    void shouldConvertPromptRequestsToApplicationContracts() {
+        PromptRequests.TemplateIdRequest idRequest = new PromptRequests.TemplateIdRequest();
+        idRequest.setId(1001L);
+        PromptRequests.TemplateQueryRequest queryRequest = new PromptRequests.TemplateQueryRequest();
+        queryRequest.setCapability("classics_summary");
+        queryRequest.setEnabled(true);
+        PromptRequests.VersionRollbackRequest rollbackRequest = new PromptRequests.VersionRollbackRequest();
+        rollbackRequest.setId(1001L);
+        rollbackRequest.setVersionNo(2);
+
+        GetPromptQuery getQuery = PromptInterfaceAssembler.toGetPromptQuery(idRequest);
+        GetPromptByCapabilityQuery getByCapabilityQuery =
+                PromptInterfaceAssembler.toGetPromptByCapabilityQuery(queryRequest);
+        ListPromptsQuery listQuery = PromptInterfaceAssembler.toListPromptsQuery(queryRequest);
+        RollbackPromptVersionCommand rollbackCommand =
+                PromptInterfaceAssembler.toRollbackPromptVersionCommand(rollbackRequest);
+
+        assertThat(getQuery.getTemplateId()).isEqualTo(new PromptTemplateId(1001L));
+        assertThat(getByCapabilityQuery.getCapability()).isEqualTo(AiBusinessCapability.CLASSICS_SUMMARY);
+        assertThat(listQuery.getCapability()).isEqualTo(AiBusinessCapability.CLASSICS_SUMMARY);
+        assertThat(listQuery.getEnabled()).isTrue();
+        assertThat(rollbackCommand.getTemplateId()).isEqualTo(new PromptTemplateId(1001L));
+        assertThat(rollbackCommand.getVersionNo()).isEqualTo(2);
     }
 
     @Test

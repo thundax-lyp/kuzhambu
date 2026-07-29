@@ -1,6 +1,15 @@
 package com.thundax.kuzhambu.ai.application.config.service.impl;
 
+import com.thundax.kuzhambu.ai.application.config.command.BuildPromptOptimizationSuggestionCommand;
 import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand;
+import com.thundax.kuzhambu.ai.application.config.command.RollbackPromptVersionCommand;
+import com.thundax.kuzhambu.ai.application.config.command.ValidatePromptVariablesCommand;
+import com.thundax.kuzhambu.ai.application.config.query.GetCurrentPromptVersionQuery;
+import com.thundax.kuzhambu.ai.application.config.query.GetPromptByCapabilityQuery;
+import com.thundax.kuzhambu.ai.application.config.query.GetPromptQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListPromptVariablesQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListPromptVersionsQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListPromptsQuery;
 import com.thundax.kuzhambu.ai.application.config.query.PromptVersionCompareQuery;
 import com.thundax.kuzhambu.ai.application.config.result.PromptVersionResult;
 import com.thundax.kuzhambu.ai.application.config.service.PromptApplicationService;
@@ -41,12 +50,13 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     }
 
     @Override
-    public PromptTemplate getTemplate(PromptTemplateId templateId) {
-        return promptRepository.get(templateId);
+    public PromptTemplate get(GetPromptQuery query) {
+        return promptRepository.get(query == null ? null : query.getTemplateId());
     }
 
     @Override
-    public PromptTemplate getTemplate(AiBusinessCapability capability) {
+    public PromptTemplate getByCapability(GetPromptByCapabilityQuery query) {
+        AiBusinessCapability capability = query == null ? null : query.getCapability();
         if (capability == null) {
             return null;
         }
@@ -54,13 +64,14 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     }
 
     @Override
-    public List<PromptTemplate> listTemplates(AiBusinessCapability capability, Boolean enabled) {
-        return promptRepository.list(capability, enabled);
+    public List<PromptTemplate> list(ListPromptsQuery query) {
+        return promptRepository.list(
+                query == null ? null : query.getCapability(), query == null ? null : query.getEnabled());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PromptTemplateId saveTemplate(PromptTemplateSaveCommand command) {
+    public PromptTemplateId save(PromptTemplateSaveCommand command) {
         validateCommand(command);
         PromptTemplate template = toTemplate(command);
         PromptTemplateId templateId = saveOrUpdateTemplate(template);
@@ -75,7 +86,8 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     }
 
     @Override
-    public PromptVersionResult getCurrentVersion(PromptTemplateId templateId) {
+    public PromptVersionResult getCurrentVersion(GetCurrentPromptVersionQuery query) {
+        PromptTemplateId templateId = query == null ? null : query.getTemplateId();
         if (templateId == null) {
             return null;
         }
@@ -83,8 +95,9 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     }
 
     @Override
-    public List<PromptVersionResult> listVersions(PromptTemplateId templateId) {
+    public List<PromptVersionResult> listVersions(ListPromptVersionsQuery query) {
         List<PromptVersionResult> results = new ArrayList<>();
+        PromptTemplateId templateId = query == null ? null : query.getTemplateId();
         if (templateId == null) {
             return results;
         }
@@ -107,17 +120,20 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PromptVersionResult rollback(PromptTemplateId templateId, int versionNo) {
+    public PromptVersionResult rollback(RollbackPromptVersionCommand command) {
+        PromptTemplateId templateId = command == null ? null : command.getTemplateId();
+        int versionNo = command == null ? 0 : command.getVersionNo();
         findVersion(templateId, versionNo);
         int affectedRows = promptRepository.markCurrentVersion(templateId, versionNo);
         if (affectedRows <= 0) {
             throw new BizException("Prompt rollback failed: " + templateId.value() + "#" + versionNo);
         }
-        return getCurrentVersion(templateId);
+        return getCurrentVersion(new GetCurrentPromptVersionQuery(templateId));
     }
 
     @Override
-    public List<PromptVariable> listVariables(PromptTemplateId templateId) {
+    public List<PromptVariable> listVariables(ListPromptVariablesQuery query) {
+        PromptTemplateId templateId = query == null ? null : query.getTemplateId();
         if (templateId == null) {
             return new ArrayList<>();
         }
@@ -125,7 +141,9 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     }
 
     @Override
-    public void validateRequiredVariables(PromptTemplateId templateId, Collection<String> providedNames) {
+    public void validateRequiredVariables(ValidatePromptVariablesCommand command) {
+        PromptTemplateId templateId = command == null ? null : command.getTemplateId();
+        Collection<String> providedNames = command == null ? null : command.getProvidedNames();
         if (templateId == null) {
             throw new BizException("Prompt templateId is required");
         }
@@ -137,12 +155,13 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     }
 
     @Override
-    public PromptVersionResult buildOptimizationSuggestion(PromptTemplateId templateId, String changeSummary) {
+    public PromptVersionResult buildOptimizationSuggestion(BuildPromptOptimizationSuggestionCommand command) {
+        PromptTemplateId templateId = command == null ? null : command.getTemplateId();
         PromptVersion current = promptRepository.getCurrentVersion(templateId);
         if (current == null) {
             return null;
         }
-        current.setChangeSummary(changeSummary);
+        current.setChangeSummary(command == null ? null : command.getChangeSummary());
         return PromptVersionResult.from(current);
     }
 

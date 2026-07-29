@@ -1,0 +1,16 @@
+package com.thundax.kuzhambu.ai.application.config.query;
+
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
+
+public class GetPromptQuery {
+
+    private final PromptTemplateId templateId;
+
+    public GetPromptQuery(PromptTemplateId templateId) {
+        this.templateId = templateId;
+    }
+
+    public PromptTemplateId getTemplateId() {
+        return templateId;
+    }
+}
