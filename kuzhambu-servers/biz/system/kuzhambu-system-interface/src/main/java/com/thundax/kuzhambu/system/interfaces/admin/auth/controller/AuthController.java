@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.system.application.auth.command.ReleasePreAuthSessio
 import com.thundax.kuzhambu.system.application.auth.command.UpsertPreAuthSessionValueCommand;
 import com.thundax.kuzhambu.system.application.auth.configure.AuthProperties;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidCaptchaException;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueValidateQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
@@ -263,7 +264,7 @@ public class AuthController {
             preAuthSessionService.upsertValue(new UpsertPreAuthSessionValueCommand(
                     session.getId(), PRIVATE_KEY_ITEM, keyPair.getPrivateKey(), session.getExpiredAt()));
         }
-        return preAuthSessionService.get(session.getId());
+        return preAuthSessionService.get(preAuthSessionQuery(session.getId()));
     }
 
     private PreAuthSession refreshPreAuthSession(String refreshToken) {
@@ -276,7 +277,7 @@ public class AuthController {
     }
 
     private void releasePreAuthSession(String loginToken) {
-        PreAuthSessionId sessionId = preAuthSessionService.getIdByToken(PreAuthSessionToken.of(loginToken));
+        PreAuthSessionId sessionId = preAuthSessionService.getIdByToken(preAuthSessionTokenQuery(loginToken));
         if (sessionId != null) {
             preAuthSessionService.release(new ReleasePreAuthSessionCommand(sessionId));
         }
@@ -314,7 +315,7 @@ public class AuthController {
     }
 
     private PreAuthSessionId requireSessionIdByToken(String token) {
-        PreAuthSessionId sessionId = preAuthSessionService.getIdByToken(PreAuthSessionToken.of(token));
+        PreAuthSessionId sessionId = preAuthSessionService.getIdByToken(preAuthSessionTokenQuery(token));
         if (sessionId == null) {
             throw AdminResponseExceptions.invalidToken();
         }
@@ -322,7 +323,8 @@ public class AuthController {
     }
 
     private PreAuthSessionId requireSessionIdByRefreshToken(String refreshToken) {
-        PreAuthSessionId sessionId = preAuthSessionService.getIdByRefreshToken(PreAuthSessionToken.of(refreshToken));
+        PreAuthSessionId sessionId =
+                preAuthSessionService.getIdByRefreshToken(preAuthSessionRefreshTokenQuery(refreshToken));
         if (sessionId == null) {
             throw AdminResponseExceptions.invalidToken();
         }
@@ -405,6 +407,18 @@ public class AuthController {
         AdminAuthQuery query = new AdminAuthQuery();
         query.setToken(token);
         return query;
+    }
+
+    private PreAuthSessionQuery preAuthSessionQuery(PreAuthSessionId id) {
+        return new PreAuthSessionQuery(id, null, null);
+    }
+
+    private PreAuthSessionQuery preAuthSessionTokenQuery(String token) {
+        return new PreAuthSessionQuery(null, PreAuthSessionToken.of(token), null);
+    }
+
+    private PreAuthSessionQuery preAuthSessionRefreshTokenQuery(String refreshToken) {
+        return new PreAuthSessionQuery(null, null, PreAuthSessionToken.of(refreshToken));
     }
 
     private AdminAuthCommand passwordCommand(String loginName, String plainPassword, HttpServletRequest request) {

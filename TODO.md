@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `05-pre-auth-session-query`：[05] 强类型化预认证会话查询参数
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/query/PreAuthSessionQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/PreAuthSessionApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/impl/PreAuthSessionApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/controller/AuthController.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/controller/CaptchaController.java`
-    - 处理动作：新增 `PreAuthSessionQuery`，替换 `get(PreAuthSessionId)`、`getIdByToken(PreAuthSessionToken)`、`getIdByRefreshToken(PreAuthSessionToken)` 的直接值对象参数。
-    - 验收点：预认证会话有输入条件的读取入口只接收 Query，`countActiveSessions()` 保持无参读方法。
-    - 重要度：8/10
-
 - [ ] `06-principal-identity-command`：[06] 拆分 PrincipalIdentity 写命令
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
