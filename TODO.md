@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T07 Log application and core tests`：修复日志调用点与菜单仓储测试桩
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/LogApplicationServiceImpl.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/test/java/com/thundax/kuzhambu/system/application/core/service/impl/MenuApplicationServiceImplTest.java`
-    - 处理动作：把日志批量读取调用改为传 `List<LogId>`，并更新菜单仓储测试 stub 签名和断言。
-    - 验收点：core application 编译不再出现 repository 签名不匹配。
-    - 重要度：8/10
-
 - [ ] `T08 Audit repository ref contract`：用审计 Ref 收敛审计仓储查询契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
