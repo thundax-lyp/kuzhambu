@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `06-principal-identity-command`：[06] 拆分 PrincipalIdentity 写命令
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/CreatePrincipalIdentityCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/ChangePrincipalIdentityCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/ChangePrincipalIdentityStatusCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/PrincipalIdentityApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/impl/PrincipalIdentityApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/PrincipalIdentityCommand.java`
-    - 处理动作：用创建、变更、状态变更三个 Command 替代直接包装 `PrincipalIdentity` 的写命令。
-    - 验收点：`PrincipalIdentityCommand.principalIdentity` 不再作为公开写入契约使用，写方法参数分别对应明确业务动作。
-    - 重要度：8/10
-
 - [ ] `07-principal-credential-command`：[07] 拆分 PrincipalCredential 基础写命令
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

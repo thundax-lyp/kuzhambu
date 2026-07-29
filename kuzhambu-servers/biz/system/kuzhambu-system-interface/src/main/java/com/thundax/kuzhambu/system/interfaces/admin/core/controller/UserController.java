@@ -14,8 +14,9 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
-import com.thundax.kuzhambu.system.application.auth.command.PrincipalIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
@@ -779,7 +780,7 @@ public class UserController {
             accountIdentity.setType(PrincipalIdentityType.USER_ACCOUNT);
             accountIdentity.setIdentityValue(loginName);
             accountIdentity.setStatus(PrincipalIdentityStatus.ENABLED);
-            accountIdentity.setId(principalIdentityService.create(new PrincipalIdentityCommand(accountIdentity)));
+            accountIdentity.setId(principalIdentityService.create(createIdentityCommand(accountIdentity)));
             return accountIdentity;
         }
 
@@ -787,8 +788,22 @@ public class UserController {
         accountIdentity.setType(PrincipalIdentityType.USER_ACCOUNT);
         accountIdentity.setIdentityValue(loginName);
         accountIdentity.setStatus(PrincipalIdentityStatus.ENABLED);
-        principalIdentityService.change(new PrincipalIdentityCommand(accountIdentity));
+        principalIdentityService.change(changeIdentityCommand(accountIdentity));
         return accountIdentity;
+    }
+
+    private CreatePrincipalIdentityCommand createIdentityCommand(PrincipalIdentity identity) {
+        return new CreatePrincipalIdentityCommand(
+                identity.getPrincipalKey(), identity.getType(), identity.getIdentityValue(), identity.getStatus());
+    }
+
+    private ChangePrincipalIdentityCommand changeIdentityCommand(PrincipalIdentity identity) {
+        return new ChangePrincipalIdentityCommand(
+                identity.getId(),
+                identity.getPrincipalKey(),
+                identity.getType(),
+                identity.getIdentityValue(),
+                identity.getStatus());
     }
 
     private void validatePassword(String password) {
