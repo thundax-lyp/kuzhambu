@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `24-frontend-contract-check`：[24] 验证前端契约和关键控件操作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/auth/auth-service-contract.test.ts`、`kuzhambu-apps/admin-web/src/pages/system/common/system-service-contract.test.ts`、`kuzhambu-apps/admin-web/src/pages/system/common/log-service-contract.test.ts`、`kuzhambu-apps/admin-web/src/pages/system/user/components/user-edit-drawer/user-edit-drawer.test.tsx`、`kuzhambu-apps/admin-web/e2e/auth/login/login.spec.ts`、`kuzhambu-apps/admin-web/e2e/system/dictionary/dictionary.spec.ts`
-    - 处理动作：验证登录、权限、用户编辑、字典和日志相关前端契约测试与关键控件操作。
-    - 验收点：登录输入框/验证码/登录按钮、权限存储、用户角色多选、字典类型筛选、日志筛选和清理按钮均符合 RUNBOOK 的前端验收描述。
-    - 重要度：7/10
-
 - [ ] `25-system-contract-validation`：[25] 运行 system 契约强类型化后端验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
