@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `04-storage-valueobject-codec-size-part`：新增 size、part 和 owner params codec
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/codec/StorageByteSizeCodec.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/codec/MultipartPartSizeCodec.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/codec/MultipartPartNumberCodec.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/codec/StorageOwnerParamsCodec.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/test/java/com/thundax/kuzhambu/storage/domain/StorageValueObjectTest.java`
-    - 处理动作：为 size、part size、part number 和 owner params 增加 `toDomain`、`toValue` 转换。
-    - 验收点：`mvn -pl biz/storage/kuzhambu-storage-domain test` 通过，codec 能处理 null 和合法基础值。
-    - 重要度：9/10
-
 - [ ] `05-storage-stored-object-entity`：强类型化 StoredObject 和引用实体字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`

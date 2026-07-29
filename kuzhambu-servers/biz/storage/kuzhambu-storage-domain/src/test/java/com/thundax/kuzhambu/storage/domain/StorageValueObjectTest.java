@@ -4,9 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.thundax.kuzhambu.storage.domain.object.codec.MultipartPartNumberCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.MultipartPartSizeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageBucketNameCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageByteSizeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageObjectKeyCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageOwnerParamsCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartNumber;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartSize;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageBucketName;
@@ -87,5 +91,33 @@ class StorageValueObjectTest {
         assertNull(StorageMimeTypeCodec.toValue(null));
         assertNull(StorageBucketNameCodec.toValue(null));
         assertNull(StorageObjectKeyCodec.toValue(null));
+    }
+
+    @Test
+    void sizeAndPartCodecsShouldOwnNullableBoundaryConversion() {
+        assertNull(StorageByteSizeCodec.toDomain(null));
+        assertNull(MultipartPartSizeCodec.toDomain(null));
+        assertNull(MultipartPartNumberCodec.toDomain(null));
+
+        StorageByteSize size = StorageByteSizeCodec.toDomain(0L);
+        MultipartPartSize partSize = MultipartPartSizeCodec.toDomain(5_242_880L);
+        MultipartPartNumber partNumber = MultipartPartNumberCodec.toDomain(3);
+
+        assertEquals(0L, StorageByteSizeCodec.toValue(size));
+        assertEquals(5_242_880L, MultipartPartSizeCodec.toValue(partSize));
+        assertEquals(3, MultipartPartNumberCodec.toValue(partNumber));
+        assertNull(StorageByteSizeCodec.toValue(null));
+        assertNull(MultipartPartSizeCodec.toValue(null));
+        assertNull(MultipartPartNumberCodec.toValue(null));
+    }
+
+    @Test
+    void ownerParamsCodecShouldOwnNullableBoundaryConversion() {
+        assertNull(StorageOwnerParamsCodec.toDomain(null));
+
+        StorageOwnerParams ownerParams = StorageOwnerParamsCodec.toDomain(" {\"source\":\"manual\"} ");
+
+        assertEquals("{\"source\":\"manual\"}", StorageOwnerParamsCodec.toValue(ownerParams));
+        assertNull(StorageOwnerParamsCodec.toValue(null));
     }
 }
