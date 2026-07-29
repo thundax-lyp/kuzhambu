@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T04 Department repository contract`：强类型化部门仓储契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/core/repository/DepartmentRepository.java`；`kuzhambu-servers/biz/system/kuzhambu-system-infra/src/main/java/com/thundax/kuzhambu/system/infra/core/repository/impl/DepartmentRepositoryImpl.java`
-    - 处理动作：把部门仓储端口中的 `idList`、`parentId`、`fromId`、`toId`、`childId` 改为 `DepartmentId` 或 `List<DepartmentId>`。
-    - 验收点：`DepartmentRepository` 不再暴露 `Long` 部门 ID，部门树移动和祖先判断的 null/root 语义保持一致。
-    - 重要度：9/10
-
 - [ ] `T05 Dict and Log repository contracts`：强类型化字典与日志仓储契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
