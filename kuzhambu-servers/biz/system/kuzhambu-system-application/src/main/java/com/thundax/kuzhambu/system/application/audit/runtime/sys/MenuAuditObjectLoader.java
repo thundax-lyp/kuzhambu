@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.system.application.audit.runtime.sys;
 
 import com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoader;
+import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,6 @@ public class MenuAuditObjectLoader implements AuditObjectLoader {
 
     @Override
     public Object load(String objectId) {
-        return menuService.get(MenuIdCodec.toDomain(Long.valueOf(objectId)));
+        return menuService.get(new GetMenuQuery(MenuIdCodec.toDomain(Long.valueOf(objectId))));
     }
 }

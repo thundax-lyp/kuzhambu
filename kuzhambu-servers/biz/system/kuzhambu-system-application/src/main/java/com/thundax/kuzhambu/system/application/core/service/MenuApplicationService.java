@@ -6,6 +6,8 @@ import com.thundax.kuzhambu.system.application.core.command.ChangeMenuInfoComman
 import com.thundax.kuzhambu.system.application.core.command.ChangeMenuVisibilityCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateMenuCommand;
 import com.thundax.kuzhambu.system.application.core.command.MoveMenuCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveMenuCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
@@ -13,7 +15,7 @@ import java.util.List;
 
 public interface MenuApplicationService {
 
-    Menu get(MenuId id);
+    Menu get(GetMenuQuery query);
 
     List<Menu> list(MenuQuery query);
 
@@ -23,7 +25,7 @@ public interface MenuApplicationService {
 
     void changeInfo(ChangeMenuInfoCommand command);
 
-    int remove(MenuId id);
+    int remove(RemoveMenuCommand command);
 
     int changeVisibility(ChangeMenuVisibilityCommand command);
 

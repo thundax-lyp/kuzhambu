@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.system.application.core.command.ChangeMenuInfoComman
 import com.thundax.kuzhambu.system.application.core.command.ChangeMenuVisibilityCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateMenuCommand;
 import com.thundax.kuzhambu.system.application.core.command.MoveMenuCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveMenuCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
@@ -35,7 +37,8 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
         this.cacheChangedListeners = cacheChangedListeners;
     }
 
-    public Menu get(MenuId id) {
+    public Menu get(GetMenuQuery query) {
+        MenuId id = query == null ? null : query.getId();
         if (id == null) {
             return null;
         }
@@ -101,10 +104,15 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "Menu", id = "#id == null ? null : #id.value()", action = AuditAction.DELETE, summary = "删除菜单")
-    public int remove(MenuId id) {
+    @AuditLog(
+            type = "Menu",
+            id = "#command.id == null ? null : #command.id.value()",
+            action = AuditAction.DELETE,
+            summary = "删除菜单")
+    public int remove(RemoveMenuCommand command) {
+        MenuId id = command == null ? null : command.getId();
         dao.deleteMenuRole(id);
-        Menu bean = this.get(id);
+        Menu bean = this.get(new GetMenuQuery(id));
         if (bean == null) {
             return 0;
         }

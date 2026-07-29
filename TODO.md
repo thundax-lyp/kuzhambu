@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `11-core-menu-contract`：[11] 强类型化 Menu get/remove 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/GetMenuQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/RemoveMenuCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/MenuApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/MenuApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/MenuController.java`
-    - 处理动作：新增 `GetMenuQuery.id` 和 `RemoveMenuCommand.id`，替换 `get(MenuId)` 与 `remove(MenuId)`。
-    - 验收点：Menu application service 的 get/remove 均使用 Query/Command，菜单详情、删除菜单接口保持 HTTP 契约不变。
-    - 重要度：8/10
-
 - [ ] `12-core-department-contract`：[12] 强类型化 Department get/remove 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

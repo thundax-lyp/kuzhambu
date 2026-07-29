@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
@@ -482,7 +483,7 @@ public class RoleController {
                 throw AdminResponseExceptions.invalidParameter("menus.id");
 
             } else {
-                Menu bean = menuService.get(MenuIdCodec.toDomain(request.getId()));
+                Menu bean = menuService.get(new GetMenuQuery(MenuIdCodec.toDomain(request.getId())));
                 if (bean == null) {
                     throw AdminResponseExceptions.objectNotFound();
                 }
