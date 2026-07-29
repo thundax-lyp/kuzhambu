@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `10-admin-interface-callers`：10 迁移 storage admin interface 调用方
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/StorageObjectController.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/assembler/StorageInterfaceAssembler.java`
-    - 处理动作：把 controller 和 interface assembler 调整为新 Query/Command 和业务化 application service
-    - 验收点：HTTP Request/Response 字段和路径不变，interface 层仍只通过 assembler 暴露 response，不直接暴露 domain entity
-    - 重要度：9/10
-
 - [ ] `11-application-tests`：11 更新 storage application 测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
