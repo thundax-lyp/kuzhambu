@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T12 Frontend verification`：运行 admin-web 前端验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/system/role`；`kuzhambu-apps/admin-web/src/pages/system/user`；`kuzhambu-apps/admin-web/src/pages/system/menu`；`kuzhambu-apps/admin-web/src/pages/system/department`；`kuzhambu-apps/admin-web/src/pages/audit/audit-log`
-    - 处理动作：运行 RUNBOOK 中列出的 admin-web 格式化检查、lint、测试和前端协议字段扫描。
-    - 验收点：前端验证通过；若存在失败，TODO 收窄为失败页面、控件或协议字段对应的剩余任务。
-    - 重要度：9/10
-
 - [ ] `T13 Runbook cleanup`：清理临时 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
