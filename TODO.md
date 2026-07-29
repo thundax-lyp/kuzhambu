@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T03 Menu repository contract`：强类型化菜单仓储契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/core/repository/MenuRepository.java`；`kuzhambu-servers/biz/system/kuzhambu-system-infra/src/main/java/com/thundax/kuzhambu/system/infra/core/repository/impl/MenuRepositoryImpl.java`
-    - 处理动作：把菜单仓储端口中的 `idList`、`parentId`、`fromId`、`toId`、`childId`、`menuId` 改为 `MenuId` 或 `List<MenuId>`。
-    - 验收点：`MenuRepository` 不再暴露 `Long` 菜单 ID，菜单树移动、祖先判断、删除菜单角色关系行为保持一致。
-    - 重要度：9/10
-
 - [ ] `T04 Department repository contract`：强类型化部门仓储契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`

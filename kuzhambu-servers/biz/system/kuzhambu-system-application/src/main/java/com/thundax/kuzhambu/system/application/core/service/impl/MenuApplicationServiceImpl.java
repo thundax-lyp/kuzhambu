@@ -12,7 +12,6 @@ import com.thundax.kuzhambu.system.application.core.command.MoveMenuCommand;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
-import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import com.thundax.kuzhambu.system.domain.core.repository.MenuRepository;
@@ -45,10 +44,10 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
 
     public List<Menu> list(MenuQuery query) {
         if (query != null && query.getIds() != null) {
-            return dao.listByIds(MenuIdCodec.toValues(query.getIds()));
+            return dao.listByIds(query.getIds());
         }
         return dao.list(
-                query == null ? null : MenuIdCodec.toValue(query.getParentId()),
+                query == null ? null : query.getParentId(),
                 query == null || query.getVisibility() == null
                         ? null
                         : query.getVisibility().value(),
@@ -57,7 +56,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
 
     public PageResult<Menu> page(MenuQuery query, PageQuery page) {
         return dao.page(
-                query == null ? null : MenuIdCodec.toValue(query.getParentId()),
+                query == null ? null : query.getParentId(),
                 query == null || query.getVisibility() == null
                         ? null
                         : query.getVisibility().value(),
@@ -104,7 +103,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
     @Transactional(rollbackFor = Exception.class)
     @AuditLog(type = "Menu", id = "#id == null ? null : #id.value()", action = AuditAction.DELETE, summary = "删除菜单")
     public int remove(MenuId id) {
-        dao.deleteMenuRole(MenuIdCodec.toValue(id));
+        dao.deleteMenuRole(id);
         Menu bean = this.get(id);
         if (bean == null) {
             return 0;
@@ -121,10 +120,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
     @Transactional(rollbackFor = Exception.class)
     @AuditLog(type = "Menu", id = "#command.fromId.value()", action = AuditAction.UPDATE, summary = "移动菜单")
     public void move(MoveMenuCommand command) {
-        dao.moveTreeNode(
-                MenuIdCodec.toValue(command.getFromId()),
-                MenuIdCodec.toValue(command.getToId()),
-                command.getMoveType());
+        dao.moveTreeNode(command.getFromId(), command.getToId(), command.getMoveType());
         notifyCacheChanged();
     }
 
@@ -133,7 +129,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
         return query != null
                 && query.getChildId() != null
                 && query.getAncestorId() != null
-                && dao.isChildOf(MenuIdCodec.toValue(query.getChildId()), MenuIdCodec.toValue(query.getAncestorId()));
+                && dao.isChildOf(query.getChildId(), query.getAncestorId());
     }
 
     private void notifyCacheChanged() {

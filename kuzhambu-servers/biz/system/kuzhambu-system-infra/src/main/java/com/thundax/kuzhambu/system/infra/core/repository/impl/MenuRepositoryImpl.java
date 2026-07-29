@@ -53,12 +53,12 @@ public class MenuRepositoryImpl implements MenuRepository {
     }
 
     @Override
-    public List<Menu> listByIds(List<Long> idList) {
+    public List<Menu> listByIds(List<MenuId> idList) {
         if (idList == null || idList.isEmpty()) {
             return new ArrayList<>();
         }
         LambdaQueryWrapper<MenuDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(MenuDO::getId, idList).orderByAsc(MenuDO::getLft);
+        wrapper.in(MenuDO::getId, MenuIdCodec.toValues(idList)).orderByAsc(MenuDO::getLft);
         List<Menu> menuList = MenuPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
         for (Menu menu : menuList) {
             cacheSupport.putById(menu);
@@ -67,15 +67,15 @@ public class MenuRepositoryImpl implements MenuRepository {
     }
 
     @Override
-    public List<Menu> list(Long parentId, String visibility, Integer maxRank) {
+    public List<Menu> list(MenuId parentId, String visibility, Integer maxRank) {
         return MenuPersistenceAssembler.toDomainList(
-                mapper.selectList(buildListWrapper(parentId, visibility, maxRank)));
+                mapper.selectList(buildListWrapper(MenuIdCodec.toValue(parentId), visibility, maxRank)));
     }
 
     @Override
-    public PageResult<Menu> page(Long parentId, String visibility, Integer maxRank, int pageNo, int pageSize) {
-        IPage<MenuDO> dataObjectPage =
-                mapper.selectPage(new Page<>(pageNo, pageSize), buildListWrapper(parentId, visibility, maxRank));
+    public PageResult<Menu> page(MenuId parentId, String visibility, Integer maxRank, int pageNo, int pageSize) {
+        IPage<MenuDO> dataObjectPage = mapper.selectPage(
+                new Page<>(pageNo, pageSize), buildListWrapper(MenuIdCodec.toValue(parentId), visibility, maxRank));
         return PageResult.of(
                 (int) dataObjectPage.getCurrent(),
                 (int) dataObjectPage.getSize(),
@@ -137,9 +137,11 @@ public class MenuRepositoryImpl implements MenuRepository {
     }
 
     @Override
-    public void moveTreeNode(Long fromId, Long toId, TreeNodeMoveType moveType) {
-        MenuDO fromNode = getTreeNode(fromId);
-        MenuDO toNode = getTreeNode(toId);
+    public void moveTreeNode(MenuId fromId, MenuId toId, TreeNodeMoveType moveType) {
+        Long fromIdValue = MenuIdCodec.toValue(fromId);
+        Long toIdValue = MenuIdCodec.toValue(toId);
+        MenuDO fromNode = getTreeNode(fromIdValue);
+        MenuDO toNode = getTreeNode(toIdValue);
 
         int newPosition;
         Long newParentId;
@@ -151,23 +153,23 @@ public class MenuRepositoryImpl implements MenuRepository {
             newParentId = toNode.getParentId();
         } else if (moveType == TreeNodeMoveType.INSIDE) {
             newPosition = toNode.getLft() + 1;
-            newParentId = toId;
+            newParentId = toIdValue;
         } else {
             newPosition = toNode.getRgt();
-            newParentId = toId;
+            newParentId = toIdValue;
         }
 
         moveTreeLfts(newPosition, treeSpan(fromNode));
         moveTreeRgts(newPosition, treeSpan(fromNode));
 
-        fromNode = getTreeNode(fromId);
+        fromNode = getTreeNode(fromIdValue);
         int offset = newPosition - fromNode.getLft();
         moveTreeNodes(fromNode.getLft(), fromNode.getRgt(), offset);
 
         moveTreeLfts(fromNode.getLft(), -treeSpan(fromNode));
         moveTreeRgts(fromNode.getLft(), -treeSpan(fromNode));
 
-        MenuDO parentUpdateDataObject = MenuPersistenceAssembler.toParentUpdateObject(fromId, newParentId);
+        MenuDO parentUpdateDataObject = MenuPersistenceAssembler.toParentUpdateObject(fromIdValue, newParentId);
         mapper.update(
                 null,
                 buildIdUpdateWrapper(parentUpdateDataObject)
@@ -176,9 +178,9 @@ public class MenuRepositoryImpl implements MenuRepository {
     }
 
     @Override
-    public boolean isChildOf(Long childId, Long parentId) {
-        MenuDO child = getTreeNode(childId);
-        MenuDO parent = getTreeNode(parentId);
+    public boolean isChildOf(MenuId childId, MenuId parentId) {
+        MenuDO child = getTreeNode(MenuIdCodec.toValue(childId));
+        MenuDO parent = getTreeNode(MenuIdCodec.toValue(parentId));
         return child != null && parent != null && child.getLft() > parent.getLft() && child.getRgt() < parent.getRgt();
     }
 
@@ -192,9 +194,9 @@ public class MenuRepositoryImpl implements MenuRepository {
     }
 
     @Override
-    public void deleteMenuRole(Long menuId) {
+    public void deleteMenuRole(MenuId menuId) {
         LambdaQueryWrapper<MenuRoleDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MenuRoleDO::getMenuId, menuId);
+        wrapper.eq(MenuRoleDO::getMenuId, MenuIdCodec.toValue(menuId));
         menuRoleMapper.delete(wrapper);
     }
 
