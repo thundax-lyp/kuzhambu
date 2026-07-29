@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `26-runbook-closure`：[26] 收口并清理强类型契约 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`、`TODO.md`
-    - 处理动作：完成实现和验证后删除临时 RUNBOOK，并按剩余工作收窄或清空 TODO。
-    - 验收点：PR 收口前 RUNBOOK 已删除或长期价值内容已迁移到治理/readiness 文档，`TODO.md` 不保留已完成任务。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
