@@ -18,7 +18,7 @@ import {
     KuzhambuSelect
 } from "@/components";
 
-import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
+import { AiCandidateBatchDrawer } from "@/pages/classics/common/ai-candidate-batch-drawer";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type {
     AiRefinementTaskCapability,
@@ -37,15 +37,15 @@ import type {
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
 import { isSameId } from "@/types/id";
-import { WangqiDocumentTable } from "./components/wangqi-document-table";
-import { WangqiDocumentBatchResults } from "./components/wangqi-document-batch-results";
-import { WangqiExportActions } from "./components/wangqi-export-actions";
-import { WangqiDocumentEditDrawer } from "./components/wangqi-document-edit-drawer";
-import type { WangqiQaTaskPair } from "./components/wangqi-qa-ai-modal";
-import { WangqiRefinementActions } from "./components/wangqi-refinement-actions";
-import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
-import { WangqiTimeline } from "./components/wangqi-timeline";
-import { WangqiVersionPanel } from "./components/wangqi-version-panel";
+import { WangqiDocumentTable } from "./wangqi-document-table";
+import { WangqiDocumentBatchResults } from "./wangqi-document-batch-results";
+import { WangqiExportActions } from "./wangqi-export-actions";
+import { WangqiDocumentEditDrawer } from "./wangqi-document-edit-drawer";
+import type { WangqiQaTaskPair } from "./wangqi-qa-ai-modal";
+import { WangqiRefinementActions } from "./wangqi-refinement-actions";
+import { WangqiStorageFilePanel } from "./wangqi-storage-file-panel";
+import { WangqiTimeline } from "./wangqi-timeline";
+import { WangqiVersionPanel } from "./wangqi-version-panel";
 import * as wangqiService from "./wangqi-service";
 import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-service";
 import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";

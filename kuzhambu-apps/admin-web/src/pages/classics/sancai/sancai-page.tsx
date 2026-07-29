@@ -16,10 +16,10 @@ import {
     KuzhambuSelect
 } from "@/components";
 
-import { SancaiCatalogTreePanel } from "./components/sancai-catalog-tree-panel";
-import { SancaiCategoryPanel } from "./components/sancai-category-panel";
-import { SancaiEntryPanel } from "./components/sancai-entry-panel";
-import { SancaiVolumePanel } from "./components/sancai-volume-panel";
+import { SancaiCatalogTreePanel } from "./sancai-catalog-tree-panel";
+import { SancaiCategoryPanel } from "./sancai-category-panel";
+import { SancaiEntryPanel } from "./sancai-entry-panel";
+import { SancaiVolumePanel } from "./sancai-volume-panel";
 import { useSancaiCatalogState } from "./hooks/use-sancai-catalog-state";
 
 import "./sancai-page.css";

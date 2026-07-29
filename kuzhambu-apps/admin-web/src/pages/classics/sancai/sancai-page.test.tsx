@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { queryClient } from "@/query/query-client";
-import { SancaiEntryList } from "./components/sancai-entry-panel/sancai-entry-list";
+import { SancaiEntryList } from "./sancai-entry-panel/sancai-entry-list";
 import { SancaiPage } from "./sancai-page";
 import type { SancaiEntryRecord } from "./sancai-types";
 
@@ -27,7 +27,7 @@ const { mockSancaiEntryPanel } = vi.hoisted(() => ({
     )
 }));
 
-vi.mock("./components/sancai-entry-panel", () => ({
+vi.mock("./sancai-entry-panel", () => ({
     SancaiEntryPanel: mockSancaiEntryPanel
 }));
 

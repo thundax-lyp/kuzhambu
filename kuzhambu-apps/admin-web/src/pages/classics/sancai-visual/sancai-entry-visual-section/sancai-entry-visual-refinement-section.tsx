@@ -5,8 +5,8 @@ import type {
     AiRefinementStreamEventRecord,
     AiRefinementTaskRecord
 } from "@/pages/classics/common/ai-refinement-task-types";
-import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
-import { AiRefinementStreamPanel } from "@/pages/classics/common/components/ai-refinement-stream-panel";
+import { AiCandidatePanel } from "@/pages/classics/common/ai-candidate-panel";
+import { AiRefinementStreamPanel } from "@/pages/classics/common/ai-refinement-stream-panel";
 
 interface SancaiEntryVisualRefinementSectionProps {
     entryId: string;
