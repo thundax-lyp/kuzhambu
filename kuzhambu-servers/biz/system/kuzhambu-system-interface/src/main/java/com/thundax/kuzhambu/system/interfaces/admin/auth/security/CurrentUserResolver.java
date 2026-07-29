@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import java.util.Set;
@@ -15,9 +15,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class CurrentUserResolver {
 
-    private final UserApplicationService userService;
+    private final UserManagementApplicationService userService;
 
-    public CurrentUserResolver(UserApplicationService userService) {
+    public CurrentUserResolver(UserManagementApplicationService userService) {
         this.userService = userService;
     }
 

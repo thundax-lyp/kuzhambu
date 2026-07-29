@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
@@ -149,7 +149,7 @@ class AccessTokenAuthenticationFilterTest {
         }
     }
 
-    private static final class DeletedUserService implements UserApplicationService {
+    private static final class DeletedUserService implements UserManagementApplicationService {
 
         @Override
         public User get(GetUserQuery query) {

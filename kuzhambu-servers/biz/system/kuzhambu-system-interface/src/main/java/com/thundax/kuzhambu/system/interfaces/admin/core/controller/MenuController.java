@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.system.application.core.command.MoveMenuCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveMenuCommand;
 import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
-import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.MenuManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.enums.MenuVisibility;
@@ -46,10 +46,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class MenuController {
 
-    private final MenuApplicationService menuService;
+    private final MenuManagementApplicationService menuService;
 
     @Autowired
-    public MenuController(MenuApplicationService menuService) {
+    public MenuController(MenuManagementApplicationService menuService) {
         this.menuService = menuService;
     }
 

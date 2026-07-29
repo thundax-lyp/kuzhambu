@@ -42,8 +42,8 @@ import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.RoleManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.utils.SysApiUtils;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
@@ -121,10 +121,10 @@ public class UserController {
     private static final String USER_RANK_DICT_TYPE = "user_rank";
     private static final String USER_STATUS_DICT_TYPE = "user_status";
 
-    private final UserApplicationService userService;
+    private final UserManagementApplicationService userService;
     private final DepartmentApplicationService departmentService;
     private final DictApplicationService dictService;
-    private final RoleApplicationService roleService;
+    private final RoleManagementApplicationService roleService;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final PrincipalCredentialApplicationService principalCredentialService;
     private final PreAuthSessionApplicationService preAuthSessionService;
@@ -134,10 +134,10 @@ public class UserController {
 
     @Autowired
     public UserController(
-            UserApplicationService userService,
+            UserManagementApplicationService userService,
             DepartmentApplicationService departmentService,
             DictApplicationService dictService,
-            RoleApplicationService roleService,
+            RoleManagementApplicationService roleService,
             PrincipalIdentityApplicationService principalIdentityService,
             PrincipalCredentialApplicationService principalCredentialService,
             PreAuthSessionApplicationService preAuthSessionService,

@@ -15,7 +15,7 @@ import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
@@ -45,14 +45,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class LogController {
 
     private final LogApplicationService logService;
-    private final UserApplicationService userService;
+    private final UserManagementApplicationService userService;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final DepartmentApplicationService departmentService;
 
     @Autowired
     public LogController(
             LogApplicationService logService,
-            UserApplicationService userService,
+            UserManagementApplicationService userService,
             PrincipalIdentityApplicationService principalIdentityService,
             DepartmentApplicationService departmentService) {
         this.logService = logService;

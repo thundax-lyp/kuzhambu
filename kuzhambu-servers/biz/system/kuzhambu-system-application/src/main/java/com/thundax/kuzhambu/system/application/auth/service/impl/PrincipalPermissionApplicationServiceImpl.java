@@ -14,9 +14,9 @@ import com.thundax.kuzhambu.system.application.auth.service.PrincipalPermissionA
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.impl.MenuApplicationServiceImpl;
-import com.thundax.kuzhambu.system.application.core.service.impl.RoleApplicationServiceImpl;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.impl.MenuManagementApplicationServiceImpl;
+import com.thundax.kuzhambu.system.application.core.service.impl.RoleManagementApplicationServiceImpl;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAccessTokenRepository;
@@ -41,8 +41,8 @@ import org.springframework.util.Assert;
 @Service
 public class PrincipalPermissionApplicationServiceImpl
         implements PrincipalPermissionApplicationService,
-                RoleApplicationServiceImpl.CacheChangedListener,
-                MenuApplicationServiceImpl.CacheChangedListener {
+                RoleManagementApplicationServiceImpl.CacheChangedListener,
+                MenuManagementApplicationServiceImpl.CacheChangedListener {
 
     private static final String SESSION_VALUE_PERMISSIONS = "PERMISSIONS";
     private static final String SESSION_VALUE_PERMISSION_VERSION = "PERMISSION_VERSION";
@@ -50,7 +50,7 @@ public class PrincipalPermissionApplicationServiceImpl
 
     private final PrincipalAccessTokenRepository principalAccessTokenRepository;
     private final PrincipalAuthSessionRepository principalAuthSessionRepository;
-    private final UserApplicationService userService;
+    private final UserManagementApplicationService userService;
     private final CurrentUserApplicationService currentUserService;
     private final PermissionMatcher permissionMatcher = new PrefixPermissionMatcher();
     private final AtomicLong permissionVersion = new AtomicLong();
@@ -58,7 +58,7 @@ public class PrincipalPermissionApplicationServiceImpl
     public PrincipalPermissionApplicationServiceImpl(
             PrincipalAccessTokenRepository principalAccessTokenRepository,
             PrincipalAuthSessionRepository principalAuthSessionRepository,
-            UserApplicationService userService,
+            UserManagementApplicationService userService,
             CurrentUserApplicationService currentUserService) {
         this.principalAccessTokenRepository = principalAccessTokenRepository;
         this.principalAuthSessionRepository = principalAuthSessionRepository;

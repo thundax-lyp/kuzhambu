@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import java.util.List;
 
-public interface UserApplicationService {
+public interface UserManagementApplicationService {
 
     User get(GetUserQuery query);
 

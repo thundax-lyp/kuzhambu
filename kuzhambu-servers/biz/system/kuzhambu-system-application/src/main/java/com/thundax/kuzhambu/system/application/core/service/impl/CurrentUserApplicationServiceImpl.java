@@ -31,9 +31,9 @@ import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.MenuManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.RoleManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.utils.SysApiUtils;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
@@ -84,17 +84,17 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     private static final long MAX_AVATAR_PIXELS = 4096L * 4096L;
     private static final float IMAGE_QUALITY = 0.8f;
 
-    private final UserApplicationService userService;
-    private final RoleApplicationService roleService;
-    private final MenuApplicationService menuService;
+    private final UserManagementApplicationService userService;
+    private final RoleManagementApplicationService roleService;
+    private final MenuManagementApplicationService menuService;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final PrincipalCredentialApplicationService principalCredentialService;
     private final StorageFacade storageFacade;
 
     public CurrentUserApplicationServiceImpl(
-            UserApplicationService userService,
-            RoleApplicationService roleService,
-            MenuApplicationService menuService,
+            UserManagementApplicationService userService,
+            RoleManagementApplicationService roleService,
+            MenuManagementApplicationService menuService,
             PrincipalIdentityApplicationService principalIdentityService,
             PrincipalCredentialApplicationService principalCredentialService,
             StorageFacade storageFacade) {

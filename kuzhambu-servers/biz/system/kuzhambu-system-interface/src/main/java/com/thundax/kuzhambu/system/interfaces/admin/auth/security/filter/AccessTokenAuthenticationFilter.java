@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.exception.WebErrorCode;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
@@ -43,14 +43,14 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final AdminAuthService authService;
     private final PermissionService permissionService;
-    private final UserApplicationService userService;
+    private final UserManagementApplicationService userService;
     private final ObjectMapper objectMapper;
 
     public AccessTokenAuthenticationFilter(
             KuzhambuProperties.AccessTokenFilterProperties properties,
             AdminAuthService authService,
             PermissionService permissionService,
-            UserApplicationService userService,
+            UserManagementApplicationService userService,
             ObjectMapper objectMapper) {
         this(properties.getExcludePath(), authService, permissionService, userService, objectMapper);
     }
@@ -59,7 +59,7 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
             List<String> excludePaths,
             AdminAuthService authService,
             PermissionService permissionService,
-            UserApplicationService userService,
+            UserManagementApplicationService userService,
             ObjectMapper objectMapper) {
         this.excludePatternList.addAll(excludePaths);
         this.authService = authService;

@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.system.application.core.command.MoveMenuCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveMenuCommand;
 import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
-import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.MenuManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
@@ -26,12 +26,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class MenuApplicationServiceImpl implements MenuApplicationService {
+public class MenuManagementApplicationServiceImpl implements MenuManagementApplicationService {
 
     private final MenuRepository dao;
     private final ObjectProvider<List<CacheChangedListener>> cacheChangedListeners;
 
-    public MenuApplicationServiceImpl(
+    public MenuManagementApplicationServiceImpl(
             MenuRepository dao, ObjectProvider<List<CacheChangedListener>> cacheChangedListeners) {
         this.dao = dao;
         this.cacheChangedListeners = cacheChangedListeners;

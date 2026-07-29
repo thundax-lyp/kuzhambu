@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.system.application.auth.result.AdminTokenRefreshResu
 import com.thundax.kuzhambu.system.application.auth.service.AdminSessionTokenApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
@@ -57,7 +57,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
     private final AuthProperties properties;
     private final PrincipalAuthSessionRepository principalAuthSessionRepository;
     private final PrincipalIdentityApplicationService principalIdentityService;
-    private final UserApplicationService userService;
+    private final UserManagementApplicationService userService;
     private final ObjectProvider<PrincipalAccessTokenRepository> principalAccessTokenRepositoryProvider;
     private final ObjectProvider<PrincipalRefreshTokenRepository> principalRefreshTokenRepositoryProvider;
     private final ObjectProvider<PrincipalLoginEventRepository> principalLoginEventRepositoryProvider;
@@ -66,7 +66,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
             AuthProperties properties,
             PrincipalAuthSessionRepository principalAuthSessionRepository,
             PrincipalIdentityApplicationService principalIdentityService,
-            UserApplicationService userService,
+            UserManagementApplicationService userService,
             ObjectProvider<PrincipalAccessTokenRepository> principalAccessTokenRepositoryProvider,
             ObjectProvider<PrincipalRefreshTokenRepository> principalRefreshTokenRepositoryProvider,
             ObjectProvider<PrincipalLoginEventRepository> principalLoginEventRepositoryProvider) {

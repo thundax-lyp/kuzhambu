@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import java.util.List;
 
-public interface RoleApplicationService {
+public interface RoleManagementApplicationService {
 
     Role get(GetRoleQuery query);
 

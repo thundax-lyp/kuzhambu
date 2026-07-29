@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import java.util.List;
 
-public interface MenuApplicationService {
+public interface MenuManagementApplicationService {
 
     Menu get(GetMenuQuery query);
 

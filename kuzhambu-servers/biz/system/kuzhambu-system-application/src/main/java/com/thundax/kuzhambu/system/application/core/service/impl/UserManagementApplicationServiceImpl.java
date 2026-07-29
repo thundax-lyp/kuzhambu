@@ -11,7 +11,7 @@ import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.handler.UserDeleteCascadeHandler;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
@@ -28,16 +28,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class UserApplicationServiceImpl implements UserApplicationService {
+public class UserManagementApplicationServiceImpl implements UserManagementApplicationService {
 
     private final UserRepository dao;
     private final List<UserDeleteCascadeHandler> deleteCascadeHandlers;
-    private final ObjectProvider<List<RoleApplicationServiceImpl.CacheChangedListener>> roleCacheChangedListeners;
+    private final ObjectProvider<List<RoleManagementApplicationServiceImpl.CacheChangedListener>>
+            roleCacheChangedListeners;
 
-    public UserApplicationServiceImpl(
+    public UserManagementApplicationServiceImpl(
             UserRepository dao,
             ObjectProvider<List<UserDeleteCascadeHandler>> deleteCascadeHandlers,
-            ObjectProvider<List<RoleApplicationServiceImpl.CacheChangedListener>> roleCacheChangedListeners) {
+            ObjectProvider<List<RoleManagementApplicationServiceImpl.CacheChangedListener>> roleCacheChangedListeners) {
         this.dao = dao;
         this.deleteCascadeHandlers = deleteCascadeHandlers == null
                 ? Collections.emptyList()
@@ -185,10 +186,11 @@ public class UserApplicationServiceImpl implements UserApplicationService {
     }
 
     private void notifyRoleCacheChanged() {
-        roleCacheChangedListeners().forEach(RoleApplicationServiceImpl.CacheChangedListener::onRoleCacheChanged);
+        roleCacheChangedListeners()
+                .forEach(RoleManagementApplicationServiceImpl.CacheChangedListener::onRoleCacheChanged);
     }
 
-    private List<RoleApplicationServiceImpl.CacheChangedListener> roleCacheChangedListeners() {
+    private List<RoleManagementApplicationServiceImpl.CacheChangedListener> roleCacheChangedListeners() {
         return roleCacheChangedListeners == null
                 ? Collections.emptyList()
                 : roleCacheChangedListeners.getIfAvailable(Collections::emptyList);

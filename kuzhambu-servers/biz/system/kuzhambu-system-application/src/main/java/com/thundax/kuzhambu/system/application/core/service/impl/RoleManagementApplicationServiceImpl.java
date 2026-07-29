@@ -17,7 +17,7 @@ import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
 import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
-import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.RoleManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
@@ -35,14 +35,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class RoleApplicationServiceImpl implements RoleApplicationService {
+public class RoleManagementApplicationServiceImpl implements RoleManagementApplicationService {
 
     private static final int PRIORITY_STEP = 1;
 
     private final RoleRepository dao;
     private final ObjectProvider<List<CacheChangedListener>> cacheChangedListeners;
 
-    public RoleApplicationServiceImpl(
+    public RoleManagementApplicationServiceImpl(
             RoleRepository dao, ObjectProvider<List<CacheChangedListener>> cacheChangedListeners) {
         this.dao = dao;
         this.cacheChangedListeners = cacheChangedListeners;

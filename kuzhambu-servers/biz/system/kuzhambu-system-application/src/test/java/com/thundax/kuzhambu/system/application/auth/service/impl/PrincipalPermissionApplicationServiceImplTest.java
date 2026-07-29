@@ -11,7 +11,7 @@ import com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCom
 import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAuthSessionIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
@@ -38,7 +38,7 @@ class PrincipalPermissionApplicationServiceImplTest {
     void shouldReloadPermissionsWhenPermissionVersionChanged() {
         PrincipalAccessTokenRepository accessTokenRepository = mock(PrincipalAccessTokenRepository.class);
         PrincipalAuthSessionRepository authSessionRepository = mock(PrincipalAuthSessionRepository.class);
-        UserApplicationService userService = mock(UserApplicationService.class);
+        UserManagementApplicationService userService = mock(UserManagementApplicationService.class);
         CurrentUserApplicationService currentUserService = mock(CurrentUserApplicationService.class);
         PrincipalPermissionApplicationServiceImpl permissionService = new PrincipalPermissionApplicationServiceImpl(
                 accessTokenRepository, authSessionRepository, userService, currentUserService);

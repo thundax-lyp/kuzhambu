@@ -20,7 +20,7 @@ import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthApplica
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalLoginEvent;
@@ -56,7 +56,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     private final AdminSessionTokenApplicationService adminTokenService;
     private final PrincipalAuthApplicationService principalAuthService;
     private final PrincipalIdentityApplicationService principalIdentityService;
-    private final UserApplicationService userService;
+    private final UserManagementApplicationService userService;
 
     @Autowired(required = false)
     private WecomLoginProvider wecomLoginProvider;
@@ -70,7 +70,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             AdminSessionTokenApplicationService adminTokenService,
             PrincipalAuthApplicationService principalAuthService,
             PrincipalIdentityApplicationService principalIdentityService,
-            UserApplicationService userService) {
+            UserManagementApplicationService userService) {
         this.loginProperties = loginProperties;
         this.permissionService = permissionService;
         this.adminTokenService = adminTokenService;

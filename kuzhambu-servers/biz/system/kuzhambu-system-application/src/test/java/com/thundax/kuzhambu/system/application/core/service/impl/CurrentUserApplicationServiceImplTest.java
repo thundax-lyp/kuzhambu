@@ -31,9 +31,9 @@ import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
-import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
-import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.MenuManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.RoleManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
@@ -171,9 +171,9 @@ class CurrentUserApplicationServiceImplTest {
 
     @Test
     void listAccessibleMenusShouldBatchLoadMenusForNormalUser() {
-        UserApplicationService userService = mock(UserApplicationService.class);
-        RoleApplicationService roleService = mock(RoleApplicationService.class);
-        MenuApplicationService menuService = mock(MenuApplicationService.class);
+        UserManagementApplicationService userService = mock(UserManagementApplicationService.class);
+        RoleManagementApplicationService roleService = mock(RoleManagementApplicationService.class);
+        MenuManagementApplicationService menuService = mock(MenuManagementApplicationService.class);
         CurrentUserApplicationServiceImpl service =
                 service(userService, roleService, menuService, mock(StorageFacade.class));
 
@@ -199,16 +199,16 @@ class CurrentUserApplicationServiceImplTest {
 
     private static CurrentUserApplicationServiceImpl service(StorageFacade storageFacade) {
         return service(
-                mock(UserApplicationService.class),
-                mock(RoleApplicationService.class),
-                mock(MenuApplicationService.class),
+                mock(UserManagementApplicationService.class),
+                mock(RoleManagementApplicationService.class),
+                mock(MenuManagementApplicationService.class),
                 storageFacade);
     }
 
     private static CurrentUserApplicationServiceImpl service(
-            UserApplicationService userService,
-            RoleApplicationService roleService,
-            MenuApplicationService menuService,
+            UserManagementApplicationService userService,
+            RoleManagementApplicationService roleService,
+            MenuManagementApplicationService menuService,
             StorageFacade storageFacade) {
         return new CurrentUserApplicationServiceImpl(
                 userService,
