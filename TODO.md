@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `09-core-user-contract`：[09] 强类型化 User get/remove 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/GetUserQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/RemoveUserCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/UserApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/UserApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/UserController.java`
-    - 处理动作：新增 `GetUserQuery.id` 和 `RemoveUserCommand.id`，替换 `get(UserId)` 与 `remove(UserId)`。
-    - 验收点：User application service 的 get/remove 均使用 Query/Command，用户详情、删除用户接口保持 HTTP 契约不变。
-    - 重要度：8/10
-
 - [ ] `10-core-role-contract`：[10] 强类型化 Role get/remove 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

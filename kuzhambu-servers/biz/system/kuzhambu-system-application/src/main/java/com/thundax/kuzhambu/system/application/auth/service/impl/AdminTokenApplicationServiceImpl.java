@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.system.application.auth.result.AdminTokenQueryResult
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenRefreshResult;
 import com.thundax.kuzhambu.system.application.auth.service.AdminTokenApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
@@ -408,7 +409,7 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
     }
 
     private User getUser(UserId userId) {
-        return userService.get(userId);
+        return userService.get(new GetUserQuery(userId));
     }
 
     private String getAccountLoginName(UserId userId) {

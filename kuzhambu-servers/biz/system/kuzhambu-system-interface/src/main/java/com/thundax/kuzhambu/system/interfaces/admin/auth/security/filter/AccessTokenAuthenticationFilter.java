@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.exception.WebErrorCode;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
@@ -100,7 +101,8 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
             writeError(response);
             return;
         }
-        User currentUser = userService.get(UserIdCodec.toDomain(Long.valueOf(accessToken.getUserId())));
+        User currentUser =
+                userService.get(new GetUserQuery(UserIdCodec.toDomain(Long.valueOf(accessToken.getUserId()))));
         if (currentUser == null || currentUser.getId() == null || !currentUser.isEnable()) {
             writeError(response);
             return;

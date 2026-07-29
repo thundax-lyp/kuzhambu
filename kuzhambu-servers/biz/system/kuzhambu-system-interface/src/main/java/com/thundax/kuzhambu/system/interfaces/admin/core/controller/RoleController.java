@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusComm
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
@@ -369,7 +370,7 @@ public class RoleController {
         }
 
         return roleService.listRoleUsers(roleQuery(request.getId())).stream()
-                .map(user -> toUserResponse(userService.get(user.getId())))
+                .map(user -> toUserResponse(userService.get(new GetUserQuery(user.getId()))))
                 .collect(Collectors.toList());
     }
 
@@ -433,7 +434,7 @@ public class RoleController {
         }
 
         for (RoleUserRequest userRequest : request.getUsers()) {
-            User userBean = userService.get(UserIdCodec.toDomain(userRequest.getId()));
+            User userBean = userService.get(new GetUserQuery(UserIdCodec.toDomain(userRequest.getId())));
             if (userBean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }

@@ -5,6 +5,8 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
@@ -13,7 +15,7 @@ import java.util.List;
 
 public interface UserApplicationService {
 
-    User get(UserId id);
+    User get(GetUserQuery query);
 
     List<User> list(UserQuery query);
 
@@ -27,7 +29,7 @@ public interface UserApplicationService {
 
     void changeInfo(ChangeUserInfoCommand command);
 
-    int remove(UserId id);
+    int remove(RemoveUserCommand command);
 
     int changeStatus(ChangeUserStatusCommand command);
 

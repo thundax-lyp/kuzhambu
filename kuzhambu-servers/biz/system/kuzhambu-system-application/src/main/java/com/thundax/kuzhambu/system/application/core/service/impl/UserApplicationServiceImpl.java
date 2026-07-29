@@ -8,6 +8,8 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.handler.UserDeleteCascadeHandler;
@@ -43,7 +45,8 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         this.roleCacheChangedListeners = roleCacheChangedListeners;
     }
 
-    public User get(UserId id) {
+    public User get(GetUserQuery query) {
+        UserId id = query == null ? null : query.getId();
         if (id == null) {
             return null;
         }
@@ -149,9 +152,14 @@ public class UserApplicationServiceImpl implements UserApplicationService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "User", id = "#id == null ? null : #id.value()", action = AuditAction.DELETE, summary = "删除后台用户")
-    public int remove(UserId id) {
-        User user = get(id);
+    @AuditLog(
+            type = "User",
+            id = "#command.id == null ? null : #command.id.value()",
+            action = AuditAction.DELETE,
+            summary = "删除后台用户")
+    public int remove(RemoveUserCommand command) {
+        UserId id = command == null ? null : command.getId();
+        User user = get(new GetUserQuery(id));
         if (user == null) {
             return 0;
         }

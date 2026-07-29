@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAuthSessionIdCodec;
@@ -61,7 +62,7 @@ class PermissionApplicationServiceImplTest {
 
         when(accessTokenRepository.getByToken("token")).thenReturn(accessToken);
         when(authSessionRepository.getById(sessionId)).thenReturn(session);
-        when(userService.get(UserIdCodec.toDomain(1L))).thenReturn(user);
+        when(userService.get(any(GetUserQuery.class))).thenReturn(user);
         when(currentUserService.listAccessibleMenus(any()))
                 .thenReturn(List.of(menu("system:user:view")))
                 .thenReturn(List.of(menu("system:role:view")));

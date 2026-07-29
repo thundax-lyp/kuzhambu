@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCom
 import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PermissionApplicationService;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.impl.MenuApplicationServiceImpl;
@@ -135,7 +136,7 @@ public class PermissionApplicationServiceImpl
     }
 
     private Set<PermissionCode> loadPermissions(String userId) {
-        User user = userService.get(UserIdCodec.toDomain(Long.valueOf(userId)));
+        User user = userService.get(new GetUserQuery(UserIdCodec.toDomain(Long.valueOf(userId))));
         Assert.notNull(user, "user can not be null");
 
         Set<PermissionCode> permissions = new HashSet<>();

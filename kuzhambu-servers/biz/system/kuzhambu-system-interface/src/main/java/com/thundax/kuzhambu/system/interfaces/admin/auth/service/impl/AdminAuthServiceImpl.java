@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.system.application.auth.service.AdminTokenApplicatio
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
@@ -359,7 +360,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private User getUser(UserId userId) {
-        return userService.get(userId);
+        return userService.get(new GetUserQuery(userId));
     }
 
     private String getAccountLoginName(UserId userId) {

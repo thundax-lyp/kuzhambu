@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
@@ -26,7 +27,7 @@ public class CurrentUserResolver {
             return new User();
         }
         try {
-            User user = userService.get(UserIdCodec.toDomain(Long.valueOf(subjectId)));
+            User user = userService.get(new GetUserQuery(UserIdCodec.toDomain(Long.valueOf(subjectId))));
             return user == null ? new User() : user;
         } catch (NumberFormatException e) {
             return new User();

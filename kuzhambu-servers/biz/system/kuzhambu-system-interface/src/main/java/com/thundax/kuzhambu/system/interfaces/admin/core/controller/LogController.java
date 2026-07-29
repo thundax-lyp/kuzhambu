@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
@@ -87,7 +88,7 @@ public class LogController {
         if (log == null || log.getUserId() == null) {
             return null;
         }
-        return userService.get(log.getUserId());
+        return userService.get(new GetUserQuery(log.getUserId()));
     }
 
     private String getAccountLoginName(User user) {

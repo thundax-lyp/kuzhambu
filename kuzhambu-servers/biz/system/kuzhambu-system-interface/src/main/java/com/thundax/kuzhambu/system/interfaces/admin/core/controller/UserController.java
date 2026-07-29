@@ -29,8 +29,10 @@ import com.thundax.kuzhambu.system.application.auth.utils.PasswordHelper;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
@@ -163,7 +165,7 @@ public class UserController {
     @PostMapping(value = "get")
     @WrappedApiResponse
     public UserResponse get(@Valid @RequestBody UserIdRequest request) {
-        User bean = userService.get(UserIdCodec.toDomain(request.getId()));
+        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -267,7 +269,7 @@ public class UserController {
         String encryptedPassword = PasswordHelper.encrypt(request.getLoginPass());
 
         if (entity.getId() != null) {
-            User bean = userService.get(entity.getId());
+            User bean = userService.get(getUserQuery(entity.getId()));
             if (bean != null) {
                 throw AdminResponseExceptions.objectExists();
             }
@@ -309,7 +311,7 @@ public class UserController {
         }
         validateUniqueContact(request);
 
-        User bean = userService.get(UserIdCodec.toDomain(request.getId()));
+        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -348,7 +350,7 @@ public class UserController {
     @PostMapping(value = "avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @WrappedApiResponse
     public Boolean uploadAvatar(@RequestParam("id") String id, MultipartFile avatar) {
-        User bean = userService.get(UserIdCodec.toDomain(Long.valueOf(id)));
+        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(Long.valueOf(id))));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -375,7 +377,7 @@ public class UserController {
     @PostMapping(value = "avatar/delete")
     @WrappedApiResponse
     public Boolean deleteAvatar(@Valid @RequestBody UserAvatarRequest request) {
-        User bean = userService.get(UserIdCodec.toDomain(request.getId()));
+        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -416,7 +418,7 @@ public class UserController {
 
         List<ChangeUserStatusCommand> commandList = new ArrayList<>();
         for (UserStatusRequest request : RequestListHelper.present(list)) {
-            User bean = userService.get(UserIdCodec.toDomain(request.getId()));
+            User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -452,7 +454,7 @@ public class UserController {
 
         List<UserId> idList = new ArrayList<>();
         for (UserIdRequest request : RequestListHelper.present(list)) {
-            User bean = userService.get(UserIdCodec.toDomain(request.getId()));
+            User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -463,7 +465,7 @@ public class UserController {
             throw AdminResponseExceptions.invalidParameter("list");
         }
 
-        idList.forEach(userService::remove);
+        idList.forEach(id -> userService.remove(new RemoveUserCommand(id)));
 
         return true;
     }
@@ -726,6 +728,10 @@ public class UserController {
         UserQuery query = new UserQuery();
         query.setId(userId);
         return query;
+    }
+
+    private GetUserQuery getUserQuery(UserId userId) {
+        return new GetUserQuery(userId);
     }
 
     private String getAccountLoginName(UserId userId) {
