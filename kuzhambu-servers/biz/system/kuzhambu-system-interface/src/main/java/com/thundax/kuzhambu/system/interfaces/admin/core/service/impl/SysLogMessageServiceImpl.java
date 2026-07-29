@@ -126,7 +126,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
         private CreateLogCommand toCreateCommand() {
             return new CreateLogCommand(
                     LogIdCodec.toDomain(id),
-                    userId,
+                    UserIdCodec.toDomain(userId),
                     type == null ? null : LogType.from(type),
                     logDate,
                     title,

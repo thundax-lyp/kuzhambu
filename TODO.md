@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `15-create-log-user-id`：[15] 强类型化 CreateLogCommand.userId 字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/CreateLogCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/LogApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/LogApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/service/impl/SysLogMessageServiceImpl.java`
-    - 处理动作：将 `CreateLogCommand.userId` 从 `String` 改为 `UserId`，把字符串到值对象转换移动到 interface 层。
-    - 验收点：`LogApplicationServiceImpl.toLog(...)` 不再调用 `UserIdCodec.toDomain(command.getUserId())`。
-    - 重要度：8/10
-
 - [ ] `16-current-user-avatar-query`：[16] 强类型化当前用户头像查询参数
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

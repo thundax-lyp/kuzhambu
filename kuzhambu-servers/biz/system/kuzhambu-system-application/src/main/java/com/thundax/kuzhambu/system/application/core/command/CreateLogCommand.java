@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.system.application.core.command;
 
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CreateLogCommand {
     private LogId id;
-    private String userId;
+    private UserId userId;
     private LogType type;
     private Date logDate;
     private String title;

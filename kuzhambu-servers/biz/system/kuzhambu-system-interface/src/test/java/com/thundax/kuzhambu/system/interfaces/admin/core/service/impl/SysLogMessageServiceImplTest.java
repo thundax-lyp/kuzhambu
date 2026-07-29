@@ -65,7 +65,7 @@ class SysLogMessageServiceImplTest {
         service.consumeLog(payload);
 
         assertNotNull(logService.command);
-        assertEquals("1", logService.command.getUserId());
+        assertEquals(UserIdCodec.toDomain(1L), logService.command.getUserId());
         assertEquals(LogType.ACCESS, logService.command.getType());
         assertEquals(logDate, logService.command.getLogDate());
         assertEquals("系统-登录-成功", logService.command.getTitle());

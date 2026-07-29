@@ -8,7 +8,6 @@ import com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand;
 import com.thundax.kuzhambu.system.application.core.query.GetLogQuery;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
-import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
@@ -93,7 +92,7 @@ public class LogApplicationServiceImpl implements LogApplicationService {
     private Log toLog(CreateLogCommand command) {
         Log log = new Log();
         log.setId(command.getId());
-        log.setUserId(UserIdCodec.toDomain(command.getUserId()));
+        log.setUserId(command.getUserId());
         log.setType(command.getType());
         log.setLogDate(command.getLogDate());
         log.setTitle(command.getTitle());
