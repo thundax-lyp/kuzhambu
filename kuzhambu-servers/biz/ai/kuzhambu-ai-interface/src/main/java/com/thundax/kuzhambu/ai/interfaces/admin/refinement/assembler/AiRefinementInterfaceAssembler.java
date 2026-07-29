@@ -7,6 +7,8 @@ import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
@@ -54,12 +56,15 @@ public final class AiRefinementInterfaceAssembler {
             return AiRefinementResponses.CandidateResultResponse.builder().build();
         }
         return AiRefinementResponses.CandidateResultResponse.builder()
-                .callId(result.getCallId())
-                .callIdText(longText(result.getCallId()))
-                .candidateId(result.getCandidateId())
-                .candidateIdText(longText(result.getCandidateId()))
-                .status(result.getStatus())
-                .capability(result.getCapability())
+                .callId(AiCallIdCodec.toValue(result.getCallId()))
+                .callIdText(longText(AiCallIdCodec.toValue(result.getCallId())))
+                .candidateId(AiCandidateIdCodec.toValue(result.getCandidateId()))
+                .candidateIdText(longText(AiCandidateIdCodec.toValue(result.getCandidateId())))
+                .status(result.getStatus() == null ? null : result.getStatus().name())
+                .capability(
+                        result.getCapability() == null
+                                ? null
+                                : result.getCapability().value())
                 .failureStage(result.getFailureStage())
                 .resultFormat(result.getResultFormat())
                 .resultPayload(result.getResultPayload())

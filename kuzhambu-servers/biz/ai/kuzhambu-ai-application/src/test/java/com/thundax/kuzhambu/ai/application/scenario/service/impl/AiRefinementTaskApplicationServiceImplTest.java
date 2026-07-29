@@ -49,10 +49,10 @@ class AiRefinementTaskApplicationServiceImplTest {
     void addTaskShouldCreateSingleUnitBatchJobAndRecordSuccess() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_TRANSLATE.value(),
+                new AiCallId(101L),
+                new AiCandidateId(201L),
+                AiInvocationStatus.SUCCEEDED,
+                AiBusinessCapability.CLASSICS_TRANSLATE,
                 null,
                 "TEXT",
                 "译文",
@@ -76,10 +76,10 @@ class AiRefinementTaskApplicationServiceImplTest {
     void addTaskShouldUseTypedCapabilityBeforeCreatingBatchJob() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_TRANSLATE.value(),
+                new AiCallId(101L),
+                new AiCandidateId(201L),
+                AiInvocationStatus.SUCCEEDED,
+                AiBusinessCapability.CLASSICS_TRANSLATE,
                 null,
                 "TEXT",
                 "译文",
@@ -99,10 +99,10 @@ class AiRefinementTaskApplicationServiceImplTest {
     void addTaskShouldUseTypedFusionCapabilityAndInvokeFusionUseCase() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION.value(),
+                new AiCallId(101L),
+                new AiCandidateId(201L),
+                AiInvocationStatus.SUCCEEDED,
+                AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION,
                 null,
                 "TEXT",
                 "融合说明",
@@ -123,10 +123,10 @@ class AiRefinementTaskApplicationServiceImplTest {
     void addTaskShouldExecuteOnlyAfterTransactionCommitWhenSynchronizationIsActive() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                new AiCallId(101L),
+                new AiCandidateId(201L),
+                AiInvocationStatus.SUCCEEDED,
+                AiBusinessCapability.CLASSICS_SUMMARY,
                 null,
                 "TEXT",
                 "摘要",
@@ -157,10 +157,10 @@ class AiRefinementTaskApplicationServiceImplTest {
     void addTaskShouldRecordFailureThroughBatchJobRule() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "FAILED",
-                AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value(),
+                new AiCallId(101L),
+                new AiCandidateId(201L),
+                AiInvocationStatus.FAILED,
+                AiBusinessCapability.CLASSICS_IMAGE_GENERATE,
                 "WORKER_STREAM",
                 null,
                 null,
@@ -183,10 +183,10 @@ class AiRefinementTaskApplicationServiceImplTest {
     void addTaskShouldPreservePartialResultStatus() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "PARTIAL",
-                AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value(),
+                new AiCallId(101L),
+                new AiCandidateId(201L),
+                AiInvocationStatus.PARTIAL,
+                AiBusinessCapability.CLASSICS_IMAGE_GENERATE,
                 "WORKER_RESULT",
                 "TEXT",
                 "partial",
@@ -208,10 +208,10 @@ class AiRefinementTaskApplicationServiceImplTest {
     void streamTaskEventsShouldPreservePartialTerminalStatus() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "PARTIAL",
-                AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value(),
+                new AiCallId(101L),
+                new AiCandidateId(201L),
+                AiInvocationStatus.PARTIAL,
+                AiBusinessCapability.CLASSICS_IMAGE_GENERATE,
                 "WORKER_RESULT",
                 "TEXT",
                 "partial",
