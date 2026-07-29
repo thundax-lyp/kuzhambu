@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `05-storage-stored-object-entity`：强类型化 StoredObject 和引用实体字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/entity/StoredObject.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/entity/StoredObjectReference.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/persistence/assembler/StoragePersistenceAssembler.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/cache/StorageCacheSupport.java`
-    - 处理动作：将 `mimeType`、`bucketName`、`objectKey`、`size`、`ownerParams` 改为目标值对象并在持久化和缓存边界转换。
-    - 验收点：`referenceOwnerType` 仍为展示/查询用 `String`，DO 和 cache DTO 仍使用基础类型。
-    - 重要度：10/10
-
 - [ ] `06-storage-multipart-entity`：强类型化分片上传实体字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`

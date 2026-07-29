@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.storage.domain.object.model.entity;
 
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageOwnerParamsCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerParams;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import lombok.AllArgsConstructor;
@@ -16,12 +18,28 @@ public class StoredObjectReference {
     private StoredObjectId objectId;
 
     private StorageOwnerRef referenceOwnerRef;
-    private String ownerParams;
+    private StorageOwnerParams ownerParams;
 
     public StoredObjectReference(
             StoredObjectId objectId, String referenceOwnerId, String referenceOwnerType, String ownerParams) {
         this.objectId = objectId;
         this.referenceOwnerRef = StorageOwnerRef.ofNullable(ownerTypeFrom(referenceOwnerType), referenceOwnerId);
+        setOwnerParams(ownerParams);
+    }
+
+    public String getOwnerParams() {
+        return StorageOwnerParamsCodec.toValue(ownerParams);
+    }
+
+    public void setOwnerParams(String ownerParams) {
+        this.ownerParams = StorageOwnerParamsCodec.toDomain(ownerParams);
+    }
+
+    public StorageOwnerParams getOwnerParamsRef() {
+        return ownerParams;
+    }
+
+    public void setOwnerParamsRef(StorageOwnerParams ownerParams) {
         this.ownerParams = ownerParams;
     }
 

@@ -5,6 +5,10 @@ import com.alicp.jetcache.anno.CacheType;
 import com.alicp.jetcache.anno.CreateCache;
 import com.thundax.kuzhambu.common.cache.CacheDTO;
 import com.thundax.kuzhambu.common.cache.KuzhambuCacheNames;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageBucketNameCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageByteSizeCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageObjectKeyCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
@@ -54,10 +58,10 @@ public class StorageCacheSupport {
         storage.setContentType(cacheDTO.contentType);
         storage.setName(cacheDTO.name);
         storage.setExtendName(cacheDTO.extendName);
-        storage.setMimeType(cacheDTO.mimeType);
-        storage.setBucketName(cacheDTO.bucketName);
-        storage.setObjectKey(cacheDTO.objectKey);
-        storage.setSize(cacheDTO.size);
+        storage.setMimeTypeRef(StorageMimeTypeCodec.toDomain(cacheDTO.mimeType));
+        storage.setBucketNameRef(StorageBucketNameCodec.toDomain(cacheDTO.bucketName));
+        storage.setObjectKeyRef(StorageObjectKeyCodec.toDomain(cacheDTO.objectKey));
+        storage.setSizeRef(StorageByteSizeCodec.toDomain(cacheDTO.size));
         storage.setAccessEndpoint(cacheDTO.accessEndpoint);
         storage.setObjectStatus(cacheDTO.objectStatus == null ? null : StoredObjectStatus.from(cacheDTO.objectStatus));
         storage.setReferenceStatus(
@@ -74,10 +78,10 @@ public class StorageCacheSupport {
         cacheDTO.contentType = storage.getContentType();
         cacheDTO.name = storage.getName();
         cacheDTO.extendName = storage.getExtendName();
-        cacheDTO.mimeType = storage.getMimeType();
-        cacheDTO.bucketName = storage.getBucketName();
-        cacheDTO.objectKey = storage.getObjectKey();
-        cacheDTO.size = storage.getSize();
+        cacheDTO.mimeType = StorageMimeTypeCodec.toValue(storage.getMimeTypeRef());
+        cacheDTO.bucketName = StorageBucketNameCodec.toValue(storage.getBucketNameRef());
+        cacheDTO.objectKey = StorageObjectKeyCodec.toValue(storage.getObjectKeyRef());
+        cacheDTO.size = StorageByteSizeCodec.toValue(storage.getSizeRef());
         cacheDTO.accessEndpoint = storage.getAccessEndpoint();
         cacheDTO.objectStatus = storage.getObjectStatus() == null
                 ? null

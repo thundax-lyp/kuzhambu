@@ -2,6 +2,11 @@ package com.thundax.kuzhambu.storage.infra.object.persistence.assembler;
 
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadPartIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadSessionIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageBucketNameCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageByteSizeCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageObjectKeyCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StorageOwnerParamsCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
@@ -30,10 +35,10 @@ public final class StoragePersistenceAssembler {
         dataObject.setId(StoredObjectIdCodec.toValue(entity.getId()));
         dataObject.setName(entity.getName());
         dataObject.setExtendName(entity.getExtendName());
-        dataObject.setMimeType(entity.getMimeType());
-        dataObject.setBucketName(entity.getBucketName());
-        dataObject.setObjectKey(entity.getObjectKey());
-        dataObject.setSize(entity.getSize());
+        dataObject.setMimeType(StorageMimeTypeCodec.toValue(entity.getMimeTypeRef()));
+        dataObject.setBucketName(StorageBucketNameCodec.toValue(entity.getBucketNameRef()));
+        dataObject.setObjectKey(StorageObjectKeyCodec.toValue(entity.getObjectKeyRef()));
+        dataObject.setSize(StorageByteSizeCodec.toValue(entity.getSizeRef()));
         dataObject.setAccessEndpoint(entity.getAccessEndpoint());
         dataObject.setStoredAt(entity.getStoredAt());
         dataObject.setObjectStatus(statusValue(entity.getObjectStatus()));
@@ -51,10 +56,10 @@ public final class StoragePersistenceAssembler {
         entity.setId(StoredObjectIdCodec.toDomain(dataObject.getId()));
         entity.setName(dataObject.getName());
         entity.setExtendName(dataObject.getExtendName());
-        entity.setMimeType(dataObject.getMimeType());
-        entity.setBucketName(dataObject.getBucketName());
-        entity.setObjectKey(dataObject.getObjectKey());
-        entity.setSize(dataObject.getSize());
+        entity.setMimeTypeRef(StorageMimeTypeCodec.toDomain(dataObject.getMimeType()));
+        entity.setBucketNameRef(StorageBucketNameCodec.toDomain(dataObject.getBucketName()));
+        entity.setObjectKeyRef(StorageObjectKeyCodec.toDomain(dataObject.getObjectKey()));
+        entity.setSizeRef(StorageByteSizeCodec.toDomain(dataObject.getSize()));
         entity.setAccessEndpoint(dataObject.getAccessEndpoint());
         entity.setStoredAt(dataObject.getStoredAt());
         entity.setObjectStatus(statusFrom(dataObject.getObjectStatus()));
@@ -112,7 +117,7 @@ public final class StoragePersistenceAssembler {
         dataObject.setObjectId(StoredObjectIdCodec.toValue(entity.getObjectId()));
         dataObject.setReferenceOwnerId(entity.getReferenceOwnerId());
         dataObject.setReferenceOwnerType(entity.getReferenceOwnerType());
-        dataObject.setBusinessParams(entity.getOwnerParams());
+        dataObject.setBusinessParams(StorageOwnerParamsCodec.toValue(entity.getOwnerParamsRef()));
         return dataObject;
     }
 
@@ -125,7 +130,7 @@ public final class StoragePersistenceAssembler {
         entity.setObjectId(StoredObjectIdCodec.toDomain(dataObject.getObjectId()));
         entity.setReferenceOwnerId(dataObject.getReferenceOwnerId());
         entity.setReferenceOwnerType(dataObject.getReferenceOwnerType());
-        entity.setOwnerParams(dataObject.getBusinessParams());
+        entity.setOwnerParamsRef(StorageOwnerParamsCodec.toDomain(dataObject.getBusinessParams()));
         return entity;
     }
 
