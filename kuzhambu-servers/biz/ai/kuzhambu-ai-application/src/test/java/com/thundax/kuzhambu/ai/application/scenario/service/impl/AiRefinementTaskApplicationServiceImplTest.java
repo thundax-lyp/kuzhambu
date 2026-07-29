@@ -64,12 +64,12 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiRefinementTaskResult accepted = service.addTask(command(AiBusinessCapability.CLASSICS_TRANSLATE.value()));
 
         assertEquals(1, batchJobService.created.getTotalCount());
-        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), accepted.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, accepted.getCapability());
         assertEquals(
                 AiBatchJobStatus.SUCCEEDED,
                 batchJobService.get(accepted.getTaskId()).getStatus());
         assertEquals(1, batchJobService.get(accepted.getTaskId()).getSuccessCount());
-        assertEquals(accepted.getTaskId(), AiBatchJobIdCodec.toValue(refinementService.lastCommand.getBatchId()));
+        assertEquals(accepted.getTaskId(), refinementService.lastCommand.getBatchId());
     }
 
     @Test
@@ -226,7 +226,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
         List<com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult> events = new ArrayList<>();
 
-        service.streamTaskEvents(accepted.getTaskId(), events::add);
+        service.streamTaskEvents(AiBatchJobIdCodec.toValue(accepted.getTaskId()), events::add);
 
         assertEquals(1, events.size());
         assertEquals(AiInvocationStatus.PARTIAL, events.get(0).getStatus());
@@ -329,8 +329,8 @@ class AiRefinementTaskApplicationServiceImplTest {
         assertEquals(2, page.getRecords().size());
         assertEquals(1, invocationRepository.contentInvocationQueryCount);
         assertEquals(1, invocationRepository.contentCandidateQueryCount);
-        assertEquals(301L, page.getRecords().get(0).getCandidateId());
-        assertEquals(302L, page.getRecords().get(1).getCandidateId());
+        assertEquals(301L, page.getRecords().get(0).getCandidateId().value());
+        assertEquals(302L, page.getRecords().get(1).getCandidateId().value());
     }
 
     @Test
@@ -386,9 +386,9 @@ class AiRefinementTaskApplicationServiceImplTest {
         PageResult<AiRefinementTaskResult> page = service.pageTasks(null, null, "SANCAI_ENTRY", 10L, new PageQuery());
 
         assertEquals(1, page.getRecords().size());
-        assertEquals(10L, page.getRecords().get(0).getContentId());
-        assertEquals(301L, page.getRecords().get(0).getCandidateId());
-        assertEquals(201L, page.getRecords().get(0).getCallId());
+        assertEquals(10L, page.getRecords().get(0).getContentRef().contentId());
+        assertEquals(301L, page.getRecords().get(0).getCandidateId().value());
+        assertEquals(201L, page.getRecords().get(0).getCallId().value());
     }
 
     private AiRefinementRequestCommand command(String capability) {

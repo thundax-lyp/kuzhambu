@@ -117,7 +117,7 @@ class AiRefinementTaskControllerTest {
         AiRefinementResponses.TaskCancelResponse cancelled = controller.cancelTask(cancelRequest);
 
         assertEquals(7001L, accepted.getTaskId());
-        assertEquals("PENDING", accepted.getStatus());
+        assertEquals("RUNNING", accepted.getStatus());
         assertNotNull(controller.streamTask(7001L));
         assertEquals(9001L, detail.getCallId());
         assertEquals(9002L, detail.getCandidateId());
@@ -245,7 +245,7 @@ class AiRefinementTaskControllerTest {
         @Override
         public AiRefinementTaskResult addTask(AiRefinementRequestCommand command) {
             return task(
-                    "PENDING",
+                    "RUNNING",
                     command.getCapability() == null
                             ? null
                             : command.getCapability().value(),
@@ -282,21 +282,26 @@ class AiRefinementTaskControllerTest {
 
         private AiRefinementTaskResult task(String status, String capability, Long callId, Long candidateId) {
             return new AiRefinementTaskResult(
-                    7001L,
+                    new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(7001L),
                     "classics",
-                    capability,
-                    "SANCAI_ENTRY",
-                    101L,
+                    com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias(capability),
+                    com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
+                            "SANCAI_ENTRY", 101L),
                     null,
-                    "req-1",
-                    "trace-1",
-                    status,
+                    new com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId("req-1"),
+                    new com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId("trace-1"),
+                    com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus.valueOf(status),
                     null,
-                    201L,
-                    "gpt-test",
-                    301L,
-                    callId,
-                    candidateId,
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(201L),
+                    com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("gpt-test"),
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(301L),
+                    callId == null
+                            ? null
+                            : new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(callId),
+                    candidateId == null
+                            ? null
+                            : new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(
+                                    candidateId),
                     "TEXT",
                     "摘要",
                     null,

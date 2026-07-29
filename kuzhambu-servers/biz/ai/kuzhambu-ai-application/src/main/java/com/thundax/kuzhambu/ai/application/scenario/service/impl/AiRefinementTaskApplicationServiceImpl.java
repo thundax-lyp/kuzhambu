@@ -12,15 +12,9 @@ import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
@@ -32,8 +26,6 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
-import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -64,9 +56,6 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     private static final String REFINEMENT_SCOPE = "classics";
     private static final String CONTENT_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
-    private static final String CAPABILITY_IMAGE_ANALYSIS = "classics_image_describe";
-    private static final String CAPABILITY_IMAGE_GEN = "classics_image_generate";
-    private static final String STATUS_CANCELLED = "CANCELLED";
     private static final int RESULT_PREVIEW_MAX_LENGTH = 500;
     private static final int STREAM_EVENT_HISTORY_LIMIT = 100;
     private static final Duration STREAM_SUBSCRIBE_TIMEOUT = Duration.ofMinutes(10L);
@@ -246,8 +235,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     private void markFailedAfterUnexpectedException(Long taskId, RuntimeException exception) {
         AiBatchJobId batchId = AiBatchJobIdCodec.toDomain(taskId);
         AiBatchJobResult job = batchJobApplicationService.get(batchId);
-        if (job == null
-                || isTerminal(job.getStatus() == null ? null : job.getStatus().name())) {
+        if (job == null || isTerminal(job.getStatus())) {
             return;
         }
         AiCandidateResult result = new AiCandidateResult(
@@ -360,11 +348,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         }
     }
 
-    private boolean isTerminal(String status) {
-        return AiInvocationStatus.SUCCEEDED.name().equals(status)
-                || AiInvocationStatus.FAILED.name().equals(status)
-                || AiInvocationStatus.PARTIAL.name().equals(status)
-                || STATUS_CANCELLED.equals(status);
+    private boolean isTerminal(AiBatchJobStatus status) {
+        return AiBatchJobStatus.SUCCEEDED == status
+                || AiBatchJobStatus.FAILED == status
+                || AiBatchJobStatus.PARTIAL == status
+                || AiBatchJobStatus.CANCELLED == status;
     }
 
     private void validateRefinementBatchOwnership(AiBatchJobResult job) {
@@ -405,8 +393,8 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         if (job == null || !CONTENT_TYPE_SANCAI_ENTRY.equals(AiContentRefCodec.toContentType(job.getContentRef()))) {
             return false;
         }
-        return CAPABILITY_IMAGE_ANALYSIS.equals(job.getCapability().value())
-                || CAPABILITY_IMAGE_GEN.equals(job.getCapability().value());
+        return AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE == job.getCapability()
+                || AiBusinessCapability.CLASSICS_IMAGE_GENERATE == job.getCapability();
     }
 
     private void publishStreamEvent(Long taskId, AiStreamEventResult event) {
@@ -425,7 +413,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             streamHubs.remove(taskId, hub);
             return;
         }
-        if (AiInvocationStatus.SUCCEEDED.name().equals(task.getStatus())) {
+        if (AiBatchJobStatus.SUCCEEDED == task.getStatus()) {
             hub.publish(toCompletedEvent(task, result));
             streamHubs.remove(taskId, hub);
             return;
@@ -448,7 +436,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         if (hub.hasTerminalEvent() || task == null || !isTerminal(task.getStatus())) {
             return;
         }
-        if (AiInvocationStatus.SUCCEEDED.name().equals(task.getStatus())) {
+        if (AiBatchJobStatus.SUCCEEDED == task.getStatus()) {
             hub.publish(toCompletedEvent(task, null));
             return;
         }
@@ -469,8 +457,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         AiStreamEventResult event = baseEvent(task);
         event.setEventType("error");
         event.setStage(task.getFailureStage());
-        event.setStatus(AiInvocationStatus.from(task.getStatus()));
-        if (AiInvocationStatus.PARTIAL.name().equals(task.getStatus())) {
+        event.setStatus(
+                task.getStatus() == null
+                        ? null
+                        : AiInvocationStatus.from(task.getStatus().name()));
+        if (AiBatchJobStatus.PARTIAL == task.getStatus()) {
             event.setResultFormat(task.getResultFormat());
             event.setResultPayload(task.getResultPreview());
         }
@@ -483,8 +474,8 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     private AiStreamEventResult baseEvent(AiRefinementTaskResult task) {
         AiStreamEventResult event = new AiStreamEventResult();
         event.setEventId("task-" + task.getTaskId() + "-" + System.currentTimeMillis());
-        event.setRequestId(RequestIdCodec.toDomain(task.getRequestId()));
-        event.setTraceId(TraceIdCodec.toDomain(task.getTraceId()));
+        event.setRequestId(task.getRequestId());
+        event.setTraceId(task.getTraceId());
         event.setTimestamp(Instant.now());
         return event;
     }
@@ -502,37 +493,27 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     private AiRefinementTaskResult toTaskResult(
             Long taskId, AiBatchJobResult job, AiRefinementRequestCommand command, AiCandidateResult result) {
-        String status =
-                job == null || job.getStatus() == null ? null : job.getStatus().name();
+        AiBatchJobStatus status = job == null ? null : job.getStatus();
         if (status == null && result != null) {
-            status = result.getStatus() == null ? null : result.getStatus().name();
+            status = result.getStatus() == null
+                    ? null
+                    : AiBatchJobStatus.valueOf(result.getStatus().name());
         }
         return new AiRefinementTaskResult(
-                job == null ? taskId : AiBatchJobIdCodec.toValue(job.getBatchId()),
+                job == null ? AiBatchJobIdCodec.toDomain(taskId) : job.getBatchId(),
                 command == null ? (job == null ? null : job.getScope()) : command.getScope(),
-                command == null
-                        ? (job == null || job.getCapability() == null
-                                ? null
-                                : job.getCapability().value())
-                        : capabilityValue(command.getCapability()),
-                command == null
-                        ? (job == null ? null : AiContentRefCodec.toContentType(job.getContentRef()))
-                        : AiContentRefCodec.toContentType(command.getContentRef()),
-                command == null
-                        ? (job == null ? null : AiContentRefCodec.toContentId(job.getContentRef()))
-                        : AiContentRefCodec.toContentId(command.getContentRef()),
-                command == null ? null : AiTargetObjectIdCodec.toValue(command.getTargetObjectId()),
-                command == null ? null : RequestIdCodec.toValue(command.getRequestId()),
-                command == null ? null : TraceIdCodec.toValue(command.getTraceId()),
+                command == null ? (job == null ? null : job.getCapability()) : command.getCapability(),
+                command == null ? (job == null ? null : job.getContentRef()) : command.getContentRef(),
+                command == null ? null : command.getTargetObjectId(),
+                command == null ? null : command.getRequestId(),
+                command == null ? null : command.getTraceId(),
                 status,
                 command == null ? null : command.getServiceRole(),
-                command == null ? null : AiModelIdCodec.toValue(command.getModelId()),
-                command == null ? null : AiModelNameCodec.toValue(command.getModelName()),
-                command == null ? null : PromptVersionIdCodec.toValue(command.getPromptVersionId()),
-                result == null ? null : AiCallIdCodec.toValue(result.getCallId()),
-                result == null || (command != null && isStreamEnabledTask(command))
-                        ? null
-                        : AiCandidateIdCodec.toValue(result.getCandidateId()),
+                command == null ? null : command.getModelId(),
+                command == null ? null : command.getModelName(),
+                command == null ? null : command.getPromptVersionId(),
+                result == null ? null : result.getCallId(),
+                result == null || (command != null && isStreamEnabledTask(command)) ? null : result.getCandidateId(),
                 result == null ? null : result.getResultFormat(),
                 result == null ? null : truncate(result.getResultPayload()),
                 result == null ? null : result.getFailureStage(),
@@ -562,9 +543,8 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                 task.getTaskId(),
                 task.getScope(),
                 task.getCapability(),
-                task.getContentType(),
-                task.getContentId(),
-                task.getObjectId(),
+                task.getContentRef(),
+                task.getTargetObjectId(),
                 task.getRequestId(),
                 task.getTraceId(),
                 task.getStatus(),
