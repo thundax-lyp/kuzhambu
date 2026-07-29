@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T09 Frontend role and user regression`：回归角色与用户管理控件协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/system/role/role-types.ts`；`kuzhambu-apps/admin-web/src/pages/system/role/role-service.ts`；`kuzhambu-apps/admin-web/src/pages/system/role/components/role-edit-drawer/role-edit-drawer.tsx`；`kuzhambu-apps/admin-web/src/pages/system/role/components/menu-tree-field/menu-tree-field.tsx`；`kuzhambu-apps/admin-web/src/pages/system/user/components/user-edit-drawer/user-edit-drawer.tsx`
-    - 处理动作：回归角色 drawer 的名称输入、权限开关、状态开关、菜单权限 Tree，以及用户 drawer 的部门 TreeSelect 和角色多选。
-    - 验收点：角色保存请求 `menus` 仍是 `[{ id: string }]`，用户保存请求 `departmentId` 仍是 string 或 null 且 `roleIds` 仍是 `string[]`。
-    - 重要度：7/10
-
 - [ ] `T10 Frontend menu department audit regression`：回归菜单、部门和审计筛选控件协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
