@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `14-runbook-closure`：14 清理 RUNBOOK 并收窄 TODO
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`、`TODO.md`
-    - 处理动作：任务完成后删除临时 RUNBOOK，并删除或收窄已完成 TODO 项
-    - 验收点：PR 收口时无已完成 TODO 残留，临时 RUNBOOK 已删除或结论已迁移到稳定文档
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
