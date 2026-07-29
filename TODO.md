@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `03-storage-valueobject-codec-main`：新增 Storage 主字段 codec 和剩余值对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/valueobject/MultipartPartSize.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/valueobject/StorageOwnerParams.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/codec/StorageMimeTypeCodec.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/codec/StorageBucketNameCodec.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/codec/StorageObjectKeyCodec.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/test/java/com/thundax/kuzhambu/storage/domain/StorageValueObjectTest.java`
-    - 处理动作：补齐分片大小、owner 参数值对象和 MIME、bucket、object key 边界转换。
-    - 验收点：nullable 基础类型转换只出现在 codec 中，值对象本身不承担 nullable 工厂职责。
-    - 重要度：9/10
-
 - [ ] `04-storage-valueobject-codec-size-part`：新增 size、part 和 owner params codec
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
