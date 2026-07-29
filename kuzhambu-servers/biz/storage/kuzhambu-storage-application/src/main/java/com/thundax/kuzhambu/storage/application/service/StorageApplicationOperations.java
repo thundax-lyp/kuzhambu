@@ -12,7 +12,6 @@ import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesC
 import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
@@ -48,7 +47,7 @@ public interface StorageApplicationOperations {
     void addReferences(AddStorageReferencesCommand command);
 
     @LayerPublicApi(reason = "业务对象上传存储对象内容并落元数据的跨模块入口")
-    StorageUploadResult upload(UploadStorageObjectCommand command);
+    StoredObject upload(UploadStorageObjectCommand command);
 
     List<StoredObjectReference> listReferences(StorageQuery query);
 

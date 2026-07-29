@@ -16,7 +16,6 @@ import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesC
 import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationOperations;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
@@ -351,17 +350,14 @@ public class StorageApplicationServiceImpl implements StorageApplicationOperatio
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public StorageUploadResult upload(UploadStorageObjectCommand command) {
-        StorageUploadResult validatedResult = validateUploadFile(
+    public StoredObject upload(UploadStorageObjectCommand command) {
+        validateUploadFile(
                 command == null ? null : command.getInputStream(),
                 command == null ? null : command.getOriginalFilename(),
                 command == null || command.getSize() == null
                         ? 0L
                         : command.getSize().value(),
                 command == null ? null : command.getAllowedSuffixes());
-        if (validatedResult.hasError()) {
-            return validatedResult;
-        }
 
         StoredObject storage = new StoredObject();
         storage.setObjectStatus(command.getObjectStatus());
@@ -375,14 +371,14 @@ public class StorageApplicationServiceImpl implements StorageApplicationOperatio
                     storedObjectContentRepository.save(
                             storage, StorageInputStreamLimiter.limit(command.getInputStream(), declaredSize)));
         } catch (IOException exception) {
-            return StorageUploadResult.builder().error(exception.getMessage()).build();
+            throw new BizException(exception.getMessage());
         }
         if (!command.getSize().value().equals(storage.getSize())) {
             deleteStoredObjectContent(storage);
-            return StorageUploadResult.builder().error("文件大小与声明大小不一致").build();
+            throw new BizException("文件大小与声明大小不一致");
         }
         storage.setId(create(toCreateStorageCommand(storage)));
-        return StorageUploadResult.builder().storage(storage).build();
+        return storage;
     }
 
     @Override
@@ -453,19 +449,18 @@ public class StorageApplicationServiceImpl implements StorageApplicationOperatio
         }
     }
 
-    private StorageUploadResult validateUploadFile(
+    private void validateUploadFile(
             InputStream inputStream, String originalFilename, long size, List<String> allowedSuffixes) {
         if (inputStream == null || size <= 0L) {
-            return StorageUploadResult.builder().error("文件不能为空").build();
+            throw new BizException("文件不能为空");
         }
         if (size > MAX_UPLOAD_SIZE) {
-            return StorageUploadResult.builder().error("文件大小超过限制").build();
+            throw new BizException("文件大小超过限制");
         }
         String extendName = StringUtils.lowerCase(FilenameUtils.getExtension(originalFilename));
         if (allowedSuffixes != null && !allowedSuffixes.isEmpty() && !allowedSuffixes.contains(extendName)) {
-            return StorageUploadResult.builder().error("无效的后缀名").build();
+            throw new BizException("无效的后缀名");
         }
-        return StorageUploadResult.builder().build();
     }
 
     private void applyFileMetadata(String originalFilename, String contentType, StoredObject storage) {
