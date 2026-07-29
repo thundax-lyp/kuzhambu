@@ -15,6 +15,11 @@ import com.thundax.kuzhambu.ai.application.scenario.command.DiscoveryAiCommand;
 import com.thundax.kuzhambu.ai.application.scenario.result.DiscoveryAiInvokeResult;
 import com.thundax.kuzhambu.ai.application.scenario.support.DiscoveryAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -135,11 +140,11 @@ class DiscoveryAiApplicationServiceImplTest {
         return new DiscoveryAiCommand(
                 3L,
                 "discovery-portal",
-                10L,
-                "model-a",
-                20L,
-                "req-1",
-                "trace-1",
+                new AiModelId(10L),
+                AiModelName.of("model-a"),
+                new PromptVersionId(20L),
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
                 "[{\"role\":\"user\",\"content\":\"hello\"}]",
                 "{\"locale\":\"zh-CN\"}",
                 "hash-a",
