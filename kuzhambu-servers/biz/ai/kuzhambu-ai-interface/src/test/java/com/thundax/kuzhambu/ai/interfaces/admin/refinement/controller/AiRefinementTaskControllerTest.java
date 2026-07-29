@@ -14,9 +14,13 @@ import com.thundax.kuzhambu.ai.application.scenario.query.PageAiRefinementTasksQ
 import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import java.lang.reflect.Method;

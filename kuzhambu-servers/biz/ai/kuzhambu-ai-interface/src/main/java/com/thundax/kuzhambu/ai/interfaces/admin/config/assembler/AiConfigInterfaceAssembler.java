@@ -1,5 +1,10 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.assembler;
 
+import com.thundax.kuzhambu.ai.application.config.command.CreateAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.command.DeleteAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.command.UpdateAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.query.GetAiModelQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListAiModelsQuery;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiBusinessConfigIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
@@ -21,28 +26,50 @@ public final class AiConfigInterfaceAssembler {
 
     private AiConfigInterfaceAssembler() {}
 
-    public static AiModel toModel(AiConfigRequests.ModelSaveRequest request) {
-        AiModel model = new AiModel();
-        model.setId(AiModelIdCodec.toDomain(request.getId()));
-        model.setApiSource(AiApiSource.from(request.getApiSource()));
-        model.setBaseUrl(request.getBaseUrl());
-        model.setEncryptedApiKey(request.getApiKey());
-        model.setModelName(AiModelNameCodec.toDomain(request.getModelName()));
-        model.setDisplayName(request.getDisplayName());
-        model.setCapabilities(toModelCapabilities(request.getCapabilities()));
-        model.setDefaultParamsJson(request.getDefaultParamsJson());
-        model.setDescription(request.getDescription());
-        model.setEnabled(request.getEnabled() == null || request.getEnabled());
-        model.setRegisteredAt(Instant.now());
-        return model;
+    public static GetAiModelQuery toGetModelQuery(Long value) {
+        return new GetAiModelQuery(AiModelIdCodec.toDomain(value));
     }
 
-    public static AiModelId toModelId(Long value) {
-        return AiModelIdCodec.toDomain(value);
+    public static GetAiModelQuery toGetModelQuery(AiModelId value) {
+        return new GetAiModelQuery(value);
     }
 
-    public static AiApiSource toApiSource(String value) {
-        return isBlank(value) ? null : AiApiSource.from(value);
+    public static ListAiModelsQuery toListModelsQuery(AiConfigRequests.ModelListRequest request) {
+        return new ListAiModelsQuery(
+                toApiSource(request == null ? null : request.getApiSource()),
+                request == null ? null : request.getEnabled());
+    }
+
+    public static CreateAiModelCommand toCreateModelCommand(AiConfigRequests.ModelSaveRequest request) {
+        return new CreateAiModelCommand(
+                AiModelIdCodec.toDomain(request.getId()),
+                AiApiSource.from(request.getApiSource()),
+                request.getBaseUrl(),
+                request.getApiKey(),
+                AiModelNameCodec.toDomain(request.getModelName()),
+                request.getDisplayName(),
+                toModelCapabilities(request.getCapabilities()),
+                request.getDefaultParamsJson(),
+                request.getDescription(),
+                request.getEnabled());
+    }
+
+    public static UpdateAiModelCommand toUpdateModelCommand(AiConfigRequests.ModelSaveRequest request) {
+        return new UpdateAiModelCommand(
+                AiModelIdCodec.toDomain(request.getId()),
+                AiApiSource.from(request.getApiSource()),
+                request.getBaseUrl(),
+                request.getApiKey(),
+                AiModelNameCodec.toDomain(request.getModelName()),
+                request.getDisplayName(),
+                toModelCapabilities(request.getCapabilities()),
+                request.getDefaultParamsJson(),
+                request.getDescription(),
+                request.getEnabled());
+    }
+
+    public static DeleteAiModelCommand toDeleteModelCommand(Long value) {
+        return new DeleteAiModelCommand(AiModelIdCodec.toDomain(value));
     }
 
     public static AiBusinessConfig toBusinessConfig(AiConfigRequests.BusinessConfigSaveRequest request) {
@@ -122,6 +149,10 @@ public final class AiConfigInterfaceAssembler {
 
     private static boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private static AiApiSource toApiSource(String value) {
+        return isBlank(value) ? null : AiApiSource.from(value);
     }
 
     private static List<AiModelCapability> toModelCapabilities(List<String> values) {

@@ -4,6 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.application.config.command.CreateAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.command.DeleteAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.command.UpdateAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.query.GetAiModelQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListAiModelsQuery;
 import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
@@ -147,27 +152,27 @@ class AiWorkerModelConfigResolverTest {
                 null);
 
         @Override
-        public AiModel get(AiModelId modelId) {
+        public AiModel get(GetAiModelQuery query) {
             return model;
         }
 
         @Override
-        public List<AiModel> list(AiApiSource apiSource, Boolean enabled) {
+        public List<AiModel> list(ListAiModelsQuery query) {
             return List.of(model);
         }
 
         @Override
-        public AiModelId save(AiModel model) {
+        public AiModelId create(CreateAiModelCommand command) {
             return null;
         }
 
         @Override
-        public int update(AiModel model) {
+        public int update(UpdateAiModelCommand command) {
             return 0;
         }
 
         @Override
-        public int delete(AiModelId modelId) {
+        public int delete(DeleteAiModelCommand command) {
             return 0;
         }
     }
