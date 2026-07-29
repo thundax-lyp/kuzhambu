@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserInf
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserPasswordCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
@@ -181,7 +182,8 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     }
 
     @Override
-    public UserAvatarResult getAvatar(UserId userId) {
+    public UserAvatarResult getAvatar(CurrentUserAvatarQuery query) {
+        UserId userId = query == null ? null : query.getUserId();
         List<StorageObjectFacadeDto> avatars = listAvatarDtos(userId);
         if (avatars.isEmpty()) {
             return null;
@@ -190,7 +192,8 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     }
 
     @Override
-    public InputStream getAvatarInputStream(UserId userId) {
+    public InputStream getAvatarInputStream(CurrentUserAvatarQuery query) {
+        UserId userId = query == null ? null : query.getUserId();
         UserAvatarResult avatar = latestAvatar(userId);
         if (avatar == null || storageFacade == null) {
             return null;
@@ -204,7 +207,8 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     }
 
     @Override
-    public boolean existsAvatar(UserId userId) {
+    public boolean existsAvatar(CurrentUserAvatarQuery query) {
+        UserId userId = query == null ? null : query.getUserId();
         UserAvatarResult avatar = latestAvatar(userId);
         return avatar != null && storageFacade.exists(toReadableContentRequest(avatar));
     }

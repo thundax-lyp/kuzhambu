@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `16-current-user-avatar-query`：[16] 强类型化当前用户头像查询参数
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/CurrentUserAvatarQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/CurrentUserApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/CurrentUserApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/CurrentUserController.java`
-    - 处理动作：新增 `CurrentUserAvatarQuery.userId`，替换头像读取、流读取和存在性检查中的 `UserId` 直接参数。
-    - 验收点：头像上传、预览、删除接口仍可用，application service 头像读取入口只接收 Query。
-    - 重要度：8/10
-
 - [ ] `17-audit-object-ref`：[17] 强类型化审计对象和操作人引用
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
@@ -71,7 +72,7 @@ class CurrentUserApplicationServiceImplTest {
                         .inputStream(inputStream)
                         .build());
 
-        InputStream result = service.getAvatarInputStream(UserIdCodec.toDomain(100L));
+        InputStream result = service.getAvatarInputStream(new CurrentUserAvatarQuery(UserIdCodec.toDomain(100L)));
 
         assertSame(inputStream, result);
         ArgumentCaptor<OpenStorageFacadeRequest> requestCaptor =
@@ -94,7 +95,7 @@ class CurrentUserApplicationServiceImplTest {
                         .build());
         when(storageFacade.exists(any(OpenStorageFacadeRequest.class))).thenReturn(false);
 
-        assertNull(service.getAvatarInputStream(UserIdCodec.toDomain(100L)));
+        assertNull(service.getAvatarInputStream(new CurrentUserAvatarQuery(UserIdCodec.toDomain(100L))));
         verify(storageFacade, never()).open(any(OpenStorageFacadeRequest.class));
     }
 

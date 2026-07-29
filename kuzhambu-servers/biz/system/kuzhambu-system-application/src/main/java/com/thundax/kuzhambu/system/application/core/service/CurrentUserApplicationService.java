@@ -4,11 +4,11 @@ import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAva
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserPasswordCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
-import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import java.io.InputStream;
 import java.util.List;
 
@@ -22,11 +22,11 @@ public interface CurrentUserApplicationService {
 
     void removeAvatar(RemoveCurrentUserAvatarCommand command);
 
-    UserAvatarResult getAvatar(UserId userId);
+    UserAvatarResult getAvatar(CurrentUserAvatarQuery query);
 
-    InputStream getAvatarInputStream(UserId userId);
+    InputStream getAvatarInputStream(CurrentUserAvatarQuery query);
 
-    boolean existsAvatar(UserId userId);
+    boolean existsAvatar(CurrentUserAvatarQuery query);
 
     List<Menu> listAccessibleMenus(CurrentUserQuery query);
 

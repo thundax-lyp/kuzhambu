@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAva
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserPasswordCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
@@ -244,7 +245,7 @@ public class CurrentUserController {
     }
 
     private String readAvatarUrl(User user) {
-        if (user == null || !currentUserService.existsAvatar(user.getId())) {
+        if (user == null || !currentUserService.existsAvatar(new CurrentUserAvatarQuery(user.getId()))) {
             return null;
         }
         return avatarUrlBuilder.build(UserIdCodec.toStringValue(user.getId()));

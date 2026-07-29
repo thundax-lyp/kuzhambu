@@ -30,6 +30,7 @@ import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAva
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
@@ -547,8 +548,9 @@ public class UserController {
             return;
         }
 
-        UserAvatarResult avatar = currentUserService.getAvatar(UserIdCodec.toDomain(Long.valueOf(userId)));
-        InputStream inputStream = currentUserService.getAvatarInputStream(UserIdCodec.toDomain(Long.valueOf(userId)));
+        CurrentUserAvatarQuery avatarQuery = new CurrentUserAvatarQuery(UserIdCodec.toDomain(Long.valueOf(userId)));
+        UserAvatarResult avatar = currentUserService.getAvatar(avatarQuery);
+        InputStream inputStream = currentUserService.getAvatarInputStream(avatarQuery);
         if (avatar == null || inputStream == null) {
             response.sendError(HttpStatus.NOT_FOUND.value());
             return;
@@ -898,7 +900,7 @@ public class UserController {
     }
 
     private String readAvatarUrl(UserId userId) {
-        if (!currentUserService.existsAvatar(userId)) {
+        if (!currentUserService.existsAvatar(new CurrentUserAvatarQuery(userId))) {
             return null;
         }
         return avatarUrlBuilder.build(UserIdCodec.toStringValue(userId));
