@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `02-storage-valueobject-core`：新增第一批 Storage 核心值对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/valueobject/StorageMimeType.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/valueobject/StorageBucketName.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/valueobject/StorageObjectKey.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/valueobject/StorageByteSize.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/valueobject/MultipartPartNumber.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/test/java/com/thundax/kuzhambu/storage/domain/StorageValueObjectTest.java`
-    - 处理动作：在 `kuzhambu-storage-domain` 的 `domain/object/model/valueobject/` 下新增 5 个不可变单值包装类型。
-    - 验收点：新增值对象无框架注解，并覆盖非空、去空白、非负 size 和 part number 下界约束。
-    - 重要度：10/10
-
 - [ ] `03-storage-valueobject-codec-main`：新增 Storage 主字段 codec 和剩余值对象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-DOMAIN-STRONG-TYPING.md`
