@@ -1,9 +1,15 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.assembler;
 
+import com.thundax.kuzhambu.ai.application.config.command.CreateAiBusinessConfigCommand;
 import com.thundax.kuzhambu.ai.application.config.command.CreateAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.command.DeleteAiBusinessConfigCommand;
 import com.thundax.kuzhambu.ai.application.config.command.DeleteAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.command.UpdateAiBusinessConfigCommand;
 import com.thundax.kuzhambu.ai.application.config.command.UpdateAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigByCapabilityQuery;
+import com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigQuery;
 import com.thundax.kuzhambu.ai.application.config.query.GetAiModelQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery;
 import com.thundax.kuzhambu.ai.application.config.query.ListAiModelsQuery;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiBusinessConfigIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
@@ -18,7 +24,6 @@ import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiBusinessConfigI
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
@@ -72,20 +77,49 @@ public final class AiConfigInterfaceAssembler {
         return new DeleteAiModelCommand(AiModelIdCodec.toDomain(value));
     }
 
-    public static AiBusinessConfig toBusinessConfig(AiConfigRequests.BusinessConfigSaveRequest request) {
-        AiBusinessConfig config = new AiBusinessConfig();
-        config.setId(AiBusinessConfigIdCodec.toDomain(request.getId()));
-        config.setCapability(AiBusinessCapability.from(request.getCapability()));
-        config.setPromptTemplateId(PromptTemplateIdCodec.toDomain(request.getPromptTemplateId()));
-        config.setModelId(AiModelIdCodec.toDomain(request.getModelId()));
-        config.setDefaultParamsJson(request.getDefaultParamsJson());
-        config.setEnabled(request.getEnabled() == null || request.getEnabled());
-        config.setConfiguredAt(Instant.now());
-        return config;
+    public static GetAiBusinessConfigQuery toGetBusinessConfigQuery(Long value) {
+        return new GetAiBusinessConfigQuery(AiBusinessConfigIdCodec.toDomain(value));
     }
 
-    public static AiBusinessConfigId toBusinessConfigId(Long value) {
-        return AiBusinessConfigIdCodec.toDomain(value);
+    public static GetAiBusinessConfigQuery toGetBusinessConfigQuery(AiBusinessConfigId value) {
+        return new GetAiBusinessConfigQuery(value);
+    }
+
+    public static GetAiBusinessConfigByCapabilityQuery toGetBusinessConfigByCapabilityQuery(String value) {
+        return new GetAiBusinessConfigByCapabilityQuery(toBusinessCapability(value));
+    }
+
+    public static ListAiBusinessConfigsQuery toListBusinessConfigsQuery(
+            AiConfigRequests.BusinessConfigListRequest request) {
+        return new ListAiBusinessConfigsQuery(
+                toBusinessCapability(request == null ? null : request.getCapability()),
+                request == null ? null : request.getEnabled());
+    }
+
+    public static CreateAiBusinessConfigCommand toCreateBusinessConfigCommand(
+            AiConfigRequests.BusinessConfigSaveRequest request) {
+        return new CreateAiBusinessConfigCommand(
+                AiBusinessConfigIdCodec.toDomain(request.getId()),
+                AiBusinessCapability.from(request.getCapability()),
+                PromptTemplateIdCodec.toDomain(request.getPromptTemplateId()),
+                AiModelIdCodec.toDomain(request.getModelId()),
+                request.getDefaultParamsJson(),
+                request.getEnabled());
+    }
+
+    public static UpdateAiBusinessConfigCommand toUpdateBusinessConfigCommand(
+            AiConfigRequests.BusinessConfigSaveRequest request) {
+        return new UpdateAiBusinessConfigCommand(
+                AiBusinessConfigIdCodec.toDomain(request.getId()),
+                AiBusinessCapability.from(request.getCapability()),
+                PromptTemplateIdCodec.toDomain(request.getPromptTemplateId()),
+                AiModelIdCodec.toDomain(request.getModelId()),
+                request.getDefaultParamsJson(),
+                request.getEnabled());
+    }
+
+    public static DeleteAiBusinessConfigCommand toDeleteBusinessConfigCommand(Long value) {
+        return new DeleteAiBusinessConfigCommand(AiBusinessConfigIdCodec.toDomain(value));
     }
 
     public static AiBusinessCapability toBusinessCapability(String value) {

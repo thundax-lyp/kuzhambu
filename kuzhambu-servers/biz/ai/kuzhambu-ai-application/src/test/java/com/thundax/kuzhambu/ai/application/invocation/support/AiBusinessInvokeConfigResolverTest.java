@@ -5,10 +5,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.application.config.command.CreateAiBusinessConfigCommand;
 import com.thundax.kuzhambu.ai.application.config.command.CreateAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.command.DeleteAiBusinessConfigCommand;
 import com.thundax.kuzhambu.ai.application.config.command.DeleteAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.command.UpdateAiBusinessConfigCommand;
 import com.thundax.kuzhambu.ai.application.config.command.UpdateAiModelCommand;
+import com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigByCapabilityQuery;
+import com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigQuery;
 import com.thundax.kuzhambu.ai.application.config.query.GetAiModelQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery;
 import com.thundax.kuzhambu.ai.application.config.query.ListAiModelsQuery;
 import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
@@ -256,32 +262,32 @@ class AiBusinessInvokeConfigResolverTest {
     private static class FakeBusinessConfigApplicationService implements AiBusinessConfigApplicationService {
 
         @Override
-        public AiBusinessConfig get(AiBusinessConfigId id) {
+        public AiBusinessConfig get(GetAiBusinessConfigQuery query) {
             return config();
         }
 
         @Override
-        public AiBusinessConfig get(AiBusinessCapability capability) {
+        public AiBusinessConfig getByCapability(GetAiBusinessConfigByCapabilityQuery query) {
             return config();
         }
 
         @Override
-        public List<AiBusinessConfig> list(AiBusinessCapability capability, Boolean enabled) {
+        public List<AiBusinessConfig> list(ListAiBusinessConfigsQuery query) {
             return List.of(config());
         }
 
         @Override
-        public AiBusinessConfigId save(AiBusinessConfig config) {
+        public AiBusinessConfigId create(CreateAiBusinessConfigCommand command) {
             return null;
         }
 
         @Override
-        public int update(AiBusinessConfig config) {
+        public int update(UpdateAiBusinessConfigCommand command) {
             return 0;
         }
 
         @Override
-        public int delete(AiBusinessConfigId id) {
+        public int delete(DeleteAiBusinessConfigCommand command) {
             return 0;
         }
 
