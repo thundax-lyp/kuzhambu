@@ -11,7 +11,8 @@ import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.ListStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
-import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
@@ -322,7 +323,7 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
             credential.setNeedChangePassword(false);
             credential.setFailedCount(0);
             credential.setFailedLimit(DEFAULT_PASSWORD_FAILED_LIMIT);
-            principalCredentialService.create(new PrincipalCredentialCommand(credential));
+            principalCredentialService.create(createCredentialCommand(credential));
             return;
         }
 
@@ -332,7 +333,38 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
         credential.setFailedCount(0);
         credential.setLockedUntil(null);
         credential.setLastVerifiedAt(null);
-        principalCredentialService.change(new PrincipalCredentialCommand(credential));
+        principalCredentialService.change(changeCredentialCommand(credential));
+    }
+
+    private CreatePrincipalCredentialCommand createCredentialCommand(PrincipalCredential credential) {
+        return new CreatePrincipalCredentialCommand(
+                credential.getPrincipalKey(),
+                credential.getIdentityId(),
+                credential.getCredentialType(),
+                credential.getCredentialValue(),
+                credential.getStatus(),
+                credential.isNeedChangePassword(),
+                credential.getFailedCount(),
+                credential.getFailedLimit(),
+                credential.getLockedUntil(),
+                credential.getExpiresAt(),
+                credential.getLastVerifiedAt());
+    }
+
+    private ChangePrincipalCredentialCommand changeCredentialCommand(PrincipalCredential credential) {
+        return new ChangePrincipalCredentialCommand(
+                credential.getId(),
+                credential.getPrincipalKey(),
+                credential.getIdentityId(),
+                credential.getCredentialType(),
+                credential.getCredentialValue(),
+                credential.getStatus(),
+                credential.isNeedChangePassword(),
+                credential.getFailedCount(),
+                credential.getFailedLimit(),
+                credential.getLockedUntil(),
+                credential.getExpiresAt(),
+                credential.getLastVerifiedAt());
     }
 
     private byte[] readAvatarBytes(InputStream inputStream) {

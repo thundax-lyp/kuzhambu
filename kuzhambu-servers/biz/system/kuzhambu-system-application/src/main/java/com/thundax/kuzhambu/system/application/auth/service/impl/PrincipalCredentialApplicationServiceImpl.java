@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.system.application.auth.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialStatusCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialApplicationService;
@@ -45,21 +48,24 @@ public class PrincipalCredentialApplicationServiceImpl implements PrincipalCrede
     }
 
     @Override
-    public PrincipalCredentialId create(PrincipalCredentialCommand command) {
-        PrincipalCredential principalCredential = command.getPrincipalCredential();
+    public PrincipalCredentialId create(CreatePrincipalCredentialCommand command) {
+        PrincipalCredential principalCredential = principalCredential(command);
         PrincipalCredentialId id = principalCredentialRepository.insert(principalCredential);
         principalCredential.setId(id);
         return id;
     }
 
     @Override
-    public void change(PrincipalCredentialCommand command) {
-        principalCredentialRepository.update(command.getPrincipalCredential());
+    public void change(ChangePrincipalCredentialCommand command) {
+        principalCredentialRepository.update(principalCredential(command));
     }
 
     @Override
-    public void changeStatus(PrincipalCredentialCommand command) {
-        principalCredentialRepository.updateStatus(command.getPrincipalCredential());
+    public void changeStatus(ChangePrincipalCredentialStatusCommand command) {
+        PrincipalCredential principalCredential = new PrincipalCredential();
+        principalCredential.setId(command.getId());
+        principalCredential.setStatus(command.getStatus());
+        principalCredentialRepository.updateStatus(principalCredential);
     }
 
     @Override
@@ -72,5 +78,38 @@ public class PrincipalCredentialApplicationServiceImpl implements PrincipalCrede
         PrincipalCredential credential = command.getPrincipalCredential();
         principalCredentialRepository.recordFailure(credential);
         return principalCredentialRepository.getById(credential.getId());
+    }
+
+    private PrincipalCredential principalCredential(CreatePrincipalCredentialCommand command) {
+        PrincipalCredential principalCredential = new PrincipalCredential();
+        principalCredential.setPrincipalKey(command.getPrincipalKey());
+        principalCredential.setIdentityId(command.getIdentityId());
+        principalCredential.setCredentialType(command.getCredentialType());
+        principalCredential.setCredentialValue(command.getCredentialValue());
+        principalCredential.setStatus(command.getStatus());
+        principalCredential.setNeedChangePassword(command.isNeedChangePassword());
+        principalCredential.setFailedCount(command.getFailedCount());
+        principalCredential.setFailedLimit(command.getFailedLimit());
+        principalCredential.setLockedUntil(command.getLockedUntil());
+        principalCredential.setExpiresAt(command.getExpiresAt());
+        principalCredential.setLastVerifiedAt(command.getLastVerifiedAt());
+        return principalCredential;
+    }
+
+    private PrincipalCredential principalCredential(ChangePrincipalCredentialCommand command) {
+        PrincipalCredential principalCredential = principalCredential(new CreatePrincipalCredentialCommand(
+                command.getPrincipalKey(),
+                command.getIdentityId(),
+                command.getCredentialType(),
+                command.getCredentialValue(),
+                command.getStatus(),
+                command.isNeedChangePassword(),
+                command.getFailedCount(),
+                command.getFailedLimit(),
+                command.getLockedUntil(),
+                command.getExpiresAt(),
+                command.getLastVerifiedAt()));
+        principalCredential.setId(command.getId());
+        return principalCredential;
     }
 }

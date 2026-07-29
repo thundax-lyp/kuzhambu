@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `07-principal-credential-command`：[07] 拆分 PrincipalCredential 基础写命令
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/CreatePrincipalCredentialCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/ChangePrincipalCredentialCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/ChangePrincipalCredentialStatusCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/PrincipalCredentialApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/impl/PrincipalCredentialApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/PrincipalCredentialCommand.java`
-    - 处理动作：用创建、变更、状态变更三个 Command 替代直接包装 `PrincipalCredential` 的基础写命令。
-    - 验收点：`PrincipalCredentialCommand.principalCredential` 不再作为创建、变更、状态变更公开契约使用。
-    - 重要度：8/10
-
 - [ ] `08-principal-credential-verify-failure`：[08] 拆分凭据验证状态和失败记录命令
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

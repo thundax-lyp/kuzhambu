@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.system.application.auth.service;
 
 import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialStatusCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
@@ -16,13 +19,13 @@ public interface PrincipalCredentialApplicationService {
     List<PrincipalCredential> list(PrincipalCredentialQuery query);
 
     @LayerPublicApi(reason = "统一认证主体资料维护时新增凭据的业务入口")
-    PrincipalCredentialId create(PrincipalCredentialCommand command);
+    PrincipalCredentialId create(CreatePrincipalCredentialCommand command);
 
     @LayerPublicApi(reason = "统一认证主体资料维护时更新凭据的业务入口")
-    void change(PrincipalCredentialCommand command);
+    void change(ChangePrincipalCredentialCommand command);
 
     @LayerPublicApi(reason = "统一认证主体资料维护时更新凭据状态的业务入口")
-    void changeStatus(PrincipalCredentialCommand command);
+    void changeStatus(ChangePrincipalCredentialStatusCommand command);
 
     @LayerPublicApi(reason = "统一认证主体登录时更新凭据验证状态的业务入口")
     void changeVerifyState(PrincipalCredentialCommand command);
