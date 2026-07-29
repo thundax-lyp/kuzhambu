@@ -2,7 +2,9 @@ package com.thundax.kuzhambu.system.application.auth.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.id.UuidHelper;
+import com.thundax.kuzhambu.system.application.auth.command.CreateAdminAccessTokenCommand;
 import com.thundax.kuzhambu.system.application.auth.configure.AuthProperties;
+import com.thundax.kuzhambu.system.application.auth.query.AdminAccessTokenQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.result.AdminAccessTokenResult;
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenQueryResult;
@@ -74,13 +76,13 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
 
     @Override
     @NonNull
-    public AdminAccessTokenResult createAccessToken(
-            UserId userId,
-            String loginName,
-            String ip,
-            String userAgent,
-            PrincipalAuthenticationMethod authenticationMethod,
-            PrincipalIdentityType identityType) {
+    public AdminAccessTokenResult createAccessToken(CreateAdminAccessTokenCommand command) {
+        UserId userId = command == null ? null : command.getUserId();
+        String loginName = command == null ? null : command.getLoginName();
+        String ip = command == null ? null : command.getIp();
+        String userAgent = command == null ? null : command.getUserAgent();
+        PrincipalAuthenticationMethod authenticationMethod = command == null ? null : command.getAuthenticationMethod();
+        PrincipalIdentityType identityType = command == null ? null : command.getIdentityType();
         PrincipalAuthenticationMethod method =
                 authenticationMethod == null ? PrincipalAuthenticationMethod.PASSWORD : authenticationMethod;
         PrincipalIdentityType type = identityType == null ? PrincipalIdentityType.USER_ACCOUNT : identityType;
@@ -115,7 +117,8 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
     }
 
     @Override
-    public AdminAccessTokenResult getAccessToken(String token) {
+    public AdminAccessTokenResult getAccessToken(AdminAccessTokenQuery query) {
+        String token = tokenValue(query);
         if (StringUtils.isBlank(token)) {
             return null;
         }
@@ -153,16 +156,16 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
     }
 
     @Override
-    public boolean validateToken(String token) {
-        AdminAccessTokenResult accessToken = getAccessToken(token);
+    public boolean validateToken(AdminAccessTokenQuery query) {
+        AdminAccessTokenResult accessToken = getAccessToken(query);
         return accessToken != null
                 && accessToken.getPrincipalAccessToken() != null
                 && accessToken.getPrincipalAccessToken().canAccess(new Date());
     }
 
     @Override
-    public void activeAccessToken(String token) {
-        AdminAccessTokenResult accessToken = getAccessToken(token);
+    public void activeAccessToken(AdminAccessTokenQuery query) {
+        AdminAccessTokenResult accessToken = getAccessToken(query);
         if (accessToken == null) {
             return;
         }
@@ -171,7 +174,7 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
 
     @Override
     public void deleteAccessToken(String token, String ip, String userAgent) {
-        AdminAccessTokenResult accessToken = getAccessToken(token);
+        AdminAccessTokenResult accessToken = getAccessToken(accessTokenQuery(token));
         if (accessToken == null) {
             return;
         }
@@ -195,9 +198,10 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
     }
 
     @Override
-    public AdminTokenQueryResult getTokenInfo(String token) {
-        AdminAccessTokenResult accessToken = getAccessToken(token);
-        if (accessToken == null || !validateToken(token)) {
+    public AdminTokenQueryResult getTokenInfo(AdminAccessTokenQuery query) {
+        String token = tokenValue(query);
+        AdminAccessTokenResult accessToken = getAccessToken(query);
+        if (accessToken == null || !validateToken(query)) {
             return AdminTokenQueryResult.inactive(PrincipalAccessTokenCode.ofNullable(token));
         }
         PrincipalAuthSession session = getActivePrincipalAuthSession(accessToken.getPrincipalAccessToken(), new Date());
@@ -231,8 +235,8 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
             throw invalidToken();
         }
 
-        AdminAccessTokenResult accessToken = createAccessToken(
-                UserIdCodec.toDomain(current.getPrincipalKey().getPrincipalId()), null, ip, userAgent, null, null);
+        AdminAccessTokenResult accessToken = createAccessToken(new CreateAdminAccessTokenCommand(
+                UserIdCodec.toDomain(current.getPrincipalKey().getPrincipalId()), null, ip, userAgent, null, null));
         writeLoginEvent(
                 current.getPrincipalKey(),
                 requestedClientId,
@@ -310,7 +314,7 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
     }
 
     private void invalidatePrincipalAuthSession(String token) {
-        AdminAccessTokenResult accessToken = getAccessToken(token);
+        AdminAccessTokenResult accessToken = getAccessToken(accessTokenQuery(token));
         if (accessToken != null && accessToken.getPrincipalAccessToken() != null) {
             PrincipalAccessToken principalAccessToken = accessToken.getPrincipalAccessToken();
             principalAccessToken.revoke();
@@ -425,6 +429,17 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
         query.setPrincipalKey(principalKey);
         query.setIdentityType(identityType);
         return query;
+    }
+
+    private AdminAccessTokenQuery accessTokenQuery(String token) {
+        return new AdminAccessTokenQuery(PrincipalAccessTokenCode.ofNullable(token));
+    }
+
+    private String tokenValue(AdminAccessTokenQuery query) {
+        if (query == null || query.getToken() == null) {
+            return null;
+        }
+        return query.getToken().asString();
     }
 
     private BizException invalidToken() {

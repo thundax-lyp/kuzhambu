@@ -4,7 +4,9 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticateIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticatePasswordCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreateAdminAccessTokenCommand;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
+import com.thundax.kuzhambu.system.application.auth.query.AdminAccessTokenQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.result.AdminAccessTokenResult;
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenQueryResult;
@@ -20,6 +22,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticati
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
@@ -79,13 +82,14 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         if (identityType == null) {
             identityType = PrincipalIdentityType.USER_ACCOUNT;
         }
-        AuthAccessTokenResult result = toInterfaceResult(adminTokenService.createAccessToken(
-                command.getUserId(),
-                command.getLoginName(),
-                command.getIp(),
-                command.getUserAgent(),
-                authenticationMethod,
-                identityType));
+        AuthAccessTokenResult result =
+                toInterfaceResult(adminTokenService.createAccessToken(new CreateAdminAccessTokenCommand(
+                        command.getUserId(),
+                        command.getLoginName(),
+                        command.getIp(),
+                        command.getUserAgent(),
+                        authenticationMethod,
+                        identityType)));
         if (result != null) {
             permissionService.createPermissions(result.getToken(), UserIdCodec.toStringValue(command.getUserId()));
         }
@@ -94,7 +98,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public AuthAccessTokenResult getAccessToken(AdminAuthQuery query) {
-        return toInterfaceResult(adminTokenService.getAccessToken(query.getToken()));
+        return toInterfaceResult(adminTokenService.getAccessToken(accessTokenQuery(query.getToken())));
     }
 
     @Override
@@ -104,12 +108,12 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public boolean validateToken(AdminAuthCommand command) {
-        return adminTokenService.validateToken(tokenValue(command.getAccessToken()));
+        return adminTokenService.validateToken(accessTokenQuery(tokenValue(command.getAccessToken())));
     }
 
     @Override
     public void activeAccessToken(AdminAuthCommand command) {
-        adminTokenService.activeAccessToken(tokenValue(command.getAccessToken()));
+        adminTokenService.activeAccessToken(accessTokenQuery(tokenValue(command.getAccessToken())));
     }
 
     @Override
@@ -120,7 +124,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public AuthTokenQueryResult getTokenInfo(AdminAuthQuery query) {
-        return toInterfaceResult(adminTokenService.getTokenInfo(query.getToken()));
+        return toInterfaceResult(adminTokenService.getTokenInfo(accessTokenQuery(query.getToken())));
     }
 
     @Override
@@ -369,6 +373,10 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             return null;
         }
         return result.getToken();
+    }
+
+    private AdminAccessTokenQuery accessTokenQuery(String token) {
+        return new AdminAccessTokenQuery(PrincipalAccessTokenCode.ofNullable(token));
     }
 
     private AuthTokenQueryResult toInterfaceResult(AdminTokenQueryResult result) {

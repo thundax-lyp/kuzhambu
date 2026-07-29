@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.system.application.auth.service;
 
+import com.thundax.kuzhambu.system.application.auth.command.CreateAdminAccessTokenCommand;
+import com.thundax.kuzhambu.system.application.auth.query.AdminAccessTokenQuery;
 import com.thundax.kuzhambu.system.application.auth.result.AdminAccessTokenResult;
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenQueryResult;
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenRefreshResult;
@@ -10,25 +12,19 @@ import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 
 public interface AdminTokenApplicationService {
 
-    AdminAccessTokenResult createAccessToken(
-            UserId userId,
-            String loginName,
-            String ip,
-            String userAgent,
-            PrincipalAuthenticationMethod authenticationMethod,
-            PrincipalIdentityType identityType);
+    AdminAccessTokenResult createAccessToken(CreateAdminAccessTokenCommand command);
 
-    AdminAccessTokenResult getAccessToken(String token);
+    AdminAccessTokenResult getAccessToken(AdminAccessTokenQuery query);
 
     int deleteAccessTokensByUserId(UserId userId);
 
-    boolean validateToken(String token);
+    boolean validateToken(AdminAccessTokenQuery query);
 
-    void activeAccessToken(String token);
+    void activeAccessToken(AdminAccessTokenQuery query);
 
     void deleteAccessToken(String token, String ip, String userAgent);
 
-    AdminTokenQueryResult getTokenInfo(String token);
+    AdminTokenQueryResult getTokenInfo(AdminAccessTokenQuery query);
 
     AdminTokenRefreshResult refreshAccessToken(String clientId, String refreshToken, String ip, String userAgent);
 

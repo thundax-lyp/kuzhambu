@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `02-admin-token-read-create`：[02] 强类型化 AdminToken 创建和读取参数
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/CreateAdminAccessTokenCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/query/AdminAccessTokenQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/AdminTokenApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/impl/AdminTokenApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/controller/AuthController.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/service/impl/AdminAuthServiceImpl.java`
-    - 处理动作：新增 `CreateAdminAccessTokenCommand` 和 `AdminAccessTokenQuery`，替换 `createAccessToken(...)`、`getAccessToken(String)`、`validateToken(String)`、`activeAccessToken(String)`、`getTokenInfo(String)` 的基础类型参数。
-    - 验收点：相关方法只接收 Command/Query，`AdminAccessTokenQuery.token` 为 `PrincipalAccessTokenCode`，HTTP 登录和 token 查询响应不变。
-    - 重要度：9/10
-
 - [ ] `03-admin-token-write-session`：[03] 强类型化 AdminToken 刷新、删除、失效和失败记录参数
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
