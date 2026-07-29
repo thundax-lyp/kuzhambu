@@ -28,7 +28,7 @@ class StorageValueObjectTest {
     void stringValueObjectsShouldTrimAndRejectBlankValues() {
         assertEquals("image/png", new StorageMimeType(" image/png ").value());
         assertEquals("storage-bucket", new StorageBucketName(" storage-bucket ").value());
-        assertEquals("object/path.png", new StorageObjectKey(" object/path.png ").value());
+        assertEquals(" object/path.png ", new StorageObjectKey(" object/path.png ").value());
         assertEquals("BOOK", new StorageReferenceOwnerType(" BOOK ").value());
 
         assertThrows(IllegalArgumentException.class, () -> new StorageMimeType(" "));
@@ -95,7 +95,7 @@ class StorageValueObjectTest {
 
         assertEquals("image/jpeg", StorageMimeTypeCodec.toValue(mimeType));
         assertEquals("storage", StorageBucketNameCodec.toValue(bucketName));
-        assertEquals("path/image.jpg", StorageObjectKeyCodec.toValue(objectKey));
+        assertEquals(" path/image.jpg ", StorageObjectKeyCodec.toValue(objectKey));
         assertEquals("BOOK", StorageReferenceOwnerTypeCodec.toValue(referenceOwnerType));
         assertNull(StorageMimeTypeCodec.toValue(null));
         assertNull(StorageBucketNameCodec.toValue(null));

@@ -5,10 +5,6 @@ import com.thundax.kuzhambu.common.core.id.BaseStringId;
 public final class StorageObjectKey extends BaseStringId {
 
     public StorageObjectKey(String value) {
-        super(normalize(value));
-    }
-
-    private static String normalize(String value) {
-        return value == null ? null : value.trim();
+        super(value);
     }
 }
