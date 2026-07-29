@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `08-principal-credential-verify-failure`：[08] 拆分凭据验证状态和失败记录命令
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/ChangePrincipalCredentialVerifyStateCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/RecordPrincipalCredentialFailureCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/PrincipalCredentialApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/impl/PrincipalCredentialApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/impl/PrincipalAuthApplicationServiceImpl.java`
-    - 处理动作：新增验证状态和失败记录专用 Command，替换 `changeVerifyState(PrincipalCredentialCommand)` 和 `recordFailure(PrincipalCredentialCommand)`。
-    - 验收点：凭据验证状态变更和失败记录入口有独立 Command，认证失败流程测试通过。
-    - 重要度：8/10
-
 - [ ] `09-core-user-contract`：[09] 强类型化 User get/remove 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

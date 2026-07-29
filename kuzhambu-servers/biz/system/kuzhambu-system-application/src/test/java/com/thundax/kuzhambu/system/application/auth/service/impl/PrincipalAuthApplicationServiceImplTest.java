@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticatePasswordCommand;
-import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalCredentialFailureCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialApplicationService;
@@ -45,7 +45,7 @@ class PrincipalAuthApplicationServiceImplTest {
         when(principalIdentityService.get(any(PrincipalIdentityQuery.class))).thenReturn(identity);
         when(principalCredentialService.get(any(PrincipalCredentialQuery.class)))
                 .thenReturn(credential);
-        when(principalCredentialService.recordFailure(any(PrincipalCredentialCommand.class)))
+        when(principalCredentialService.recordFailure(any(RecordPrincipalCredentialFailureCommand.class)))
                 .thenReturn(latestCredential);
 
         BizException exception = assertThrows(
@@ -58,7 +58,7 @@ class PrincipalAuthApplicationServiceImplTest {
                         new PrincipalPasswordPolicyDTO(true, 5, 60))));
 
         assertTrue(exception.getMessage().contains("剩余2次"));
-        verify(principalCredentialService).recordFailure(any(PrincipalCredentialCommand.class));
+        verify(principalCredentialService).recordFailure(any(RecordPrincipalCredentialFailureCommand.class));
     }
 
     private static PrincipalCredential activePasswordCredential(int failedCount) {

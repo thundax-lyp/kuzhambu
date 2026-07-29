@@ -3,8 +3,9 @@ package com.thundax.kuzhambu.system.application.auth.service.impl;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialStatusCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialVerifyStateCommand;
 import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalCredentialCommand;
-import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalCredentialFailureCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
@@ -69,13 +70,22 @@ public class PrincipalCredentialApplicationServiceImpl implements PrincipalCrede
     }
 
     @Override
-    public void changeVerifyState(PrincipalCredentialCommand command) {
-        principalCredentialRepository.updateVerifyState(command.getPrincipalCredential());
+    public void changeVerifyState(ChangePrincipalCredentialVerifyStateCommand command) {
+        PrincipalCredential principalCredential = new PrincipalCredential();
+        principalCredential.setId(command.getId());
+        principalCredential.setStatus(command.getStatus());
+        principalCredential.setFailedCount(command.getFailedCount());
+        principalCredential.setLockedUntil(command.getLockedUntil());
+        principalCredential.setLastVerifiedAt(command.getLastVerifiedAt());
+        principalCredentialRepository.updateVerifyState(principalCredential);
     }
 
     @Override
-    public PrincipalCredential recordFailure(PrincipalCredentialCommand command) {
-        PrincipalCredential credential = command.getPrincipalCredential();
+    public PrincipalCredential recordFailure(RecordPrincipalCredentialFailureCommand command) {
+        PrincipalCredential credential = new PrincipalCredential();
+        credential.setId(command.getId());
+        credential.setFailedLimit(command.getFailedLimit());
+        credential.setLockedUntil(command.getLockedUntil());
         principalCredentialRepository.recordFailure(credential);
         return principalCredentialRepository.getById(credential.getId());
     }

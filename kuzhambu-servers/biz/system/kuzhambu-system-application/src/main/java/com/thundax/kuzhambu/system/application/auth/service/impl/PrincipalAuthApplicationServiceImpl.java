@@ -4,7 +4,8 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticateIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticatePasswordCommand;
-import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialVerifyStateCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalCredentialFailureCommand;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
@@ -74,7 +75,7 @@ public class PrincipalAuthApplicationServiceImpl implements PrincipalAuthApplica
 
         if (PasswordHelper.validate(plainPassword, credential.getCredentialValue())) {
             credential.markVerified(now);
-            principalCredentialService.changeVerifyState(new PrincipalCredentialCommand(credential));
+            principalCredentialService.changeVerifyState(verifyStateCommand(credential));
             return;
         }
 
@@ -87,8 +88,7 @@ public class PrincipalAuthApplicationServiceImpl implements PrincipalAuthApplica
         }
         Date lockedUntil = new Date(now.getTime() + passwordPolicy.getLockSeconds() * 1000L);
         credential.setLockedUntil(lockedUntil);
-        PrincipalCredential latestCredential =
-                principalCredentialService.recordFailure(new PrincipalCredentialCommand(credential));
+        PrincipalCredential latestCredential = principalCredentialService.recordFailure(failureCommand(credential));
         if (latestCredential == null) {
             throw new InvalidPasswordException();
         }
@@ -115,6 +115,20 @@ public class PrincipalAuthApplicationServiceImpl implements PrincipalAuthApplica
         query.setIdentityId(identityId);
         query.setCredentialType(credentialType);
         return query;
+    }
+
+    private ChangePrincipalCredentialVerifyStateCommand verifyStateCommand(PrincipalCredential credential) {
+        return new ChangePrincipalCredentialVerifyStateCommand(
+                credential.getId(),
+                credential.getStatus(),
+                credential.getFailedCount(),
+                credential.getLockedUntil(),
+                credential.getLastVerifiedAt());
+    }
+
+    private RecordPrincipalCredentialFailureCommand failureCommand(PrincipalCredential credential) {
+        return new RecordPrincipalCredentialFailureCommand(
+                credential.getId(), credential.getFailedLimit(), credential.getLockedUntil());
     }
 
     private long lockedExpireSeconds(
