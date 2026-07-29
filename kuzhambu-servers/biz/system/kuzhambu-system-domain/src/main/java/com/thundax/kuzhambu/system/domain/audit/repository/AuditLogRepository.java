@@ -3,8 +3,9 @@ package com.thundax.kuzhambu.system.domain.audit.repository;
 import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
-import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
 import java.util.Date;
 import java.util.List;
 
@@ -16,14 +17,12 @@ public interface AuditLogRepository {
 
     AuditLog getByIdempotencyKey(String idempotencyKey);
 
-    List<AuditLog> listByObject(String objectType, String objectId);
+    List<AuditLog> listByObject(AuditObjectRef objectRef);
 
     PageResult<AuditLog> page(
-            String objectType,
-            String objectId,
+            AuditObjectRef objectRef,
             AuditAction action,
-            AuditOperatorType operatorType,
-            String operatorId,
+            AuditOperatorRef operatorRef,
             String source,
             String requestId,
             Date beginDate,

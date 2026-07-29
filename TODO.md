@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T08 Audit repository ref contract`：用审计 Ref 收敛审计仓储查询契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/repository/AuditLogRepository.java`；`kuzhambu-servers/biz/system/kuzhambu-system-infra/src/main/java/com/thundax/kuzhambu/system/infra/audit/repository/impl/AuditLogRepositoryImpl.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/service/impl/AuditApplicationServiceImpl.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/test/java/com/thundax/kuzhambu/system/application/audit/service/impl/AuditApplicationServiceImplTest.java`
-    - 处理动作：把 `AuditLogRepository` 的对象和操作者查询参数收敛为 `AuditObjectRef` 与 `AuditOperatorRef`。
-    - 验收点：`AuditLogRepository` 不再暴露分散的对象 ID 和操作者 ID 字符串参数，且 Ref 内部 ID 字段仍为 `String`。
-    - 重要度：9/10
-
 - [ ] `T09 Frontend role and user regression`：回归角色与用户管理控件协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
