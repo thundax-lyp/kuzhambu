@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller;
 
+import com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
@@ -179,10 +181,11 @@ public class AiInvocationController {
     @SysLogger(value = "候选拒绝")
     @PostMapping(value = "candidate/reject")
     public CandidateResponse rejectCandidate(@Valid @RequestBody AiInvocationRequests.CandidateRejectRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(aiCandidateApplicationService.reject(
-                AiCandidateIdCodec.toDomain(request.getCandidateId()),
-                request.getErrorType(),
-                request.getErrorMessage()));
+        return AiInvocationInterfaceAssembler.toResponse(
+                aiCandidateApplicationService.reject(new RejectAiCandidateCommand(
+                        AiCandidateIdCodec.toDomain(request.getCandidateId()),
+                        request.getErrorType(),
+                        request.getErrorMessage())));
     }
 
     @Operation(summary = "标记AI候选已应用", description = "ai:invocation:edit")
@@ -198,11 +201,12 @@ public class AiInvocationController {
     @PostMapping(value = "candidate/mark-applied")
     public CandidateResponse markCandidateApplied(
             @Valid @RequestBody AiInvocationRequests.CandidateMarkAppliedRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(aiCandidateApplicationService.markApplied(
-                AiCandidateIdCodec.toDomain(request.getCandidateId()),
-                request.getResultFormat(),
-                request.getResultPayload(),
-                null));
+        return AiInvocationInterfaceAssembler.toResponse(
+                aiCandidateApplicationService.markApplied(new ApplyAiCandidateCommand(
+                        AiCandidateIdCodec.toDomain(request.getCandidateId()),
+                        request.getResultFormat(),
+                        request.getResultPayload(),
+                        null)));
     }
 
     private AiBusinessCapability toCapability(String value) {

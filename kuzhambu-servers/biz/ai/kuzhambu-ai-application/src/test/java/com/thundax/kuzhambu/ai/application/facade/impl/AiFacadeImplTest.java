@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -508,11 +509,11 @@ class AiFacadeImplTest {
     @Test
     void requirePendingCandidateShouldMapApplyCheckAndCandidateDto() {
         AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
-        when(aiCandidateApplicationService.requirePendingForApply(
-                        new AiCandidateId(901L),
-                        AiContentRef.of("CLASSICS_CONTENT", 902L),
-                        AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
-                        new AiTargetObjectId(903L)))
+        when(aiCandidateApplicationService.requirePendingForApply(argThat(query -> query != null
+                        && new AiCandidateId(901L).equals(query.getCandidateId())
+                        && AiContentRef.of("CLASSICS_CONTENT", 902L).equals(query.getContentRef())
+                        && AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT == query.getCapability()
+                        && new AiTargetObjectId(903L).equals(query.getTargetObjectId()))))
                 .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -548,7 +549,10 @@ class AiFacadeImplTest {
     @Test
     void rejectCandidateShouldDelegateToDomainServiceAndMapDto() {
         AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
-        when(aiCandidateApplicationService.reject(new AiCandidateId(901L), "USER_REJECTED", "not useful"))
+        when(aiCandidateApplicationService.reject(argThat(command -> command != null
+                        && new AiCandidateId(901L).equals(command.getCandidateId())
+                        && "USER_REJECTED".equals(command.getErrorType())
+                        && "not useful".equals(command.getErrorMessage()))))
                 .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -565,7 +569,11 @@ class AiFacadeImplTest {
                 .build());
 
         assertEquals(901L, response.getCandidateId());
-        verify(aiCandidateApplicationService).reject(new AiCandidateId(901L), "USER_REJECTED", "not useful");
+        verify(aiCandidateApplicationService)
+                .reject(argThat(command -> command != null
+                        && new AiCandidateId(901L).equals(command.getCandidateId())
+                        && "USER_REJECTED".equals(command.getErrorType())
+                        && "not useful".equals(command.getErrorMessage())));
     }
 
     private static AiFacadeImpl newFacade(

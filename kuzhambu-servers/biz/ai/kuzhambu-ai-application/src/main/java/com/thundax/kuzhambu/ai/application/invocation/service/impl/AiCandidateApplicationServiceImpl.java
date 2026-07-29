@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.ai.application.invocation.service.impl;
 
+import com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.RequireAiCandidateForApplyQuery;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import java.time.Instant;
@@ -21,35 +21,32 @@ public class AiCandidateApplicationServiceImpl implements AiCandidateApplication
     }
 
     @Override
-    public AiCandidate requirePendingForApply(
-            AiCandidateId candidateId,
-            AiContentRef contentRef,
-            AiBusinessCapability capability,
-            AiTargetObjectId targetObjectId) {
-        AiCandidate candidate = getRequired(candidateId);
-        candidate.requirePendingForApply(contentRef, capability);
-        if (targetObjectId != null) {
-            candidate.requireTargetObject(targetObjectId);
+    public AiCandidate requirePendingForApply(RequireAiCandidateForApplyQuery query) {
+        AiCandidate candidate = getRequired(query == null ? null : query.getCandidateId());
+        candidate.requirePendingForApply(
+                query == null ? null : query.getContentRef(), query == null ? null : query.getCapability());
+        if (query != null && query.getTargetObjectId() != null) {
+            candidate.requireTargetObject(query.getTargetObjectId());
         }
         return candidate;
     }
 
     @Override
-    public AiCandidate markApplied(
-            AiCandidateId candidateId, String resultFormat, String resultPayload, Instant appliedAt) {
-        AiCandidate candidate = getRequired(candidateId);
+    public AiCandidate markApplied(ApplyAiCandidateCommand command) {
+        AiCandidate candidate = getRequired(command == null ? null : command.getCandidateId());
         candidate.markApplied(
-                defaultIfNull(resultFormat, candidate.getResultFormat()),
-                defaultIfNull(resultPayload, candidate.getResultPayload()),
-                appliedAt == null ? Instant.now() : appliedAt);
+                defaultIfNull(command == null ? null : command.getResultFormat(), candidate.getResultFormat()),
+                defaultIfNull(command == null ? null : command.getResultPayload(), candidate.getResultPayload()),
+                command == null || command.getAppliedAt() == null ? Instant.now() : command.getAppliedAt());
         updateRequired(candidate);
         return candidate;
     }
 
     @Override
-    public AiCandidate reject(AiCandidateId candidateId, String errorType, String errorMessage) {
-        AiCandidate candidate = getRequired(candidateId);
-        candidate.reject(errorType, errorMessage);
+    public AiCandidate reject(RejectAiCandidateCommand command) {
+        AiCandidate candidate = getRequired(command == null ? null : command.getCandidateId());
+        candidate.reject(
+                command == null ? null : command.getErrorType(), command == null ? null : command.getErrorMessage());
         updateRequired(candidate);
         return candidate;
     }
