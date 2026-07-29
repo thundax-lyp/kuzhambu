@@ -11,7 +11,9 @@ import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.system.application.core.command.DictSortCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveDictCommand;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetDictQuery;
 import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
@@ -61,7 +63,7 @@ public class DictController {
     @SysLogger(value = "读取")
     @PostMapping(value = "get")
     public DictResponse get(@Valid @RequestBody DictIdRequest request) {
-        return DictInterfaceAssembler.toResponse(dictService.get(DictInterfaceAssembler.toId(request)));
+        return DictInterfaceAssembler.toResponse(getDict(DictInterfaceAssembler.toId(request)));
     }
 
     @Operation(summary = "获取列表", description = "sys:dict:view")
@@ -113,7 +115,7 @@ public class DictController {
     @PostMapping(value = "create")
     public DictResponse add(@Valid @RequestBody DictSaveRequest request) {
         DictId id = dictService.create(DictInterfaceAssembler.toCreateCommand(request));
-        return DictInterfaceAssembler.toResponse(dictService.get(id));
+        return DictInterfaceAssembler.toResponse(getDict(id));
     }
 
     @Operation(summary = "更新", description = "sys:dict:edit")
@@ -129,12 +131,12 @@ public class DictController {
     @PostMapping(value = "update")
     public DictResponse update(@Valid @RequestBody DictSaveRequest request) {
         DictId id = DictIdCodec.toDomain(request.getId());
-        Dict dict = dictService.get(id);
+        Dict dict = getDict(id);
         if (dict == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
         dictService.changeInfo(DictInterfaceAssembler.toChangeInfoCommand(request));
-        return DictInterfaceAssembler.toResponse(dictService.get(id));
+        return DictInterfaceAssembler.toResponse(getDict(id));
     }
 
     @Operation(summary = "删除", description = "sys:dict:edit")
@@ -151,7 +153,7 @@ public class DictController {
     public Boolean delete(@Valid @RequestBody List<DictIdRequest> list) {
         List<DictId> idList = new ArrayList<>();
         for (DictIdRequest request : RequestListHelper.present(list)) {
-            Dict bean = dictService.get(DictInterfaceAssembler.toId(request));
+            Dict bean = getDict(DictInterfaceAssembler.toId(request));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -160,7 +162,7 @@ public class DictController {
         if (idList.isEmpty()) {
             throw AdminResponseExceptions.invalidParameter("list");
         }
-        idList.forEach(dictService::remove);
+        idList.forEach(id -> dictService.remove(new RemoveDictCommand(id)));
         return true;
     }
 
@@ -192,5 +194,9 @@ public class DictController {
             throw AdminResponseExceptions.invalidParameter("orderedIds");
         }
         return orderedIds;
+    }
+
+    private Dict getDict(DictId dictId) {
+        return dictService.get(new GetDictQuery(dictId));
     }
 }

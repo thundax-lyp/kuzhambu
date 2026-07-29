@@ -12,7 +12,9 @@ import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.system.application.core.command.ChangeDictInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateDictCommand;
 import com.thundax.kuzhambu.system.application.core.command.DictSortCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveDictCommand;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetDictQuery;
 import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
@@ -37,7 +39,8 @@ public class DictApplicationServiceImpl implements DictApplicationService {
         this.dao = dao;
     }
 
-    public Dict get(DictId id) {
+    public Dict get(GetDictQuery query) {
+        DictId id = query == null ? null : query.getId();
         if (id == null) {
             return null;
         }
@@ -120,8 +123,13 @@ public class DictApplicationServiceImpl implements DictApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "Dict", id = "#id == null ? null : #id.value()", action = AuditAction.DELETE, summary = "删除字典")
-    public void remove(DictId id) {
+    @AuditLog(
+            type = "Dict",
+            id = "#command.id == null ? null : #command.id.value()",
+            action = AuditAction.DELETE,
+            summary = "删除字典")
+    public void remove(RemoveDictCommand command) {
+        DictId id = command == null ? null : command.getId();
         if (id != null) {
             dao.deleteById(id);
         }

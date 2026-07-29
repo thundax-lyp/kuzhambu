@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `13-core-dict-contract`：[13] 强类型化 Dict get/remove 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/GetDictQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/RemoveDictCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/DictApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/DictApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/DictController.java`
-    - 处理动作：新增 `GetDictQuery.id` 和 `RemoveDictCommand.id`，替换 `get(DictId)` 与 `remove(DictId)`。
-    - 验收点：Dict application service 的 get/remove 均使用 Query/Command，`listTypes/listLabels` 继续返回 `List<String>`。
-    - 重要度：8/10
-
 - [ ] `14-core-log-contract`：[14] 强类型化 Log get/delete 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`

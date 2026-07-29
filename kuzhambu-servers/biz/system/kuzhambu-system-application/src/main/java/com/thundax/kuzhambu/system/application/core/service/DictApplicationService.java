@@ -5,14 +5,16 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.command.ChangeDictInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateDictCommand;
 import com.thundax.kuzhambu.system.application.core.command.DictSortCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveDictCommand;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetDictQuery;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
 import java.util.List;
 
 public interface DictApplicationService {
 
-    Dict get(DictId id);
+    Dict get(GetDictQuery query);
 
     List<Dict> list(DictQuery query);
 
@@ -24,7 +26,7 @@ public interface DictApplicationService {
 
     void changeInfo(ChangeDictInfoCommand command);
 
-    void remove(DictId id);
+    void remove(RemoveDictCommand command);
 
     List<String> listTypes(DictQuery query);
 
