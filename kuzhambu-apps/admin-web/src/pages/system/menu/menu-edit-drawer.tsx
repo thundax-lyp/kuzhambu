@@ -10,8 +10,8 @@ import {
     KuzhambuSwitch
 } from "@/components";
 
-import type { MenuSaveCommand } from "../menu-service";
-import type { MenuNode } from "../menu-types";
+import type { MenuSaveCommand } from "./menu-service";
+import type { MenuNode } from "./menu-types";
 
 const { TextArea } = Input;
 

@@ -1,7 +1,7 @@
 import { Avatar } from "antd";
 import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import type { UserRecord } from "../user-types";
+import type { UserRecord } from "./user-types";
 
 interface UserAvatarProps {
     user: UserRecord;

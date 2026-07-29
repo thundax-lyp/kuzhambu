@@ -25,7 +25,7 @@ import {
 } from "@/components";
 import * as service from "./storage-object-service";
 import type { StoragePageQuery } from "./storage-object-service";
-import { StorageUploadTaskCard } from "./components/storage-upload-task-card";
+import { StorageUploadTaskCard } from "./storage-upload-task-card";
 import type {
     StorageContentMode,
     StorageRecord,

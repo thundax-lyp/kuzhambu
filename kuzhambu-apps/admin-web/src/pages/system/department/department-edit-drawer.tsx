@@ -8,8 +8,8 @@ import {
     KuzhambuFormPlaceholderItem,
     KuzhambuSelect
 } from "@/components";
-import type { DepartmentSaveCommand } from "../department-service";
-import type { DepartmentNode } from "../department-types";
+import type { DepartmentSaveCommand } from "./department-service";
+import type { DepartmentNode } from "./department-types";
 
 const { TextArea } = Input;
 

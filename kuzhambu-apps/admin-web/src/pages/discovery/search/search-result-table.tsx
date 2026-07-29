@@ -1,6 +1,6 @@
 import { Empty, Pagination, Spin, Tag } from "antd";
 import type { ReactNode } from "react";
-import type { DiscoverySearchGroupRecord, DiscoverySearchItemRecord } from "../search-types";
+import type { DiscoverySearchGroupRecord, DiscoverySearchItemRecord } from "./search-types";
 
 export interface SearchResultEntry {
     group: DiscoverySearchGroupRecord;

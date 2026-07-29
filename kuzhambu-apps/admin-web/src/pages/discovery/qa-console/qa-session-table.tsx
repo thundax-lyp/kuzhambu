@@ -6,7 +6,7 @@ import { KuzhambuButton, KuzhambuSpace, KuzhambuCard } from "@/components";
 import type {
     DiscoveryQaSessionDetailRecord,
     DiscoveryQaSessionPageRecord
-} from "../qa-console-types";
+} from "./qa-console-types";
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;

@@ -2,9 +2,9 @@ import { useMutation } from "@tanstack/react-query";
 import type { Dayjs } from "dayjs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { SearchQueryPanel, type SearchFormState } from "./components/search-query-panel";
-import { SearchResultDetail } from "./components/search-result-detail";
-import { SearchResultTable, type SearchResultEntry } from "./components/search-result-table";
+import { SearchQueryPanel, type SearchFormState } from "./search-query-panel";
+import { SearchResultDetail } from "./search-result-detail";
+import { SearchResultTable, type SearchResultEntry } from "./search-result-table";
 import * as service from "./search-service";
 import type { DiscoverySearchGroupRecord, DiscoverySearchItemRecord } from "./search-types";
 import type {

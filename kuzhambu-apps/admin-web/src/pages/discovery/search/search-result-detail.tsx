@@ -1,6 +1,6 @@
 import { Descriptions, Empty, Spin, Tag, Typography } from "antd";
 import { KuzhambuDrawer } from "@/components";
-import type { DiscoverySearchPreviewRecord } from "../search-types";
+import type { DiscoverySearchPreviewRecord } from "./search-types";
 import type { SearchResultEntry } from "./search-result-table";
 
 const PREVIEW_PARAGRAPH_MAX_LENGTH = 360;
