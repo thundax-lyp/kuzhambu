@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.system.application.audit.query;
 
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AuditMetaQuery {
 
-    private String objectType;
-    private String objectId;
+    private AuditObjectRef objectRef;
 }

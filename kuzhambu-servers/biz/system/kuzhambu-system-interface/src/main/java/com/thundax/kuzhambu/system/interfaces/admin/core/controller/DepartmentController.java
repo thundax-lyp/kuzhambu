@@ -9,8 +9,10 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.system.application.core.command.MoveDepartmentCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
+import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
@@ -41,10 +43,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class DepartmentController {
 
-    private final DepartmentApplicationService departmentService;
+    private final DepartmentManagementApplicationService departmentService;
 
     @Autowired
-    public DepartmentController(DepartmentApplicationService departmentService) {
+    public DepartmentController(DepartmentManagementApplicationService departmentService) {
         this.departmentService = departmentService;
     }
 
@@ -60,11 +62,11 @@ public class DepartmentController {
     @SysLogger(value = "读取")
     @PostMapping(value = "get")
     public DepartmentResponse get(@Valid @RequestBody DepartmentIdRequest request) {
-        Department bean = departmentService.get(DepartmentIdCodec.toDomain(request.getId()));
+        Department bean = getDepartment(DepartmentIdCodec.toDomain(request.getId()));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
-        return DepartmentInterfaceAssembler.toResponse(bean, departmentService::get);
+        return DepartmentInterfaceAssembler.toResponse(bean, this::getDepartment);
     }
 
     @Operation(summary = "获取列表", description = "sys:department:view")
@@ -82,7 +84,7 @@ public class DepartmentController {
         DepartmentQuery query = DepartmentInterfaceAssembler.toQuery(request);
 
         return departmentService.list(query).stream()
-                .map(department -> DepartmentInterfaceAssembler.toResponse(department, departmentService::get))
+                .map(department -> DepartmentInterfaceAssembler.toResponse(department, this::getDepartment))
                 .collect(Collectors.toList());
     }
 
@@ -100,14 +102,14 @@ public class DepartmentController {
     public DepartmentResponse add(@Valid @RequestBody DepartmentSaveRequest request) {
         Department entity = DepartmentInterfaceAssembler.toDomain(new Department(), request);
         if (entity.getId() != null) {
-            Department bean = departmentService.get(entity.getId());
+            Department bean = getDepartment(entity.getId());
             if (bean != null) {
                 throw AdminResponseExceptions.objectExists();
             }
         }
 
         if (entity.getParentId() != null) {
-            Department parent = departmentService.get(entity.getParentId());
+            Department parent = getDepartment(entity.getParentId());
             if (parent == null) {
                 throw AdminResponseExceptions.invalidParameter("parentId");
             }
@@ -115,7 +117,7 @@ public class DepartmentController {
 
         entity.setId(departmentService.create(DepartmentInterfaceAssembler.toCreateCommand(request)));
 
-        return DepartmentInterfaceAssembler.toResponse(entity, departmentService::get);
+        return DepartmentInterfaceAssembler.toResponse(entity, this::getDepartment);
     }
 
     @Operation(summary = "更新", description = "sys:department:edit")
@@ -130,13 +132,13 @@ public class DepartmentController {
     @SysLogger(value = "更新")
     @PostMapping(value = "update")
     public DepartmentResponse update(@Valid @RequestBody DepartmentSaveRequest request) {
-        Department bean = departmentService.get(DepartmentIdCodec.toDomain(request.getId()));
+        Department bean = getDepartment(DepartmentIdCodec.toDomain(request.getId()));
         if (bean == null) {
             throw AdminResponseExceptions.invalidParameter("id");
         }
 
         if (request.getParentId() != null) {
-            Department parent = departmentService.get(DepartmentIdCodec.toDomain(request.getParentId()));
+            Department parent = getDepartment(DepartmentIdCodec.toDomain(request.getParentId()));
             if (parent == null) {
                 throw AdminResponseExceptions.invalidParameter("parentId");
             }
@@ -146,7 +148,7 @@ public class DepartmentController {
 
         departmentService.changeInfo(DepartmentInterfaceAssembler.toChangeInfoCommand(request));
 
-        return DepartmentInterfaceAssembler.toResponse(entity, departmentService::get);
+        return DepartmentInterfaceAssembler.toResponse(entity, this::getDepartment);
     }
 
     @Operation(summary = "删除", description = "sys:department:edit")
@@ -163,7 +165,7 @@ public class DepartmentController {
     public Boolean delete(@Valid @RequestBody List<DepartmentIdRequest> list) {
         List<DepartmentId> idList = new ArrayList<>();
         for (DepartmentIdRequest request : RequestListHelper.present(list)) {
-            Department bean = departmentService.get(DepartmentIdCodec.toDomain(request.getId()));
+            Department bean = getDepartment(DepartmentIdCodec.toDomain(request.getId()));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -173,7 +175,7 @@ public class DepartmentController {
             throw AdminResponseExceptions.invalidParameter("list");
         }
 
-        idList.forEach(departmentService::remove);
+        idList.forEach(id -> departmentService.remove(new RemoveDepartmentCommand(id)));
 
         return true;
     }
@@ -234,12 +236,12 @@ public class DepartmentController {
     @SysLogger(value = "移动")
     @PostMapping(value = "move")
     public Boolean move(@Valid @RequestBody DepartmentMoveRequest request) {
-        Department fromBean = departmentService.get(DepartmentIdCodec.toDomain(request.getFromNodeId()));
+        Department fromBean = getDepartment(DepartmentIdCodec.toDomain(request.getFromNodeId()));
         if (fromBean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
 
-        Department toBean = departmentService.get(DepartmentIdCodec.toDomain(request.getToNodeId()));
+        Department toBean = getDepartment(DepartmentIdCodec.toDomain(request.getToNodeId()));
         if (toBean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -272,5 +274,9 @@ public class DepartmentController {
         query.setChildId(child.getId());
         query.setAncestorId(ancestor.getId());
         return query;
+    }
+
+    private Department getDepartment(DepartmentId departmentId) {
+        return departmentService.get(new GetDepartmentQuery(departmentId));
     }
 }

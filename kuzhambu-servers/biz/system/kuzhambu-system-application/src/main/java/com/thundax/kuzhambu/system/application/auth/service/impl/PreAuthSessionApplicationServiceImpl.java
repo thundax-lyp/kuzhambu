@@ -7,12 +7,12 @@ import com.thundax.kuzhambu.system.application.auth.command.RefreshPreAuthSessio
 import com.thundax.kuzhambu.system.application.auth.command.ReleasePreAuthSessionCommand;
 import com.thundax.kuzhambu.system.application.auth.command.UpsertPreAuthSessionValueCommand;
 import com.thundax.kuzhambu.system.application.auth.configure.CaptchaWhitelistProperties;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueValidateQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
-import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
 import com.thundax.kuzhambu.system.domain.auth.repository.PreAuthSessionRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,18 +46,18 @@ public class PreAuthSessionApplicationServiceImpl implements PreAuthSessionAppli
     }
 
     @Override
-    public PreAuthSessionId getIdByToken(PreAuthSessionToken token) {
-        return preAuthSessionRepository.getByToken(token);
+    public PreAuthSessionId getIdByToken(PreAuthSessionQuery query) {
+        return preAuthSessionRepository.getByToken(query == null ? null : query.getToken());
     }
 
     @Override
-    public PreAuthSessionId getIdByRefreshToken(PreAuthSessionToken refreshToken) {
-        return preAuthSessionRepository.getByRefreshToken(refreshToken);
+    public PreAuthSessionId getIdByRefreshToken(PreAuthSessionQuery query) {
+        return preAuthSessionRepository.getByRefreshToken(query == null ? null : query.getRefreshToken());
     }
 
     @Override
-    public PreAuthSession get(PreAuthSessionId id) {
-        PreAuthSession session = preAuthSessionRepository.getById(id);
+    public PreAuthSession get(PreAuthSessionQuery query) {
+        PreAuthSession session = preAuthSessionRepository.getById(query == null ? null : query.getId());
         if (session == null || session.isExpired()) {
             throw new BizException("AUTH-00006", "auth.exception.invalid-token", "token 已失效");
         }
@@ -66,7 +66,7 @@ public class PreAuthSessionApplicationServiceImpl implements PreAuthSessionAppli
 
     @Override
     public PreAuthSession refresh(RefreshPreAuthSessionCommand command) {
-        PreAuthSession session = get(command.getId());
+        PreAuthSession session = get(new PreAuthSessionQuery(command.getId(), null, null));
         session.refresh(command.getExpiredSeconds(), command.getRefreshTokenGraceSeconds());
         preAuthSessionRepository.update(session);
         return session;
@@ -79,14 +79,14 @@ public class PreAuthSessionApplicationServiceImpl implements PreAuthSessionAppli
 
     @Override
     public void upsertValue(UpsertPreAuthSessionValueCommand command) {
-        PreAuthSession session = get(command.getId());
+        PreAuthSession session = get(new PreAuthSessionQuery(command.getId(), null, null));
         session.upsertValue(command.getName(), command.getValue(), command.getExpiredAt());
         preAuthSessionRepository.update(session);
     }
 
     @Override
     public String getValue(PreAuthSessionValueQuery query) {
-        return get(query.getId()).findValue(query.getName());
+        return get(new PreAuthSessionQuery(query.getId(), null, null)).findValue(query.getName());
     }
 
     @Override
@@ -97,7 +97,7 @@ public class PreAuthSessionApplicationServiceImpl implements PreAuthSessionAppli
         if (captchaWhitelistProperties.matches(query.getValue())) {
             return true;
         }
-        PreAuthSession session = get(query.getId());
+        PreAuthSession session = get(new PreAuthSessionQuery(query.getId(), null, null));
         if (!StringUtils.equals(query.getValue(), session.findValue(query.getName()))) {
             return false;
         }

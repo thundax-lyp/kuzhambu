@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
@@ -16,8 +17,9 @@ import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAva
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserPasswordCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
-import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.CurrentUserProfileApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
@@ -58,14 +60,14 @@ public class CurrentUserController {
 
     private static final String PRIVATE_KEY_ITEM = "privateKey";
 
-    private final CurrentUserApplicationService currentUserService;
+    private final CurrentUserProfileApplicationService currentUserService;
     private final CurrentUserResolver currentUserResolver;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final PreAuthSessionApplicationService preAuthSessionService;
     private final AdminAvatarUrlBuilder avatarUrlBuilder;
 
     public CurrentUserController(
-            CurrentUserApplicationService currentUserService,
+            CurrentUserProfileApplicationService currentUserService,
             CurrentUserResolver currentUserResolver,
             PrincipalIdentityApplicationService principalIdentityService,
             PreAuthSessionApplicationService preAuthSessionService,
@@ -243,7 +245,7 @@ public class CurrentUserController {
     }
 
     private String readAvatarUrl(User user) {
-        if (user == null || !currentUserService.existsAvatar(user.getId())) {
+        if (user == null || !currentUserService.existsAvatar(new CurrentUserAvatarQuery(user.getId()))) {
             return null;
         }
         return avatarUrlBuilder.build(UserIdCodec.toStringValue(user.getId()));
@@ -262,7 +264,8 @@ public class CurrentUserController {
     }
 
     private String getPrivateKey(String token) {
-        PreAuthSessionId sessionId = preAuthSessionService.getIdByToken(PreAuthSessionToken.of(token));
+        PreAuthSessionId sessionId =
+                preAuthSessionService.getIdByToken(new PreAuthSessionQuery(null, PreAuthSessionToken.of(token), null));
         if (sessionId == null) {
             throw AdminResponseExceptions.invalidToken();
         }

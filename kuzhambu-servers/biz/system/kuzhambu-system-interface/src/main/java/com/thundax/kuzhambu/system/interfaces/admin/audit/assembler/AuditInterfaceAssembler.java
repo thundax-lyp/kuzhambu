@@ -8,13 +8,15 @@ import com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssemblerRegistry;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.audit.query.AuditLogQuery;
 import com.thundax.kuzhambu.system.application.audit.query.AuditMetaQuery;
+import com.thundax.kuzhambu.system.application.audit.query.GetAuditLogQuery;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditLogIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditMetaIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditChangedField;
-import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogDetailRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogPageRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditMetaRequest;
@@ -40,19 +42,17 @@ public final class AuditInterfaceAssembler {
 
     public static AuditMetaQuery toMetaQuery(AuditMetaRequest request) {
         AuditMetaQuery query = new AuditMetaQuery();
-        query.setObjectType(request.getObjectType());
-        query.setObjectId(request.getObjectId());
+        query.setObjectRef(AuditObjectRef.of(request.getObjectType(), request.getObjectId()));
         return query;
     }
 
     public static AuditLogQuery toLogQuery(AuditLogPageRequest request) {
         AuditLogQuery query = new AuditLogQuery();
-        query.setObjectType(request.getObjectType());
-        query.setObjectId(request.getObjectId());
+        query.setObjectRef(AuditObjectRef.of(request.getObjectType(), request.getObjectId()));
         query.setAction(request.getAction() == null ? null : AuditAction.from(request.getAction()));
-        query.setOperatorType(
-                request.getOperatorType() == null ? null : AuditOperatorType.from(request.getOperatorType()));
-        query.setOperatorId(request.getOperatorId());
+        query.setOperatorRef(AuditOperatorRef.of(
+                request.getOperatorType() == null ? null : AuditOperatorType.from(request.getOperatorType()),
+                request.getOperatorId()));
         query.setSource(request.getSource());
         query.setRequestId(request.getRequestId());
         query.setBeginDate(request.getBeginDate());
@@ -60,21 +60,19 @@ public final class AuditInterfaceAssembler {
         return query;
     }
 
-    public static AuditLogId toLogId(AuditLogDetailRequest request) {
-        return AuditLogIdCodec.toDomain(request.getId());
+    public static GetAuditLogQuery toGetLogQuery(AuditLogDetailRequest request) {
+        return new GetAuditLogQuery(AuditLogIdCodec.toDomain(request.getId()));
     }
 
     public static AuditLogQuery toLogQuery(AuditObjectPageRequest request) {
         AuditLogQuery query = new AuditLogQuery();
-        query.setObjectType(request.getObjectType());
-        query.setObjectId(request.getObjectId());
+        query.setObjectRef(AuditObjectRef.of(request.getObjectType(), request.getObjectId()));
         return query;
     }
 
     public static AuditLogQuery toObjectLogQuery(AuditMetaRequest request) {
         AuditLogQuery query = new AuditLogQuery();
-        query.setObjectType(request.getObjectType());
-        query.setObjectId(request.getObjectId());
+        query.setObjectRef(AuditObjectRef.of(request.getObjectType(), request.getObjectId()));
         return query;
     }
 

@@ -1,7 +1,9 @@
 package com.thundax.kuzhambu.system.application.auth.service;
 
 import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
-import com.thundax.kuzhambu.system.application.auth.command.PrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalIdentityStatusCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
@@ -16,11 +18,11 @@ public interface PrincipalIdentityApplicationService {
     List<PrincipalIdentity> list(PrincipalIdentityQuery query);
 
     @LayerPublicApi(reason = "统一认证主体资料维护时新增登录标识的业务入口")
-    PrincipalIdentityId create(PrincipalIdentityCommand command);
+    PrincipalIdentityId create(CreatePrincipalIdentityCommand command);
 
     @LayerPublicApi(reason = "统一认证主体资料维护时更新登录标识的业务入口")
-    void change(PrincipalIdentityCommand command);
+    void change(ChangePrincipalIdentityCommand command);
 
     @LayerPublicApi(reason = "统一认证主体资料维护时启停登录标识的业务入口")
-    void changeStatus(PrincipalIdentityCommand command);
+    void changeStatus(ChangePrincipalIdentityStatusCommand command);
 }

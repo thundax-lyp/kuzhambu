@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqMessage;
 import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqSender;
 import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
+import com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
-import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.SystemLogApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
@@ -37,7 +38,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
 
     private final KuzhambuMqSender mqSender;
     private final KuzhambuProperties kuzhambuProperties;
-    private final LogApplicationService logService;
+    private final SystemLogApplicationService logService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -80,7 +81,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
         LogQuery query = new LogQuery();
         query.setBeginDate(DateUtils.addDays(new Date(), -9999));
         query.setEndDate(DateUtils.addDays(new Date(), -logProperties().getAliveDays()));
-        logService.deleteByCondition(query);
+        logService.deleteByCondition(new DeleteLogCommand(query));
     }
 
     private KuzhambuProperties.LogProperties logProperties() {
@@ -125,7 +126,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
         private CreateLogCommand toCreateCommand() {
             return new CreateLogCommand(
                     LogIdCodec.toDomain(id),
-                    userId,
+                    UserIdCodec.toDomain(userId),
                     type == null ? null : LogType.from(type),
                     logDate,
                     title,

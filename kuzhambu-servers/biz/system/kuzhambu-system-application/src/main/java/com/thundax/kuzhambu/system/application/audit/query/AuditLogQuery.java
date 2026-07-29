@@ -1,7 +1,8 @@
 package com.thundax.kuzhambu.system.application.audit.query;
 
 import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
-import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,11 +15,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AuditLogQuery {
 
-    private String objectType;
-    private String objectId;
+    private AuditObjectRef objectRef;
     private AuditAction action;
-    private AuditOperatorType operatorType;
-    private String operatorId;
+    private AuditOperatorRef operatorRef;
     private String source;
     private String requestId;
     private Date beginDate;

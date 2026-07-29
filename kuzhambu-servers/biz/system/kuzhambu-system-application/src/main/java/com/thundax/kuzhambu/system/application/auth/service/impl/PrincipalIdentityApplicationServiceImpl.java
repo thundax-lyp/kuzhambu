@@ -1,7 +1,9 @@
 package com.thundax.kuzhambu.system.application.auth.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.system.application.auth.command.PrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalIdentityStatusCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
@@ -45,20 +47,37 @@ public class PrincipalIdentityApplicationServiceImpl implements PrincipalIdentit
     }
 
     @Override
-    public PrincipalIdentityId create(PrincipalIdentityCommand command) {
-        PrincipalIdentity principalIdentity = command.getPrincipalIdentity();
+    public PrincipalIdentityId create(CreatePrincipalIdentityCommand command) {
+        PrincipalIdentity principalIdentity = new PrincipalIdentity();
+        principalIdentity.setPrincipalKey(command.getPrincipalKey());
+        principalIdentity.setType(command.getType());
+        principalIdentity.setIdentityValue(command.getIdentityValue());
+        principalIdentity.setStatus(command.getStatus());
         PrincipalIdentityId id = principalIdentityRepository.insert(principalIdentity);
         principalIdentity.setId(id);
         return id;
     }
 
     @Override
-    public void change(PrincipalIdentityCommand command) {
-        principalIdentityRepository.update(command.getPrincipalIdentity());
+    public void change(ChangePrincipalIdentityCommand command) {
+        principalIdentityRepository.update(principalIdentity(command));
     }
 
     @Override
-    public void changeStatus(PrincipalIdentityCommand command) {
-        principalIdentityRepository.updateStatus(command.getPrincipalIdentity());
+    public void changeStatus(ChangePrincipalIdentityStatusCommand command) {
+        PrincipalIdentity principalIdentity = new PrincipalIdentity();
+        principalIdentity.setId(command.getId());
+        principalIdentity.setStatus(command.getStatus());
+        principalIdentityRepository.updateStatus(principalIdentity);
+    }
+
+    private PrincipalIdentity principalIdentity(ChangePrincipalIdentityCommand command) {
+        PrincipalIdentity principalIdentity = new PrincipalIdentity();
+        principalIdentity.setId(command.getId());
+        principalIdentity.setPrincipalKey(command.getPrincipalKey());
+        principalIdentity.setType(command.getType());
+        principalIdentity.setIdentityValue(command.getIdentityValue());
+        principalIdentity.setStatus(command.getStatus());
+        return principalIdentity;
     }
 }
