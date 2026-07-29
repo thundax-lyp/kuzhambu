@@ -5,8 +5,8 @@ import { KuzhambuList, KuzhambuListItem, KuzhambuSpace, KuzhambuButton } from "@
 import type { TagAliasCreateCommand, TagAliasRemoveCommand } from "./taxonomy-service";
 import type { TagAliasRecord } from "./taxonomy-types";
 
-import { TagAliasCreateField } from "./tag-alias-create-field";
-import type { TagAliasCreateFormValues } from "./tag-alias-create-field";
+import { TagAliasCreateField } from "./components/tag-alias-create-field";
+import type { TagAliasCreateFormValues } from "./components/tag-alias-create-field";
 
 const { Text } = Typography;
 

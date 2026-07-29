@@ -15,7 +15,7 @@ import { ClassicsContentTagPanel } from "@/pages/classics/common/classics-conten
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/ai-candidate-batch-drawer";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import { SancaiEntryList } from "./sancai-entry-list";
-import { SancaiEntryEditDrawer } from "../sancai-entry-edit-drawer";
+import { SancaiEntryEditDrawer } from "../components/sancai-entry-edit-drawer";
 import { SancaiEntryExportActions } from "../sancai-entry-export-actions";
 import { SancaiEntryVersionSection } from "../sancai-entry-version-section";
 import type { SancaiEntryFormValues } from "../sancai-entry-edit-drawer/sancai-entry-form-values";

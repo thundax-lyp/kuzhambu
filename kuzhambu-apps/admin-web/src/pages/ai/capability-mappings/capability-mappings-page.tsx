@@ -13,8 +13,8 @@ import {
     KuzhambuCard
 } from "@/components";
 
-import { CapabilityMappingDrawer } from "./capability-mapping-drawer";
-import type { MappingFormValues } from "./capability-mapping-drawer";
+import { CapabilityMappingDrawer } from "./components/capability-mapping-drawer/capability-mapping-drawer";
+import type { MappingFormValues } from "./components/capability-mapping-drawer/capability-mapping-drawer";
 import { CapabilityMappingTable } from "./capability-mapping-table";
 import type { MappingTableRow } from "./capability-mapping-table";
 import * as service from "./capability-mappings-service";

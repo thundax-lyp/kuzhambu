@@ -12,7 +12,7 @@ import {
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
-import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-edit-drawer/sancai-entry-form-values";
+import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 
 const MODAL_TITLE = "AI摘要";
 const TASK_LABEL = "摘要";
