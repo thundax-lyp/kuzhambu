@@ -32,6 +32,7 @@ import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAva
 import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
@@ -63,6 +64,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.UserInterfaceAssembler;
@@ -601,7 +603,7 @@ public class UserController {
                 throw AdminResponseExceptions.invalidParameter("roles.id");
 
             } else {
-                Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+                Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
                 if (bean == null) {
                     throw AdminResponseExceptions.objectNotFound();
                 }
@@ -719,7 +721,7 @@ public class UserController {
             return new ArrayList<>();
         }
         return userRoles.stream()
-                .map(role -> role == null ? null : roleService.get(role.getId()))
+                .map(role -> role == null ? null : roleService.get(getRoleQuery(role.getId())))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
@@ -732,6 +734,10 @@ public class UserController {
 
     private GetUserQuery getUserQuery(UserId userId) {
         return new GetUserQuery(userId);
+    }
+
+    private GetRoleQuery getRoleQuery(RoleId roleId) {
+        return new GetRoleQuery(roleId);
     }
 
     private String getAccountLoginName(UserId userId) {

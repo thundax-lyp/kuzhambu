@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.system.application.audit.runtime.sys;
 
 import com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoader;
+import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,6 @@ public class RoleAuditObjectLoader implements AuditObjectLoader {
 
     @Override
     public Object load(String objectId) {
-        return roleService.get(RoleIdCodec.toDomain(Long.valueOf(objectId)));
+        return roleService.get(new GetRoleQuery(RoleIdCodec.toDomain(Long.valueOf(objectId))));
     }
 }

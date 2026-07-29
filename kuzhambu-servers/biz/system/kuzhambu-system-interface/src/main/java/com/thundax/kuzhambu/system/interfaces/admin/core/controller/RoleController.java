@@ -12,9 +12,11 @@ import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
@@ -114,7 +116,7 @@ public class RoleController {
     @SysLogger(value = "读取")
     @PostMapping(value = "get")
     public RoleResponse get(@Valid @RequestBody RoleIdRequest request) {
-        Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+        Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -177,7 +179,7 @@ public class RoleController {
         validateMenus(request.getMenuList());
 
         if (request.getId() != null) {
-            Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+            Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
             if (bean != null) {
                 throw AdminResponseExceptions.objectExists();
             }
@@ -203,7 +205,7 @@ public class RoleController {
     public RoleResponse update(@Valid @RequestBody RoleSaveRequest request) {
         validateMenus(request.getMenuList());
 
-        Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+        Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -229,7 +231,7 @@ public class RoleController {
     public Boolean updateStatus(@Valid @RequestBody List<RoleStatusRequest> list) {
         List<ChangeRoleStatusCommand> commandList = new ArrayList<>();
         for (RoleStatusRequest request : RequestListHelper.present(list)) {
-            Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+            Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -289,7 +291,7 @@ public class RoleController {
     public Boolean delete(@Valid @RequestBody List<RoleIdRequest> list) {
         List<RoleId> idList = new ArrayList<>();
         for (RoleIdRequest request : RequestListHelper.present(list)) {
-            Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+            Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -299,7 +301,7 @@ public class RoleController {
             throw AdminResponseExceptions.invalidParameter("list");
         }
 
-        idList.forEach(roleService::remove);
+        idList.forEach(id -> roleService.remove(new RemoveRoleCommand(id)));
 
         return true;
     }
@@ -364,7 +366,7 @@ public class RoleController {
     @IgnoreSysLogger
     @PostMapping(value = "user/list")
     public List<RoleUserResponse> userList(@Valid @RequestBody RoleIdRequest request) {
-        Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));
+        Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -424,7 +426,7 @@ public class RoleController {
     }
 
     private void validateAssignUser(RoleAssignUserRequest request) {
-        Role roleBean = roleService.get(RoleIdCodec.toDomain(request.getRoleId()));
+        Role roleBean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getRoleId())));
         if (roleBean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -453,6 +455,10 @@ public class RoleController {
 
     private RoleQuery roleQuery(Role role) {
         return roleQuery(RoleIdCodec.toValue(role.getId()));
+    }
+
+    private GetRoleQuery getRoleQuery(RoleId roleId) {
+        return new GetRoleQuery(roleId);
     }
 
     private RoleQuery roleQuery(String roleId) {

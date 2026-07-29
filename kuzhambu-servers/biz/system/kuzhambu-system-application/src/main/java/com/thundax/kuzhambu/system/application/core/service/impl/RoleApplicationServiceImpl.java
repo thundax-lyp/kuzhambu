@@ -13,7 +13,9 @@ import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersComma
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateRoleCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
@@ -46,7 +48,8 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         this.cacheChangedListeners = cacheChangedListeners;
     }
 
-    public Role get(RoleId id) {
+    public Role get(GetRoleQuery query) {
+        RoleId id = query == null ? null : query.getId();
         if (id == null) {
             return null;
         }
@@ -164,9 +167,14 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "Role", id = "#id == null ? null : #id.value()", action = AuditAction.DELETE, summary = "删除角色")
-    public int remove(RoleId id) {
-        Role role = get(id);
+    @AuditLog(
+            type = "Role",
+            id = "#command.id == null ? null : #command.id.value()",
+            action = AuditAction.DELETE,
+            summary = "删除角色")
+    public int remove(RemoveRoleCommand command) {
+        RoleId id = command == null ? null : command.getId();
+        Role role = get(new GetRoleQuery(id));
         if (role == null) {
             return 0;
         }

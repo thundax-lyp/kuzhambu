@@ -6,7 +6,9 @@ import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersComma
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateRoleCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
@@ -16,7 +18,7 @@ import java.util.List;
 
 public interface RoleApplicationService {
 
-    Role get(RoleId id);
+    Role get(GetRoleQuery query);
 
     List<Role> list(RoleQuery query);
 
@@ -26,7 +28,7 @@ public interface RoleApplicationService {
 
     void changeInfo(ChangeRoleInfoCommand command);
 
-    int remove(RoleId id);
+    int remove(RemoveRoleCommand command);
 
     void sort(RoleSortCommand command);
 

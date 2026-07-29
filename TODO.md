@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `10-core-role-contract`：[10] 强类型化 Role get/remove 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/GetRoleQuery.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/RemoveRoleCommand.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/RoleApplicationService.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/RoleApplicationServiceImpl.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/RoleController.java`
-    - 处理动作：新增 `GetRoleQuery.id` 和 `RemoveRoleCommand.id`，替换 `get(RoleId)` 与 `remove(RoleId)`。
-    - 验收点：Role application service 的 get/remove 均使用 Query/Command，角色详情、删除角色接口保持 HTTP 契约不变。
-    - 重要度：8/10
-
 - [ ] `11-core-menu-contract`：[11] 强类型化 Menu get/remove 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-APPLICATION-TYPED-CONTRACT.md`
