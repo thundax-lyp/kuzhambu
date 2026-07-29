@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `02-storage-object-commands`：02 强类型化 storage object 写入命令
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/command/{CreateStorageCommand.java,ChangeStorageCommand.java,UploadStorageObjectCommand.java,RemoveStorageReferencesCommand.java,AddStorageReferencesCommand.java,StorageSortCommand.java}`
-    - 处理动作：把 storage object 写入命令中的 owner、mime、bucket、object key、size 等字段收敛到本域强类型值对象或本域 domain entity
-    - 验收点：命令对象仍为纯字段对象，`AddStorageReferencesCommand.references` 保留 `List<StoredObjectReference>`，无新增方法
-    - 重要度：9/10
-
 - [ ] `03-multipart-commands`：03 强类型化 multipart 上传命令
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-APPLICATION-STRONG-CONTRACT.md`

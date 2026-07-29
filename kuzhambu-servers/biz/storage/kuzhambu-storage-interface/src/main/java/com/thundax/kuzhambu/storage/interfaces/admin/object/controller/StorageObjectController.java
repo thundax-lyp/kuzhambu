@@ -26,6 +26,8 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPa
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.AbortMultipartUploadRequest;
@@ -249,10 +251,9 @@ public class StorageObjectController {
                     file == null ? null : file.getInputStream(),
                     file == null ? null : file.getOriginalFilename(),
                     file == null ? null : file.getContentType(),
-                    file == null ? 0L : file.getSize(),
+                    file == null ? null : new StorageByteSize(file.getSize()),
                     ALLOWED_UPLOAD_SUFFIXES,
-                    ownerTypeFrom(ownerType),
-                    StringUtils.trimToNull(ownerId),
+                    StorageOwnerRef.ofNullable(ownerTypeFrom(ownerType), StringUtils.trimToNull(ownerId)),
                     null,
                     null,
                     null));

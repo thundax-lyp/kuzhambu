@@ -248,7 +248,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (command == null) {
             return 0;
         }
-        StorageOwnerRef ownerRef = StorageOwnerRef.ofNullable(command.getOwnerType(), command.getOwnerId());
+        StorageOwnerRef ownerRef = command.getOwnerRef();
         Set<StoredObjectId> impactedObjectIds = impactedObjectIdsByOwner(ownerRef);
         int removed = businessRepository.deleteByOwner(ownerRef);
         updateReferenceStatusByObjectId(impactedObjectIds);
@@ -355,7 +355,9 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         StorageUploadResult validatedResult = validateUploadFile(
                 command == null ? null : command.getInputStream(),
                 command == null ? null : command.getOriginalFilename(),
-                command == null ? 0L : command.getSize(),
+                command == null || command.getSize() == null
+                        ? 0L
+                        : command.getSize().value(),
                 command == null ? null : command.getAllowedSuffixes());
         if (validatedResult.hasError()) {
             return validatedResult;
@@ -367,14 +369,15 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         storage.setRemarks(command.getRemarks());
         applyFileMetadata(command.getOriginalFilename(), command.getContentType(), storage);
         try {
+            long declaredSize = command.getSize().value();
             applyStoredObject(
                     storage,
                     storedObjectContentRepository.save(
-                            storage, StorageInputStreamLimiter.limit(command.getInputStream(), command.getSize())));
+                            storage, StorageInputStreamLimiter.limit(command.getInputStream(), declaredSize)));
         } catch (IOException exception) {
             return StorageUploadResult.builder().error(exception.getMessage()).build();
         }
-        if (!Long.valueOf(command.getSize()).equals(storage.getSize())) {
+        if (!command.getSize().value().equals(storage.getSize())) {
             deleteStoredObjectContent(storage);
             return StorageUploadResult.builder().error("文件大小与声明大小不一致").build();
         }
@@ -488,10 +491,10 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         command.setContentType(storage.getContentType());
         command.setName(storage.getName());
         command.setExtendName(storage.getExtendName());
-        command.setMimeType(storage.getMimeType());
-        command.setBucketName(storage.getBucketName());
-        command.setObjectKey(storage.getObjectKey());
-        command.setSize(storage.getSize());
+        command.setMimeType(storage.getMimeTypeRef());
+        command.setBucketName(storage.getBucketNameRef());
+        command.setObjectKey(storage.getObjectKeyRef());
+        command.setSize(storage.getSizeRef());
         command.setAccessEndpoint(storage.getAccessEndpoint());
         command.setObjectStatus(storage.getObjectStatus());
         command.setReferenceStatus(storage.getReferenceStatus());
@@ -506,10 +509,10 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         storage.setContentType(command.getContentType());
         storage.setName(command.getName());
         storage.setExtendName(command.getExtendName());
-        storage.setMimeType(command.getMimeType());
-        storage.setBucketName(command.getBucketName());
-        storage.setObjectKey(command.getObjectKey());
-        storage.setSize(command.getSize());
+        storage.setMimeTypeRef(command.getMimeType());
+        storage.setBucketNameRef(command.getBucketName());
+        storage.setObjectKeyRef(command.getObjectKey());
+        storage.setSizeRef(command.getSize());
         storage.setAccessEndpoint(command.getAccessEndpoint());
         storage.setObjectStatus(command.getObjectStatus());
         storage.setReferenceStatus(command.getReferenceStatus());
@@ -524,10 +527,10 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         storage.setContentType(command.getContentType());
         storage.setName(command.getName());
         storage.setExtendName(command.getExtendName());
-        storage.setMimeType(command.getMimeType());
-        storage.setBucketName(command.getBucketName());
-        storage.setObjectKey(command.getObjectKey());
-        storage.setSize(command.getSize());
+        storage.setMimeTypeRef(command.getMimeType());
+        storage.setBucketNameRef(command.getBucketName());
+        storage.setObjectKeyRef(command.getObjectKey());
+        storage.setSizeRef(command.getSize());
         storage.setAccessEndpoint(command.getAccessEndpoint());
         storage.setObjectStatus(command.getObjectStatus());
         storage.setReferenceStatus(command.getReferenceStatus());

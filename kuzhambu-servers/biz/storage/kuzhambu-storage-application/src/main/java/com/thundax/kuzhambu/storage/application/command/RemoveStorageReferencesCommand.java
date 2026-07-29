@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.storage.application.command;
 
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +11,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RemoveStorageReferencesCommand {
-    private StorageOwnerType ownerType;
-    private String ownerId;
+    private StorageOwnerRef ownerRef;
 }

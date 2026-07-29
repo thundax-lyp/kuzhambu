@@ -364,10 +364,10 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         command.setContentType(storage.getContentType());
         command.setName(storage.getName());
         command.setExtendName(storage.getExtendName());
-        command.setMimeType(storage.getMimeType());
-        command.setBucketName(storage.getBucketName());
-        command.setObjectKey(storage.getObjectKey());
-        command.setSize(storage.getSize());
+        command.setMimeType(storage.getMimeTypeRef());
+        command.setBucketName(storage.getBucketNameRef());
+        command.setObjectKey(storage.getObjectKeyRef());
+        command.setSize(storage.getSizeRef());
         command.setAccessEndpoint(storage.getAccessEndpoint());
         command.setObjectStatus(storage.getObjectStatus());
         command.setReferenceStatus(storage.getReferenceStatus());

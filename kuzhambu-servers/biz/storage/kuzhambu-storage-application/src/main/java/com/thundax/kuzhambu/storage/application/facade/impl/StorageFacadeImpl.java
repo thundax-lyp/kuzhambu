@@ -14,6 +14,8 @@ import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.request.AbortMultipartUploadFacadeRequest;
@@ -98,10 +100,9 @@ public class StorageFacadeImpl implements StorageFacade {
                 request.getInputStream(),
                 request.getOriginalFilename(),
                 request.getContentType(),
-                request.getSizeBytes() == null ? 0L : request.getSizeBytes(),
+                request.getSizeBytes() == null ? null : new StorageByteSize(request.getSizeBytes()),
                 request.getAllowedSuffixes(),
-                uploadFacadeAssembler.toOwnerType(request),
-                request.getOwnerId(),
+                StorageOwnerRef.ofNullable(uploadFacadeAssembler.toOwnerType(request), request.getOwnerId()),
                 uploadFacadeAssembler.toObjectStatus(request),
                 uploadFacadeAssembler.toReferenceStatus(request),
                 request.getRemarks()));
