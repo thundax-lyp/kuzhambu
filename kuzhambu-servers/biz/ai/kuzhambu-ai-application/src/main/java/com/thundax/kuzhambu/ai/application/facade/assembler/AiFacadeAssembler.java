@@ -200,10 +200,13 @@ public class AiFacadeAssembler {
             return null;
         }
         return KnowledgeAiExtractionFacadeResponse.builder()
-                .callId(record.getCallId())
-                .candidateId(record.getCandidateId())
-                .status(record.getStatus())
-                .capability(record.getCapability())
+                .callId(AiCallIdCodec.toValue(record.getCallId()))
+                .candidateId(AiCandidateIdCodec.toValue(record.getCandidateId()))
+                .status(record.getStatus() == null ? null : record.getStatus().name())
+                .capability(
+                        record.getCapability() == null
+                                ? null
+                                : record.getCapability().value())
                 .resultFormat(record.getResultFormat())
                 .resultPayload(record.getResultPayload())
                 .errorType(record.getErrorType())

@@ -349,10 +349,10 @@ class AiFacadeImplTest {
             assertFalse(input.isForceJson());
             assertEquals("zh-CN", input.getLocale());
             return new KnowledgeAiExtractionResult(
-                    701L,
-                    801L,
-                    "SUCCEEDED",
-                    AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT.value(),
+                    new AiCallId(701L),
+                    new AiCandidateId(801L),
+                    AiInvocationStatus.SUCCEEDED,
+                    AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
                     "JSON",
                     "{\"nodes\":1}",
                     null,
@@ -424,7 +424,14 @@ class AiFacadeImplTest {
             assertTrue(input.isForceJson());
             assertEquals("zh-CN", input.getLocale());
             return new KnowledgeAiExtractionResult(
-                    711L, 811L, "SUCCEEDED", "KNOWLEDGE_TAG_EXTRACTION", "STRUCTURED", "{\"tags\":[]}", null, null);
+                    new AiCallId(711L),
+                    new AiCandidateId(811L),
+                    AiInvocationStatus.SUCCEEDED,
+                    AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT,
+                    "STRUCTURED",
+                    "{\"tags\":[]}",
+                    null,
+                    null);
         });
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -460,7 +467,7 @@ class AiFacadeImplTest {
         assertEquals(711L, response.getCallId());
         assertEquals(811L, response.getCandidateId());
         assertEquals("SUCCEEDED", response.getStatus());
-        assertEquals("KNOWLEDGE_TAG_EXTRACTION", response.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT.value(), response.getCapability());
         assertEquals("STRUCTURED", response.getResultFormat());
         assertEquals("{\"tags\":[]}", response.getResultPayload());
         assertNull(response.getErrorType());

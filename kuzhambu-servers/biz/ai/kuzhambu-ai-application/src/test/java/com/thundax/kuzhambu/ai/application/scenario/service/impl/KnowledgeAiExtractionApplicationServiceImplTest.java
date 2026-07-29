@@ -16,6 +16,9 @@ import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
 import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.util.function.Consumer;
@@ -94,9 +97,10 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
 
         KnowledgeAiExtractionResult result = extractGraph(repository);
 
-        assertEquals(101L, result.getCallId());
-        assertEquals(102L, result.getCandidateId());
-        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals(new AiCallId(101L), result.getCallId());
+        assertEquals(new AiCandidateId(102L), result.getCandidateId());
+        assertEquals(AiInvocationStatus.SUCCEEDED, result.getStatus());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, result.getCapability());
     }
 
     @Test
