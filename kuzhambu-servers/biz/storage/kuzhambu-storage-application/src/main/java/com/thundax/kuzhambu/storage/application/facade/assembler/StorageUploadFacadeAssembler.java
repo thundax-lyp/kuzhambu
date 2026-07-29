@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.storage.application.facade.assembler;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.storage.application.command.AbortMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
@@ -27,6 +28,7 @@ import com.thundax.kuzhambu.storage.facade.response.CompleteMultipartUploadFacad
 import com.thundax.kuzhambu.storage.facade.response.InitMultipartUploadFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadMultipartPartFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -196,19 +198,27 @@ public class StorageUploadFacadeAssembler {
     }
 
     private MultipartUploadId toMultipartUploadId(String value) {
-        return StringUtils.isBlank(value) ? null : new MultipartUploadId(value);
+        return StringUtils.isBlank(value) ? null : toBizValueObject(() -> new MultipartUploadId(value));
     }
 
     private MultipartPartNumber toMultipartPartNumber(Integer value) {
-        return value == null ? null : new MultipartPartNumber(value);
+        return value == null ? null : toBizValueObject(() -> new MultipartPartNumber(value));
     }
 
     private StorageByteSize toStorageByteSize(Long value) {
-        return value == null ? null : new StorageByteSize(value);
+        return value == null ? null : toBizValueObject(() -> new StorageByteSize(value));
     }
 
     private MultipartPartSize toMultipartPartSize(Long value) {
-        return value == null ? null : new MultipartPartSize(value);
+        return value == null ? null : toBizValueObject(() -> new MultipartPartSize(value));
+    }
+
+    private <T> T toBizValueObject(Supplier<T> supplier) {
+        try {
+            return supplier.get();
+        } catch (IllegalArgumentException exception) {
+            throw new BizException(exception.getMessage());
+        }
     }
 
     public UploadStorageFacadeResponse toResponse(StoredObject storage) {

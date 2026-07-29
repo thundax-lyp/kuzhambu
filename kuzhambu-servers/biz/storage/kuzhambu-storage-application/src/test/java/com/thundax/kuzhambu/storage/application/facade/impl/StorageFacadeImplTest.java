@@ -2,12 +2,14 @@ package com.thundax.kuzhambu.storage.application.facade.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.storage.application.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.command.ChangeStorageReferenceStatusCommand;
 import com.thundax.kuzhambu.storage.application.command.CompleteMultipartUploadCommand;
@@ -33,6 +35,7 @@ import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest
 import com.thundax.kuzhambu.storage.facade.request.CompleteMultipartUploadFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.InitMultipartUploadFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadMultipartPartFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -188,6 +191,65 @@ class StorageFacadeImplTest {
     }
 
     @Test
+    void uploadShouldConvertInvalidFacadeSizeToBizException() {
+        StorageUploadApplicationService uploadApplicationService = mock(StorageUploadApplicationService.class);
+        StorageFacadeImpl facade = facade(uploadApplicationService);
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> facade.upload(UploadStorageFacadeRequest.builder()
+                        .originalFilename("source.pdf")
+                        .contentType("application/pdf")
+                        .sizeBytes(-1L)
+                        .build()));
+
+        assertEquals("storage byte size must be greater than or equal to 0", exception.getMessage());
+        verify(uploadApplicationService, never()).upload(any());
+    }
+
+    @Test
+    void initMultipartUploadShouldConvertInvalidFacadePartSizeToBizException() {
+        StorageMultipartUploadApplicationService multipartUploadApplicationService =
+                mock(StorageMultipartUploadApplicationService.class);
+        StorageFacadeImpl facade = facade(multipartUploadApplicationService);
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> facade.initMultipartUpload(InitMultipartUploadFacadeRequest.builder()
+                        .uploadId("upload-1")
+                        .ownerId("owner-1")
+                        .ownerType(StorageOwnerType.USER.value())
+                        .businessType("image")
+                        .originalFilename("source.pdf")
+                        .mimeType("application/pdf")
+                        .totalSize(10L)
+                        .partSize(0L)
+                        .build()));
+
+        assertEquals("multipart part size must be greater than 0", exception.getMessage());
+        verify(multipartUploadApplicationService, never()).init(any());
+    }
+
+    @Test
+    void uploadPartShouldConvertInvalidFacadePartNumberToBizException() {
+        StorageMultipartUploadApplicationService multipartUploadApplicationService =
+                mock(StorageMultipartUploadApplicationService.class);
+        StorageFacadeImpl facade = facade(multipartUploadApplicationService);
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> facade.uploadPart(UploadMultipartPartFacadeRequest.builder()
+                        .uploadId("upload-1")
+                        .partNumber(0)
+                        .etag("etag-1")
+                        .size(7L)
+                        .build()));
+
+        assertEquals("multipart part number must be greater than or equal to 1", exception.getMessage());
+        verify(multipartUploadApplicationService, never()).uploadPart(any());
+    }
+
+    @Test
     void completeMultipartShouldDelegateAndReturnCompleteResponse() {
         StorageMultipartUploadApplicationService multipartUploadApplicationService =
                 mock(StorageMultipartUploadApplicationService.class);
@@ -250,6 +312,18 @@ class StorageFacadeImplTest {
                 mock(StorageContentApplicationService.class),
                 mock(StorageUploadApplicationService.class),
                 multipartUploadApplicationService,
+                new StorageReadableContentFacadeAssembler(),
+                new StorageOwnerBindingFacadeAssembler(),
+                new StorageUploadFacadeAssembler());
+    }
+
+    private static StorageFacadeImpl facade(StorageUploadApplicationService uploadApplicationService) {
+        return new StorageFacadeImpl(
+                mock(StorageObjectApplicationService.class),
+                mock(StorageReferenceApplicationService.class),
+                mock(StorageContentApplicationService.class),
+                uploadApplicationService,
+                mock(StorageMultipartUploadApplicationService.class),
                 new StorageReadableContentFacadeAssembler(),
                 new StorageOwnerBindingFacadeAssembler(),
                 new StorageUploadFacadeAssembler());
