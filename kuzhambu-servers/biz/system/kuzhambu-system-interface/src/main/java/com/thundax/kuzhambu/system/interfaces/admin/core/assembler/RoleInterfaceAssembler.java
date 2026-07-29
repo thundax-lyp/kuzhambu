@@ -150,12 +150,6 @@ public final class RoleInterfaceAssembler {
         entity.setName(request.getName());
         entity.setPrivilege(Boolean.TRUE.equals(request.getAdmin()) ? RolePrivilege.ADMIN : RolePrivilege.NORMAL);
         entity.setStatus(Boolean.TRUE.equals(request.getEnable()) ? RoleStatus.ENABLED : RoleStatus.DISABLED);
-        entity.setMenuIdList(
-                request.getMenuList() == null
-                        ? new ArrayList<>()
-                        : request.getMenuList().stream()
-                                .map(menu -> MenuIdCodec.toValue(MenuIdCodec.toDomain(menu.getId())))
-                                .collect(Collectors.toList()));
         return entity;
     }
 

@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `T01 Role entity boundary`：删除 Role 实体中的菜单关联字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/core/model/entity/Role.java`；`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/assembler/RoleInterfaceAssembler.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/RoleApplicationServiceImpl.java`
-    - 处理动作：删除 `Role.menuIdList` 及其手写 getter/setter，并让角色菜单关联只通过 command 与 repository 关系方法传递。
-    - 验收点：生产代码不再出现 `role.getMenuIdList()` 或 `role.setMenuIdList(...)`，且 `Role` 类级 Lombok 注解仍只保留治理规则允许的四个注解。
-    - 重要度：9/10
-
 - [ ] `T02 User and Role repository contracts`：强类型化用户与角色仓储契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SYSTEM-DOMAIN-STRONG-TYPING.md`

@@ -22,9 +22,9 @@ import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.repository.RoleRepository;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -78,7 +78,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         Role role = toRole(command);
         role.setPriority(dao.maxPriority() + PRIORITY_STEP);
         role.setId(dao.insert(role));
-        afterWrite(role);
+        afterWrite(role, command.getMenuIdList());
         return role.getId();
     }
 
@@ -116,13 +116,13 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     public void changeInfo(ChangeRoleInfoCommand command) {
         Role role = toRole(command);
         dao.update(role);
-        afterWrite(role);
+        afterWrite(role, command.getMenuIdList());
     }
 
-    private void afterWrite(Role role) {
+    private void afterWrite(Role role, List<MenuId> menuIdList) {
         dao.deleteRoleMenu(RoleIdCodec.toValue(role.getId()));
-        if (role.getMenuIdList() != null && !role.getMenuIdList().isEmpty()) {
-            dao.insertRoleMenu(RoleIdCodec.toValue(role.getId()), role.getMenuIdList());
+        if (menuIdList != null && !menuIdList.isEmpty()) {
+            dao.insertRoleMenu(RoleIdCodec.toValue(role.getId()), MenuIdCodec.toValues(menuIdList));
         }
 
         notifyCacheChanged();
@@ -223,14 +223,6 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
                 : cacheChangedListeners.getIfAvailable(Collections::emptyList);
     }
 
-    private List<Long> toValues(List<RoleId> ids) {
-        List<Long> values = new ArrayList<>(ids.size());
-        for (RoleId id : ids) {
-            values.add(id.value());
-        }
-        return values;
-    }
-
     private void updatePriorityOrThrow(RoleId id, int priority, String message) {
         Role role = new Role();
         role.setId(id);
@@ -249,7 +241,6 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         role.setPrivilege(command.getPrivilege());
         role.setStatus(command.getStatus());
         role.setRemarks(command.getRemarks());
-        role.setMenuIdList(MenuIdCodec.toValues(command.getMenuIdList()));
         return role;
     }
 
@@ -260,7 +251,6 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         role.setPrivilege(command.getPrivilege());
         role.setStatus(command.getStatus());
         role.setRemarks(command.getRemarks());
-        role.setMenuIdList(MenuIdCodec.toValues(command.getMenuIdList()));
         return role;
     }
 }
