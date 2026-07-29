@@ -9,5 +9,5 @@ public interface AiCapabilityCatalogApplicationService {
 
     AiBusinessCapability get(GetAiCapabilityQuery query);
 
-    List<AiBusinessCapability> listCapabilities(ListAiCapabilitiesQuery query);
+    List<AiBusinessCapability> list(ListAiCapabilitiesQuery query);
 }

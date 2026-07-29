@@ -137,9 +137,7 @@ public class AiConfigController {
     @PostMapping(value = "capability/list")
     public List<CapabilityResponse> listCapabilities(
             @Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
-        return capabilityCatalogService
-                .listCapabilities(AiConfigInterfaceAssembler.toListCapabilitiesQuery(request))
-                .stream()
+        return capabilityCatalogService.list(AiConfigInterfaceAssembler.toListCapabilitiesQuery(request)).stream()
                 .map(AiConfigInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }

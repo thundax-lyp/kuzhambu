@@ -21,14 +21,13 @@ class AiCapabilityCatalogApplicationServiceImplTest {
     void listCapabilitiesShouldReturnBusinessCapabilitiesWhenEnabled() {
         AiCapabilityCatalogApplicationServiceImpl service = new AiCapabilityCatalogApplicationServiceImpl();
 
-        assertThat(service.listCapabilities(new ListAiCapabilitiesQuery(true)))
-                .contains(AiBusinessCapability.CLASSICS_TRANSLATE);
+        assertThat(service.list(new ListAiCapabilitiesQuery(true))).contains(AiBusinessCapability.CLASSICS_TRANSLATE);
     }
 
     @Test
     void listCapabilitiesShouldReturnEmptyWhenDisabledFilterIsFalse() {
         AiCapabilityCatalogApplicationServiceImpl service = new AiCapabilityCatalogApplicationServiceImpl();
 
-        assertThat(service.listCapabilities(new ListAiCapabilitiesQuery(false))).isEmpty();
+        assertThat(service.list(new ListAiCapabilitiesQuery(false))).isEmpty();
     }
 }
