@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.discovery.facade.response;
 import com.thundax.kuzhambu.discovery.facade.dto.DiscoveryQaTrendPointFacadeDto;
 import com.thundax.kuzhambu.discovery.facade.dto.DiscoverySearchTrendPointFacadeDto;
 import com.thundax.kuzhambu.discovery.facade.dto.DiscoveryTopQueryFacadeDto;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,8 +15,8 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DiscoverySummaryFacadeResponse {
 
-    private final Date periodStart;
-    private final Date periodEnd;
+    private final Instant periodStart;
+    private final Instant periodEnd;
     private final Long searchCount;
     private final Long qaCount;
     private final Long avgSearchLatencyMs;
