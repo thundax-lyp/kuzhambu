@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTa
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +18,6 @@ public class ShareLinkCreateResult {
     private String title;
     private ClassicsShareVisibility visibility;
     private ClassicsShareLinkStatus status;
-    private Date expiresAt;
+    private Instant expiresAt;
     private List<ClassicsShareTarget> targets;
 }

@@ -30,7 +30,7 @@ import com.thundax.kuzhambu.classics.facade.request.ClassicsCleanupTargetsFacade
 import com.thundax.kuzhambu.classics.facade.request.ClassicsPublicContentFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -40,8 +40,8 @@ class ClassicsFacadeImplTest {
     void summaryShouldDelegateAndMapFacadeResponse() {
         ClassicsReportApplicationService classicsReportApplicationService =
                 mock(ClassicsReportApplicationService.class);
-        Date periodStart = new Date(1_735_689_600_000L);
-        Date periodEnd = new Date(1_735_776_000_000L);
+        Instant periodStart = Instant.ofEpochMilli(1_735_689_600_000L);
+        Instant periodEnd = Instant.ofEpochMilli(1_735_776_000_000L);
         when(classicsReportApplicationService.summary(periodStart, periodEnd, "WEEK"))
                 .thenReturn(new ClassicsReportSummaryResult(
                         periodStart,
@@ -90,8 +90,8 @@ class ClassicsFacadeImplTest {
                 "PUBLISHED",
                 "PUBLIC",
                 7,
-                new Date(1_735_689_600_000L),
-                new Date(1_735_776_000_000L));
+                Instant.ofEpochMilli(1_735_689_600_000L),
+                Instant.ofEpochMilli(1_735_776_000_000L));
         when(classicsSearchContentApplicationService.listPublicContents()).thenReturn(List.of(sourceContent));
         when(classicsSearchContentApplicationService.getPublicContent("SANCAI_ENTRY", "1001"))
                 .thenReturn(sourceContent);
@@ -141,8 +141,8 @@ class ClassicsFacadeImplTest {
                 "PUBLISHED",
                 "PUBLIC",
                 7,
-                new Date(1_735_689_600_000L),
-                new Date(1_735_776_000_000L));
+                Instant.ofEpochMilli(1_735_689_600_000L),
+                Instant.ofEpochMilli(1_735_776_000_000L));
         SancaiEntry entry = new SancaiEntry();
         entry.setId(com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec.toDomain(1001L));
         entry.setOriginalText("原文");
@@ -208,8 +208,8 @@ class ClassicsFacadeImplTest {
                 "PUBLISHED",
                 "PUBLIC",
                 9,
-                new Date(1_735_689_600_000L),
-                new Date(1_735_776_000_000L));
+                Instant.ofEpochMilli(1_735_689_600_000L),
+                Instant.ofEpochMilli(1_735_776_000_000L));
         WangqiDocument document = new WangqiDocument();
         document.setId(com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec.toDomain(2001L));
         document.setContent("内容正文");
@@ -272,8 +272,8 @@ class ClassicsFacadeImplTest {
                 "PUBLISHED",
                 "PUBLIC",
                 10,
-                new Date(1_735_689_600_000L),
-                new Date(1_735_776_000_000L));
+                Instant.ofEpochMilli(1_735_689_600_000L),
+                Instant.ofEpochMilli(1_735_776_000_000L));
         MingCustomsEntry entry = new MingCustomsEntry();
         entry.setId(com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec.toDomain(3001L));
         entry.setContent("正文");
@@ -345,7 +345,7 @@ class ClassicsFacadeImplTest {
     @Test
     void cleanupTargetsShouldForwardPolicyParametersAndExposeTargetIds() {
         ClassicsCleanupApplicationService cleanupApplicationService = mock(ClassicsCleanupApplicationService.class);
-        Date requestedAt = new Date(1_735_689_600_000L);
+        Instant requestedAt = Instant.ofEpochMilli(1_735_689_600_000L);
         when(cleanupApplicationService.listTargets("EXPIRED_SHARE", requestedAt, 90, 25))
                 .thenReturn(List.of(
                         ClassicsCleanupApplicationService.CleanupTarget.builder()

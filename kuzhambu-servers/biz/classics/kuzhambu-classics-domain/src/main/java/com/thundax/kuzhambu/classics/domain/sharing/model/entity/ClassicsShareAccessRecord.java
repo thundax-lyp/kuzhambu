@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareAcc
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareAccessRecordId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +18,7 @@ public class ClassicsShareAccessRecord {
     private ClassicsShareAccessRecordId id;
     private ClassicsShareLinkId shareLinkId;
     private ClassicsShareTargetId shareTargetId;
-    private Date accessedAt;
+    private Instant accessedAt;
     private ClassicsShareAccessResult accessResult;
     private String clientSnapshot;
 }

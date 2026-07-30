@@ -30,7 +30,7 @@ import com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsSh
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsSharingMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
@@ -76,7 +76,7 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
 
     @Override
     public PageResult<ClassicsSharePortalListItem> pagePortalShares(
-            String contentType, String title, Date issuedAfter, Date issuedBefore, int pageNo, int pageSize) {
+            String contentType, String title, Instant issuedAfter, Instant issuedBefore, int pageNo, int pageSize) {
         Page<ClassicsSharePortalListItemDO> dataPage = targetMapper.pagePortalShares(
                 new Page<>(pageNo, pageSize),
                 ClassicsShareVisibility.PUBLIC.value(),
@@ -119,7 +119,7 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
     }
 
     @Override
-    public List<ClassicsShareLinkId> listExpiredShareLinkIds(Date now, int limit) {
+    public List<ClassicsShareLinkId> listExpiredShareLinkIds(Instant now, int limit) {
         return linkMapper
                 .selectList(new LambdaQueryWrapper<ClassicsShareLinkDO>()
                         .select(ClassicsShareLinkDO::getId)

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,10 +33,10 @@ public class ClassicsSharingResponse implements Serializable {
     private String status;
 
     @JsonProperty("issuedAt")
-    private Date issuedAt;
+    private Instant issuedAt;
 
     @JsonProperty("expiresAt")
-    private Date expiresAt;
+    private Instant expiresAt;
 
     @JsonProperty("accessCount")
     private Long accessCount;

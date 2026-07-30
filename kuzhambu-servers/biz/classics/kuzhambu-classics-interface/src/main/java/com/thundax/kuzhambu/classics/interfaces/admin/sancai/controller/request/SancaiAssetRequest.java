@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -53,10 +53,10 @@ public class SancaiAssetRequest extends PageRequest {
     private String visibilityRiskStatus;
 
     @JsonProperty("requestedAtStart")
-    private Date requestedAtStart;
+    private Instant requestedAtStart;
 
     @JsonProperty("requestedAtEnd")
-    private Date requestedAtEnd;
+    private Instant requestedAtEnd;
 
     @JsonProperty("privateConfirmed")
     private Boolean privateConfirmed;

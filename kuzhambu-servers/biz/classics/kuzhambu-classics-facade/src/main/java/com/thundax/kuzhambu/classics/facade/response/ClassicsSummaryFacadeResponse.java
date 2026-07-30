@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.classics.facade.response;
 
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsContentGrowthPointFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsTopContentFacadeDto;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -14,8 +14,8 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClassicsSummaryFacadeResponse {
 
-    private final Date periodStart;
-    private final Date periodEnd;
+    private final Instant periodStart;
+    private final Instant periodEnd;
     private final Long contentCount;
     private final Long translatedContentCount;
     private final Long imageReadyContentCount;

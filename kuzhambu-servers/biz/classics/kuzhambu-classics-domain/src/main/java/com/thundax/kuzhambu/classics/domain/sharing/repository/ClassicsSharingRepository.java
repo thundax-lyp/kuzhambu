@@ -11,7 +11,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsSh
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface ClassicsSharingRepository {
@@ -22,12 +22,12 @@ public interface ClassicsSharingRepository {
 
     PageResult<ClassicsShareLink> pageLinks(String status, String visibility, int pageNo, int pageSize);
 
-    default List<ClassicsShareLinkId> listExpiredShareLinkIds(Date now, int limit) {
+    default List<ClassicsShareLinkId> listExpiredShareLinkIds(Instant now, int limit) {
         return List.of();
     }
 
     PageResult<ClassicsSharePortalListItem> pagePortalShares(
-            String contentType, String title, Date issuedAfter, Date issuedBefore, int pageNo, int pageSize);
+            String contentType, String title, Instant issuedAfter, Instant issuedBefore, int pageNo, int pageSize);
 
     List<ClassicsSharePortalListItem> listTopPortalShares(String visibility, int limit);
 

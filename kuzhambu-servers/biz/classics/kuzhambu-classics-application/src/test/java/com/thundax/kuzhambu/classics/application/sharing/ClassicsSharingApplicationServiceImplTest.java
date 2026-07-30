@@ -61,7 +61,6 @@ import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -899,22 +898,22 @@ class ClassicsSharingApplicationServiceImplTest {
     }
 
     private static ClassicsShareLink link(
-            ClassicsShareVisibility visibility, ClassicsShareLinkStatus status, Date expiresAt) {
+            ClassicsShareVisibility visibility, ClassicsShareLinkStatus status, Instant expiresAt) {
         ClassicsShareLink link = new ClassicsShareLink();
         link.setId(ClassicsShareLinkIdCodec.toDomain(10L));
         link.setTitle("公开分享");
         link.setVisibility(visibility);
         link.setStatus(status);
-        link.setIssuedAt(new Date(1_000L));
+        link.setIssuedAt(Instant.ofEpochMilli(1_000L));
         link.setExpiresAt(expiresAt);
         return link;
     }
 
-    private static Date futureDate() {
-        return new Date(System.currentTimeMillis() + 60_000L);
+    private static Instant futureDate() {
+        return Instant.now().plusSeconds(60);
     }
 
-    private static Date pastDate() {
-        return new Date(System.currentTimeMillis() - 60_000L);
+    private static Instant pastDate() {
+        return Instant.now().minusSeconds(60);
     }
 }

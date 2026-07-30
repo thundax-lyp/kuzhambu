@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.application.search.result;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,8 +24,8 @@ public class ClassicsSearchSourceContent {
     private String status;
     private String visibility;
     private Integer currentVersionNo;
-    private Date publishedAt;
-    private Date updatedAt;
+    private Instant publishedAt;
+    private Instant updatedAt;
 
     public ClassicsSearchSourceContent(
             String contentType,
@@ -39,8 +39,8 @@ public class ClassicsSearchSourceContent {
             List<String> tagNames,
             String status,
             String visibility,
-            Date publishedAt,
-            Date updatedAt) {
+            Instant publishedAt,
+            Instant updatedAt) {
         this(
                 contentType,
                 contentId,

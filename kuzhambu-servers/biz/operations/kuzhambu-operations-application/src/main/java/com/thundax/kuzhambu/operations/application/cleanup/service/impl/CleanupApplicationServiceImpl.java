@@ -266,7 +266,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         ClassicsCleanupTargetsFacadeResponse response =
                 classicsFacade.listCleanupTargets(ClassicsCleanupTargetsFacadeRequest.builder()
                         .cleanupType(cleanupType)
-                        .requestedAt(OperationsCleanupLegacyTimeAdapter.toDate(requestedAt))
+                        .requestedAt(requestedAt)
                         .retentionDays(retentionDays)
                         .limit(limit)
                         .build());

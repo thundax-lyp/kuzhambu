@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryDraftIdCodec
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiAssetRepository;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +21,7 @@ class ClassicsCleanupApplicationServiceImplTest {
     @Test
     void listTargetsShouldMapExpiredShareIds() {
         ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
-        Date now = new Date(1_735_689_600_000L);
+        Instant now = Instant.ofEpochMilli(1_735_689_600_000L);
         when(sharingRepository.listExpiredShareLinkIds(now, 50))
                 .thenReturn(List.of(ClassicsShareLinkIdCodec.toDomain(11L), ClassicsShareLinkIdCodec.toDomain(12L)));
         ClassicsCleanupApplicationServiceImpl service = new ClassicsCleanupApplicationServiceImpl(
@@ -37,8 +37,8 @@ class ClassicsCleanupApplicationServiceImplTest {
     @Test
     void listTargetsShouldApplyRetentionDaysAndLimitToExpiredDrafts() {
         SancaiAssetRepository sancaiAssetRepository = mock(SancaiAssetRepository.class);
-        Date now = new Date(1_735_689_600_000L);
-        Date expectedCutoff = new Date(1_735_689_600_000L - 14L * 24L * 60L * 60L * 1000L);
+        Instant now = Instant.ofEpochMilli(1_735_689_600_000L);
+        Instant expectedCutoff = Instant.ofEpochMilli(1_735_689_600_000L - 14L * 24L * 60L * 60L * 1000L);
         when(sancaiAssetRepository.listExpiredDraftIds(expectedCutoff, 10))
                 .thenReturn(List.of(SancaiEntryDraftIdCodec.toDomain(21L)));
         ClassicsCleanupApplicationServiceImpl service = new ClassicsCleanupApplicationServiceImpl(
@@ -74,7 +74,7 @@ class ClassicsCleanupApplicationServiceImplTest {
                 mock(SancaiAssetRepository.class),
                 mock(ClassicsContentRepository.class));
 
-        List<CleanupTarget> targets = service.listTargets("EXPIRED_BACKUP", new Date(), null, null);
+        List<CleanupTarget> targets = service.listTargets("EXPIRED_BACKUP", Instant.now(), null, null);
 
         assertEquals(0, targets.size());
     }

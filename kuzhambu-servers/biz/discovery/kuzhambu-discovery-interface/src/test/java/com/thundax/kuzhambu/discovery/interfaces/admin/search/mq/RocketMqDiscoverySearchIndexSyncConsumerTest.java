@@ -6,7 +6,7 @@ import static org.mockito.Mockito.verify;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncEventFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncMessageFacadeDto;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexSyncApplicationService;
-import java.util.Date;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class RocketMqDiscoverySearchIndexSyncConsumerTest {
@@ -21,7 +21,7 @@ class RocketMqDiscoverySearchIndexSyncConsumerTest {
                 .contentType("SANCAI_ENTRY")
                 .contentId("1001")
                 .currentVersionNo(3)
-                .occurredAt(new Date())
+                .occurredAt(Instant.now())
                 .build();
 
         consumer.onMessage(message);
@@ -33,7 +33,7 @@ class RocketMqDiscoverySearchIndexSyncConsumerTest {
     void onMessageShouldDelegateDeleteEvent() {
         SearchIndexSyncApplicationService service = mock(SearchIndexSyncApplicationService.class);
         RocketMqDiscoverySearchIndexSyncConsumer consumer = new RocketMqDiscoverySearchIndexSyncConsumer(service);
-        Date occurredAt = new Date();
+        Instant occurredAt = Instant.now();
         ClassicsSearchIndexSyncMessageFacadeDto message = ClassicsSearchIndexSyncMessageFacadeDto.builder()
                 .eventId("event-2")
                 .eventType(ClassicsSearchIndexSyncEventFacadeDto.DELETE)
@@ -45,6 +45,6 @@ class RocketMqDiscoverySearchIndexSyncConsumerTest {
 
         consumer.onMessage(message);
 
-        verify(service).syncDelete("WANGQI_DOCUMENT", "2002", 5, occurredAt.toInstant());
+        verify(service).syncDelete("WANGQI_DOCUMENT", "2002", 5, occurredAt);
     }
 }

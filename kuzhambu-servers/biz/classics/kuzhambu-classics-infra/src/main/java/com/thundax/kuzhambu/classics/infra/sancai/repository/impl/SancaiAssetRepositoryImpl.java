@@ -33,7 +33,7 @@ import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiShowc
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiVisualAssetMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
@@ -81,7 +81,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public List<SancaiEntryDraftId> listExpiredDraftIds(Date cutoff, int limit) {
+    public List<SancaiEntryDraftId> listExpiredDraftIds(Instant cutoff, int limit) {
         return draftMapper
                 .selectList(new LambdaQueryWrapper<SancaiEntryDraftDO>()
                         .select(SancaiEntryDraftDO::getId)
@@ -303,7 +303,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
                 new LambdaUpdateWrapper<SancaiShowcaseDO>()
                         .eq(SancaiShowcaseDO::getId, SancaiShowcaseIdCodec.toValue(id))
                         .set(SancaiShowcaseDO::getStatus, SancaiShowcaseStatus.COMPLETED.value())
-                        .set(SancaiShowcaseDO::getCompletedAt, new Date())
+                        .set(SancaiShowcaseDO::getCompletedAt, Instant.now())
                         .set(SancaiShowcaseDO::getStorageObjectId, StorageObjectIdCodec.toValue(storageObjectId))
                         .set(SancaiShowcaseDO::getEntryCount, entryCount)
                         .set(SancaiShowcaseDO::getAssetCount, assetCount)
@@ -327,7 +327,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
                 new LambdaUpdateWrapper<SancaiShowcaseDO>()
                         .eq(SancaiShowcaseDO::getId, SancaiShowcaseIdCodec.toValue(id))
                         .set(SancaiShowcaseDO::getStatus, SancaiShowcaseStatus.FAILED.value())
-                        .set(SancaiShowcaseDO::getCompletedAt, new Date())
+                        .set(SancaiShowcaseDO::getCompletedAt, Instant.now())
                         .set(SancaiShowcaseDO::getFailureType, failureType)
                         .set(SancaiShowcaseDO::getFailureMessage, failureMessage));
     }
@@ -356,8 +356,8 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
             String keyword,
             String status,
             String visibilityRiskStatus,
-            Date requestedAtStart,
-            Date requestedAtEnd,
+            Instant requestedAtStart,
+            Instant requestedAtEnd,
             int pageNo,
             int pageSize) {
         LambdaQueryWrapper<SancaiShowcaseDO> wrapper = new LambdaQueryWrapper<>();

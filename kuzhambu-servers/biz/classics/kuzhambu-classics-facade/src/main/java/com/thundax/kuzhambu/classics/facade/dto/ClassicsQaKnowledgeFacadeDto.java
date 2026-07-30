@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.facade.dto;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,7 @@ public class ClassicsQaKnowledgeFacadeDto {
     private final String visibility;
     private final String status;
     private final String sourcePath;
-    private final Date updatedAt;
+    private final Instant updatedAt;
     private final String title;
     private final String categoryPath;
     private final String summary;

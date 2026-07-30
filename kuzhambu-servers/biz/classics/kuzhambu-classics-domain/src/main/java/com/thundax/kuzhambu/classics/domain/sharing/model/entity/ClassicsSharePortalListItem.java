@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,8 +20,8 @@ public class ClassicsSharePortalListItem {
     private ClassicsShareLinkId shareLinkId;
     private String shareToken;
     private String shareTitle;
-    private Date issuedAt;
-    private Date expiresAt;
+    private Instant issuedAt;
+    private Instant expiresAt;
     private ClassicsContentType contentType;
     private ClassicsContentId contentId;
     private ClassicsContentVersionId contentVersionId;
