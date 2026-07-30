@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchEventDetailResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchEventResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchStatisticsSummaryResponse;
+import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -73,7 +74,7 @@ public class DiscoverySearchStatisticsController {
     })
     public DiscoverySearchEventDetailResponse getEvent(@Valid @RequestBody DiscoverySearchEventGetRequest request) {
         return DiscoverySearchStatisticsInterfaceAssembler.toDetailResponse(
-                searchApplicationService.getEvent(request.getSearchEventId()));
+                searchApplicationService.getEvent(DiscoveryInterfaceIdCodec.toLongValue(request.getId())));
     }
 
     @Operation(summary = "获取检索统计摘要", description = "Discovery 检索统计摘要")

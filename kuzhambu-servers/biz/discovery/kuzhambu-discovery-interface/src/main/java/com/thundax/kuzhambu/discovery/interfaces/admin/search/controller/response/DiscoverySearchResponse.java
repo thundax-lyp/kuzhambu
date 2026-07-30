@@ -16,9 +16,9 @@ import lombok.Getter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DiscoverySearchResponse implements Serializable {
 
-    @Schema(name = "searchEventId", description = "检索统计事件号")
-    @JsonProperty(value = "searchEventId")
-    private String searchEventId;
+    @Schema(name = "id", description = "检索统计事件 ID")
+    @JsonProperty(value = "id")
+    private String id;
 
     @Schema(name = "queryText", description = "原始搜索词")
     @JsonProperty(value = "queryText")

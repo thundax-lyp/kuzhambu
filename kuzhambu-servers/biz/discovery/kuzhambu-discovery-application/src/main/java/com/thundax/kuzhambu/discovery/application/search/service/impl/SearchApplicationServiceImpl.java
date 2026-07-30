@@ -31,7 +31,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -89,7 +88,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                     searchPage.getTotalCount(),
                     groups,
                     elapsedMillis(startNanos));
-            searchEventRepository.save(searchEvent);
+            searchEvent.setId(searchEventRepository.save(searchEvent));
             return toSearchResult(searchEvent, groups);
         } catch (BizException exception) {
             searchEventRepository.save(buildFailedSearchEvent(
@@ -126,15 +125,15 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     @Override
     public Boolean recordClick(SearchClickEventCreateCommand command) {
         validateClickCommand(command);
-        SearchEvent searchEvent = searchEventRepository.getBySearchEventId(command.getSearchEventId());
+        Long searchEventId = Long.valueOf(command.getSearchEventId());
+        SearchEvent searchEvent = searchEventRepository.getById(searchEventId);
         if (searchEvent == null) {
             throw new BizException(
                     "DISCOVERY-20002", "discovery.search.click.search-event-not-found", "Search event does not exist");
         }
         searchClickEventRepository.save(new SearchClickEvent(
                 null,
-                null,
-                command.getSearchEventId(),
+                searchEventId,
                 command.getContentDomain(),
                 command.getContentType(),
                 command.getContentId(),
@@ -171,11 +170,11 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     @Override
-    public SearchEventResult getEvent(String searchEventId) {
-        if (isBlank(searchEventId)) {
+    public SearchEventResult getEvent(Long id) {
+        if (id == null) {
             throw new BizException("Search event id is required");
         }
-        return toSearchEventResult(searchEventRepository.getBySearchEventId(searchEventId));
+        return toSearchEventResult(searchEventRepository.getById(id));
     }
 
     @Override
@@ -203,7 +202,6 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             Long searchLatencyMs) {
         return new SearchEvent(
                 null,
-                newSearchEventId(),
                 query.getQueryText(),
                 normalizedQueryText,
                 resolveDisplayQueryText(understandingResult, normalizedQueryText),
@@ -234,7 +232,6 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 : "DISCOVERY-20001";
         return new SearchEvent(
                 null,
-                newSearchEventId(),
                 query.getQueryText(),
                 normalizedQueryText,
                 resolveDisplayQueryText(understandingResult, normalizedQueryText),
@@ -255,7 +252,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private SearchEventResult toSearchResult(SearchEvent searchEvent, List<SearchGroupResult> groups) {
         return new SearchEventResult(
-                searchEvent.getSearchEventId(),
+                searchEvent.getId(),
                 searchEvent.getQueryText(),
                 searchEvent.getNormalizedQueryText(),
                 searchEvent.getDisplayQueryText(),
@@ -332,7 +329,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             return null;
         }
         return new SearchEventResult(
-                entity.getSearchEventId(),
+                entity.getId(),
                 entity.getQueryText(),
                 entity.getNormalizedQueryText(),
                 entity.getDisplayQueryText(),
@@ -389,10 +386,6 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
-    }
-
-    private String newSearchEventId() {
-        return UUID.randomUUID().toString();
     }
 
     private Long elapsedMillis(long startNanos) {

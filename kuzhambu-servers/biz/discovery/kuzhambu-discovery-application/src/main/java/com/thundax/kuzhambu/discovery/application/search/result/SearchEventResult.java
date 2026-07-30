@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SearchEventResult {
-    private String searchEventId;
+    private Long id;
     private String queryText;
     private String normalizedQueryText;
     private String displayQueryText;
@@ -27,4 +27,48 @@ public class SearchEventResult {
     private String traceId;
     private Long createdAt;
     private List<SearchGroupResult> groups;
+
+    public SearchEventResult(
+            String searchEventId,
+            String queryText,
+            String normalizedQueryText,
+            String displayQueryText,
+            String intentType,
+            String searchScopesJson,
+            int resultTotalCount,
+            int groupTotalCount,
+            String searchStatus,
+            String failureCode,
+            String failureMessage,
+            String operatorId,
+            String requestId,
+            String traceId,
+            Long createdAt,
+            List<SearchGroupResult> groups) {
+        this(
+                searchEventId == null ? null : Long.valueOf(searchEventId),
+                queryText,
+                normalizedQueryText,
+                displayQueryText,
+                intentType,
+                searchScopesJson,
+                resultTotalCount,
+                groupTotalCount,
+                searchStatus,
+                failureCode,
+                failureMessage,
+                operatorId,
+                requestId,
+                traceId,
+                createdAt,
+                groups);
+    }
+
+    public String getSearchEventId() {
+        return id == null ? null : String.valueOf(id);
+    }
+
+    public void setSearchEventId(String searchEventId) {
+        this.id = searchEventId == null ? null : Long.valueOf(searchEventId);
+    }
 }

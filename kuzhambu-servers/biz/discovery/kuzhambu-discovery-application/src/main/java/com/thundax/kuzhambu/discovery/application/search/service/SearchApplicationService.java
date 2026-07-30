@@ -20,7 +20,7 @@ public interface SearchApplicationService {
 
     PageResult<SearchEventResult> pageEvents(SearchEventPageQuery query);
 
-    SearchEventResult getEvent(String searchEventId);
+    SearchEventResult getEvent(Long id);
 
     SearchStatisticsSummaryResult getStatisticsSummary(SearchStatisticsSummaryQuery query);
 }
