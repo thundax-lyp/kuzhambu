@@ -14,15 +14,14 @@ import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
 import java.io.File;
-import java.time.ZoneId;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -59,9 +58,8 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
                 logService.create(sysLog.toCreateCommand());
 
                 try {
-                    String filename = LOG_FILENAME_FORMAT.format(
-                                    sysLog.logDate().toInstant().atZone(ZoneId.systemDefault()))
-                            + LOG_EXTEND_NAME;
+                    String filename =
+                            LOG_FILENAME_FORMAT.format(sysLog.logDate().atZone(ZoneOffset.UTC)) + LOG_EXTEND_NAME;
                     File logFile = new File(logProperties().getStoragePath(), filename);
 
                     FileUtils.writeLines(logFile, new ArrayList<>(Collections.singletonList(payload)), true);
@@ -79,8 +77,9 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
     @Scheduled(cron = "0 0 0/4 * * ?")
     void doTask() {
         LogQuery query = new LogQuery();
-        query.setBeginDate(DateUtils.addDays(new Date(), -9999));
-        query.setEndDate(DateUtils.addDays(new Date(), -logProperties().getAliveDays()));
+        Instant now = Instant.now();
+        query.setBeginDate(now.minusSeconds(9999L * 24L * 60L * 60L));
+        query.setEndDate(now.minusSeconds(logProperties().getAliveDays() * 24L * 60L * 60L));
         logService.deleteByCondition(new DeleteLogCommand(query));
     }
 
@@ -97,7 +96,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
             Long id,
             String userId,
             String type,
-            Date logDate,
+            Instant logDate,
             String title,
             String remoteAddr,
             String userAgent,
