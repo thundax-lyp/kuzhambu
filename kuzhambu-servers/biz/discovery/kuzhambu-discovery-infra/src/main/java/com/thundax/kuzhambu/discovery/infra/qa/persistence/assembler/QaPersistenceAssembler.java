@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.discovery.infra.qa.persistence.assembler;
 
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaMessageIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaSessionIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
@@ -22,7 +25,7 @@ public final class QaPersistenceAssembler {
             return null;
         }
         QaSessionDO dataObject = new QaSessionDO();
-        dataObject.setId(entity.getId());
+        dataObject.setId(QaSessionIdCodec.toValue(entity.getId()));
         dataObject.setOwnerType(entity.getOwnerType());
         dataObject.setOwnerId(entity.getOwnerId());
         dataObject.setKnowledgeBaseName(entity.getKnowledgeBaseName());
@@ -31,7 +34,7 @@ public final class QaPersistenceAssembler {
         dataObject.setContextMode(entity.getContextMode());
         dataObject.setContextContentType(entity.getContextContentType());
         dataObject.setContextContentId(entity.getContextContentId());
-        dataObject.setStatus(entity.getStatus());
+        dataObject.setStatus(QaStringValueCodec.toValue(entity.getStatus()));
         dataObject.setOpenedAt(entity.getOpenedAt());
         dataObject.setLastMessageAt(entity.getLastMessageAt());
         dataObject.setRemovedAt(entity.getRemovedAt());
@@ -43,7 +46,7 @@ public final class QaPersistenceAssembler {
             return null;
         }
         QaSession entity = new QaSession();
-        entity.setId(dataObject.getId());
+        entity.setId(QaSessionIdCodec.toDomain(dataObject.getId()));
         entity.setOwnerType(dataObject.getOwnerType());
         entity.setOwnerId(dataObject.getOwnerId());
         entity.setKnowledgeBaseName(dataObject.getKnowledgeBaseName());
@@ -52,7 +55,7 @@ public final class QaPersistenceAssembler {
         entity.setContextMode(dataObject.getContextMode());
         entity.setContextContentType(dataObject.getContextContentType());
         entity.setContextContentId(dataObject.getContextContentId());
-        entity.setStatus(dataObject.getStatus());
+        entity.setStatus(QaStringValueCodec.toSessionStatus(dataObject.getStatus()));
         entity.setOpenedAt(dataObject.getOpenedAt());
         entity.setLastMessageAt(dataObject.getLastMessageAt());
         entity.setRemovedAt(dataObject.getRemovedAt());
@@ -98,9 +101,9 @@ public final class QaPersistenceAssembler {
             return null;
         }
         QaMessageDO dataObject = new QaMessageDO();
-        dataObject.setId(entity.getId());
-        dataObject.setSessionId(entity.getSessionId());
-        dataObject.setRole(entity.getRole());
+        dataObject.setId(QaMessageIdCodec.toValue(entity.getId()));
+        dataObject.setSessionId(QaSessionIdCodec.toValue(entity.getSessionId()));
+        dataObject.setRole(QaStringValueCodec.toValue(entity.getRole()));
         dataObject.setContent(entity.getContent());
         dataObject.setAnswerStatus(entity.getAnswerStatus());
         dataObject.setModel(entity.getModel());
@@ -118,9 +121,9 @@ public final class QaPersistenceAssembler {
             return null;
         }
         QaMessage entity = new QaMessage();
-        entity.setId(dataObject.getId());
-        entity.setSessionId(dataObject.getSessionId());
-        entity.setRole(dataObject.getRole());
+        entity.setId(QaMessageIdCodec.toDomain(dataObject.getId()));
+        entity.setSessionId(QaSessionIdCodec.toDomain(dataObject.getSessionId()));
+        entity.setRole(QaStringValueCodec.toMessageRole(dataObject.getRole()));
         entity.setContent(dataObject.getContent());
         entity.setAnswerStatus(dataObject.getAnswerStatus());
         entity.setModel(dataObject.getModel());

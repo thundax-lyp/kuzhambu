@@ -17,7 +17,7 @@ const readGraphVersionIdFromSearch = () => {
         return null;
     }
     const versionId = new URLSearchParams(window.location.search).get("graphVersionId")?.trim();
-    return isPositiveDecimalId(versionId) ? versionId : null;
+    return isPositiveDecimalId(versionId) ? (versionId ?? null) : null;
 };
 
 export const useGraphResultsQueryState = () => {

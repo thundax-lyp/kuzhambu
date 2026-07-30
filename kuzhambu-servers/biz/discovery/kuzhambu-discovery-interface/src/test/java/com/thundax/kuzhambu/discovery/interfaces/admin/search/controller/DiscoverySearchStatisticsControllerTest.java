@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.search.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -19,6 +20,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchStatisticsSummaryResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexApplicationService;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchClickEventRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchEventGetRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchEventPageRequest;
@@ -26,6 +28,8 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchStatisticsSummaryRequest;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
@@ -146,7 +150,7 @@ class DiscoverySearchStatisticsControllerTest {
                         20,
                         1,
                         List.of(new SearchEventResult(
-                                1L,
+                                SearchEventIdCodec.toDomain(1L),
                                 "黄帝",
                                 "黄帝",
                                 "黄帝",
@@ -180,7 +184,7 @@ class DiscoverySearchStatisticsControllerTest {
         request.setPageSize(20);
         when(service.search(any()))
                 .thenReturn(new SearchEventResult(
-                        1L,
+                        SearchEventIdCodec.toDomain(1L),
                         "辞官",
                         "辞官",
                         "辞官",
@@ -228,7 +232,7 @@ class DiscoverySearchStatisticsControllerTest {
         SearchApplicationService service = mock(SearchApplicationService.class);
         DiscoverySearchStatisticsQueryController controller = new DiscoverySearchStatisticsQueryController(service);
         DiscoverySearchClickEventRequest request = new DiscoverySearchClickEventRequest();
-        request.setSearchEventId("s-1");
+        request.setSearchEventId("1");
         request.setContentDomain("CLASSICS");
         request.setContentType("SANCAI_ENTRY");
         request.setContentId("1001");
@@ -243,6 +247,33 @@ class DiscoverySearchStatisticsControllerTest {
 
         verify(service).recordClick(any());
         assertEquals(Boolean.TRUE, result);
+    }
+
+    @Test
+    void clickRequestShouldRejectNonnumericSearchEventId() {
+        DiscoverySearchClickEventRequest request = new DiscoverySearchClickEventRequest();
+        request.setSearchEventId("EVT-1001");
+        request.setContentDomain("CLASSICS");
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentId("1001");
+        request.setResultGroupKey("SANCAI_ENTRY");
+        request.setResultRank(1);
+        request.setGroupRank(1);
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+        assertFalse(validator.validate(request).isEmpty());
+    }
+
+    @Test
+    void getRequestShouldRejectNonPositiveSearchEventId() {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        DiscoverySearchEventGetRequest zeroRequest = new DiscoverySearchEventGetRequest();
+        zeroRequest.setId("0");
+        DiscoverySearchEventGetRequest negativeRequest = new DiscoverySearchEventGetRequest();
+        negativeRequest.setId("-1");
+
+        assertFalse(validator.validate(zeroRequest).isEmpty());
+        assertFalse(validator.validate(negativeRequest).isEmpty());
     }
 
     @Test
@@ -291,7 +322,7 @@ class DiscoverySearchStatisticsControllerTest {
         request.setId("1");
         when(service.getEvent(1L))
                 .thenReturn(new SearchEventResult(
-                        1L,
+                        SearchEventIdCodec.toDomain(1L),
                         "黄帝",
                         "黄帝",
                         "黄帝",
@@ -328,7 +359,7 @@ class DiscoverySearchStatisticsControllerTest {
         request.setId("2");
         when(service.getEvent(2L))
                 .thenReturn(new SearchEventResult(
-                        2L,
+                        SearchEventIdCodec.toDomain(2L),
                         "黄帝",
                         "黄帝",
                         "黄帝",

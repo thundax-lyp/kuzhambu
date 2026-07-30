@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
@@ -26,8 +28,10 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewRes
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickEventRepository;
@@ -135,8 +139,8 @@ class SearchApplicationServiceImplTest {
                 20,
                 "ANONYMOUS",
                 null,
-                "req-1",
-                "trace-1");
+                requestId("req-1"),
+                traceId("trace-1"));
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(new QueryUnderstandingResult(
                         "黄帝",
@@ -196,8 +200,8 @@ class SearchApplicationServiceImplTest {
                 20,
                 "ADMIN",
                 "admin-1",
-                "req-blank",
-                "trace-blank");
+                requestId("req-blank"),
+                traceId("trace-blank"));
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(
                         new QueryUnderstandingResult("", "", "KEYWORD_SEARCH", List.of(), "req-blank", "trace-blank"));
@@ -246,8 +250,8 @@ class SearchApplicationServiceImplTest {
                 20,
                 "ANONYMOUS",
                 null,
-                "req-null-query",
-                "trace-null-query");
+                requestId("req-null-query"),
+                traceId("trace-null-query"));
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(new QueryUnderstandingResult(
                         "", "", "KEYWORD_SEARCH", List.of(), "req-null-query", "trace-null-query"));
@@ -293,8 +297,8 @@ class SearchApplicationServiceImplTest {
                 20,
                 "ANONYMOUS",
                 null,
-                "req-3",
-                "trace-3");
+                requestId("req-3"),
+                traceId("trace-3"));
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
@@ -343,8 +347,8 @@ class SearchApplicationServiceImplTest {
                 2,
                 "ADMIN",
                 "admin-1",
-                "req-total",
-                "trace-total");
+                requestId("req-total"),
+                traceId("trace-total"));
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
@@ -397,8 +401,8 @@ class SearchApplicationServiceImplTest {
                 20,
                 "ADMIN",
                 "admin-1",
-                "req-4",
-                "trace-4");
+                requestId("req-4"),
+                traceId("trace-4"));
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
@@ -441,8 +445,8 @@ class SearchApplicationServiceImplTest {
                 20,
                 "ADMIN",
                 "admin-1",
-                "req-5",
-                "trace-5");
+                requestId("req-5"),
+                traceId("trace-5"));
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
@@ -521,7 +525,7 @@ class SearchApplicationServiceImplTest {
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
-        when(searchEventRepository.getById(1L))
+        when(searchEventRepository.getById(searchEventId("1")))
                 .thenReturn(new SearchEvent(
                         1L,
                         "1",
@@ -543,7 +547,7 @@ class SearchApplicationServiceImplTest {
                         new Date()));
 
         Boolean result = service.recordClick(new SearchClickEventCreateCommand(
-                "1",
+                searchEventId("1"),
                 "CLASSICS",
                 "SANCAI_ENTRY",
                 "1001",
@@ -574,12 +578,12 @@ class SearchApplicationServiceImplTest {
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
-        when(searchEventRepository.getBySearchEventId("404")).thenReturn(null);
+        when(searchEventRepository.getById(searchEventId("404"))).thenReturn(null);
 
         BizException exception = assertThrows(
                 BizException.class,
                 () -> service.recordClick(new SearchClickEventCreateCommand(
-                        "404",
+                        searchEventId("404"),
                         "CLASSICS",
                         "SANCAI_ENTRY",
                         "1001",
@@ -639,7 +643,7 @@ class SearchApplicationServiceImplTest {
 
         verify(searchEventRepository).page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20);
         assertEquals(1, result.getRecords().size());
-        assertEquals(1L, result.getRecords().get(0).getId());
+        assertEquals(searchEventId("1"), result.getRecords().get(0).getId());
     }
 
     @Test
@@ -737,8 +741,8 @@ class SearchApplicationServiceImplTest {
                 20,
                 "ANONYMOUS",
                 "user-1",
-                "req-2",
-                "trace-2");
+                requestId("req-2"),
+                traceId("trace-2"));
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), "req-2", "trace-2"));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
@@ -781,8 +785,8 @@ class SearchApplicationServiceImplTest {
                 20,
                 "ANONYMOUS",
                 null,
-                "req-query-understanding",
-                "trace-query-understanding");
+                requestId("req-query-understanding"),
+                traceId("trace-query-understanding"));
         when(queryUnderstandingApplicationService.understand(query))
                 .thenThrow(new BizException(
                         "DISCOVERY-20004",
@@ -811,7 +815,7 @@ class SearchApplicationServiceImplTest {
     private SearchEvent searchEvent(String queryText, String searchStatus, Integer resultTotalCount) {
         return new SearchEvent(
                 1L,
-                "s-" + queryText + "-" + searchStatus + "-" + resultTotalCount,
+                "1",
                 queryText,
                 queryText,
                 queryText,
@@ -847,5 +851,17 @@ class SearchApplicationServiceImplTest {
                 1,
                 1,
                 "/classics/sancai/" + contentId);
+    }
+
+    private SearchEventId searchEventId(String value) {
+        return SearchEventIdCodec.toDomain(value);
+    }
+
+    private com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId requestId(String value) {
+        return RequestIdCodec.toDomain(value);
+    }
+
+    private com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId traceId(String value) {
+        return TraceIdCodec.toDomain(value);
     }
 }

@@ -4,8 +4,8 @@ import { KuzhambuDrawer, KuzhambuForm, KuzhambuFormItem, KuzhambuSelect } from "
 
 import { CapabilityModelMatchPanel } from "./capability-model-match-panel";
 import type { CapabilityModelTagMatch } from "./capability-model-match-panel";
-import type { AiCapabilityMappingChangeCommand } from "./capability-mappings-service";
-import type { AiCapabilityMappingRecord } from "./capability-mappings-types";
+import type { AiCapabilityMappingChangeCommand } from "@/pages/ai/capability-mappings/capability-mappings-service";
+import type { AiCapabilityMappingRecord } from "@/pages/ai/capability-mappings/capability-mappings-types";
 
 export type MappingFormValues = AiCapabilityMappingChangeCommand;
 

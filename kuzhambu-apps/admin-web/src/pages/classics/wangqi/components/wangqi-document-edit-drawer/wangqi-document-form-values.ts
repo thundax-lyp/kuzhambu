@@ -1,6 +1,6 @@
 import dayjs, { type Dayjs } from "dayjs";
-import type { WangqiDocumentCommand } from "./wangqi-service";
-import type { WangqiDocumentRecord } from "./wangqi-types";
+import type { WangqiDocumentCommand } from "@/pages/classics/wangqi/wangqi-service";
+import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
 
 export interface WangqiDocumentFormValues {
     content: string;

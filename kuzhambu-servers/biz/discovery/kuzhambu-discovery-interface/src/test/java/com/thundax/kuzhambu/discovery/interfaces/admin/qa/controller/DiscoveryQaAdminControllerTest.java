@@ -26,6 +26,8 @@ import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeSyncApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.request.DiscoveryQaAdminRequests;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
@@ -144,6 +146,23 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(1, sessionPageRequest.getPageNo());
         assertEquals(10, sessionPageRequest.getPageSize());
         assertJsonFields(sessionPageRequest, "title", "openedAtStart", "openedAtEnd", "pageNo", "pageSize");
+    }
+
+    @Test
+    void sessionRequestsShouldRejectNonPositiveSessionId() {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        DiscoveryQaAdminRequests.QaSessionGetRequest getRequest = new DiscoveryQaAdminRequests.QaSessionGetRequest();
+        getRequest.setSessionId("0");
+        DiscoveryQaAdminRequests.QaSessionDeleteRequest deleteRequest =
+                new DiscoveryQaAdminRequests.QaSessionDeleteRequest();
+        deleteRequest.setSessionId("-1");
+        DiscoveryQaAdminRequests.QaSessionExportRequest exportRequest =
+                new DiscoveryQaAdminRequests.QaSessionExportRequest();
+        exportRequest.setSessionId("stored-5001");
+
+        assertEquals(1, validator.validate(getRequest).size());
+        assertEquals(1, validator.validate(deleteRequest).size());
+        assertEquals(1, validator.validate(exportRequest).size());
     }
 
     @Test

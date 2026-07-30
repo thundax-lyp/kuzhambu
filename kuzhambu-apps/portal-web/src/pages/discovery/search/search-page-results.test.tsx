@@ -89,7 +89,7 @@ const emptySearchResponse = {
     displayQueryText: "",
     groupCount: 0,
     groups: [],
-    id: "EVT-EMPTY",
+    id: "1000",
     queryText: "",
     totalCount: 0
 };
@@ -143,7 +143,7 @@ describe("DiscoverySearchPage", () => {
                     ]
                 }
             ],
-            id: "EVT-1001",
+            id: "9001",
             permissionDebugTrace: "DO_NOT_RENDER_RESPONSE_TRACE",
             queryText: "礼器",
             totalCount: 2
@@ -185,7 +185,7 @@ describe("DiscoverySearchPage", () => {
             container.textContent?.indexOf("王圻礼器") ?? Number.POSITIVE_INFINITY
         );
         expect(container.querySelector("mark")?.textContent).toBe("礼器");
-        expect(container.textContent).not.toContain("EVT-1001");
+        expect(container.textContent).not.toContain("9001");
         expect(container.textContent).not.toContain("回显词");
         expect(container.textContent).not.toContain("全局");
         expect(container.textContent).not.toContain("组内");
@@ -214,7 +214,7 @@ describe("DiscoverySearchPage", () => {
             groupRank: 1,
             resultGroupKey: "SANCAI_ENTRY",
             resultRank: 1,
-            searchEventId: "EVT-1001",
+            searchEventId: "9001",
             targetPath: "/shares/1001"
         });
         expect(mocks.previewSearchResult).not.toHaveBeenCalled();
@@ -249,7 +249,7 @@ describe("DiscoverySearchPage", () => {
                     ]
                 }
             ],
-            id: "EVT-1008",
+            id: "1008",
             queryText: "礼器",
             totalCount: 1
         });
@@ -305,7 +305,7 @@ describe("DiscoverySearchPage", () => {
                     ]
                 }
             ],
-            id: "EVT-1009",
+            id: "1009",
             queryText: "王圻",
             totalCount: 1
         });
@@ -355,7 +355,7 @@ describe("DiscoverySearchPage", () => {
                     ]
                 }
             ],
-            id: "EVT-1010",
+            id: "1010",
             queryText: "节令",
             totalCount: 1
         });

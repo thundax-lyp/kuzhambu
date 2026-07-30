@@ -122,7 +122,7 @@ describe("DiscoveryQaPage", () => {
                     contextContentId: null,
                     contextContentType: null,
                     contextMode: "GENERAL",
-                    id: "removed-2001",
+                    id: "2401",
                     scope: "PORTAL",
                     status: "OPEN",
                     title: "知识中心问答"
@@ -134,7 +134,7 @@ describe("DiscoveryQaPage", () => {
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
-            id: "recovered-2001",
+            id: "2402",
             scope: "PORTAL",
             status: "OPEN",
             title: "知识中心问答"
@@ -151,7 +151,7 @@ describe("DiscoveryQaPage", () => {
                     }
                 }
             ],
-            sessionId: "recovered-2001"
+            sessionId: "2402"
         });
 
         const { container, root } = renderPage();
@@ -161,16 +161,14 @@ describe("DiscoveryQaPage", () => {
 
         expect(mocks.getQaSession).toHaveBeenCalledWith({
             ownerUserId: 1001,
-            sessionId: "removed-2001"
+            sessionId: "2401"
         });
-        expect(localStorage.getItem("kuzhambu.portal.discovery.qa.session")).not.toContain(
-            "removed-2001"
-        );
+        expect(localStorage.getItem("kuzhambu.portal.discovery.qa.session")).not.toContain("2401");
         expect(mocks.openQaSession).toHaveBeenCalledTimes(1);
         expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "旧会话还能用吗？", role: "user" }],
-                sessionId: "recovered-2001"
+                sessionId: "2402"
             }
         });
         expect(container.textContent).toContain("新会话恢复回答。");
@@ -188,7 +186,7 @@ describe("DiscoveryQaPage", () => {
                 expiresAt: Date.now() - 1,
                 session: {
                     contextMode: "GENERAL",
-                    id: "expired-2001",
+                    id: "2501",
                     scope: "PORTAL",
                     status: "OPEN",
                     title: "知识中心问答"
@@ -199,7 +197,7 @@ describe("DiscoveryQaPage", () => {
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
-            id: "new-2001",
+            id: "2502",
             scope: "PORTAL",
             status: "OPEN",
             title: "知识中心问答"
@@ -216,7 +214,7 @@ describe("DiscoveryQaPage", () => {
                     }
                 }
             ],
-            sessionId: "new-2001"
+            sessionId: "2502"
         });
 
         const { container, root } = renderPage();
@@ -228,7 +226,7 @@ describe("DiscoveryQaPage", () => {
         expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "重新开始", role: "user" }],
-                sessionId: "new-2001"
+                sessionId: "2502"
             }
         });
         expect(container.textContent).toContain("新会话回答。");

@@ -4,6 +4,7 @@ import ancientScholarAvatar from "@/assets/discovery/ancient-scholar-avatar-face
 import {
     isUnavailableSource,
     toChatCompletionSourceKey,
+    toChatCompletionSourceLabel,
     type QaTimelineMessage
 } from "@/pages/discovery/qa/qa-utils";
 
@@ -86,14 +87,15 @@ const QaSourceList = ({ message }: { message: QaTimelineMessage }) => {
                 const key = toChatCompletionSourceKey(source, sourceIndex);
                 const hasSourcePath = source.sourcePath !== null && source.sourcePath !== undefined;
                 const sourcePath = source.sourcePath ?? "";
+                const sourceLabel = toChatCompletionSourceLabel(source);
                 const unavailable = isUnavailableSource(source) || !hasSourcePath;
                 return (
                     <div key={key}>
                         <p>
                             {unavailable ? (
-                                <span>{source.titleSnapshot ?? source.sourceId}</span>
+                                <span>{sourceLabel}</span>
                             ) : (
-                                <a href={sourcePath}>{source.titleSnapshot ?? source.sourceId}</a>
+                                <a href={sourcePath}>{sourceLabel}</a>
                             )}
                         </p>
                         <p>来源状态：{source.sourceStatus ?? "-"}</p>

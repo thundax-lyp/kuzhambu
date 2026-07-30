@@ -1,6 +1,10 @@
 package com.thundax.kuzhambu.discovery.domain.search.model.entity;
 
+import com.thundax.kuzhambu.discovery.domain.search.codec.QueryUnderstandingIdCodec;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.QueryUnderstandingId;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,8 +16,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QueryUnderstanding {
-    private Long id;
-    private Long searchEventId;
+    private QueryUnderstandingId id;
+    private SearchEventId searchEventId;
     private String queryText;
     private String normalizedQueryText;
     private String rewrittenQueryText;
@@ -41,8 +45,10 @@ public class QueryUnderstanding {
             String requestId,
             String traceId,
             Date createdAt) {
-        this.id = id == null ? parseId(queryUnderstandingId) : id;
-        this.searchEventId = parseId(searchEventId);
+        this.id = id == null
+                ? QueryUnderstandingIdCodec.toDomain(queryUnderstandingId)
+                : QueryUnderstandingIdCodec.toDomain(id);
+        this.searchEventId = SearchEventIdCodec.toDomain(searchEventId);
         this.queryText = queryText;
         this.normalizedQueryText = normalizedQueryText;
         this.rewrittenQueryText = rewrittenQueryText;
@@ -57,22 +63,30 @@ public class QueryUnderstanding {
     }
 
     public String getQueryUnderstandingId() {
-        return id == null ? null : String.valueOf(id);
+        return QueryUnderstandingIdCodec.toStringValue(id);
     }
 
     public void setQueryUnderstandingId(String queryUnderstandingId) {
-        this.id = parseId(queryUnderstandingId);
+        this.id = QueryUnderstandingIdCodec.toDomain(queryUnderstandingId);
+    }
+
+    public void setId(QueryUnderstandingId id) {
+        this.id = id;
+    }
+
+    public void setId(Long id) {
+        this.id = QueryUnderstandingIdCodec.toDomain(id);
     }
 
     public void setSearchEventId(String searchEventId) {
-        this.searchEventId = parseId(searchEventId);
+        this.searchEventId = SearchEventIdCodec.toDomain(searchEventId);
     }
 
     public void setSearchEventId(Long searchEventId) {
-        this.searchEventId = searchEventId;
+        this.searchEventId = SearchEventIdCodec.toDomain(searchEventId);
     }
 
-    private Long parseId(String value) {
-        return value == null ? null : Long.valueOf(value);
+    public void setSearchEventId(SearchEventId searchEventId) {
+        this.searchEventId = searchEventId;
     }
 }

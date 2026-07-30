@@ -1,5 +1,11 @@
 package com.thundax.kuzhambu.discovery.domain.qa.model.entity;
 
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaMessageIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaSessionIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaMessageId;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaMessageRole;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,9 +17,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QaMessage {
-    private Long id;
-    private Long sessionId;
-    private String role;
+    private QaMessageId id;
+    private QaSessionId sessionId;
+    private QaMessageRole role;
     private String content;
     private String answerStatus;
     private String model;
@@ -23,6 +29,35 @@ public class QaMessage {
     private String finishReason;
     private Date sentAt;
     private Date answeredAt;
+
+    public QaMessage(
+            Long id,
+            Long sessionId,
+            String role,
+            String content,
+            String answerStatus,
+            String model,
+            Integer contextTurnCount,
+            String failureReason,
+            String providerChatId,
+            String finishReason,
+            Date sentAt,
+            Date answeredAt) {
+        this(
+                id,
+                null,
+                sessionId,
+                role,
+                content,
+                answerStatus,
+                model,
+                contextTurnCount,
+                failureReason,
+                providerChatId,
+                finishReason,
+                sentAt,
+                answeredAt);
+    }
 
     public QaMessage(
             Long id,
@@ -38,9 +73,9 @@ public class QaMessage {
             String finishReason,
             Date sentAt,
             Date answeredAt) {
-        this.id = id == null ? messageId : id;
-        this.sessionId = sessionId;
-        this.role = role;
+        this.id = QaMessageIdCodec.toDomain(id == null ? messageId : id);
+        this.sessionId = QaSessionIdCodec.toDomain(sessionId);
+        this.role = QaStringValueCodec.toMessageRole(role);
         this.content = content;
         this.answerStatus = answerStatus;
         this.model = model;
@@ -52,11 +87,31 @@ public class QaMessage {
         this.answeredAt = answeredAt;
     }
 
-    public Long getMessageId() {
+    public QaMessageId getMessageId() {
         return id;
     }
 
-    public void setMessageId(Long messageId) {
+    public void setMessageId(QaMessageId messageId) {
         this.id = messageId;
+    }
+
+    public void setMessageId(Long messageId) {
+        this.id = QaMessageIdCodec.toDomain(messageId);
+    }
+
+    public void setSessionId(QaSessionId sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public void setSessionId(Long sessionId) {
+        this.sessionId = QaSessionIdCodec.toDomain(sessionId);
+    }
+
+    public void setRole(QaMessageRole role) {
+        this.role = role;
+    }
+
+    public void setRole(String role) {
+        this.role = QaStringValueCodec.toMessageRole(role);
     }
 }

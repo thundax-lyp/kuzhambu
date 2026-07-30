@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
@@ -19,9 +21,11 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchStatistics
 import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchClickEvent;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickEventRepository;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
@@ -125,7 +129,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     @Override
     public Boolean recordClick(SearchClickEventCreateCommand command) {
         validateClickCommand(command);
-        Long searchEventId = Long.valueOf(command.getSearchEventId());
+        SearchEventId searchEventId = command.getSearchEventId();
         SearchEvent searchEvent = searchEventRepository.getById(searchEventId);
         if (searchEvent == null) {
             throw new BizException(
@@ -144,8 +148,8 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 command.getTargetPath(),
                 command.getOperatorType(),
                 command.getOperatorId(),
-                command.getRequestId(),
-                command.getTraceId(),
+                RequestIdCodec.toValue(command.getRequestId()),
+                TraceIdCodec.toValue(command.getTraceId()),
                 new Date()));
         return Boolean.TRUE;
     }
@@ -174,7 +178,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         if (id == null) {
             throw new BizException("Search event id is required");
         }
-        return toSearchEventResult(searchEventRepository.getById(id));
+        return toSearchEventResult(searchEventRepository.getById(SearchEventIdCodec.toDomain(id)));
     }
 
     @Override
@@ -215,8 +219,8 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 null,
                 query.getOperatorType(),
                 query.getOperatorId(),
-                query.getRequestId(),
-                query.getTraceId(),
+                RequestIdCodec.toValue(query.getRequestId()),
+                TraceIdCodec.toValue(query.getTraceId()),
                 new Date());
     }
 
@@ -245,8 +249,8 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 exception.getMessage(),
                 query.getOperatorType(),
                 query.getOperatorId(),
-                query.getRequestId(),
-                query.getTraceId(),
+                RequestIdCodec.toValue(query.getRequestId()),
+                TraceIdCodec.toValue(query.getTraceId()),
                 new Date());
     }
 
@@ -368,7 +372,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private void validateClickCommand(SearchClickEventCreateCommand command) {
         if (command == null
-                || isBlank(command.getSearchEventId())
+                || command.getSearchEventId() == null
                 || isBlank(command.getContentDomain())
                 || isBlank(command.getContentType())
                 || isBlank(command.getContentId())
