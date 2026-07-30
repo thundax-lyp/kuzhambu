@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,13 +27,13 @@ public class WangqiDocument implements Versionable {
     private String summary;
     private WangqiContentFormat contentFormat;
     private String content;
-    private Date documentTime;
+    private Instant documentTime;
     private StorageObjectId storageObjectId;
     private WangqiDocumentVisibility visibility;
     private ClassicsContentVersionId currentVersionId;
     private Integer currentVersionNo;
-    private Date currentVersionedAt;
-    private Date contentUpdatedAt;
+    private Instant currentVersionedAt;
+    private Instant contentUpdatedAt;
     private List<WangqiDocumentEvent> events;
 
     public WangqiDocument(
@@ -42,7 +42,7 @@ public class WangqiDocument implements Versionable {
             String summary,
             WangqiContentFormat contentFormat,
             String content,
-            Date documentTime,
+            Instant documentTime,
             StorageObjectId storageObjectId,
             WangqiDocumentVisibility visibility) {
         this.id = id;
@@ -76,12 +76,12 @@ public class WangqiDocument implements Versionable {
     }
 
     @Override
-    public Date currentVersionedAt() {
+    public Instant currentVersionedAt() {
         return currentVersionedAt;
     }
 
     @Override
-    public Date contentUpdatedAt() {
+    public Instant contentUpdatedAt() {
         return contentUpdatedAt;
     }
 
