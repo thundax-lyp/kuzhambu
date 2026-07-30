@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.operations.application.task.result;
 
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +23,7 @@ public class OperationsTaskDetailResult {
     private Integer failedCount;
     private String failureReason;
     private Long requestedByUserId;
-    private Date startedAt;
-    private Date completedAt;
-    private Date snapshotAt;
+    private Instant startedAt;
+    private Instant completedAt;
+    private Instant snapshotAt;
 }

@@ -51,7 +51,6 @@ import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSna
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -594,7 +593,7 @@ class CleanupApplicationServiceImplTest {
         }
 
         @Override
-        public List<LongTaskSnapshotId> listExpiredSnapshotIds(Date snapshotBefore, int limit) {
+        public List<LongTaskSnapshotId> listExpiredSnapshotIds(Instant snapshotBefore, int limit) {
             return expiredSnapshotIds.stream().limit(limit).toList();
         }
     }

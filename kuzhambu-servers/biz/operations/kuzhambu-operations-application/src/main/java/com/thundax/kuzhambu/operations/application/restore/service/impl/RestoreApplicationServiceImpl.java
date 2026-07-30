@@ -14,7 +14,6 @@ import com.thundax.kuzhambu.operations.application.restore.result.OperationsRest
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreExecuteResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestorePageResult;
 import com.thundax.kuzhambu.operations.application.restore.service.RestoreApplicationService;
-import com.thundax.kuzhambu.operations.application.restore.support.OperationsRestoreLegacyTimeAdapter;
 import com.thundax.kuzhambu.operations.application.restore.support.OperationsRestoreWriteBlocker;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupStatus;
@@ -231,9 +230,9 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 0,
                 null,
                 record.getRequesterUserId(),
-                OperationsRestoreLegacyTimeAdapter.toDate(record.getStartedAt()),
+                record.getStartedAt(),
                 null,
-                OperationsRestoreLegacyTimeAdapter.toDate(snapshotAt));
+                snapshotAt);
         LongTaskSnapshotId snapshotId = longTaskSnapshotRepository.insert(snapshot);
         snapshot.setId(snapshotId);
         return snapshot;
@@ -248,8 +247,8 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         snapshot.setSuccessCount(succeeded ? 1 : 0);
         snapshot.setFailedCount(succeeded ? 0 : 1);
         snapshot.setFailureReason(record.getFailureReason());
-        snapshot.setCompletedAt(OperationsRestoreLegacyTimeAdapter.toDate(record.getCompletedAt()));
-        snapshot.setSnapshotAt(OperationsRestoreLegacyTimeAdapter.toDate(Instant.now()));
+        snapshot.setCompletedAt(record.getCompletedAt());
+        snapshot.setSnapshotAt(Instant.now());
         longTaskSnapshotRepository.update(snapshot);
     }
 
