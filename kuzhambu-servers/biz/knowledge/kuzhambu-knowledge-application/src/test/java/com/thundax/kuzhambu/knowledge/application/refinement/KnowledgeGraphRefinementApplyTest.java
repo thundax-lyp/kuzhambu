@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.knowledge.application.refinement.support.KnowledgeRe
 import com.thundax.kuzhambu.knowledge.application.refinement.support.QualitySummaryAggregationSupport;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementApplySupport;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementDraftBootstrapSupport;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionAiCandidateIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
@@ -16,9 +18,13 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionAiCandidateId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionBatchJobId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionSourceContentId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
@@ -39,6 +45,7 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementLin
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementLineageRelationDraftRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementRelationDraftRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -199,47 +206,50 @@ class KnowledgeGraphRefinementApplyTest {
 
     private static final class FakeGraphVersionRepository implements GraphVersionRepository {
         @Override
-        public GraphVersion findLatest(String taskType, String sourceContentType, Long sourceContentId) {
+        public GraphVersion findLatest(
+                GraphExtractionTaskType taskType,
+                String sourceContentType,
+                GraphExtractionSourceContentId sourceContentId) {
             return null;
         }
 
         @Override
-        public GraphVersion getByVersionId(Long versionId) {
+        public GraphVersion getByVersionId(GraphVersionId versionId) {
             return new GraphVersion(
                     versionId,
                     GraphExtractionTaskIdCodec.toDomain(88L),
-                    12L,
-                    "GRAPH",
+                    GraphExtractionAiCandidateIdCodec.toDomain(12L),
+                    GraphExtractionTaskType.GRAPH,
                     "CONTENT",
                     "{}",
                     "SANCAI_ENTRY",
-                    1001L,
+                    GraphExtractionSourceContentIdCodec.toDomain(1001L),
                     "myth",
                     "神话",
                     3,
-                    "APPLIED",
-                    new Date());
+                    GraphVersionStatus.APPLIED,
+                    Instant.now());
         }
 
         @Override
-        public GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, Long candidateId) {
+        public GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, GraphExtractionAiCandidateId candidateId) {
             return null;
         }
 
         @Override
         public PageResult<GraphVersion> page(
-                String taskType,
-                String status,
+                GraphExtractionTaskType taskType,
+                GraphVersionStatus status,
                 String sourceContentType,
-                Long sourceContentId,
+                GraphExtractionSourceContentId sourceContentId,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, 0, List.of());
         }
 
         @Override
-        public Long save(GraphVersion entity) {
-            return 0L;
+        public GraphVersionId save(GraphVersion entity) {
+            return new GraphVersionId(0L);
         }
     }
 

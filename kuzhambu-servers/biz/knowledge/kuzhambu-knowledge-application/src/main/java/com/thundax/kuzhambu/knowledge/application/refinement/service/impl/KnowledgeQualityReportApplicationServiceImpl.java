@@ -22,6 +22,8 @@ import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityRepor
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.SourceDetailRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.ReextractLowQualityCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
@@ -47,6 +49,7 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTas
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -121,14 +124,17 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
     @Override
     public QualityReportDetailResult generateReport(GenerateQualityReportCommand command) {
         Long graphVersionId = command == null ? null : command.getGraphVersionId();
-        GraphVersion version = graphVersionRepository.getByVersionId(graphVersionId);
+        GraphVersion version = graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(graphVersionId));
         List<KnowledgeEntity> entities = entityRepository.listByVersionId(graphVersionId);
         List<KnowledgeRelation> relations = relationRepository.listByVersionId(graphVersionId);
         List<KnowledgeLineageNode> lineageNodes = lineageNodeRepository.listByVersionId(graphVersionId);
         List<KnowledgeLineageRelation> lineageRelations = lineageRelationRepository.listByVersionId(graphVersionId);
         List<QualityAnnotation> annotations = qualityAnnotationRepository.listByGraphVersionId(graphVersionId);
         RefinementTask task = refinementTaskRepository.findLatestDraft(
-                version.getTaskType(), version.getSourceContentType(), version.getSourceContentId(), version.getId());
+                graphVersionTaskTypeValue(version),
+                version.getSourceContentType(),
+                GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId()),
+                GraphVersionIdCodec.toValue(version.getId()));
         RefinementCounts refinementCounts = loadRefinementCounts(task);
         Date now = new Date();
         Long reportId = idGenerator.nextId().value();
@@ -270,10 +276,10 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
         return new QualityReport(
                 null,
                 reportId,
-                reportNo(now, version.getId()),
-                version.getId(),
+                reportNo(now, GraphVersionIdCodec.toValue(version.getId())),
+                GraphVersionIdCodec.toValue(version.getId()),
                 version.getSourceContentType(),
-                version.getSourceContentId(),
+                GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId()),
                 version.getSourceCategoryCode(),
                 version.getSourceCategoryName(),
                 PUBLISHED,
@@ -407,11 +413,11 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
                 null,
                 reportId,
                 version.getSourceContentType(),
-                version.getSourceContentId(),
+                GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId()),
                 version.getSourceCategoryCode(),
                 version.getSourceCategoryName(),
-                version.getId(),
-                version.getAppliedAt(),
+                GraphVersionIdCodec.toValue(version.getId()),
+                toDate(version.getAppliedAt()),
                 (long) size(annotations),
                 (long) size(issues),
                 "APPLIED",
@@ -595,6 +601,16 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
 
     private String reportNo(Date now, Long graphVersionId) {
         return "KQR-" + new SimpleDateFormat("yyyyMMddHHmmss").format(now) + "-" + graphVersionId;
+    }
+
+    private String graphVersionTaskTypeValue(GraphVersion version) {
+        return version == null || version.getTaskType() == null
+                ? null
+                : version.getTaskType().value();
+    }
+
+    private Date toDate(Instant instant) {
+        return instant == null ? null : Date.from(instant);
     }
 
     private String annotationTitle(QualityAnnotation annotation) {
