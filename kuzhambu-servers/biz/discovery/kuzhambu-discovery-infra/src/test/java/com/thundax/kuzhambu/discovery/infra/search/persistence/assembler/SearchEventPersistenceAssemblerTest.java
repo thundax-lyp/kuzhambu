@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject.SearchEventDO;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +41,7 @@ class SearchEventPersistenceAssemblerTest {
                 "admin-1",
                 "req-1",
                 "trace-1",
-                new Date(1_718_000_000_000L));
+                Instant.ofEpochMilli(1_718_000_000_000L));
 
         SearchEventDO dataObject = SearchEventPersistenceAssembler.toObject(entity);
         SearchEvent restored = SearchEventPersistenceAssembler.toDomain(dataObject);
