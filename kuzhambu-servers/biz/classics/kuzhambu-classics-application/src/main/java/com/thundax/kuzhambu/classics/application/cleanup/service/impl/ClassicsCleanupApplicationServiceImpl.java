@@ -9,7 +9,8 @@ import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiAssetReposit
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
@@ -44,9 +45,10 @@ public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApp
 
     @Override
     @Transactional(readOnly = true)
-    public List<CleanupTarget> listTargets(String cleanupType, Date requestedAt, Integer retentionDays, Integer limit) {
+    public List<CleanupTarget> listTargets(
+            String cleanupType, Instant requestedAt, Integer retentionDays, Integer limit) {
         String normalizedType = normalizeCleanupType(cleanupType);
-        Date effectiveNow = requestedAt == null ? new Date() : requestedAt;
+        Instant effectiveNow = requestedAt == null ? Instant.now() : requestedAt;
         int effectiveLimit = normalizeLimit(limit);
         if (targetType(normalizedType) == null) {
             return List.of();
@@ -131,9 +133,9 @@ public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApp
         return limit == null || limit <= 0 ? DEFAULT_LIMIT : limit;
     }
 
-    private static Date retentionCutoff(Date now, Integer retentionDays) {
+    private static Instant retentionCutoff(Instant now, Integer retentionDays) {
         int effectiveRetentionDays =
                 retentionDays == null || retentionDays <= 0 ? DEFAULT_RETENTION_DAYS : retentionDays;
-        return new Date(now.getTime() - effectiveRetentionDays * 24L * 60L * 60L * 1000L);
+        return now.minus(Duration.ofDays(effectiveRetentionDays));
     }
 }
