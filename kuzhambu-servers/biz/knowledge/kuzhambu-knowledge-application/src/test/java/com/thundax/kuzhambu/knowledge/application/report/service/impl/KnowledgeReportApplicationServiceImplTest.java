@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportS
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.readmodel.TagGovernanceMetrics;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -26,8 +26,8 @@ class KnowledgeReportApplicationServiceImplTest {
                         List.of(),
                         List.of(new TagGovernanceMetrics.MonthlyNewTagMetric("2025-01", 3L))));
 
-        KnowledgeReportSummaryResult result =
-                service.summary(new Date(1_718_000_000_000L), new Date(1_720_419_200_000L), "WEEK");
+        KnowledgeReportSummaryResult result = service.summary(
+                Instant.ofEpochMilli(1_718_000_000_000L), Instant.ofEpochMilli(1_720_419_200_000L), "WEEK");
 
         assertEquals(new BigDecimal("0.8750"), result.getTagCoverageRate());
         assertEquals("礼制", result.getTopTags().get(0).getTagName());
