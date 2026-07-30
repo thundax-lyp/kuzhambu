@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,7 +32,7 @@ public class SearchEventDO {
     private String operatorId;
     private String requestId;
     private String traceId;
-    private Date createdAt;
+    private Instant createdAt;
 
     public String getSearchEventId() {
         return id == null ? null : String.valueOf(id);
