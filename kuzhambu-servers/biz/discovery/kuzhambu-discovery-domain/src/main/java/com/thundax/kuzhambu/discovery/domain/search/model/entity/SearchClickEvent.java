@@ -1,5 +1,9 @@
 package com.thundax.kuzhambu.discovery.domain.search.model.entity;
 
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchClickEventIdCodec;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchClickEventId;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,8 +15,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SearchClickEvent {
-    private Long id;
-    private Long searchEventId;
+    private SearchClickEventId id;
+    private SearchEventId searchEventId;
     private String contentDomain;
     private String contentType;
     private String contentId;
@@ -44,8 +48,10 @@ public class SearchClickEvent {
             String requestId,
             String traceId,
             Date createdAt) {
-        this.id = id == null ? parseId(searchClickEventId) : id;
-        this.searchEventId = parseId(searchEventId);
+        this.id = id == null
+                ? SearchClickEventIdCodec.toDomain(searchClickEventId)
+                : SearchClickEventIdCodec.toDomain(id);
+        this.searchEventId = SearchEventIdCodec.toDomain(searchEventId);
         this.contentDomain = contentDomain;
         this.contentType = contentType;
         this.contentId = contentId;
@@ -62,22 +68,30 @@ public class SearchClickEvent {
     }
 
     public String getSearchClickEventId() {
-        return id == null ? null : String.valueOf(id);
+        return SearchClickEventIdCodec.toStringValue(id);
     }
 
     public void setSearchClickEventId(String searchClickEventId) {
-        this.id = parseId(searchClickEventId);
+        this.id = SearchClickEventIdCodec.toDomain(searchClickEventId);
+    }
+
+    public void setId(SearchClickEventId id) {
+        this.id = id;
+    }
+
+    public void setId(Long id) {
+        this.id = SearchClickEventIdCodec.toDomain(id);
     }
 
     public void setSearchEventId(String searchEventId) {
-        this.searchEventId = parseId(searchEventId);
+        this.searchEventId = SearchEventIdCodec.toDomain(searchEventId);
     }
 
     public void setSearchEventId(Long searchEventId) {
-        this.searchEventId = searchEventId;
+        this.searchEventId = SearchEventIdCodec.toDomain(searchEventId);
     }
 
-    private Long parseId(String value) {
-        return value == null ? null : Long.valueOf(value);
+    public void setSearchEventId(SearchEventId searchEventId) {
+        this.searchEventId = searchEventId;
     }
 }

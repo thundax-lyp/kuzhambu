@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler;
 
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
@@ -7,6 +9,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchEventResul
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickEventRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchPreviewRequest;
@@ -48,8 +51,8 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 request.getPageSize() == null ? 20 : request.getPageSize(),
                 PORTAL_OPERATOR_TYPE,
                 null,
-                newRequestId(),
-                newTraceId());
+                RequestIdCodec.toDomain(newRequestId()),
+                TraceIdCodec.toDomain(newTraceId()));
     }
 
     public static SearchClickEventCreateCommand toCommand(DiscoverySearchClickEventRequest request) {
@@ -57,7 +60,7 @@ public final class DiscoverySearchPortalInterfaceAssembler {
             return null;
         }
         return new SearchClickEventCreateCommand(
-                request.getSearchEventId(),
+                SearchEventIdCodec.toDomain(DiscoveryInterfaceIdCodec.toLongValue(request.getSearchEventId())),
                 request.getContentDomain(),
                 request.getContentType(),
                 request.getContentId(),
@@ -68,8 +71,8 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 request.getTargetPath(),
                 PORTAL_OPERATOR_TYPE,
                 null,
-                newRequestId(),
-                newTraceId());
+                RequestIdCodec.toDomain(newRequestId()),
+                TraceIdCodec.toDomain(newTraceId()));
     }
 
     public static SearchPreviewQuery toQuery(DiscoverySearchPreviewRequest request) {
@@ -90,7 +93,7 @@ public final class DiscoverySearchPortalInterfaceAssembler {
             return null;
         }
         return DiscoverySearchResponse.builder()
-                .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
+                .id(SearchEventIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
                 .displayQueryText(result.getDisplayQueryText())
                 .totalCount(result.getResultTotalCount())

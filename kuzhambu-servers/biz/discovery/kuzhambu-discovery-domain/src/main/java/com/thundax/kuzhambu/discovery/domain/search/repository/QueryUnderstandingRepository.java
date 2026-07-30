@@ -1,16 +1,14 @@
 package com.thundax.kuzhambu.discovery.domain.search.repository;
 
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.QueryUnderstanding;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.QueryUnderstandingId;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
 
 public interface QueryUnderstandingRepository {
 
-    QueryUnderstanding getBySearchEventId(Long searchEventId);
+    QueryUnderstanding getBySearchEventId(SearchEventId searchEventId);
 
-    default QueryUnderstanding getBySearchEventId(String searchEventId) {
-        return getBySearchEventId(searchEventId == null ? null : Long.valueOf(searchEventId));
-    }
-
-    Long save(QueryUnderstanding entity);
+    QueryUnderstandingId save(QueryUnderstanding entity);
 
     int update(QueryUnderstanding entity);
 }

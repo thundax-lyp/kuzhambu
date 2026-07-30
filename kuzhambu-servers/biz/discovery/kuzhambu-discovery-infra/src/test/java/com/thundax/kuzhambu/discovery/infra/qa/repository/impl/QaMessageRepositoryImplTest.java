@@ -7,7 +7,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaMessageIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaSessionIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaMessageId;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaMessageDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaMessageMapper;
 import java.util.Date;
@@ -29,9 +33,9 @@ class QaMessageRepositoryImplTest {
                 .when(mapper)
                 .insert(any(QaMessageDO.class));
 
-        Long savedId = repository.save(entity);
+        QaMessageId savedId = repository.save(entity);
 
-        assertEquals(2001L, savedId);
+        assertEquals(2001L, QaMessageIdCodec.toValue(savedId));
         verify(mapper).insert(any(QaMessageDO.class));
     }
 
@@ -54,10 +58,10 @@ class QaMessageRepositoryImplTest {
                 new Date());
         when(mapper.selectList(any())).thenReturn(List.of(dataObject));
 
-        List<QaMessage> result = repository.listBySessionId(3001L);
+        List<QaMessage> result = repository.listBySessionId(QaSessionIdCodec.toDomain(3001L));
 
         assertEquals(1, result.size());
-        assertEquals(2001L, result.get(0).getId());
-        assertEquals("ASSISTANT", result.get(0).getRole());
+        assertEquals(2001L, QaMessageIdCodec.toValue(result.get(0).getId()));
+        assertEquals("ASSISTANT", QaStringValueCodec.toValue(result.get(0).getRole()));
     }
 }

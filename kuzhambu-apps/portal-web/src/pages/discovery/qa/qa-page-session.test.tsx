@@ -131,7 +131,7 @@ describe("DiscoveryQaPage", () => {
             lastMessageAt: null,
             openedAt: 1699999999000,
             scope: "PORTAL",
-            id: "pending-2101",
+            id: "2101",
             status: "OPEN",
             title: "知识中心问答"
         };
@@ -149,7 +149,7 @@ describe("DiscoveryQaPage", () => {
                     }
                 }
             ],
-            sessionId: "pending-2101"
+            sessionId: "2101"
         });
 
         const { container, root } = renderPage();
@@ -170,7 +170,7 @@ describe("DiscoveryQaPage", () => {
         expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "不要重复创建", role: "user" }],
-                sessionId: "pending-2101"
+                sessionId: "2101"
             }
         });
         expect(container.textContent).toContain("只回答一次。");
@@ -190,7 +190,7 @@ describe("DiscoveryQaPage", () => {
                     contextContentId: null,
                     contextContentType: null,
                     contextMode: "GENERAL",
-                    id: "stored-2001",
+                    id: "2001",
                     scope: "PORTAL",
                     status: "OPEN",
                     title: "知识中心问答"
@@ -201,7 +201,7 @@ describe("DiscoveryQaPage", () => {
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
-            id: "stored-2001",
+            id: "2001",
             scope: "PORTAL",
             status: "OPEN",
             title: "知识中心问答"
@@ -218,7 +218,7 @@ describe("DiscoveryQaPage", () => {
                     }
                 }
             ],
-            sessionId: "stored-2001"
+            sessionId: "2001"
         });
 
         const { container, root } = renderPage();
@@ -228,13 +228,13 @@ describe("DiscoveryQaPage", () => {
 
         expect(mocks.getQaSession).toHaveBeenCalledWith({
             ownerUserId: 1001,
-            sessionId: "stored-2001"
+            sessionId: "2001"
         });
         expect(mocks.openQaSession).not.toHaveBeenCalled();
         expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "继续问", role: "user" }],
-                sessionId: "stored-2001"
+                sessionId: "2001"
             }
         });
         expect(container.textContent).not.toContain("会话列表");
@@ -255,7 +255,7 @@ describe("DiscoveryQaPage", () => {
                     contextContentId: null,
                     contextContentType: null,
                     contextMode: "GENERAL",
-                    id: "stored-2201",
+                    id: "2201",
                     scope: "PORTAL",
                     status: "OPEN",
                     title: "知识中心问答"
@@ -266,7 +266,7 @@ describe("DiscoveryQaPage", () => {
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
-            id: "stored-2201",
+            id: "2201",
             scope: "PORTAL",
             status: "OPEN",
             title: "知识中心问答"
@@ -285,7 +285,7 @@ describe("DiscoveryQaPage", () => {
                         }
                     }
                 ],
-                sessionId: "stored-2201"
+                sessionId: "2201"
             });
 
         const { container, root } = renderPage();
@@ -297,7 +297,7 @@ describe("DiscoveryQaPage", () => {
         expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "旧会话还能用吗？", role: "user" }],
-                sessionId: "stored-2201"
+                sessionId: "2201"
             }
         });
         expect(localStorage.getItem("kuzhambu.portal.discovery.qa.session")).not.toBeNull();
@@ -313,10 +313,71 @@ describe("DiscoveryQaPage", () => {
         expect(mocks.createQaChatCompletionStream.mock.calls[1]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "旧会话还能用吗？", role: "user" }],
-                sessionId: "stored-2201"
+                sessionId: "2201"
             }
         });
         expect(container.textContent).toContain("新会话恢复回答。");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("opens a new session instead of reusing stale nonnumeric local session id", async () => {
+        localStorage.setItem(
+            "kuzhambu.portal.discovery.qa.session",
+            JSON.stringify({
+                contextKey: "PORTAL|1001|GENERAL||",
+                expiresAt: Date.now() + 30 * 60 * 1000,
+                session: {
+                    contextContentId: null,
+                    contextContentType: null,
+                    contextMode: "GENERAL",
+                    id: "stored-legacy",
+                    scope: "PORTAL",
+                    status: "OPEN",
+                    title: "知识中心问答"
+                }
+            })
+        );
+        mocks.openQaSession.mockResolvedValueOnce({
+            contextContentId: null,
+            contextContentType: null,
+            contextMode: "GENERAL",
+            id: "2301",
+            scope: "PORTAL",
+            status: "OPEN",
+            title: "知识中心问答"
+        });
+        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+            answerStatus: "SUCCEEDED",
+            choices: [
+                {
+                    finishReason: "stop",
+                    index: 0,
+                    message: {
+                        content: "新会话回答。",
+                        role: "assistant"
+                    }
+                }
+            ],
+            sessionId: "2301"
+        });
+
+        const { container, root } = renderPage();
+
+        setTextareaValue(container, "question", "旧缓存还能用吗？");
+        await pressTextareaKey(container, "question", "Enter");
+
+        expect(mocks.getQaSession).not.toHaveBeenCalled();
+        expect(mocks.openQaSession).toHaveBeenCalledTimes(1);
+        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+            request: {
+                messages: [{ content: "旧缓存还能用吗？", role: "user" }],
+                sessionId: "2301"
+            }
+        });
+        expect(container.textContent).toContain("新会话回答。");
 
         act(() => {
             root.unmount();

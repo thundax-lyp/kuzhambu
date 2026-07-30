@@ -26,7 +26,9 @@ import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemRes
 import com.thundax.kuzhambu.discovery.application.qa.support.KnowledgeDocumentAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.KnowledgeItemTextRenderer;
 import com.thundax.kuzhambu.discovery.application.qa.support.KnowledgeRevisionCalculator;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncItem;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.KnowledgeSourceId;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncBatchRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncItemRepository;
 import java.util.Map;
@@ -54,8 +56,8 @@ class KnowledgeSyncApplicationServiceImplTest {
                 .thenReturn(new KnowledgeItemResult("item-1", "kb-1", "SANCAI_ENTRY:1001", "黄帝问答", Map.of()));
         when(knowledgeBaseClient.syncKnowledgeItem(any(KnowledgeSyncRequest.class)))
                 .thenReturn(new KnowledgeSyncResult("sync-1", "SUCCEEDED", Map.of()));
-        when(itemRepository.getBySourceId("SANCAI_ENTRY:1001")).thenReturn(null);
-        when(itemRepository.save(any(QaKnowledgeSyncItem.class))).thenReturn(9001L);
+        when(itemRepository.getBySourceId(sourceId("SANCAI_ENTRY:1001"))).thenReturn(null);
+        when(itemRepository.save(any(QaKnowledgeSyncItem.class))).thenReturn(sourceId("SANCAI_ENTRY:1001"));
 
         KnowledgeSyncApplicationServiceImpl service = new KnowledgeSyncApplicationServiceImpl(
                 knowledgeBaseClient,
@@ -94,8 +96,8 @@ class KnowledgeSyncApplicationServiceImplTest {
                         .build());
         when(knowledgeBaseClient.upsertKnowledgeItem(any(KnowledgeItemUpsertRequest.class)))
                 .thenReturn(null);
-        when(itemRepository.getBySourceId("SANCAI_ENTRY:1001")).thenReturn(null);
-        when(itemRepository.save(any(QaKnowledgeSyncItem.class))).thenReturn(9001L);
+        when(itemRepository.getBySourceId(sourceId("SANCAI_ENTRY:1001"))).thenReturn(null);
+        when(itemRepository.save(any(QaKnowledgeSyncItem.class))).thenReturn(sourceId("SANCAI_ENTRY:1001"));
 
         KnowledgeSyncApplicationServiceImpl service = new KnowledgeSyncApplicationServiceImpl(
                 knowledgeBaseClient,
@@ -125,7 +127,7 @@ class KnowledgeSyncApplicationServiceImplTest {
 
         when(knowledgeBaseClient.deleteKnowledgeItem(any(KnowledgeItemDeleteRequest.class)))
                 .thenReturn(new KnowledgeSyncResult("del-1", "DELETED", Map.of("result", "ok")));
-        when(itemRepository.getBySourceId("SANCAI_ENTRY:1001"))
+        when(itemRepository.getBySourceId(sourceId("SANCAI_ENTRY:1001")))
                 .thenReturn(new QaKnowledgeSyncItem(
                         1001L,
                         "SANCAI_ENTRY:1001",
@@ -175,5 +177,9 @@ class KnowledgeSyncApplicationServiceImplTest {
                 .summary("上古皇帝")
                 .body("黄帝是上古帝王")
                 .build();
+    }
+
+    private KnowledgeSourceId sourceId(String value) {
+        return QaStringValueCodec.toKnowledgeSourceId(value);
     }
 }

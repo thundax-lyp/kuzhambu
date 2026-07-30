@@ -21,11 +21,16 @@ import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationServic
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSessionCsvExporter;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaMessageIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaSessionIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSessionExport;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaOwnerRef;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaRetrievalTraceRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionExportRepository;
@@ -110,6 +115,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         Date now = new Date();
         QaSession session = new QaSession(
                 null,
+                null,
                 DEFAULT_OWNER_TYPE,
                 String.valueOf(command.getOwnerUserId()),
                 DEFAULT_KNOWLEDGE_BASE_NAME,
@@ -122,7 +128,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 now,
                 now,
                 null);
-        Long sessionPk = qaSessionRepository.save(session);
+        QaSessionId sessionPk = qaSessionRepository.save(session);
         session.setId(sessionPk);
         return toSessionResult(session);
     }
@@ -139,9 +145,10 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         if (!Boolean.TRUE.equals(command.getAdminOperation())) {
             requireOwner(session, command.getOwnerType(), command.getOwnerId());
         }
-        int updated = qaSessionRepository.markRemoved(command.getSessionId(), new Date());
+        QaSessionId sessionId = QaSessionIdCodec.toDomain(command.getSessionId());
+        int updated = qaSessionRepository.markRemoved(sessionId, new Date());
         if (updated == 0) {
-            QaSession latest = qaSessionRepository.getBySessionId(command.getSessionId());
+            QaSession latest = qaSessionRepository.getBySessionId(sessionId);
             if (latest == null) {
                 throw sessionNotFoundException();
             }
@@ -165,7 +172,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         QaSessionExport export = new QaSessionExport(
                 null,
                 null,
-                session.getId(),
+                QaSessionIdCodec.toValue(session.getId()),
                 EXPORT_FORMAT_CSV,
                 null,
                 EXPORT_STATUS_PROCESSING,
@@ -175,7 +182,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 null);
         Long exportId = qaSessionExportRepository.save(export);
         export.setId(exportId);
-        String filename = exportFilename(session.getId(), exportId);
+        String filename = exportFilename(QaSessionIdCodec.toValue(session.getId()), exportId);
         try {
             byte[] content = buildCsvContent(session);
             UploadStorageFacadeResponse uploadResponse = storageFacade.upload(UploadStorageFacadeRequest.builder()
@@ -185,7 +192,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                     .sizeBytes((long) content.length)
                     .allowedSuffixes(List.of("csv"))
                     .ownerType(EXPORT_OWNER_TYPE)
-                    .ownerId(exportOwnerId(session.getId(), exportId))
+                    .ownerId(exportOwnerId(QaSessionIdCodec.toValue(session.getId()), exportId))
                     .build());
             if (uploadResponse == null || uploadResponse.getStorageObjectId() == null) {
                 throw new IllegalStateException("Storage upload response is empty");
@@ -207,7 +214,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
 
     @Override
     public List<QaSessionResult> listPortalSessions(String ownerType, String ownerId, Integer limit) {
-        return qaSessionRepository.listByOwnerUserId(ownerType, ownerId, limit).stream()
+        QaOwnerRef owner = QaStringValueCodec.toOwnerRef(ownerType, ownerId);
+        return qaSessionRepository.listByOwnerUserId(owner, limit).stream()
                 .map(this::toSessionResult)
                 .toList();
     }
@@ -251,14 +259,14 @@ public class QaApplicationServiceImpl implements QaApplicationService {
 
     private QaSessionDetailResult toSessionDetailResult(QaSession session) {
         QaSessionDetailResult result = new QaSessionDetailResult();
-        result.setId(session.getId());
+        result.setId(QaSessionIdCodec.toValue(session.getId()));
         result.setOwnerUserId(parseOwnerUserId(session.getOwnerId()));
         result.setTitle(session.getTitle());
         result.setScope(session.getScope());
         result.setContextMode(session.getContextMode());
         result.setContextContentType(session.getContextContentType());
         result.setContextContentId(session.getContextContentId());
-        result.setStatus(session.getStatus());
+        result.setStatus(QaStringValueCodec.toValue(session.getStatus()));
         result.setOpenedAt(
                 session.getOpenedAt() == null ? null : session.getOpenedAt().getTime());
         result.setLastMessageAt(
@@ -278,13 +286,14 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         List<QaMessage> safeMessages = messages == null ? List.of() : messages;
         Map<Long, List<QaSource>> sourcesByMessageId = safeMessages.stream()
                 .filter(message -> message.getId() != null)
-                .collect(Collectors.toMap(QaMessage::getId, message -> {
-                    List<QaSource> sources = qaSourceRepository.listByMessageId(message.getId());
+                .collect(Collectors.toMap(message -> QaMessageIdCodec.toValue(message.getId()), message -> {
+                    List<QaSource> sources =
+                            qaSourceRepository.listByMessageId(QaMessageIdCodec.toValue(message.getId()));
                     return sources == null ? List.of() : sources;
                 }));
         Map<Long, QaRetrievalTrace> tracesByMessageId = safeMessages.stream()
                 .filter(message -> message.getId() != null)
-                .map(message -> qaRetrievalTraceRepository.getByMessageId(message.getId()))
+                .map(message -> qaRetrievalTraceRepository.getByMessageId(QaMessageIdCodec.toValue(message.getId())))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(QaRetrievalTrace::getMessageId, trace -> trace));
         return qaSessionCsvExporter
@@ -310,14 +319,14 @@ public class QaApplicationServiceImpl implements QaApplicationService {
 
     private QaSessionResult toSessionResult(QaSession session) {
         return new QaSessionResult(
-                session.getId(),
+                QaSessionIdCodec.toValue(session.getId()),
                 parseOwnerUserId(session.getOwnerId()),
                 session.getTitle(),
                 session.getScope(),
                 session.getContextMode(),
                 session.getContextContentType(),
                 session.getContextContentId(),
-                session.getStatus(),
+                QaStringValueCodec.toValue(session.getStatus()),
                 session.getOpenedAt() == null ? null : session.getOpenedAt().getTime(),
                 session.getLastMessageAt() == null
                         ? null
@@ -405,7 +414,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         if (sessionId == null) {
             throw new BizException("DISCOVERY-30006", "discovery.qa.session-id.required", "Session id is required");
         }
-        QaSession session = qaSessionRepository.getBySessionId(sessionId);
+        QaSession session = qaSessionRepository.getBySessionId(QaSessionIdCodec.toDomain(sessionId));
         if (session == null) {
             throw sessionNotFoundException();
         }
@@ -446,9 +455,9 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             return null;
         }
         return new QaMessageResult(
-                message.getId(),
-                message.getSessionId(),
-                message.getRole(),
+                QaMessageIdCodec.toValue(message.getId()),
+                QaSessionIdCodec.toValue(message.getSessionId()),
+                QaStringValueCodec.toValue(message.getRole()),
                 message.getContent(),
                 message.getAnswerStatus(),
                 message.getContextTurnCount(),

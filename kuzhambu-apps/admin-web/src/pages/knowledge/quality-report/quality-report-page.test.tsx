@@ -405,7 +405,8 @@ describe("QualityReportPage", () => {
             sourceDetails: [],
             annotations: [],
             stale: true,
-            staleReason: "REFINEMENT_APPLIED_AFTER_REPORT"
+            staleReason: "REFINEMENT_APPLIED_AFTER_REPORT",
+            lastRefinementAppliedAt: null
         });
 
         renderQualityReportPage();

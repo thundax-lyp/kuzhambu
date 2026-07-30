@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
@@ -91,6 +92,7 @@ public final class DiscoveryQaRequests {
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
         @NotBlank(message = "\"会话号\"不能为空")
+        @Pattern(regexp = "[1-9]\\d*", message = "\"会话号\"必须为数字")
         private String sessionId;
 
         @Schema(name = "ownerUserId", description = "拥有者用户号")
@@ -109,6 +111,7 @@ public final class DiscoveryQaRequests {
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
         @NotBlank(message = "\"会话号\"不能为空")
+        @Pattern(regexp = "[1-9]\\d*", message = "\"会话号\"必须为数字")
         private String sessionId;
 
         @Schema(name = "ownerUserId", description = "拥有者用户号")
@@ -127,6 +130,7 @@ public final class DiscoveryQaRequests {
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
         @NotBlank(message = "\"会话号\"不能为空")
+        @Pattern(regexp = "[1-9]\\d*", message = "\"会话号\"必须为数字")
         private String sessionId;
 
         @Schema(name = "ownerUserId", description = "拥有者用户号")
@@ -149,6 +153,7 @@ public final class DiscoveryQaRequests {
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
         @NotBlank(message = "\"会话号\"不能为空")
+        @Pattern(regexp = "[1-9]\\d*", message = "\"会话号\"必须为数字")
         private String sessionId;
 
         @Schema(name = "model", description = "知识库名")

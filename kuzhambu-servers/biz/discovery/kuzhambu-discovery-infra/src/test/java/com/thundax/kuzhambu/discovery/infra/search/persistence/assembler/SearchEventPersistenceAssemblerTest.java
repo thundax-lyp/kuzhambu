@@ -17,7 +17,7 @@ class SearchEventPersistenceAssemblerTest {
     void toObjectAndToDomainShouldKeepSearchLatencyMs() {
         SearchEvent entity = new SearchEvent(
                 1L,
-                "s-1",
+                "1",
                 "黄帝",
                 "huangdi",
                 "黄帝",

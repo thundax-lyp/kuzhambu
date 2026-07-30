@@ -11,10 +11,13 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 import com.thundax.kuzhambu.discovery.application.search.support.DiscoveryKnowledgeEnhancementProvider;
 import com.thundax.kuzhambu.discovery.application.search.support.QueryUnderstandingPayloadBuilder;
+import com.thundax.kuzhambu.discovery.domain.search.codec.QueryUnderstandingIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.QueryUnderstanding;
 import com.thundax.kuzhambu.discovery.domain.search.repository.QueryUnderstandingRepository;
 import java.util.List;
@@ -56,8 +59,8 @@ class QueryUnderstandingApplicationServiceImplTest {
                 20,
                 "ANONYMOUS",
                 null,
-                "req-blank",
-                "trace-blank");
+                RequestIdCodec.toDomain("req-blank"),
+                TraceIdCodec.toDomain("trace-blank"));
 
         QueryUnderstandingResult result = service.understand(query);
 
@@ -87,9 +90,9 @@ class QueryUnderstandingApplicationServiceImplTest {
                         .status("SUCCEEDED")
                         .capability("query_understanding")
                         .resultFormat("STRUCTURED")
-                        .resultPayload("{\"intent\":\"NATURAL_LANGUAGE_SEARCH\",\"rewrittenQueryText\":\"礼制 礼学\"}")
+                        .resultPayload("{\"intentType\":\"NATURAL_LANGUAGE_SEARCH\",\"rewrittenQueryText\":\"礼制 礼学\"}")
                         .build());
-        when(repository.save(any())).thenReturn(1L);
+        when(repository.save(any())).thenReturn(QueryUnderstandingIdCodec.toDomain(1L));
 
         QueryUnderstandingApplicationServiceImpl service =
                 new QueryUnderstandingApplicationServiceImpl(repository, enhancementProvider, payloadBuilder, aiFacade);
@@ -106,8 +109,8 @@ class QueryUnderstandingApplicationServiceImplTest {
                 20,
                 "ANONYMOUS",
                 null,
-                "req-1",
-                "trace-1");
+                RequestIdCodec.toDomain("req-1"),
+                TraceIdCodec.toDomain("trace-1"));
 
         QueryUnderstandingResult result = service.understand(query);
         ArgumentCaptor<QueryUnderstanding> captor = ArgumentCaptor.forClass(QueryUnderstanding.class);
@@ -135,7 +138,7 @@ class QueryUnderstandingApplicationServiceImplTest {
         when(aiFacade.understandDiscoveryQuery(any()))
                 .thenThrow(new BizException(
                         "DISCOVERY-29999", "discovery.search.query-understanding.ai-failed", "AI failed"));
-        when(repository.save(any())).thenReturn(1L);
+        when(repository.save(any())).thenReturn(QueryUnderstandingIdCodec.toDomain(1L));
 
         QueryUnderstandingApplicationServiceImpl service =
                 new QueryUnderstandingApplicationServiceImpl(repository, enhancementProvider, payloadBuilder, aiFacade);
@@ -152,8 +155,8 @@ class QueryUnderstandingApplicationServiceImplTest {
                 20,
                 "ANONYMOUS",
                 null,
-                "req-1",
-                "trace-1");
+                RequestIdCodec.toDomain("req-1"),
+                TraceIdCodec.toDomain("trace-1"));
 
         QueryUnderstandingResult result = service.understand(query);
         ArgumentCaptor<QueryUnderstanding> captor = ArgumentCaptor.forClass(QueryUnderstanding.class);

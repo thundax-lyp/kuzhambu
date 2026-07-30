@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.discovery.infra.search.persistence.assembler;
 
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchClickEventIdCodec;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchClickEvent;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject.SearchClickEventDO;
 import java.util.ArrayList;
@@ -14,9 +16,9 @@ public final class SearchClickEventPersistenceAssembler {
             return null;
         }
         SearchClickEventDO dataObject = new SearchClickEventDO();
-        dataObject.setId(entity.getId());
+        dataObject.setId(SearchClickEventIdCodec.toValue(entity.getId()));
         dataObject.setSearchClickEventId(entity.getSearchClickEventId());
-        dataObject.setSearchEventId(entity.getSearchEventId());
+        dataObject.setSearchEventId(SearchEventIdCodec.toValue(entity.getSearchEventId()));
         dataObject.setContentDomain(entity.getContentDomain());
         dataObject.setContentType(entity.getContentType());
         dataObject.setContentId(entity.getContentId());
@@ -38,9 +40,8 @@ public final class SearchClickEventPersistenceAssembler {
             return null;
         }
         SearchClickEvent entity = new SearchClickEvent();
-        entity.setId(dataObject.getId());
-        entity.setSearchClickEventId(dataObject.getSearchClickEventId());
-        entity.setSearchEventId(dataObject.getSearchEventId());
+        entity.setId(SearchClickEventIdCodec.toDomain(dataObject.getId()));
+        entity.setSearchEventId(SearchEventIdCodec.toDomain(dataObject.getSearchEventId()));
         entity.setContentDomain(dataObject.getContentDomain());
         entity.setContentType(dataObject.getContentType());
         entity.setContentId(dataObject.getContentId());

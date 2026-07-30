@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.discovery.application.qa.support;
 
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaMessageIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaSessionIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
@@ -55,10 +58,11 @@ public class QaSessionCsvExporter {
         appendSessionRow(builder, session);
         for (QaMessage message : safeMessages(messages)) {
             appendMessageRow(builder, session, message);
-            for (QaSource source : safeSources(sourcesByMessageId, message.getMessageId())) {
+            Long messageId = QaMessageIdCodec.toValue(message.getMessageId());
+            for (QaSource source : safeSources(sourcesByMessageId, messageId)) {
                 appendSourceRow(builder, session, message, source);
             }
-            QaRetrievalTrace trace = tracesByMessageId == null ? null : tracesByMessageId.get(message.getMessageId());
+            QaRetrievalTrace trace = tracesByMessageId == null ? null : tracesByMessageId.get(messageId);
             if (trace != null) {
                 appendTraceRow(builder, session, message, trace);
             }
@@ -70,7 +74,7 @@ public class QaSessionCsvExporter {
         appendRow(
                 builder,
                 "SESSION",
-                session.getSessionId(),
+                QaSessionIdCodec.toValue(session.getSessionId()),
                 session.getTitle(),
                 session.getOwnerType(),
                 session.getOwnerId(),
@@ -78,7 +82,7 @@ public class QaSessionCsvExporter {
                 session.getContextMode(),
                 session.getContextContentType(),
                 session.getContextContentId(),
-                session.getStatus(),
+                QaStringValueCodec.toValue(session.getStatus()),
                 millis(session.getOpenedAt()),
                 millis(session.getLastMessageAt()),
                 millis(session.getRemovedAt()),
@@ -105,7 +109,7 @@ public class QaSessionCsvExporter {
         appendRow(
                 builder,
                 "MESSAGE",
-                session.getSessionId(),
+                QaSessionIdCodec.toValue(session.getSessionId()),
                 session.getTitle(),
                 session.getOwnerType(),
                 session.getOwnerId(),
@@ -113,12 +117,12 @@ public class QaSessionCsvExporter {
                 session.getContextMode(),
                 session.getContextContentType(),
                 session.getContextContentId(),
-                session.getStatus(),
+                QaStringValueCodec.toValue(session.getStatus()),
                 millis(session.getOpenedAt()),
                 millis(session.getLastMessageAt()),
                 millis(session.getRemovedAt()),
-                message.getMessageId(),
-                message.getRole(),
+                QaMessageIdCodec.toValue(message.getMessageId()),
+                QaStringValueCodec.toValue(message.getRole()),
                 message.getContent(),
                 message.getAnswerStatus(),
                 message.getModel(),
@@ -140,7 +144,7 @@ public class QaSessionCsvExporter {
         appendRow(
                 builder,
                 "SOURCE",
-                session.getSessionId(),
+                QaSessionIdCodec.toValue(session.getSessionId()),
                 session.getTitle(),
                 session.getOwnerType(),
                 session.getOwnerId(),
@@ -148,12 +152,12 @@ public class QaSessionCsvExporter {
                 session.getContextMode(),
                 session.getContextContentType(),
                 session.getContextContentId(),
-                session.getStatus(),
+                QaStringValueCodec.toValue(session.getStatus()),
                 millis(session.getOpenedAt()),
                 millis(session.getLastMessageAt()),
                 millis(session.getRemovedAt()),
-                message.getMessageId(),
-                message.getRole(),
+                QaMessageIdCodec.toValue(message.getMessageId()),
+                QaStringValueCodec.toValue(message.getRole()),
                 null,
                 message.getAnswerStatus(),
                 message.getModel(),
@@ -175,7 +179,7 @@ public class QaSessionCsvExporter {
         appendRow(
                 builder,
                 "TRACE",
-                session.getSessionId(),
+                QaSessionIdCodec.toValue(session.getSessionId()),
                 session.getTitle(),
                 session.getOwnerType(),
                 session.getOwnerId(),
@@ -183,12 +187,12 @@ public class QaSessionCsvExporter {
                 session.getContextMode(),
                 session.getContextContentType(),
                 session.getContextContentId(),
-                session.getStatus(),
+                QaStringValueCodec.toValue(session.getStatus()),
                 millis(session.getOpenedAt()),
                 millis(session.getLastMessageAt()),
                 millis(session.getRemovedAt()),
-                message.getMessageId(),
-                message.getRole(),
+                QaMessageIdCodec.toValue(message.getMessageId()),
+                QaStringValueCodec.toValue(message.getRole()),
                 null,
                 message.getAnswerStatus(),
                 message.getModel(),

@@ -24,8 +24,11 @@ import com.thundax.kuzhambu.discovery.application.qa.support.KnowledgeDocument;
 import com.thundax.kuzhambu.discovery.application.qa.support.KnowledgeDocumentAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.KnowledgeItemTextRenderer;
 import com.thundax.kuzhambu.discovery.application.qa.support.KnowledgeRevisionCalculator;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncBatch;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncItem;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.KnowledgeSourceId;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaKnowledgeSyncStatus;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncBatchRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncItemRepository;
 import java.util.ArrayList;
@@ -155,7 +158,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
         if (syncItem == null) {
             return toResult(new QaKnowledgeSyncItem(
                     null,
-                    sourceId(command),
+                    sourceIdValue(sourceId(command)),
                     command.getContentType(),
                     command.getContentId(),
                     KNOWLEDGE_BASE_NAME,
@@ -184,11 +187,11 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             KnowledgeSyncResult deleteResult = knowledgeBaseClient.deleteKnowledgeItem(new KnowledgeItemDeleteRequest(
                     knowledgeItemBase(syncItem),
                     syncItem.getExternalKnowledgeItemId(),
-                    syncItem.getSourceId(),
+                    sourceIdValue(syncItem.getSourceId()),
                     Map.of("operation", "deleteContent")));
             syncItem.setSyncStatus(isSuccessStatus(deleteResult) ? SYNC_STATUS_DELETED : SYNC_STATUS_FAILED);
             syncItem.setFailureReason(syncResultFailureReason(deleteResult, "deleteKnowledgeItem failed"));
-            if (SYNC_STATUS_DELETED.equals(syncItem.getSyncStatus())) {
+            if (SYNC_STATUS_DELETED.equals(syncStatusValue(syncItem))) {
                 syncItem.setSyncedAt(now);
             }
             qaKnowledgeSyncItemRepository.update(syncItem);
@@ -224,7 +227,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
 
     private KnowledgeSyncItemResult syncContent(
             SyncKnowledgeContentCommand command, QaKnowledgeSyncItem existingItem, String triggerType) {
-        String sourceId = sourceId(command);
+        KnowledgeSourceId sourceId = sourceId(command);
         Date now = new Date();
         String externalKnowledgeBaseId = existingItem == null ? null : existingItem.getExternalKnowledgeBaseId();
         try {
@@ -258,7 +261,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
 
             KnowledgeItemResult itemResult = knowledgeBaseClient.upsertKnowledgeItem(new KnowledgeItemUpsertRequest(
                     knowledgeBaseName,
-                    sourceId,
+                    sourceIdValue(sourceId),
                     title,
                     renderedKnowledge,
                     buildItemMetadata(command, currentVersionNo, document, knowledgeRevision),
@@ -288,7 +291,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             syncItem.setSyncedAt(isSuccessStatus(syncResult) ? now : null);
 
             if (syncItem.getId() == null) {
-                syncItem.setId(qaKnowledgeSyncItemRepository.save(syncItem));
+                qaKnowledgeSyncItemRepository.save(syncItem);
             } else {
                 qaKnowledgeSyncItemRepository.update(syncItem);
             }
@@ -310,7 +313,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             failedItem.setCreatedAt(failedItem.getCreatedAt() == null ? now : failedItem.getCreatedAt());
             failedItem.setUpdatedAt(now);
             if (failedItem.getId() == null) {
-                failedItem.setId(qaKnowledgeSyncItemRepository.save(failedItem));
+                qaKnowledgeSyncItemRepository.save(failedItem);
             } else {
                 qaKnowledgeSyncItemRepository.update(failedItem);
             }
@@ -319,7 +322,10 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     }
 
     private KnowledgeSyncItemResult disableContentIfNeeded(
-            SyncKnowledgeContentCommand command, QaKnowledgeSyncItem existingItem, String sourceId, Date now) {
+            SyncKnowledgeContentCommand command,
+            QaKnowledgeSyncItem existingItem,
+            KnowledgeSourceId sourceId,
+            Date now) {
         if (!isWangqiOrMingCustoms(command.getContentType())) {
             throw new BizException(
                     "DISCOVERY-30011", "discovery.qa.sync.source-missing", "QA knowledge source is not available");
@@ -338,7 +344,8 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
 
         List<QaKnowledgeSyncItem> items = StringUtils.isBlank(syncStatus)
                 ? listAllSyncItems()
-                : new ArrayList<>(qaKnowledgeSyncItemRepository.listBySyncStatus(syncStatus, Integer.MAX_VALUE));
+                : new ArrayList<>(qaKnowledgeSyncItemRepository.listBySyncStatus(
+                        QaStringValueCodec.toKnowledgeSyncStatus(syncStatus), Integer.MAX_VALUE));
 
         if (StringUtils.isBlank(contentType)) {
             return items;
@@ -377,9 +384,12 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
                 SYNC_STATUS_PENDING);
         Map<String, QaKnowledgeSyncItem> unique = new LinkedHashMap<>();
         for (String status : syncStatuses) {
-            for (QaKnowledgeSyncItem item : qaKnowledgeSyncItemRepository.listBySyncStatus(status, Integer.MAX_VALUE)) {
-                if (item != null && StringUtils.isNotBlank(item.getSourceId())) {
-                    unique.put(item.getSourceId(), item);
+            QaKnowledgeSyncStatus syncStatus = QaStringValueCodec.toKnowledgeSyncStatus(status);
+            for (QaKnowledgeSyncItem item :
+                    qaKnowledgeSyncItemRepository.listBySyncStatus(syncStatus, Integer.MAX_VALUE)) {
+                String itemSourceId = sourceIdValue(item == null ? null : item.getSourceId());
+                if (StringUtils.isNotBlank(itemSourceId)) {
+                    unique.put(itemSourceId, item);
                 }
             }
         }
@@ -449,7 +459,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             KnowledgeDocument document,
             String knowledgeRevision) {
         Map<String, Object> metadata = new HashMap<>();
-        metadata.put("sourceId", sourceId(command));
+        metadata.put("sourceId", sourceIdValue(sourceId(command)));
         metadata.put("contentType", command.getContentType());
         metadata.put(
                 "contentId",
@@ -492,7 +502,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
 
     private KnowledgeSyncItemResult syncDeletedContent(
             SyncKnowledgeContentCommand command,
-            String sourceId,
+            KnowledgeSourceId sourceId,
             Date now,
             String failureReasonIfMissing,
             QaKnowledgeSyncItem existingItem) {
@@ -512,7 +522,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
         failedItem.setCreatedAt(failedItem.getCreatedAt() == null ? now : failedItem.getCreatedAt());
         failedItem.setUpdatedAt(now);
         if (failedItem.getId() == null) {
-            failedItem.setId(qaKnowledgeSyncItemRepository.save(failedItem));
+            qaKnowledgeSyncItemRepository.save(failedItem);
         } else {
             qaKnowledgeSyncItemRepository.update(failedItem);
         }
@@ -520,7 +530,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     }
 
     private KnowledgeSyncItemResult deleteSyncItem(
-            QaKnowledgeSyncItem existingItem, String sourceId, Date now, String requestId, String traceId) {
+            QaKnowledgeSyncItem existingItem, KnowledgeSourceId sourceId, Date now, String requestId, String traceId) {
         if (StringUtils.isBlank(existingItem.getExternalKnowledgeItemId())) {
             return syncDeletedContent(
                     new SyncKnowledgeContentCommand(
@@ -539,11 +549,11 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             KnowledgeSyncResult deleteResult = knowledgeBaseClient.deleteKnowledgeItem(new KnowledgeItemDeleteRequest(
                     knowledgeItemBase(existingItem),
                     existingItem.getExternalKnowledgeItemId(),
-                    sourceId,
+                    sourceIdValue(sourceId),
                     Map.of("operation", "deleteContent")));
             existingItem.setSyncStatus(isSuccessStatus(deleteResult) ? SYNC_STATUS_DELETED : SYNC_STATUS_FAILED);
             existingItem.setFailureReason(syncResultFailureReason(deleteResult, "deleteKnowledgeItem failed"));
-            if (SYNC_STATUS_DELETED.equals(existingItem.getSyncStatus())) {
+            if (SYNC_STATUS_DELETED.equals(syncStatusValue(existingItem))) {
                 existingItem.setSyncedAt(now);
             }
             existingItem.setUpdatedAt(now);
@@ -607,7 +617,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
 
     private KnowledgeSyncItemResult toResult(QaKnowledgeSyncItem item, String title) {
         return new KnowledgeSyncItemResult(
-                item == null ? null : item.getSourceId(),
+                sourceIdValue(item == null ? null : item.getSourceId()),
                 item == null ? null : item.getContentType(),
                 item == null ? null : item.getContentId(),
                 title,
@@ -617,7 +627,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
                 item == null ? null : item.getProvider(),
                 item == null ? null : item.getExternalKnowledgeBaseId(),
                 item == null ? null : item.getExternalKnowledgeItemId(),
-                item == null ? null : item.getSyncStatus(),
+                syncStatusValue(item),
                 item == null ? null : item.getFailureReason(),
                 item == null || item.getSyncedAt() == null
                         ? null
@@ -630,8 +640,16 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
                         : item.getUpdatedAt().getTime());
     }
 
-    private String sourceId(SyncKnowledgeContentCommand command) {
-        return command.getContentType() + ":" + command.getContentId();
+    private KnowledgeSourceId sourceId(SyncKnowledgeContentCommand command) {
+        return QaStringValueCodec.toKnowledgeSourceId(command.getContentType() + ":" + command.getContentId());
+    }
+
+    private String sourceIdValue(KnowledgeSourceId sourceId) {
+        return QaStringValueCodec.toValue(sourceId);
+    }
+
+    private String syncStatusValue(QaKnowledgeSyncItem item) {
+        return item == null ? null : QaStringValueCodec.toValue(item.getSyncStatus());
     }
 
     private String normalizeString(String value) {

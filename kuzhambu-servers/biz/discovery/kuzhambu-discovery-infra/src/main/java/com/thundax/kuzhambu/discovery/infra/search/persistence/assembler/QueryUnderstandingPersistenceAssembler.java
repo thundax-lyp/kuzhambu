@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.discovery.infra.search.persistence.assembler;
 
+import com.thundax.kuzhambu.discovery.domain.search.codec.QueryUnderstandingIdCodec;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.QueryUnderstanding;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject.QueryUnderstandingDO;
@@ -15,9 +17,9 @@ public final class QueryUnderstandingPersistenceAssembler {
             return null;
         }
         QueryUnderstandingDO dataObject = new QueryUnderstandingDO();
-        dataObject.setId(entity.getId());
+        dataObject.setId(QueryUnderstandingIdCodec.toValue(entity.getId()));
         dataObject.setQueryUnderstandingId(entity.getQueryUnderstandingId());
-        dataObject.setSearchEventId(entity.getSearchEventId());
+        dataObject.setSearchEventId(SearchEventIdCodec.toValue(entity.getSearchEventId()));
         dataObject.setQueryText(entity.getQueryText());
         dataObject.setNormalizedQueryText(entity.getNormalizedQueryText());
         dataObject.setRewrittenQueryText(entity.getRewrittenQueryText());
@@ -37,9 +39,8 @@ public final class QueryUnderstandingPersistenceAssembler {
             return null;
         }
         QueryUnderstanding entity = new QueryUnderstanding();
-        entity.setId(dataObject.getId());
-        entity.setQueryUnderstandingId(dataObject.getQueryUnderstandingId());
-        entity.setSearchEventId(dataObject.getSearchEventId());
+        entity.setId(QueryUnderstandingIdCodec.toDomain(dataObject.getId()));
+        entity.setSearchEventId(SearchEventIdCodec.toDomain(dataObject.getSearchEventId()));
         entity.setQueryText(dataObject.getQueryText());
         entity.setNormalizedQueryText(dataObject.getNormalizedQueryText());
         entity.setRewrittenQueryText(dataObject.getRewrittenQueryText());

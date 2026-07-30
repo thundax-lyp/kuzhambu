@@ -7,7 +7,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncItem;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.KnowledgeSourceId;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaKnowledgeSyncItemDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaKnowledgeSyncItemMapper;
 import java.util.Date;
@@ -43,9 +45,9 @@ class QaKnowledgeSyncItemRepositoryImplTest {
                 .when(mapper)
                 .insert(any(QaKnowledgeSyncItemDO.class));
 
-        Long savedId = repository.save(entity);
+        KnowledgeSourceId savedId = repository.save(entity);
 
-        assertEquals(1L, savedId);
+        assertEquals("SANCAI:1001", QaStringValueCodec.toValue(savedId));
         verify(mapper).insert(any(QaKnowledgeSyncItemDO.class));
     }
 
@@ -71,10 +73,10 @@ class QaKnowledgeSyncItemRepositoryImplTest {
                 new Date());
         when(mapper.selectOne(any())).thenReturn(dataObject);
 
-        QaKnowledgeSyncItem result = repository.getBySourceId("SANCAI:1001");
+        QaKnowledgeSyncItem result = repository.getBySourceId(QaStringValueCodec.toKnowledgeSourceId("SANCAI:1001"));
 
-        assertEquals("SANCAI:1001", result.getSourceId());
-        assertEquals("SUCCEEDED", result.getSyncStatus());
+        assertEquals("SANCAI:1001", QaStringValueCodec.toValue(result.getSourceId()));
+        assertEquals("SUCCEEDED", QaStringValueCodec.toValue(result.getSyncStatus()));
     }
 
     @Test
@@ -115,10 +117,11 @@ class QaKnowledgeSyncItemRepositoryImplTest {
                 new Date());
         when(mapper.selectList(any())).thenReturn(List.of(first, second));
 
-        List<QaKnowledgeSyncItem> result = repository.listBySyncStatus("FAILED", 2);
+        List<QaKnowledgeSyncItem> result =
+                repository.listBySyncStatus(QaStringValueCodec.toKnowledgeSyncStatus("FAILED"), 2);
 
         assertEquals(2, result.size());
-        assertEquals("SANCAI:1001", result.get(0).getSourceId());
-        assertEquals("WANGQI:2001", result.get(1).getSourceId());
+        assertEquals("SANCAI:1001", QaStringValueCodec.toValue(result.get(0).getSourceId()));
+        assertEquals("WANGQI:2001", QaStringValueCodec.toValue(result.get(1).getSourceId()));
     }
 }

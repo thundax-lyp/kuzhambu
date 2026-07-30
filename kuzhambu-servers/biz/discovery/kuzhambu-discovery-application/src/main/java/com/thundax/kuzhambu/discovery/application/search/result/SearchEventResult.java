@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.discovery.application.search.result;
 
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SearchEventResult {
-    private Long id;
+    private SearchEventId id;
     private String queryText;
     private String normalizedQueryText;
     private String displayQueryText;
@@ -46,7 +48,7 @@ public class SearchEventResult {
             Long createdAt,
             List<SearchGroupResult> groups) {
         this(
-                searchEventId == null ? null : Long.valueOf(searchEventId),
+                SearchEventIdCodec.toDomain(searchEventId),
                 queryText,
                 normalizedQueryText,
                 displayQueryText,
@@ -65,10 +67,14 @@ public class SearchEventResult {
     }
 
     public String getSearchEventId() {
-        return id == null ? null : String.valueOf(id);
+        return SearchEventIdCodec.toStringValue(id);
     }
 
     public void setSearchEventId(String searchEventId) {
-        this.id = searchEventId == null ? null : Long.valueOf(searchEventId);
+        this.id = SearchEventIdCodec.toDomain(searchEventId);
+    }
+
+    public void setId(Long id) {
+        this.id = SearchEventIdCodec.toDomain(id);
     }
 }

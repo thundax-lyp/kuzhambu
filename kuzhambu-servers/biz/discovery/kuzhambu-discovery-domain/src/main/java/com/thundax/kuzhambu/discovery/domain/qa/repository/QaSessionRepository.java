@@ -2,14 +2,16 @@ package com.thundax.kuzhambu.discovery.domain.qa.repository;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaOwnerRef;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
 import java.util.Date;
 import java.util.List;
 
 public interface QaSessionRepository {
 
-    QaSession getById(Long id);
+    QaSession getById(QaSessionId id);
 
-    default QaSession getBySessionId(Long sessionId) {
+    default QaSession getBySessionId(QaSessionId sessionId) {
         return getById(sessionId);
     }
 
@@ -17,11 +19,11 @@ public interface QaSessionRepository {
 
     PageResult<QaSession> page(String title, Date openedAtStart, Date openedAtEnd, int pageNo, int pageSize);
 
-    List<QaSession> listByOwnerUserId(String ownerType, String ownerId, Integer limit);
+    List<QaSession> listByOwnerUserId(QaOwnerRef owner, Integer limit);
 
-    Long save(QaSession entity);
+    QaSessionId save(QaSession entity);
 
     int update(QaSession entity);
 
-    int markRemoved(Long id, Date removedAt);
+    int markRemoved(QaSessionId id, Date removedAt);
 }

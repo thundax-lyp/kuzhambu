@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.assembler.SearchEventPersistenceAssembler;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject.SearchEventDO;
@@ -24,15 +26,15 @@ public class SearchEventRepositoryImpl implements SearchEventRepository {
     }
 
     @Override
-    public SearchEvent getById(Long id) {
-        return SearchEventPersistenceAssembler.toDomain(mapper.selectById(id));
+    public SearchEvent getById(SearchEventId id) {
+        return SearchEventPersistenceAssembler.toDomain(mapper.selectById(SearchEventIdCodec.toValue(id)));
     }
 
     @Override
-    public Long save(SearchEvent entity) {
+    public SearchEventId save(SearchEvent entity) {
         SearchEventDO dataObject = SearchEventPersistenceAssembler.toObject(entity);
         mapper.insert(dataObject);
-        return dataObject.getId();
+        return SearchEventIdCodec.toDomain(dataObject.getId());
     }
 
     @Override

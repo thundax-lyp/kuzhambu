@@ -18,7 +18,7 @@ import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryEditDrawer } from "../components/sancai-entry-edit-drawer";
 import { SancaiEntryExportActions } from "../sancai-entry-export-actions";
 import { SancaiEntryVersionSection } from "../sancai-entry-version-section";
-import type { SancaiEntryFormValues } from "../sancai-entry-edit-drawer/sancai-entry-form-values";
+import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 import { useSancaiEntryPanelState } from "@/pages/classics/sancai/hooks/use-sancai-entry-panel-state";
 import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import type {

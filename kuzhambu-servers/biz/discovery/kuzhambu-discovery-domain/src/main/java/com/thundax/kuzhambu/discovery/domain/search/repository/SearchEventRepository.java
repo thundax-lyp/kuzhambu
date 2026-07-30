@@ -2,18 +2,19 @@ package com.thundax.kuzhambu.discovery.domain.search.repository;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
 import java.util.Date;
 import java.util.List;
 
 public interface SearchEventRepository {
 
-    SearchEvent getById(Long id);
+    SearchEvent getById(SearchEventId id);
 
-    default SearchEvent getBySearchEventId(String searchEventId) {
-        return getById(searchEventId == null ? null : Long.valueOf(searchEventId));
+    default SearchEvent getBySearchEventId(SearchEventId searchEventId) {
+        return getById(searchEventId);
     }
 
-    Long save(SearchEvent entity);
+    SearchEventId save(SearchEvent entity);
 
     List<SearchEvent> listByCreatedAtRange(Date createdAtStart, Date createdAtEnd);
 
