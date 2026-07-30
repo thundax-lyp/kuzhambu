@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.query;
 
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +18,6 @@ public class LogQuery {
     private String requestUri;
     private String userLoginName;
     private String userName;
-    private Date beginDate;
-    private Date endDate;
+    private Instant beginDate;
+    private Instant endDate;
 }
