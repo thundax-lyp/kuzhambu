@@ -50,6 +50,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceCo
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTraceIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
@@ -59,11 +60,13 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelatio
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionAiCandidateId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionBatchJobId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionSourceContentId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.KnowledgeEntityId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
@@ -628,16 +631,16 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void pageEntitiesShouldMapReadableFields() {
         FakeKnowledgeEntityRepository knowledgeEntityRepository = new FakeKnowledgeEntityRepository();
         KnowledgeEntity entity = new KnowledgeEntity();
-        entity.setId(1001L);
+        entity.setId(KnowledgeEntityIdCodec.toDomain(1001L));
         entity.setEntityKey("person:huangdi");
         entity.setName("黄帝");
         entity.setEntityType("PERSON");
         entity.setDescription("始祖");
-        entity.setConfirmationStatus("CONFIRMED");
-        entity.setLatestVersionId(71L);
+        entity.setConfirmationStatus(KnowledgeConfirmationStatus.CONFIRMED);
+        entity.setLatestVersionId(GraphVersionIdCodec.toDomain(71L));
         entity.setSourceRefsJson("[{\"entryId\":1}]");
-        entity.setFirstExtractedAt(new Date(1_719_100_800_000L));
-        entity.setLastExtractedAt(new Date(1_719_187_200_000L));
+        entity.setFirstExtractedAt(Instant.ofEpochMilli(1_719_100_800_000L));
+        entity.setLastExtractedAt(Instant.ofEpochMilli(1_719_187_200_000L));
         knowledgeEntityRepository.entities.add(entity);
         KnowledgeGraphExtractionApplicationServiceImpl service = service(
                 new FakeRepository(),
@@ -664,13 +667,13 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void getEntityDetailShouldMapSingleEntityRecord() {
         FakeKnowledgeEntityRepository knowledgeEntityRepository = new FakeKnowledgeEntityRepository();
         KnowledgeEntity entity = new KnowledgeEntity();
-        entity.setId(1002L);
+        entity.setId(KnowledgeEntityIdCodec.toDomain(1002L));
         entity.setEntityKey("person:fuxi");
         entity.setName("伏羲");
         entity.setEntityType("PERSON");
         entity.setDescription("始祖");
-        entity.setConfirmationStatus("AI_EXTRACTED");
-        entity.setLatestVersionId(72L);
+        entity.setConfirmationStatus(KnowledgeConfirmationStatus.AI_EXTRACTED);
+        entity.setLatestVersionId(GraphVersionIdCodec.toDomain(72L));
         entity.setSourceRefsJson("[{\"entryId\":2}]");
         knowledgeEntityRepository.entities.add(entity);
         KnowledgeGraphExtractionApplicationServiceImpl service = service(
@@ -1813,7 +1816,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public KnowledgeEntity getByEntityId(Long entityId) {
+        public KnowledgeEntity getByEntityId(KnowledgeEntityId entityId) {
             return entities.stream()
                     .filter(entity -> entityId.equals(entity.getId()))
                     .findFirst()
@@ -1821,7 +1824,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public List<KnowledgeEntity> listByVersionId(Long versionId) {
+        public List<KnowledgeEntity> listByVersionId(GraphVersionId versionId) {
             return entities.stream()
                     .filter(entity -> versionId == null || versionId.equals(entity.getLatestVersionId()))
                     .toList();
@@ -1829,10 +1832,10 @@ class KnowledgeGraphExtractionApplicationServiceTest {
 
         @Override
         public PageResult<KnowledgeEntity> page(
-                Long versionId,
+                GraphVersionId versionId,
                 String keyword,
                 String entityType,
-                String confirmationStatus,
+                KnowledgeConfirmationStatus confirmationStatus,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(

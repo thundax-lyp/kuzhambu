@@ -15,10 +15,12 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionAiCandidateId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionSourceContentId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.KnowledgeEntityId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
@@ -133,7 +135,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
-        public KnowledgeEntity getByEntityId(Long entityId) {
+        public KnowledgeEntity getByEntityId(KnowledgeEntityId entityId) {
             return store.values().stream()
                     .filter(item -> entityId.equals(item.getId()))
                     .findFirst()
@@ -141,7 +143,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
-        public List<KnowledgeEntity> listByVersionId(Long versionId) {
+        public List<KnowledgeEntity> listByVersionId(GraphVersionId versionId) {
             return store.values().stream()
                     .filter(item -> versionId == null || versionId.equals(item.getLatestVersionId()))
                     .toList();
@@ -149,10 +151,10 @@ class KnowledgeGraphCandidateApplySupportTest {
 
         @Override
         public PageResult<KnowledgeEntity> page(
-                Long versionId,
+                GraphVersionId versionId,
                 String keyword,
                 String entityType,
-                String confirmationStatus,
+                KnowledgeConfirmationStatus confirmationStatus,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, store.size(), saved);
