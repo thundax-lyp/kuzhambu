@@ -7,14 +7,17 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 
 public class StoredObjectContentRepositoryImpl implements StoredObjectContentRepository {
 
-    private static final String PATH_FORMAT = "yyyyMM";
+    private static final ZoneId PATH_ZONE = ZoneId.of("Asia/Shanghai");
+    private static final DateTimeFormatter PATH_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMM").withZone(PATH_ZONE);
 
     private final ObjectStorageClient objectStorageClient;
     private final String bucketName;
@@ -60,6 +63,10 @@ public class StoredObjectContentRepositoryImpl implements StoredObjectContentRep
     }
 
     private String writeObjectKey(StoredObject storage) {
+        return writeObjectKey(storage, Instant.now());
+    }
+
+    String writeObjectKey(StoredObject storage, Instant now) {
         if (StringUtils.isNotBlank(storage.getObjectKey())) {
             return storage.getObjectKey();
         }
@@ -67,6 +74,6 @@ public class StoredObjectContentRepositoryImpl implements StoredObjectContentRep
             return storage.getPathName();
         }
         String extendName = StringUtils.defaultIfBlank(storage.getExtendName(), "bin");
-        return new SimpleDateFormat(PATH_FORMAT).format(new Date()) + "/" + UUID.randomUUID() + "." + extendName;
+        return PATH_FORMATTER.format(now) + "/" + UUID.randomUUID() + "." + extendName;
     }
 }

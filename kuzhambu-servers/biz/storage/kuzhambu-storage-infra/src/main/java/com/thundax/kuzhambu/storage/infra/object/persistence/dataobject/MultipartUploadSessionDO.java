@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.storage.infra.object.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,6 +29,6 @@ public class MultipartUploadSessionDO {
     private Long partSize;
     private Integer uploadedPartCount;
     private String uploadStatus;
-    private Date completedDate;
-    private Date abortedDate;
+    private Instant completedDate;
+    private Instant abortedDate;
 }

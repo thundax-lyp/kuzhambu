@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.storage.application.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -46,6 +47,8 @@ class MultipartUploadApplicationServiceImplAbortTest {
         int updated = service.abort(new AbortMultipartUploadCommand(UPLOAD_ID_REF));
 
         assertEquals(1, updated);
+        assertNotNull(session.getAbortedDate());
+        assertEquals(MultipartUploadStatus.ABORTED, session.getUploadStatus());
         verify(contentRepository).delete(argThat(storage -> PART_PATH_1.equals(storage.getObjectKey())));
         verify(contentRepository).delete(argThat(storage -> PART_PATH_2.equals(storage.getObjectKey())));
         verify(contentRepository).delete(argThat(storage -> PART_PATH_3.equals(storage.getObjectKey())));
