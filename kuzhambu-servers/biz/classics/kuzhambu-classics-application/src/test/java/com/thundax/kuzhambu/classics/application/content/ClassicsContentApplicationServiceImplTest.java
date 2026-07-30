@@ -79,7 +79,6 @@ import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -1043,7 +1042,7 @@ class ClassicsContentApplicationServiceImplTest {
         public int markExportJobCompleted(
                 ClassicsContentExportJobId id,
                 StorageObjectId storageObjectId,
-                Date expiresAt,
+                Instant expiresAt,
                 int itemCount,
                 int assetCount) {
             return 0;
