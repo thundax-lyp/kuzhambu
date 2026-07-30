@@ -205,7 +205,7 @@ public final class SancaiInterfaceAssembler {
             return true;
         }
         return entity.getContentUpdatedAt() != null
-                && entity.getContentUpdatedAt().after(entity.getCurrentVersionedAt());
+                && entity.getContentUpdatedAt().isAfter(entity.getCurrentVersionedAt());
     }
 
     private static DictResponse dict(String type, String value, String label) {
