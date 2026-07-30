@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagMappe
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.YearMonth;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -31,6 +31,7 @@ public class TagGovernanceMetricsRepositoryImpl implements TagGovernanceMetricsR
 
     private static final int DEFAULT_TOP_LIMIT = 10;
     private static final int DEFAULT_RECENT_MONTHS = 6;
+    private static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Shanghai");
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
 
     private final TagMapper tagMapper;
@@ -175,10 +176,10 @@ public class TagGovernanceMetricsRepositoryImpl implements TagGovernanceMetricsR
 
     private YearMonth resolveUsableMonth(Tag tag) {
         if (tag.getReviewedAt() != null) {
-            return YearMonth.from(tag.getReviewedAt().atZone(ZoneOffset.UTC));
+            return YearMonth.from(tag.getReviewedAt().atZone(BUSINESS_ZONE));
         }
         if (tag.getCreatedAt() != null) {
-            return YearMonth.from(tag.getCreatedAt().atZone(ZoneOffset.UTC));
+            return YearMonth.from(tag.getCreatedAt().atZone(BUSINESS_ZONE));
         }
         return null;
     }

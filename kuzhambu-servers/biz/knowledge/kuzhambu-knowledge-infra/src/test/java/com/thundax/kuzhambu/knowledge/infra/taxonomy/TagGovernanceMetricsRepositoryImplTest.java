@@ -45,8 +45,8 @@ class TagGovernanceMetricsRepositoryImplTest {
         activeAi.setStatus("ENABLED");
         activeAi.setSource("AI_EXTRACTED");
         activeAi.setReviewStatus("APPROVED");
-        activeAi.setCreatedAt(Instant.ofEpochMilli(1738368000000L));
-        activeAi.setReviewedAt(Instant.ofEpochMilli(1738368000000L));
+        activeAi.setCreatedAt(Instant.parse("2025-01-31T16:30:00Z"));
+        activeAi.setReviewedAt(Instant.parse("2025-01-31T16:30:00Z"));
         TagDO deprecated = new TagDO();
         deprecated.setId(3L);
         deprecated.setTagId(1003L);
