@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.knowledge.domain.refinement.model.entity;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +28,7 @@ public class RefinementLineageRelationDraft {
     private String sourceRefsJson;
     private Integer sortOrder;
     private Long createdBy;
-    private Date createdAt;
+    private Instant createdAt;
     private Long updatedBy;
-    private Date updatedAt;
+    private Instant updatedAt;
 }

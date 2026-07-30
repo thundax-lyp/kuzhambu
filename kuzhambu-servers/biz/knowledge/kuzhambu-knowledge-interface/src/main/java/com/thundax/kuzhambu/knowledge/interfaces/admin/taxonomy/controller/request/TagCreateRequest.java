@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -53,5 +53,5 @@ public class TagCreateRequest {
     @Schema(name = "reviewedAt", description = "审核时间")
     @JsonProperty(value = "reviewedAt")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date reviewedAt;
+    private Instant reviewedAt;
 }

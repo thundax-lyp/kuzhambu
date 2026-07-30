@@ -74,12 +74,12 @@ public class KnowledgeGraphCandidateApplySupport {
         GraphVersion version = ensureVersion(task, candidate, appliedAt);
         JsonNode payload = parsePayload(candidate.getResultPayload());
         if (GraphExtractionTaskType.LINEAGE.equals(task.getTaskType())) {
-            applyLineageNodes(version, payload, java.util.Date.from(appliedAt));
-            applyLineageRelations(version, payload, java.util.Date.from(appliedAt));
+            applyLineageNodes(version, payload, appliedAt);
+            applyLineageRelations(version, payload, appliedAt);
         } else if (GraphExtractionTaskType.RELATION.equals(task.getTaskType())
                 || GraphExtractionTaskType.GRAPH.equals(task.getTaskType())) {
             applyEntities(version, payload, appliedAt);
-            applyRelations(version, payload, java.util.Date.from(appliedAt));
+            applyRelations(version, payload, appliedAt);
         } else {
             throw new BizException("Unsupported graph extraction task type: " + taskTypeValue(task));
         }
@@ -140,7 +140,7 @@ public class KnowledgeGraphCandidateApplySupport {
         mergeEntities(incoming, appliedAt);
     }
 
-    private void applyRelations(GraphVersion version, JsonNode payload, java.util.Date appliedAt) {
+    private void applyRelations(GraphVersion version, JsonNode payload, Instant appliedAt) {
         ArrayNode relationNodes = arrayOf(payload, "relations");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeRelation> incoming = new ArrayList<>();
@@ -170,7 +170,7 @@ public class KnowledgeGraphCandidateApplySupport {
         mergeRelations(incoming, appliedAt);
     }
 
-    private void applyLineageNodes(GraphVersion version, JsonNode payload, java.util.Date appliedAt) {
+    private void applyLineageNodes(GraphVersion version, JsonNode payload, Instant appliedAt) {
         ArrayNode nodeArray = arrayOf(payload, "nodes");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeLineageNode> incoming = new ArrayList<>();
@@ -196,7 +196,7 @@ public class KnowledgeGraphCandidateApplySupport {
         mergeLineageNodes(incoming, appliedAt);
     }
 
-    private void applyLineageRelations(GraphVersion version, JsonNode payload, java.util.Date appliedAt) {
+    private void applyLineageRelations(GraphVersion version, JsonNode payload, Instant appliedAt) {
         ArrayNode relationNodes = arrayOf(payload, "relations");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeLineageRelation> incoming = new ArrayList<>();
@@ -248,7 +248,7 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeEntityRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeRelations(List<KnowledgeRelation> incoming, java.util.Date appliedAt) {
+    private void mergeRelations(List<KnowledgeRelation> incoming, Instant appliedAt) {
         Map<String, KnowledgeRelation> existingByKey = mapByKey(
                 knowledgeRelationRepository.listByRelationKeys(keys(incoming, KnowledgeRelation::getRelationKey)),
                 KnowledgeRelation::getRelationKey);
@@ -270,7 +270,7 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeRelationRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeLineageNodes(List<KnowledgeLineageNode> incoming, java.util.Date appliedAt) {
+    private void mergeLineageNodes(List<KnowledgeLineageNode> incoming, Instant appliedAt) {
         Map<String, KnowledgeLineageNode> existingByKey = mapByKey(
                 knowledgeLineageNodeRepository.listByNodeKeys(keys(incoming, KnowledgeLineageNode::getNodeKey)),
                 KnowledgeLineageNode::getNodeKey);
@@ -291,7 +291,7 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeLineageNodeRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeLineageRelations(List<KnowledgeLineageRelation> incoming, java.util.Date appliedAt) {
+    private void mergeLineageRelations(List<KnowledgeLineageRelation> incoming, Instant appliedAt) {
         Map<String, KnowledgeLineageRelation> existingByKey = mapByKey(
                 knowledgeLineageRelationRepository.listByRelationKeys(
                         keys(incoming, KnowledgeLineageRelation::getRelationKey)),

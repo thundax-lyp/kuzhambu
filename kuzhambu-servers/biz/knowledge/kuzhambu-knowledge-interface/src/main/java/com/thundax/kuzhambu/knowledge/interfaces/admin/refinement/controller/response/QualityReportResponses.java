@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller.response;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -46,8 +46,8 @@ public final class QualityReportResponses {
         private Long annotationCount;
         private Long issueCount;
         private Long generatedBy;
-        private Date generatedAt;
-        private Date publishedAt;
+        private Instant generatedAt;
+        private Instant publishedAt;
     }
 
     @Getter
@@ -73,7 +73,7 @@ public final class QualityReportResponses {
         private String sourceCategoryCode;
         private String sourceCategoryName;
         private Long graphVersionId;
-        private Date appliedAt;
+        private Instant appliedAt;
         private Long annotationCount;
         private Long issueCount;
         private String status;

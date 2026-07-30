@@ -21,7 +21,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagAliasReposit
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagCategoryRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagContentRefRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -73,7 +73,7 @@ public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBinding
         if (existing != null) {
             return existing;
         }
-        return createTag(normalizeName(name), TagSource.MANUAL, TagReviewStatus.APPROVED, new Date());
+        return createTag(normalizeName(name), TagSource.MANUAL, TagReviewStatus.APPROVED, Instant.now());
     }
 
     @Override
@@ -123,9 +123,9 @@ public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBinding
                 .forEach(ref -> tagContentRefRepository.deleteById(ref.getId()));
     }
 
-    private Tag createTag(String normalizedName, TagSource source, TagReviewStatus reviewStatus, Date reviewedAt) {
+    private Tag createTag(String normalizedName, TagSource source, TagReviewStatus reviewStatus, Instant reviewedAt) {
         TagCategory category = requireDefaultCategory();
-        Date now = new Date();
+        Instant now = Instant.now();
         Tag tag = new Tag();
         tag.setId(TagIdCodec.toDomain(idGenerator.nextId().value()));
         tag.setName(normalizedName);

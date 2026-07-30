@@ -18,7 +18,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTraceIdC
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphExtractionTaskMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -101,8 +101,8 @@ class GraphExtractionTaskRepositoryImplTest {
                 null,
                 null,
                 99L,
-                new Date(1_718_000_000_000L),
-                new Date(1_718_000_100_000L),
+                Instant.ofEpochMilli(1_718_000_000_000L),
+                Instant.ofEpochMilli(1_718_000_100_000L),
                 null);
     }
 }

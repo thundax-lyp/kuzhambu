@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.knowledge.domain.refinement.model.entity;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,8 +34,8 @@ public class QualityReport {
     private Long annotationCount;
     private Long issueCount;
     private Long generatedBy;
-    private Date generatedAt;
-    private Date publishedAt;
-    private Date createdAt;
-    private Date updatedAt;
+    private Instant generatedAt;
+    private Instant publishedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
 }

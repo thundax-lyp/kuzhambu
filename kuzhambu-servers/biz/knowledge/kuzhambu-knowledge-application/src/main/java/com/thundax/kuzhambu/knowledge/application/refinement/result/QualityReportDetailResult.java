@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.knowledge.application.refinement.result;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -55,8 +55,8 @@ public class QualityReportDetailResult {
         private Long annotationCount;
         private Long issueCount;
         private Long generatedBy;
-        private Date generatedAt;
-        private Date publishedAt;
+        private Instant generatedAt;
+        private Instant publishedAt;
     }
 
     @Getter
@@ -87,7 +87,7 @@ public class QualityReportDetailResult {
         private String sourceCategoryCode;
         private String sourceCategoryName;
         private Long graphVersionId;
-        private Date appliedAt;
+        private Instant appliedAt;
         private Long annotationCount;
         private Long issueCount;
         private String status;

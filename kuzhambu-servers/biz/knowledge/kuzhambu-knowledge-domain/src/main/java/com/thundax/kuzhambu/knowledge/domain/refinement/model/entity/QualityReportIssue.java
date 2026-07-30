@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.knowledge.domain.refinement.model.entity;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,5 +23,5 @@ public class QualityReportIssue {
     private String suggestion;
     private String href;
     private Integer priority;
-    private Date createdAt;
+    private Instant createdAt;
 }

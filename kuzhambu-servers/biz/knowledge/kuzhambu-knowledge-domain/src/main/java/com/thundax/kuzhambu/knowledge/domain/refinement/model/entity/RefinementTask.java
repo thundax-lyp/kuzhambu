@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.knowledge.domain.refinement.model.entity;
 
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.valueobject.RefinementTaskId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,11 +22,11 @@ public class RefinementTask {
     private Long graphVersionId;
     private String status;
     private Long openedBy;
-    private Date openedAt;
+    private Instant openedAt;
     private Long submittedBy;
-    private Date submittedAt;
+    private Instant submittedAt;
     private Long appliedBy;
-    private Date appliedAt;
+    private Instant appliedAt;
     private Long cancelledBy;
-    private Date cancelledAt;
+    private Instant cancelledAt;
 }

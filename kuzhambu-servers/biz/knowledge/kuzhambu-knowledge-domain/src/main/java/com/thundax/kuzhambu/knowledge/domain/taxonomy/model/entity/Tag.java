@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,10 +25,10 @@ public class Tag {
     private TagSource source;
     private TagReviewStatus reviewStatus;
     private String reviewNote;
-    private Date createdAt;
-    private Date reviewedAt;
+    private Instant createdAt;
+    private Instant reviewedAt;
     private TagId mergedToTagId;
-    private Date deprecatedAt;
+    private Instant deprecatedAt;
     private Long deprecatedBy;
 
     public Tag(
@@ -40,8 +40,8 @@ public class Tag {
             TagSource source,
             TagReviewStatus reviewStatus,
             String reviewNote,
-            Date createdAt,
-            Date reviewedAt) {
+            Instant createdAt,
+            Instant reviewedAt) {
         this(
                 id,
                 name,
@@ -89,7 +89,7 @@ public class Tag {
         mergedToTagId = targetTag.getId();
     }
 
-    public void deprecate(Date operatedAt, Long operatorId) {
+    public void deprecate(Instant operatedAt, Long operatorId) {
         if (id == null) {
             throw new DomainException("待废弃标签不能为空");
         }
@@ -97,7 +97,7 @@ public class Tag {
             throw new DomainException("标签已废弃");
         }
         status = TagStatus.DISABLED;
-        deprecatedAt = operatedAt == null ? new Date() : operatedAt;
+        deprecatedAt = operatedAt == null ? Instant.now() : operatedAt;
         deprecatedBy = operatorId;
     }
 }

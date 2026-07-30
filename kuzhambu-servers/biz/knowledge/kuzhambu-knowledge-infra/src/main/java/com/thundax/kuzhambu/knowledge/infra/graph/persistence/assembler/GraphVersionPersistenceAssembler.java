@@ -8,8 +8,6 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphVersionDO;
-import java.time.Instant;
-import java.util.Date;
 
 public final class GraphVersionPersistenceAssembler {
 
@@ -34,7 +32,7 @@ public final class GraphVersionPersistenceAssembler {
         dataObject.setVersionNo(entity.getVersionNo());
         dataObject.setStatus(
                 entity.getStatus() == null ? null : entity.getStatus().value());
-        dataObject.setAppliedAt(toDate(entity.getAppliedAt()));
+        dataObject.setAppliedAt(entity.getAppliedAt());
         return dataObject;
     }
 
@@ -55,15 +53,7 @@ public final class GraphVersionPersistenceAssembler {
         entity.setSourceCategoryName(dataObject.getSourceCategoryName());
         entity.setVersionNo(dataObject.getVersionNo());
         entity.setStatus(GraphVersionStatus.from(dataObject.getStatus()));
-        entity.setAppliedAt(toInstant(dataObject.getAppliedAt()));
+        entity.setAppliedAt(dataObject.getAppliedAt());
         return entity;
-    }
-
-    private static Date toDate(Instant value) {
-        return value == null ? null : Date.from(value);
-    }
-
-    private static Instant toInstant(Date value) {
-        return value == null ? null : value.toInstant();
     }
 }

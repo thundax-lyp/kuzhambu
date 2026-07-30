@@ -80,7 +80,6 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTas
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -598,11 +597,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 71L,
                 "APPLIED",
                 9L,
-                new Date(),
+                Instant.now(),
                 null,
                 null,
                 19L,
-                new Date(1_719_187_260_000L),
+                Instant.ofEpochMilli(1_719_187_260_000L),
                 null,
                 null);
         KnowledgeGraphExtractionApplicationServiceImpl service = service(

@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.KnowledgeRelationDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.KnowledgeRelationMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -105,8 +105,8 @@ class KnowledgeRelationRepositoryTest {
         relation.setConfirmationStatus("AI_EXTRACTED");
         relation.setLatestVersionId(102L);
         relation.setSourceRefsJson("[{\"entryId\":1}]");
-        relation.setFirstExtractedAt(new Date());
-        relation.setLastExtractedAt(new Date());
+        relation.setFirstExtractedAt(Instant.now());
+        relation.setLastExtractedAt(Instant.now());
 
         repository.saveOrUpdateBatch(List.of(relation));
 

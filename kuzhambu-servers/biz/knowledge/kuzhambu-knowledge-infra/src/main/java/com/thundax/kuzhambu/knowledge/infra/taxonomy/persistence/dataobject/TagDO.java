@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,9 +25,9 @@ public class TagDO {
     private String source;
     private String reviewStatus;
     private String reviewNote;
-    private Date createdAt;
-    private Date reviewedAt;
+    private Instant createdAt;
+    private Instant reviewedAt;
     private Long mergedToTagId;
-    private Date deprecatedAt;
+    private Instant deprecatedAt;
     private Long deprecatedBy;
 }
