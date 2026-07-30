@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.operations.domain.backup.model.entity;
 
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +22,7 @@ public class BackupRecord {
     private String checksum;
     private String failureReason;
     private Long requesterUserId;
-    private Date startedAt;
-    private Date completedAt;
-    private Date expiresAt;
+    private Instant startedAt;
+    private Instant completedAt;
+    private Instant expiresAt;
 }
