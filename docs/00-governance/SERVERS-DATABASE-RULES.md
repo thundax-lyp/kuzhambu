@@ -41,6 +41,8 @@
 - 当前 AI 默认提示词数据源为 `db/data-source/ai-prompts/`，生成脚本为 `scripts/generate-ai-data-sql.ts`。
 - 修改 AI 默认提示词时必须先改对应提示词目录下的 `meta.json`、`system-template.txt` 或 `user-template.txt`，再重新生成并提交 `db/data/ai.sql`。
 - AI 默认提示词目录允许维护 `sample.md` 作为人工运行样例；`sample.md` 不进入 SQL 产物。
+- 当前三才图会标签初始化数据源为 `db/data-source/sancai-tags.json`，生成脚本为 `scripts/generate-sancai-knowledge-data-sql.mjs`；`sancai_tree_snapshot.json` 是采集快照，不作为标签 seed 真相源。
+- 修改三才图会标签库、标签别名或稿件标签绑定时必须先改 `db/data-source/sancai-tags.json`，再重新生成并提交 `db/data/knowledge.sql`；同步生成 `db/data/classics.sql` 时，`scripts/classics-json-to-sql.sh` 必须从该标签数据源解析 `classics_content_tag.tag_id`。
 - 当前 schema 文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
 - 当前初始化数据文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
 - SQL 文件名必须与业务域名称保持一致。
