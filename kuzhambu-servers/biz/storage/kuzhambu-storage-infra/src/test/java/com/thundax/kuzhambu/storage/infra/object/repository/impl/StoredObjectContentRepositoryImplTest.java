@@ -8,9 +8,23 @@ import com.thundax.kuzhambu.common.oss.model.ObjectStorageWriteResult;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class StoredObjectContentRepositoryImplTest {
+
+    @Test
+    void writeObjectKeyShouldUseShanghaiMonthAtUtcMonthBoundary() {
+        RecordingObjectStorageClient client = new RecordingObjectStorageClient();
+        StoredObjectContentRepositoryImpl store = new StoredObjectContentRepositoryImpl(client, "bucket", "/content/");
+        StoredObject storage = new StoredObject();
+        storage.setExtendName("pdf");
+
+        String objectKey = store.writeObjectKey(storage, Instant.parse("2026-01-31T16:00:00Z"));
+
+        assertEquals("202602", objectKey.substring(0, 6));
+        assertEquals(".pdf", objectKey.substring(objectKey.length() - 4));
+    }
 
     @Test
     void deleteShouldRemoveObjectByStoredObjectKey() throws Exception {

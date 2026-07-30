@@ -77,8 +77,9 @@ class MultipartUploadApplicationServiceImplTest {
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository, contentRepository, storageApplicationService);
 
+        MultipartUploadSession session = session();
         when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID_REF))
-                .thenReturn(session());
+                .thenReturn(session);
         when(multipartUploadRepository.updateMultipartSessionStatus(
                         eq(UPLOAD_ID_REF), eq(MultipartUploadStatus.UPLOADING), eq(MultipartUploadStatus.COMPLETING)))
                 .thenReturn(1);
@@ -114,6 +115,8 @@ class MultipartUploadApplicationServiceImplTest {
         assertEquals("/api/storage/object/11/content", storage.getAccessEndpoint());
         assertEquals(11L, storage.getSize());
         assertArrayEquals("onetwothree".getBytes(), savedBytes.get());
+        assertNotNull(session.getCompletedDate());
+        assertEquals(MultipartUploadStatus.COMPLETED, session.getUploadStatus());
         verify(contentRepository).save(any(), any());
         verify(storageApplicationService).create(any());
         verify(contentRepository, times(3)).delete(any());
