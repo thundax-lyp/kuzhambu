@@ -1089,7 +1089,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                         : lastAppliedRefinement.getRefinementTaskId().value(),
                 lastAppliedRefinement == null || lastAppliedRefinement.getAppliedAt() == null
                         ? null
-                        : lastAppliedRefinement.getAppliedAt().getTime());
+                        : lastAppliedRefinement.getAppliedAt().toEpochMilli());
     }
 
     private KnowledgeEntityResult toKnowledgeEntityResult(KnowledgeEntity entity) {

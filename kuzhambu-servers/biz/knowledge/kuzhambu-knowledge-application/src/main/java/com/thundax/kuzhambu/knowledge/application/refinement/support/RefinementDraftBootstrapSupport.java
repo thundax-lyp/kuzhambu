@@ -14,8 +14,8 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementE
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementLineageNodeDraft;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementLineageRelationDraft;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementRelationDraft;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -39,7 +39,7 @@ public class RefinementDraftBootstrapSupport {
     }
 
     public List<RefinementEntityDraft> bootstrapEntityDrafts(Long refinementTaskId, Long versionId, Long operatorId) {
-        Date now = new Date();
+        Instant now = Instant.now();
         List<RefinementEntityDraft> drafts = new ArrayList<>();
         int sortOrder = 1;
         for (KnowledgeEntity entity : entityRepository.listByVersionId(GraphVersionIdCodec.toDomain(versionId))) {
@@ -69,7 +69,7 @@ public class RefinementDraftBootstrapSupport {
 
     public List<RefinementRelationDraft> bootstrapRelationDrafts(
             Long refinementTaskId, Long versionId, Long operatorId) {
-        Date now = new Date();
+        Instant now = Instant.now();
         List<RefinementRelationDraft> drafts = new ArrayList<>();
         int sortOrder = 1;
         for (KnowledgeRelation relation : relationRepository.listByVersionId(versionId)) {
@@ -100,7 +100,7 @@ public class RefinementDraftBootstrapSupport {
 
     public List<RefinementLineageNodeDraft> bootstrapLineageNodeDrafts(
             Long refinementTaskId, Long versionId, Long operatorId) {
-        Date now = new Date();
+        Instant now = Instant.now();
         List<RefinementLineageNodeDraft> drafts = new ArrayList<>();
         int sortOrder = 1;
         for (KnowledgeLineageNode node : lineageNodeRepository.listByVersionId(versionId)) {
@@ -129,7 +129,7 @@ public class RefinementDraftBootstrapSupport {
 
     public List<RefinementLineageRelationDraft> bootstrapLineageRelationDrafts(
             Long refinementTaskId, Long versionId, Long operatorId) {
-        Date now = new Date();
+        Instant now = Instant.now();
         List<RefinementLineageRelationDraft> drafts = new ArrayList<>();
         int sortOrder = 1;
         for (KnowledgeLineageRelation relation : lineageRelationRepository.listByVersionId(versionId)) {
