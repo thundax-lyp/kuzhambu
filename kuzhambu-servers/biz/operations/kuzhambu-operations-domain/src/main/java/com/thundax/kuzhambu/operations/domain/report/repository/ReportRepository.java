@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.operations.domain.report.repository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface ReportRepository {
@@ -15,8 +15,8 @@ public interface ReportRepository {
             String format,
             String reportStatus,
             Long requesterUserId,
-            Date periodStart,
-            Date periodEnd,
+            Instant periodStart,
+            Instant periodEnd,
             int pageNo,
             int pageSize);
 
@@ -26,7 +26,7 @@ public interface ReportRepository {
 
     int deleteById(ReportId id);
 
-    default List<ReportId> listExpiredReportIds(Date requestedBefore, int limit) {
+    default List<ReportId> listExpiredReportIds(Instant requestedBefore, int limit) {
         return List.of();
     }
 }

@@ -17,7 +17,7 @@ import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.infra.report.persistence.dataobject.ReportDO;
 import com.thundax.kuzhambu.operations.infra.report.persistence.mapper.ReportMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -51,7 +51,14 @@ class ReportRepositoryImplTest {
         when(mapper.selectPage(any(Page.class), any())).thenReturn(dataObjectPage);
 
         PageResult<ReportRecord> result = repository.page(
-                "WEEKLY", "PDF", "SUCCEEDED", 1001L, new Date(1_718_000_000_000L), new Date(1_718_086_400_000L), 2, 5);
+                "WEEKLY",
+                "PDF",
+                "SUCCEEDED",
+                1001L,
+                Instant.ofEpochMilli(1_718_000_000_000L),
+                Instant.ofEpochMilli(1_718_086_400_000L),
+                2,
+                5);
 
         assertEquals(2, result.getPageNo());
         assertEquals(5, result.getPageSize());
@@ -68,7 +75,7 @@ class ReportRepositoryImplTest {
         ReportRepositoryImpl repository = new ReportRepositoryImpl(mapper);
         when(mapper.selectObjs(any())).thenReturn(List.of(9001L, 9002L));
 
-        List<ReportId> result = repository.listExpiredReportIds(new Date(1_718_086_500_000L), 2);
+        List<ReportId> result = repository.listExpiredReportIds(Instant.ofEpochMilli(1_718_086_500_000L), 2);
 
         assertEquals(2, result.size());
         assertEquals(9001L, result.get(0).value());
@@ -86,8 +93,8 @@ class ReportRepositoryImplTest {
                 reportId,
                 "WEEKLY",
                 "PDF",
-                new Date(1_718_000_000_000L),
-                new Date(1_718_086_400_000L),
+                Instant.ofEpochMilli(1_718_000_000_000L),
+                Instant.ofEpochMilli(1_718_086_400_000L),
                 "req-1",
                 "trace-1",
                 "2026.06.26",
@@ -96,7 +103,7 @@ class ReportRepositoryImplTest {
                 "SUCCEEDED",
                 null,
                 1001L,
-                new Date(1_718_086_500_000L),
-                new Date(1_718_086_600_000L));
+                Instant.ofEpochMilli(1_718_086_500_000L),
+                Instant.ofEpochMilli(1_718_086_600_000L));
     }
 }
