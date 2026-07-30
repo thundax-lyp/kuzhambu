@@ -45,10 +45,7 @@ class DefaultOperationsReportMetricsGatewayTest {
                 .totalCostAmount(new BigDecimal("8.88"))
                 .build();
         when(summaryGateway.loadSummary(
-                        monthlyRecord().getPeriodStart().toInstant(),
-                        monthlyRecord().getPeriodEnd().toInstant(),
-                        "WEEK",
-                        permissions))
+                        monthlyRecord().getPeriodStart(), monthlyRecord().getPeriodEnd(), "WEEK", permissions))
                 .thenReturn(new OperationsCrossDomainSummary(
                         classicsSummary, aiSummary, discoverySummary, knowledgeSummary));
         DefaultOperationsReportMetricsGateway gateway = new DefaultOperationsReportMetricsGateway(summaryGateway);
@@ -65,11 +62,7 @@ class DefaultOperationsReportMetricsGatewayTest {
         assertEquals("knowledgeSummary", sections.get(3).getSectionKey());
         assertSame(knowledgeSummary, sections.get(3).getPayload().get("summary"));
         verify(summaryGateway)
-                .loadSummary(
-                        monthlyRecord().getPeriodStart().toInstant(),
-                        monthlyRecord().getPeriodEnd().toInstant(),
-                        "WEEK",
-                        permissions);
+                .loadSummary(monthlyRecord().getPeriodStart(), monthlyRecord().getPeriodEnd(), "WEEK", permissions);
     }
 
     @Test
@@ -77,10 +70,7 @@ class DefaultOperationsReportMetricsGatewayTest {
         OperationsDashboardSummaryGateway summaryGateway = mock(OperationsDashboardSummaryGateway.class);
         OperationsDashboardPermissionSnapshot permissions = permissionSnapshotWithAllPrivileges();
         when(summaryGateway.loadSummary(
-                        weeklyRecord().getPeriodStart().toInstant(),
-                        weeklyRecord().getPeriodEnd().toInstant(),
-                        "DAY",
-                        permissions))
+                        weeklyRecord().getPeriodStart(), weeklyRecord().getPeriodEnd(), "DAY", permissions))
                 .thenReturn(new OperationsCrossDomainSummary(
                         ClassicsSummaryFacadeResponse.builder().build(),
                         AiReportSummaryFacadeResponse.builder().build(),
@@ -91,11 +81,7 @@ class DefaultOperationsReportMetricsGatewayTest {
         gateway.loadSections(weeklyRecord());
 
         verify(summaryGateway)
-                .loadSummary(
-                        weeklyRecord().getPeriodStart().toInstant(),
-                        weeklyRecord().getPeriodEnd().toInstant(),
-                        "DAY",
-                        permissions);
+                .loadSummary(weeklyRecord().getPeriodStart(), weeklyRecord().getPeriodEnd(), "DAY", permissions);
     }
 
     private static OperationsDashboardPermissionSnapshot permissionSnapshotWithAllPrivileges() {
