@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 public class SysLogMessageServiceImpl implements SysLogMessageService {
 
     private static final DateTimeFormatter LOG_FILENAME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final ZoneOffset LOG_FILE_ZONE_OFFSET = ZoneOffset.ofHours(8);
     private static final String LOG_EXTEND_NAME = ".log";
 
     private final KuzhambuMqSender mqSender;
@@ -59,7 +60,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
 
                 try {
                     String filename =
-                            LOG_FILENAME_FORMAT.format(sysLog.logDate().atZone(ZoneOffset.UTC)) + LOG_EXTEND_NAME;
+                            LOG_FILENAME_FORMAT.format(sysLog.logDate().atZone(LOG_FILE_ZONE_OFFSET)) + LOG_EXTEND_NAME;
                     File logFile = new File(logProperties().getStoragePath(), filename);
 
                     FileUtils.writeLines(logFile, new ArrayList<>(Collections.singletonList(payload)), true);

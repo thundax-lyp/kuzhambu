@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +22,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
@@ -70,6 +72,21 @@ class SysLogMessageServiceImplTest {
         assertEquals(logDate, logService.command.getLogDate());
         assertEquals("系统-登录-成功", logService.command.getTitle());
         assertEquals("/api/auth/session/login", logService.command.getRequestUri());
+    }
+
+    @Test
+    void shouldPartitionLogFilesByExplicitGmt8Date() {
+        CapturingMqSender mqSender = new CapturingMqSender();
+        SysLogMessageServiceImpl service = new SysLogMessageServiceImpl(
+                mqSender, properties(), new CapturingSystemLogApplicationService(), OBJECT_MAPPER);
+        Log log = new Log();
+        log.setType(LogType.ACCESS);
+        log.setLogDate(Instant.parse("2026-06-17T16:30:00Z"));
+
+        service.saveLog(log);
+        service.consumeLog(String.valueOf(mqSender.message.getPayload()));
+
+        assertTrue(Files.exists(tempDir.resolve("2026-06-18.log")));
     }
 
     private KuzhambuProperties properties() {
