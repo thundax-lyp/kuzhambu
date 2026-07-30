@@ -68,7 +68,7 @@ class SancaiRepositoryTest {
         String repositorySource = readFromKnownRoots(
                 "biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java");
 
-        assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getCompletedAt, new Date())"));
+        assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getCompletedAt, Instant.now())"));
         assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getStorageObjectId"));
         assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getAssetCount, assetCount)"));
         assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getFilename, filename)"));
