@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface ClassicsContentRepository {
@@ -111,7 +111,7 @@ public interface ClassicsContentRepository {
     int markExportJobCompleted(
             ClassicsContentExportJobId id,
             StorageObjectId storageObjectId,
-            Date expiresAt,
+            Instant expiresAt,
             int itemCount,
             int assetCount);
 
@@ -121,7 +121,7 @@ public interface ClassicsContentRepository {
 
     int deleteExportJobById(ClassicsContentExportJobId id);
 
-    default List<ClassicsContentExportJobId> listExpiredExportJobIds(Date now, int limit) {
+    default List<ClassicsContentExportJobId> listExpiredExportJobIds(Instant now, int limit) {
         return List.of();
     }
 

@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.classics.infra.content.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.thundax.kuzhambu.classics.infra.content.persistence.dataobject.ClassicsContentExportJobDO;
-import java.util.Date;
+import java.time.Instant;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
@@ -24,7 +24,7 @@ public interface ClassicsContentMapper extends BaseMapper<ClassicsContentExportJ
             @Param("id") Long id,
             @Param("status") String status,
             @Param("storageObjectId") Long storageObjectId,
-            @Param("expiresAt") Date expiresAt,
+            @Param("expiresAt") Instant expiresAt,
             @Param("itemCount") int itemCount,
             @Param("assetCount") int assetCount);
 
