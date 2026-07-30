@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.ai.application.invocation.result;
 
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,8 +15,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AiReportSummaryResult {
 
-    private Date periodStart;
-    private Date periodEnd;
+    private Instant periodStart;
+    private Instant periodEnd;
     private Long invocationCount;
     private Long succeededInvocationCount;
     private Long failedInvocationCount;
