@@ -26,6 +26,7 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.respons
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchPreviewResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchStatisticsSummaryResponse;
+import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
@@ -79,7 +80,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
             return null;
         }
         return new SearchClickEventCreateCommand(
-                SearchEventIdCodec.toDomain(request.getSearchEventId()),
+                SearchEventIdCodec.toDomain(DiscoveryInterfaceIdCodec.toLongValue(request.getSearchEventId())),
                 request.getContentDomain(),
                 request.getContentType(),
                 request.getContentId(),

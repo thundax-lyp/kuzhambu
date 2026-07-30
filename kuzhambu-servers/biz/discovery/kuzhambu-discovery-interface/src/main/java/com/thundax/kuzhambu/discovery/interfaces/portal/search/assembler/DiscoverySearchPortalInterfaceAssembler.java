@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResul
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
+import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickEventRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
@@ -59,7 +60,7 @@ public final class DiscoverySearchPortalInterfaceAssembler {
             return null;
         }
         return new SearchClickEventCreateCommand(
-                SearchEventIdCodec.toDomain(request.getSearchEventId()),
+                SearchEventIdCodec.toDomain(DiscoveryInterfaceIdCodec.toLongValue(request.getSearchEventId())),
                 request.getContentDomain(),
                 request.getContentType(),
                 request.getContentId(),
