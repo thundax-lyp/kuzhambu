@@ -3,6 +3,9 @@ package com.thundax.kuzhambu.ai.domain.config.model.entity;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVariableId;
 import com.thundax.kuzhambu.common.core.sort.Sortable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +23,20 @@ public class PromptVariable implements Sortable {
     private boolean required = true;
     private String description;
     private int priority;
+
+    public static List<String> findMissingRequiredVariables(
+            List<PromptVariable> requiredVariables, Collection<String> providedNames) {
+        List<String> missingNames = new ArrayList<>();
+        if (requiredVariables == null || requiredVariables.isEmpty()) {
+            return missingNames;
+        }
+        for (PromptVariable variable : requiredVariables) {
+            if (variable.isMissingIn(providedNames)) {
+                missingNames.add(variable.getVariableName());
+            }
+        }
+        return missingNames;
+    }
 
     public boolean isMissingIn(Iterable<String> providedNames) {
         if (!required) {

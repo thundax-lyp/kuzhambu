@@ -6,7 +6,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.KnowledgeEntityId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.KnowledgeEntityPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.KnowledgeEntityDO;
@@ -34,16 +39,16 @@ public class KnowledgeEntityRepositoryImpl implements KnowledgeEntityRepository 
     }
 
     @Override
-    public List<KnowledgeEntity> listByVersionId(Long versionId) {
+    public List<KnowledgeEntity> listByVersionId(GraphVersionId versionId) {
         QueryWrapper<KnowledgeEntityDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("latest_version_id", versionId).orderByAsc("id");
+        wrapper.eq("latest_version_id", GraphVersionIdCodec.toValue(versionId)).orderByAsc("id");
         return KnowledgeEntityPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
     }
 
     @Override
-    public KnowledgeEntity getByEntityId(Long entityId) {
+    public KnowledgeEntity getByEntityId(KnowledgeEntityId entityId) {
         QueryWrapper<KnowledgeEntityDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("id", entityId);
+        wrapper.eq("id", KnowledgeEntityIdCodec.toValue(entityId));
         return KnowledgeEntityPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
     }
 
@@ -56,12 +61,20 @@ public class KnowledgeEntityRepositoryImpl implements KnowledgeEntityRepository 
 
     @Override
     public PageResult<KnowledgeEntity> page(
-            Long versionId, String keyword, String entityType, String confirmationStatus, int pageNo, int pageSize) {
+            GraphVersionId versionId,
+            String keyword,
+            String entityType,
+            KnowledgeConfirmationStatus confirmationStatus,
+            int pageNo,
+            int pageSize) {
         QueryWrapper<KnowledgeEntityDO> wrapper = new QueryWrapper<>();
-        wrapper.eq(versionId != null, "latest_version_id", versionId)
+        wrapper.eq(versionId != null, "latest_version_id", GraphVersionIdCodec.toValue(versionId))
                 .like(StringUtils.isNotBlank(keyword), "name", keyword)
                 .eq(StringUtils.isNotBlank(entityType), "entity_type", entityType)
-                .eq(StringUtils.isNotBlank(confirmationStatus), "confirmation_status", confirmationStatus)
+                .eq(
+                        confirmationStatus != null,
+                        "confirmation_status",
+                        confirmationStatus == null ? null : confirmationStatus.value())
                 .orderByDesc("last_extracted_at")
                 .orderByDesc("id");
         IPage<KnowledgeEntityDO> dataObjectPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);

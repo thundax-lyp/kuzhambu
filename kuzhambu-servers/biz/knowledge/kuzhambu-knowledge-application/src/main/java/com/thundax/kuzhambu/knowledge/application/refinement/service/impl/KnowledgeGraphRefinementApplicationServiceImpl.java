@@ -38,6 +38,8 @@ import com.thundax.kuzhambu.knowledge.application.refinement.support.KnowledgeRe
 import com.thundax.kuzhambu.knowledge.application.refinement.support.QualitySummaryAggregationSupport;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementApplySupport;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementDraftBootstrapSupport;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
@@ -137,9 +139,12 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     public RefinementDetailResult openTask(Long graphVersionId, Long openedBy) {
-        GraphVersion version = graphVersionRepository.getByVersionId(graphVersionId);
+        GraphVersion version = graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(graphVersionId));
         RefinementTask existing = refinementTaskRepository.findLatestDraft(
-                version.getTaskType(), version.getSourceContentType(), version.getSourceContentId(), graphVersionId);
+                graphVersionTaskTypeValue(version),
+                version.getSourceContentType(),
+                GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId()),
+                graphVersionId);
         if (existing != null) {
             return detail(existing);
         }
@@ -147,9 +152,9 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         RefinementTask task = new RefinementTask(
                 null,
                 null,
-                version.getTaskType(),
+                graphVersionTaskTypeValue(version),
                 version.getSourceContentType(),
-                version.getSourceContentId(),
+                GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId()),
                 version.getSourceCategoryCode(),
                 version.getSourceCategoryName(),
                 graphVersionId,
@@ -555,6 +560,12 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         return value == null || value.isBlank() ? defaultValue : value;
     }
 
+    private String graphVersionTaskTypeValue(GraphVersion version) {
+        return version == null || version.getTaskType() == null
+                ? null
+                : version.getTaskType().value();
+    }
+
     private RefinementDetailResult detail(RefinementTask task) {
         Long refinementTaskId = task == null || task.getRefinementTaskId() == null
                 ? null
@@ -612,7 +623,8 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     }
 
     private RefinementApplyResult toApplyResult(RefinementTask task) {
-        GraphVersion version = graphVersionRepository.getByVersionId(task.getGraphVersionId());
+        GraphVersion version =
+                graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(task.getGraphVersionId()));
         GraphExtractionTask sourceTask = sourceTask(version);
         Long sourceTaskId = version == null || version.getTaskId() == null
                 ? null
@@ -621,7 +633,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 defaultIfBlank(version == null ? null : version.getSourceContentType(), task.getSourceContentType());
         Long sourceContentId = version == null || version.getSourceContentId() == null
                 ? task.getSourceContentId()
-                : version.getSourceContentId();
+                : GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId());
         String sourceCategoryCode =
                 defaultIfBlank(version == null ? null : version.getSourceCategoryCode(), task.getSourceCategoryCode());
         String sourceCategoryName =
@@ -631,7 +643,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                         ? null
                         : task.getRefinementTaskId().value(),
                 task.getGraphVersionId(),
-                defaultIfBlank(version == null ? null : version.getTaskType(), task.getTaskType()),
+                defaultIfBlank(graphVersionTaskTypeValue(version), task.getTaskType()),
                 sourceContentType,
                 sourceContentId,
                 sourceCategoryCode,

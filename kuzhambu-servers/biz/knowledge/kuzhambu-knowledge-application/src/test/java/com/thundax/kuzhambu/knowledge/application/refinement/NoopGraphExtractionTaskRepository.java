@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.knowledge.application.refinement;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionBatchJobId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionSourceContentId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import java.util.List;
@@ -24,18 +26,18 @@ final class NoopGraphExtractionTaskRepository implements GraphExtractionTaskRepo
     }
 
     @Override
-    public List<GraphExtractionTask> listByBatchJobId(Long batchJobId) {
+    public List<GraphExtractionTask> listByBatchJobId(GraphExtractionBatchJobId batchJobId) {
         return List.of();
     }
 
     @Override
     public PageResult<GraphExtractionTask> page(
             String taskType,
-            Long batchJobId,
+            GraphExtractionBatchJobId batchJobId,
             String triggerSource,
             String status,
             String sourceContentType,
-            Long sourceContentId,
+            GraphExtractionSourceContentId sourceContentId,
             int pageNo,
             int pageSize) {
         return PageResult.of(pageNo, pageSize, 0, List.of());

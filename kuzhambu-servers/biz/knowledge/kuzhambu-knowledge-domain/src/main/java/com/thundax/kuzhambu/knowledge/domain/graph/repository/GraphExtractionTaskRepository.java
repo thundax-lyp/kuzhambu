@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.knowledge.domain.graph.repository;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionBatchJobId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionSourceContentId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 
 public interface GraphExtractionTaskRepository {
@@ -12,15 +14,15 @@ public interface GraphExtractionTaskRepository {
 
     int update(GraphExtractionTask entity);
 
-    java.util.List<GraphExtractionTask> listByBatchJobId(Long batchJobId);
+    java.util.List<GraphExtractionTask> listByBatchJobId(GraphExtractionBatchJobId batchJobId);
 
     PageResult<GraphExtractionTask> page(
             String taskType,
-            Long batchJobId,
+            GraphExtractionBatchJobId batchJobId,
             String triggerSource,
             String status,
             String sourceContentType,
-            Long sourceContentId,
+            GraphExtractionSourceContentId sourceContentId,
             int pageNo,
             int pageSize);
 }

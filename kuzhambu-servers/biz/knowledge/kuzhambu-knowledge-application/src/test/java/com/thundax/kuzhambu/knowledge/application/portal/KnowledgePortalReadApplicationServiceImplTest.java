@@ -18,9 +18,16 @@ import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityRepor
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.SourceDetailRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionAiCandidateIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
@@ -28,6 +35,7 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTas
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -42,31 +50,19 @@ class KnowledgePortalReadApplicationServiceImplTest {
         KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
 
         when(tagRepository.page(null, null, null, null, null, 1, 1)).thenReturn(PageResult.of(1, 1, 12, List.of()));
-        when(graphVersionRepository.page(null, "APPLIED", null, null, 1, 1))
+        when(graphVersionRepository.page(null, GraphVersionStatus.APPLIED, null, null, 1, 1))
                 .thenReturn(PageResult.of(1, 1, 4, List.of()));
         when(knowledgeEntityRepository.page(null, null, null, null, 1, 1))
                 .thenReturn(PageResult.of(1, 1, 21, List.of()));
         when(knowledgeRelationRepository.page(null, null, null, null, 1, 1))
                 .thenReturn(PageResult.of(1, 1, 34, List.of()));
-        when(graphVersionRepository.page(null, "APPLIED", null, null, 1, 3))
+        when(graphVersionRepository.page(null, GraphVersionStatus.APPLIED, null, null, 1, 3))
                 .thenReturn(PageResult.of(
                         1,
                         3,
                         1,
-                        List.of(new GraphVersion(
-                                71L,
-                                null,
-                                901L,
-                                "GRAPH",
-                                null,
-                                null,
-                                "SANCAI_ENTRY",
-                                1001L,
-                                null,
-                                null,
-                                2,
-                                "APPLIED",
-                                new Date(1_700_000_000_000L)))));
+                        List.of(version(
+                                71L, 901L, "GRAPH", "SANCAI_ENTRY", 1001L, null, null, 2, 1_700_000_000_000L))));
 
         KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
                 tagRepository,
@@ -101,13 +97,13 @@ class KnowledgePortalReadApplicationServiceImplTest {
         KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
 
         when(tagRepository.page(null, null, null, null, null, 1, 1)).thenReturn(PageResult.of(1, 1, 0, List.of()));
-        when(graphVersionRepository.page(null, "APPLIED", null, null, 1, 1))
+        when(graphVersionRepository.page(null, GraphVersionStatus.APPLIED, null, null, 1, 1))
                 .thenReturn(PageResult.of(1, 1, 0, List.of()));
         when(knowledgeEntityRepository.page(null, null, null, null, 1, 1))
                 .thenReturn(PageResult.of(1, 1, 0, List.of()));
         when(knowledgeRelationRepository.page(null, null, null, null, 1, 1))
                 .thenReturn(PageResult.of(1, 1, 0, List.of()));
-        when(graphVersionRepository.page(null, "APPLIED", null, null, 1, 3))
+        when(graphVersionRepository.page(null, GraphVersionStatus.APPLIED, null, null, 1, 3))
                 .thenReturn(PageResult.of(1, 3, 0, List.of()));
 
         KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
@@ -134,27 +130,15 @@ class KnowledgePortalReadApplicationServiceImplTest {
         KnowledgeEntityRepository knowledgeEntityRepository = mock(KnowledgeEntityRepository.class);
         KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
 
-        when(graphVersionRepository.page(null, "APPLIED", null, null, 1, 1))
+        when(graphVersionRepository.page(null, GraphVersionStatus.APPLIED, null, null, 1, 1))
                 .thenReturn(PageResult.of(
                         1,
                         1,
                         1,
-                        List.of(new GraphVersion(
-                                71L,
-                                null,
-                                901L,
-                                "GRAPH",
-                                null,
-                                null,
-                                "SANCAI_ENTRY",
-                                1001L,
-                                "ANIMALS",
-                                "鸟兽",
-                                2,
-                                "APPLIED",
-                                new Date(1_700_000_000_000L)))));
-        when(knowledgeEntityRepository.getByEntityId(3001L))
-                .thenReturn(new KnowledgeEntity(
+                        List.of(version(
+                                71L, 901L, "GRAPH", "SANCAI_ENTRY", 1001L, "ANIMALS", "鸟兽", 2, 1_700_000_000_000L))));
+        when(knowledgeEntityRepository.getByEntityId(KnowledgeEntityIdCodec.toDomain(3001L)))
+                .thenReturn(entity(
                         3001L,
                         "person:huangdi",
                         "黄帝",
@@ -163,9 +147,9 @@ class KnowledgePortalReadApplicationServiceImplTest {
                         "CONFIRMED",
                         71L,
                         "[]",
-                        new Date(1_700_000_000_000L),
-                        new Date(1_700_000_100_000L),
-                        new Date(1_700_000_200_000L)));
+                        1_700_000_000_000L,
+                        1_700_000_100_000L,
+                        1_700_000_200_000L));
         when(knowledgeRelationRepository.listByEntityKey("person:huangdi"))
                 .thenReturn(List.of(new KnowledgeRelation(
                         4001L,
@@ -233,40 +217,12 @@ class KnowledgePortalReadApplicationServiceImplTest {
         KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
         when(graphVersionRepository.listAppliedByCategoryCode(null))
                 .thenReturn(List.of(
-                        new GraphVersion(
-                                71L,
-                                null,
-                                901L,
-                                "GRAPH",
-                                null,
-                                null,
-                                "SANCAI_ENTRY",
-                                1001L,
-                                "ANIMALS",
-                                "鸟兽",
-                                3,
-                                "APPLIED",
-                                new Date(1_700_000_000_000L)),
-                        new GraphVersion(
-                                72L,
-                                null,
-                                902L,
-                                "GRAPH",
-                                null,
-                                null,
-                                "SANCAI_ENTRY",
-                                1002L,
-                                "ANIMALS",
-                                "鸟兽",
-                                2,
-                                "APPLIED",
-                                new Date(1_699_000_000_000L))));
-        when(knowledgeEntityRepository.listByVersionId(71L))
+                        version(71L, 901L, "GRAPH", "SANCAI_ENTRY", 1001L, "ANIMALS", "鸟兽", 3, 1_700_000_000_000L),
+                        version(72L, 902L, "GRAPH", "SANCAI_ENTRY", 1002L, "ANIMALS", "鸟兽", 2, 1_699_000_000_000L)));
+        when(knowledgeEntityRepository.listByVersionId(GraphVersionIdCodec.toDomain(71L)))
                 .thenReturn(List.of(
-                        new KnowledgeEntity(
-                                3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L, "[]", null, null, null),
-                        new KnowledgeEntity(
-                                3002L, "bird:feng", "凤", "CREATURE", "瑞鸟", "CONFIRMED", 71L, "[]", null, null, null)));
+                        entity(3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L),
+                        entity(3002L, "bird:feng", "凤", "CREATURE", "瑞鸟", "CONFIRMED", 71L)));
         when(knowledgeRelationRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeRelation(
                         4001L,
@@ -327,23 +283,9 @@ class KnowledgePortalReadApplicationServiceImplTest {
         KnowledgeEntityRepository knowledgeEntityRepository = mock(KnowledgeEntityRepository.class);
         KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
         when(graphVersionRepository.findLatestAppliedByCategoryCode("ANIMALS"))
-                .thenReturn(new GraphVersion(
-                        71L,
-                        null,
-                        901L,
-                        "GRAPH",
-                        null,
-                        null,
-                        "SANCAI_ENTRY",
-                        1001L,
-                        "ANIMALS",
-                        "鸟兽",
-                        3,
-                        "APPLIED",
-                        new Date(1_700_000_000_000L)));
-        when(knowledgeEntityRepository.listByVersionId(71L))
-                .thenReturn(List.of(new KnowledgeEntity(
-                        3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L, "[]", null, null, null)));
+                .thenReturn(version(71L, 901L, "GRAPH", "SANCAI_ENTRY", 1001L, "ANIMALS", "鸟兽", 3, 1_700_000_000_000L));
+        when(knowledgeEntityRepository.listByVersionId(GraphVersionIdCodec.toDomain(71L)))
+                .thenReturn(List.of(entity(3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L)));
         when(knowledgeRelationRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeRelation(
                         4001L,
@@ -524,5 +466,83 @@ class KnowledgePortalReadApplicationServiceImplTest {
         assertEquals("尚未生成质量报告", result.getFocusIssues().get(0).getTitle());
         assertEquals("high", result.getFocusIssues().get(0).getSeverity());
         assertEquals("/knowledge/quality", result.getFocusIssues().get(0).getHref());
+    }
+
+    private static GraphVersion version(
+            Long versionId,
+            Long candidateId,
+            String taskType,
+            String sourceContentType,
+            Long sourceContentId,
+            String sourceCategoryCode,
+            String sourceCategoryName,
+            Integer versionNo,
+            Long appliedAt) {
+        return new GraphVersion(
+                GraphVersionIdCodec.toDomain(versionId),
+                null,
+                GraphExtractionAiCandidateIdCodec.toDomain(candidateId),
+                GraphExtractionTaskType.from(taskType),
+                null,
+                null,
+                sourceContentType,
+                GraphExtractionSourceContentIdCodec.toDomain(sourceContentId),
+                sourceCategoryCode,
+                sourceCategoryName,
+                versionNo,
+                GraphVersionStatus.APPLIED,
+                Instant.ofEpochMilli(appliedAt));
+    }
+
+    private static KnowledgeEntity entity(
+            Long entityId,
+            String entityKey,
+            String name,
+            String entityType,
+            String description,
+            String confirmationStatus,
+            Long latestVersionId) {
+        return entity(
+                entityId,
+                entityKey,
+                name,
+                entityType,
+                description,
+                confirmationStatus,
+                latestVersionId,
+                "[]",
+                null,
+                null,
+                null);
+    }
+
+    private static KnowledgeEntity entity(
+            Long entityId,
+            String entityKey,
+            String name,
+            String entityType,
+            String description,
+            String confirmationStatus,
+            Long latestVersionId,
+            String sourceRefsJson,
+            Long firstExtractedAt,
+            Long lastExtractedAt,
+            Long confirmedAt) {
+        return new KnowledgeEntity(
+                KnowledgeEntityIdCodec.toDomain(entityId),
+                entityKey,
+                name,
+                entityType,
+                description,
+                KnowledgeConfirmationStatus.from(confirmationStatus),
+                GraphVersionIdCodec.toDomain(latestVersionId),
+                sourceRefsJson,
+                instant(firstExtractedAt),
+                instant(lastExtractedAt),
+                instant(confirmedAt));
+    }
+
+    private static Instant instant(Long epochMillis) {
+        return epochMillis == null ? null : Instant.ofEpochMilli(epochMillis);
     }
 }

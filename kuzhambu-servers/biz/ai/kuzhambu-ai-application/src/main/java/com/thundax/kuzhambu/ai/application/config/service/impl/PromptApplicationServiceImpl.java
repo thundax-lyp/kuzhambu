@@ -20,7 +20,6 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
-import com.thundax.kuzhambu.ai.domain.config.service.PromptVariableDomainService;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.time.Instant;
@@ -43,7 +42,6 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{\\s*([A-Za-z][A-Za-z0-9_]*)\\s*}}");
 
     private final PromptRepository promptRepository;
-    private final PromptVariableDomainService promptVariableDomainService = new PromptVariableDomainService();
 
     public PromptApplicationServiceImpl(PromptRepository promptRepository) {
         this.promptRepository = promptRepository;
@@ -147,8 +145,8 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (templateId == null) {
             throw new BizException("Prompt templateId is required");
         }
-        List<String> missingNames = promptVariableDomainService.findMissingRequiredVariables(
-                promptRepository.listVariables(templateId), providedNames);
+        List<String> missingNames =
+                PromptVariable.findMissingRequiredVariables(promptRepository.listVariables(templateId), providedNames);
         if (!missingNames.isEmpty()) {
             throw new BizException("Prompt required variables are missing: " + missingNames);
         }

@@ -1,8 +1,15 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler;
 
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionAiCandidateIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphVersionDO;
+import java.time.Instant;
+import java.util.Date;
 
 public final class GraphVersionPersistenceAssembler {
 
@@ -13,20 +20,21 @@ public final class GraphVersionPersistenceAssembler {
             return null;
         }
         GraphVersionDO dataObject = new GraphVersionDO();
-        dataObject.setId(entity.getId());
-        dataObject.setTaskId(
-                entity.getTaskId() == null ? null : entity.getTaskId().value());
-        dataObject.setCandidateId(entity.getCandidateId());
-        dataObject.setTaskType(entity.getTaskType());
+        dataObject.setId(GraphVersionIdCodec.toValue(entity.getId()));
+        dataObject.setTaskId(GraphExtractionTaskIdCodec.toValue(entity.getTaskId()));
+        dataObject.setCandidateId(GraphExtractionAiCandidateIdCodec.toValue(entity.getCandidateId()));
+        dataObject.setTaskType(
+                entity.getTaskType() == null ? null : entity.getTaskType().value());
         dataObject.setScopeType(entity.getScopeType());
         dataObject.setScopeJson(entity.getScopeJson());
         dataObject.setSourceContentType(entity.getSourceContentType());
-        dataObject.setSourceContentId(entity.getSourceContentId());
+        dataObject.setSourceContentId(GraphExtractionSourceContentIdCodec.toValue(entity.getSourceContentId()));
         dataObject.setSourceCategoryCode(entity.getSourceCategoryCode());
         dataObject.setSourceCategoryName(entity.getSourceCategoryName());
         dataObject.setVersionNo(entity.getVersionNo());
-        dataObject.setStatus(entity.getStatus());
-        dataObject.setAppliedAt(entity.getAppliedAt());
+        dataObject.setStatus(
+                entity.getStatus() == null ? null : entity.getStatus().value());
+        dataObject.setAppliedAt(toDate(entity.getAppliedAt()));
         return dataObject;
     }
 
@@ -35,19 +43,27 @@ public final class GraphVersionPersistenceAssembler {
             return null;
         }
         GraphVersion entity = new GraphVersion();
-        entity.setId(dataObject.getId());
+        entity.setId(GraphVersionIdCodec.toDomain(dataObject.getId()));
         entity.setTaskId(GraphExtractionTaskIdCodec.toDomain(dataObject.getTaskId()));
-        entity.setCandidateId(dataObject.getCandidateId());
-        entity.setTaskType(dataObject.getTaskType());
+        entity.setCandidateId(GraphExtractionAiCandidateIdCodec.toDomain(dataObject.getCandidateId()));
+        entity.setTaskType(GraphExtractionTaskType.from(dataObject.getTaskType()));
         entity.setScopeType(dataObject.getScopeType());
         entity.setScopeJson(dataObject.getScopeJson());
         entity.setSourceContentType(dataObject.getSourceContentType());
-        entity.setSourceContentId(dataObject.getSourceContentId());
+        entity.setSourceContentId(GraphExtractionSourceContentIdCodec.toDomain(dataObject.getSourceContentId()));
         entity.setSourceCategoryCode(dataObject.getSourceCategoryCode());
         entity.setSourceCategoryName(dataObject.getSourceCategoryName());
         entity.setVersionNo(dataObject.getVersionNo());
-        entity.setStatus(dataObject.getStatus());
-        entity.setAppliedAt(dataObject.getAppliedAt());
+        entity.setStatus(GraphVersionStatus.from(dataObject.getStatus()));
+        entity.setAppliedAt(toInstant(dataObject.getAppliedAt()));
         return entity;
+    }
+
+    private static Date toDate(Instant value) {
+        return value == null ? null : Date.from(value);
+    }
+
+    private static Instant toInstant(Date value) {
+        return value == null ? null : value.toInstant();
     }
 }

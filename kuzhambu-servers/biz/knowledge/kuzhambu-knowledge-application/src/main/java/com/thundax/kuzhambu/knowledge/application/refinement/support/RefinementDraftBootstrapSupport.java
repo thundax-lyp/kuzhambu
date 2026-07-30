@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.knowledge.application.refinement.support;
 
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
@@ -40,19 +42,21 @@ public class RefinementDraftBootstrapSupport {
         Date now = new Date();
         List<RefinementEntityDraft> drafts = new ArrayList<>();
         int sortOrder = 1;
-        for (KnowledgeEntity entity : entityRepository.listByVersionId(versionId)) {
+        for (KnowledgeEntity entity : entityRepository.listByVersionId(GraphVersionIdCodec.toDomain(versionId))) {
             drafts.add(new RefinementEntityDraft(
                     null,
                     null,
                     refinementTaskId,
-                    entity.getId(),
+                    KnowledgeEntityIdCodec.toValue(entity.getId()),
                     entity.getEntityKey(),
                     "AI_EXTRACTED",
                     "UNCHANGED",
                     entity.getName(),
                     entity.getEntityType(),
                     entity.getDescription(),
-                    entity.getConfirmationStatus(),
+                    entity.getConfirmationStatus() == null
+                            ? null
+                            : entity.getConfirmationStatus().value(),
                     entity.getSourceRefsJson(),
                     sortOrder++,
                     operatorId,

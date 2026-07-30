@@ -12,11 +12,16 @@ import static org.mockito.Mockito.when;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionAiCandidateIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphVersionDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphVersionMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -32,7 +37,13 @@ class GraphVersionRepositoryTest {
         when(mapper.selectPage(any(Page.class), any())).thenReturn(dataObjectPage);
         GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
 
-        PageResult<GraphVersion> page = repository.page("GRAPH", "APPLIED", "SANCAI_ENTRY", 100L, 1, 10);
+        PageResult<GraphVersion> page = repository.page(
+                GraphExtractionTaskType.GRAPH,
+                GraphVersionStatus.APPLIED,
+                "SANCAI_ENTRY",
+                GraphExtractionSourceContentIdCodec.toDomain(100L),
+                1,
+                10);
 
         ArgumentCaptor<QueryWrapper<GraphVersionDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectPage(any(Page.class), captor.capture());
@@ -51,7 +62,7 @@ class GraphVersionRepositoryTest {
         when(mapper.selectOne(any())).thenReturn(new GraphVersionDO());
         GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
 
-        repository.getByVersionId(66L);
+        repository.getByVersionId(GraphVersionIdCodec.toDomain(66L));
 
         ArgumentCaptor<QueryWrapper<GraphVersionDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectOne(captor.capture());
@@ -65,7 +76,8 @@ class GraphVersionRepositoryTest {
         when(mapper.selectOne(any())).thenReturn(new GraphVersionDO());
         GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
 
-        repository.findLatest("GRAPH", "SANCAI_ENTRY", 100L);
+        repository.findLatest(
+                GraphExtractionTaskType.GRAPH, "SANCAI_ENTRY", GraphExtractionSourceContentIdCodec.toDomain(100L));
 
         ArgumentCaptor<QueryWrapper<GraphVersionDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectOne(captor.capture());
@@ -117,19 +129,19 @@ class GraphVersionRepositoryTest {
         GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
         GraphVersion version = new GraphVersion();
         version.setTaskId(GraphExtractionTaskIdCodec.toDomain(12L));
-        version.setCandidateId(34L);
-        version.setTaskType("GRAPH");
+        version.setCandidateId(GraphExtractionAiCandidateIdCodec.toDomain(34L));
+        version.setTaskType(GraphExtractionTaskType.GRAPH);
         version.setScopeType("ENTRY");
         version.setScopeJson("{\"entryIds\":[1]}");
         version.setSourceContentType("SANCAI_ENTRY");
-        version.setSourceContentId(100L);
+        version.setSourceContentId(GraphExtractionSourceContentIdCodec.toDomain(100L));
         version.setSourceCategoryCode("BIRDS");
         version.setSourceCategoryName("羽族");
         version.setVersionNo(2);
-        version.setStatus("APPLIED");
-        version.setAppliedAt(new Date());
+        version.setStatus(GraphVersionStatus.APPLIED);
+        version.setAppliedAt(Instant.now());
 
-        Long versionId = repository.save(version);
+        Long versionId = GraphVersionIdCodec.toValue(repository.save(version));
 
         assertNotNull(versionId);
         ArgumentCaptor<GraphVersionDO> captor = ArgumentCaptor.forClass(GraphVersionDO.class);

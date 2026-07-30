@@ -17,10 +17,17 @@ import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLo
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.ReextractLowQualityCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.impl.KnowledgeQualityReportApplicationServiceImpl;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionAiCandidateIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
@@ -40,6 +47,7 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementLin
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementRelationDraftRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -72,36 +80,25 @@ class KnowledgeQualityReportApplicationServiceTest {
                 annotationRepository,
                 reportRepository);
         GraphVersion version = new GraphVersion(
-                71L,
+                GraphVersionIdCodec.toDomain(71L),
                 null,
-                901L,
-                "GRAPH",
+                GraphExtractionAiCandidateIdCodec.toDomain(901L),
+                GraphExtractionTaskType.GRAPH,
                 null,
                 null,
                 "SANCAI_ENTRY",
-                1001L,
+                GraphExtractionSourceContentIdCodec.toDomain(1001L),
                 "myth",
                 "神话",
                 2,
-                "APPLIED",
-                new Date(1_700_000_000_000L));
-        when(graphVersionRepository.getByVersionId(71L)).thenReturn(version);
-        when(entityRepository.listByVersionId(71L))
+                GraphVersionStatus.APPLIED,
+                Instant.ofEpochMilli(1_700_000_000_000L));
+        when(graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(71L)))
+                .thenReturn(version);
+        when(entityRepository.listByVersionId(GraphVersionIdCodec.toDomain(71L)))
                 .thenReturn(List.of(
-                        new KnowledgeEntity(
-                                3001L,
-                                "person:huangdi",
-                                "黄帝",
-                                "PERSON",
-                                "始祖",
-                                "MANUAL_CONFIRMED",
-                                71L,
-                                "[]",
-                                null,
-                                null,
-                                null),
-                        new KnowledgeEntity(
-                                3002L, "person:fuxi", "伏羲", "PERSON", "始祖", "PENDING", 71L, "[]", null, null, null)));
+                        entity(3001L, "person:huangdi", "黄帝", "PERSON", "始祖", "MANUAL_CONFIRMED", 71L),
+                        entity(3002L, "person:fuxi", "伏羲", "PERSON", "始祖", "PENDING", 71L)));
         when(relationRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeRelation(
                         4001L,
@@ -372,6 +369,28 @@ class KnowledgeQualityReportApplicationServiceTest {
                 issueCount,
                 "APPLIED",
                 "/knowledge/atlas",
+                null);
+    }
+
+    private static KnowledgeEntity entity(
+            Long entityId,
+            String entityKey,
+            String name,
+            String entityType,
+            String description,
+            String confirmationStatus,
+            Long latestVersionId) {
+        return new KnowledgeEntity(
+                KnowledgeEntityIdCodec.toDomain(entityId),
+                entityKey,
+                name,
+                entityType,
+                description,
+                KnowledgeConfirmationStatus.from(confirmationStatus),
+                GraphVersionIdCodec.toDomain(latestVersionId),
+                "[]",
+                null,
+                null,
                 null);
     }
 
