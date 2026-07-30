@@ -19,7 +19,6 @@ import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.respon
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchResponse;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
@@ -197,7 +196,7 @@ public final class DiscoverySearchPortalInterfaceAssembler {
         try {
             LocalDate date = LocalDate.parse(value);
             return endOfDay
-                    ? date.atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC)
+                    ? date.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC).minusMillis(1)
                     : date.atStartOfDay().toInstant(ZoneOffset.UTC);
         } catch (DateTimeParseException exception) {
             return null;
