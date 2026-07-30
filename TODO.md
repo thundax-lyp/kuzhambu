@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `10 search-domain-persistence`：清理 Search 领域和 DO 本体 ID
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/model/entity/SearchEvent.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/model/entity/SearchClickEvent.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/model/entity/QueryUnderstanding.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/dataobject/SearchEventDO.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/dataobject/SearchClickEventDO.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/dataobject/QueryUnderstandingDO.java`
-    - 处理动作：删除 Search 本体重复 ID 字段，并把 SearchEvent 引用字段类型调整为 `Long`。
-    - 验收点：`SearchEvent.searchEventId`、`SearchClickEvent.searchClickEventId`、`QueryUnderstanding.queryUnderstandingId` 不存在，点击和查询理解的 `searchEventId` 引用类型为 `Long`。
-    - 重要度：10/10
-
 - [ ] `11 search-repositories`：调整 Search repository 和实现
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`

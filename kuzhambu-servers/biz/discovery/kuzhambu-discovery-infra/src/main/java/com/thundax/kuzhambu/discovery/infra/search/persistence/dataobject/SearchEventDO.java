@@ -14,10 +14,9 @@ import lombok.NoArgsConstructor;
 @TableName("discovery_search_event")
 public class SearchEventDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String searchEventId;
     private String queryText;
     private String normalizedQueryText;
     private String displayQueryText;
@@ -34,4 +33,12 @@ public class SearchEventDO {
     private String requestId;
     private String traceId;
     private Date createdAt;
+
+    public String getSearchEventId() {
+        return id == null ? null : String.valueOf(id);
+    }
+
+    public void setSearchEventId(String searchEventId) {
+        this.id = searchEventId == null ? null : Long.valueOf(searchEventId);
+    }
 }

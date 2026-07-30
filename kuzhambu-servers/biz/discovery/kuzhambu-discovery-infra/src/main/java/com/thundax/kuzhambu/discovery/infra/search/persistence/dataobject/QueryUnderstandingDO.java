@@ -14,11 +14,10 @@ import lombok.NoArgsConstructor;
 @TableName("discovery_query_understanding")
 public class QueryUnderstandingDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String queryUnderstandingId;
-    private String searchEventId;
+    private Long searchEventId;
     private String queryText;
     private String normalizedQueryText;
     private String rewrittenQueryText;
@@ -31,4 +30,24 @@ public class QueryUnderstandingDO {
     private String requestId;
     private String traceId;
     private Date createdAt;
+
+    public String getQueryUnderstandingId() {
+        return id == null ? null : String.valueOf(id);
+    }
+
+    public void setQueryUnderstandingId(String queryUnderstandingId) {
+        this.id = parseId(queryUnderstandingId);
+    }
+
+    public void setSearchEventId(String searchEventId) {
+        this.searchEventId = parseId(searchEventId);
+    }
+
+    public void setSearchEventId(Long searchEventId) {
+        this.searchEventId = searchEventId;
+    }
+
+    private Long parseId(String value) {
+        return value == null ? null : Long.valueOf(value);
+    }
 }
