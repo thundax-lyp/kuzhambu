@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `01 schema-docs`：重建 Discovery ID 目标表结构和设计字段清单
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`db/schema/discovery.sql`、`db/data/discovery.sql`、`docs/30-designs/DISCOVERY-DESIGN.md`、`docs/30-designs/DISCOVERY-QA-KNOWLEDGE-SPECIAL-DESIGN.md`
-    - 处理动作：按 RUNBOOK 字段表删除本体重复 ID 列、调整 Search 引用列类型、改为数据库自增 ID，并同步设计文档字段清单。
-    - 验收点：Discovery schema 中本表身份列只剩 `id`，引用列仍保留 `{domain}_id`，设计文档不再把本体身份写成 `sessionId/messageId/exportId/batchId/searchEventId`。
-    - 重要度：10/10
-
 - [ ] `02 qa-session`：清理 QA 会话自身 `sessionId`
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`

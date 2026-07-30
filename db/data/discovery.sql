@@ -29,11 +29,11 @@ INSERT INTO `discovery_search_query_event` (
     `searched_at` = VALUES(`searched_at`);
 
 INSERT INTO `discovery_search_event` (
-    `search_event_id`, `query_text`, `normalized_query_text`, `display_query_text`, `intent_type`,
+    `id`, `query_text`, `normalized_query_text`, `display_query_text`, `intent_type`,
     `search_scopes_json`, `result_total_count`, `group_total_count`, `search_latency_ms`, `search_status`,
     `failure_code`, `failure_message`, `operator_type`, `operator_id`, `request_id`, `trace_id`, `created_at`
 ) VALUES (
-    'sample-search-event-1001',
+    1001,
     '世系图',
     '世系图',
     '世系图',
@@ -69,13 +69,12 @@ INSERT INTO `discovery_search_event` (
     `created_at` = VALUES(`created_at`);
 
 INSERT INTO `discovery_search_click_event` (
-    `id`, `search_click_event_id`, `search_event_id`, `content_domain`, `content_type`, `content_id`,
+    `id`, `search_event_id`, `content_domain`, `content_type`, `content_id`,
     `content_title`, `result_group_key`, `result_rank`, `group_rank`, `target_path`,
     `operator_type`, `operator_id`, `request_id`, `trace_id`, `created_at`
 ) VALUES (
     1101,
-    '1101',
-    'sample-search-event-1001',
+    1001,
     'CLASSICS',
     'SANCAI_ENTRY',
     '300000000604',
@@ -106,7 +105,7 @@ INSERT INTO `discovery_search_click_event` (
     `created_at` = VALUES(`created_at`);
 
 INSERT INTO `discovery_qa_session` (
-    `session_id`, `owner_type`, `owner_id`, `title`, `scope`, `context_mode`,
+    `id`, `owner_type`, `owner_id`, `title`, `scope`, `context_mode`,
     `context_content_type`, `context_content_id`, `status`, `knowledge_base_name`,
     `opened_at`, `last_message_at`, `removed_at`
 ) VALUES (
@@ -138,7 +137,7 @@ INSERT INTO `discovery_qa_session` (
     `removed_at` = VALUES(`removed_at`);
 
 INSERT INTO `discovery_qa_message` (
-    `message_id`, `session_id`, `role`, `content`, `answer_status`, `model`,
+    `id`, `session_id`, `role`, `content`, `answer_status`, `model`,
     `context_turn_count`, `failure_reason`, `provider_chat_id`, `finish_reason`, `sent_at`, `answered_at`
 ) VALUES
     (
@@ -183,7 +182,7 @@ ON DUPLICATE KEY UPDATE
     `answered_at` = VALUES(`answered_at`);
 
 INSERT INTO `discovery_qa_message_source` (
-    `source_id`, `source_business_id`, `message_id`, `content_type`, `content_id`, `knowledge_base`,
+    `id`, `source_business_id`, `message_id`, `content_type`, `content_id`, `knowledge_base`,
     `title_snapshot`, `location_label`, `snippet`, `source_path`, `source_rank`, `score`,
     `source_status`, `referenced_at`
 ) VALUES (
@@ -217,7 +216,7 @@ INSERT INTO `discovery_qa_message_source` (
     `referenced_at` = VALUES(`referenced_at`);
 
 INSERT INTO `discovery_qa_retrieval_trace` (
-    `trace_id`, `message_id`, `raw_question`, `provider`, `external_knowledge_base_id`,
+    `id`, `message_id`, `raw_question`, `provider`, `external_knowledge_base_id`,
     `external_knowledge_item_ids`, `external_chat_id`, `provider_request_id`, `latency_ms`,
     `failure_reason`, `raw`, `retrieved_at`
 ) VALUES (
@@ -247,7 +246,7 @@ INSERT INTO `discovery_qa_retrieval_trace` (
     `retrieved_at` = VALUES(`retrieved_at`);
 
 INSERT INTO `discovery_qa_knowledge_sync_batch` (
-    `batch_id`, `trigger_type`, `provider`, `total_count`, `success_count`, `failure_count`, `started_at`, `finished_at`
+    `id`, `trigger_type`, `provider`, `total_count`, `success_count`, `failure_count`, `started_at`, `finished_at`
 ) VALUES (
     7001,
     'MANUAL',
