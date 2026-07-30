@@ -15,7 +15,6 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
-import com.thundax.kuzhambu.ai.domain.config.service.PromptVariableDomainService;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,7 +33,6 @@ public class AiBusinessInvokeConfigResolver {
     private final PromptRepository promptRepository;
     private final AiWorkerModelConfigResolver modelConfigResolver;
     private final ObjectMapper objectMapper;
-    private final PromptVariableDomainService promptVariableDomainService = new PromptVariableDomainService();
 
     public AiBusinessInvokeConfigResolver(
             AiBusinessConfigApplicationService businessConfigService,
@@ -174,7 +172,7 @@ public class AiBusinessInvokeConfigResolver {
         while (fieldNames.hasNext()) {
             providedNames.add(fieldNames.next());
         }
-        List<String> missingNames = promptVariableDomainService.findMissingRequiredVariables(variables, providedNames);
+        List<String> missingNames = PromptVariable.findMissingRequiredVariables(variables, providedNames);
         if (!missingNames.isEmpty()) {
             throw new BizException("Prompt required variables are missing: " + missingNames);
         }
