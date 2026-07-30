@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `14 admin-qa-console-frontend`：调整 Admin QA Console 表格操作 ID 口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/discovery/qa-console/qa-console-types.ts`、`kuzhambu-apps/admin-web/src/pages/discovery/qa-console/qa-console-service.ts`、`kuzhambu-apps/admin-web/src/pages/discovery/qa-console/qa-console-page.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/qa-console/qa-session-table.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/qa-console/qa-session-detail-drawer.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/qa-console/qa-console-page.test.tsx`
-    - 处理动作：把 QA Console 会话表格的查看、导出、删除和 row key 操作改为使用 `record.id`。
-    - 验收点：标题筛选、日期 RangePicker、查询按钮不变；会话表格的查看/导出/删除按钮和操作提示文案不再依赖本体 `sessionId`。
-    - 重要度：9/10
-
 - [ ] `15 admin-search-frontend`：调整 Admin Search 页面和搜索统计控件 ID 口径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`

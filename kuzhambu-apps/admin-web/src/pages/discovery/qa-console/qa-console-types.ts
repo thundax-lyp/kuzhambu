@@ -34,7 +34,7 @@ export interface DiscoveryQaSessionMessageRecord {
     content?: string | null;
     contextTurnCount?: number | null;
     failureReason?: string | null;
-    messageId?: string | null;
+    id?: string | null;
     messageStatus?: string | null;
     role?: string | null;
     sentAt?: string | null;
@@ -45,6 +45,7 @@ export interface DiscoveryQaSessionDetailRecord {
     contextContentId?: string | null;
     contextContentType?: string | null;
     contextMode?: string | null;
+    id?: string | null;
     lastMessageAt?: number | null;
     messages?: DiscoveryQaSessionMessageRecord[] | null;
     openedAt?: number | null;
@@ -60,7 +61,7 @@ export type DiscoveryQaSessionPageRecord = Page<DiscoveryQaSessionDetailRecord>;
 export interface DiscoveryQaSessionExportRecord {
     completedAt?: number | null;
     contentType?: string | null;
-    exportId?: string | null;
+    id?: string | null;
     exportStatus?: string | null;
     failureReason?: string | null;
     filename?: string | null;
