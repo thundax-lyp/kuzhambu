@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 class OperationsHealthContractTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void healthPageRequestJsonFieldsShouldRemainStable() throws Exception {

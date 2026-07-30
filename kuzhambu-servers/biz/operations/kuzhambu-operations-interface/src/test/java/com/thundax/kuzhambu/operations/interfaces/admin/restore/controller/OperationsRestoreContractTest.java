@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 class OperationsRestoreContractTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void requestJsonFieldsShouldRemainStable() throws Exception {
