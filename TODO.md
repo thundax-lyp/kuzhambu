@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `D-06 discovery-application-qa-adapters`：适配 QA application 和 interface 调用链
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImpl.java`、`KnowledgeQaApplicationServiceImpl.java`、`KnowledgeSyncApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaSourceAssembler.java`、`QaTraceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/assembler/DiscoveryQaAdminInterfaceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/assembler/DiscoveryQaPortalInterfaceAssembler.java`
-    - 处理动作：把 QA application 内部编排改为强类型并在 interface assembler 输出基础类型。
-    - 验收点：同步条目 insert/update 仍以 `getBySourceId(KnowledgeSourceId)` 判断，portal/admin response 字段名和基础类型不变。
-    - 重要度：10/10
-
 - [ ] `D-07 discovery-search-entity-repository-infra`：强类型化 Search 实体、仓储和 infra 边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`

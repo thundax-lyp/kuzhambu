@@ -32,6 +32,35 @@ public class QaMessage {
 
     public QaMessage(
             Long id,
+            Long sessionId,
+            String role,
+            String content,
+            String answerStatus,
+            String model,
+            Integer contextTurnCount,
+            String failureReason,
+            String providerChatId,
+            String finishReason,
+            Date sentAt,
+            Date answeredAt) {
+        this(
+                id,
+                null,
+                sessionId,
+                role,
+                content,
+                answerStatus,
+                model,
+                contextTurnCount,
+                failureReason,
+                providerChatId,
+                finishReason,
+                sentAt,
+                answeredAt);
+    }
+
+    public QaMessage(
+            Long id,
             Long messageId,
             Long sessionId,
             String role,
