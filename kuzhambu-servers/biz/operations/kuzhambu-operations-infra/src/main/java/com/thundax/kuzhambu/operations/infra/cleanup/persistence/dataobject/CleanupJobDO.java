@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.operations.infra.cleanup.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +25,6 @@ public class CleanupJobDO {
     private Integer failedCount;
     private String failureReason;
     private Long requesterUserId;
-    private Date startedAt;
-    private Date completedAt;
+    private Instant startedAt;
+    private Instant completedAt;
 }
