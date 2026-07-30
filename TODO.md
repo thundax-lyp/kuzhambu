@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `D-01 discovery-domain-qa-id-valueobjects`：新增 QA Long-backed ID 值对象和基础 codec
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/valueobject/QaSessionId.java`、`QaMessageId.java`、`QaSourceId.java`、`QaRetrievalTraceId.java`、`QaSessionExportId.java`、`QaKnowledgeSyncBatchId.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/codec/QaSessionIdCodec.java`、`QaMessageIdCodec.java`
-    - 处理动作：新增 QA 主业务 ID 值对象和最小 ID codec。
-    - 验收点：新增 `*Id.java` 均继承 `BaseLongId`、无 `static` 方法，并通过 `DiscoveryDomainArchitectureTest` 覆盖。
-    - 重要度：9/10
-
 - [ ] `D-02 discovery-domain-qa-ref-status-valueobjects`：新增 QA 引用、状态和来源值对象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
