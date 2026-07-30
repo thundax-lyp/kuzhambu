@@ -44,7 +44,7 @@ const readGraphVersionIdFromSearch = () => {
     const graphVersionId = new URLSearchParams(window.location.search)
         .get("graphVersionId")
         ?.trim();
-    return isPositiveDecimalId(graphVersionId) ? graphVersionId : null;
+    return isPositiveDecimalId(graphVersionId) ? (graphVersionId ?? null) : null;
 };
 
 const readRegenerateModeFromSearch = () => {
