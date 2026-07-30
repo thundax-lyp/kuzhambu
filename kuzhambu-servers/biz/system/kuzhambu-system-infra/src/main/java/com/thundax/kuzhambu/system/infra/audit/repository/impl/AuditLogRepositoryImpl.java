@@ -15,7 +15,7 @@ import com.thundax.kuzhambu.system.domain.audit.repository.AuditLogRepository;
 import com.thundax.kuzhambu.system.infra.audit.persistence.assembler.AuditLogPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.audit.persistence.dataobject.AuditLogDO;
 import com.thundax.kuzhambu.system.infra.audit.persistence.mapper.AuditLogMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
@@ -69,8 +69,8 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
             AuditOperatorRef operatorRef,
             String source,
             String requestId,
-            Date beginDate,
-            Date endDate,
+            Instant beginDate,
+            Instant endDate,
             int pageNo,
             int pageSize) {
         LambdaQueryWrapper<AuditLogDO> wrapper =
@@ -90,8 +90,8 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
             AuditOperatorRef operatorRef,
             String source,
             String requestId,
-            Date beginDate,
-            Date endDate) {
+            Instant beginDate,
+            Instant endDate) {
         LambdaQueryWrapper<AuditLogDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(objectType(objectRef)), AuditLogDO::getObjectType, objectType(objectRef));
         wrapper.eq(StringUtils.isNotBlank(objectId(objectRef)), AuditLogDO::getObjectId, objectId(objectRef));
