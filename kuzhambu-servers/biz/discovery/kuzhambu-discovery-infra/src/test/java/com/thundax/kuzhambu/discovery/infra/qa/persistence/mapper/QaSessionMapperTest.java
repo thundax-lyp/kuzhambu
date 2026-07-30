@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -33,7 +33,7 @@ class QaSessionMapperTest {
     }
 
     private Method selectByOpenedAtRangeMethod() throws NoSuchMethodException {
-        return QaSessionMapper.class.getMethod("selectByOpenedAtRange", Date.class, Date.class);
+        return QaSessionMapper.class.getMethod("selectByOpenedAtRange", Instant.class, Instant.class);
     }
 
     private List<String> paramNames(Method method) {

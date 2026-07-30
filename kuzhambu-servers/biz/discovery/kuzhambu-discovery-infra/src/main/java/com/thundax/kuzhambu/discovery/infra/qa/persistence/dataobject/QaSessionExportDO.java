@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +23,6 @@ public class QaSessionExportDO {
     private String exportStatus;
     private String failureReason;
     private Long requesterUserId;
-    private Date requestedAt;
-    private Date completedAt;
+    private Instant requestedAt;
+    private Instant completedAt;
 }

@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaMessageId;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaMessageRole;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,8 +27,8 @@ public class QaMessage {
     private String failureReason;
     private String providerChatId;
     private String finishReason;
-    private Date sentAt;
-    private Date answeredAt;
+    private Instant sentAt;
+    private Instant answeredAt;
 
     public QaMessage(
             Long id,
@@ -41,8 +41,8 @@ public class QaMessage {
             String failureReason,
             String providerChatId,
             String finishReason,
-            Date sentAt,
-            Date answeredAt) {
+            Instant sentAt,
+            Instant answeredAt) {
         this(
                 id,
                 null,
@@ -71,8 +71,8 @@ public class QaMessage {
             String failureReason,
             String providerChatId,
             String finishReason,
-            Date sentAt,
-            Date answeredAt) {
+            Instant sentAt,
+            Instant answeredAt) {
         this.id = QaMessageIdCodec.toDomain(id == null ? messageId : id);
         this.sessionId = QaSessionIdCodec.toDomain(sessionId);
         this.role = QaStringValueCodec.toMessageRole(role);

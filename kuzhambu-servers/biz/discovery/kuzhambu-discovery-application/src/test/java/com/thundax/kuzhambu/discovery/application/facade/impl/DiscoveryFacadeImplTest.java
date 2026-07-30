@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoveryFaca
 import com.thundax.kuzhambu.discovery.application.report.result.DiscoveryReportSummaryResult;
 import com.thundax.kuzhambu.discovery.application.report.service.DiscoveryReportApplicationService;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySummaryFacadeRequest;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -20,8 +20,8 @@ class DiscoveryFacadeImplTest {
     void summaryShouldDelegateAndMapFacadeResponse() {
         DiscoveryReportApplicationService discoveryReportApplicationService =
                 mock(DiscoveryReportApplicationService.class);
-        Date periodStart = new Date(1_735_689_600_000L);
-        Date periodEnd = new Date(1_735_776_000_000L);
+        Instant periodStart = Instant.ofEpochMilli(1_735_689_600_000L);
+        Instant periodEnd = Instant.ofEpochMilli(1_735_776_000_000L);
         when(discoveryReportApplicationService.summary(periodStart, periodEnd, "WEEK"))
                 .thenReturn(new DiscoveryReportSummaryResult(
                         periodStart,

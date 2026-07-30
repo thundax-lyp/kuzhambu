@@ -41,7 +41,7 @@ import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -112,7 +112,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     @Override
     public QaSessionResult openSession(OpenQaSessionCommand command) {
         validateOpenSessionCommand(command);
-        Date now = new Date();
+        Instant now = Instant.now();
         QaSession session = new QaSession(
                 null,
                 null,
@@ -146,7 +146,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             requireOwner(session, command.getOwnerType(), command.getOwnerId());
         }
         QaSessionId sessionId = QaSessionIdCodec.toDomain(command.getSessionId());
-        int updated = qaSessionRepository.markRemoved(sessionId, new Date());
+        int updated = qaSessionRepository.markRemoved(sessionId, Instant.now());
         if (updated == 0) {
             QaSession latest = qaSessionRepository.getBySessionId(sessionId);
             if (latest == null) {
@@ -168,7 +168,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 throw removedSessionException();
             }
         }
-        Date requestedAt = new Date();
+        Instant requestedAt = Instant.now();
         QaSessionExport export = new QaSessionExport(
                 null,
                 null,
@@ -199,14 +199,14 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             }
             export.setStorageObjectId(uploadResponse.getStorageObjectId());
             export.setExportStatus(EXPORT_STATUS_SUCCEEDED);
-            export.setCompletedAt(new Date());
+            export.setCompletedAt(Instant.now());
             qaSessionExportRepository.update(export);
             return toExportResult(export, filename);
         } catch (RuntimeException ex) {
             export.setExportStatus(EXPORT_STATUS_FAILED);
             export.setFailureReason(
                     StringUtils.defaultIfBlank(ex.getMessage(), ex.getClass().getSimpleName()));
-            export.setCompletedAt(new Date());
+            export.setCompletedAt(Instant.now());
             qaSessionExportRepository.update(export);
             return toExportResult(export, filename);
         }
@@ -268,13 +268,13 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         result.setContextContentId(session.getContextContentId());
         result.setStatus(QaStringValueCodec.toValue(session.getStatus()));
         result.setOpenedAt(
-                session.getOpenedAt() == null ? null : session.getOpenedAt().getTime());
+                session.getOpenedAt() == null ? null : session.getOpenedAt().toEpochMilli());
         result.setLastMessageAt(
                 session.getLastMessageAt() == null
                         ? null
-                        : session.getLastMessageAt().getTime());
+                        : session.getLastMessageAt().toEpochMilli());
         result.setRemovedAt(
-                session.getRemovedAt() == null ? null : session.getRemovedAt().getTime());
+                session.getRemovedAt() == null ? null : session.getRemovedAt().toEpochMilli());
         List<QaMessage> messages = qaMessageRepository.listBySessionId(session.getId());
         result.setMessages((messages == null ? List.<QaMessage>of() : messages)
                 .stream().map(this::toMessageResult).toList());
@@ -327,11 +327,11 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 session.getContextContentType(),
                 session.getContextContentId(),
                 QaStringValueCodec.toValue(session.getStatus()),
-                session.getOpenedAt() == null ? null : session.getOpenedAt().getTime(),
+                session.getOpenedAt() == null ? null : session.getOpenedAt().toEpochMilli(),
                 session.getLastMessageAt() == null
                         ? null
-                        : session.getLastMessageAt().getTime(),
-                session.getRemovedAt() == null ? null : session.getRemovedAt().getTime());
+                        : session.getLastMessageAt().toEpochMilli(),
+                session.getRemovedAt() == null ? null : session.getRemovedAt().toEpochMilli());
     }
 
     private int normalizePageNo(Integer pageNo) {
@@ -474,8 +474,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 export.getStorageObjectId(),
                 export.getExportStatus(),
                 export.getFailureReason(),
-                export.getRequestedAt() == null ? null : export.getRequestedAt().getTime(),
-                export.getCompletedAt() == null ? null : export.getCompletedAt().getTime(),
+                export.getRequestedAt() == null ? null : export.getRequestedAt().toEpochMilli(),
+                export.getCompletedAt() == null ? null : export.getCompletedAt().toEpochMilli(),
                 filename,
                 EXPORT_CONTENT_TYPE);
     }

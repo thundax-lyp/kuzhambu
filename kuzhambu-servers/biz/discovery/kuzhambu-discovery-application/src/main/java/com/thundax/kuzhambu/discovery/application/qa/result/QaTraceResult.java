@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.discovery.application.qa.result;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +26,7 @@ public class QaTraceResult {
     private String aiStatus;
     private String aiErrorType;
     private String aiErrorMessage;
-    private Date retrievedAt;
+    private Instant retrievedAt;
 
     public Long getTraceId() {
         return id;

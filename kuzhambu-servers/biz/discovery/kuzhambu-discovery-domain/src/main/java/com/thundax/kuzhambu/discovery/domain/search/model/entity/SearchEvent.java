@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,7 +31,7 @@ public class SearchEvent {
     private String operatorId;
     private String requestId;
     private String traceId;
-    private Date createdAt;
+    private Instant createdAt;
 
     public SearchEvent(
             Long id,
@@ -51,7 +51,7 @@ public class SearchEvent {
             String operatorId,
             String requestId,
             String traceId,
-            Date createdAt) {
+            Instant createdAt) {
         this.id = id == null ? SearchEventIdCodec.toDomain(searchEventId) : SearchEventIdCodec.toDomain(id);
         this.queryText = queryText;
         this.normalizedQueryText = normalizedQueryText;

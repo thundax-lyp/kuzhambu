@@ -214,8 +214,12 @@ public class DiscoveryQaAdminController {
         }
         return new QaSessionPageQuery(
                 request.getTitle(),
-                request.getOpenedAtStart(),
-                request.getOpenedAtEnd(),
+                request.getOpenedAtStart() == null
+                        ? null
+                        : request.getOpenedAtStart().toInstant(),
+                request.getOpenedAtEnd() == null
+                        ? null
+                        : request.getOpenedAtEnd().toInstant(),
                 Objects.requireNonNullElse(request.getPageNo(), 0),
                 Objects.requireNonNullElse(request.getPageSize(), 0));
     }

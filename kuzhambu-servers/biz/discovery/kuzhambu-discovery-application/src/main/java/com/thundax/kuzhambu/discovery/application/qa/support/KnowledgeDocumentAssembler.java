@@ -29,7 +29,9 @@ public class KnowledgeDocumentAssembler {
                 sourceKnowledge.getVisibility(),
                 sourceKnowledge.getStatus(),
                 sourceKnowledge.getSourcePath(),
-                sourceKnowledge.getUpdatedAt());
+                sourceKnowledge.getUpdatedAt() == null
+                        ? null
+                        : sourceKnowledge.getUpdatedAt().toInstant());
     }
 
     private KnowledgeDocument.Knowledge buildKnowledge(ClassicsQaKnowledgeFacadeDto sourceKnowledge) {

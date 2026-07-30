@@ -29,6 +29,7 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.request.Dis
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -299,7 +300,7 @@ class DiscoveryQaAdminControllerTest {
         result.setLastMessageAt(1_718_000_100_000L);
         result.setRemovedAt(1_718_000_200_000L);
         result.setMessages(List.of(new QaMessageResult(
-                7001L, 5001L, "USER", "黄帝是谁", "SENT", 1, null, new Date(1_718_000_050_000L), null)));
+                7001L, 5001L, "USER", "黄帝是谁", "SENT", 1, null, Instant.ofEpochMilli(1_718_000_050_000L), null)));
         return result;
     }
 
