@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeCategoryDistributionFa
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeMonthlyNewTagFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeTopTagFacadeDto;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,8 +16,8 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class KnowledgeSummaryFacadeResponse {
 
-    private final Date periodStart;
-    private final Date periodEnd;
+    private final Instant periodStart;
+    private final Instant periodEnd;
     private final BigDecimal tagCoverageRate;
     private final List<KnowledgeTopTagFacadeDto> topTags;
     private final List<KnowledgeCategoryDistributionFacadeDto> categoryDistributions;

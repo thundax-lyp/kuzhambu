@@ -24,7 +24,7 @@ import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeRemoveContentTagRe
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeResolveTagFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSummaryFacadeRequest;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -35,8 +35,8 @@ class KnowledgeFacadeImplTest {
     void summaryShouldDelegateAndMapFacadeResponse() {
         KnowledgeReportApplicationService knowledgeReportApplicationService =
                 mock(KnowledgeReportApplicationService.class);
-        Date periodStart = new Date(1_735_689_600_000L);
-        Date periodEnd = new Date(1_735_776_000_000L);
+        Instant periodStart = Instant.ofEpochMilli(1_735_689_600_000L);
+        Instant periodEnd = Instant.ofEpochMilli(1_735_776_000_000L);
         when(knowledgeReportApplicationService.summary(periodStart, periodEnd, "WEEK"))
                 .thenReturn(new KnowledgeReportSummaryResult(
                         periodStart,

@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSummaryFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
-import java.util.Date;
+import java.time.Instant;
 import java.util.Objects;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +38,10 @@ public class DefaultOperationsDashboardSummaryGateway implements OperationsDashb
 
     @Override
     public OperationsCrossDomainSummary loadSummary(
-            Date periodStart, Date periodEnd, String bucketType, OperationsDashboardPermissionSnapshot permissions) {
+            Instant periodStart,
+            Instant periodEnd,
+            String bucketType,
+            OperationsDashboardPermissionSnapshot permissions) {
         return new OperationsCrossDomainSummary(
                 loadClassicsSummary(periodStart, periodEnd, bucketType, permissions),
                 loadAiSummary(periodStart, periodEnd, bucketType, permissions),
@@ -47,49 +50,61 @@ public class DefaultOperationsDashboardSummaryGateway implements OperationsDashb
     }
 
     private ClassicsSummaryFacadeResponse loadClassicsSummary(
-            Date periodStart, Date periodEnd, String bucketType, OperationsDashboardPermissionSnapshot permissions) {
+            Instant periodStart,
+            Instant periodEnd,
+            String bucketType,
+            OperationsDashboardPermissionSnapshot permissions) {
         if (!permissions.canLoadClassicsSummary()) {
             return null;
         }
         return requireSummary(
                 classicsFacade.summary(ClassicsSummaryFacadeRequest.builder()
-                        .periodStart(periodStart)
-                        .periodEnd(periodEnd)
+                        .periodStart(OperationsDashboardLegacyTimeAdapter.toDate(periodStart))
+                        .periodEnd(OperationsDashboardLegacyTimeAdapter.toDate(periodEnd))
                         .bucketType(bucketType)
                         .build()),
                 "classics");
     }
 
     private AiReportSummaryFacadeResponse loadAiSummary(
-            Date periodStart, Date periodEnd, String bucketType, OperationsDashboardPermissionSnapshot permissions) {
+            Instant periodStart,
+            Instant periodEnd,
+            String bucketType,
+            OperationsDashboardPermissionSnapshot permissions) {
         if (!permissions.canLoadAiSummary()) {
             return null;
         }
         return requireSummary(
                 aiFacade.summary(AiReportSummaryFacadeRequest.builder()
-                        .periodStart(periodStart == null ? null : periodStart.toInstant())
-                        .periodEnd(periodEnd == null ? null : periodEnd.toInstant())
+                        .periodStart(periodStart)
+                        .periodEnd(periodEnd)
                         .bucketType(bucketType)
                         .build()),
                 "ai");
     }
 
     private DiscoverySummaryFacadeResponse loadDiscoverySummary(
-            Date periodStart, Date periodEnd, String bucketType, OperationsDashboardPermissionSnapshot permissions) {
+            Instant periodStart,
+            Instant periodEnd,
+            String bucketType,
+            OperationsDashboardPermissionSnapshot permissions) {
         if (!permissions.canLoadDiscoverySummary()) {
             return null;
         }
         return requireSummary(
                 discoveryFacade.summary(DiscoverySummaryFacadeRequest.builder()
-                        .periodStart(periodStart == null ? null : periodStart.toInstant())
-                        .periodEnd(periodEnd == null ? null : periodEnd.toInstant())
+                        .periodStart(periodStart)
+                        .periodEnd(periodEnd)
                         .bucketType(bucketType)
                         .build()),
                 "discovery");
     }
 
     private KnowledgeSummaryFacadeResponse loadKnowledgeSummary(
-            Date periodStart, Date periodEnd, String bucketType, OperationsDashboardPermissionSnapshot permissions) {
+            Instant periodStart,
+            Instant periodEnd,
+            String bucketType,
+            OperationsDashboardPermissionSnapshot permissions) {
         if (!permissions.canLoadKnowledgeSummary()) {
             return null;
         }

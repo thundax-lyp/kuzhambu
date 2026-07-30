@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.operations.application.cleanup.result;
 
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupItemId;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,8 +22,8 @@ public class OperationsCleanupDetailResult {
     private Integer failedCount;
     private String failureReason;
     private Long requesterUserId;
-    private Date startedAt;
-    private Date completedAt;
+    private Instant startedAt;
+    private Instant completedAt;
     private List<Item> items;
 
     @Getter
@@ -36,6 +36,6 @@ public class OperationsCleanupDetailResult {
         private Long targetId;
         private String itemStatus;
         private String failureReason;
-        private Date processedAt;
+        private Instant processedAt;
     }
 }

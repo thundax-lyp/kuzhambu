@@ -5,8 +5,6 @@ import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.KnowledgeEntityDO;
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 public final class KnowledgeEntityPersistenceAssembler {
@@ -29,9 +27,9 @@ public final class KnowledgeEntityPersistenceAssembler {
                         : entity.getConfirmationStatus().value());
         dataObject.setLatestVersionId(GraphVersionIdCodec.toValue(entity.getLatestVersionId()));
         dataObject.setSourceRefsJson(entity.getSourceRefsJson());
-        dataObject.setFirstExtractedAt(toDate(entity.getFirstExtractedAt()));
-        dataObject.setLastExtractedAt(toDate(entity.getLastExtractedAt()));
-        dataObject.setConfirmedAt(toDate(entity.getConfirmedAt()));
+        dataObject.setFirstExtractedAt(entity.getFirstExtractedAt());
+        dataObject.setLastExtractedAt(entity.getLastExtractedAt());
+        dataObject.setConfirmedAt(entity.getConfirmedAt());
         return dataObject;
     }
 
@@ -48,9 +46,9 @@ public final class KnowledgeEntityPersistenceAssembler {
         entity.setConfirmationStatus(KnowledgeConfirmationStatus.from(dataObject.getConfirmationStatus()));
         entity.setLatestVersionId(GraphVersionIdCodec.toDomain(dataObject.getLatestVersionId()));
         entity.setSourceRefsJson(dataObject.getSourceRefsJson());
-        entity.setFirstExtractedAt(toInstant(dataObject.getFirstExtractedAt()));
-        entity.setLastExtractedAt(toInstant(dataObject.getLastExtractedAt()));
-        entity.setConfirmedAt(toInstant(dataObject.getConfirmedAt()));
+        entity.setFirstExtractedAt(dataObject.getFirstExtractedAt());
+        entity.setLastExtractedAt(dataObject.getLastExtractedAt());
+        entity.setConfirmedAt(dataObject.getConfirmedAt());
         return entity;
     }
 
@@ -60,13 +58,5 @@ public final class KnowledgeEntityPersistenceAssembler {
                 : dataObjects.stream()
                         .map(KnowledgeEntityPersistenceAssembler::toDomain)
                         .toList();
-    }
-
-    private static Date toDate(Instant value) {
-        return value == null ? null : Date.from(value);
-    }
-
-    private static Instant toInstant(Date value) {
-        return value == null ? null : value.toInstant();
     }
 }

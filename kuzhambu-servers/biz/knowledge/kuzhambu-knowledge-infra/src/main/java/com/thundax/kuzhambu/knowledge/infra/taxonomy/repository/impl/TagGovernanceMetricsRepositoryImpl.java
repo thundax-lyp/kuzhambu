@@ -31,6 +31,7 @@ public class TagGovernanceMetricsRepositoryImpl implements TagGovernanceMetricsR
 
     private static final int DEFAULT_TOP_LIMIT = 10;
     private static final int DEFAULT_RECENT_MONTHS = 6;
+    private static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Shanghai");
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
 
     private final TagMapper tagMapper;
@@ -175,10 +176,10 @@ public class TagGovernanceMetricsRepositoryImpl implements TagGovernanceMetricsR
 
     private YearMonth resolveUsableMonth(Tag tag) {
         if (tag.getReviewedAt() != null) {
-            return YearMonth.from(tag.getReviewedAt().toInstant().atZone(ZoneId.systemDefault()));
+            return YearMonth.from(tag.getReviewedAt().atZone(BUSINESS_ZONE));
         }
         if (tag.getCreatedAt() != null) {
-            return YearMonth.from(tag.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()));
+            return YearMonth.from(tag.getCreatedAt().atZone(BUSINESS_ZONE));
         }
         return null;
     }

@@ -17,7 +17,7 @@ import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.dashboard.controller.request.OperationsDashboardOverviewRequest;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,8 +40,8 @@ class OperationsDashboardAdminControllerTest {
     void overviewShouldDelegateToApplicationServiceAndMapStableResponse() {
         OperationsDashboardApplicationService service = mock(OperationsDashboardApplicationService.class);
         OperationsDashboardAdminController controller = new OperationsDashboardAdminController(service);
-        Date periodStart = new Date(1_719_630_400_000L);
-        Date periodEnd = new Date(1_719_716_800_000L);
+        Instant periodStart = Instant.ofEpochMilli(1_719_630_400_000L);
+        Instant periodEnd = Instant.ofEpochMilli(1_719_716_800_000L);
         when(service.overview(argThat(query -> query != null && "CUSTOM".equals(query.getPeriodType()))))
                 .thenReturn(new OperationsDashboardOverviewResult(
                         periodStart,
@@ -80,7 +80,7 @@ class OperationsDashboardAdminControllerTest {
                                 "ok",
                                 "LOCAL",
                                 "admin-server",
-                                periodEnd)),
+                                java.util.Date.from(periodEnd))),
                         List.of(new TaskStatusSummaryResult("RUNNING", 2L)),
                         List.of(),
                         List.of(),
@@ -112,8 +112,8 @@ class OperationsDashboardAdminControllerTest {
     void overviewShouldKeepNullCollectionsFromApplicationResult() {
         OperationsDashboardApplicationService service = mock(OperationsDashboardApplicationService.class);
         OperationsDashboardAdminController controller = new OperationsDashboardAdminController(service);
-        Date periodStart = new Date(1_719_630_400_000L);
-        Date periodEnd = new Date(1_719_716_800_000L);
+        Instant periodStart = Instant.ofEpochMilli(1_719_630_400_000L);
+        Instant periodEnd = Instant.ofEpochMilli(1_719_716_800_000L);
         when(service.overview(argThat(query -> query != null && "WEEK".equals(query.getPeriodType()))))
                 .thenReturn(new OperationsDashboardOverviewResult(
                         periodStart,

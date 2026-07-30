@@ -56,9 +56,9 @@ class RestoreApplicationServiceImplTest {
                         "sha256-backup",
                         null,
                         1001L,
-                        new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L),
-                        new Date(1_722_222_400_000L)));
+                        java.time.Instant.ofEpochMilli(1_719_630_400_000L),
+                        java.time.Instant.ofEpochMilli(1_719_630_500_000L),
+                        java.time.Instant.ofEpochMilli(1_722_222_400_000L)));
         InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
         SuccessfulRestoreScriptExecutor scriptExecutor = new SuccessfulRestoreScriptExecutor();
         RestoreApplicationServiceImpl service = service(restoreRepository, backupRepository, scriptExecutor);
@@ -137,9 +137,9 @@ class RestoreApplicationServiceImplTest {
                         "sha256-backup",
                         null,
                         1001L,
-                        new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L),
-                        new Date(1_722_222_400_000L)));
+                        java.time.Instant.ofEpochMilli(1_719_630_400_000L),
+                        java.time.Instant.ofEpochMilli(1_719_630_500_000L),
+                        java.time.Instant.ofEpochMilli(1_722_222_400_000L)));
         InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
         OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
         RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
@@ -286,9 +286,9 @@ class RestoreApplicationServiceImplTest {
                         "sha256-backup",
                         null,
                         1001L,
-                        new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L),
-                        new Date(1_722_222_400_000L)));
+                        java.time.Instant.ofEpochMilli(1_719_630_400_000L),
+                        java.time.Instant.ofEpochMilli(1_719_630_500_000L),
+                        java.time.Instant.ofEpochMilli(1_722_222_400_000L)));
         return backupRepository;
     }
 

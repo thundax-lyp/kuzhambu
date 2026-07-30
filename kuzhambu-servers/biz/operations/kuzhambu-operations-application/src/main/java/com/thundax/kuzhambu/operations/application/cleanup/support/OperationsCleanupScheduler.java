@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.operations.application.cleanup.support;
 
 import com.thundax.kuzhambu.operations.application.cleanup.command.OperationsCleanupExecuteCommand;
 import com.thundax.kuzhambu.operations.application.cleanup.service.CleanupApplicationService;
-import java.util.Date;
+import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -41,7 +41,7 @@ public class OperationsCleanupScheduler implements ApplicationListener<Applicati
     }
 
     private void executeEnabledPolicies() {
-        Date requestedAt = new Date();
+        Instant requestedAt = Instant.now();
         for (OperationsCleanupScheduleProperties.CleanupPolicy policy : properties.orderedPolicies()) {
             if (!policy.enabled()) {
                 continue;
@@ -50,7 +50,7 @@ public class OperationsCleanupScheduler implements ApplicationListener<Applicati
         }
     }
 
-    private void executePolicy(OperationsCleanupScheduleProperties.CleanupPolicy policy, Date requestedAt) {
+    private void executePolicy(OperationsCleanupScheduleProperties.CleanupPolicy policy, Instant requestedAt) {
         try {
             cleanupApplicationService.executeScheduled(new OperationsCleanupExecuteCommand(
                     policy.cleanupType(), null, requestedAt, policy.retentionDays(), policy.limit()));

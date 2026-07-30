@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.taxonomy.command;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,5 +20,5 @@ public class TagCreateCommand {
     private String description;
     private TagReviewStatus reviewStatus;
     private String reviewNote;
-    private Date reviewedAt;
+    private Instant reviewedAt;
 }

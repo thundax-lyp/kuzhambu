@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -45,7 +45,7 @@ public class GraphExtractionTaskDO {
     private String errorType;
     private String errorMessage;
     private Long requestedBy;
-    private Date requestedAt;
-    private Date completedAt;
-    private Date appliedAt;
+    private Instant requestedAt;
+    private Instant completedAt;
+    private Instant appliedAt;
 }

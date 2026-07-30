@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.knowledge.domain.refinement.model.entity;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,10 +19,10 @@ public class QualityReportSourceDetail {
     private String sourceCategoryCode;
     private String sourceCategoryName;
     private Long graphVersionId;
-    private Date appliedAt;
+    private Instant appliedAt;
     private Long annotationCount;
     private Long issueCount;
     private String status;
     private String href;
-    private Date createdAt;
+    private Instant createdAt;
 }

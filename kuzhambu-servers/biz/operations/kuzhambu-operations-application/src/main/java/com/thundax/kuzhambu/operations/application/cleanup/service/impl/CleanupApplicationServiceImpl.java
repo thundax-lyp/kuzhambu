@@ -42,8 +42,8 @@ import com.thundax.kuzhambu.operations.domain.task.codec.LongTaskSnapshotIdCodec
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -115,7 +115,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
             throw new IllegalArgumentException("Operations cleanup type is not supported: " + command.getCleanupType());
         }
 
-        Date requestedAt = command.getRequestedAt() == null ? new Date() : command.getRequestedAt();
+        Instant requestedAt = command.getRequestedAt() == null ? Instant.now() : command.getRequestedAt();
         int limit = effectiveLimit(command.getLimit());
         CleanupJob cleanupJob = new CleanupJob(
                 null,
@@ -148,7 +148,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
             cleanupJob.setSuccessCount(successCount);
             cleanupJob.setFailedCount(failedCount);
             cleanupJob.setCleanupStatus(failedCount > 0 ? CLEANUP_STATUS_FAILED : CLEANUP_STATUS_SUCCEEDED);
-            cleanupJob.setCompletedAt(new Date());
+            cleanupJob.setCompletedAt(Instant.now());
             cleanupJobRepository.update(cleanupJob);
             if (failedCount > 0) {
                 recordCleanupFailure(cleanupJob);
@@ -156,7 +156,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         } catch (RuntimeException exception) {
             cleanupJob.setCleanupStatus(CLEANUP_STATUS_FAILED);
             cleanupJob.setFailureReason(truncateFailureReason(exception.getMessage()));
-            cleanupJob.setCompletedAt(new Date());
+            cleanupJob.setCompletedAt(Instant.now());
             cleanupJobRepository.update(cleanupJob);
             recordCleanupFailure(cleanupJob);
         }
@@ -202,7 +202,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
     }
 
     private List<CleanupItem> discoverCleanupItems(
-            Long cleanupJobId, String cleanupType, Date processedAt, Integer retentionDays, int limit) {
+            Long cleanupJobId, String cleanupType, Instant processedAt, Integer retentionDays, int limit) {
         List<DiscoveredCleanupTarget> targets = discoverCleanupTargets(cleanupType, processedAt, retentionDays, limit);
         return targets.stream()
                 .map(targetId -> new CleanupItem(
@@ -215,20 +215,20 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
             CleanupExecutionOutcome result = executeCleanupTarget(item);
             item.setItemStatus(result.success() ? CLEANUP_ITEM_STATUS_SUCCEEDED : CLEANUP_ITEM_STATUS_FAILED);
             item.setFailureReason(truncateFailureReason(result.failureReason()));
-            item.setProcessedAt(new Date());
+            item.setProcessedAt(Instant.now());
             cleanupJobRepository.insertItem(item);
             return result.success();
         } catch (RuntimeException exception) {
             item.setItemStatus(CLEANUP_ITEM_STATUS_FAILED);
             item.setFailureReason(truncateFailureReason(exception.getMessage()));
-            item.setProcessedAt(new Date());
+            item.setProcessedAt(Instant.now());
             cleanupJobRepository.insertItem(item);
             return false;
         }
     }
 
     private List<DiscoveredCleanupTarget> discoverCleanupTargets(
-            String cleanupType, Date requestedAt, Integer retentionDays, int limit) {
+            String cleanupType, Instant requestedAt, Integer retentionDays, int limit) {
         if (CLEANUP_TYPE_EXPIRED_BACKUP.equals(cleanupType)) {
             return backupRepository
                     .listExpiredBackupIds(backupCleanupThreshold(requestedAt, retentionDays), limit)
@@ -239,7 +239,11 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
                     .toList();
         }
         if (CLEANUP_TYPE_EXPIRED_REPORT.equals(cleanupType)) {
-            return reportRepository.listExpiredReportIds(cleanupThreshold(requestedAt, retentionDays), limit).stream()
+            return reportRepository
+                    .listExpiredReportIds(
+                            OperationsCleanupLegacyTimeAdapter.toDate(cleanupThreshold(requestedAt, retentionDays)),
+                            limit)
+                    .stream()
                     .map(ReportId::value)
                     .map(targetId -> new DiscoveredCleanupTarget(
                             OperationsCleanupSupport.resolveItemType(cleanupType), targetId))
@@ -247,7 +251,9 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         }
         if (CLEANUP_TYPE_EXPIRED_HEALTH_CHECK.equals(cleanupType)) {
             return healthCheckRepository
-                    .listExpiredCheckIds(cleanupThreshold(requestedAt, retentionDays), limit)
+                    .listExpiredCheckIds(
+                            OperationsCleanupLegacyTimeAdapter.toDate(cleanupThreshold(requestedAt, retentionDays)),
+                            limit)
                     .stream()
                     .map(HealthCheckId::value)
                     .map(targetId -> new DiscoveredCleanupTarget(
@@ -256,7 +262,9 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         }
         if (CLEANUP_TYPE_EXPIRED_LONG_TASK.equals(cleanupType)) {
             return longTaskSnapshotRepository
-                    .listExpiredSnapshotIds(cleanupThreshold(requestedAt, retentionDays), limit)
+                    .listExpiredSnapshotIds(
+                            OperationsCleanupLegacyTimeAdapter.toDate(cleanupThreshold(requestedAt, retentionDays)),
+                            limit)
                     .stream()
                     .map(LongTaskSnapshotId::value)
                     .map(targetId -> new DiscoveredCleanupTarget(
@@ -266,7 +274,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         ClassicsCleanupTargetsFacadeResponse response =
                 classicsFacade.listCleanupTargets(ClassicsCleanupTargetsFacadeRequest.builder()
                         .cleanupType(cleanupType)
-                        .requestedAt(requestedAt)
+                        .requestedAt(OperationsCleanupLegacyTimeAdapter.toDate(requestedAt))
                         .retentionDays(retentionDays)
                         .limit(limit)
                         .build());
@@ -324,15 +332,15 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         return null;
     }
 
-    private Date backupCleanupThreshold(Date requestedAt, Integer retentionDays) {
+    private Instant backupCleanupThreshold(Instant requestedAt, Integer retentionDays) {
         return cleanupThreshold(requestedAt, retentionDays);
     }
 
-    private Date cleanupThreshold(Date requestedAt, Integer retentionDays) {
+    private Instant cleanupThreshold(Instant requestedAt, Integer retentionDays) {
         if (retentionDays == null || retentionDays <= 0) {
             return requestedAt;
         }
-        return Date.from(requestedAt.toInstant().minus(Duration.ofDays(retentionDays)));
+        return requestedAt.minus(Duration.ofDays(retentionDays));
     }
 
     private void validateExecuteCommand(OperationsCleanupExecuteCommand command, boolean requireRequesterUserId) {

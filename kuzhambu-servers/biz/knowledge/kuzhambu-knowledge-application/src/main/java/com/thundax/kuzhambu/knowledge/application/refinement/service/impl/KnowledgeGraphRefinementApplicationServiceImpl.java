@@ -57,8 +57,8 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementLin
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementLineageRelationDraftRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementRelationDraftRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -148,7 +148,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         if (existing != null) {
             return detail(existing);
         }
-        Date now = new Date();
+        Instant now = Instant.now();
         RefinementTask task = new RefinementTask(
                 null,
                 null,
@@ -212,7 +212,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         draft.setConfirmationStatus("MANUAL_CONFIRMED");
         draft.setOperationType("CONFIRMED");
         draft.setUpdatedBy(command.getOperatorId());
-        draft.setUpdatedAt(new Date());
+        draft.setUpdatedAt(Instant.now());
         entityDraftRepository.saveOrUpdateBatch(List.of(draft));
         return toResult(draft);
     }
@@ -226,7 +226,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 .orElseThrow();
         draft.setOperationType("DELETED");
         draft.setUpdatedBy(command.getOperatorId());
-        draft.setUpdatedAt(new Date());
+        draft.setUpdatedAt(Instant.now());
         entityDraftRepository.saveOrUpdateBatch(List.of(draft));
     }
 
@@ -255,7 +255,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         draft.setConfirmationStatus("MANUAL_CONFIRMED");
         draft.setOperationType("CONFIRMED");
         draft.setUpdatedBy(command.getOperatorId());
-        draft.setUpdatedAt(new Date());
+        draft.setUpdatedAt(Instant.now());
         relationDraftRepository.saveOrUpdateBatch(List.of(draft));
         return toResult(draft);
     }
@@ -269,7 +269,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 .orElseThrow();
         draft.setOperationType("DELETED");
         draft.setUpdatedBy(command.getOperatorId());
-        draft.setUpdatedAt(new Date());
+        draft.setUpdatedAt(Instant.now());
         relationDraftRepository.saveOrUpdateBatch(List.of(draft));
     }
 
@@ -299,7 +299,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         draft.setConfirmationStatus("MANUAL_CONFIRMED");
         draft.setOperationType("CONFIRMED");
         draft.setUpdatedBy(command.getOperatorId());
-        draft.setUpdatedAt(new Date());
+        draft.setUpdatedAt(Instant.now());
         lineageNodeDraftRepository.saveOrUpdateBatch(List.of(draft));
         return toResult(draft);
     }
@@ -314,7 +314,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 .orElseThrow();
         draft.setOperationType("DELETED");
         draft.setUpdatedBy(command.getOperatorId());
-        draft.setUpdatedAt(new Date());
+        draft.setUpdatedAt(Instant.now());
         lineageNodeDraftRepository.saveOrUpdateBatch(List.of(draft));
     }
 
@@ -344,7 +344,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         draft.setConfirmationStatus("MANUAL_CONFIRMED");
         draft.setOperationType("CONFIRMED");
         draft.setUpdatedBy(command.getOperatorId());
-        draft.setUpdatedAt(new Date());
+        draft.setUpdatedAt(Instant.now());
         lineageRelationDraftRepository.saveOrUpdateBatch(List.of(draft));
         return toResult(draft);
     }
@@ -359,7 +359,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 .orElseThrow();
         draft.setOperationType("DELETED");
         draft.setUpdatedBy(command.getOperatorId());
-        draft.setUpdatedAt(new Date());
+        draft.setUpdatedAt(Instant.now());
         lineageRelationDraftRepository.saveOrUpdateBatch(List.of(draft));
     }
 
@@ -377,9 +377,9 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 command.getAnnotationLabel(),
                 command.getComment(),
                 command.getOperatorId(),
-                new Date(),
+                Instant.now(),
                 command.getOperatorId(),
-                new Date());
+                Instant.now());
         qualityAnnotationRepository.saveOrUpdate(annotation);
         return new QualityAnnotationResult(
                 annotation.getAnnotationId(),
@@ -437,7 +437,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 task.getGraphVersionId(), lineageRelationDraftRepository.listByTaskId(refinementTaskId));
         task.setStatus(STATUS_APPLIED);
         task.setAppliedBy(appliedBy);
-        task.setAppliedAt(new Date());
+        task.setAppliedAt(Instant.now());
         refinementTaskRepository.update(task);
         return toApplyResult(task);
     }
@@ -451,7 +451,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     }
 
     private void fillEntityDraft(RefinementEntityDraft draft, UpsertRefinementEntityCommand command, boolean created) {
-        Date now = new Date();
+        Instant now = Instant.now();
         draft.setRefinementTaskId(command.getRefinementTaskId());
         draft.setEntityId(command.getEntityId());
         draft.setEntityKey(
@@ -476,7 +476,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     private void fillRelationDraft(
             RefinementRelationDraft draft, UpsertRefinementRelationCommand command, boolean created) {
-        Date now = new Date();
+        Instant now = Instant.now();
         draft.setRefinementTaskId(command.getRefinementTaskId());
         draft.setRelationId(command.getRelationId());
         draft.setRelationKey(
@@ -504,7 +504,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     private void fillLineageNodeDraft(
             RefinementLineageNodeDraft draft, UpsertRefinementLineageNodeCommand command, boolean created) {
-        Date now = new Date();
+        Instant now = Instant.now();
         draft.setRefinementTaskId(command.getRefinementTaskId());
         draft.setNodeId(command.getNodeId());
         draft.setNodeKey(
@@ -530,7 +530,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     private void fillLineageRelationDraft(
             RefinementLineageRelationDraft draft, UpsertRefinementLineageRelationCommand command, boolean created) {
-        Date now = new Date();
+        Instant now = Instant.now();
         draft.setRefinementTaskId(command.getRefinementTaskId());
         draft.setRelationId(command.getRelationId());
         draft.setRelationKey(
@@ -614,7 +614,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 task.getSourceCategoryName(),
                 task.getStatus(),
                 task.getOpenedBy(),
-                task.getOpenedAt() == null ? null : task.getOpenedAt().getTime(),
+                task.getOpenedAt() == null ? null : task.getOpenedAt().toEpochMilli(),
                 new RefinementProgressSummaryResult(
                         pendingEntities(entities),
                         confirmedEntities(entities),
@@ -649,7 +649,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 sourceCategoryCode,
                 sourceCategoryName,
                 task.getStatus(),
-                task.getAppliedAt() == null ? null : task.getAppliedAt().getTime(),
+                task.getAppliedAt() == null ? null : task.getAppliedAt().toEpochMilli(),
                 true,
                 sourceTaskId != null,
                 sourceTaskId,

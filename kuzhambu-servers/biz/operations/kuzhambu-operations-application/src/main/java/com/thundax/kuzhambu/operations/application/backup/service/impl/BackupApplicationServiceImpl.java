@@ -19,11 +19,12 @@ import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupStatus;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupType;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
 import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,9 @@ import org.springframework.stereotype.Service;
 @BizExceptionBoundary
 public class BackupApplicationServiceImpl implements BackupApplicationService {
 
-    private static final long RETENTION_MILLIS = 30L * 24 * 60 * 60 * 1000;
+    private static final Duration RETENTION = Duration.ofDays(30);
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss", Locale.ROOT).withZone(ZoneId.of("Asia/Shanghai"));
     private static final String RUNNING_FAILURE_REASON =
             "Operations backup skipped because another backup or restore is running.";
 
@@ -88,7 +91,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
     }
 
     private OperationsBackupExecuteResult doExecuteBackup(BackupType backupType, Long requesterUserId) {
-        Date startedAt = new Date();
+        Instant startedAt = Instant.now();
         String timestamp = formatTimestamp(startedAt);
         BackupRecord record = new BackupRecord(
                 null,
@@ -102,7 +105,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
                 requesterUserId,
                 startedAt,
                 null,
-                new Date(startedAt.getTime() + RETENTION_MILLIS));
+                startedAt.plus(RETENTION));
         BackupId backupId = backupRepository.insert(record);
         record.setId(backupId);
         try {
@@ -111,12 +114,12 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
             record.setFileSizeBytes(artifact.getFileSizeBytes());
             record.setChecksum(artifact.getChecksum());
             record.setBackupStatus(BackupStatus.SUCCEEDED.value());
-            record.setCompletedAt(new Date());
+            record.setCompletedAt(Instant.now());
             backupRepository.update(record);
         } catch (RuntimeException exception) {
             record.setBackupStatus(BackupStatus.FAILED.value());
             record.setFailureReason(truncateFailureReason(exception.getMessage()));
-            record.setCompletedAt(new Date());
+            record.setCompletedAt(Instant.now());
             backupRepository.update(record);
             recordBackupFailure(record);
         }
@@ -124,7 +127,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
     }
 
     private BackupRecord insertSkippedAutoBackup() {
-        Date startedAt = new Date();
+        Instant startedAt = Instant.now();
         String timestamp = formatTimestamp(startedAt);
         BackupRecord record = new BackupRecord(
                 null,
@@ -138,7 +141,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
                 null,
                 startedAt,
                 startedAt,
-                new Date(startedAt.getTime() + RETENTION_MILLIS));
+                startedAt.plus(RETENTION));
         BackupId backupId = backupRepository.insert(record);
         record.setId(backupId);
         recordBackupFailure(record);
@@ -235,10 +238,8 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
         }
     }
 
-    private String formatTimestamp(Date date) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ROOT);
-        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-        return formatter.format(date);
+    private String formatTimestamp(Instant instant) {
+        return TIMESTAMP_FORMATTER.format(instant);
     }
 
     private String truncateFailureReason(String failureReason) {

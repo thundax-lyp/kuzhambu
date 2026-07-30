@@ -36,7 +36,6 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMe
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -392,8 +391,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                                 8L,
                                 1L,
                                 1L,
-                                new Date(1_700_000_000_000L),
-                                new Date(1_700_000_000_000L)),
+                                Instant.ofEpochMilli(1_700_000_000_000L),
+                                Instant.ofEpochMilli(1_700_000_000_000L)),
                         List.of(new IssueRecord(
                                 9101L,
                                 "LOW_ENTITY_COVERAGE",
@@ -412,7 +411,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
                                 "SANCAI",
                                 "三才图会",
                                 71L,
-                                new Date(1_700_000_000_000L),
+                                Instant.ofEpochMilli(1_700_000_000_000L),
                                 8L,
                                 1L,
                                 "APPLIED",
