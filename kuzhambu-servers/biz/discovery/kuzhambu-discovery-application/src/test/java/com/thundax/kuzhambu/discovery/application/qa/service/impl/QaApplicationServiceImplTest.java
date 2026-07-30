@@ -46,7 +46,7 @@ import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -205,13 +205,25 @@ class QaApplicationServiceImplTest {
                 "SANCAI_ENTRY",
                 10001L,
                 "OPEN",
-                new Date(),
-                new Date(),
+                Instant.now(),
+                Instant.now(),
                 null);
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
         when(messageRepository.listBySessionId(sessionId(5001L)))
                 .thenReturn(List.of(new QaMessage(
-                        1L, 1L, 5001L, "USER", "黄帝是谁", "SENT", "kuzhambu-qa", 0, null, null, null, new Date(), null)));
+                        1L,
+                        1L,
+                        5001L,
+                        "USER",
+                        "黄帝是谁",
+                        "SENT",
+                        "kuzhambu-qa",
+                        0,
+                        null,
+                        null,
+                        null,
+                        Instant.now(),
+                        null)));
         when(sourceRepository.listByMessageId(any())).thenReturn(List.of());
         when(traceRepository.getByTraceId(any())).thenReturn(new QaRetrievalTrace());
 
@@ -228,12 +240,12 @@ class QaApplicationServiceImplTest {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession());
-        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Date.class)))
+        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Instant.class)))
                 .thenReturn(1);
 
         service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "1001", false));
 
-        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Date.class));
+        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Instant.class));
     }
 
     @Test
@@ -241,12 +253,12 @@ class QaApplicationServiceImplTest {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession());
-        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Date.class)))
+        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Instant.class)))
                 .thenReturn(1);
 
         service.deleteSession(new DeleteQaSessionCommand(5001L, null, null, true));
 
-        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Date.class));
+        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Instant.class));
     }
 
     @Test
@@ -254,7 +266,7 @@ class QaApplicationServiceImplTest {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
         QaSession session = openSession();
-        session.markRemoved(new Date());
+        session.markRemoved(Instant.now());
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
 
         BizException exception = assertThrows(
@@ -262,7 +274,7 @@ class QaApplicationServiceImplTest {
                 () -> service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "1001", false)));
 
         assertEquals("QA_SESSION_ALREADY_REMOVED", exception.getCode());
-        verify(sessionRepository, never()).markRemoved(eq(sessionId(5001L)), any(Date.class));
+        verify(sessionRepository, never()).markRemoved(eq(sessionId(5001L)), any(Instant.class));
     }
 
     @Test
@@ -270,9 +282,9 @@ class QaApplicationServiceImplTest {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
         QaSession latest = openSession();
-        latest.markRemoved(new Date());
+        latest.markRemoved(Instant.now());
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession(), latest);
-        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Date.class)))
+        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Instant.class)))
                 .thenReturn(0);
 
         BizException exception = assertThrows(
@@ -280,7 +292,7 @@ class QaApplicationServiceImplTest {
                 () -> service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "1001", false)));
 
         assertEquals("QA_SESSION_ALREADY_REMOVED", exception.getCode());
-        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Date.class));
+        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Instant.class));
     }
 
     @Test
@@ -294,7 +306,7 @@ class QaApplicationServiceImplTest {
                 () -> service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "2002", false)));
 
         assertEquals("DISCOVERY-30009", exception.getCode());
-        verify(sessionRepository, never()).markRemoved(eq(sessionId(5001L)), any(Date.class));
+        verify(sessionRepository, never()).markRemoved(eq(sessionId(5001L)), any(Instant.class));
     }
 
     @Test
@@ -302,7 +314,7 @@ class QaApplicationServiceImplTest {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
         QaSession session = openSession();
-        session.markRemoved(new Date());
+        session.markRemoved(Instant.now());
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
 
         BizException exception =
@@ -327,8 +339,8 @@ class QaApplicationServiceImplTest {
     void pageSessionsShouldDelegateFilteredPagingToRepository() {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
-        Date openedAtStart = new Date(1_718_000_000_000L);
-        Date openedAtEnd = new Date(1_718_086_400_000L);
+        Instant openedAtStart = Instant.ofEpochMilli(1_718_000_000_000L);
+        Instant openedAtEnd = Instant.ofEpochMilli(1_718_086_400_000L);
         when(sessionRepository.page("黄帝", openedAtStart, openedAtEnd, 2, 100))
                 .thenReturn(PageResult.of(2, 100, 101, List.of(openSession())));
 
@@ -394,7 +406,7 @@ class QaApplicationServiceImplTest {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
         QaSession session = openSession();
-        session.markRemoved(new Date());
+        session.markRemoved(Instant.now());
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
 
         BizException exception = assertThrows(
@@ -415,7 +427,7 @@ class QaApplicationServiceImplTest {
         QaApplicationServiceImpl service =
                 service(sessionRepository, messageRepository, sourceRepository, traceRepository);
         QaSession session = openSession();
-        session.markRemoved(new Date());
+        session.markRemoved(Instant.now());
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
         when(messageRepository.listBySessionId(sessionId(5001L))).thenReturn(List.of(answerMessage()));
         when(sourceRepository.listByMessageId(6001L)).thenReturn(List.of(source()));
@@ -524,8 +536,8 @@ class QaApplicationServiceImplTest {
                 "SANCAI_ENTRY",
                 10001L,
                 "OPEN",
-                new Date(),
-                new Date(),
+                Instant.now(),
+                Instant.now(),
                 null);
     }
 
@@ -542,8 +554,8 @@ class QaApplicationServiceImplTest {
                 null,
                 "chat-1",
                 "STOP",
-                new Date(1000L),
-                new Date(2000L));
+                Instant.ofEpochMilli(1000L),
+                Instant.ofEpochMilli(2000L));
     }
 
     private static QaSource source() {
@@ -562,7 +574,7 @@ class QaApplicationServiceImplTest {
                 1,
                 null,
                 "ACTIVE",
-                new Date(3000L));
+                Instant.ofEpochMilli(3000L));
     }
 
     private static QaRetrievalTrace trace() {
@@ -583,7 +595,7 @@ class QaApplicationServiceImplTest {
                 null,
                 null,
                 null,
-                new Date(4000L));
+                Instant.ofEpochMilli(4000L));
     }
 
     private static QaSessionId sessionId(Long value) {
