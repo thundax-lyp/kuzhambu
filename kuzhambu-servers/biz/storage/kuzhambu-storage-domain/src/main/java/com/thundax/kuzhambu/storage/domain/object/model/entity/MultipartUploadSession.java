@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteS
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageObjectKey;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,8 +41,8 @@ public class MultipartUploadSession {
     private MultipartPartSize partSize;
     private Integer uploadedPartCount = 0;
     private MultipartUploadStatus uploadStatus = MultipartUploadStatus.INITIATED;
-    private Date completedDate;
-    private Date abortedDate;
+    private Instant completedDate;
+    private Instant abortedDate;
 
     public String getUploadId() {
         return uploadId == null ? null : uploadId.value();
