@@ -15,8 +15,8 @@ import com.thundax.kuzhambu.operations.infra.health.persistence.assembler.Health
 import com.thundax.kuzhambu.operations.infra.health.persistence.dataobject.HealthCheckDO;
 import com.thundax.kuzhambu.operations.infra.health.persistence.mapper.HealthCheckMapper;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -70,8 +70,8 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
             String healthStatus,
             String probeSource,
             String probeTarget,
-            Date checkedAtStart,
-            Date checkedAtEnd,
+            Instant checkedAtStart,
+            Instant checkedAtEnd,
             int pageNo,
             int pageSize) {
         Page<HealthCheckDO> page = new Page<>(pageNo, pageSize);
@@ -87,7 +87,7 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
 
     @Override
     public List<HealthTrendBucket> listTrend(
-            String component, String probeSource, Date periodStart, Date periodEnd, String bucketType) {
+            String component, String probeSource, Instant periodStart, Instant periodEnd, String bucketType) {
         return mapper.selectMaps(buildTrendWrapper(component, probeSource, periodStart, periodEnd, bucketType)).stream()
                 .map(HealthCheckRepositoryImpl::toTrendBucket)
                 .toList();
@@ -124,7 +124,7 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
     }
 
     @Override
-    public List<HealthCheckId> listExpiredCheckIds(Date checkedBefore, int limit) {
+    public List<HealthCheckId> listExpiredCheckIds(Instant checkedBefore, int limit) {
         return mapper
                 .selectObjs(new QueryWrapper<HealthCheckDO>()
                         .select("check_id")
@@ -143,8 +143,8 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
             String healthStatus,
             String probeSource,
             String probeTarget,
-            Date checkedAtStart,
-            Date checkedAtEnd) {
+            Instant checkedAtStart,
+            Instant checkedAtEnd) {
         QueryWrapper<HealthCheckDO> wrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(component)) {
             wrapper.eq("component", component);
@@ -170,7 +170,7 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
     }
 
     private QueryWrapper<HealthCheckDO> buildTrendWrapper(
-            String component, String probeSource, Date periodStart, Date periodEnd, String bucketType) {
+            String component, String probeSource, Instant periodStart, Instant periodEnd, String bucketType) {
         String bucketExpression = resolveBucketExpression(bucketType);
         QueryWrapper<HealthCheckDO> wrapper = new QueryWrapper<>();
         wrapper.select(

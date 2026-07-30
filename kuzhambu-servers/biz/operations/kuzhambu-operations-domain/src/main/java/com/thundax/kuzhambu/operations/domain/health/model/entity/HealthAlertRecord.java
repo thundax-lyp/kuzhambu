@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.operations.domain.health.model.entity;
 
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthAlertId;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,10 +26,10 @@ public class HealthAlertRecord {
     private String suggestion;
     private String recoveryAction;
     private String recoveryTarget;
-    private Date firstTriggeredAt;
-    private Date lastTriggeredAt;
-    private Date ackedAt;
+    private Instant firstTriggeredAt;
+    private Instant lastTriggeredAt;
+    private Instant ackedAt;
     private Long ackedByUserId;
-    private Date recoveredAt;
+    private Instant recoveredAt;
     private String failureReason;
 }

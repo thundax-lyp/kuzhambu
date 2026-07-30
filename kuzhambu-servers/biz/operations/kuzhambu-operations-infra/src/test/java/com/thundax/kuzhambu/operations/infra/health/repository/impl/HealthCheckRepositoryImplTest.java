@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthTre
 import com.thundax.kuzhambu.operations.infra.health.persistence.dataobject.HealthCheckDO;
 import com.thundax.kuzhambu.operations.infra.health.persistence.mapper.HealthCheckMapper;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -77,8 +77,8 @@ class HealthCheckRepositoryImplTest {
                 "DOWN",
                 "HTTP",
                 "internal/health",
-                new Date(1_718_000_000_000L),
-                new Date(1_718_086_400_000L),
+                Instant.ofEpochMilli(1_718_000_000_000L),
+                Instant.ofEpochMilli(1_718_086_400_000L),
                 2,
                 5);
 
@@ -120,7 +120,11 @@ class HealthCheckRepositoryImplTest {
                         new BigDecimal("12"))));
 
         List<HealthTrendBucket> result = repository.listTrend(
-                "admin-server", "LOCAL", new Date(1_718_000_000_000L), new Date(1_718_086_400_000L), "HOUR");
+                "admin-server",
+                "LOCAL",
+                Instant.ofEpochMilli(1_718_000_000_000L),
+                Instant.ofEpochMilli(1_718_086_400_000L),
+                "HOUR");
 
         assertEquals(1, result.size());
         HealthTrendBucket bucket = result.get(0);
@@ -172,7 +176,7 @@ class HealthCheckRepositoryImplTest {
         when(mapper.selectObjs(any())).thenReturn(List.of(9001L, 9002L));
 
         List<com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId> result =
-                repository.listExpiredCheckIds(new Date(1_718_086_500_000L), 2);
+                repository.listExpiredCheckIds(Instant.ofEpochMilli(1_718_086_500_000L), 2);
 
         assertEquals(2, result.size());
         assertEquals(9001L, result.get(0).value());
@@ -194,6 +198,6 @@ class HealthCheckRepositoryImplTest {
                 "LOCAL",
                 component,
                 "{\"component\":\"" + component + "\"}",
-                new Date(1_718_000_000_000L));
+                Instant.ofEpochMilli(1_718_000_000_000L));
     }
 }

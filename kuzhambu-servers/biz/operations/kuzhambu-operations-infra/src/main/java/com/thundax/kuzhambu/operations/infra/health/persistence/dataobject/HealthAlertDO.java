@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.operations.infra.health.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,10 +29,10 @@ public class HealthAlertDO {
     private String suggestion;
     private String recoveryAction;
     private String recoveryTarget;
-    private Date firstTriggeredAt;
-    private Date lastTriggeredAt;
-    private Date ackedAt;
+    private Instant firstTriggeredAt;
+    private Instant lastTriggeredAt;
+    private Instant ackedAt;
     private Long ackedByUserId;
-    private Date recoveredAt;
+    private Instant recoveredAt;
     private String failureReason;
 }
