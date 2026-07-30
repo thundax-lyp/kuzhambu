@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `04 qa-source-trace-domain`：清理 QA 来源和检索追踪领域身份字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaSource.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaRetrievalTrace.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaSourceRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaRetrievalTraceRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaSourceRepositoryImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaRetrievalTraceRepositoryImpl.java`
-    - 处理动作：删除 `QaSource.sourceId` 和 `QaRetrievalTrace.traceId`，并把自身保存、查询改为使用 `id`。
-    - 验收点：来源记录自身身份只用 `id` 且外部来源号仍为 `sourceBusinessId`，trace 自身查询改为 `getById(Long)`。
-    - 重要度：9/10
-
 - [ ] `05 qa-source-trace-persistence`：同步 QA 来源和检索追踪持久化及装配
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`

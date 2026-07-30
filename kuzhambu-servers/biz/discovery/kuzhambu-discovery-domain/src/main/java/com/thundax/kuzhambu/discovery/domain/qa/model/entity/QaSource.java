@@ -13,7 +13,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class QaSource {
     private Long id;
-    private Long sourceId;
     private String sourceBusinessId;
     private Long messageId;
     private String contentType;
@@ -27,4 +26,44 @@ public class QaSource {
     private BigDecimal score;
     private String sourceStatus;
     private Date referencedAt;
+
+    public QaSource(
+            Long id,
+            Long sourceId,
+            String sourceBusinessId,
+            Long messageId,
+            String contentType,
+            Long contentId,
+            String knowledgeBase,
+            String titleSnapshot,
+            String locationLabel,
+            String snippet,
+            String sourcePath,
+            Integer sourceRank,
+            BigDecimal score,
+            String sourceStatus,
+            Date referencedAt) {
+        this.id = id == null ? sourceId : id;
+        this.sourceBusinessId = sourceBusinessId;
+        this.messageId = messageId;
+        this.contentType = contentType;
+        this.contentId = contentId;
+        this.knowledgeBase = knowledgeBase;
+        this.titleSnapshot = titleSnapshot;
+        this.locationLabel = locationLabel;
+        this.snippet = snippet;
+        this.sourcePath = sourcePath;
+        this.sourceRank = sourceRank;
+        this.score = score;
+        this.sourceStatus = sourceStatus;
+        this.referencedAt = referencedAt;
+    }
+
+    public Long getSourceId() {
+        return id;
+    }
+
+    public void setSourceId(Long sourceId) {
+        this.id = sourceId;
+    }
 }

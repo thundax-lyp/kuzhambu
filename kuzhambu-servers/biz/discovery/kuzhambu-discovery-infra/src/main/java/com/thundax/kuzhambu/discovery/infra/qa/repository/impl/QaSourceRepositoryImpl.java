@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSourceRepository;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.assembler.QaPersistenceAssembler;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Repository;
 public class QaSourceRepositoryImpl implements QaSourceRepository {
 
     private final QaSourceMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public QaSourceRepositoryImpl(QaSourceMapper mapper) {
         this.mapper = mapper;
@@ -32,11 +30,6 @@ public class QaSourceRepositoryImpl implements QaSourceRepository {
     @Override
     public Long save(QaSource entity) {
         QaSourceDO dataObject = QaPersistenceAssembler.toObject(entity);
-        long nextId = idGenerator.nextId().value();
-        dataObject.setId(nextId);
-        if (dataObject.getSourceId() == null) {
-            dataObject.setSourceId(nextId);
-        }
         mapper.insert(dataObject);
         return dataObject.getId();
     }
