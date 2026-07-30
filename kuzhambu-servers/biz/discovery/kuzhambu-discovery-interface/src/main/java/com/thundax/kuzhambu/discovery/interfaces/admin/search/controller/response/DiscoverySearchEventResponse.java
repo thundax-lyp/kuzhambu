@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -52,5 +52,5 @@ public class DiscoverySearchEventResponse implements Serializable {
     @Schema(name = "createdAt", description = "创建时间")
     @JsonProperty(value = "createdAt")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date createdAt;
+    private Instant createdAt;
 }
