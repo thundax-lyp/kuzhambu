@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.system.infra.audit.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,7 +24,7 @@ public class AuditMetaDO {
     private String lastOperatorType;
     private String lastOperatorId;
     private String lastOperatorName;
-    private Date lastOperatedAt;
+    private Instant lastOperatedAt;
     private Long createdLogId;
-    private Date createdAt;
+    private Instant createdAt;
 }

@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccess
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
-import java.util.Date;
+import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -26,11 +26,11 @@ public class PrincipalAccessToken {
     private PrincipalAuthSessionId sessionId;
     private PrincipalKey principalKey;
     private Set<String> scopes = new LinkedHashSet<>();
-    private Date issuedAt;
-    private Date expireAt;
+    private Instant issuedAt;
+    private Instant expireAt;
     private PrincipalTokenStatus status = PrincipalTokenStatus.ACTIVE;
 
-    public boolean canAccess(Date now) {
+    public boolean canAccess(Instant now) {
         return isActive() && !isExpired(now);
     }
 
@@ -54,7 +54,7 @@ public class PrincipalAccessToken {
         return status == PrincipalTokenStatus.ACTIVE;
     }
 
-    public boolean isExpired(Date now) {
-        return expireAt != null && now != null && !expireAt.after(now);
+    public boolean isExpired(Instant now) {
+        return expireAt != null && now != null && !expireAt.isAfter(now);
     }
 }

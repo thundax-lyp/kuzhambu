@@ -27,7 +27,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -49,9 +49,9 @@ class PrincipalPermissionApplicationServiceImplTest {
                 PrincipalKey.of(PrincipalType.USER, 1L),
                 "admin-api",
                 null,
-                new Date(),
-                new Date(),
-                new Date(System.currentTimeMillis() + 60_000L));
+                Instant.now(),
+                Instant.now(),
+                Instant.now().plusSeconds(60));
         PrincipalAccessToken accessToken = new PrincipalAccessToken();
         accessToken.setSessionId(sessionId);
         accessToken.setPrincipalKey(PrincipalKey.of(PrincipalType.USER, 1L));

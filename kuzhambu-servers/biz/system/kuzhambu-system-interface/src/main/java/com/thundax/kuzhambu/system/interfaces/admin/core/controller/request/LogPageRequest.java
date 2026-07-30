@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -46,10 +46,10 @@ public class LogPageRequest extends PageRequest {
     @Schema(name = "beginDate", description = "开始时间，格式: yyyy-MM-dd HH:mm:ss")
     @JsonProperty(value = "beginDate")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date beginDate;
+    private Instant beginDate;
 
     @Schema(name = "endDate", description = "结束时间，格式: yyyy-MM-dd HH:mm:ss")
     @JsonProperty(value = "endDate")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date endDate;
+    private Instant endDate;
 }

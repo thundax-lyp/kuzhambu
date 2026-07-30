@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.system.infra.audit.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,5 +35,5 @@ public class AuditLogDO {
     private String beforeSnapshot;
     private String afterSnapshot;
     private String changedFields;
-    private Date occurredAt;
+    private Instant occurredAt;
 }
