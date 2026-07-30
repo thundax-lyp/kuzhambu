@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialTy
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalCredentialId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,9 +25,9 @@ public class PrincipalCredential {
     private boolean needChangePassword;
     private int failedCount;
     private int failedLimit;
-    private Date lockedUntil;
-    private Date expiresAt;
-    private Date lastVerifiedAt;
+    private Instant lockedUntil;
+    private Instant expiresAt;
+    private Instant lastVerifiedAt;
 
     public boolean isPassword() {
         return credentialType != null && credentialType.isPassword();
@@ -37,35 +37,35 @@ public class PrincipalCredential {
         return PrincipalCredentialStatus.ACTIVE == status;
     }
 
-    public boolean isLocked(Date now) {
+    public boolean isLocked(Instant now) {
         if (PrincipalCredentialStatus.LOCKED == status) {
-            return lockedUntil == null || now == null || lockedUntil.after(now);
+            return lockedUntil == null || now == null || lockedUntil.isAfter(now);
         }
-        return lockedUntil != null && now != null && lockedUntil.after(now);
+        return lockedUntil != null && now != null && lockedUntil.isAfter(now);
     }
 
-    public boolean isExpired(Date now) {
+    public boolean isExpired(Instant now) {
         if (PrincipalCredentialStatus.EXPIRED == status) {
             return true;
         }
-        return expiresAt != null && now != null && !expiresAt.after(now);
+        return expiresAt != null && now != null && !expiresAt.isAfter(now);
     }
 
-    public void markVerified(Date verifiedAt) {
+    public void markVerified(Instant verifiedAt) {
         this.status = PrincipalCredentialStatus.ACTIVE;
         this.failedCount = 0;
         this.lockedUntil = null;
         this.lastVerifiedAt = verifiedAt;
     }
 
-    public void markFailed(Date lockedUntil) {
+    public void markFailed(Instant lockedUntil) {
         this.failedCount += 1;
         if (failedLimit > 0 && failedCount >= failedLimit) {
             lock(lockedUntil);
         }
     }
 
-    public void lock(Date lockedUntil) {
+    public void lock(Instant lockedUntil) {
         this.status = PrincipalCredentialStatus.LOCKED;
         this.lockedUntil = lockedUntil;
     }

@@ -6,7 +6,8 @@ import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -25,12 +26,12 @@ public class PrincipalAuthSession {
     private PrincipalKey principalKey;
     private PrincipalClientId clientId;
     private Map<String, Object> values = new LinkedHashMap<>();
-    private Date issuedAt;
-    private Date lastAccessTime;
-    private Date expireAt;
+    private Instant issuedAt;
+    private Instant lastAccessTime;
+    private Instant expireAt;
 
     public static PrincipalAuthSession create(
-            PrincipalKey principalKey, PrincipalClientId clientId, Date issuedAt, long ttlSeconds) {
+            PrincipalKey principalKey, PrincipalClientId clientId, Instant issuedAt, long ttlSeconds) {
         if (principalKey == null) {
             throw new IllegalArgumentException("principalKey can not be null");
         }
@@ -50,11 +51,11 @@ public class PrincipalAuthSession {
                 new LinkedHashMap<>(),
                 issuedAt,
                 issuedAt,
-                new Date(issuedAt.getTime() + ttlSeconds * 1000L));
+                issuedAt.plusSeconds(ttlSeconds));
     }
 
     public static PrincipalAuthSession create(
-            PrincipalKey principalKey, String clientId, Date issuedAt, long ttlSeconds) {
+            PrincipalKey principalKey, String clientId, Instant issuedAt, long ttlSeconds) {
         return create(principalKey, PrincipalClientIdCodec.toDomain(clientId), issuedAt, ttlSeconds);
     }
 
@@ -63,9 +64,9 @@ public class PrincipalAuthSession {
             PrincipalKey principalKey,
             PrincipalClientId clientId,
             Map<String, Object> values,
-            Date issuedAt,
-            Date lastAccessTime,
-            Date expireAt) {
+            Instant issuedAt,
+            Instant lastAccessTime,
+            Instant expireAt) {
         if (id == null || principalKey == null || clientId == null) {
             throw new IllegalArgumentException("principal auth session state can not be null");
         }
@@ -84,9 +85,9 @@ public class PrincipalAuthSession {
             PrincipalKey principalKey,
             String clientId,
             Map<String, Object> values,
-            Date issuedAt,
-            Date lastAccessTime,
-            Date expireAt) {
+            Instant issuedAt,
+            Instant lastAccessTime,
+            Instant expireAt) {
         return restore(
                 id,
                 principalKey,
@@ -97,15 +98,15 @@ public class PrincipalAuthSession {
                 expireAt);
     }
 
-    public boolean isExpired(Date now) {
-        return expireAt != null && now != null && !expireAt.after(now);
+    public boolean isExpired(Instant now) {
+        return expireAt != null && now != null && !expireAt.isAfter(now);
     }
 
-    public int remainingSeconds(Date now) {
+    public int remainingSeconds(Instant now) {
         if (expireAt == null || now == null) {
             return 0;
         }
-        long remainingMillis = expireAt.getTime() - now.getTime();
+        long remainingMillis = Duration.between(now, expireAt).toMillis();
         if (remainingMillis <= 0L) {
             return 0;
         }

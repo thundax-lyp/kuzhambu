@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClient
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,11 +25,11 @@ public class PrincipalRefreshToken {
     private PrincipalClientId clientId;
     private PrincipalAuthSessionId sessionId;
     private PrincipalKey principalKey;
-    private Date issuedAt;
-    private Date expireAt;
+    private Instant issuedAt;
+    private Instant expireAt;
     private PrincipalTokenStatus status = PrincipalTokenStatus.ACTIVE;
 
-    public boolean canRefresh(Date now) {
+    public boolean canRefresh(Instant now) {
         return isActive() && !isExpired(now);
     }
 
@@ -57,7 +57,7 @@ public class PrincipalRefreshToken {
         return status == PrincipalTokenStatus.ACTIVE;
     }
 
-    public boolean isExpired(Date now) {
-        return expireAt != null && now != null && !expireAt.after(now);
+    public boolean isExpired(Instant now) {
+        return expireAt != null && now != null && !expireAt.isAfter(now);
     }
 }
