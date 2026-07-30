@@ -14,9 +14,9 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageSe
 import jakarta.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -131,7 +131,7 @@ public class SysLogMethodInterceptor implements MethodInterceptor {
         log.setUserId(UserIdCodec.toDomain(KuzhambuContextHolder.currentSubjectId()));
         log.setTitle(StringUtils.join(titleParts, TITLE_SEPARATOR));
 
-        log.setLogDate(new Date());
+        log.setLogDate(Instant.now());
 
         log.setRemoteAddr(RequestIpUtils.getIpAddr(currentRequest));
         log.setUserAgent(currentRequest.getHeader("user-agent"));

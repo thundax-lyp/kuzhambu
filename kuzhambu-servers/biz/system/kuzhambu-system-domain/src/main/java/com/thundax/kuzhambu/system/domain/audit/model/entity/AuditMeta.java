@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditMetaId;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,9 +25,9 @@ public class AuditMeta {
     private AuditAction lastAction;
     private AuditOperatorRef lastOperatorRef;
     private String lastOperatorName;
-    private Date lastOperatedAt;
+    private Instant lastOperatedAt;
     private AuditLogId createdLogId;
-    private Date createdAt;
+    private Instant createdAt;
 
     public String getObjectType() {
         return objectRef == null ? null : objectRef.getObjectType();

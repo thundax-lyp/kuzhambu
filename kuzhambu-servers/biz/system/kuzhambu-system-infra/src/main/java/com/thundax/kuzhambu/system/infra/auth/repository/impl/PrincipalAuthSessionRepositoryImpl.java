@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAuthSessionRepository;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -53,12 +54,12 @@ public class PrincipalAuthSessionRepositoryImpl implements PrincipalAuthSessionR
     }
 
     @Override
-    public void touch(PrincipalAuthSessionId id, Date accessTime, int expireSeconds) {
+    public void touch(PrincipalAuthSessionId id, Instant accessTime, int expireSeconds) {
         PrincipalAuthSessionCacheDTO cacheDTO = cache.get(sessionKey(id));
         if (cacheDTO == null || expireSeconds <= 0) {
             return;
         }
-        cacheDTO.lastAccessTime = accessTime;
+        cacheDTO.lastAccessTime = toDate(accessTime);
         cache.put(sessionKey(id), cacheDTO, expireSeconds, TimeUnit.SECONDS);
     }
 
@@ -80,9 +81,9 @@ public class PrincipalAuthSessionRepositoryImpl implements PrincipalAuthSessionR
                 PrincipalKey.of(PrincipalType.from(cacheDTO.principalType), cacheDTO.principalId),
                 PrincipalClientIdCodec.toDomain(cacheDTO.clientId),
                 toEntityValues(cacheDTO.values),
-                cacheDTO.issuedAt,
-                cacheDTO.lastAccessTime,
-                cacheDTO.expireAt);
+                toInstant(cacheDTO.issuedAt),
+                toInstant(cacheDTO.lastAccessTime),
+                toInstant(cacheDTO.expireAt));
     }
 
     private static PrincipalAuthSessionCacheDTO toCacheDTO(PrincipalAuthSession session) {
@@ -92,9 +93,9 @@ public class PrincipalAuthSessionRepositoryImpl implements PrincipalAuthSessionR
         cacheDTO.principalId = session.getPrincipalKey().getPrincipalId();
         cacheDTO.clientId = PrincipalClientIdCodec.toValue(session.getClientId());
         cacheDTO.values = toCacheValues(session.getValues());
-        cacheDTO.issuedAt = session.getIssuedAt();
-        cacheDTO.lastAccessTime = session.getLastAccessTime();
-        cacheDTO.expireAt = session.getExpireAt();
+        cacheDTO.issuedAt = toDate(session.getIssuedAt());
+        cacheDTO.lastAccessTime = toDate(session.getLastAccessTime());
+        cacheDTO.expireAt = toDate(session.getExpireAt());
         return cacheDTO;
     }
 
@@ -164,5 +165,13 @@ public class PrincipalAuthSessionRepositoryImpl implements PrincipalAuthSessionR
         private Date issuedAt;
         private Date lastAccessTime;
         private Date expireAt;
+    }
+
+    private static Instant toInstant(Date value) {
+        return value == null ? null : value.toInstant();
+    }
+
+    private static Date toDate(Instant value) {
+        return value == null ? null : Date.from(value);
     }
 }

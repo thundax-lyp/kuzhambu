@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialSt
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +23,7 @@ public class CreatePrincipalCredentialCommand {
     private boolean needChangePassword;
     private int failedCount;
     private int failedLimit;
-    private Date lockedUntil;
-    private Date expiresAt;
-    private Date lastVerifiedAt;
+    private Instant lockedUntil;
+    private Instant expiresAt;
+    private Instant lastVerifiedAt;
 }

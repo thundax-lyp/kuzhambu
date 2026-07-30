@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,15 +22,16 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class SysLogMessageServiceImplTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @TempDir
     private Path tempDir;
@@ -40,7 +42,7 @@ class SysLogMessageServiceImplTest {
         CapturingSystemLogApplicationService logService = new CapturingSystemLogApplicationService();
         SysLogMessageServiceImpl service =
                 new SysLogMessageServiceImpl(mqSender, properties(), logService, OBJECT_MAPPER);
-        Date logDate = new Date(1778513052000L);
+        Instant logDate = Instant.ofEpochMilli(1778513052000L);
         Log log = new Log();
         log.setUserId(UserIdCodec.toDomain(1L));
         log.setType(LogType.ACCESS);
@@ -70,6 +72,21 @@ class SysLogMessageServiceImplTest {
         assertEquals(logDate, logService.command.getLogDate());
         assertEquals("系统-登录-成功", logService.command.getTitle());
         assertEquals("/api/auth/session/login", logService.command.getRequestUri());
+    }
+
+    @Test
+    void shouldPartitionLogFilesByExplicitGmt8Date() {
+        CapturingMqSender mqSender = new CapturingMqSender();
+        SysLogMessageServiceImpl service = new SysLogMessageServiceImpl(
+                mqSender, properties(), new CapturingSystemLogApplicationService(), OBJECT_MAPPER);
+        Log log = new Log();
+        log.setType(LogType.ACCESS);
+        log.setLogDate(Instant.parse("2026-06-17T16:30:00Z"));
+
+        service.saveLog(log);
+        service.consumeLog(String.valueOf(mqSender.message.getPayload()));
+
+        assertTrue(Files.exists(tempDir.resolve("2026-06-18.log")));
     }
 
     private KuzhambuProperties properties() {

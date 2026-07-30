@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface AuditLogRepository {
@@ -25,8 +25,8 @@ public interface AuditLogRepository {
             AuditOperatorRef operatorRef,
             String source,
             String requestId,
-            Date beginDate,
-            Date endDate,
+            Instant beginDate,
+            Instant endDate,
             int pageNo,
             int pageSize);
 }

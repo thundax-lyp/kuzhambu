@@ -18,15 +18,15 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.Log
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.LogResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.LogUserResponse;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 class SystemLogContractTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void logRoutesShouldKeepAdminApiPaths() throws Exception {
@@ -48,6 +48,12 @@ class SystemLogContractTest {
 
     @Test
     void logPageRequestsShouldKeepJsonFieldNames() throws Exception {
+        AuditLogPageRequest parsedAuditRequest = OBJECT_MAPPER.readValue(
+                "{\"beginDate\":\"2026-06-18 00:00:00\",\"endDate\":\"2026-06-18 23:59:59\"}",
+                AuditLogPageRequest.class);
+        assertEquals(Instant.parse("2026-06-17T16:00:00Z"), parsedAuditRequest.getBeginDate());
+        assertEquals(Instant.parse("2026-06-18T15:59:59Z"), parsedAuditRequest.getEndDate());
+
         AuditLogPageRequest auditLogPageRequest = new AuditLogPageRequest();
         auditLogPageRequest.setPageNo(1);
         auditLogPageRequest.setPageSize(20);
@@ -58,8 +64,8 @@ class SystemLogContractTest {
         auditLogPageRequest.setOperatorId("operator-1");
         auditLogPageRequest.setSource("ADMIN_WEB");
         auditLogPageRequest.setRequestId("request-1");
-        auditLogPageRequest.setBeginDate(new Date(1778513052000L));
-        auditLogPageRequest.setEndDate(new Date(1778514052000L));
+        auditLogPageRequest.setBeginDate(Instant.ofEpochMilli(1778513052000L));
+        auditLogPageRequest.setEndDate(Instant.ofEpochMilli(1778514052000L));
         assertJsonFields(
                 auditLogPageRequest,
                 "pageNo",
@@ -87,8 +93,8 @@ class SystemLogContractTest {
         logPageRequest.setUserName("Developer");
         logPageRequest.setRemoteAddr("127.0.0.1");
         logPageRequest.setRequestUri("/api/auth/session/login");
-        logPageRequest.setBeginDate(new Date(1778513052000L));
-        logPageRequest.setEndDate(new Date(1778514052000L));
+        logPageRequest.setBeginDate(Instant.ofEpochMilli(1778513052000L));
+        logPageRequest.setEndDate(Instant.ofEpochMilli(1778514052000L));
         assertJsonFields(
                 logPageRequest,
                 "pageNo",
@@ -123,7 +129,7 @@ class SystemLogContractTest {
                         .traceId("trace-1")
                         .remoteAddr("127.0.0.1")
                         .summary("新增用户")
-                        .occurredAt(new Date(1778513052000L))
+                        .occurredAt(Instant.ofEpochMilli(1778513052000L))
                         .changedFields(new ArrayList<>())
                         .build(),
                 "id",
@@ -165,7 +171,7 @@ class SystemLogContractTest {
                         .traceId("trace-1")
                         .remoteAddr("127.0.0.1")
                         .summary("更新用户")
-                        .occurredAt(new Date(1778513052000L))
+                        .occurredAt(Instant.ofEpochMilli(1778513052000L))
                         .changedFields(new ArrayList<>())
                         .idempotencyKey("idempotency-1")
                         .previousVersion(1L)
@@ -207,7 +213,7 @@ class SystemLogContractTest {
                 LogResponse.builder()
                         .id("log-1")
                         .remarks("系统日志")
-                        .createDate(new Date(1778513052000L))
+                        .createDate(Instant.ofEpochMilli(1778513052000L))
                         .type("ACCESS")
                         .title("系统-登录-成功")
                         .remoteAddr("127.0.0.1")

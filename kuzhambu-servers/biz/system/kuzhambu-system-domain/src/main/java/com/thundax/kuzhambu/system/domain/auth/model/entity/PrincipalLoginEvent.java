@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalLoginEventTy
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalLoginEventId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,7 +40,7 @@ public class PrincipalLoginEvent {
     private PrincipalLoginEventType eventType;
     private PrincipalAuthenticationMethod authenticationMethod;
     private PrincipalIdentityType identityType;
-    private Date occurredAt;
+    private Instant occurredAt;
     private String ip;
     private String userAgent;
     private String reason;

@@ -12,8 +12,8 @@ import com.thundax.kuzhambu.system.domain.core.repository.LogRepository;
 import com.thundax.kuzhambu.system.infra.core.persistence.assembler.LogPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.core.persistence.dataobject.LogDO;
 import com.thundax.kuzhambu.system.infra.core.persistence.mapper.LogMapper;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
@@ -46,8 +46,8 @@ public class LogRepositoryImpl implements LogRepository {
             String userName,
             String title,
             String requestUri,
-            Date beginDate,
-            Date endDate) {
+            Instant beginDate,
+            Instant endDate) {
         return LogPersistenceAssembler.toDomainList(mapper.selectList(
                 buildListWrapper(type, remoteAddr, userLoginName, userName, title, requestUri, beginDate, endDate)));
     }
@@ -60,8 +60,8 @@ public class LogRepositoryImpl implements LogRepository {
             String userName,
             String title,
             String requestUri,
-            Date beginDate,
-            Date endDate,
+            Instant beginDate,
+            Instant endDate,
             int pageNo,
             int pageSize) {
         Page<LogDO> page = new Page<>(pageNo, pageSize);
@@ -106,7 +106,7 @@ public class LogRepositoryImpl implements LogRepository {
 
     @Override
     public int batchDelete(
-            String type, String remoteAddr, String title, String requestUri, Date beginDate, Date endDate) {
+            String type, String remoteAddr, String title, String requestUri, Instant beginDate, Instant endDate) {
         return mapper.delete(buildBatchDeleteWrapper(type, remoteAddr, title, requestUri, beginDate, endDate));
     }
 
@@ -117,8 +117,8 @@ public class LogRepositoryImpl implements LogRepository {
             String userName,
             String title,
             String requestUri,
-            Date beginDate,
-            Date endDate) {
+            Instant beginDate,
+            Instant endDate) {
         QueryWrapper<LogDO> wrapper = buildBatchDeleteWrapper(type, remoteAddr, title, requestUri, beginDate, endDate);
         if (StringUtils.isNotBlank(userLoginName)) {
             wrapper.apply(
@@ -135,7 +135,7 @@ public class LogRepositoryImpl implements LogRepository {
     }
 
     private QueryWrapper<LogDO> buildBatchDeleteWrapper(
-            String type, String remoteAddr, String title, String requestUri, Date beginDate, Date endDate) {
+            String type, String remoteAddr, String title, String requestUri, Instant beginDate, Instant endDate) {
         QueryWrapper<LogDO> wrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(type)) {
             wrapper.eq("type", type);

@@ -24,6 +24,8 @@ import io.lettuce.core.SetArgs;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import jakarta.annotation.PreDestroy;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -138,7 +140,7 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
     }
 
     @Override
-    public int markUsedIfActive(PrincipalRefreshToken refreshToken, Date now) {
+    public int markUsedIfActive(PrincipalRefreshToken refreshToken, Instant now) {
         Assert.notNull(refreshToken, "refreshToken can not be null");
         String tokenHash = tokenHashById(refreshToken.getId());
         if (StringUtils.isBlank(tokenHash)) {
@@ -174,7 +176,7 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
                 tokenHash,
                 seconds,
                 TimeUnit.SECONDS);
-        redis().zadd(principalIndexKey(refreshToken), refreshToken.getExpireAt().getTime(), tokenHash);
+        redis().zadd(principalIndexKey(refreshToken), refreshToken.getExpireAt().toEpochMilli(), tokenHash);
     }
 
     private String tokenHashById(PrincipalRefreshTokenId id) {
@@ -185,11 +187,11 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
     }
 
     private long remainingSeconds(PrincipalRefreshToken refreshToken) {
-        Date expireAt = refreshToken.getExpireAt();
+        Instant expireAt = refreshToken.getExpireAt();
         if (expireAt == null) {
             return 1L;
         }
-        long remainingMillis = expireAt.getTime() - System.currentTimeMillis();
+        long remainingMillis = Duration.between(Instant.now(), expireAt).toMillis();
         return remainingMillis <= 0 ? 1L : (remainingMillis + 999L) / 1000L;
     }
 
@@ -243,8 +245,8 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
         refreshToken.setClientId(PrincipalClientIdCodec.toDomain(cacheDTO.clientId));
         refreshToken.setSessionId(PrincipalAuthSessionIdCodec.toDomain(cacheDTO.sessionId));
         refreshToken.setPrincipalKey(PrincipalKey.of(PrincipalType.from(cacheDTO.principalType), cacheDTO.principalId));
-        refreshToken.setIssuedAt(cacheDTO.issuedAt);
-        refreshToken.setExpireAt(cacheDTO.expireAt);
+        refreshToken.setIssuedAt(toInstant(cacheDTO.issuedAt));
+        refreshToken.setExpireAt(toInstant(cacheDTO.expireAt));
         refreshToken.setStatus(PrincipalTokenStatus.from(cacheDTO.status));
         return refreshToken;
     }
@@ -259,8 +261,8 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
         cacheDTO.principalType =
                 refreshToken.getPrincipalKey().getPrincipalType().value();
         cacheDTO.principalId = refreshToken.getPrincipalKey().getPrincipalId();
-        cacheDTO.issuedAt = refreshToken.getIssuedAt();
-        cacheDTO.expireAt = refreshToken.getExpireAt();
+        cacheDTO.issuedAt = toDate(refreshToken.getIssuedAt());
+        cacheDTO.expireAt = toDate(refreshToken.getExpireAt());
         cacheDTO.status = refreshToken.getStatus().value();
         return cacheDTO;
     }
@@ -276,5 +278,13 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
         private Date issuedAt;
         private Date expireAt;
         private String status;
+    }
+
+    private static Instant toInstant(Date value) {
+        return value == null ? null : value.toInstant();
+    }
+
+    private static Date toDate(Instant value) {
+        return value == null ? null : Date.from(value);
     }
 }
