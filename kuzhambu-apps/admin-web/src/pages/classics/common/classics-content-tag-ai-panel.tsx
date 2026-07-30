@@ -547,16 +547,17 @@ export const ClassicsContentTagAiPanel = ({
                         isCandidateMutationPending;
 
                     return (
-                        <KuzhambuSpace orientation="vertical" size={12}>
+                        <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                             <div
                                 style={{
                                     display: "grid",
                                     gap: 12,
                                     gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-                                    minWidth: 0
+                                    minWidth: 0,
+                                    width: "100%"
                                 }}
                             >
-                                <KuzhambuCard size="small" title="当前标签">
+                                <KuzhambuCard size="small" title="当前标签" style={{ minWidth: 0 }}>
                                     {currentTagNames.length ? (
                                         <KuzhambuSpace wrap>
                                             {currentTagNames.map((tagName) => (
@@ -572,7 +573,7 @@ export const ClassicsContentTagAiPanel = ({
                                         />
                                     )}
                                 </KuzhambuCard>
-                                <KuzhambuCard size="small" title="AI标签">
+                                <KuzhambuCard size="small" title="AI标签" style={{ minWidth: 0 }}>
                                     {result ? (
                                         <KuzhambuSpace wrap>
                                             {candidateTags.map((tagName) => (
@@ -593,7 +594,7 @@ export const ClassicsContentTagAiPanel = ({
                                     )}
                                 </KuzhambuCard>
                             </div>
-                            <KuzhambuCard size="small" title="标签差异">
+                            <KuzhambuCard size="small" title="标签差异" style={{ width: "100%" }}>
                                 {result ? (
                                     addedTagNames.length ||
                                     removedTagNames.length ||
