@@ -1281,9 +1281,15 @@ describe("SancaiEntryPanel batch operations", () => {
         await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         await openTagSection(user);
-        expect(await screen.findByText("当前条目标签")).toBeInTheDocument();
+        expect((await screen.findAllByText("标签")).length).toBeGreaterThan(0);
         expect(await screen.findByLabelText("标签列表")).toBeInTheDocument();
         expect(await screen.findByText("AI 生成")).toBeInTheDocument();
+        expect(screen.queryByLabelText("添加标签")).not.toBeInTheDocument();
+        await user.click(
+            await screen.findByTestId("classics-common-classics-content-tag-open-add-button")
+        );
+        expect(await screen.findByTestId("classics-content-tag-add-modal")).toBeInTheDocument();
+        expect(await screen.findByLabelText("添加标签")).toBeInTheDocument();
         await openQaSection(user);
         expect(await screen.findByText("三才图会问答对治理")).toBeInTheDocument();
         expect(screen.queryByLabelText("三才图会内容上下文")).not.toBeInTheDocument();

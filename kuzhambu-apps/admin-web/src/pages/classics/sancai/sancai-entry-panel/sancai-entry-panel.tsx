@@ -675,7 +675,7 @@ export const SancaiEntryPanel = ({
                             <ClassicsContentTagPanel
                                 contentId={selectedEntry.id}
                                 contentType="SANCAI_ENTRY"
-                                panelTitle="当前条目标签"
+                                panelTitle="标签"
                                 toolbarExtra={
                                     <ClassicsContentTagAiPanel
                                         contentId={selectedEntry.id}

@@ -7,6 +7,7 @@ import {
     KuzhambuCard,
     KuzhambuForm,
     KuzhambuFormItem,
+    KuzhambuModal,
     KuzhambuSelect,
     KuzhambuSpace,
     KuzhambuTag
@@ -85,6 +86,7 @@ export const ClassicsContentTagPanel = ({
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const [form] = Form.useForm<TagEditorValues>();
+    const [addModalOpen, setAddModalOpen] = useState(false);
     const [tagSearchText, setTagSearchText] = useState("");
 
     const queryKey = ["classics", "content", "tags", contentType, contentId] as const;
@@ -192,6 +194,7 @@ export const ClassicsContentTagPanel = ({
         );
         form.resetFields();
         setTagSearchText("");
+        setAddModalOpen(false);
         messageApi.success(`已添加 ${tagNames.length} 个标签`);
     };
 
@@ -207,40 +210,24 @@ export const ClassicsContentTagPanel = ({
     }
 
     const cardTitle = showHeader ? panelTitle || "内容标签" : undefined;
+    const actionButtons = (
+        <KuzhambuSpace wrap size={8}>
+            {toolbarExtra}
+            <KuzhambuButton
+                testId="classics-common-classics-content-tag-open-add-button"
+                icon={<PlusOutlined />}
+                type="primary"
+                onClick={() => setAddModalOpen(true)}
+            >
+                添加
+            </KuzhambuButton>
+        </KuzhambuSpace>
+    );
 
     return (
-        <KuzhambuCard size="small" title={cardTitle}>
+        <KuzhambuCard size="small" title={cardTitle} extra={showHeader ? actionButtons : null}>
             <KuzhambuSpace orientation="vertical" size={16}>
-                <KuzhambuForm form={form} labelWrap>
-                    <KuzhambuSpace wrap align="start">
-                        <KuzhambuFormItem
-                            label="添加标签"
-                            name="tagNames"
-                            layoutSize="large"
-                            extra="输入已有标签名会绑定已有标签；输入新标签名会创建并绑定到当前内容。"
-                        >
-                            <KuzhambuSelect<string[]>
-                                aria-label="添加标签"
-                                mode="tags"
-                                options={tagOptions}
-                                placeholder="输入标签后回车"
-                                style={{ minWidth: 280 }}
-                                tokenSeparators={[",", "，", "\n"]}
-                                onSearch={setTagSearchText}
-                            />
-                        </KuzhambuFormItem>
-                        <KuzhambuButton
-                            testId="classics-common-classics-content-tag-action-button"
-                            icon={<PlusOutlined />}
-                            loading={addMutation.isPending}
-                            type="primary"
-                            onClick={submitTags}
-                        >
-                            添加
-                        </KuzhambuButton>
-                        {toolbarExtra}
-                    </KuzhambuSpace>
-                </KuzhambuForm>
+                {!showHeader ? actionButtons : null}
 
                 {tagsQuery.isLoading ? (
                     <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="加载中" />
@@ -270,6 +257,39 @@ export const ClassicsContentTagPanel = ({
                     <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
                 )}
             </KuzhambuSpace>
+            <KuzhambuModal
+                testId="classics-content-tag-add-modal"
+                destroyOnHidden
+                open={addModalOpen}
+                title="添加标签"
+                okText="添加"
+                confirmLoading={addMutation.isPending}
+                onCancel={() => {
+                    setAddModalOpen(false);
+                    form.resetFields();
+                    setTagSearchText("");
+                }}
+                onOk={submitTags}
+            >
+                <KuzhambuForm form={form} labelWrap>
+                    <KuzhambuFormItem
+                        label="标签"
+                        name="tagNames"
+                        layoutSize="large"
+                        extra="输入已有标签名会绑定已有标签；输入新标签名会创建并绑定到当前内容。"
+                    >
+                        <KuzhambuSelect<string[]>
+                            aria-label="添加标签"
+                            mode="tags"
+                            options={tagOptions}
+                            placeholder="输入标签后回车，或从列表选择"
+                            style={{ width: "100%" }}
+                            tokenSeparators={[",", "，", "\n"]}
+                            onSearch={setTagSearchText}
+                        />
+                    </KuzhambuFormItem>
+                </KuzhambuForm>
+            </KuzhambuModal>
         </KuzhambuCard>
     );
 };
