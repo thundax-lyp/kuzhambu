@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `03 qa-message`：清理 QA 消息自身 `messageId`
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaMessage.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaMessageRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/dataobject/QaMessageDO.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaMessageRepositoryImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/assembler/QaPersistenceAssembler.java`
-    - 处理动作：删除 QA 消息本体 `messageId` 字段并保留 `sessionId` 作为会话引用。
-    - 验收点：`QaMessage` 和 `QaMessageDO` 不再声明 `messageId`，`getByMessageId` 改为 `getById`，`listBySessionId` 仍按引用会话查询。
-    - 重要度：10/10
-
 - [ ] `04 qa-source-trace-domain`：清理 QA 来源和检索追踪领域身份字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`

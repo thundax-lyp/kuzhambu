@@ -5,7 +5,11 @@ import java.util.List;
 
 public interface QaMessageRepository {
 
-    QaMessage getByMessageId(Long messageId);
+    QaMessage getById(Long id);
+
+    default QaMessage getByMessageId(Long messageId) {
+        return getById(messageId);
+    }
 
     List<QaMessage> listBySessionId(Long sessionId);
 

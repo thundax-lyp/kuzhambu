@@ -101,7 +101,6 @@ public final class QaPersistenceAssembler {
         }
         QaMessageDO dataObject = new QaMessageDO();
         dataObject.setId(entity.getId());
-        dataObject.setMessageId(entity.getMessageId());
         dataObject.setSessionId(entity.getSessionId());
         dataObject.setRole(entity.getRole());
         dataObject.setContent(entity.getContent());
@@ -122,7 +121,6 @@ public final class QaPersistenceAssembler {
         }
         QaMessage entity = new QaMessage();
         entity.setId(dataObject.getId());
-        entity.setMessageId(dataObject.getMessageId());
         entity.setSessionId(dataObject.getSessionId());
         entity.setRole(dataObject.getRole());
         entity.setContent(dataObject.getContent());
