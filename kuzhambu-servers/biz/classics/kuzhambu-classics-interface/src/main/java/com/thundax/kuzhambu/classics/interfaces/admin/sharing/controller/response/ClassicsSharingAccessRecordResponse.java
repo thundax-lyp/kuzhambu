@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -24,7 +24,7 @@ public class ClassicsSharingAccessRecordResponse implements Serializable {
     private Long shareTargetId;
 
     @JsonProperty("accessedAt")
-    private Date accessedAt;
+    private Instant accessedAt;
 
     @JsonProperty("accessResult")
     private String accessResult;
