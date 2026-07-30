@@ -374,7 +374,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         ClassicsContentVersion version = versioningService.newVersion(
                 content,
                 versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
-                new Date(),
+                Instant.now(),
                 snapshotJson(content),
                 changeType,
                 changeSummary);
@@ -1505,7 +1505,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         ClassicsContentVersion version = versioningService.newVersion(
                 content,
                 versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
-                new Date(),
+                Instant.now(),
                 snapshotJson(content),
                 ClassicsContentChangeType.HISTORY_RESTORED,
                 "恢复历史版本 v" + restoredFrom.getVersionNo());
