@@ -58,7 +58,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 class ClassicsContentAdminControllerTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void routesShouldKeepExportAdminApiPathsAndPermissions() throws Exception {
