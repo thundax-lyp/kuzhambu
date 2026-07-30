@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRe
 import com.thundax.kuzhambu.operations.infra.task.persistence.assembler.LongTaskSnapshotPersistenceAssembler;
 import com.thundax.kuzhambu.operations.infra.task.persistence.dataobject.LongTaskSnapshotDO;
 import com.thundax.kuzhambu.operations.infra.task.persistence.mapper.LongTaskSnapshotMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
@@ -82,7 +82,7 @@ public class LongTaskSnapshotRepositoryImpl implements LongTaskSnapshotRepositor
     }
 
     @Override
-    public List<LongTaskSnapshotId> listExpiredSnapshotIds(Date snapshotBefore, int limit) {
+    public List<LongTaskSnapshotId> listExpiredSnapshotIds(Instant snapshotBefore, int limit) {
         return mapper
                 .selectObjs(new QueryWrapper<LongTaskSnapshotDO>()
                         .select("snapshot_id")
