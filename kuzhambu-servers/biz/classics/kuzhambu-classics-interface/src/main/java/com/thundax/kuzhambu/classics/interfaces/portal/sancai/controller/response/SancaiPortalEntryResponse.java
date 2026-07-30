@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -53,7 +53,7 @@ public class SancaiPortalEntryResponse implements Serializable {
     private String refinementStatus;
 
     @JsonProperty("contentUpdatedAt")
-    private Date contentUpdatedAt;
+    private Instant contentUpdatedAt;
 
     @JsonProperty("tags")
     private List<TagResponse> tags;

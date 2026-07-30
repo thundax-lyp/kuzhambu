@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,5 +30,5 @@ public class QaSourceDO {
     private Integer sourceRank;
     private BigDecimal score;
     private String sourceStatus;
-    private Date referencedAt;
+    private Instant referencedAt;
 }

@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.discovery.application.qa.support;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public record KnowledgeDocument(Metadata metadata, Knowledge knowledge) {
@@ -15,7 +15,7 @@ public record KnowledgeDocument(Metadata metadata, Knowledge knowledge) {
             String visibility,
             String status,
             String sourcePath,
-            Date updatedAt) {}
+            Instant updatedAt) {}
 
     public record Knowledge(
             String title,

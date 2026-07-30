@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.discovery.domain.search.codec.SearchClickEventIdCode
 import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchClickEventId;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,7 +29,7 @@ public class SearchClickEvent {
     private String operatorId;
     private String requestId;
     private String traceId;
-    private Date createdAt;
+    private Instant createdAt;
 
     public SearchClickEvent(
             Long id,
@@ -47,7 +47,7 @@ public class SearchClickEvent {
             String operatorId,
             String requestId,
             String traceId,
-            Date createdAt) {
+            Instant createdAt) {
         this.id = id == null
                 ? SearchClickEventIdCodec.toDomain(searchClickEventId)
                 : SearchClickEventIdCodec.toDomain(id);

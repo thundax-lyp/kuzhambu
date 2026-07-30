@@ -11,7 +11,7 @@ import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventReposi
 import com.thundax.kuzhambu.discovery.infra.search.persistence.assembler.SearchEventPersistenceAssembler;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject.SearchEventDO;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.mapper.SearchEventMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
@@ -38,7 +38,7 @@ public class SearchEventRepositoryImpl implements SearchEventRepository {
     }
 
     @Override
-    public List<SearchEvent> listByCreatedAtRange(Date createdAtStart, Date createdAtEnd) {
+    public List<SearchEvent> listByCreatedAtRange(Instant createdAtStart, Instant createdAtEnd) {
         return SearchEventPersistenceAssembler.toDomainList(
                 mapper.selectByCreatedAtRange(createdAtStart, createdAtEnd));
     }

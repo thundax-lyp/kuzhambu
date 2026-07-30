@@ -28,7 +28,7 @@ import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.Di
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.lang.reflect.Method;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -553,7 +553,7 @@ class DiscoveryQaPortalControllerTest {
         result.setOpenedAt(1_718_000_000_000L);
         result.setLastMessageAt(1_718_000_001_000L);
         result.setMessages(List.of(new QaMessageResult(
-                7001L, 5001L, "user", "黄帝是谁", "SENT", 0, null, new Date(1_718_000_001_000L), null)));
+                7001L, 5001L, "user", "黄帝是谁", "SENT", 0, null, Instant.ofEpochMilli(1_718_000_001_000L), null)));
         return result;
     }
 

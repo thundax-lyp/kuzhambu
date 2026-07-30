@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.classics.domain.content.service;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
-import java.util.Date;
+import java.time.Instant;
 
 public class ClassicsContentVersioningService {
 
@@ -14,8 +14,8 @@ public class ClassicsContentVersioningService {
         if (content.currentVersionId() == null || content.currentVersionedAt() == null) {
             return true;
         }
-        Date contentUpdatedAt = content.contentUpdatedAt();
-        return contentUpdatedAt != null && contentUpdatedAt.after(content.currentVersionedAt());
+        Instant contentUpdatedAt = content.contentUpdatedAt();
+        return contentUpdatedAt != null && contentUpdatedAt.isAfter(content.currentVersionedAt());
     }
 
     public int nextVersionNo(int latestVersionNo) {
@@ -25,7 +25,7 @@ public class ClassicsContentVersioningService {
     public ClassicsContentVersion newVersion(
             Versionable content,
             int versionNo,
-            Date versionedAt,
+            Instant versionedAt,
             String snapshotJson,
             ClassicsContentChangeType changeType,
             String changeSummary) {

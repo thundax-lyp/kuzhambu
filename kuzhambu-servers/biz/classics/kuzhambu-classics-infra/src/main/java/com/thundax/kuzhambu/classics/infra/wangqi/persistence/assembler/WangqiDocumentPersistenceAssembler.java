@@ -7,8 +7,8 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.dataobject.WangqiDocumentDO;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public final class WangqiDocumentPersistenceAssembler {
@@ -66,7 +66,7 @@ public final class WangqiDocumentPersistenceAssembler {
         return entities;
     }
 
-    private static Date contentUpdatedAt(Date contentUpdatedAt) {
-        return contentUpdatedAt == null ? new Date() : contentUpdatedAt;
+    private static Instant contentUpdatedAt(Instant contentUpdatedAt) {
+        return contentUpdatedAt == null ? Instant.now() : contentUpdatedAt;
     }
 }

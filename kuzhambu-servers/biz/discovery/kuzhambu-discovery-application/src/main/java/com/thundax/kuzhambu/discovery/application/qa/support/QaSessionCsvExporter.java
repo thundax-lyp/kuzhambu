@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
@@ -227,8 +227,8 @@ public class QaSessionCsvExporter {
         return "\"" + String.valueOf(value).replace("\"", "\"\"") + "\"";
     }
 
-    private Long millis(Date value) {
-        return value == null ? null : value.getTime();
+    private Long millis(Instant value) {
+        return value == null ? null : value.toEpochMilli();
     }
 
     private List<QaMessage> safeMessages(List<QaMessage> messages) {

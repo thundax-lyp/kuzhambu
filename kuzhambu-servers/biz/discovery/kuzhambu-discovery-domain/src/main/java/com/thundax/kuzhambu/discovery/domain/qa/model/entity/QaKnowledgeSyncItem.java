@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.KnowledgeContentRef;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.KnowledgeSourceId;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaKnowledgeSyncStatus;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,9 +26,9 @@ public class QaKnowledgeSyncItem {
     private String externalKnowledgeItemId;
     private QaKnowledgeSyncStatus syncStatus;
     private String failureReason;
-    private Date syncedAt;
-    private Date createdAt;
-    private Date updatedAt;
+    private Instant syncedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
 
     public QaKnowledgeSyncItem(
             Long id,
@@ -43,9 +43,9 @@ public class QaKnowledgeSyncItem {
             String externalKnowledgeItemId,
             String syncStatus,
             String failureReason,
-            Date syncedAt,
-            Date createdAt,
-            Date updatedAt) {
+            Instant syncedAt,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = id;
         this.sourceId = QaStringValueCodec.toKnowledgeSourceId(sourceId);
         this.content = QaStringValueCodec.toKnowledgeContentRef(contentType, contentId);

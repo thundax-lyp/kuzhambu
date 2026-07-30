@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.discovery.application.qa.result;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,8 +18,8 @@ public class QaMessageResult {
     private String messageStatus;
     private Integer contextTurnCount;
     private String failureReason;
-    private Date sentAt;
-    private Date answeredAt;
+    private Instant sentAt;
+    private Instant answeredAt;
 
     public Long getMessageId() {
         return id;

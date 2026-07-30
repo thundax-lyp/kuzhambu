@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response.ClassicsContentResponse;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -58,10 +58,10 @@ public class SancaiEntryResponse implements Serializable {
     private Integer currentVersionNo;
 
     @JsonProperty("currentVersionedAt")
-    private Date currentVersionedAt;
+    private Instant currentVersionedAt;
 
     @JsonProperty("contentUpdatedAt")
-    private Date contentUpdatedAt;
+    private Instant contentUpdatedAt;
 
     @JsonProperty("versionDirty")
     private Boolean versionDirty;

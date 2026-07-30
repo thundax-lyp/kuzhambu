@@ -15,7 +15,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisual
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.common.core.sort.Sortable;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,8 +41,8 @@ public class SancaiEntry implements Sortable, Versionable {
     private int priority;
     private ClassicsContentVersionId currentVersionId;
     private Integer currentVersionNo;
-    private Date currentVersionedAt;
-    private Date contentUpdatedAt;
+    private Instant currentVersionedAt;
+    private Instant contentUpdatedAt;
 
     public SancaiEntry(
             SancaiEntryId id,
@@ -94,12 +94,12 @@ public class SancaiEntry implements Sortable, Versionable {
     }
 
     @Override
-    public Date currentVersionedAt() {
+    public Instant currentVersionedAt() {
         return currentVersionedAt;
     }
 
     @Override
-    public Date contentUpdatedAt() {
+    public Instant contentUpdatedAt() {
         return contentUpdatedAt;
     }
 

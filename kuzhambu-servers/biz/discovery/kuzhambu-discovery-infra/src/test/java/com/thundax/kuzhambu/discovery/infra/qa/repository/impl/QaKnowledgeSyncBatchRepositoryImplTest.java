@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncBatch;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaKnowledgeSyncBatchDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaKnowledgeSyncBatchMapper;
-import java.util.Date;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class QaKnowledgeSyncBatchRepositoryImplTest {
@@ -19,8 +19,8 @@ class QaKnowledgeSyncBatchRepositoryImplTest {
     void saveShouldAssignIdentifierWhenIdIsMissing() {
         QaKnowledgeSyncBatchMapper mapper = mock(QaKnowledgeSyncBatchMapper.class);
         QaKnowledgeSyncBatchRepositoryImpl repository = new QaKnowledgeSyncBatchRepositoryImpl(mapper);
-        QaKnowledgeSyncBatch entity =
-                new QaKnowledgeSyncBatch(null, 9001L, "FULL_REBUILD", "fastgpt", 10, 8, 2, new Date(), new Date());
+        QaKnowledgeSyncBatch entity = new QaKnowledgeSyncBatch(
+                null, 9001L, "FULL_REBUILD", "fastgpt", 10, 8, 2, Instant.now(), Instant.now());
         doAnswer(invocation -> {
                     invocation.getArgument(0, QaKnowledgeSyncBatchDO.class).setId(9001L);
                     return 1;
@@ -39,7 +39,7 @@ class QaKnowledgeSyncBatchRepositoryImplTest {
         QaKnowledgeSyncBatchMapper mapper = mock(QaKnowledgeSyncBatchMapper.class);
         QaKnowledgeSyncBatchRepositoryImpl repository = new QaKnowledgeSyncBatchRepositoryImpl(mapper);
         QaKnowledgeSyncBatchDO dataObject =
-                new QaKnowledgeSyncBatchDO(9001L, "FULL_REBUILD", "fastgpt", 10, 8, 2, new Date(), new Date());
+                new QaKnowledgeSyncBatchDO(9001L, "FULL_REBUILD", "fastgpt", 10, 8, 2, Instant.now(), Instant.now());
         when(mapper.selectById(9001L)).thenReturn(dataObject);
 
         QaKnowledgeSyncBatch result = repository.getByBatchId(9001L);

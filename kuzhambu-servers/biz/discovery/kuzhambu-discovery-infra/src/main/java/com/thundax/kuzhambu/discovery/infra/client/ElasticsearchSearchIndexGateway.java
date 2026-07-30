@@ -110,7 +110,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
 
     @Override
     public void markDocumentDeleted(
-            String contentType, String contentId, Integer currentVersionNo, java.util.Date occurredAt) {
+            String contentType, String contentId, Integer currentVersionNo, Instant occurredAt) {
         ElasticsearchOperations operations = requireOperations("mark-deleted");
         String documentId = contentType + ":" + contentId;
         DiscoverySearchDocument existing =
@@ -127,7 +127,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         deletedDocument.setContentId(contentId);
         deletedDocument.setSourceVersionNo(currentVersionNo);
         deletedDocument.setDeleted(Boolean.TRUE);
-        deletedDocument.setDeletedAt(occurredAt == null ? null : occurredAt.toInstant());
+        deletedDocument.setDeletedAt(occurredAt);
         operations.save(deletedDocument, indexCoordinates());
     }
 
@@ -223,12 +223,10 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         criteria = appendPublicVisibilityFilter(criteria);
         criteria = criteria.and(new Criteria("deleted").is(false));
         if (searchScope.getDateFrom() != null) {
-            criteria = criteria.and(new Criteria("updatedAt")
-                    .greaterThanEqual(searchScope.getDateFrom().toInstant()));
+            criteria = criteria.and(new Criteria("updatedAt").greaterThanEqual(searchScope.getDateFrom()));
         }
         if (searchScope.getDateTo() != null) {
-            criteria = criteria.and(new Criteria("updatedAt")
-                    .lessThanEqual(searchScope.getDateTo().toInstant()));
+            criteria = criteria.and(new Criteria("updatedAt").lessThanEqual(searchScope.getDateTo()));
         }
         return criteria;
     }

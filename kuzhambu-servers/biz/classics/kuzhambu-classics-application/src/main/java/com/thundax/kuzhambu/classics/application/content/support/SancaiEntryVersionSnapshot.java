@@ -5,8 +5,8 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.common.core.id.Identifier;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
+import java.time.Instant;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,8 +111,8 @@ public record SancaiEntryVersionSnapshot(
         return id == null ? null : id.value();
     }
 
-    private static String date(Date date) {
-        return date == null ? null : date.toInstant().toString();
+    private static String date(Instant date) {
+        return date == null ? null : date.toString();
     }
 
     private static String value(Enum<?> value) {

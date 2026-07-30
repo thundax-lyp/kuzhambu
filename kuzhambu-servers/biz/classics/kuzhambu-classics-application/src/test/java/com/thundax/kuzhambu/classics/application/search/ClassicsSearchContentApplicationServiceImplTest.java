@@ -36,7 +36,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -68,7 +68,7 @@ class ClassicsSearchContentApplicationServiceImplTest {
         sancaiEntry.setSummary("摘要");
         sancaiEntry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
         sancaiEntry.setVisibility(SancaiEntryVisibility.PUBLIC);
-        sancaiEntry.setContentUpdatedAt(new Date(1_718_000_000_000L));
+        sancaiEntry.setContentUpdatedAt(Instant.ofEpochMilli(1_718_000_000_000L));
         when(sancaiApplicationService.listCategories()).thenReturn(List.of(category));
         when(sancaiApplicationService.listVolumes(SancaiCategoryIdCodec.toDomain(11L)))
                 .thenReturn(List.of(volume));
@@ -81,8 +81,8 @@ class ClassicsSearchContentApplicationServiceImplTest {
         wangqiDocument.setSummary("王圻摘要");
         wangqiDocument.setContent("正文");
         wangqiDocument.setVisibility(WangqiDocumentVisibility.PUBLIC);
-        wangqiDocument.setDocumentTime(new Date(1_718_100_000_000L));
-        wangqiDocument.setContentUpdatedAt(new Date(1_718_200_000_000L));
+        wangqiDocument.setDocumentTime(Instant.ofEpochMilli(1_718_100_000_000L));
+        wangqiDocument.setContentUpdatedAt(Instant.ofEpochMilli(1_718_200_000_000L));
         when(wangqiDocumentApplicationService.listTimeline(
                         org.mockito.ArgumentMatchers.any(WangqiDocumentPageQuery.class)))
                 .thenReturn(List.of(wangqiDocument));
@@ -95,7 +95,7 @@ class ClassicsSearchContentApplicationServiceImplTest {
         mingEntry.setContent("节令正文");
         mingEntry.setOriginalExcerpts("原文摘录");
         mingEntry.setVisibility(MingCustomsVisibility.PUBLIC);
-        mingEntry.setContentUpdatedAt(new Date(1_718_300_000_000L));
+        mingEntry.setContentUpdatedAt(Instant.ofEpochMilli(1_718_300_000_000L));
         when(mingCustomsApplicationService.page(
                         org.mockito.ArgumentMatchers.any(MingCustomsPageQuery.class),
                         org.mockito.ArgumentMatchers.any()))

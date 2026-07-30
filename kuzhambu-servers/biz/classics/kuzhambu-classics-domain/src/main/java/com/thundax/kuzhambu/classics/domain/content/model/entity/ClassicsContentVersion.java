@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentC
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +19,7 @@ public class ClassicsContentVersion {
     private ClassicsContentType contentType;
     private ClassicsContentId contentId;
     private int versionNo;
-    private Date versionedAt;
+    private Instant versionedAt;
     private String snapshotJson;
     private ClassicsContentChangeType changeType;
     private String changeSummary;

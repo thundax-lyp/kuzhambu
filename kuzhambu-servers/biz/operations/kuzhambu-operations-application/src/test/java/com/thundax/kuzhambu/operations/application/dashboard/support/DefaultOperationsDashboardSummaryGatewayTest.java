@@ -78,8 +78,8 @@ class DefaultOperationsDashboardSummaryGatewayTest {
         assertSame(periodEnd, classicsCaptor.getValue().getPeriodEnd());
         assertEquals(periodStart.toInstant(), aiCaptor.getValue().getPeriodStart());
         assertEquals(periodEnd.toInstant(), aiCaptor.getValue().getPeriodEnd());
-        assertSame(periodStart, discoveryCaptor.getValue().getPeriodStart());
-        assertSame(periodEnd, discoveryCaptor.getValue().getPeriodEnd());
+        assertEquals(periodStart.toInstant(), discoveryCaptor.getValue().getPeriodStart());
+        assertEquals(periodEnd.toInstant(), discoveryCaptor.getValue().getPeriodEnd());
         assertEquals(periodStart.toInstant(), knowledgeCaptor.getValue().getPeriodStart());
         assertEquals(periodEnd.toInstant(), knowledgeCaptor.getValue().getPeriodEnd());
         assertEquals("WEEK", classicsCaptor.getValue().getBucketType());

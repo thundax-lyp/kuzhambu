@@ -10,13 +10,13 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApplicationService {
 
     private static final int TOP_QUERY_LIMIT = 10;
+    private static final ZoneId REPORT_ZONE = ZoneId.of("Asia/Shanghai");
 
     private final SearchEventRepository searchEventRepository;
     private final QaSessionRepository qaSessionRepository;
@@ -37,7 +38,7 @@ public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApp
     }
 
     @Override
-    public DiscoveryReportSummaryResult summary(Date periodStart, Date periodEnd, String bucketType) {
+    public DiscoveryReportSummaryResult summary(Instant periodStart, Instant periodEnd, String bucketType) {
         List<SearchEvent> searchEvents = searchEventRepository.listByCreatedAtRange(periodStart, periodEnd);
         List<QaSession> qaSessions = qaSessionRepository.listByOpenedAtRange(periodStart, periodEnd);
         return new DiscoveryReportSummaryResult(
@@ -74,10 +75,10 @@ public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApp
     }
 
     private List<SearchTrendPointResult> buildSearchTrendSeries(
-            Date periodStart, Date periodEnd, String bucketType, List<SearchEvent> searchEvents) {
+            Instant periodStart, Instant periodEnd, String bucketType, List<SearchEvent> searchEvents) {
         Map<String, Long> bucketCounts = new LinkedHashMap<>();
         for (SearchEvent searchEvent : searchEvents) {
-            Date createdAt = searchEvent == null ? null : searchEvent.getCreatedAt();
+            Instant createdAt = searchEvent == null ? null : searchEvent.getCreatedAt();
             if (createdAt == null || outOfRange(createdAt, periodStart, periodEnd)) {
                 continue;
             }
@@ -92,10 +93,10 @@ public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApp
     }
 
     private List<QaTrendPointResult> buildQaTrendSeries(
-            Date periodStart, Date periodEnd, String bucketType, List<QaSession> qaSessions) {
+            Instant periodStart, Instant periodEnd, String bucketType, List<QaSession> qaSessions) {
         Map<String, Long> bucketCounts = new LinkedHashMap<>();
         for (QaSession qaSession : qaSessions) {
-            Date openedAt = qaSession == null ? null : qaSession.getOpenedAt();
+            Instant openedAt = qaSession == null ? null : qaSession.getOpenedAt();
             if (openedAt == null || outOfRange(openedAt, periodStart, periodEnd)) {
                 continue;
             }
@@ -109,8 +110,8 @@ public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApp
         return points;
     }
 
-    private boolean outOfRange(Date value, Date periodStart, Date periodEnd) {
-        return (periodStart != null && value.before(periodStart)) || (periodEnd != null && value.after(periodEnd));
+    private boolean outOfRange(Instant value, Instant periodStart, Instant periodEnd) {
+        return (periodStart != null && value.isBefore(periodStart)) || (periodEnd != null && value.isAfter(periodEnd));
     }
 
     private String resolveQueryText(SearchEvent searchEvent) {
@@ -126,10 +127,10 @@ public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApp
         return searchEvent.getQueryText();
     }
 
-    private String toBucket(Date value, String bucketType) {
-        SimpleDateFormat formatter =
-                new SimpleDateFormat(StringUtils.equalsIgnoreCase(bucketType, "WEEK") ? "yyyy-'W'ww" : "yyyy-MM-dd");
-        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+    private String toBucket(Instant value, String bucketType) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+                        StringUtils.equalsIgnoreCase(bucketType, "WEEK") ? "yyyy-'W'ww" : "yyyy-MM-dd")
+                .withZone(REPORT_ZONE);
         return formatter.format(value);
     }
 }

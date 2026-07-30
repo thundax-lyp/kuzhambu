@@ -9,7 +9,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +69,7 @@ class DiscoveryReportApplicationServiceImplTest {
             String normalizedQueryText,
             String displayQueryText,
             Long searchLatencyMs,
-            Date createdAt) {
+            Instant createdAt) {
         SearchEvent searchEvent = new SearchEvent();
         searchEvent.setQueryText(queryText);
         searchEvent.setNormalizedQueryText(normalizedQueryText);
@@ -79,13 +79,13 @@ class DiscoveryReportApplicationServiceImplTest {
         return searchEvent;
     }
 
-    private static QaSession qaSession(Date openedAt) {
+    private static QaSession qaSession(Instant openedAt) {
         QaSession qaSession = new QaSession();
         qaSession.setOpenedAt(openedAt);
         return qaSession;
     }
 
-    private static Date date(long epochMillis) {
-        return new Date(epochMillis);
+    private static Instant date(long epochMillis) {
+        return Instant.ofEpochMilli(epochMillis);
     }
 }

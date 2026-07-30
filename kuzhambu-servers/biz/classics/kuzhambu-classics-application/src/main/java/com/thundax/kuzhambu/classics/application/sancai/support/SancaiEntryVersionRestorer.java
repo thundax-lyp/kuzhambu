@@ -17,7 +17,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisual
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.io.IOException;
-import java.util.Date;
+import java.time.Instant;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +46,7 @@ public class SancaiEntryVersionRestorer {
         SancaiEntry restored = toEntry(snapshot);
         restored.setId(current.getId());
         restored.setPriority(repository.maxEntryPriority() + 1);
-        restored.setContentUpdatedAt(new Date());
+        restored.setContentUpdatedAt(Instant.now());
         updateRestoredEntryOrThrow(restored);
         return restored;
     }

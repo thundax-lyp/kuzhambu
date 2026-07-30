@@ -39,8 +39,8 @@ import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaRetrievalTraceRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSourceRepository;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +138,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         DiscoveryAiFacadeRequest aiRequest = singleDocumentKnowledge == null
                 ? null
                 : buildSingleDocumentAiRequest(command, session, model, question, singleDocumentKnowledge);
-        Date now = new Date();
+        Instant now = Instant.now();
         int contextTurnCount = contextTurnCount(command);
 
         QaMessage questionMessage = new QaMessage(
@@ -179,7 +179,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             failureReason = DEFAULT_FAILURE_REASON;
             providerFailureReason = StringUtils.defaultIfBlank(ex.getMessage(), TRACE_FAILURE_REASON);
         } finally {
-            session.setLastMessageAt(new Date());
+            session.setLastMessageAt(Instant.now());
             qaSessionRepository.update(session);
         }
 
@@ -190,7 +190,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                         createLocalRetrievalAnswerMessage(command, model, contextTurnCount, now, localAnswer.answer());
                 QaMessageId answerMessagePk = qaMessageRepository.save(answerMessage);
                 answerMessage.setId(answerMessagePk);
-                answerMessage.setAnsweredAt(new Date());
+                answerMessage.setAnsweredAt(Instant.now());
                 List<QaSource> sourceEntities =
                         saveLocalRetrievalSources(localAnswer.sources(), messageIdValue(answerMessagePk));
                 saveTrace(
@@ -201,7 +201,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                         providerRequest,
                         localRetrievalChatResult(localAnswer, model),
                         now,
-                        new Date(),
+                        Instant.now(),
                         "Provider failed; answered by local retrieval: " + providerFailureReason);
                 return new ChatCompletionResult(
                         command.getSessionId(),
@@ -246,7 +246,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 createAnswerMessage(command, model, contextTurnCount, chatResult, now, answer, choices);
         QaMessageId answerMessagePk = qaMessageRepository.save(answerMessage);
         answerMessage.setId(answerMessagePk);
-        answerMessage.setAnsweredAt(new Date());
+        answerMessage.setAnsweredAt(Instant.now());
 
         List<QaSource> sourceEntities =
                 qaSourceAssembler.toKnowledgeDomainList(chatResult.sources(), messageIdValue(answerMessagePk));
@@ -255,7 +255,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             sourceEntity.setId(sourcePk);
         }
 
-        saveTrace(command, session, answerMessage, question, providerRequest, chatResult, now, new Date(), null);
+        saveTrace(command, session, answerMessage, question, providerRequest, chatResult, now, Instant.now(), null);
 
         return new ChatCompletionResult(
                 command.getSessionId(),
@@ -296,7 +296,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         DiscoveryAiFacadeRequest aiRequest = singleDocumentKnowledge == null
                 ? null
                 : buildSingleDocumentAiRequest(command, session, model, question, singleDocumentKnowledge);
-        Date now = new Date();
+        Instant now = Instant.now();
         int contextTurnCount = contextTurnCount(command);
 
         QaMessage questionMessage = new QaMessage(
@@ -338,7 +338,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             failureReason = DEFAULT_FAILURE_REASON;
             providerFailureReason = StringUtils.defaultIfBlank(ex.getMessage(), TRACE_FAILURE_REASON);
         } finally {
-            session.setLastMessageAt(new Date());
+            session.setLastMessageAt(Instant.now());
             qaSessionRepository.update(session);
         }
 
@@ -352,7 +352,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                         createLocalRetrievalAnswerMessage(command, model, contextTurnCount, now, localAnswer.answer());
                 QaMessageId answerMessagePk = qaMessageRepository.save(answerMessage);
                 answerMessage.setId(answerMessagePk);
-                answerMessage.setAnsweredAt(new Date());
+                answerMessage.setAnsweredAt(Instant.now());
                 List<QaSource> sourceEntities =
                         saveLocalRetrievalSources(localAnswer.sources(), messageIdValue(answerMessagePk));
                 saveTrace(
@@ -363,7 +363,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                         providerRequest,
                         localRetrievalChatResult(localAnswer, model),
                         now,
-                        new Date(),
+                        Instant.now(),
                         "Provider failed; answered by local retrieval: " + providerFailureReason);
                 return new ChatCompletionResult(
                         command.getSessionId(),
@@ -408,7 +408,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 createAnswerMessage(command, model, contextTurnCount, chatResult, now, answer, choices);
         QaMessageId answerMessagePk = qaMessageRepository.save(answerMessage);
         answerMessage.setId(answerMessagePk);
-        answerMessage.setAnsweredAt(new Date());
+        answerMessage.setAnsweredAt(Instant.now());
 
         List<QaSource> sourceEntities =
                 qaSourceAssembler.toKnowledgeDomainList(chatResult.sources(), messageIdValue(answerMessagePk));
@@ -417,7 +417,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             sourceEntity.setId(sourcePk);
         }
 
-        saveTrace(command, session, answerMessage, question, providerRequest, chatResult, now, new Date(), null);
+        saveTrace(command, session, answerMessage, question, providerRequest, chatResult, now, Instant.now(), null);
 
         return new ChatCompletionResult(
                 command.getSessionId(),
@@ -478,7 +478,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             Long questionMessagePk,
             DiscoveryAiFacadeRequest aiRequest,
             ClassicsQaKnowledgeFacadeDto knowledge,
-            Date startedAt) {
+            Instant startedAt) {
         return completeSingleDocumentWithAi(
                 command,
                 session,
@@ -501,7 +501,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             Long questionMessagePk,
             DiscoveryAiFacadeRequest aiRequest,
             ClassicsQaKnowledgeFacadeDto knowledge,
-            Date startedAt,
+            Instant startedAt,
             ChatCompletionStreamHandler streamHandler) {
         DiscoveryAiFacadeResponse aiResponse = null;
         String failureReason = null;
@@ -515,7 +515,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         } catch (Exception ex) {
             failureReason = StringUtils.defaultIfBlank(ex.getMessage(), DEFAULT_AI_FAILURE_REASON);
         } finally {
-            session.setLastMessageAt(new Date());
+            session.setLastMessageAt(Instant.now());
             qaSessionRepository.update(session);
         }
 
@@ -533,7 +533,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                     aiResponse,
                     List.of(),
                     startedAt,
-                    new Date(),
+                    Instant.now(),
                     failureReason);
             return new ChatCompletionResult(
                     command.getSessionId(),
@@ -552,7 +552,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         QaMessage answerMessage = createAiAnswerMessage(command, model, contextTurnCount, startedAt, answerPayload);
         QaMessageId answerMessagePk = qaMessageRepository.save(answerMessage);
         answerMessage.setId(answerMessagePk);
-        answerMessage.setAnsweredAt(new Date());
+        answerMessage.setAnsweredAt(Instant.now());
 
         QaSource sourceEntity = qaSourceAssembler.toDomain(knowledge, messageIdValue(answerMessagePk), 1);
         Long sourcePk = qaSourceRepository.save(sourceEntity);
@@ -567,7 +567,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 aiResponse,
                 sourceEntities,
                 startedAt,
-                new Date(),
+                Instant.now(),
                 null);
         return new ChatCompletionResult(
                 command.getSessionId(),
@@ -964,8 +964,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             String question,
             KnowledgeChatRequest providerRequest,
             KnowledgeChatResult chatResult,
-            Date startedAt,
-            Date endAt,
+            Instant startedAt,
+            Instant endAt,
             String failureReason) {
         List<KnowledgeChatSource> sources = chatResult == null ? List.of() : chatResult.sources();
         QaRetrievalTrace trace = qaTraceAssembler.toDomain(
@@ -976,7 +976,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 providerRequest,
                 chatResult,
                 sources,
-                Math.max(0L, endAt.getTime() - startedAt.getTime()),
+                Math.max(0L, endAt.toEpochMilli() - startedAt.toEpochMilli()),
                 failureReason);
         Long tracePk = qaRetrievalTraceRepository.save(trace);
         trace.setId(tracePk);
@@ -990,8 +990,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             DiscoveryAiFacadeRequest aiRequest,
             DiscoveryAiFacadeResponse aiResponse,
             List<QaSource> sources,
-            Date startedAt,
-            Date endAt,
+            Instant startedAt,
+            Instant endAt,
             String failureReason) {
         QaRetrievalTrace trace = qaTraceAssembler.toAiDomain(
                 command,
@@ -1001,7 +1001,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 aiRequest,
                 aiResponse,
                 sources,
-                Math.max(0L, endAt.getTime() - startedAt.getTime()),
+                Math.max(0L, endAt.toEpochMilli() - startedAt.toEpochMilli()),
                 failureReason);
         Long tracePk = qaRetrievalTraceRepository.save(trace);
         trace.setId(tracePk);
@@ -1150,7 +1150,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             String model,
             int contextTurnCount,
             KnowledgeChatResult chatResult,
-            Date sentAt,
+            Instant sentAt,
             String answer,
             List<KnowledgeChatChoice> choices) {
         return new QaMessage(
@@ -1172,7 +1172,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             ChatCompletionCommand command,
             String model,
             int contextTurnCount,
-            Date sentAt,
+            Instant sentAt,
             AiAnswerPayload answerPayload) {
         return new QaMessage(
                 null,
@@ -1190,7 +1190,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     }
 
     private QaMessage createLocalRetrievalAnswerMessage(
-            ChatCompletionCommand command, String model, int contextTurnCount, Date sentAt, String answer) {
+            ChatCompletionCommand command, String model, int contextTurnCount, Instant sentAt, String answer) {
         return new QaMessage(
                 null,
                 command.getSessionId(),
@@ -1207,7 +1207,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     }
 
     private QaMessage createFailureMessage(
-            Long sessionId, String model, int contextTurnCount, String failureReason, Date sentAt) {
+            Long sessionId, String model, int contextTurnCount, String failureReason, Instant sentAt) {
         return new QaMessage(
                 null,
                 sessionId,

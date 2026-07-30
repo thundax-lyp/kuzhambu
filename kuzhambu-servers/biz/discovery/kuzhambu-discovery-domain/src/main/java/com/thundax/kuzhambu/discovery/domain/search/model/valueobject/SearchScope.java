@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.discovery.domain.search.model.valueobject;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +18,6 @@ public class SearchScope {
     private List<String> contentStatuses;
     private List<String> visibilityScopes;
     private List<String> privateKnowledgeBases;
-    private Date dateFrom;
-    private Date dateTo;
+    private Instant dateFrom;
+    private Instant dateTo;
 }

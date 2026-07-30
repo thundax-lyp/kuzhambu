@@ -21,6 +21,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchStatistics
 import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
+import com.thundax.kuzhambu.discovery.application.search.support.SearchTimeObjectMapperFactory;
 import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchClickEvent;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
@@ -30,9 +31,9 @@ import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScop
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickEventRepository;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
 import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +45,7 @@ import org.springframework.stereotype.Service;
 @BizExceptionBoundary
 public class SearchApplicationServiceImpl implements SearchApplicationService {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = SearchTimeObjectMapperFactory.create();
     private static final String PUBLIC_VISIBILITY = "PUBLIC";
 
     private final SearchEventRepository searchEventRepository;
@@ -150,7 +151,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 command.getOperatorId(),
                 RequestIdCodec.toValue(command.getRequestId()),
                 TraceIdCodec.toValue(command.getTraceId()),
-                new Date()));
+                Instant.now()));
         return Boolean.TRUE;
     }
 
@@ -183,8 +184,8 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     @Override
     public SearchStatisticsSummaryResult getStatisticsSummary(SearchStatisticsSummaryQuery query) {
-        Date dateFrom = query == null ? null : query.getDateFrom();
-        Date dateTo = query == null ? null : query.getDateTo();
+        Instant dateFrom = query == null ? null : query.getDateFrom();
+        Instant dateTo = query == null ? null : query.getDateTo();
         List<SearchEvent> searchEvents = searchEventRepository.listByCreatedAtRange(dateFrom, dateTo);
         List<SearchEvent> logs = searchEvents == null ? Collections.emptyList() : searchEvents;
         long clickCount = searchClickEventRepository.countByCreatedAtRange(dateFrom, dateTo);
@@ -221,7 +222,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 query.getOperatorId(),
                 RequestIdCodec.toValue(query.getRequestId()),
                 TraceIdCodec.toValue(query.getTraceId()),
-                new Date());
+                Instant.now());
     }
 
     private SearchEvent buildFailedSearchEvent(
@@ -251,7 +252,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 query.getOperatorId(),
                 RequestIdCodec.toValue(query.getRequestId()),
                 TraceIdCodec.toValue(query.getTraceId()),
-                new Date());
+                Instant.now());
     }
 
     private SearchEventResult toSearchResult(SearchEvent searchEvent, List<SearchGroupResult> groups) {
@@ -274,7 +275,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 searchEvent.getTraceId(),
                 searchEvent.getCreatedAt() == null
                         ? null
-                        : searchEvent.getCreatedAt().getTime(),
+                        : searchEvent.getCreatedAt().toEpochMilli(),
                 groups);
     }
 
@@ -347,7 +348,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 entity.getOperatorId(),
                 entity.getRequestId(),
                 entity.getTraceId(),
-                entity.getCreatedAt() == null ? null : entity.getCreatedAt().getTime(),
+                entity.getCreatedAt() == null ? null : entity.getCreatedAt().toEpochMilli(),
                 Collections.emptyList());
     }
 

@@ -34,7 +34,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 class WangqiDocumentAdminControllerTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void routesShouldKeepAdminApiPathsAndPermissions() throws Exception {
@@ -322,7 +322,7 @@ class WangqiDocumentAdminControllerTest {
         request.setSummary("摘要");
         request.setContentFormat("MARKDOWN");
         request.setContent("正文");
-        request.setDocumentTime(new Date(1767225600000L));
+        request.setDocumentTime(Instant.ofEpochMilli(1767225600000L));
         request.setStorageObjectId(7001L);
         request.setVisibility("PUBLIC");
         request.setKeyword("王圻");
@@ -346,7 +346,7 @@ class WangqiDocumentAdminControllerTest {
                 "摘要",
                 WangqiContentFormat.MARKDOWN,
                 "正文",
-                new Date(1767225600000L),
+                Instant.ofEpochMilli(1767225600000L),
                 StorageObjectIdCodec.toDomain(7001L),
                 WangqiDocumentVisibility.PUBLIC);
     }
@@ -357,7 +357,7 @@ class WangqiDocumentAdminControllerTest {
                 ClassicsContentType.WANGQI_DOCUMENT,
                 ClassicsContentIdCodec.toDomain(400000000001L),
                 versionNo,
-                new Date(1767225600000L),
+                Instant.ofEpochMilli(1767225600000L),
                 "{\"contentType\":\"WANGQI_DOCUMENT\",\"contentId\":400000000001}",
                 changeType,
                 "手动保存");
