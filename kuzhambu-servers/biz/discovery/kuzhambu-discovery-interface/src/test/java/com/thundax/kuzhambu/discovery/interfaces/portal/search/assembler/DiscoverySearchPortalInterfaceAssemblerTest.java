@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickEventRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
@@ -57,7 +58,7 @@ class DiscoverySearchPortalInterfaceAssemblerTest {
     @Test
     void toCommandShouldFillAnonymousRequestContext() {
         DiscoverySearchClickEventRequest request = new DiscoverySearchClickEventRequest();
-        request.setSearchEventId("search-1");
+        request.setSearchEventId("1");
         request.setContentDomain("CLASSICS");
         request.setContentType("MING_CUSTOMS");
         request.setContentId("content-1");
@@ -68,6 +69,7 @@ class DiscoverySearchPortalInterfaceAssemblerTest {
         SearchClickEventCreateCommand command = DiscoverySearchPortalInterfaceAssembler.toCommand(request);
 
         assertEquals("ANONYMOUS", command.getOperatorType());
+        assertEquals("1", SearchEventIdCodec.toStringValue(command.getSearchEventId()));
         assertNotNull(command.getRequestId());
         assertNotNull(command.getTraceId());
     }

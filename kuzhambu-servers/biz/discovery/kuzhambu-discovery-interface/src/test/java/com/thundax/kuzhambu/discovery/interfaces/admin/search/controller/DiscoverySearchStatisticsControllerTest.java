@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchStatisticsSummaryResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexApplicationService;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchClickEventRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchEventGetRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchEventPageRequest;
@@ -146,7 +147,7 @@ class DiscoverySearchStatisticsControllerTest {
                         20,
                         1,
                         List.of(new SearchEventResult(
-                                1L,
+                                SearchEventIdCodec.toDomain(1L),
                                 "黄帝",
                                 "黄帝",
                                 "黄帝",
@@ -180,7 +181,7 @@ class DiscoverySearchStatisticsControllerTest {
         request.setPageSize(20);
         when(service.search(any()))
                 .thenReturn(new SearchEventResult(
-                        1L,
+                        SearchEventIdCodec.toDomain(1L),
                         "辞官",
                         "辞官",
                         "辞官",
@@ -228,7 +229,7 @@ class DiscoverySearchStatisticsControllerTest {
         SearchApplicationService service = mock(SearchApplicationService.class);
         DiscoverySearchStatisticsQueryController controller = new DiscoverySearchStatisticsQueryController(service);
         DiscoverySearchClickEventRequest request = new DiscoverySearchClickEventRequest();
-        request.setSearchEventId("s-1");
+        request.setSearchEventId("1");
         request.setContentDomain("CLASSICS");
         request.setContentType("SANCAI_ENTRY");
         request.setContentId("1001");
@@ -291,7 +292,7 @@ class DiscoverySearchStatisticsControllerTest {
         request.setId("1");
         when(service.getEvent(1L))
                 .thenReturn(new SearchEventResult(
-                        1L,
+                        SearchEventIdCodec.toDomain(1L),
                         "黄帝",
                         "黄帝",
                         "黄帝",
@@ -328,7 +329,7 @@ class DiscoverySearchStatisticsControllerTest {
         request.setId("2");
         when(service.getEvent(2L))
                 .thenReturn(new SearchEventResult(
-                        2L,
+                        SearchEventIdCodec.toDomain(2L),
                         "黄帝",
                         "黄帝",
                         "黄帝",

@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResul
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickEventRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
@@ -110,7 +111,7 @@ class DiscoverySearchPortalControllerTest {
         request.setPageSize(20);
         when(service.search(any()))
                 .thenReturn(new SearchEventResult(
-                        1L,
+                        SearchEventIdCodec.toDomain(1L),
                         "",
                         "",
                         "",
@@ -145,7 +146,7 @@ class DiscoverySearchPortalControllerTest {
         request.setPageSize(20);
         when(service.search(any()))
                 .thenReturn(new SearchEventResult(
-                        1L,
+                        SearchEventIdCodec.toDomain(1L),
                         "黄帝",
                         "黄帝",
                         "黄帝",
@@ -237,7 +238,7 @@ class DiscoverySearchPortalControllerTest {
         Boolean result = controller.click(request);
 
         verify(service)
-                .recordClick(argThat(command -> "1".equals(command.getSearchEventId())
+                .recordClick(argThat(command -> "1".equals(SearchEventIdCodec.toStringValue(command.getSearchEventId()))
                         && "SANCAI_ENTRY".equals(command.getResultGroupKey())
                         && "/classics/sancai/1001".equals(command.getTargetPath())));
         assertTrue(result);
