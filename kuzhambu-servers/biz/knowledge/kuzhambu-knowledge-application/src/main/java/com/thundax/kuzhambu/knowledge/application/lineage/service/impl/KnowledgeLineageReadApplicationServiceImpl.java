@@ -14,12 +14,17 @@ import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasRe
 import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult.VersionOptionView;
 import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult.VersionView;
 import com.thundax.kuzhambu.knowledge.application.lineage.service.KnowledgeLineageReadApplicationService;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
+import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -68,8 +73,9 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
         if (effectiveQuery.getVersionId() == null) {
             return emptyResult(filters, "NO_VERSION", "请选择世系版本", "选择一个已应用版本后浏览正式世系节点和关系。", null, null);
         }
-        GraphVersion version = graphVersionRepository.getByVersionId(effectiveQuery.getVersionId());
-        if (version == null || !TASK_TYPE_LINEAGE.equals(version.getTaskType())) {
+        GraphVersion version =
+                graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(effectiveQuery.getVersionId()));
+        if (version == null || !GraphExtractionTaskType.LINEAGE.equals(version.getTaskType())) {
             return emptyResult(filters, "NO_VERSION", "未找到世系版本", "当前版本不存在或不是世系图版本。", null, null);
         }
         return buildCanvas(version, effectiveQuery, filters);
@@ -79,21 +85,21 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
     public LineageCanvasResult getLatestAppliedCanvas(LineageCanvasQuery query) {
         LineageCanvasQuery effectiveQuery = normalizeQuery(query);
         if (effectiveQuery.getVersionId() == null) {
-            PageResult<GraphVersion> latestPage =
-                    graphVersionRepository.page(TASK_TYPE_LINEAGE, STATUS_APPLIED, null, null, 1, 1);
+            PageResult<GraphVersion> latestPage = graphVersionRepository.page(
+                    GraphExtractionTaskType.LINEAGE, GraphVersionStatus.APPLIED, null, null, 1, 1);
             GraphVersion latest = latestPage.getRecords().isEmpty()
                     ? null
                     : latestPage.getRecords().get(0);
-            effectiveQuery.setVersionId(latest == null ? null : latest.getId());
+            effectiveQuery.setVersionId(latest == null ? null : GraphVersionIdCodec.toValue(latest.getId()));
         }
         return getCanvas(effectiveQuery);
     }
 
     private LineageCanvasResult buildCanvas(
             GraphVersion version, LineageCanvasQuery query, AvailableFiltersView availableFilters) {
-        List<KnowledgeLineageNode> allNodes = defaultList(lineageNodeRepository.listByVersionId(version.getId()));
-        List<KnowledgeLineageRelation> allRelations =
-                defaultList(lineageRelationRepository.listByVersionId(version.getId()));
+        Long versionId = GraphVersionIdCodec.toValue(version.getId());
+        List<KnowledgeLineageNode> allNodes = defaultList(lineageNodeRepository.listByVersionId(versionId));
+        List<KnowledgeLineageRelation> allRelations = defaultList(lineageRelationRepository.listByVersionId(versionId));
         if (allNodes.isEmpty() && allRelations.isEmpty()) {
             return emptyResult(availableFilters, "NO_LINEAGE_DATA", "暂无世系数据", "当前版本尚未沉淀正式世系节点或关系。", null, null);
         }
@@ -212,15 +218,15 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
     }
 
     private AvailableFiltersView buildAvailableFilters() {
-        PageResult<GraphVersion> versionPage =
-                graphVersionRepository.page(TASK_TYPE_LINEAGE, STATUS_APPLIED, null, null, 1, VERSION_OPTION_LIMIT);
+        PageResult<GraphVersion> versionPage = graphVersionRepository.page(
+                GraphExtractionTaskType.LINEAGE, GraphVersionStatus.APPLIED, null, null, 1, VERSION_OPTION_LIMIT);
         List<VersionOptionView> versions =
                 versionPage.getRecords().stream().map(this::toVersionOptionView).toList();
         List<String> nodeTypes = new ArrayList<>();
         List<String> relationTypes = new ArrayList<>();
         List<String> confirmationStatuses = new ArrayList<>();
         for (GraphVersion version : versionPage.getRecords()) {
-            Long versionId = version.getId();
+            Long versionId = GraphVersionIdCodec.toValue(version.getId());
             for (KnowledgeLineageNode node : defaultList(lineageNodeRepository.listByVersionId(versionId))) {
                 addDistinct(nodeTypes, node.getNodeType());
                 addDistinct(confirmationStatuses, node.getConfirmationStatus());
@@ -382,12 +388,12 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
 
     private VersionView toVersionView(GraphVersion version) {
         return new VersionView(
-                version.getId(),
+                GraphVersionIdCodec.toValue(version.getId()),
                 version.getVersionNo(),
-                version.getTaskType(),
-                version.getStatus(),
+                version.getTaskType() == null ? null : version.getTaskType().value(),
+                version.getStatus() == null ? null : version.getStatus().value(),
                 version.getSourceContentType(),
-                version.getSourceContentId(),
+                GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId()),
                 version.getSourceCategoryCode(),
                 version.getSourceCategoryName(),
                 toEpochMillis(version.getAppliedAt()));
@@ -395,12 +401,12 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
 
     private VersionOptionView toVersionOptionView(GraphVersion version) {
         return new VersionOptionView(
-                version.getId(),
+                GraphVersionIdCodec.toValue(version.getId()),
                 version.getVersionNo(),
-                version.getTaskType(),
-                version.getStatus(),
+                version.getTaskType() == null ? null : version.getTaskType().value(),
+                version.getStatus() == null ? null : version.getStatus().value(),
                 version.getSourceContentType(),
-                version.getSourceContentId(),
+                GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId()),
                 version.getSourceCategoryCode(),
                 version.getSourceCategoryName(),
                 toEpochMillis(version.getAppliedAt()));
@@ -426,6 +432,10 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
 
     private Long toEpochMillis(Date date) {
         return date == null ? null : date.getTime();
+    }
+
+    private Long toEpochMillis(Instant instant) {
+        return instant == null ? null : instant.toEpochMilli();
     }
 
     private String text(JsonNode node, String... fields) {

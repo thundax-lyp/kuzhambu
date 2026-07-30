@@ -12,12 +12,17 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.lineage.query.LineageCanvasQuery;
 import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult;
 import com.thundax.kuzhambu.knowledge.application.lineage.service.impl.KnowledgeLineageReadApplicationServiceImpl;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -31,7 +36,7 @@ class KnowledgeLineageReadApplicationServiceImplTest {
         KnowledgeLineageRelationRepository relationRepository = mock(KnowledgeLineageRelationRepository.class);
         KnowledgeLineageReadApplicationServiceImpl service =
                 new KnowledgeLineageReadApplicationServiceImpl(versionRepository, nodeRepository, relationRepository);
-        when(versionRepository.page("LINEAGE", "APPLIED", null, null, 1, 200))
+        when(versionRepository.page(GraphExtractionTaskType.LINEAGE, GraphVersionStatus.APPLIED, null, null, 1, 200))
                 .thenReturn(PageResult.of(1, 200, 0, List.of()));
 
         LineageCanvasResult result = service.getCanvas(new LineageCanvasQuery());
@@ -39,7 +44,7 @@ class KnowledgeLineageReadApplicationServiceImplTest {
         assertEquals("NO_VERSION", result.getEmpty().getReason());
         assertEquals(0L, result.getSummary().getNodeCount());
         assertTrue(result.getAvailableFilters().getVersions().isEmpty());
-        verify(versionRepository, never()).getByVersionId(71L);
+        verify(versionRepository, never()).getByVersionId(GraphVersionIdCodec.toDomain(71L));
     }
 
     @Test
@@ -53,11 +58,12 @@ class KnowledgeLineageReadApplicationServiceImplTest {
         KnowledgeLineageNode father = node(301L, "person:father", "贾代善", "MALE", "CONFIRMED");
         KnowledgeLineageNode son = node(302L, "person:son", "贾政", "MALE", "PENDING");
         KnowledgeLineageRelation relation = relation();
-        when(versionRepository.page("LINEAGE", "APPLIED", null, null, 1, 1))
+        when(versionRepository.page(GraphExtractionTaskType.LINEAGE, GraphVersionStatus.APPLIED, null, null, 1, 1))
                 .thenReturn(PageResult.of(1, 1, 1, List.of(version)));
-        when(versionRepository.page("LINEAGE", "APPLIED", null, null, 1, 200))
+        when(versionRepository.page(GraphExtractionTaskType.LINEAGE, GraphVersionStatus.APPLIED, null, null, 1, 200))
                 .thenReturn(PageResult.of(1, 200, 1, List.of(version)));
-        when(versionRepository.getByVersionId(71L)).thenReturn(version);
+        when(versionRepository.getByVersionId(GraphVersionIdCodec.toDomain(71L)))
+                .thenReturn(version);
         when(nodeRepository.listByVersionId(71L)).thenReturn(List.of(father, son));
         when(relationRepository.listByVersionId(71L)).thenReturn(List.of(relation));
         LineageCanvasQuery query = new LineageCanvasQuery();
@@ -95,9 +101,10 @@ class KnowledgeLineageReadApplicationServiceImplTest {
         KnowledgeLineageReadApplicationServiceImpl service =
                 new KnowledgeLineageReadApplicationServiceImpl(versionRepository, nodeRepository, relationRepository);
         GraphVersion version = lineageVersion();
-        when(versionRepository.page("LINEAGE", "APPLIED", null, null, 1, 200))
+        when(versionRepository.page(GraphExtractionTaskType.LINEAGE, GraphVersionStatus.APPLIED, null, null, 1, 200))
                 .thenReturn(PageResult.of(1, 200, 1, List.of(version)));
-        when(versionRepository.getByVersionId(71L)).thenReturn(version);
+        when(versionRepository.getByVersionId(GraphVersionIdCodec.toDomain(71L)))
+                .thenReturn(version);
         when(nodeRepository.listByVersionId(71L))
                 .thenReturn(List.of(node(301L, "person:father", "贾代善", "MALE", "CONFIRMED")));
         when(relationRepository.listByVersionId(71L)).thenReturn(List.of());
@@ -115,19 +122,19 @@ class KnowledgeLineageReadApplicationServiceImplTest {
 
     private static GraphVersion lineageVersion() {
         return new GraphVersion(
-                71L,
+                GraphVersionIdCodec.toDomain(71L),
                 null,
                 null,
-                "LINEAGE",
+                GraphExtractionTaskType.LINEAGE,
                 null,
                 null,
                 "SANCAI_ENTRY",
-                1001L,
+                GraphExtractionSourceContentIdCodec.toDomain(1001L),
                 "PEOPLE",
                 "人物",
                 3,
-                "APPLIED",
-                new Date(3_000L));
+                GraphVersionStatus.APPLIED,
+                Instant.ofEpochMilli(3_000L));
     }
 
     private static KnowledgeLineageNode node(

@@ -13,9 +13,12 @@ import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityRepor
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.SourceDetailRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
@@ -43,7 +46,6 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
     private static final int RECENT_UPDATE_LIMIT = 3;
     private static final int DEFAULT_METRICS_TOP_LIMIT = 5;
     private static final int DEFAULT_METRICS_MONTHS = 6;
-    private static final String GRAPH_VERSION_APPLIED_STATUS = "APPLIED";
     private static final String REFINEMENT_DRAFT_STATUS = "DRAFT";
     private static final List<CategorySlot> SANCAI_CATEGORY_SLOTS = List.of(
             new CategorySlot("ASTRONOMY", "天文"),
@@ -95,7 +97,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                 .page(null, null, null, null, null, FIRST_PAGE_NO, COUNT_PAGE_SIZE)
                 .getTotalCount();
         long graphVersionCount = graphVersionRepository
-                .page(null, GRAPH_VERSION_APPLIED_STATUS, null, null, FIRST_PAGE_NO, COUNT_PAGE_SIZE)
+                .page(null, GraphVersionStatus.APPLIED, null, null, FIRST_PAGE_NO, COUNT_PAGE_SIZE)
                 .getTotalCount();
         long entityCount = knowledgeEntityRepository
                 .page(null, null, null, null, FIRST_PAGE_NO, COUNT_PAGE_SIZE)
@@ -184,7 +186,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                     "/knowledge/atlas?level=category&categoryCode=" + categorySlot.code());
         }
         GraphVersion latestVersion = versions.get(0);
-        Long versionId = latestVersion.getId();
+        Long versionId = GraphVersionIdCodec.toValue(latestVersion.getId());
         List<KnowledgeEntity> entities =
                 versionId == null ? List.of() : defaultList(knowledgeEntityRepository.listByVersionId(versionId));
         List<KnowledgeRelation> relations =
@@ -211,7 +213,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
         if (latestVersion == null || latestVersion.getId() == null) {
             return buildEmptyCategoryAtlas(categorySlot);
         }
-        Long versionId = latestVersion.getId();
+        Long versionId = GraphVersionIdCodec.toValue(latestVersion.getId());
         List<KnowledgeEntity> entities = defaultList(knowledgeEntityRepository.listByVersionId(versionId));
         List<KnowledgeRelation> relations = defaultList(knowledgeRelationRepository.listByVersionId(versionId));
         return new KnowledgePortalAtlasResult(
@@ -227,7 +229,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                 new KnowledgePortalAtlasResult.CategoryView(
                         categorySlot.code(),
                         categorySlot.name(),
-                        latestVersion.getId(),
+                        GraphVersionIdCodec.toValue(latestVersion.getId()),
                         latestVersion.getVersionNo(),
                         entities.stream().map(this::toCategoryEntityHighlight).toList(),
                         buildCategoryRelationGroups(relations),
@@ -662,7 +664,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
 
     private List<KnowledgePortalHomeResult.PortalRecentUpdateItem> buildRecentUpdates() {
         PageResult<GraphVersion> page = graphVersionRepository.page(
-                null, GRAPH_VERSION_APPLIED_STATUS, null, null, FIRST_PAGE_NO, RECENT_UPDATE_LIMIT);
+                null, GraphVersionStatus.APPLIED, null, null, FIRST_PAGE_NO, RECENT_UPDATE_LIMIT);
         if (page.getRecords() == null || page.getRecords().isEmpty()) {
             return List.of(new KnowledgePortalHomeResult.PortalRecentUpdateItem(
                     "等待首批知识版本", "知识门户将在图谱应用后自动展示最近更新", "当前还没有已应用的图谱版本，首页先展示静态导览入口。", null, "/knowledge/atlas", null));
@@ -672,13 +674,14 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
 
     private KnowledgePortalHomeResult.PortalRecentUpdateItem toRecentUpdate(GraphVersion version) {
         String sourceType = version.getSourceContentType() == null ? "UNKNOWN" : version.getSourceContentType();
-        String taskType = version.getTaskType() == null ? "GRAPH" : version.getTaskType();
-        Long sourceContentId = version.getSourceContentId();
+        String taskType =
+                version.getTaskType() == null ? "GRAPH" : version.getTaskType().value();
+        Long sourceContentId = GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId());
         return new KnowledgePortalHomeResult.PortalRecentUpdateItem(
                 sourceType + " · 版本 " + version.getVersionNo(),
                 "任务 " + taskType + " / 来源 " + sourceType,
                 "已应用版本可继续查看实体关系、来源线索与质量摘要。",
-                version.getAppliedAt() == null ? null : version.getAppliedAt().getTime(),
+                version.getAppliedAt() == null ? null : version.getAppliedAt().toEpochMilli(),
                 buildAtlasHref(sourceContentId, sourceType),
                 null);
     }
@@ -707,7 +710,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
 
     private GraphVersion latestAppliedVersion() {
         PageResult<GraphVersion> page = graphVersionRepository.page(
-                null, GRAPH_VERSION_APPLIED_STATUS, null, null, FIRST_PAGE_NO, COUNT_PAGE_SIZE);
+                null, GraphVersionStatus.APPLIED, null, null, FIRST_PAGE_NO, COUNT_PAGE_SIZE);
         if (page.getRecords() == null || page.getRecords().isEmpty()) {
             return null;
         }
@@ -787,7 +790,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                 "当前展示的是最新已应用图谱版本，可继续查看关联实体、来源与时间线。",
                 latestVersion.getAppliedAt() == null
                         ? null
-                        : latestVersion.getAppliedAt().getTime(),
+                        : latestVersion.getAppliedAt().toEpochMilli(),
                 "/knowledge/atlas"));
     }
 
@@ -889,7 +892,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
 
     private List<KnowledgePortalQualityResult.SourceDetailItem> buildSourceDetails() {
         PageResult<GraphVersion> recentVersions = graphVersionRepository.page(
-                null, GRAPH_VERSION_APPLIED_STATUS, null, null, FIRST_PAGE_NO, RECENT_UPDATE_LIMIT);
+                null, GraphVersionStatus.APPLIED, null, null, FIRST_PAGE_NO, RECENT_UPDATE_LIMIT);
         if (recentVersions.getRecords() == null || recentVersions.getRecords().isEmpty()) {
             return List.of();
         }
@@ -901,8 +904,8 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                                 : version.getSourceCategoryName(),
                         version.getAppliedAt() == null
                                 ? null
-                                : version.getAppliedAt().getTime(),
-                        version.getStatus(),
+                                : version.getAppliedAt().toEpochMilli(),
+                        version.getStatus() == null ? null : version.getStatus().value(),
                         "/knowledge/atlas"))
                 .toList();
     }
