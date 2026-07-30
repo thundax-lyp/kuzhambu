@@ -29,6 +29,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
@@ -125,7 +126,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
     public QualityReportDetailResult generateReport(GenerateQualityReportCommand command) {
         Long graphVersionId = command == null ? null : command.getGraphVersionId();
         GraphVersion version = graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(graphVersionId));
-        List<KnowledgeEntity> entities = entityRepository.listByVersionId(graphVersionId);
+        List<KnowledgeEntity> entities = entityRepository.listByVersionId(GraphVersionIdCodec.toDomain(graphVersionId));
         List<KnowledgeRelation> relations = relationRepository.listByVersionId(graphVersionId);
         List<KnowledgeLineageNode> lineageNodes = lineageNodeRepository.listByVersionId(graphVersionId);
         List<KnowledgeLineageRelation> lineageRelations = lineageRelationRepository.listByVersionId(graphVersionId);
@@ -560,7 +561,8 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
         return entities == null
                 ? 0L
                 : entities.stream()
-                        .filter(item -> MANUAL_CONFIRMED.equals(item.getConfirmationStatus()))
+                        .filter(item ->
+                                KnowledgeConfirmationStatus.MANUAL_CONFIRMED.equals(item.getConfirmationStatus()))
                         .count();
     }
 

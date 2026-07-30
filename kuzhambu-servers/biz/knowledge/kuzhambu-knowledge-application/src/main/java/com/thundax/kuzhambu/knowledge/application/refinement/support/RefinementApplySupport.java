@@ -1,9 +1,12 @@
 package com.thundax.kuzhambu.knowledge.application.refinement.support;
 
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
@@ -12,6 +15,7 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementE
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementLineageNodeDraft;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementLineageRelationDraft;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementRelationDraft;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -104,15 +108,15 @@ public class RefinementApplySupport {
     }
 
     private KnowledgeEntity toEntity(Long versionId, RefinementEntityDraft draft) {
-        Date now = new Date();
+        Instant now = Instant.now();
         return new KnowledgeEntity(
-                draft.getEntityId(),
+                KnowledgeEntityIdCodec.toDomain(draft.getEntityId()),
                 draft.getEntityKey(),
                 draft.getName(),
                 draft.getEntityType(),
                 draft.getDescription(),
-                draft.getConfirmationStatus(),
-                versionId,
+                KnowledgeConfirmationStatus.from(draft.getConfirmationStatus()),
+                GraphVersionIdCodec.toDomain(versionId),
                 draft.getSourceRefsJson(),
                 now,
                 now,
