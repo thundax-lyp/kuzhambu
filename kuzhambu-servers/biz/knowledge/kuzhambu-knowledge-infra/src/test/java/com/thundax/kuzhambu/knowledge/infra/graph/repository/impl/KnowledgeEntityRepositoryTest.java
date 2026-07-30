@@ -11,10 +11,13 @@ import static org.mockito.Mockito.when;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.KnowledgeEntityDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.KnowledgeEntityMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -30,7 +33,8 @@ class KnowledgeEntityRepositoryTest {
         when(mapper.selectPage(any(Page.class), any())).thenReturn(dataObjectPage);
         KnowledgeEntityRepositoryImpl repository = new KnowledgeEntityRepositoryImpl(mapper);
 
-        PageResult<KnowledgeEntity> page = repository.page(71L, "黄帝", "PERSON", "CONFIRMED", 1, 10);
+        PageResult<KnowledgeEntity> page = repository.page(
+                GraphVersionIdCodec.toDomain(71L), "黄帝", "PERSON", KnowledgeConfirmationStatus.CONFIRMED, 1, 10);
 
         ArgumentCaptor<QueryWrapper<KnowledgeEntityDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectPage(any(Page.class), captor.capture());
@@ -49,7 +53,7 @@ class KnowledgeEntityRepositoryTest {
         when(mapper.selectOne(any())).thenReturn(new KnowledgeEntityDO());
         KnowledgeEntityRepositoryImpl repository = new KnowledgeEntityRepositoryImpl(mapper);
 
-        repository.getByEntityId(1001L);
+        repository.getByEntityId(KnowledgeEntityIdCodec.toDomain(1001L));
 
         ArgumentCaptor<QueryWrapper<KnowledgeEntityDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectOne(captor.capture());
@@ -95,11 +99,11 @@ class KnowledgeEntityRepositoryTest {
         entity.setName("黄帝");
         entity.setEntityType("PERSON");
         entity.setDescription("人皇");
-        entity.setConfirmationStatus("AI_EXTRACTED");
-        entity.setLatestVersionId(101L);
+        entity.setConfirmationStatus(KnowledgeConfirmationStatus.AI_EXTRACTED);
+        entity.setLatestVersionId(GraphVersionIdCodec.toDomain(101L));
         entity.setSourceRefsJson("[{\"entryId\":1}]");
-        entity.setFirstExtractedAt(new Date());
-        entity.setLastExtractedAt(new Date());
+        entity.setFirstExtractedAt(Instant.now());
+        entity.setLastExtractedAt(Instant.now());
 
         repository.saveOrUpdateBatch(List.of(entity));
 
