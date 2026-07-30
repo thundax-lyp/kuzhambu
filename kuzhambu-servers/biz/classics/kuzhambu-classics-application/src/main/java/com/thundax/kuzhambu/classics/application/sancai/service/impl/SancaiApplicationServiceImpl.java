@@ -37,8 +37,8 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -302,7 +302,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         requireExistingVolume(command.getVolumeId());
         SancaiEntry entry = toEntry(command);
         entry.setPriority(repository.maxEntryPriority() + 1);
-        entry.setContentUpdatedAt(new Date());
+        entry.setContentUpdatedAt(Instant.now());
         SancaiEntryId id = repository.insertEntry(entry);
         entry.setId(id);
         markManualSaveVersion(entry);
@@ -324,7 +324,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         SancaiEntry entry = toEntry(command);
         boolean volumeChanged = !sameVolumeId(currentEntry.getVolumeId(), targetVolumeId);
         entry.setPriority(volumeChanged ? repository.maxEntryPriority() + 1 : currentEntry.getPriority());
-        entry.setContentUpdatedAt(new Date());
+        entry.setContentUpdatedAt(Instant.now());
         if (repository.updateEntry(entry) != 1) {
             throw new BizException("三才图会条目不存在");
         }
@@ -350,7 +350,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         SancaiEntryLifecycleStatus currentStatus = entry.getLifecycleStatus();
         validateLifecycleChange(currentStatus, targetStatus);
         entry.setLifecycleStatus(targetStatus);
-        entry.setContentUpdatedAt(new Date());
+        entry.setContentUpdatedAt(Instant.now());
         markManualSaveVersion(entry, lifecycleChangeSummary(currentStatus, targetStatus));
         publishSearchSyncAfterCommit(entry);
     }
@@ -418,7 +418,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (entry == null) {
             return;
         }
-        entry.setContentUpdatedAt(new Date());
+        entry.setContentUpdatedAt(Instant.now());
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
         if (sharingApplicationService != null) {
             sharingApplicationService.syncContentDeleted(ClassicsContentType.SANCAI_ENTRY, id.value());
@@ -555,7 +555,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     private void changeExistingEntryVisibility(SancaiEntry entry, String visibility) {
         entry.setVisibility(SancaiEntryVisibility.from(visibility));
-        entry.setContentUpdatedAt(new Date());
+        entry.setContentUpdatedAt(Instant.now());
         markManualSaveVersion(entry);
         publishSearchSyncAfterCommit(entry);
     }
