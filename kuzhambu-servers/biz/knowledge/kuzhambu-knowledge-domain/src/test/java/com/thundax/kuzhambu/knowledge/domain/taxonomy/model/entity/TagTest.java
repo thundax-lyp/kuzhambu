@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class TagTest {
@@ -43,7 +44,7 @@ class TagTest {
     void deprecateShouldDisableTagAndExcludeItFromNewBinding() {
         Tag tag = enabledTag(1001L);
 
-        tag.deprecate(null, 99L);
+        tag.deprecate((Instant) null, 99L);
 
         assertTrue(tag.isDeprecated());
         assertEquals(TagStatus.DISABLED, tag.getStatus());
@@ -55,9 +56,9 @@ class TagTest {
     @Test
     void deprecateShouldRejectAlreadyDeprecatedTag() {
         Tag tag = enabledTag(1001L);
-        tag.deprecate(null, null);
+        tag.deprecate((Instant) null, null);
 
-        assertThrows(DomainException.class, () -> tag.deprecate(null, null));
+        assertThrows(DomainException.class, () -> tag.deprecate((Instant) null, null));
     }
 
     @Test
@@ -67,7 +68,7 @@ class TagTest {
 
         assertTrue(tag.isDeprecated());
         assertFalse(tag.isUsableForNewBinding());
-        assertThrows(DomainException.class, () -> tag.deprecate(null, null));
+        assertThrows(DomainException.class, () -> tag.deprecate((Instant) null, null));
     }
 
     private static Tag enabledTag(Long tagId) {
