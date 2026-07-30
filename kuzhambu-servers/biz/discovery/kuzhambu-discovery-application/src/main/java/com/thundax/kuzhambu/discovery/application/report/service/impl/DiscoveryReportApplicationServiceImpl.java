@@ -10,13 +10,13 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApplicationService {
 
     private static final int TOP_QUERY_LIMIT = 10;
+    private static final ZoneId REPORT_ZONE = ZoneId.of("Asia/Shanghai");
 
     private final SearchEventRepository searchEventRepository;
     private final QaSessionRepository qaSessionRepository;
@@ -127,9 +128,9 @@ public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApp
     }
 
     private String toBucket(Instant value, String bucketType) {
-        SimpleDateFormat formatter =
-                new SimpleDateFormat(StringUtils.equalsIgnoreCase(bucketType, "WEEK") ? "yyyy-'W'ww" : "yyyy-MM-dd");
-        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+                        StringUtils.equalsIgnoreCase(bucketType, "WEEK") ? "yyyy-'W'ww" : "yyyy-MM-dd")
+                .withZone(REPORT_ZONE);
         return formatter.format(value);
     }
 }
