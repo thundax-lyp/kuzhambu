@@ -45,6 +45,6 @@ class RocketMqDiscoverySearchIndexSyncConsumerTest {
 
         consumer.onMessage(message);
 
-        verify(service).syncDelete("WANGQI_DOCUMENT", "2002", 5, occurredAt);
+        verify(service).syncDelete("WANGQI_DOCUMENT", "2002", 5, occurredAt.toInstant());
     }
 }

@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.discovery.application.search.query;
 
 import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
 import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,8 +20,8 @@ public class SearchQuery {
     private List<String> tagNames;
     private List<String> contentStatuses;
     private List<String> visibilityScopes;
-    private Date dateFrom;
-    private Date dateTo;
+    private Instant dateFrom;
+    private Instant dateTo;
     private int pageNo;
     private int pageSize;
     private String operatorType;

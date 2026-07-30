@@ -29,7 +29,6 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.respons
 import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -217,8 +216,8 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 .orElse(null);
     }
 
-    private static Date toDate(Long value) {
-        return value == null ? null : new Date(value);
+    private static Instant toDate(Long value) {
+        return value == null ? null : Instant.ofEpochMilli(value);
     }
 
     private static List<DiscoverySearchGroupResponse> toGroupResponses(List<SearchGroupResult> groups) {
@@ -282,12 +281,12 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 .toList();
     }
 
-    private static Date parseDate(String value, String fieldName) {
+    private static Instant parseDate(String value, String fieldName) {
         if (value == null || value.isBlank()) {
             return null;
         }
         try {
-            return Date.from(Instant.parse(value));
+            return Instant.parse(value);
         } catch (DateTimeParseException exception) {
             throw new BizException(
                     "DISCOVERY-40002",

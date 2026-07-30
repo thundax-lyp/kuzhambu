@@ -19,11 +19,9 @@ import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.respon
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchResponse;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -174,33 +172,32 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 .build();
     }
 
-    private static Date parseDateFrom(String value) {
+    private static Instant parseDateFrom(String value) {
         return parseDate(value, false);
     }
 
-    private static Date parseDateTo(String value) {
+    private static Instant parseDateTo(String value) {
         return parseDate(value, true);
     }
 
-    private static Date parseDate(String value, boolean endOfDay) {
+    private static Instant parseDate(String value, boolean endOfDay) {
         if (value == null || value.isBlank()) {
             return null;
         }
         String trimmedValue = value.trim();
         try {
-            return Date.from(Instant.parse(trimmedValue));
+            return Instant.parse(trimmedValue);
         } catch (DateTimeParseException exception) {
             return parseLocalDate(trimmedValue, endOfDay);
         }
     }
 
-    private static Date parseLocalDate(String value, boolean endOfDay) {
+    private static Instant parseLocalDate(String value, boolean endOfDay) {
         try {
             LocalDate date = LocalDate.parse(value);
-            Instant instant = endOfDay
-                    ? date.atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC)
+            return endOfDay
+                    ? date.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC).minusMillis(1)
                     : date.atStartOfDay().toInstant(ZoneOffset.UTC);
-            return Date.from(instant);
         } catch (DateTimeParseException exception) {
             return null;
         }

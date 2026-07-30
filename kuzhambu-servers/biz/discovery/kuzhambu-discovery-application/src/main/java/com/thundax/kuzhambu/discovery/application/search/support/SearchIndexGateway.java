@@ -20,7 +20,7 @@ public interface SearchIndexGateway {
 
     Integer getSourceVersionNo(String documentId);
 
-    void markDocumentDeleted(String contentType, String contentId, Integer currentVersionNo, java.util.Date occurredAt);
+    void markDocumentDeleted(String contentType, String contentId, Integer currentVersionNo, Instant occurredAt);
 
     Integer cleanupDeletedDocumentsOlderThan(Instant threshold);
 }

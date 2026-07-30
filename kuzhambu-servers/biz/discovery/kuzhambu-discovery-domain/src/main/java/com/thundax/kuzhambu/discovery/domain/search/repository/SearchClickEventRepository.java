@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.discovery.domain.search.repository;
 
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchClickEvent;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchClickEventId;
-import java.util.Date;
+import java.time.Instant;
 
 public interface SearchClickEventRepository {
 
@@ -14,5 +14,5 @@ public interface SearchClickEventRepository {
 
     SearchClickEventId save(SearchClickEvent entity);
 
-    long countByCreatedAtRange(Date createdAtStart, Date createdAtEnd);
+    long countByCreatedAtRange(Instant createdAtStart, Instant createdAtEnd);
 }

@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickEventR
 import com.thundax.kuzhambu.discovery.infra.search.persistence.assembler.SearchClickEventPersistenceAssembler;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject.SearchClickEventDO;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.mapper.SearchClickEventMapper;
-import java.util.Date;
+import java.time.Instant;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -32,7 +32,7 @@ public class SearchClickEventRepositoryImpl implements SearchClickEventRepositor
     }
 
     @Override
-    public long countByCreatedAtRange(Date createdAtStart, Date createdAtEnd) {
+    public long countByCreatedAtRange(Instant createdAtStart, Instant createdAtEnd) {
         Long count = mapper.countByCreatedAtRange(createdAtStart, createdAtEnd);
         return count == null ? 0L : count;
     }
