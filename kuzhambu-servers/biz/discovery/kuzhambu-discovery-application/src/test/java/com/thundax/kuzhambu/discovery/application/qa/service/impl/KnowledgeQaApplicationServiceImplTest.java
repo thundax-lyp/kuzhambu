@@ -28,11 +28,17 @@ import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
 import com.thundax.kuzhambu.discovery.application.search.support.DiscoveryKnowledgeEnhancementProvider;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaMessageIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaSessionIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncItem;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaKnowledgeSyncStatus;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaMessageId;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncItemRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaRetrievalTraceRepository;
@@ -69,7 +75,7 @@ class KnowledgeQaApplicationServiceImplTest {
                 enhancementProvider);
         QaSession session = openSession();
         session.markRemoved(new Date());
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(session);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
 
         BizException exception = assertThrows(BizException.class, () -> service.chatCompletion(command()));
 
@@ -99,8 +105,8 @@ class KnowledgeQaApplicationServiceImplTest {
                 new QaSourceAssembler(),
                 new QaTraceAssembler(),
                 enhancementProvider);
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(wangqiSingleDocumentSession());
-        when(messageRepository.save(any(QaMessage.class))).thenReturn(6001L, 6002L);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(wangqiSingleDocumentSession());
+        when(messageRepository.save(any(QaMessage.class))).thenReturn(messageId(6001L), messageId(6002L));
         when(aiFacade.generateDiscoveryAnswer(any(DiscoveryAiFacadeRequest.class)))
                 .thenReturn(DiscoveryAiFacadeResponse.builder()
                         .callId(9101L)
@@ -169,8 +175,8 @@ class KnowledgeQaApplicationServiceImplTest {
                 new QaSourceAssembler(),
                 new QaTraceAssembler(),
                 enhancementProvider);
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(wangqiSingleDocumentSession());
-        when(messageRepository.save(any(QaMessage.class))).thenReturn(6001L, 6002L);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(wangqiSingleDocumentSession());
+        when(messageRepository.save(any(QaMessage.class))).thenReturn(messageId(6001L), messageId(6002L));
         when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
                 .thenReturn(qaKnowledge());
         when(aiFacade.streamDiscoveryAnswer(any(DiscoveryAiFacadeRequest.class), any(DiscoveryAiStreamHandler.class)))
@@ -223,7 +229,7 @@ class KnowledgeQaApplicationServiceImplTest {
                 new QaSourceAssembler(),
                 new QaTraceAssembler(),
                 enhancementProvider);
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(wangqiSingleDocumentSession());
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(wangqiSingleDocumentSession());
 
         BizException exception = assertThrows(BizException.class, () -> service.chatCompletion(wangqiCommand(3002L)));
 
@@ -253,8 +259,8 @@ class KnowledgeQaApplicationServiceImplTest {
                 new QaSourceAssembler(),
                 new QaTraceAssembler(),
                 enhancementProvider);
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(wangqiSingleDocumentSession());
-        when(messageRepository.save(any(QaMessage.class))).thenReturn(6001L, 6002L);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(wangqiSingleDocumentSession());
+        when(messageRepository.save(any(QaMessage.class))).thenReturn(messageId(6001L), messageId(6002L));
         when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
                 .thenReturn(qaKnowledge());
         when(aiFacade.generateDiscoveryAnswer(any(DiscoveryAiFacadeRequest.class)))
@@ -305,14 +311,14 @@ class KnowledgeQaApplicationServiceImplTest {
                 new QaSourceAssembler(),
                 new QaTraceAssembler(),
                 enhancementProvider);
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(openSession());
-        when(messageRepository.save(any(QaMessage.class))).thenReturn(6001L, 6002L);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession());
+        when(messageRepository.save(any(QaMessage.class))).thenReturn(messageId(6001L), messageId(6002L));
         when(enhancementProvider.enhance("什么是三才？"))
                 .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
                         null, List.of()));
         when(knowledgeBaseClient.chat(any(KnowledgeChatRequest.class)))
                 .thenThrow(new IllegalStateException("System not embedding model"));
-        when(syncItemRepository.listBySyncStatus("SUCCEEDED", 20)).thenReturn(List.of(sancaiSyncItem()));
+        when(syncItemRepository.listBySyncStatus(syncStatus("SUCCEEDED"), 20)).thenReturn(List.of(sancaiSyncItem()));
         when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
                 .thenReturn(sancaiKnowledge());
         when(sourceRepository.save(any(QaSource.class))).thenReturn(6103L);
@@ -538,5 +544,17 @@ class KnowledgeQaApplicationServiceImplTest {
                         .tags(List.of("三才"))
                         .build())
                 .build();
+    }
+
+    private static QaSessionId sessionId(Long value) {
+        return QaSessionIdCodec.toDomain(value);
+    }
+
+    private static QaMessageId messageId(Long value) {
+        return QaMessageIdCodec.toDomain(value);
+    }
+
+    private static QaKnowledgeSyncStatus syncStatus(String value) {
+        return QaStringValueCodec.toKnowledgeSyncStatus(value);
     }
 }

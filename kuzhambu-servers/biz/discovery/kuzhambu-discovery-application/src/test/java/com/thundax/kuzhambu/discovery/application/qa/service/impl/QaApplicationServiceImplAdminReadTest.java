@@ -13,10 +13,12 @@ import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSessionCsvExporter;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaSessionIdCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaRetrievalTraceRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionExportRepository;
@@ -47,7 +49,7 @@ class QaApplicationServiceImplAdminReadTest {
                 new QaSourceAssembler(),
                 new QaTraceAssembler());
 
-        when(sessionRepository.getBySessionId(5001L))
+        when(sessionRepository.getBySessionId(sessionId(5001L)))
                 .thenReturn(new QaSession(
                         5001L,
                         5001L,
@@ -63,7 +65,7 @@ class QaApplicationServiceImplAdminReadTest {
                         new Date(1_718_000_000_000L),
                         new Date(1_718_000_100_000L),
                         null));
-        when(messageRepository.listBySessionId(5001L))
+        when(messageRepository.listBySessionId(sessionId(5001L)))
                 .thenReturn(List.of(new QaMessage(
                         7001L,
                         7001L,
@@ -112,8 +114,8 @@ class QaApplicationServiceImplAdminReadTest {
         assertNotNull(trace);
         assertEquals("黄帝是谁", trace.getRawQuestion());
 
-        verify(sessionRepository).getBySessionId(5001L);
-        verify(messageRepository).listBySessionId(5001L);
+        verify(sessionRepository).getBySessionId(sessionId(5001L));
+        verify(messageRepository).listBySessionId(sessionId(5001L));
         verify(sourceRepository).listByMessageId(7002L);
         verify(traceRepository).getByTraceId(8001L);
     }
@@ -133,5 +135,9 @@ class QaApplicationServiceImplAdminReadTest {
         trace.setFailureReason("none");
         trace.setRetrievedAt(new Date(1_718_000_070_000L));
         return trace;
+    }
+
+    private QaSessionId sessionId(Long value) {
+        return QaSessionIdCodec.toDomain(value);
     }
 }

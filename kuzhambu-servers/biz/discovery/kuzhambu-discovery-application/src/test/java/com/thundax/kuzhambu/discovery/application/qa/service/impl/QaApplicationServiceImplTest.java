@@ -28,11 +28,15 @@ import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSessionCsvExporter;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaSessionIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSessionExport;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaOwnerRef;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaRetrievalTraceRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionExportRepository;
@@ -71,7 +75,7 @@ class QaApplicationServiceImplTest {
                 new QaSessionCsvExporter(),
                 new QaSourceAssembler(),
                 new QaTraceAssembler());
-        when(sessionRepository.save(any(QaSession.class))).thenReturn(9001L);
+        when(sessionRepository.save(any(QaSession.class))).thenReturn(sessionId(9001L));
 
         var result = service.openSession(new OpenQaSessionCommand(
                 1001L, "黄帝问答", "GLOBAL", "SEARCH", "SANCAI_ENTRY", 10001L, "req-1", "trace-1"));
@@ -88,7 +92,7 @@ class QaApplicationServiceImplTest {
         QaApplicationServiceImpl service = service(sessionRepository);
         when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
                 .thenReturn(qaKnowledge("PUBLIC", "ACTIVE"));
-        when(sessionRepository.save(any(QaSession.class))).thenReturn(9002L);
+        when(sessionRepository.save(any(QaSession.class))).thenReturn(sessionId(9002L));
 
         QaSessionResult result = service.openSession(new OpenQaSessionCommand(
                 1001L, "王圻文档问答", "PORTAL", "SINGLE_DOCUMENT", "WANGQI_DOCUMENT", 3001L, null, null));
@@ -204,8 +208,8 @@ class QaApplicationServiceImplTest {
                 new Date(),
                 new Date(),
                 null);
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(session);
-        when(messageRepository.listBySessionId(5001L))
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
+        when(messageRepository.listBySessionId(sessionId(5001L)))
                 .thenReturn(List.of(new QaMessage(
                         1L, 1L, 5001L, "USER", "黄帝是谁", "SENT", "kuzhambu-qa", 0, null, null, null, new Date(), null)));
         when(sourceRepository.listByMessageId(any())).thenReturn(List.of());
@@ -216,31 +220,33 @@ class QaApplicationServiceImplTest {
         assertEquals(5001L, result.getId());
         assertEquals("黄帝问答", result.getTitle());
         assertEquals(1, result.getMessages().size());
-        verify(messageRepository).listBySessionId(5001L);
+        verify(messageRepository).listBySessionId(sessionId(5001L));
     }
 
     @Test
     void deleteSessionShouldMarkOwnedSessionRemoved() {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(openSession());
-        when(sessionRepository.markRemoved(eq(5001L), any(Date.class))).thenReturn(1);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession());
+        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Date.class)))
+                .thenReturn(1);
 
         service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "1001", false));
 
-        verify(sessionRepository).markRemoved(eq(5001L), any(Date.class));
+        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Date.class));
     }
 
     @Test
     void deleteSessionShouldSkipOwnerCheckForAdminOperation() {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(openSession());
-        when(sessionRepository.markRemoved(eq(5001L), any(Date.class))).thenReturn(1);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession());
+        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Date.class)))
+                .thenReturn(1);
 
         service.deleteSession(new DeleteQaSessionCommand(5001L, null, null, true));
 
-        verify(sessionRepository).markRemoved(eq(5001L), any(Date.class));
+        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Date.class));
     }
 
     @Test
@@ -249,14 +255,14 @@ class QaApplicationServiceImplTest {
         QaApplicationServiceImpl service = service(sessionRepository);
         QaSession session = openSession();
         session.markRemoved(new Date());
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(session);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
 
         BizException exception = assertThrows(
                 BizException.class,
                 () -> service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "1001", false)));
 
         assertEquals("QA_SESSION_ALREADY_REMOVED", exception.getCode());
-        verify(sessionRepository, never()).markRemoved(eq(5001L), any(Date.class));
+        verify(sessionRepository, never()).markRemoved(eq(sessionId(5001L)), any(Date.class));
     }
 
     @Test
@@ -265,29 +271,30 @@ class QaApplicationServiceImplTest {
         QaApplicationServiceImpl service = service(sessionRepository);
         QaSession latest = openSession();
         latest.markRemoved(new Date());
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(openSession(), latest);
-        when(sessionRepository.markRemoved(eq(5001L), any(Date.class))).thenReturn(0);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession(), latest);
+        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Date.class)))
+                .thenReturn(0);
 
         BizException exception = assertThrows(
                 BizException.class,
                 () -> service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "1001", false)));
 
         assertEquals("QA_SESSION_ALREADY_REMOVED", exception.getCode());
-        verify(sessionRepository).markRemoved(eq(5001L), any(Date.class));
+        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Date.class));
     }
 
     @Test
     void deleteSessionShouldRejectOwnerMismatch() {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(openSession());
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession());
 
         BizException exception = assertThrows(
                 BizException.class,
                 () -> service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "2002", false)));
 
         assertEquals("DISCOVERY-30009", exception.getCode());
-        verify(sessionRepository, never()).markRemoved(eq(5001L), any(Date.class));
+        verify(sessionRepository, never()).markRemoved(eq(sessionId(5001L)), any(Date.class));
     }
 
     @Test
@@ -296,7 +303,7 @@ class QaApplicationServiceImplTest {
         QaApplicationServiceImpl service = service(sessionRepository);
         QaSession session = openSession();
         session.markRemoved(new Date());
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(session);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
 
         BizException exception =
                 assertThrows(BizException.class, () -> service.getPortalSessionDetail(5001L, "USER", "1001"));
@@ -308,7 +315,7 @@ class QaApplicationServiceImplTest {
     void listPortalSessionsShouldReturnOwnedSessions() {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
-        when(sessionRepository.listByOwnerUserId("USER", "1001", 10)).thenReturn(List.of(openSession()));
+        when(sessionRepository.listByOwnerUserId(ownerRef("USER", "1001"), 10)).thenReturn(List.of(openSession()));
 
         List<QaSessionResult> results = service.listPortalSessions("USER", "1001", 10);
 
@@ -344,8 +351,8 @@ class QaApplicationServiceImplTest {
         QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
         QaApplicationServiceImpl service =
                 service(sessionRepository, messageRepository, sourceRepository, traceRepository);
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(openSession());
-        when(messageRepository.listBySessionId(5001L)).thenReturn(List.of(answerMessage()));
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession());
+        when(messageRepository.listBySessionId(sessionId(5001L))).thenReturn(List.of(answerMessage()));
         when(sourceRepository.listByMessageId(6001L)).thenReturn(List.of(source()));
         when(traceRepository.getByMessageId(6001L)).thenReturn(trace());
         when(exportRepository.save(any(QaSessionExport.class))).thenReturn(7001L);
@@ -388,7 +395,7 @@ class QaApplicationServiceImplTest {
         QaApplicationServiceImpl service = service(sessionRepository);
         QaSession session = openSession();
         session.markRemoved(new Date());
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(session);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
 
         BizException exception = assertThrows(
                 BizException.class,
@@ -409,8 +416,8 @@ class QaApplicationServiceImplTest {
                 service(sessionRepository, messageRepository, sourceRepository, traceRepository);
         QaSession session = openSession();
         session.markRemoved(new Date());
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(session);
-        when(messageRepository.listBySessionId(5001L)).thenReturn(List.of(answerMessage()));
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
+        when(messageRepository.listBySessionId(sessionId(5001L))).thenReturn(List.of(answerMessage()));
         when(sourceRepository.listByMessageId(6001L)).thenReturn(List.of(source()));
         when(traceRepository.getByMessageId(6001L)).thenReturn(trace());
         when(exportRepository.save(any(QaSessionExport.class))).thenReturn(7001L);
@@ -435,7 +442,7 @@ class QaApplicationServiceImplTest {
     void exportSessionShouldMarkFailedWhenStorageUploadFails() {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
-        when(sessionRepository.getBySessionId(5001L)).thenReturn(openSession());
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession());
         when(exportRepository.save(any(QaSessionExport.class))).thenReturn(7001L);
         doThrow(new IllegalStateException("storage down"))
                 .when(storageFacade)
@@ -577,5 +584,13 @@ class QaApplicationServiceImplTest {
                 null,
                 null,
                 new Date(4000L));
+    }
+
+    private static QaSessionId sessionId(Long value) {
+        return QaSessionIdCodec.toDomain(value);
+    }
+
+    private static QaOwnerRef ownerRef(String ownerType, String ownerId) {
+        return QaStringValueCodec.toOwnerRef(ownerType, ownerId);
     }
 }

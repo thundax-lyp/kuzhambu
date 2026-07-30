@@ -13,7 +13,11 @@ import static org.mockito.Mockito.when;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaSessionIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaOwnerRef;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSessionDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaSessionMapper;
 import java.util.Date;
@@ -49,9 +53,9 @@ class QaSessionRepositoryImplTest {
                 .when(mapper)
                 .insert(any(QaSessionDO.class));
 
-        Long savedId = repository.save(entity);
+        QaSessionId savedId = repository.save(entity);
 
-        assertEquals(4001L, savedId);
+        assertEquals(4001L, QaSessionIdCodec.toValue(savedId));
         verify(mapper).insert(any(QaSessionDO.class));
     }
 
@@ -75,10 +79,10 @@ class QaSessionRepositoryImplTest {
                 null);
         when(mapper.selectList(any())).thenReturn(List.of(dataObject));
 
-        List<QaSession> result = repository.listByOwnerUserId("USER", "1001", 10);
+        List<QaSession> result = repository.listByOwnerUserId(ownerRef("USER", "1001"), 10);
 
         assertEquals(1, result.size());
-        assertEquals(4001L, result.get(0).getId());
+        assertEquals(4001L, QaSessionIdCodec.toValue(result.get(0).getId()));
         assertEquals("黄帝问答", result.get(0).getTitle());
         ArgumentCaptor<QueryWrapper<QaSessionDO>> wrapperCaptor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectList(wrapperCaptor.capture());
@@ -115,7 +119,7 @@ class QaSessionRepositoryImplTest {
         assertEquals(2, result.getPageNo());
         assertEquals(20, result.getPageSize());
         assertEquals(31, result.getTotalCount());
-        assertEquals(4001L, result.getRecords().get(0).getId());
+        assertEquals(4001L, QaSessionIdCodec.toValue(result.getRecords().get(0).getId()));
         ArgumentCaptor<Page<QaSessionDO>> pageCaptor = ArgumentCaptor.forClass(Page.class);
         ArgumentCaptor<QueryWrapper<QaSessionDO>> wrapperCaptor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectPage(pageCaptor.capture(), wrapperCaptor.capture());
@@ -136,7 +140,7 @@ class QaSessionRepositoryImplTest {
         Date removedAt = new Date();
         when(mapper.markRemoved(4001L, removedAt)).thenReturn(1);
 
-        int updated = repository.markRemoved(4001L, removedAt);
+        int updated = repository.markRemoved(QaSessionIdCodec.toDomain(4001L), removedAt);
 
         assertEquals(1, updated);
         verify(mapper).markRemoved(eq(4001L), eq(removedAt));
@@ -149,8 +153,12 @@ class QaSessionRepositoryImplTest {
         Date removedAt = new Date();
         when(mapper.markRemoved(4001L, removedAt)).thenReturn(0);
 
-        int updated = repository.markRemoved(4001L, removedAt);
+        int updated = repository.markRemoved(QaSessionIdCodec.toDomain(4001L), removedAt);
 
         assertEquals(0, updated);
+    }
+
+    private QaOwnerRef ownerRef(String ownerType, String ownerId) {
+        return QaStringValueCodec.toOwnerRef(ownerType, ownerId);
     }
 }
