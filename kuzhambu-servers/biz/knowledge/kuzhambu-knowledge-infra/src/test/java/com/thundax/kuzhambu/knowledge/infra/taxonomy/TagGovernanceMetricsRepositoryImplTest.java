@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagCateg
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagContentRefMapper;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagMapper;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.repository.impl.TagGovernanceMetricsRepositoryImpl;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -35,8 +35,8 @@ class TagGovernanceMetricsRepositoryImplTest {
         activeManual.setStatus("ENABLED");
         activeManual.setSource("MANUAL");
         activeManual.setReviewStatus("APPROVED");
-        activeManual.setCreatedAt(new Date(1735689600000L));
-        activeManual.setReviewedAt(new Date(1735689600000L));
+        activeManual.setCreatedAt(Instant.ofEpochMilli(1735689600000L));
+        activeManual.setReviewedAt(Instant.ofEpochMilli(1735689600000L));
         TagDO activeAi = new TagDO();
         activeAi.setId(2L);
         activeAi.setTagId(1002L);
@@ -45,8 +45,8 @@ class TagGovernanceMetricsRepositoryImplTest {
         activeAi.setStatus("ENABLED");
         activeAi.setSource("AI_EXTRACTED");
         activeAi.setReviewStatus("APPROVED");
-        activeAi.setCreatedAt(new Date(1738368000000L));
-        activeAi.setReviewedAt(new Date(1738368000000L));
+        activeAi.setCreatedAt(Instant.ofEpochMilli(1738368000000L));
+        activeAi.setReviewedAt(Instant.ofEpochMilli(1738368000000L));
         TagDO deprecated = new TagDO();
         deprecated.setId(3L);
         deprecated.setTagId(1003L);
@@ -55,9 +55,9 @@ class TagGovernanceMetricsRepositoryImplTest {
         deprecated.setStatus("DISABLED");
         deprecated.setSource("MANUAL");
         deprecated.setReviewStatus("APPROVED");
-        deprecated.setCreatedAt(new Date(1740787200000L));
-        deprecated.setReviewedAt(new Date(1740787200000L));
-        deprecated.setDeprecatedAt(new Date(1740787200000L));
+        deprecated.setCreatedAt(Instant.ofEpochMilli(1740787200000L));
+        deprecated.setReviewedAt(Instant.ofEpochMilli(1740787200000L));
+        deprecated.setDeprecatedAt(Instant.ofEpochMilli(1740787200000L));
 
         when(tagMapper.selectList(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(List.of(activeManual, activeAi), List.of(activeManual, activeAi, deprecated));
