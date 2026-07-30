@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,8 +75,8 @@ class OperationsHealthAlertAdminControllerTest {
                                 "check database",
                                 "OPEN_HEALTH_DETAIL",
                                 "{\"route\":\"/operations/dashboard\"}",
-                                new Date(1_719_630_400_000L),
-                                new Date(1_719_630_500_000L),
+                                Instant.ofEpochMilli(1_719_630_400_000L),
+                                Instant.ofEpochMilli(1_719_630_500_000L),
                                 null,
                                 null,
                                 null,
