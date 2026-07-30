@@ -594,7 +594,7 @@ class CleanupApplicationServiceImplTest {
         }
 
         @Override
-        public List<LongTaskSnapshotId> listExpiredSnapshotIds(Date snapshotBefore, int limit) {
+        public List<LongTaskSnapshotId> listExpiredSnapshotIds(Instant snapshotBefore, int limit) {
             return expiredSnapshotIds.stream().limit(limit).toList();
         }
     }

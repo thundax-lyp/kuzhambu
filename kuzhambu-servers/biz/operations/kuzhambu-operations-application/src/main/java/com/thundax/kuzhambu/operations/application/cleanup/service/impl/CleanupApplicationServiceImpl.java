@@ -262,9 +262,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         }
         if (CLEANUP_TYPE_EXPIRED_LONG_TASK.equals(cleanupType)) {
             return longTaskSnapshotRepository
-                    .listExpiredSnapshotIds(
-                            OperationsCleanupLegacyTimeAdapter.toDate(cleanupThreshold(requestedAt, retentionDays)),
-                            limit)
+                    .listExpiredSnapshotIds(cleanupThreshold(requestedAt, retentionDays), limit)
                     .stream()
                     .map(LongTaskSnapshotId::value)
                     .map(targetId -> new DiscoveredCleanupTarget(
