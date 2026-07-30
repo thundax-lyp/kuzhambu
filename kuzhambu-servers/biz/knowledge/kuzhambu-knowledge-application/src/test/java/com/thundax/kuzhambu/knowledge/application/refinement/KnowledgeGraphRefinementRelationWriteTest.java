@@ -18,7 +18,12 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionAiCandidateId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionSourceContentId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
@@ -274,34 +279,37 @@ class KnowledgeGraphRefinementRelationWriteTest {
 
     private static final class NoopGraphVersionRepository implements GraphVersionRepository {
         @Override
-        public GraphVersion findLatest(String taskType, String sourceContentType, Long sourceContentId) {
+        public GraphVersion findLatest(
+                GraphExtractionTaskType taskType,
+                String sourceContentType,
+                GraphExtractionSourceContentId sourceContentId) {
             return null;
         }
 
         @Override
-        public GraphVersion getByVersionId(Long versionId) {
+        public GraphVersion getByVersionId(GraphVersionId versionId) {
             return new GraphVersion();
         }
 
         @Override
-        public GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, Long candidateId) {
+        public GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, GraphExtractionAiCandidateId candidateId) {
             return null;
         }
 
         @Override
         public PageResult<GraphVersion> page(
-                String taskType,
-                String status,
+                GraphExtractionTaskType taskType,
+                GraphVersionStatus status,
                 String sourceContentType,
-                Long sourceContentId,
+                GraphExtractionSourceContentId sourceContentId,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, 0, List.of());
         }
 
         @Override
-        public Long save(GraphVersion entity) {
-            return 0L;
+        public GraphVersionId save(GraphVersion entity) {
+            return new GraphVersionId(0L);
         }
     }
 
