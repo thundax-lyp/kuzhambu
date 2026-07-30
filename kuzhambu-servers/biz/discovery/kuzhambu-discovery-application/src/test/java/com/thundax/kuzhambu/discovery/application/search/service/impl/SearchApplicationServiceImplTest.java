@@ -37,6 +37,7 @@ import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScop
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickEventRepository;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
 import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -544,7 +545,7 @@ class SearchApplicationServiceImplTest {
                         null,
                         null,
                         null,
-                        new Date()));
+                        Instant.now()));
 
         Boolean result = service.recordClick(new SearchClickEventCreateCommand(
                 searchEventId("1"),
@@ -636,7 +637,7 @@ class SearchApplicationServiceImplTest {
                                 "user-1",
                                 "req-1",
                                 "trace-1",
-                                new Date(1_718_000_000_000L)))));
+                                Instant.ofEpochMilli(1_718_000_000_000L)))));
 
         var result = service.pageEvents(new SearchEventPageQuery(
                 "黄帝", List.of("ENTITY", "KEYWORD"), List.of("SUCCEEDED", "FAILED"), "user-1", null, null, 1, 20));
@@ -661,7 +662,7 @@ class SearchApplicationServiceImplTest {
                 queryUnderstandingApplicationService);
         Date dateFrom = new Date(1_718_000_000_000L);
         Date dateTo = new Date(1_720_419_200_000L);
-        when(searchEventRepository.listByCreatedAtRange(dateFrom, dateTo))
+        when(searchEventRepository.listByCreatedAtRange(dateFrom.toInstant(), dateTo.toInstant()))
                 .thenReturn(List.of(
                         searchEvent("黄帝", "SUCCEEDED", 3),
                         searchEvent("黄帝", "SUCCEEDED", 0),
@@ -831,7 +832,7 @@ class SearchApplicationServiceImplTest {
                 null,
                 null,
                 null,
-                new Date());
+                Instant.now());
     }
 
     private SearchResult searchResult(String contentType, String contentId, String visibility) {

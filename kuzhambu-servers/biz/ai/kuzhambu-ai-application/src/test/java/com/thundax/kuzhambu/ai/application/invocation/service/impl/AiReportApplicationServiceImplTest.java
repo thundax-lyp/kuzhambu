@@ -1,8 +1,11 @@
 package com.thundax.kuzhambu.ai.application.invocation.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.ai.application.invocation.query.AiReportSummaryQuery;
@@ -24,6 +27,8 @@ class AiReportApplicationServiceImplTest {
     void summaryShouldAggregateInvocationOutcomeLatencyCostAndTopCapabilities() {
         AiInvocationRepository repository = mock(AiInvocationRepository.class);
         AiReportApplicationServiceImpl service = new AiReportApplicationServiceImpl(repository);
+        Instant periodStart = Instant.parse("2024-06-01T00:00:00.123456Z");
+        Instant periodEnd = Instant.parse("2024-06-30T23:59:59.987654Z");
         when(repository.listInvocationLogs(any(), any()))
                 .thenReturn(List.of(
                         invocationLog(
@@ -35,9 +40,11 @@ class AiReportApplicationServiceImplTest {
                                 180,
                                 "2.00")));
 
-        AiReportSummaryResult result = service.summary(new AiReportSummaryQuery(
-                Instant.parse("2024-06-01T00:00:00Z"), Instant.parse("2024-06-30T23:59:59Z"), AiReportBucketType.DAY));
+        AiReportSummaryResult result =
+                service.summary(new AiReportSummaryQuery(periodStart, periodEnd, AiReportBucketType.DAY));
 
+        assertEquals(periodStart, result.getPeriodStart());
+        assertEquals(periodEnd, result.getPeriodEnd());
         assertEquals(3L, result.getInvocationCount());
         assertEquals(2L, result.getSucceededInvocationCount());
         assertEquals(1L, result.getFailedInvocationCount());
@@ -50,6 +57,19 @@ class AiReportApplicationServiceImplTest {
         assertEquals(
                 AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
                 result.getTopCapabilities().get(1).getCapability());
+    }
+
+    @Test
+    void summaryShouldPreserveNullPeriodBoundaries() {
+        AiInvocationRepository repository = mock(AiInvocationRepository.class);
+        when(repository.listInvocationLogs(isNull(), isNull())).thenReturn(List.of());
+        AiReportApplicationServiceImpl service = new AiReportApplicationServiceImpl(repository);
+
+        AiReportSummaryResult result = service.summary(null);
+
+        assertNull(result.getPeriodStart());
+        assertNull(result.getPeriodEnd());
+        verify(repository).listInvocationLogs(null, null);
     }
 
     private static AiInvocationLog invocationLog(

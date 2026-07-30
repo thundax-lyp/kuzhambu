@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.discovery.domain.qa.model.entity;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,8 +17,8 @@ public class QaKnowledgeSyncBatch {
     private Integer totalCount;
     private Integer successCount;
     private Integer failureCount;
-    private Date startedAt;
-    private Date finishedAt;
+    private Instant startedAt;
+    private Instant finishedAt;
 
     public QaKnowledgeSyncBatch(
             Long id,
@@ -28,8 +28,8 @@ public class QaKnowledgeSyncBatch {
             Integer totalCount,
             Integer successCount,
             Integer failureCount,
-            Date startedAt,
-            Date finishedAt) {
+            Instant startedAt,
+            Instant finishedAt) {
         this.id = id == null ? batchId : id;
         this.triggerType = triggerType;
         this.provider = provider;

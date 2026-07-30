@@ -31,7 +31,7 @@ class KnowledgeDocumentAssemblerTest {
                         "PUBLIC",
                         "PUBLISHED",
                         "/classics/sancai/1001",
-                        now),
+                        now.toInstant()),
                 document.metadata());
         assertEquals("三才", document.knowledge().title());
     }

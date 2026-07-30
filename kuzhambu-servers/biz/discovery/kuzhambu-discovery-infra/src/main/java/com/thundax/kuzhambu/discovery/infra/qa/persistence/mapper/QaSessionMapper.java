@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSessionDO;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,7 +20,7 @@ public interface QaSessionMapper extends BaseMapper<QaSessionDO> {
             order by opened_at desc
             """)
     List<QaSessionDO> selectByOpenedAtRange(
-            @Param("openedAtStart") Date openedAtStart, @Param("openedAtEnd") Date openedAtEnd);
+            @Param("openedAtStart") Instant openedAtStart, @Param("openedAtEnd") Instant openedAtEnd);
 
     @Update(
             """
@@ -30,5 +30,5 @@ public interface QaSessionMapper extends BaseMapper<QaSessionDO> {
             where id = #{id}
               and removed_at is null
             """)
-    int markRemoved(@Param("id") Long id, @Param("removedAt") Date removedAt);
+    int markRemoved(@Param("id") Long id, @Param("removedAt") Instant removedAt);
 }

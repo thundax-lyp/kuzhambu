@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
-import java.util.Date;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +54,7 @@ public class QaTraceAssembler {
                 null,
                 null,
                 null,
-                new Date());
+                Instant.now());
     }
 
     public QaRetrievalTrace toAiDomain(
@@ -84,7 +84,7 @@ public class QaTraceAssembler {
                 aiResponse == null ? null : aiResponse.getStatus(),
                 aiResponse == null ? null : aiResponse.getErrorType(),
                 aiResponse == null ? null : aiResponse.getErrorMessage(),
-                new Date());
+                Instant.now());
     }
 
     public QaTraceResult toTraceResult(QaRetrievalTrace trace) {

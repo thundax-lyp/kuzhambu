@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -207,11 +207,11 @@ public final class DiscoveryQaAdminResponses {
 
         @Schema(name = "sentAt", description = "发送时间")
         @JsonProperty(value = "sentAt")
-        private Date sentAt;
+        private Instant sentAt;
 
         @Schema(name = "answeredAt", description = "回答时间")
         @JsonProperty(value = "answeredAt")
-        private Date answeredAt;
+        private Instant answeredAt;
     }
 
     @Getter

@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.discovery.domain.qa.model.entity;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,7 +25,7 @@ public class QaSource {
     private Integer sourceRank;
     private BigDecimal score;
     private String sourceStatus;
-    private Date referencedAt;
+    private Instant referencedAt;
 
     public QaSource(
             Long id,
@@ -42,7 +42,7 @@ public class QaSource {
             Integer sourceRank,
             BigDecimal score,
             String sourceStatus,
-            Date referencedAt) {
+            Instant referencedAt) {
         this.id = id == null ? sourceId : id;
         this.sourceBusinessId = sourceBusinessId;
         this.messageId = messageId;

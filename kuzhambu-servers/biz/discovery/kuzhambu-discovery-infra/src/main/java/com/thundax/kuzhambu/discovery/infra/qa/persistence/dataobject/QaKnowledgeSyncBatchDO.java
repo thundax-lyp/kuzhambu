@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,6 +22,6 @@ public class QaKnowledgeSyncBatchDO {
     private Integer totalCount;
     private Integer successCount;
     private Integer failureCount;
-    private Date startedAt;
-    private Date finishedAt;
+    private Instant startedAt;
+    private Instant finishedAt;
 }

@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.ai.facade.response;
 
 import com.thundax.kuzhambu.ai.facade.dto.AiTopCapabilityFacadeDto;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -14,8 +14,8 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AiReportSummaryFacadeResponse {
 
-    private final Date periodStart;
-    private final Date periodEnd;
+    private final Instant periodStart;
+    private final Instant periodEnd;
     private final Long invocationCount;
     private final Long succeededInvocationCount;
     private final Long failedInvocationCount;

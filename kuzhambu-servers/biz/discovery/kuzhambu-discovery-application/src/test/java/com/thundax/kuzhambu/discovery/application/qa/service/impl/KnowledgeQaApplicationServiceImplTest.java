@@ -45,7 +45,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaRetrievalTraceRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSourceRepository;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -75,7 +75,7 @@ class KnowledgeQaApplicationServiceImplTest {
                 new QaTraceAssembler(),
                 enhancementProvider);
         QaSession session = openSession();
-        session.markRemoved(new Date());
+        session.markRemoved(Instant.now());
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
 
         BizException exception = assertThrows(BizException.class, () -> service.chatCompletion(command()));
@@ -461,8 +461,8 @@ class KnowledgeQaApplicationServiceImplTest {
                 "SANCAI_ENTRY",
                 10001L,
                 "OPEN",
-                new Date(),
-                new Date(),
+                Instant.now(),
+                Instant.now(),
                 null);
     }
 
@@ -479,8 +479,8 @@ class KnowledgeQaApplicationServiceImplTest {
                 "WANGQI_DOCUMENT",
                 3001L,
                 "OPEN",
-                new Date(),
-                new Date(),
+                Instant.now(),
+                Instant.now(),
                 null);
     }
 
@@ -498,9 +498,9 @@ class KnowledgeQaApplicationServiceImplTest {
                 "item_3001",
                 "SUCCEEDED",
                 null,
-                new Date(),
-                new Date(),
-                new Date());
+                Instant.now(),
+                Instant.now(),
+                Instant.now());
     }
 
     private static ClassicsQaKnowledgeFacadeResponse qaKnowledge() {

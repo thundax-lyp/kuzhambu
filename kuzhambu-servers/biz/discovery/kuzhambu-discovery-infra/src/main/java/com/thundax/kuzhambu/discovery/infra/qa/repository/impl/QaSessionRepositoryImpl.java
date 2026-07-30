@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.assembler.QaPersistenceAssembler;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSessionDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaSessionMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
@@ -37,12 +37,13 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     }
 
     @Override
-    public List<QaSession> listByOpenedAtRange(Date openedAtStart, Date openedAtEnd) {
+    public List<QaSession> listByOpenedAtRange(Instant openedAtStart, Instant openedAtEnd) {
         return QaPersistenceAssembler.toSessionDomainList(mapper.selectByOpenedAtRange(openedAtStart, openedAtEnd));
     }
 
     @Override
-    public PageResult<QaSession> page(String title, Date openedAtStart, Date openedAtEnd, int pageNo, int pageSize) {
+    public PageResult<QaSession> page(
+            String title, Instant openedAtStart, Instant openedAtEnd, int pageNo, int pageSize) {
         Page<QaSessionDO> page = new Page<>(pageNo, pageSize);
         IPage<QaSessionDO> dataObjectPage =
                 mapper.selectPage(page, buildPageWrapper(title, openedAtStart, openedAtEnd));
@@ -69,7 +70,7 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
         return QaPersistenceAssembler.toSessionDomainList(mapper.selectList(wrapper));
     }
 
-    private QueryWrapper<QaSessionDO> buildPageWrapper(String title, Date openedAtStart, Date openedAtEnd) {
+    private QueryWrapper<QaSessionDO> buildPageWrapper(String title, Instant openedAtStart, Instant openedAtEnd) {
         QueryWrapper<QaSessionDO> wrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(title)) {
             wrapper.like("title", title);
@@ -97,7 +98,7 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     }
 
     @Override
-    public int markRemoved(QaSessionId id, Date removedAt) {
+    public int markRemoved(QaSessionId id, Instant removedAt) {
         if (id == null || removedAt == null) {
             return 0;
         }

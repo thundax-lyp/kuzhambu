@@ -25,7 +25,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionExportReposi
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSourceRepository;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -62,8 +62,8 @@ class QaApplicationServiceImplAdminReadTest {
                         "SANCAI_ENTRY",
                         10001L,
                         "OPEN",
-                        new Date(1_718_000_000_000L),
-                        new Date(1_718_000_100_000L),
+                        Instant.ofEpochMilli(1_718_000_000_000L),
+                        Instant.ofEpochMilli(1_718_000_100_000L),
                         null));
         when(messageRepository.listBySessionId(sessionId(5001L)))
                 .thenReturn(List.of(new QaMessage(
@@ -78,7 +78,7 @@ class QaApplicationServiceImplAdminReadTest {
                         null,
                         null,
                         null,
-                        new Date(1_718_000_050_000L),
+                        Instant.ofEpochMilli(1_718_000_050_000L),
                         null)));
         when(sourceRepository.listByMessageId(7002L))
                 .thenReturn(List.of(new QaSource(
@@ -96,7 +96,7 @@ class QaApplicationServiceImplAdminReadTest {
                         1,
                         java.math.BigDecimal.ONE,
                         "CITED",
-                        new Date(1_718_000_060_000L))));
+                        Instant.ofEpochMilli(1_718_000_060_000L))));
         when(traceRepository.getByTraceId(8001L)).thenReturn(trace());
 
         QaSessionDetailResult sessionDetail = service.getSessionDetail(5001L);
@@ -133,7 +133,7 @@ class QaApplicationServiceImplAdminReadTest {
         trace.setProviderRequestId("1001");
         trace.setLatencyMs(120L);
         trace.setFailureReason("none");
-        trace.setRetrievedAt(new Date(1_718_000_070_000L));
+        trace.setRetrievedAt(Instant.ofEpochMilli(1_718_000_070_000L));
         return trace;
     }
 

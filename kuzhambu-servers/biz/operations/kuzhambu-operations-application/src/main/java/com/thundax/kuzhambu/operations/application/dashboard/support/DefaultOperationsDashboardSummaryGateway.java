@@ -67,8 +67,8 @@ public class DefaultOperationsDashboardSummaryGateway implements OperationsDashb
         }
         return requireSummary(
                 aiFacade.summary(AiReportSummaryFacadeRequest.builder()
-                        .periodStart(periodStart)
-                        .periodEnd(periodEnd)
+                        .periodStart(periodStart == null ? null : periodStart.toInstant())
+                        .periodEnd(periodEnd == null ? null : periodEnd.toInstant())
                         .bucketType(bucketType)
                         .build()),
                 "ai");
@@ -81,8 +81,8 @@ public class DefaultOperationsDashboardSummaryGateway implements OperationsDashb
         }
         return requireSummary(
                 discoveryFacade.summary(DiscoverySummaryFacadeRequest.builder()
-                        .periodStart(periodStart)
-                        .periodEnd(periodEnd)
+                        .periodStart(periodStart == null ? null : periodStart.toInstant())
+                        .periodEnd(periodEnd == null ? null : periodEnd.toInstant())
                         .bucketType(bucketType)
                         .build()),
                 "discovery");

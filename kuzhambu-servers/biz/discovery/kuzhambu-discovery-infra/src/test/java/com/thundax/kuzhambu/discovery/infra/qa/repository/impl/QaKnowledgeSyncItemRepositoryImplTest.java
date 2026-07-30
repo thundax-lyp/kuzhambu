@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncItem
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.KnowledgeSourceId;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaKnowledgeSyncItemDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaKnowledgeSyncItemMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -36,8 +36,8 @@ class QaKnowledgeSyncItemRepositoryImplTest {
                 "PENDING",
                 null,
                 null,
-                new Date(),
-                new Date());
+                Instant.now(),
+                Instant.now());
         doAnswer(invocation -> {
                     invocation.getArgument(0, QaKnowledgeSyncItemDO.class).setId(1L);
                     return 1;
@@ -68,9 +68,9 @@ class QaKnowledgeSyncItemRepositoryImplTest {
                 "item-1",
                 "SUCCEEDED",
                 null,
-                new Date(),
-                new Date(),
-                new Date());
+                Instant.now(),
+                Instant.now(),
+                Instant.now());
         when(mapper.selectOne(any())).thenReturn(dataObject);
 
         QaKnowledgeSyncItem result = repository.getBySourceId(QaStringValueCodec.toKnowledgeSourceId("SANCAI:1001"));
@@ -97,8 +97,8 @@ class QaKnowledgeSyncItemRepositoryImplTest {
                 "FAILED",
                 null,
                 null,
-                new Date(),
-                new Date());
+                Instant.now(),
+                Instant.now());
         QaKnowledgeSyncItemDO second = new QaKnowledgeSyncItemDO(
                 2L,
                 "WANGQI:2001",
@@ -113,8 +113,8 @@ class QaKnowledgeSyncItemRepositoryImplTest {
                 "FAILED",
                 "sync timeout",
                 null,
-                new Date(),
-                new Date());
+                Instant.now(),
+                Instant.now());
         when(mapper.selectList(any())).thenReturn(List.of(first, second));
 
         List<QaKnowledgeSyncItem> result =

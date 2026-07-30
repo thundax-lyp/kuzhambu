@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.discovery.domain.qa.model.entity;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +26,7 @@ public class QaRetrievalTrace {
     private String aiStatus;
     private String aiErrorType;
     private String aiErrorMessage;
-    private Date retrievedAt;
+    private Instant retrievedAt;
 
     public QaRetrievalTrace(
             Long id,
@@ -45,7 +45,7 @@ public class QaRetrievalTrace {
             String aiStatus,
             String aiErrorType,
             String aiErrorMessage,
-            Date retrievedAt) {
+            Instant retrievedAt) {
         this.id = id == null ? traceId : id;
         this.messageId = messageId;
         this.rawQuestion = rawQuestion;

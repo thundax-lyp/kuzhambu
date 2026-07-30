@@ -20,7 +20,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaOwnerRef;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSessionDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaSessionMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -43,8 +43,8 @@ class QaSessionRepositoryImplTest {
                 null,
                 null,
                 "OPEN",
-                new Date(),
-                new Date(),
+                Instant.now(),
+                Instant.now(),
                 null);
         doAnswer(invocation -> {
                     invocation.getArgument(0, QaSessionDO.class).setId(4001L);
@@ -74,8 +74,8 @@ class QaSessionRepositoryImplTest {
                 null,
                 null,
                 "OPEN",
-                new Date(),
-                new Date(),
+                Instant.now(),
+                Instant.now(),
                 null);
         when(mapper.selectList(any())).thenReturn(List.of(dataObject));
 
@@ -104,15 +104,15 @@ class QaSessionRepositoryImplTest {
                 null,
                 null,
                 "OPEN",
-                new Date(1_718_000_000_000L),
-                new Date(1_718_000_100_000L),
+                Instant.ofEpochMilli(1_718_000_000_000L),
+                Instant.ofEpochMilli(1_718_000_100_000L),
                 null);
         Page<QaSessionDO> mapperPage = new Page<>(2, 20);
         mapperPage.setTotal(31);
         mapperPage.setRecords(List.of(dataObject));
         when(mapper.selectPage(any(Page.class), any())).thenReturn(mapperPage);
-        Date openedAtStart = new Date(1_718_000_000_000L);
-        Date openedAtEnd = new Date(1_718_086_400_000L);
+        Instant openedAtStart = Instant.ofEpochMilli(1_718_000_000_000L);
+        Instant openedAtEnd = Instant.ofEpochMilli(1_718_086_400_000L);
 
         PageResult<QaSession> result = repository.page("黄帝", openedAtStart, openedAtEnd, 2, 20);
 
@@ -137,7 +137,7 @@ class QaSessionRepositoryImplTest {
     void markRemovedShouldDelegateConditionalUpdate() {
         QaSessionMapper mapper = mock(QaSessionMapper.class);
         QaSessionRepositoryImpl repository = new QaSessionRepositoryImpl(mapper);
-        Date removedAt = new Date();
+        Instant removedAt = Instant.now();
         when(mapper.markRemoved(4001L, removedAt)).thenReturn(1);
 
         int updated = repository.markRemoved(QaSessionIdCodec.toDomain(4001L), removedAt);
@@ -150,7 +150,7 @@ class QaSessionRepositoryImplTest {
     void markRemovedShouldReturnZeroWhenAlreadyRemoved() {
         QaSessionMapper mapper = mock(QaSessionMapper.class);
         QaSessionRepositoryImpl repository = new QaSessionRepositoryImpl(mapper);
-        Date removedAt = new Date();
+        Instant removedAt = Instant.now();
         when(mapper.markRemoved(4001L, removedAt)).thenReturn(0);
 
         int updated = repository.markRemoved(QaSessionIdCodec.toDomain(4001L), removedAt);
