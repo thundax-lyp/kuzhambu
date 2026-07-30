@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,8 +37,8 @@ public class AuditLogPageRequest extends PageRequest {
     private String requestId;
 
     @Schema(name = "beginDate", description = "开始时间")
-    private Date beginDate;
+    private Instant beginDate;
 
     @Schema(name = "endDate", description = "结束时间")
-    private Date endDate;
+    private Instant endDate;
 }
