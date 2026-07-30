@@ -16,8 +16,8 @@ import {
     toMingCustomsFormValues,
     type MingCustomsFormValues
 } from "./ming-customs-form-values";
-import type { MingCustomsCommand } from "./ming-customs-service";
-import type { MingCustomsRecord } from "./ming-customs-types";
+import type { MingCustomsCommand } from "@/pages/classics/ming-customs/ming-customs-service";
+import type { MingCustomsRecord } from "@/pages/classics/ming-customs/ming-customs-types";
 
 const { Text } = Typography;
 const { TextArea } = Input;
