@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -24,6 +25,8 @@ import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
@@ -173,6 +176,27 @@ class DiscoveryQaPortalControllerTest {
         assertEquals("5001", exportRequest.getSessionId());
         assertEquals("CSV", exportRequest.getFormat());
         assertJsonFields(exportRequest, "sessionId", "ownerUserId", "format");
+    }
+
+    @Test
+    void sessionRequestsShouldRejectNonnumericSessionId() {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        DiscoveryQaRequests.QaSessionGetRequest getRequest = new DiscoveryQaRequests.QaSessionGetRequest();
+        getRequest.setSessionId("stored-5001");
+        getRequest.setOwnerUserId(1001L);
+        DiscoveryQaRequests.QaSessionDeleteRequest deleteRequest = new DiscoveryQaRequests.QaSessionDeleteRequest();
+        deleteRequest.setSessionId("stored-5001");
+        deleteRequest.setOwnerUserId(1001L);
+        DiscoveryQaRequests.QaSessionExportRequest exportRequest = new DiscoveryQaRequests.QaSessionExportRequest();
+        exportRequest.setSessionId("stored-5001");
+        exportRequest.setOwnerUserId(1001L);
+        DiscoveryQaRequests.ChatCompletionsRequest chatRequest = new DiscoveryQaRequests.ChatCompletionsRequest();
+        chatRequest.setSessionId("stored-5001");
+
+        assertFalse(validator.validate(getRequest).isEmpty());
+        assertFalse(validator.validate(deleteRequest).isEmpty());
+        assertFalse(validator.validate(exportRequest).isEmpty());
+        assertFalse(validator.validate(chatRequest).isEmpty());
     }
 
     @Test

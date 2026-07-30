@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.common.web.request.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -119,6 +120,7 @@ public final class DiscoveryQaAdminRequests {
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
         @NotBlank(message = "\"会话号\"不能为空")
+        @Pattern(regexp = "[1-9]\\d*", message = "\"会话号\"必须为数字")
         private String sessionId;
     }
 
@@ -132,6 +134,7 @@ public final class DiscoveryQaAdminRequests {
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
         @NotBlank(message = "\"会话号\"不能为空")
+        @Pattern(regexp = "[1-9]\\d*", message = "\"会话号\"必须为数字")
         private String sessionId;
     }
 
@@ -145,6 +148,7 @@ public final class DiscoveryQaAdminRequests {
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
         @NotBlank(message = "\"会话号\"不能为空")
+        @Pattern(regexp = "[1-9]\\d*", message = "\"会话号\"必须为数字")
         private String sessionId;
 
         @Schema(name = "requesterUserId", description = "请求用户号")
