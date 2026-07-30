@@ -201,5 +201,5 @@ const normalizeNumericId = (value: string | number | null | undefined) => {
 
     const trimmedValue = value.trim();
 
-    return /^\d+$/u.test(trimmedValue) ? trimmedValue : null;
+    return /^[1-9]\d*$/u.test(trimmedValue) ? trimmedValue : null;
 };
