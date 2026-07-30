@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `D-03 discovery-domain-search-valueobjects`：新增 Search ID、引用、状态值对象和 codec
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/model/valueobject/SearchEventId.java`、`SearchClickEventId.java`、`QueryUnderstandingId.java`、`SearchOperatorRef.java`、`SearchContentRef.java`、`SearchStatus.java`、`QueryUnderstandingStatus.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/codec/SearchEventIdCodec.java`
-    - 处理动作：新增 Search 强类型值对象并把主 ID 固定为 Long-backed。
-    - 验收点：Search 三个主 ID 均继承 `BaseLongId`，数字字符串解析只存在于 codec 或边界转换。
-    - 重要度：9/10
-
 - [ ] `D-04 discovery-domain-qa-entity-repository-contracts`：强类型化 QA 核心实体和仓储端口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
