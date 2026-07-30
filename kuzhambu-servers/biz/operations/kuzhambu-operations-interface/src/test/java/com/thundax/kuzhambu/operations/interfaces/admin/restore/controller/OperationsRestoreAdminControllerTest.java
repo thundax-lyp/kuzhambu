@@ -19,7 +19,7 @@ import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.reque
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.request.OperationsRestoreExecuteRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.request.OperationsRestorePageRequest;
 import java.lang.reflect.Method;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,11 +62,11 @@ class OperationsRestoreAdminControllerTest {
                         "DRILL",
                         "SUCCEEDED",
                         Boolean.TRUE,
-                        new Date(1_719_630_410_000L),
-                        new Date(1_719_630_490_000L),
+                        Instant.ofEpochMilli(1_719_630_410_000L),
+                        Instant.ofEpochMilli(1_719_630_490_000L),
                         null,
-                        new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L)));
+                        Instant.ofEpochMilli(1_719_630_400_000L),
+                        Instant.ofEpochMilli(1_719_630_500_000L)));
         when(service.page(any(), any()))
                 .thenReturn(PageResult.of(
                         1,
@@ -79,12 +79,12 @@ class OperationsRestoreAdminControllerTest {
                                 "DRILL",
                                 "SUCCEEDED",
                                 Boolean.TRUE,
-                                new Date(1_719_630_410_000L),
-                                new Date(1_719_630_490_000L),
+                                Instant.ofEpochMilli(1_719_630_410_000L),
+                                Instant.ofEpochMilli(1_719_630_490_000L),
                                 null,
                                 1001L,
-                                new Date(1_719_630_400_000L),
-                                new Date(1_719_630_500_000L)))));
+                                Instant.ofEpochMilli(1_719_630_400_000L),
+                                Instant.ofEpochMilli(1_719_630_500_000L)))));
         when(service.detail(any()))
                 .thenReturn(new OperationsRestoreDetailResult(
                         RestoreIdCodec.toDomain(9101L),
@@ -93,12 +93,12 @@ class OperationsRestoreAdminControllerTest {
                         "DRILL",
                         "SUCCEEDED",
                         Boolean.TRUE,
-                        new Date(1_719_630_410_000L),
-                        new Date(1_719_630_490_000L),
+                        Instant.ofEpochMilli(1_719_630_410_000L),
+                        Instant.ofEpochMilli(1_719_630_490_000L),
                         null,
                         1001L,
-                        new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L)));
+                        Instant.ofEpochMilli(1_719_630_400_000L),
+                        Instant.ofEpochMilli(1_719_630_500_000L)));
 
         OperationsRestoreExecuteRequest executeRequest = new OperationsRestoreExecuteRequest();
         executeRequest.setBackupId(9001L);
@@ -107,8 +107,8 @@ class OperationsRestoreAdminControllerTest {
         assertEquals(9101L, executeResponse.getRestoreId());
         assertEquals("DRILL", executeResponse.getRestoreMode());
         assertEquals("SUCCEEDED", executeResponse.getRestoreStatus());
-        assertEquals(new Date(1_719_630_410_000L), executeResponse.getWriteBlockStartedAt());
-        assertEquals(new Date(1_719_630_490_000L), executeResponse.getWriteBlockReleasedAt());
+        assertEquals(Instant.ofEpochMilli(1_719_630_410_000L), executeResponse.getWriteBlockStartedAt());
+        assertEquals(Instant.ofEpochMilli(1_719_630_490_000L), executeResponse.getWriteBlockReleasedAt());
 
         OperationsRestorePageRequest pageRequest = new OperationsRestorePageRequest();
         pageRequest.setBackupId(9001L);

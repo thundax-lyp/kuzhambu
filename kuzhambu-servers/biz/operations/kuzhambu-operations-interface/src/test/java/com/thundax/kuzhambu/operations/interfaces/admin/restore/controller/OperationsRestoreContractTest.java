@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.reque
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.response.OperationsRestoreDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.response.OperationsRestoreExecuteResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.response.OperationsRestorePageResponse;
-import java.util.Date;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class OperationsRestoreContractTest {
@@ -62,11 +62,11 @@ class OperationsRestoreContractTest {
                 .restoreMode("DRILL")
                 .restoreStatus("SUCCEEDED")
                 .writeBlockEnabled(Boolean.TRUE)
-                .writeBlockStartedAt(new Date(1_719_630_410_000L))
-                .writeBlockReleasedAt(new Date(1_719_630_490_000L))
+                .writeBlockStartedAt(Instant.ofEpochMilli(1_719_630_410_000L))
+                .writeBlockReleasedAt(Instant.ofEpochMilli(1_719_630_490_000L))
                 .failureReason(null)
-                .startedAt(new Date(1_719_630_400_000L))
-                .completedAt(new Date(1_719_630_500_000L))
+                .startedAt(Instant.ofEpochMilli(1_719_630_400_000L))
+                .completedAt(Instant.ofEpochMilli(1_719_630_500_000L))
                 .build();
         assertJsonFields(
                 executeResponse,
@@ -89,12 +89,12 @@ class OperationsRestoreContractTest {
                 .restoreMode("DRILL")
                 .restoreStatus("SUCCEEDED")
                 .writeBlockEnabled(Boolean.TRUE)
-                .writeBlockStartedAt(new Date(1_719_630_410_000L))
-                .writeBlockReleasedAt(new Date(1_719_630_490_000L))
+                .writeBlockStartedAt(Instant.ofEpochMilli(1_719_630_410_000L))
+                .writeBlockReleasedAt(Instant.ofEpochMilli(1_719_630_490_000L))
                 .failureReason(null)
                 .requesterUserId(1001L)
-                .startedAt(new Date(1_719_630_400_000L))
-                .completedAt(new Date(1_719_630_500_000L))
+                .startedAt(Instant.ofEpochMilli(1_719_630_400_000L))
+                .completedAt(Instant.ofEpochMilli(1_719_630_500_000L))
                 .build();
         assertJsonFields(
                 pageResponse,
@@ -118,12 +118,12 @@ class OperationsRestoreContractTest {
                 .restoreMode("DRILL")
                 .restoreStatus("SUCCEEDED")
                 .writeBlockEnabled(Boolean.TRUE)
-                .writeBlockStartedAt(new Date(1_719_630_410_000L))
-                .writeBlockReleasedAt(new Date(1_719_630_490_000L))
+                .writeBlockStartedAt(Instant.ofEpochMilli(1_719_630_410_000L))
+                .writeBlockReleasedAt(Instant.ofEpochMilli(1_719_630_490_000L))
                 .failureReason(null)
                 .requesterUserId(1001L)
-                .startedAt(new Date(1_719_630_400_000L))
-                .completedAt(new Date(1_719_630_500_000L))
+                .startedAt(Instant.ofEpochMilli(1_719_630_400_000L))
+                .completedAt(Instant.ofEpochMilli(1_719_630_500_000L))
                 .build();
         assertJsonFields(
                 detailResponse,
