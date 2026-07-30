@@ -10,12 +10,12 @@ import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.response.OperationsBackupDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.response.OperationsBackupExecuteResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.response.OperationsBackupPageResponse;
-import java.util.Date;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class OperationsBackupContractTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void requestJsonFieldsShouldRemainStable() throws Exception {
@@ -55,9 +55,9 @@ class OperationsBackupContractTest {
                 .fileSizeBytes(4096L)
                 .checksum("sha256-backup")
                 .failureReason(null)
-                .startedAt(new Date(1_719_630_400_000L))
-                .completedAt(new Date(1_719_630_500_000L))
-                .expiresAt(new Date(1_722_222_400_000L))
+                .startedAt(Instant.ofEpochMilli(1_719_630_400_000L))
+                .completedAt(Instant.ofEpochMilli(1_719_630_500_000L))
+                .expiresAt(Instant.ofEpochMilli(1_722_222_400_000L))
                 .build();
         assertJsonFields(
                 executeResponse,
@@ -81,9 +81,9 @@ class OperationsBackupContractTest {
                 .checksum("sha256-backup")
                 .failureReason(null)
                 .requesterUserId(1001L)
-                .startedAt(new Date(1_719_630_400_000L))
-                .completedAt(new Date(1_719_630_500_000L))
-                .expiresAt(new Date(1_722_222_400_000L))
+                .startedAt(Instant.ofEpochMilli(1_719_630_400_000L))
+                .completedAt(Instant.ofEpochMilli(1_719_630_500_000L))
+                .expiresAt(Instant.ofEpochMilli(1_722_222_400_000L))
                 .build();
         assertJsonFields(
                 pageResponse,
@@ -109,9 +109,9 @@ class OperationsBackupContractTest {
                 .checksum("sha256-backup")
                 .failureReason(null)
                 .requesterUserId(1001L)
-                .startedAt(new Date(1_719_630_400_000L))
-                .completedAt(new Date(1_719_630_500_000L))
-                .expiresAt(new Date(1_722_222_400_000L))
+                .startedAt(Instant.ofEpochMilli(1_719_630_400_000L))
+                .completedAt(Instant.ofEpochMilli(1_719_630_500_000L))
+                .expiresAt(Instant.ofEpochMilli(1_722_222_400_000L))
                 .build();
         assertJsonFields(
                 detailResponse,
