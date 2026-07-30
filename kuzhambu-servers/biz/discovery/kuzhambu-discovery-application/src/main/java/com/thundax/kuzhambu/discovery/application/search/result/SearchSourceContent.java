@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.discovery.application.search.result;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,8 +25,8 @@ public class SearchSourceContent {
     private String status;
     private String visibility;
     private Integer currentVersionNo;
-    private Date publishedAt;
-    private Date updatedAt;
+    private Instant publishedAt;
+    private Instant updatedAt;
 
     public SearchSourceContent(
             String contentDomain,
@@ -41,8 +41,8 @@ public class SearchSourceContent {
             List<String> tagNames,
             String status,
             String visibility,
-            Date publishedAt,
-            Date updatedAt) {
+            Instant publishedAt,
+            Instant updatedAt) {
         this(
                 contentDomain,
                 contentType,

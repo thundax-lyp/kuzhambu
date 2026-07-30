@@ -23,7 +23,6 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionReposi
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -157,9 +156,9 @@ class KnowledgeLineageReadApplicationServiceImplTest {
                   "href": "/knowledge/source/1001"
                 }]
                 """,
-                new Date(1_000L),
-                new Date(2_000L),
-                new Date(3_000L));
+                Instant.ofEpochMilli(1_000L),
+                Instant.ofEpochMilli(2_000L),
+                Instant.ofEpochMilli(3_000L));
     }
 
     private static KnowledgeLineageRelation relation() {
@@ -182,8 +181,8 @@ class KnowledgeLineageReadApplicationServiceImplTest {
                   "snippet": "关系来源"
                 }]
                 """,
-                new Date(1_000L),
-                new Date(2_000L),
-                new Date(3_000L));
+                Instant.ofEpochMilli(1_000L),
+                Instant.ofEpochMilli(2_000L),
+                Instant.ofEpochMilli(3_000L));
     }
 }

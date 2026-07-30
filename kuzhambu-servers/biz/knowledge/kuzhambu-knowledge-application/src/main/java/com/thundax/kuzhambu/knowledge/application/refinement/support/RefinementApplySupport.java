@@ -16,7 +16,6 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementL
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementLineageRelationDraft;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementRelationDraft;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -124,7 +123,7 @@ public class RefinementApplySupport {
     }
 
     private KnowledgeRelation toRelation(Long versionId, RefinementRelationDraft draft) {
-        Date now = new Date();
+        Instant now = Instant.now();
         return new KnowledgeRelation(
                 draft.getRelationId(),
                 draft.getRelationKey(),
@@ -143,7 +142,7 @@ public class RefinementApplySupport {
     }
 
     private KnowledgeLineageNode toLineageNode(Long versionId, RefinementLineageNodeDraft draft) {
-        Date now = new Date();
+        Instant now = Instant.now();
         return new KnowledgeLineageNode(
                 draft.getNodeId(),
                 draft.getNodeKey(),
@@ -160,7 +159,7 @@ public class RefinementApplySupport {
     }
 
     private KnowledgeLineageRelation toLineageRelation(Long versionId, RefinementLineageRelationDraft draft) {
-        Date now = new Date();
+        Instant now = Instant.now();
         return new KnowledgeLineageRelation(
                 draft.getRelationId(),
                 draft.getRelationKey(),

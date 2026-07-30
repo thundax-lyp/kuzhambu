@@ -31,7 +31,7 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.lang.reflect.Method;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -405,8 +405,10 @@ class DiscoverySearchStatisticsControllerTest {
         ArgumentCaptor<SearchStatisticsSummaryQuery> queryCaptor =
                 ArgumentCaptor.forClass(SearchStatisticsSummaryQuery.class);
         verify(service).getStatisticsSummary(queryCaptor.capture());
-        assertEquals(new Date(1_767_225_600_000L), queryCaptor.getValue().getDateFrom());
-        assertEquals(new Date(1_767_312_000_000L), queryCaptor.getValue().getDateTo());
+        assertEquals(
+                Instant.ofEpochMilli(1_767_225_600_000L), queryCaptor.getValue().getDateFrom());
+        assertEquals(
+                Instant.ofEpochMilli(1_767_312_000_000L), queryCaptor.getValue().getDateTo());
         assertEquals(12L, response.getSearchCount());
         assertEquals(2L, response.getFailedSearchCount());
         assertEquals(3L, response.getZeroResultSearchCount());

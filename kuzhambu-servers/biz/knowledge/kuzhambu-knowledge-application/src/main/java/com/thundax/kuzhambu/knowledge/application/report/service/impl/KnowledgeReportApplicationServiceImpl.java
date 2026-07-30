@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportS
 import com.thundax.kuzhambu.knowledge.application.report.service.KnowledgeReportApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.readmodel.TagGovernanceMetrics;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +26,7 @@ public class KnowledgeReportApplicationServiceImpl implements KnowledgeReportApp
     }
 
     @Override
-    public KnowledgeReportSummaryResult summary(Date periodStart, Date periodEnd, String bucketType) {
+    public KnowledgeReportSummaryResult summary(Instant periodStart, Instant periodEnd, String bucketType) {
         TagGovernanceMetrics metrics =
                 tagGovernanceMetricsRepository.getMetrics(DEFAULT_TOP_LIMIT, DEFAULT_RECENT_MONTHS);
         return new KnowledgeReportSummaryResult(

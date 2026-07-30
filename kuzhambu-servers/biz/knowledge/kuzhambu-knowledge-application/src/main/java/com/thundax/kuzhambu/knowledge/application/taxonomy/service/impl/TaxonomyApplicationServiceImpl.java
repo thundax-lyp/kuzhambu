@@ -69,7 +69,6 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMe
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -386,8 +385,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         tag.setSource(TagSource.MANUAL);
         tag.setReviewStatus(TagReviewStatus.APPROVED);
         tag.setReviewNote(trimOptionalText(effective.getReviewNote()));
-        tag.setCreatedAt(new Date());
-        tag.setReviewedAt(effective.getReviewedAt() == null ? new Date() : effective.getReviewedAt());
+        tag.setCreatedAt(Instant.now());
+        tag.setReviewedAt(effective.getReviewedAt() == null ? Instant.now() : effective.getReviewedAt());
 
         return tagRepository.insert(tag);
     }
@@ -456,7 +455,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     public void deprecateTag(TagDeprecateCommand command) {
         TagDeprecateCommand effective = ensureCommand(command, "标签废弃命令");
         Tag tag = ensureTagExists(ensureId(effective.getId(), "tagId"));
-        tag.deprecate(new Date(), null);
+        tag.deprecate(Instant.now(), null);
         if (tagRepository.update(tag) != 1) {
             throw new BizException("标签废弃状态更新失败");
         }
@@ -473,7 +472,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
             }
         }
         for (Tag tag : tags) {
-            tag.deprecate(new Date(), null);
+            tag.deprecate(Instant.now(), null);
             if (tagRepository.update(tag) != 1) {
                 throw new BizException("标签批量废弃状态更新失败");
             }
@@ -541,7 +540,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         reviewed.setStatus(tag.getStatus());
         reviewed.setSource(tag.getSource());
         reviewed.setCreatedAt(tag.getCreatedAt());
-        reviewed.setReviewedAt(new Date());
+        reviewed.setReviewedAt(Instant.now());
 
         if (APPROVE_DECISION.equals(decision)) {
             reviewed.setReviewStatus(TagReviewStatus.APPROVED);
@@ -743,7 +742,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         tag.setSource(TagSource.AI_EXTRACTED);
         tag.setReviewStatus(TagReviewStatus.PENDING);
         tag.setReviewNote(trimOptionalText(reviewNote));
-        tag.setCreatedAt(new Date());
+        tag.setCreatedAt(Instant.now());
         tagRepository.insert(tag);
     }
 
@@ -1012,7 +1011,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         reviewed.setStatus(tag.getStatus());
         reviewed.setSource(tag.getSource());
         reviewed.setCreatedAt(tag.getCreatedAt());
-        reviewed.setReviewedAt(new Date());
+        reviewed.setReviewedAt(Instant.now());
         reviewed.setReviewNote(reviewNote);
         reviewed.setReviewStatus(
                 APPROVE_DECISION.equals(decision) ? TagReviewStatus.APPROVED : TagReviewStatus.REJECTED);

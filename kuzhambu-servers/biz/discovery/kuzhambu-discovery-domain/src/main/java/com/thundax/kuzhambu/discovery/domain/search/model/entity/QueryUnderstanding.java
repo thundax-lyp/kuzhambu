@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.QueryUnderstandingId;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +28,7 @@ public class QueryUnderstanding {
     private String failureMessage;
     private String requestId;
     private String traceId;
-    private Date createdAt;
+    private Instant createdAt;
 
     public QueryUnderstanding(
             Long id,
@@ -44,7 +44,7 @@ public class QueryUnderstanding {
             String failureMessage,
             String requestId,
             String traceId,
-            Date createdAt) {
+            Instant createdAt) {
         this.id = id == null
                 ? QueryUnderstandingIdCodec.toDomain(queryUnderstandingId)
                 : QueryUnderstandingIdCodec.toDomain(id);

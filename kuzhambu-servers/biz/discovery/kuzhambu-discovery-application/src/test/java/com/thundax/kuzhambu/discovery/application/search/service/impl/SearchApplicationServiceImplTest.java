@@ -38,7 +38,6 @@ import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickEventR
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
 import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
@@ -125,8 +124,8 @@ class SearchApplicationServiceImplTest {
                                         1,
                                         1,
                                         "/classics/sancai/1001")))));
-        Date dateFrom = new Date(1_718_000_000_000L);
-        Date dateTo = new Date(1_720_419_200_000L);
+        Instant dateFrom = Instant.ofEpochMilli(1_718_000_000_000L);
+        Instant dateTo = Instant.ofEpochMilli(1_720_419_200_000L);
         SearchQuery query = new SearchQuery(
                 "黄帝",
                 List.of("SANCAI_ENTRY"),
@@ -660,9 +659,9 @@ class SearchApplicationServiceImplTest {
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
-        Date dateFrom = new Date(1_718_000_000_000L);
-        Date dateTo = new Date(1_720_419_200_000L);
-        when(searchEventRepository.listByCreatedAtRange(dateFrom.toInstant(), dateTo.toInstant()))
+        Instant dateFrom = Instant.ofEpochMilli(1_718_000_000_000L);
+        Instant dateTo = Instant.ofEpochMilli(1_720_419_200_000L);
+        when(searchEventRepository.listByCreatedAtRange(dateFrom, dateTo))
                 .thenReturn(List.of(
                         searchEvent("黄帝", "SUCCEEDED", 3),
                         searchEvent("黄帝", "SUCCEEDED", 0),

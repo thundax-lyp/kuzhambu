@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceCont
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexSyncApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchContentProvider;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +47,7 @@ public class SearchIndexSyncApplicationServiceImpl implements SearchIndexSyncApp
     }
 
     @Override
-    public Boolean syncDelete(String contentType, String contentId, Integer currentVersionNo, Date occurredAt) {
+    public Boolean syncDelete(String contentType, String contentId, Integer currentVersionNo, Instant occurredAt) {
         searchIndexGateway.markDocumentDeleted(contentType, contentId, currentVersionNo, occurredAt);
         return Boolean.TRUE;
     }

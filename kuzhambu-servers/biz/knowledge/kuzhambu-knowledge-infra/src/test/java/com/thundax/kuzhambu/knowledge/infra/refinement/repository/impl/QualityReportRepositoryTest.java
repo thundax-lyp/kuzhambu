@@ -18,7 +18,7 @@ import com.thundax.kuzhambu.knowledge.infra.refinement.persistence.mapper.Qualit
 import com.thundax.kuzhambu.knowledge.infra.refinement.persistence.mapper.QualityReportMapper;
 import com.thundax.kuzhambu.knowledge.infra.refinement.persistence.mapper.QualityReportSourceDetailMapper;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -55,10 +55,10 @@ class QualityReportRepositoryTest {
                 1L,
                 2L,
                 1L,
-                new Date(),
-                new Date(),
-                new Date(),
-                new Date());
+                Instant.now(),
+                Instant.now(),
+                Instant.now(),
+                Instant.now());
         QualityReportIssue issue = new QualityReportIssue(
                 2L,
                 2001L,
@@ -72,7 +72,7 @@ class QualityReportRepositoryTest {
                 "建议",
                 "/knowledge/refinement",
                 10,
-                new Date());
+                Instant.now());
         QualityReportSourceDetail sourceDetail = new QualityReportSourceDetail(
                 3L,
                 3001L,
@@ -82,12 +82,12 @@ class QualityReportRepositoryTest {
                 "myth",
                 "神话",
                 71L,
-                new Date(),
+                Instant.now(),
                 1L,
                 2L,
                 "APPLIED",
                 "/knowledge/atlas",
-                new Date());
+                Instant.now());
 
         repository.save(report, List.of(issue), List.of(sourceDetail));
 

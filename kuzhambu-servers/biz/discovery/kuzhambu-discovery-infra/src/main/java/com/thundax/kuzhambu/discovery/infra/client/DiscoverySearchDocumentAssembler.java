@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.discovery.infra.client;
 
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -28,8 +27,8 @@ public class DiscoverySearchDocumentAssembler {
                 sourceContent.getStatus(),
                 sourceContent.getVisibility(),
                 sourceContent.getCurrentVersionNo(),
-                toInstant(sourceContent.getPublishedAt()),
-                toInstant(sourceContent.getUpdatedAt()),
+                sourceContent.getPublishedAt(),
+                sourceContent.getUpdatedAt(),
                 Boolean.FALSE,
                 null,
                 buildSourcePath(sourceContent));
@@ -54,10 +53,6 @@ public class DiscoverySearchDocumentAssembler {
 
     private String stripHtml(String value) {
         return value.replaceAll("<[^>]+>", " ").replaceAll("\\s+", " ").trim();
-    }
-
-    private Instant toInstant(java.util.Date value) {
-        return value == null ? null : value.toInstant();
     }
 
     private String buildSourcePath(SearchSourceContent sourceContent) {

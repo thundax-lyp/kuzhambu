@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -38,8 +38,8 @@ public class QualityReportDO {
     private Long annotationCount;
     private Long issueCount;
     private Long generatedBy;
-    private Date generatedAt;
-    private Date publishedAt;
-    private Date createdAt;
-    private Date updatedAt;
+    private Instant generatedAt;
+    private Instant publishedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
 }

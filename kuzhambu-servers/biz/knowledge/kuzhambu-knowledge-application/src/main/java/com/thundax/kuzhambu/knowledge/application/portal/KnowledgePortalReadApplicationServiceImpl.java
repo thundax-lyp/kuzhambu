@@ -660,7 +660,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                                         : item.getSourceCategoryName(),
                                 item.getAppliedAt() == null
                                         ? null
-                                        : item.getAppliedAt().getTime(),
+                                        : item.getAppliedAt().toEpochMilli(),
                                 item.getStatus(),
                                 item.getHref()))
                         .toList();

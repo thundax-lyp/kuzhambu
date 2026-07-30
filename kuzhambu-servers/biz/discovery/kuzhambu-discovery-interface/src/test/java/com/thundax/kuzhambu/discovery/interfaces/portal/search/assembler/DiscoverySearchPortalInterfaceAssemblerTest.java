@@ -12,7 +12,6 @@ import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.reques
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
 import java.time.Instant;
-import java.util.Date;
 import org.junit.jupiter.api.Test;
 
 class DiscoverySearchPortalInterfaceAssemblerTest {
@@ -51,8 +50,8 @@ class DiscoverySearchPortalInterfaceAssemblerTest {
 
         SearchQuery query = DiscoverySearchPortalInterfaceAssembler.toQuery(request);
 
-        assertEquals(Date.from(Instant.parse("2026-01-02T00:00:00Z")), query.getDateFrom());
-        assertEquals(Date.from(Instant.parse("2026-01-31T23:59:59.999Z")), query.getDateTo());
+        assertEquals(Instant.parse("2026-01-02T00:00:00Z"), query.getDateFrom());
+        assertEquals(Instant.parse("2026-01-31T23:59:59.999Z"), query.getDateTo());
     }
 
     @Test

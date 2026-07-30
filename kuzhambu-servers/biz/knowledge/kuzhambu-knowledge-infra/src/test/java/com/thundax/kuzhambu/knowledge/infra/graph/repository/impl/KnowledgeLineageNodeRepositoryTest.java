@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.KnowledgeLineageNodeDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.KnowledgeLineageNodeMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -85,8 +85,8 @@ class KnowledgeLineageNodeRepositoryTest {
         node.setConfirmationStatus("AI_EXTRACTED");
         node.setLatestVersionId(201L);
         node.setSourceRefsJson("[{\"entryId\":1}]");
-        node.setFirstExtractedAt(new Date());
-        node.setLastExtractedAt(new Date());
+        node.setFirstExtractedAt(Instant.now());
+        node.setLastExtractedAt(Instant.now());
 
         repository.saveOrUpdateBatch(List.of(node));
 

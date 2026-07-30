@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementRelationDraft;
 import com.thundax.kuzhambu.knowledge.infra.refinement.persistence.dataobject.RefinementRelationDraftDO;
 import com.thundax.kuzhambu.knowledge.infra.refinement.persistence.mapper.RefinementRelationDraftMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -55,9 +55,9 @@ class RefinementRelationDraftRepositoryTest {
                 "[]",
                 1,
                 1L,
-                new Date(),
+                Instant.now(),
                 1L,
-                new Date());
+                Instant.now());
 
         repository.saveOrUpdateBatch(List.of(draft));
 

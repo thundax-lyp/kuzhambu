@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchContentProvider;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -83,7 +83,7 @@ class SearchIndexSyncApplicationServiceImplTest {
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         SearchIndexSyncApplicationServiceImpl service =
                 new SearchIndexSyncApplicationServiceImpl(searchContentProvider, searchIndexGateway);
-        Date occurredAt = new Date();
+        Instant occurredAt = Instant.now();
 
         Boolean synced = service.syncDelete("SANCAI_ENTRY", "1001", 5, occurredAt);
 

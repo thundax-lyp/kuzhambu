@@ -48,7 +48,6 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementRel
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -251,7 +250,7 @@ class KnowledgeQualityReportApplicationServiceTest {
                 annotationRepository,
                 reportRepository);
         QualityReport report = report();
-        report.setGeneratedAt(new Date(1_719_187_200_000L));
+        report.setGeneratedAt(Instant.ofEpochMilli(1_719_187_200_000L));
         when(reportRepository.getLatestPublished(71L)).thenReturn(report);
         when(reportRepository.getByReportId(1001L)).thenReturn(report);
         when(reportRepository.listIssuesByReportId(1001L)).thenReturn(List.of());
@@ -269,11 +268,11 @@ class KnowledgeQualityReportApplicationServiceTest {
                         71L,
                         "APPLIED",
                         9L,
-                        new Date(),
+                        Instant.now(),
                         null,
                         null,
                         19L,
-                        new Date(1_719_187_260_000L),
+                        Instant.ofEpochMilli(1_719_187_260_000L),
                         null,
                         null));
 
