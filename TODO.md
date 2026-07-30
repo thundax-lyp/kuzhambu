@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `18 verification`：运行 Discovery ID 清理验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers`、`kuzhambu-apps/admin-web`、`kuzhambu-apps/portal-web`
-    - 处理动作：运行 RUNBOOK 中 backend 和 frontend 验证命令，并记录失败项或通过结果。
-    - 验收点：`mvn -pl biz/discovery -am spotless:check checkstyle:check test`、admin-web format/lint/test/build、portal discovery e2e 按 RUNBOOK 口径完成或留下明确失败原因。
-    - 重要度：10/10
-
 - [ ] `19 cleanup-runbook`：完成后清理 ID 清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
