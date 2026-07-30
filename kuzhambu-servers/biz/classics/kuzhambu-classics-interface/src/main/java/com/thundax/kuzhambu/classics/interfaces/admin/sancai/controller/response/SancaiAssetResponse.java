@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -56,10 +56,10 @@ public class SancaiAssetResponse implements Serializable {
     private String scopeJson;
 
     @JsonProperty("requestedAt")
-    private Date requestedAt;
+    private Instant requestedAt;
 
     @JsonProperty("completedAt")
-    private Date completedAt;
+    private Instant completedAt;
 
     @JsonProperty("scopeTitle")
     private String scopeTitle;

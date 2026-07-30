@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowc
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface SancaiAssetRepository {
@@ -21,7 +21,7 @@ public interface SancaiAssetRepository {
 
     SancaiEntryDraft getLatestDraftByEntryId(SancaiEntryId entryId);
 
-    default List<SancaiEntryDraftId> listExpiredDraftIds(Date cutoff, int limit) {
+    default List<SancaiEntryDraftId> listExpiredDraftIds(Instant cutoff, int limit) {
         return List.of();
     }
 
@@ -115,8 +115,8 @@ public interface SancaiAssetRepository {
             String keyword,
             String status,
             String visibilityRiskStatus,
-            Date requestedAtStart,
-            Date requestedAtEnd,
+            Instant requestedAtStart,
+            Instant requestedAtEnd,
             int pageNo,
             int pageSize);
 }

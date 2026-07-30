@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportSc
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,8 +25,8 @@ public class ClassicsContentExportJob {
     private ClassicsExportFormat exportFormat;
     private ClassicsExportScopeType scopeType;
     private String scopeJson;
-    private Date requestedAt;
-    private Date expiresAt;
+    private Instant requestedAt;
+    private Instant expiresAt;
     private ClassicsExportStatus status;
     private StorageObjectId storageObjectId;
     private int itemCount;
@@ -34,7 +34,7 @@ public class ClassicsContentExportJob {
     private SancaiVisibilityRiskStatus visibilityRiskStatus;
     private boolean contentChanged;
 
-    public void markCompleted(StorageObjectId storageObjectId, Date expiresAt, int itemCount, int assetCount) {
+    public void markCompleted(StorageObjectId storageObjectId, Instant expiresAt, int itemCount, int assetCount) {
         this.status = ClassicsExportStatus.COMPLETED;
         this.storageObjectId = storageObjectId;
         this.expiresAt = expiresAt;

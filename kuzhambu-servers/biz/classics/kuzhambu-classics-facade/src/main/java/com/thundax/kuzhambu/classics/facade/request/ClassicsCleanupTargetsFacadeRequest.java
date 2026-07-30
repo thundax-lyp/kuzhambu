@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.facade.request;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,5 +16,5 @@ public class ClassicsCleanupTargetsFacadeRequest {
     private final List<Long> targetIds;
     private final Integer retentionDays;
     private final Integer limit;
-    private final Date requestedAt;
+    private final Instant requestedAt;
 }

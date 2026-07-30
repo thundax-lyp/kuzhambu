@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.classics.application.searchsync.service.ClassicsSear
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncEventFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncMessageFacadeDto;
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +65,7 @@ public class ClassicsSearchIndexSyncPublishSupport {
                 .contentType(contentType.value())
                 .contentId(contentId)
                 .currentVersionNo(currentVersionNo)
-                .occurredAt(new Date())
+                .occurredAt(Instant.now())
                 .build();
     }
 

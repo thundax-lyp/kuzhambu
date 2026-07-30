@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,13 +30,13 @@ public class ClassicsSharingRequest extends PageRequest {
     private String visibilityRiskStatus;
 
     @JsonProperty("expiresAt")
-    private Date expiresAt;
+    private Instant expiresAt;
 
     @JsonProperty("issuedAfter")
-    private Date issuedAfter;
+    private Instant issuedAfter;
 
     @JsonProperty("issuedBefore")
-    private Date issuedBefore;
+    private Instant issuedBefore;
 
     @JsonProperty("shareLinkId")
     private Long shareLinkId;

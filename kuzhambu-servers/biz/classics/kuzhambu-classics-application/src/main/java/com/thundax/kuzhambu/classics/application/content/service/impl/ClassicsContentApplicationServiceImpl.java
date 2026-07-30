@@ -88,11 +88,11 @@ import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -1358,7 +1358,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         requirePrivateExportPermission(command);
         ClassicsContentExportJob job = ClassicsContentApplicationAssembler.toExportJob(command);
         if (job.getRequestedAt() == null) {
-            job.setRequestedAt(new Date());
+            job.setRequestedAt(Instant.now());
         }
         ClassicsContentExportJobId jobId = repository.insertExportJob(job);
         if (jobId == null) {
@@ -1386,7 +1386,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             repository.markExportJobCompleted(
                     jobId,
                     storageObjectId,
-                    new Date(job.getRequestedAt().getTime() + EXPORT_EXPIRES_DAYS * 24L * 60L * 60L * 1000L),
+                    job.getRequestedAt().plus(Duration.ofDays(EXPORT_EXPIRES_DAYS)),
                     itemCount,
                     job.getAssetCount());
             return new ClassicsExportJobResult(jobId, ClassicsExportStatus.COMPLETED, storageObjectId);
@@ -1414,7 +1414,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 || job.getStorageObjectId() == null
                 || job.getStatus() != ClassicsExportStatus.COMPLETED
                 || job.getExpiresAt() == null
-                || job.getExpiresAt().before(new Date())
+                || job.getExpiresAt().isBefore(Instant.now())
                 || storageFacade == null) {
             return null;
         }

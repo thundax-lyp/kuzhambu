@@ -56,10 +56,10 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HexFormat;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -119,7 +119,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     public SancaiEntryDraftId updateDraft(SancaiDraftCommand command) {
         SancaiEntryDraft draft = new SancaiEntryDraft();
         draft.setEntryId(SancaiEntryIdCodec.toDomain(command.getEntryId()));
-        draft.setAutosavedAt(command.getAutosavedAt() == null ? new Date() : command.getAutosavedAt());
+        draft.setAutosavedAt(command.getAutosavedAt() == null ? Instant.now() : command.getAutosavedAt());
         draft.setDraftJson(command.getDraftJson());
         return repository.insertDraft(draft);
     }
@@ -454,8 +454,8 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             String keyword,
             String status,
             String visibilityRiskStatus,
-            Date requestedAtStart,
-            Date requestedAtEnd,
+            Instant requestedAtStart,
+            Instant requestedAtEnd,
             PageQuery page) {
         return repository.pageShowcases(
                 keyword,

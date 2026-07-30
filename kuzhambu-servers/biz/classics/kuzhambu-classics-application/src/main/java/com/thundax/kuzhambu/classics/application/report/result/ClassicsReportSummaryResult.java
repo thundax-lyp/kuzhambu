@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.application.report.result;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,8 +13,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ClassicsReportSummaryResult {
 
-    private Date periodStart;
-    private Date periodEnd;
+    private Instant periodStart;
+    private Instant periodEnd;
     private Long contentCount;
     private Long translatedContentCount;
     private Long imageReadyContentCount;

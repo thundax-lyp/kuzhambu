@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.classics.application.sharing.command;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -20,7 +20,7 @@ public class BatchShareCreateCommand {
     private ClassicsShareVisibility visibility;
     private ClassicsShareLinkStatus status;
     private SancaiVisibilityRiskStatus visibilityRiskStatus;
-    private Date expiresAt;
+    private Instant expiresAt;
     private boolean privateContentConfirmed;
     private List<ShareTargetCreateCommand> targets;
     private Long operatorUserId;
@@ -31,7 +31,7 @@ public class BatchShareCreateCommand {
             ClassicsShareVisibility visibility,
             ClassicsShareLinkStatus status,
             SancaiVisibilityRiskStatus visibilityRiskStatus,
-            Date expiresAt,
+            Instant expiresAt,
             boolean privateContentConfirmed,
             List<ShareTargetCreateCommand> targets) {
         this(

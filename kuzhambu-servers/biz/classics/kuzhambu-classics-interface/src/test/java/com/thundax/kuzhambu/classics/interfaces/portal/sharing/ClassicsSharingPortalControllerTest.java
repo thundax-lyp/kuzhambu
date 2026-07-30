@@ -34,7 +34,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -43,7 +43,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 class ClassicsSharingPortalControllerTest {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void controllerTypeShouldExist() {
@@ -156,8 +156,8 @@ class ClassicsSharingPortalControllerTest {
         ClassicsSharePortalSearchRequest request = new ClassicsSharePortalSearchRequest();
         request.setContentType("SANCAI_ENTRY");
         request.setTitle("正式");
-        request.setIssuedAfter(new Date(1_000L));
-        request.setIssuedBefore(new Date(3_000L));
+        request.setIssuedAfter(Instant.ofEpochMilli(1_000L));
+        request.setIssuedBefore(Instant.ofEpochMilli(3_000L));
         request.setPageNo(1);
         request.setPageSize(10);
 
@@ -231,8 +231,8 @@ class ClassicsSharingPortalControllerTest {
                                 "公开分享",
                                 ClassicsShareVisibility.PUBLIC,
                                 ClassicsShareLinkStatus.ACTIVE,
-                                new Date(1_000L),
-                                new Date(3_000L),
+                                Instant.ofEpochMilli(1_000L),
+                                Instant.ofEpochMilli(3_000L),
                                 List.of(target(), wangqiTarget(), deletedTarget()));
                     }
                     if ("getPrivatePortalShare".equals(method.getName())) {
@@ -241,15 +241,15 @@ class ClassicsSharingPortalControllerTest {
                                 "私有分享",
                                 ClassicsShareVisibility.PRIVATE,
                                 ClassicsShareLinkStatus.ACTIVE,
-                                new Date(1_000L),
-                                new Date(3_000L),
+                                Instant.ofEpochMilli(1_000L),
+                                Instant.ofEpochMilli(3_000L),
                                 List.of(target()));
                     }
                     if ("pagePortalShares".equals(method.getName())) {
                         assertEquals("SANCAI_ENTRY", args[0]);
                         assertEquals("正式", args[1]);
-                        assertEquals(new Date(1_000L), args[2]);
-                        assertEquals(new Date(3_000L), args[3]);
+                        assertEquals(Instant.ofEpochMilli(1_000L), args[2]);
+                        assertEquals(Instant.ofEpochMilli(3_000L), args[3]);
                         PageQuery page = (PageQuery) args[4];
                         assertEquals(1, page.getPageNo());
                         assertEquals(10, page.getPageSize());
@@ -321,8 +321,8 @@ class ClassicsSharingPortalControllerTest {
                 ClassicsShareLinkIdCodec.toDomain(10L),
                 "share-token",
                 "公开分享",
-                new Date(1_000L),
-                new Date(3_000L),
+                Instant.ofEpochMilli(1_000L),
+                Instant.ofEpochMilli(3_000L),
                 ClassicsContentType.SANCAI_ENTRY,
                 ClassicsContentIdCodec.toDomain(100L),
                 ClassicsContentVersionIdCodec.toDomain(30L),

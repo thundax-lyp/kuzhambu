@@ -48,7 +48,7 @@ import jakarta.validation.Validator;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -58,7 +58,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 class ClassicsContentAdminControllerTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void routesShouldKeepExportAdminApiPathsAndPermissions() throws Exception {
@@ -669,7 +669,7 @@ class ClassicsContentAdminControllerTest {
                             return exportJob(
                                     ClassicsContentExportJobIdCodec.toDomain(9003L),
                                     ClassicsExportStatus.COMPLETED,
-                                    new Date(System.currentTimeMillis() - 60_000L));
+                                    Instant.now().minusSeconds(60));
                         }
                     }
                     if ("getExportJobContent".equals(method.getName())) {
@@ -846,11 +846,11 @@ class ClassicsContentAdminControllerTest {
         return exportJob(
                 id,
                 status,
-                status == ClassicsExportStatus.COMPLETED ? new Date(System.currentTimeMillis() + 60_000L) : null);
+                status == ClassicsExportStatus.COMPLETED ? Instant.now().plusSeconds(60) : null);
     }
 
     private static ClassicsContentExportJob exportJob(
-            ClassicsContentExportJobId id, ClassicsExportStatus status, Date expiresAt) {
+            ClassicsContentExportJobId id, ClassicsExportStatus status, Instant expiresAt) {
         return new ClassicsContentExportJob(
                 id,
                 ClassicsExportKind.CONTENT_DATASET,
@@ -858,7 +858,7 @@ class ClassicsContentAdminControllerTest {
                 ClassicsExportFormat.HTML,
                 ClassicsExportScopeType.CATEGORY,
                 "all",
-                new Date(),
+                Instant.now(),
                 expiresAt,
                 status,
                 StorageObjectIdCodec.toDomain(7001L),

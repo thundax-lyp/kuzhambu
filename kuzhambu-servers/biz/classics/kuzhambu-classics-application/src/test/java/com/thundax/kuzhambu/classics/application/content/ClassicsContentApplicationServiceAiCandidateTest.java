@@ -64,7 +64,6 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -1378,7 +1377,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         public int markExportJobCompleted(
                 ClassicsContentExportJobId id,
                 com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId storageObjectId,
-                Date expiresAt,
+                Instant expiresAt,
                 int itemCount,
                 int assetCount) {
             return 1;

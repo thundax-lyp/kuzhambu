@@ -30,7 +30,6 @@ import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepo
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -148,8 +147,8 @@ class ClassicsReportApplicationServiceImplTest {
         return item;
     }
 
-    private static Date date(long epochMillis) {
-        return new Date(epochMillis);
+    private static Instant date(long epochMillis) {
+        return Instant.ofEpochMilli(epochMillis);
     }
 
     private static Instant instant(long epochMillis) {

@@ -47,7 +47,7 @@ import com.thundax.kuzhambu.classics.infra.wangqi.persistence.dataobject.WangqiD
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.mapper.WangqiDocumentMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
@@ -400,7 +400,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     public int markExportJobCompleted(
             ClassicsContentExportJobId id,
             StorageObjectId storageObjectId,
-            Date expiresAt,
+            Instant expiresAt,
             int itemCount,
             int assetCount) {
         return exportMapper.markExportJobCompleted(
@@ -434,7 +434,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public List<ClassicsContentExportJobId> listExpiredExportJobIds(Date now, int limit) {
+    public List<ClassicsContentExportJobId> listExpiredExportJobIds(Instant now, int limit) {
         return exportMapper
                 .selectList(new LambdaQueryWrapper<ClassicsContentExportJobDO>()
                         .select(ClassicsContentExportJobDO::getId)

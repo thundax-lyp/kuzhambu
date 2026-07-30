@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto.QaPair;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ class KnowledgeDocumentAssemblerTest {
 
     @Test
     void shouldAssembleMetadataAndKnowledgeFromClassicsResponse() {
-        Date now = new Date();
+        Instant now = Instant.now();
         KnowledgeDocument document = assembler.toKnowledgeDocument(createQaKnowledgeResponse(now));
 
         assertEquals(
@@ -31,14 +31,14 @@ class KnowledgeDocumentAssemblerTest {
                         "PUBLIC",
                         "PUBLISHED",
                         "/classics/sancai/1001",
-                        now.toInstant()),
+                        now),
                 document.metadata());
         assertEquals("三才", document.knowledge().title());
     }
 
     @Test
     void shouldNotRenderMetadataFieldsIntoKnowledgeText() {
-        KnowledgeDocument document = assembler.toKnowledgeDocument(createQaKnowledgeResponse(new Date()));
+        KnowledgeDocument document = assembler.toKnowledgeDocument(createQaKnowledgeResponse(Instant.now()));
         String rendered = textRenderer.render(document.knowledge());
 
         assertFalse(rendered.contains("SANCAI_ENTRY:1001"));
@@ -61,7 +61,7 @@ class KnowledgeDocumentAssemblerTest {
                         .visibility("PUBLIC")
                         .status("PUBLISHED")
                         .sourcePath("/classics/ming-customs/2001")
-                        .updatedAt(new Date(2000L))
+                        .updatedAt(Instant.ofEpochMilli(2000L))
                         .title("节令")
                         .categoryPath("年节")
                         .summary("")
@@ -80,7 +80,7 @@ class KnowledgeDocumentAssemblerTest {
         assertFalse(rendered.contains("不应该渲染"));
     }
 
-    private ClassicsQaKnowledgeFacadeResponse createQaKnowledgeResponse(Date updatedAt) {
+    private ClassicsQaKnowledgeFacadeResponse createQaKnowledgeResponse(Instant updatedAt) {
         return ClassicsQaKnowledgeFacadeResponse.builder()
                 .knowledge(ClassicsQaKnowledgeFacadeDto.builder()
                         .sourceId("SANCAI_ENTRY:1001")

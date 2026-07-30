@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsSharePortalListItemDO;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareTargetDO;
-import java.util.Date;
+import java.time.Instant;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -56,8 +56,8 @@ public interface ClassicsShareTargetMapper extends BaseMapper<ClassicsShareTarge
             @Param("legacyTargetStatus") String legacyTargetStatus,
             @Param("contentType") String contentType,
             @Param("title") String title,
-            @Param("issuedAfter") Date issuedAfter,
-            @Param("issuedBefore") Date issuedBefore);
+            @Param("issuedAfter") Instant issuedAfter,
+            @Param("issuedBefore") Instant issuedBefore);
 
     @Select({
         "<script>",

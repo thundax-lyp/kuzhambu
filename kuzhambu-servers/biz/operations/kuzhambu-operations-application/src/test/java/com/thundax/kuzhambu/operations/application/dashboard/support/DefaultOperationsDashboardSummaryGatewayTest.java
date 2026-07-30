@@ -24,7 +24,6 @@ import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSummaryFacadeReque
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -74,8 +73,8 @@ class DefaultOperationsDashboardSummaryGatewayTest {
         verify(aiFacade).summary(aiCaptor.capture());
         verify(discoveryFacade).summary(discoveryCaptor.capture());
         verify(knowledgeFacade).summary(knowledgeCaptor.capture());
-        assertEquals(Date.from(periodStart), classicsCaptor.getValue().getPeriodStart());
-        assertEquals(Date.from(periodEnd), classicsCaptor.getValue().getPeriodEnd());
+        assertEquals(periodStart, classicsCaptor.getValue().getPeriodStart());
+        assertEquals(periodEnd, classicsCaptor.getValue().getPeriodEnd());
         assertEquals(periodStart, aiCaptor.getValue().getPeriodStart());
         assertEquals(periodEnd, aiCaptor.getValue().getPeriodEnd());
         assertEquals(periodStart, discoveryCaptor.getValue().getPeriodStart());

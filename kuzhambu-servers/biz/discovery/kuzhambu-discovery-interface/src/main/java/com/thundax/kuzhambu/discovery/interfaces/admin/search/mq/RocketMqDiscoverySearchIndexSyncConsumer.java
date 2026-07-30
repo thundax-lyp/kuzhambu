@@ -35,9 +35,7 @@ public class RocketMqDiscoverySearchIndexSyncConsumer
                     message.getContentType(),
                     message.getContentId(),
                     message.getCurrentVersionNo(),
-                    message.getOccurredAt() == null
-                            ? null
-                            : message.getOccurredAt().toInstant());
+                    message.getOccurredAt());
             return;
         }
         searchIndexSyncApplicationService.syncUpsert(

@@ -37,14 +37,14 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.page.PageRules;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 class ClassicsSharingAdminControllerTest {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void routesShouldKeepAdminSharingApiPaths() throws Exception {
@@ -254,8 +254,8 @@ class ClassicsSharingAdminControllerTest {
         shareLink.setTitle("公开分享");
         shareLink.setVisibility(ClassicsShareVisibility.PUBLIC);
         shareLink.setStatus(ClassicsShareLinkStatus.ACTIVE);
-        shareLink.setIssuedAt(new Date());
-        shareLink.setExpiresAt(new Date(System.currentTimeMillis() + 86_400_000L));
+        shareLink.setIssuedAt(Instant.now());
+        shareLink.setExpiresAt(Instant.now().plusSeconds(86_400));
         shareLink.setAccessCount(1L);
         return shareLink;
     }
@@ -265,7 +265,7 @@ class ClassicsSharingAdminControllerTest {
         record.setId(ClassicsShareAccessRecordIdCodec.toDomain(100L));
         record.setShareLinkId(ClassicsShareLinkIdCodec.toDomain(10L));
         record.setShareTargetId(ClassicsShareTargetIdCodec.toDomain(20L));
-        record.setAccessedAt(new Date(System.currentTimeMillis() - 3_600_000L));
+        record.setAccessedAt(Instant.now().minusSeconds(3_600));
         record.setAccessResult(ClassicsShareAccessResult.ALLOWED);
         record.setClientSnapshot("resourceStorageObjectId=101");
         return record;

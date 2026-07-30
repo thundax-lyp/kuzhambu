@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.classics.application.sancai.command;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SancaiShowcaseCommand {
-    private Date requestedAt;
+    private Instant requestedAt;
     private SancaiShowcaseStatus status;
     private String scopeJson;
     private String scopeTitle;
@@ -24,7 +24,7 @@ public class SancaiShowcaseCommand {
     private boolean privateConfirmed;
 
     public SancaiShowcaseCommand(
-            Date requestedAt,
+            Instant requestedAt,
             SancaiShowcaseStatus status,
             String scopeJson,
             StorageObjectId storageObjectId,
