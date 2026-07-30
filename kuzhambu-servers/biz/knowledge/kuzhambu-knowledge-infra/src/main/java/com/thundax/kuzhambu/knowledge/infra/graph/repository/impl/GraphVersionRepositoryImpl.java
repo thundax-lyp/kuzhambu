@@ -5,8 +5,16 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionAiCandidateIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionAiCandidateId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionSourceContentId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.GraphVersionPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphVersionDO;
@@ -26,11 +34,14 @@ public class GraphVersionRepositoryImpl implements GraphVersionRepository {
     }
 
     @Override
-    public GraphVersion findLatest(String taskType, String sourceContentType, Long sourceContentId) {
+    public GraphVersion findLatest(
+            GraphExtractionTaskType taskType,
+            String sourceContentType,
+            GraphExtractionSourceContentId sourceContentId) {
         QueryWrapper<GraphVersionDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("task_type", taskType)
+        wrapper.eq("task_type", taskType == null ? null : taskType.value())
                 .eq("source_content_type", sourceContentType)
-                .eq("source_content_id", sourceContentId)
+                .eq("source_content_id", GraphExtractionSourceContentIdCodec.toValue(sourceContentId))
                 .orderByDesc("version_no")
                 .last("limit 1");
         return GraphVersionPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
@@ -62,27 +73,36 @@ public class GraphVersionRepositoryImpl implements GraphVersionRepository {
     }
 
     @Override
-    public GraphVersion getByVersionId(Long versionId) {
+    public GraphVersion getByVersionId(GraphVersionId versionId) {
         QueryWrapper<GraphVersionDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("id", versionId);
+        wrapper.eq("id", GraphVersionIdCodec.toValue(versionId));
         return GraphVersionPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
     }
 
     @Override
-    public GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, Long candidateId) {
+    public GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, GraphExtractionAiCandidateId candidateId) {
         QueryWrapper<GraphVersionDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("task_id", taskId == null ? null : taskId.value()).eq("candidate_id", candidateId);
+        wrapper.eq("task_id", taskId == null ? null : taskId.value())
+                .eq("candidate_id", GraphExtractionAiCandidateIdCodec.toValue(candidateId));
         return GraphVersionPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
     }
 
     @Override
     public PageResult<GraphVersion> page(
-            String taskType, String status, String sourceContentType, Long sourceContentId, int pageNo, int pageSize) {
+            GraphExtractionTaskType taskType,
+            GraphVersionStatus status,
+            String sourceContentType,
+            GraphExtractionSourceContentId sourceContentId,
+            int pageNo,
+            int pageSize) {
         QueryWrapper<GraphVersionDO> wrapper = new QueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(taskType), "task_type", taskType)
-                .eq(StringUtils.isNotBlank(status), "status", status)
+        wrapper.eq(taskType != null, "task_type", taskType == null ? null : taskType.value())
+                .eq(status != null, "status", status == null ? null : status.value())
                 .eq(StringUtils.isNotBlank(sourceContentType), "source_content_type", sourceContentType)
-                .eq(sourceContentId != null, "source_content_id", sourceContentId)
+                .eq(
+                        sourceContentId != null,
+                        "source_content_id",
+                        GraphExtractionSourceContentIdCodec.toValue(sourceContentId))
                 .orderByDesc("applied_at")
                 .orderByDesc("version_no")
                 .orderByDesc("id");
@@ -97,12 +117,12 @@ public class GraphVersionRepositoryImpl implements GraphVersionRepository {
     }
 
     @Override
-    public Long save(GraphVersion entity) {
+    public GraphVersionId save(GraphVersion entity) {
         GraphVersionDO dataObject = GraphVersionPersistenceAssembler.toObject(entity);
         if (dataObject.getId() == null) {
             dataObject.setId(idGenerator.nextId().value());
         }
         mapper.insert(dataObject);
-        return dataObject.getId();
+        return GraphVersionIdCodec.toDomain(dataObject.getId());
     }
 }
