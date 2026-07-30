@@ -1,10 +1,13 @@
 package com.thundax.kuzhambu.operations.application.dashboard.support;
 
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
-import java.util.Date;
+import java.time.Instant;
 
 public interface OperationsDashboardSummaryGateway {
 
     OperationsCrossDomainSummary loadSummary(
-            Date periodStart, Date periodEnd, String bucketType, OperationsDashboardPermissionSnapshot permissions);
+            Instant periodStart,
+            Instant periodEnd,
+            String bucketType,
+            OperationsDashboardPermissionSnapshot permissions);
 }

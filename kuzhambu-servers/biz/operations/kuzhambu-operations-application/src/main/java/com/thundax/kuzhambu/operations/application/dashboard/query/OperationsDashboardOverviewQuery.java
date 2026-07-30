@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.application.dashboard.query;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +12,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class OperationsDashboardOverviewQuery {
     private String periodType;
-    private Date periodStart;
-    private Date periodEnd;
+    private Instant periodStart;
+    private Instant periodEnd;
 }
