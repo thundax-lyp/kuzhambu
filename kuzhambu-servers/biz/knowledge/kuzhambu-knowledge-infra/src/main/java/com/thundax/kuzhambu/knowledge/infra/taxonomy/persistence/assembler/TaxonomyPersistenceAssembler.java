@@ -1,22 +1,18 @@
 package com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.assembler;
 
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.SynonymIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagAliasIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagCategoryIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagContentRefIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Synonym;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagCategory;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagContentRef;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.ContentType;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.SynonymStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagCategoryStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
-import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.SynonymDO;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.TagAliasDO;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.TagCategoryDO;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.TagContentRefDO;
@@ -204,44 +200,6 @@ public final class TaxonomyPersistenceAssembler {
         return entities;
     }
 
-    public static SynonymDO toObject(Synonym entity) {
-        if (entity == null) {
-            return null;
-        }
-
-        SynonymDO dataObject = new SynonymDO();
-        dataObject.setSynonymId(SynonymIdCodec.toValue(entity.getId()));
-        dataObject.setTerm(entity.getTerm());
-        dataObject.setSynonym(entity.getSynonym());
-        dataObject.setStatus(statusValue(entity.getStatus()));
-        return dataObject;
-    }
-
-    public static Synonym toDomain(SynonymDO dataObject) {
-        if (dataObject == null) {
-            return null;
-        }
-
-        Synonym entity = new Synonym();
-        entity.setId(SynonymIdCodec.toDomain(dataObject.getSynonymId()));
-        entity.setTerm(dataObject.getTerm());
-        entity.setSynonym(dataObject.getSynonym());
-        entity.setStatus(synonymStatusFrom(dataObject.getStatus()));
-        return entity;
-    }
-
-    public static List<Synonym> toSynonymDomainList(List<SynonymDO> dataObjects) {
-        if (dataObjects == null) {
-            return null;
-        }
-
-        List<Synonym> entities = new ArrayList<>();
-        for (SynonymDO dataObject : dataObjects) {
-            entities.add(toDomain(dataObject));
-        }
-        return entities;
-    }
-
     private static int priorityOrDefault(Integer priority) {
         return priority == null ? 0 : priority;
     }
@@ -284,13 +242,5 @@ public final class TaxonomyPersistenceAssembler {
 
     private static ContentType contentTypeFrom(String contentType) {
         return contentType == null ? null : ContentType.from(contentType);
-    }
-
-    private static String statusValue(SynonymStatus status) {
-        return status == null ? null : status.value();
-    }
-
-    private static SynonymStatus synonymStatusFrom(String status) {
-        return status == null ? null : SynonymStatus.from(status);
     }
 }

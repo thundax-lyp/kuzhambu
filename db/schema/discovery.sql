@@ -81,7 +81,6 @@ CREATE TABLE IF NOT EXISTS `discovery_query_understanding` (
     `rewritten_query_text` varchar(1024) DEFAULT NULL,
     `intent_type` varchar(32) DEFAULT NULL,
     `recognized_entities_json` text DEFAULT NULL,
-    `expanded_synonyms_json` text DEFAULT NULL,
     `understanding_status` varchar(32) NOT NULL,
     `failure_code` varchar(64) DEFAULT NULL,
     `failure_message` varchar(1024) DEFAULT NULL,

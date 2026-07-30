@@ -57,18 +57,6 @@ INSERT INTO `knowledge_tag_alias` (
     `name` = VALUES(`name`),
     `source` = VALUES(`source`);
 
-INSERT INTO `knowledge_synonym` (
-    `synonym_id`, `term`, `synonym`, `status`
-) VALUES (
-    520001,
-    '世系',
-    '世系图',
-    'ENABLED'
-) ON DUPLICATE KEY UPDATE
-    `term` = VALUES(`term`),
-    `synonym` = VALUES(`synonym`),
-    `status` = VALUES(`status`);
-
 INSERT INTO `knowledge_tag_content_ref` (
     `ref_id`, `tag_id`, `content_type`, `content_id`, `content_title`, `source`
 ) VALUES

@@ -23,7 +23,6 @@ public class QueryUnderstandingDO {
     private String rewrittenQueryText;
     private String intentType;
     private String recognizedEntitiesJson;
-    private String expandedSynonymsJson;
     private String understandingStatus;
     private String failureCode;
     private String failureMessage;

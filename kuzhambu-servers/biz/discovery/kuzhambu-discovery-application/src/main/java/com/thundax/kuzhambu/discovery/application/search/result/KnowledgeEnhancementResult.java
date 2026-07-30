@@ -4,6 +4,5 @@ import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagHintFacadeResp
 import java.util.List;
 
 public record KnowledgeEnhancementResult(
-        List<String> expandedSynonyms,
         KnowledgeTagHintFacadeResponse tagHint,
         List<QueryUnderstandingResult.RecognizedEntityResult> recognizedEntities) {}

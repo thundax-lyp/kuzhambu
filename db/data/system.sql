@@ -123,7 +123,7 @@ INSERT INTO `system_menu` (
     (42, 14, 35, 36, '图谱结果', 'knowledge:graph:view', 81, 'VISIBLE', '{"icon":"book"}', '/knowledge/graph-results', '_self', '知识图谱结果浏览'),
     (16, 14, 37, 38, '质量报告', 'knowledge:quality-report:view,knowledge:quality-report:generate', 78, 'VISIBLE', '{"icon":"logs"}', '/knowledge/quality-report', '_self', 'Knowledge 质量报告生成和展示'),
     (15, 13, 40, 41, '世系图', 'knowledge:graph:view', 79, 'VISIBLE', '{"icon":"book"}', '/knowledge/lineage', '_self', '正式世系图独立浏览入口'),
-    (17, 13, 42, 43, '标签配置', 'knowledge:taxonomy:view,knowledge:taxonomy:edit,knowledge:taxonomy:review', 85, 'VISIBLE', '{"icon":"book"}', '/knowledge/taxonomy', '_self', '标签与同义词治理工作台'),
+    (17, 13, 42, 43, '标签配置', 'knowledge:taxonomy:view,knowledge:taxonomy:edit,knowledge:taxonomy:review', 85, 'VISIBLE', '{"icon":"book"}', '/knowledge/taxonomy', '_self', '标签治理工作台'),
     (18, NULL, 45, 58, '知识库', 'discovery', 80, 'VISIBLE', '{"icon":"open-api"}', '/discovery', '_self', '知识检索和知识问答根菜单'),
     (43, 18, 46, 51, '检索', 'discovery:search:view', 80, 'VISIBLE', '{"icon":"open-api"}', '/discovery/search', '_self', '知识库检索分组'),
     (19, 43, 47, 48, '检索', 'discovery:search:view', 80, 'VISIBLE', '{"icon":"open-api"}', '/discovery/search', '_self', '三类古籍检索'),

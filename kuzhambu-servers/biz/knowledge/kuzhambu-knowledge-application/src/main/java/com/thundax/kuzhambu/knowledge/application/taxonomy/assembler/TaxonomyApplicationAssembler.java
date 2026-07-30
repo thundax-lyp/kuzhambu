@@ -1,12 +1,10 @@
 package com.thundax.kuzhambu.knowledge.application.taxonomy.assembler;
 
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagContentRefResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Synonym;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagCategory;
@@ -114,27 +112,6 @@ public final class TaxonomyApplicationAssembler {
                 : list.stream()
                         .filter(Objects::nonNull)
                         .map(TaxonomyApplicationAssembler::toContentRefResult)
-                        .collect(Collectors.toList());
-    }
-
-    public static SynonymResult toSynonymResult(Synonym synonym) {
-        if (synonym == null) {
-            return new SynonymResult();
-        }
-
-        return new SynonymResult(
-                synonym.getId() == null ? null : String.valueOf(synonym.getId().value()),
-                synonym.getTerm(),
-                synonym.getSynonym(),
-                synonym.getStatus() == null ? null : synonym.getStatus().value());
-    }
-
-    public static List<SynonymResult> toSynonymResultList(List<Synonym> list) {
-        return list == null
-                ? new ArrayList<>()
-                : list.stream()
-                        .filter(Objects::nonNull)
-                        .map(TaxonomyApplicationAssembler::toSynonymResult)
                         .collect(Collectors.toList());
     }
 }

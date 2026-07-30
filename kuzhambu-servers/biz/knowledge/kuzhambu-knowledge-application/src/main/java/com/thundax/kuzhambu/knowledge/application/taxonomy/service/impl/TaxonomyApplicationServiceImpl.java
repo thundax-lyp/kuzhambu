@@ -15,10 +15,6 @@ import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.assembler.TaxonomyApplicationAssembler;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymCreateCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymRemoveCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymStatusCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasRemoveCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchDeprecateCommand;
@@ -36,14 +32,12 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeComma
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.SynonymPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagBatchMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
@@ -56,22 +50,18 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.service.TaxonomyAppli
 import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagCategoryIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Synonym;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagCategory;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagContentRef;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.SynonymStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagCategoryStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.readmodel.TagGovernanceMetrics;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.SynonymId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagAliasId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.SynonymRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagAliasRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagCategoryRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagContentRefRepository;
@@ -108,7 +98,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     private final TagRepository tagRepository;
     private final TagAliasRepository tagAliasRepository;
     private final TagContentRefRepository tagContentRefRepository;
-    private final SynonymRepository synonymRepository;
     private final KnowledgeTagBindingDomainService knowledgeTagBindingDomainService;
     private final TagGovernanceMetricsRepository tagGovernanceMetricsRepository;
 
@@ -118,7 +107,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
             TagRepository tagRepository,
             TagAliasRepository tagAliasRepository,
             TagContentRefRepository tagContentRefRepository,
-            SynonymRepository synonymRepository,
             KnowledgeTagBindingDomainService knowledgeTagBindingDomainService,
             TagGovernanceMetricsRepository tagGovernanceMetricsRepository) {
         this.aiFacade = aiFacade;
@@ -126,7 +114,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         this.tagRepository = tagRepository;
         this.tagAliasRepository = tagAliasRepository;
         this.tagContentRefRepository = tagContentRefRepository;
-        this.synonymRepository = synonymRepository;
         this.knowledgeTagBindingDomainService = knowledgeTagBindingDomainService;
         this.tagGovernanceMetricsRepository = tagGovernanceMetricsRepository;
     }
@@ -735,100 +722,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         tagAliasRepository.deleteById(id);
     }
 
-    @Override
-    public PageResult<SynonymResult> pageSynonyms(SynonymPageQuery query, PageQuery page) {
-        SynonymPageQuery effectiveQuery = query == null ? new SynonymPageQuery() : query;
-        PageQuery effectivePage = normalize(page);
-
-        PageResult<Synonym> pageResult = synonymRepository.page(
-                normalizeQueryText(effectiveQuery.getTerm()),
-                normalizeQueryText(effectiveQuery.getSynonym()),
-                effectiveQuery.getStatus(),
-                effectivePage.getPageNo(),
-                effectivePage.getPageSize());
-
-        return PageResult.of(
-                pageResult.getPageNo(),
-                pageResult.getPageSize(),
-                pageResult.getTotalCount(),
-                TaxonomyApplicationAssembler.toSynonymResultList(pageResult.getRecords()).stream()
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList()));
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public SynonymId createSynonym(SynonymCreateCommand command) {
-        SynonymCreateCommand effective = ensureCommand(command, "同义词创建命令");
-        SynonymId synonymId = ensureId(effective.getId(), "synonymId");
-        String term = trimText(effective.getTerm(), "同义词项");
-        String synonymText = trimText(effective.getSynonym(), "同义词");
-
-        if (term.equals(synonymText)) {
-            throw new BizException("同义词不能与项重复");
-        }
-        if (synonymRepository.countByPair(term, synonymText, synonymId) > 0) {
-            throw new BizException("同义词组已存在: " + term + "|" + synonymText);
-        }
-
-        Synonym synonym = new Synonym();
-        synonym.setId(synonymId);
-        synonym.setTerm(term);
-        synonym.setSynonym(synonymText);
-        synonym.setStatus(command.getStatus() == null ? SynonymStatus.ENABLED : command.getStatus());
-
-        return synonymRepository.insert(synonym);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void updateSynonym(SynonymUpdateCommand command) {
-        SynonymUpdateCommand effective = ensureCommand(command, "同义词更新命令");
-        SynonymId id = ensureId(effective.getId(), "synonymId");
-        Synonym existing = ensureSynonymExists(id);
-        String term = trimText(effective.getTerm(), "同义词项");
-        String synonymText = trimText(effective.getSynonym(), "同义词");
-
-        if (term.equals(synonymText)) {
-            throw new BizException("同义词不能与项重复");
-        }
-        if (synonymRepository.countByPair(term, synonymText, id) > 0) {
-            throw new BizException("同义词组已存在: " + term + "|" + synonymText);
-        }
-
-        Synonym updated = new Synonym();
-        updated.setId(existing.getId());
-        updated.setTerm(term);
-        updated.setSynonym(synonymText);
-        updated.setStatus(existing.getStatus());
-
-        if (synonymRepository.update(updated) != 1) {
-            throw new BizException("同义词更新失败");
-        }
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void changeSynonymStatus(SynonymStatusCommand command) {
-        SynonymStatusCommand effective = ensureCommand(command, "同义词状态命令");
-        SynonymId id = ensureId(effective.getId(), "synonymId");
-        SynonymStatus status = requireStatus(effective.getStatus(), "synonymStatus");
-        Synonym updated = ensureSynonymExists(id);
-        updated.setStatus(status);
-
-        if (synonymRepository.updateStatus(updated) != 1) {
-            throw new BizException("同义词状态更新失败");
-        }
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void removeSynonym(SynonymRemoveCommand command) {
-        SynonymRemoveCommand effective = ensureCommand(command, "同义词删除命令");
-        SynonymId id = ensureId(effective.getId(), "synonymId");
-        synonymRepository.deleteById(id);
-    }
-
     private void applySelectedTag(TagCandidateApplyItemCommand item, String reviewNote) {
         TagCandidateApplyItemCommand effective = ensureCommand(item, "标签候选项");
         String name = trimText(effective.getName(), "name");
@@ -1053,15 +946,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
             throw new BizException("标签不存在: " + effectiveTagId.value());
         }
         return tag;
-    }
-
-    private Synonym ensureSynonymExists(SynonymId id) {
-        SynonymId effectiveSynonymId = ensureId(id, "synonymId");
-        Synonym synonym = synonymRepository.getById(id);
-        if (synonym == null) {
-            throw new BizException("同义词不存在: " + effectiveSynonymId.value());
-        }
-        return synonym;
     }
 
     private String getCategoryName(TagCategoryId categoryId) {

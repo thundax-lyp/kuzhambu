@@ -51,7 +51,6 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.readmodel.TagGoverna
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagContentRefId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.SynonymRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagAliasRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagCategoryRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagContentRefRepository;
@@ -75,7 +74,6 @@ class TaxonomyApplicationServiceImplTest {
                 mock(TagRepository.class),
                 mock(TagAliasRepository.class),
                 mock(TagContentRefRepository.class),
-                mock(SynonymRepository.class),
                 mock(KnowledgeTagBindingDomainService.class),
                 metricsRepository);
         when(metricsRepository.getMetrics(10, 6))
@@ -106,7 +104,6 @@ class TaxonomyApplicationServiceImplTest {
                 tagRepository,
                 mock(TagAliasRepository.class),
                 mock(TagContentRefRepository.class),
-                mock(SynonymRepository.class),
                 mock(KnowledgeTagBindingDomainService.class),
                 mock(TagGovernanceMetricsRepository.class));
         Tag tag = new Tag();
@@ -134,7 +131,6 @@ class TaxonomyApplicationServiceImplTest {
                 tagRepository,
                 mock(TagAliasRepository.class),
                 contentRefRepository,
-                mock(SynonymRepository.class),
                 knowledgeTagBindingDomainService,
                 mock(TagGovernanceMetricsRepository.class));
         Tag sourceTag = new Tag();
@@ -179,7 +175,6 @@ class TaxonomyApplicationServiceImplTest {
                 tagRepository,
                 aliasRepository,
                 contentRefRepository,
-                mock(SynonymRepository.class),
                 mock(KnowledgeTagBindingDomainService.class),
                 mock(TagGovernanceMetricsRepository.class));
 
@@ -251,7 +246,6 @@ class TaxonomyApplicationServiceImplTest {
                 tagRepository,
                 aliasRepository,
                 contentRefRepository,
-                mock(SynonymRepository.class),
                 mock(KnowledgeTagBindingDomainService.class),
                 mock(TagGovernanceMetricsRepository.class));
 
@@ -318,7 +312,6 @@ class TaxonomyApplicationServiceImplTest {
                 tagRepository,
                 mock(TagAliasRepository.class),
                 mock(TagContentRefRepository.class),
-                mock(SynonymRepository.class),
                 knowledgeTagBindingDomainService,
                 mock(TagGovernanceMetricsRepository.class));
         Tag enabledSource = tag(
@@ -361,7 +354,6 @@ class TaxonomyApplicationServiceImplTest {
                 tagRepository,
                 mock(TagAliasRepository.class),
                 mock(TagContentRefRepository.class),
-                mock(SynonymRepository.class),
                 mock(KnowledgeTagBindingDomainService.class),
                 mock(TagGovernanceMetricsRepository.class));
         Tag enabledTag = tag(
@@ -397,7 +389,6 @@ class TaxonomyApplicationServiceImplTest {
                 tagRepository,
                 mock(TagAliasRepository.class),
                 mock(TagContentRefRepository.class),
-                mock(SynonymRepository.class),
                 mock(KnowledgeTagBindingDomainService.class),
                 mock(TagGovernanceMetricsRepository.class));
         Tag firstPending = tag(
@@ -446,7 +437,6 @@ class TaxonomyApplicationServiceImplTest {
                 tagRepository,
                 mock(TagAliasRepository.class),
                 mock(TagContentRefRepository.class),
-                mock(SynonymRepository.class),
                 mock(KnowledgeTagBindingDomainService.class),
                 mock(TagGovernanceMetricsRepository.class));
         Tag firstPending = tag(
@@ -490,7 +480,6 @@ class TaxonomyApplicationServiceImplTest {
                 tagRepository,
                 aliasRepository,
                 mock(TagContentRefRepository.class),
-                mock(SynonymRepository.class),
                 mock(KnowledgeTagBindingDomainService.class),
                 mock(TagGovernanceMetricsRepository.class));
         TagCategory category =
@@ -583,7 +572,6 @@ class TaxonomyApplicationServiceImplTest {
                 tagRepository,
                 mock(TagAliasRepository.class),
                 mock(TagContentRefRepository.class),
-                mock(SynonymRepository.class),
                 mock(KnowledgeTagBindingDomainService.class),
                 mock(TagGovernanceMetricsRepository.class));
         AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()

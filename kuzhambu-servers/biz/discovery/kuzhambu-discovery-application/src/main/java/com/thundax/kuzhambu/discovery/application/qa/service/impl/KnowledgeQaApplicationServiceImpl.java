@@ -1091,14 +1091,6 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         if (command.getMetadata() != null) {
             metadata.putAll(command.getMetadata());
         }
-        if (StringUtils.isNotBlank(question)) {
-            metadata.put("synonymQueryTerm", question);
-        }
-        if (enhancement != null
-                && enhancement.expandedSynonyms() != null
-                && !enhancement.expandedSynonyms().isEmpty()) {
-            metadata.put("expandedSynonyms", enhancement.expandedSynonyms());
-        }
         if (StringUtils.isNotBlank(command.getRequestId())) {
             metadata.putIfAbsent("requestId", command.getRequestId());
         }

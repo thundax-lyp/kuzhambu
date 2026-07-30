@@ -10,11 +10,8 @@ import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeDiscoveryTermFacad
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeRemoveContentTagRefFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeResolveTagFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSummaryFacadeRequest;
-import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSynonymQueryFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeEntityHintsFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
-import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSynonymExpandFacadeResponse;
-import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSynonymQueryFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagHintFacadeResponse;
 import org.springframework.stereotype.Service;
@@ -47,26 +44,6 @@ public class KnowledgeFacadeImpl implements KnowledgeFacade {
         }
         return knowledgeFacadeAssembler.toSummaryResponse(knowledgeReportApplicationService.summary(
                 request.getPeriodStart(), request.getPeriodEnd(), request.getBucketType()));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public KnowledgeSynonymExpandFacadeResponse expandSynonyms(KnowledgeDiscoveryTermFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
-        return knowledgeFacadeAssembler.toSynonymExpandResponse(
-                knowledgeTaxonomyReadApplicationService.expandSynonyms(request.getTerm()));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public KnowledgeSynonymQueryFacadeResponse querySynonyms(KnowledgeSynonymQueryFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
-        return knowledgeFacadeAssembler.toSynonymQueryResponse(knowledgeTaxonomyReadApplicationService.querySynonyms(
-                request.getTerm(), request.getDirection(), request.getLimit()));
     }
 
     @Override

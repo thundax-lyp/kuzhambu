@@ -19,7 +19,6 @@ public class QueryUnderstanding {
     private String rewrittenQueryText;
     private SearchIntentType intentType;
     private String recognizedEntitiesJson;
-    private String expandedSynonymsJson;
     private String understandingStatus;
     private String failureCode;
     private String failureMessage;

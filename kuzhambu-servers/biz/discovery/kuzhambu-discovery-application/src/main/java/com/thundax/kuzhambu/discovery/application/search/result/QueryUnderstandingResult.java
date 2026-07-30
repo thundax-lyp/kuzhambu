@@ -14,7 +14,6 @@ public class QueryUnderstandingResult {
     private String normalizedQueryText;
     private String rewrittenQueryText;
     private String intent;
-    private List<String> expandedSynonyms;
     private List<RecognizedEntityResult> recognizedEntities;
     private String requestId;
     private String traceId;
