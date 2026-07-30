@@ -27,7 +27,7 @@ class GraphExtractionTaskRepositoryImplTest {
         GraphExtractionTask result = repository.getByTaskId(GraphExtractionTaskIdCodec.toDomain(9001L));
 
         assertNotNull(result);
-        assertEquals(9001L, result.getTaskId().value());
+        assertEquals(9001L, result.getId().value());
         assertEquals(5001L, result.getModelId());
         assertEquals("gpt-5.5", result.getModelName());
         assertEquals("req-1", result.getRequestId());
@@ -56,7 +56,6 @@ class GraphExtractionTaskRepositoryImplTest {
 
     private static GraphExtractionTaskDO dataObject(long taskId) {
         return new GraphExtractionTaskDO(
-                8001L,
                 taskId,
                 1001L,
                 "GRAPH",

@@ -84,17 +84,16 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
             GraphVersion latest = latestPage.getRecords().isEmpty()
                     ? null
                     : latestPage.getRecords().get(0);
-            effectiveQuery.setVersionId(latest == null ? null : latest.getVersionId());
+            effectiveQuery.setVersionId(latest == null ? null : latest.getId());
         }
         return getCanvas(effectiveQuery);
     }
 
     private LineageCanvasResult buildCanvas(
             GraphVersion version, LineageCanvasQuery query, AvailableFiltersView availableFilters) {
-        List<KnowledgeLineageNode> allNodes =
-                defaultList(lineageNodeRepository.listByVersionId(version.getVersionId()));
+        List<KnowledgeLineageNode> allNodes = defaultList(lineageNodeRepository.listByVersionId(version.getId()));
         List<KnowledgeLineageRelation> allRelations =
-                defaultList(lineageRelationRepository.listByVersionId(version.getVersionId()));
+                defaultList(lineageRelationRepository.listByVersionId(version.getId()));
         if (allNodes.isEmpty() && allRelations.isEmpty()) {
             return emptyResult(availableFilters, "NO_LINEAGE_DATA", "暂无世系数据", "当前版本尚未沉淀正式世系节点或关系。", null, null);
         }
@@ -166,14 +165,14 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
     private Set<String> resolveFocusedNodeKeys(
             List<KnowledgeLineageNode> nodes, List<KnowledgeLineageRelation> relations, LineageCanvasQuery query) {
         String focusNodeKey = nodes.stream()
-                .filter(node -> Objects.equals(node.getNodeId(), query.getFocusNodeId()))
+                .filter(node -> Objects.equals(node.getId(), query.getFocusNodeId()))
                 .map(KnowledgeLineageNode::getNodeKey)
                 .filter(StringUtils::isNotBlank)
                 .findFirst()
                 .orElse(null);
         if (focusNodeKey == null && query.getFocusRelationId() != null) {
             KnowledgeLineageRelation relation = relations.stream()
-                    .filter(item -> Objects.equals(item.getRelationId(), query.getFocusRelationId()))
+                    .filter(item -> Objects.equals(item.getId(), query.getFocusRelationId()))
                     .findFirst()
                     .orElse(null);
             focusNodeKey = relation == null ? null : relation.getSourceNodeKey();
@@ -221,7 +220,7 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
         List<String> relationTypes = new ArrayList<>();
         List<String> confirmationStatuses = new ArrayList<>();
         for (GraphVersion version : versionPage.getRecords()) {
-            Long versionId = version.getVersionId();
+            Long versionId = version.getId();
             for (KnowledgeLineageNode node : defaultList(lineageNodeRepository.listByVersionId(versionId))) {
                 addDistinct(nodeTypes, node.getNodeType());
                 addDistinct(confirmationStatuses, node.getConfirmationStatus());
@@ -273,8 +272,8 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
 
     private NodeView toNodeView(KnowledgeLineageNode node) {
         return new NodeView(
-                "lineage-node:" + node.getNodeId(),
-                node.getNodeId(),
+                "lineage-node:" + node.getId(),
+                node.getId(),
                 node.getNodeKey(),
                 node.getName(),
                 node.getNodeType(),
@@ -299,11 +298,11 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
         KnowledgeLineageNode targetNode = firstNonNull(
                 visibleNodesByKey.get(relation.getTargetNodeKey()), nodesByKey.get(relation.getTargetNodeKey()));
         return new RelationView(
-                "lineage-relation:" + relation.getRelationId(),
-                relation.getRelationId(),
-                sourceNode == null ? null : sourceNode.getNodeId(),
+                "lineage-relation:" + relation.getId(),
+                relation.getId(),
+                sourceNode == null ? null : sourceNode.getId(),
                 sourceNode == null ? relation.getSourceName() : sourceNode.getName(),
-                targetNode == null ? null : targetNode.getNodeId(),
+                targetNode == null ? null : targetNode.getId(),
                 targetNode == null ? relation.getTargetName() : targetNode.getName(),
                 relation.getRelationType(),
                 relationLabel(relation.getRelationType()),
@@ -383,7 +382,7 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
 
     private VersionView toVersionView(GraphVersion version) {
         return new VersionView(
-                version.getVersionId(),
+                version.getId(),
                 version.getVersionNo(),
                 version.getTaskType(),
                 version.getStatus(),
@@ -396,7 +395,7 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
 
     private VersionOptionView toVersionOptionView(GraphVersion version) {
         return new VersionOptionView(
-                version.getVersionId(),
+                version.getId(),
                 version.getVersionNo(),
                 version.getTaskType(),
                 version.getStatus(),

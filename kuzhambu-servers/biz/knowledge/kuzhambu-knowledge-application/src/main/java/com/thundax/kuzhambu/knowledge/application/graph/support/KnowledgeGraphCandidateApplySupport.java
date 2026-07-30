@@ -60,7 +60,7 @@ public class KnowledgeGraphCandidateApplySupport {
     }
 
     public GraphVersion apply(GraphExtractionTask task, AiCandidateFacadeDto candidate) {
-        if (task == null || task.getTaskId() == null || candidate == null || candidate.getCandidateId() == null) {
+        if (task == null || task.getId() == null || candidate == null || candidate.getCandidateId() == null) {
             throw new BizException("Knowledge graph apply target is incomplete");
         }
         if ("REJECTED".equals(candidate.getStatus())) {
@@ -85,14 +85,14 @@ public class KnowledgeGraphCandidateApplySupport {
     }
 
     private GraphVersion ensureVersion(GraphExtractionTask task, AiCandidateFacadeDto candidate, Date appliedAt) {
-        GraphVersion existing = graphVersionRepository.getByTaskCandidate(task.getTaskId(), candidate.getCandidateId());
+        GraphVersion existing = graphVersionRepository.getByTaskCandidate(task.getId(), candidate.getCandidateId());
         if (existing != null) {
             return existing;
         }
         GraphVersion latest = graphVersionRepository.findLatest(
                 task.getTaskType(), task.getSourceContentType(), task.getSourceContentId());
         GraphVersion version = new GraphVersion();
-        version.setTaskId(task.getTaskId());
+        version.setTaskId(task.getId());
         version.setCandidateId(candidate.getCandidateId());
         version.setTaskType(task.getTaskType());
         version.setScopeType(task.getScopeType());
@@ -102,7 +102,7 @@ public class KnowledgeGraphCandidateApplySupport {
         version.setVersionNo(latest == null || latest.getVersionNo() == null ? 1 : latest.getVersionNo() + 1);
         version.setStatus(STATUS_APPLIED);
         version.setAppliedAt(appliedAt);
-        version.setVersionId(graphVersionRepository.save(version));
+        version.setId(graphVersionRepository.save(version));
         return version;
     }
 
@@ -122,7 +122,7 @@ public class KnowledgeGraphCandidateApplySupport {
             entity.setEntityType(entityType);
             entity.setDescription(optionalText(node, "description", "summary"));
             entity.setConfirmationStatus(STATUS_AI_EXTRACTED);
-            entity.setLatestVersionId(version.getVersionId());
+            entity.setLatestVersionId(version.getId());
             entity.setSourceRefsJson(sourceRefsJson);
             entity.setFirstExtractedAt(appliedAt);
             entity.setLastExtractedAt(appliedAt);
@@ -152,7 +152,7 @@ public class KnowledgeGraphCandidateApplySupport {
             relation.setRelationType(relationType);
             relation.setEvidence(optionalText(node, "evidence", "summary"));
             relation.setConfirmationStatus(STATUS_AI_EXTRACTED);
-            relation.setLatestVersionId(version.getVersionId());
+            relation.setLatestVersionId(version.getId());
             relation.setSourceRefsJson(sourceRefsJson);
             relation.setFirstExtractedAt(appliedAt);
             relation.setLastExtractedAt(appliedAt);
@@ -178,7 +178,7 @@ public class KnowledgeGraphCandidateApplySupport {
             lineageNode.setGeneration(integerValue(node.get("generation")));
             lineageNode.setGender(optionalText(node, "gender"));
             lineageNode.setConfirmationStatus(STATUS_AI_EXTRACTED);
-            lineageNode.setLatestVersionId(version.getVersionId());
+            lineageNode.setLatestVersionId(version.getId());
             lineageNode.setSourceRefsJson(sourceRefsJson);
             lineageNode.setFirstExtractedAt(appliedAt);
             lineageNode.setLastExtractedAt(appliedAt);
@@ -208,7 +208,7 @@ public class KnowledgeGraphCandidateApplySupport {
             relation.setRelationType(relationType);
             relation.setEvidence(optionalText(node, "evidence", "summary"));
             relation.setConfirmationStatus(STATUS_AI_EXTRACTED);
-            relation.setLatestVersionId(version.getVersionId());
+            relation.setLatestVersionId(version.getId());
             relation.setSourceRefsJson(sourceRefsJson);
             relation.setFirstExtractedAt(appliedAt);
             relation.setLastExtractedAt(appliedAt);
@@ -226,7 +226,7 @@ public class KnowledgeGraphCandidateApplySupport {
             if (existing == null) {
                 continue;
             }
-            entity.setEntityId(existing.getEntityId());
+            entity.setId(existing.getId());
             entity.setId(existing.getId());
             entity.setFirstExtractedAt(
                     existing.getFirstExtractedAt() == null ? appliedAt : existing.getFirstExtractedAt());
@@ -249,7 +249,6 @@ public class KnowledgeGraphCandidateApplySupport {
             if (existing == null) {
                 continue;
             }
-            relation.setRelationId(existing.getRelationId());
             relation.setId(existing.getId());
             relation.setFirstExtractedAt(
                     existing.getFirstExtractedAt() == null ? appliedAt : existing.getFirstExtractedAt());
@@ -272,7 +271,6 @@ public class KnowledgeGraphCandidateApplySupport {
             if (existing == null) {
                 continue;
             }
-            node.setNodeId(existing.getNodeId());
             node.setId(existing.getId());
             node.setFirstExtractedAt(
                     existing.getFirstExtractedAt() == null ? appliedAt : existing.getFirstExtractedAt());
@@ -295,7 +293,6 @@ public class KnowledgeGraphCandidateApplySupport {
             if (existing == null) {
                 continue;
             }
-            relation.setRelationId(existing.getRelationId());
             relation.setId(existing.getId());
             relation.setFirstExtractedAt(
                     existing.getFirstExtractedAt() == null ? appliedAt : existing.getFirstExtractedAt());

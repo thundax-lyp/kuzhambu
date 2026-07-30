@@ -14,7 +14,6 @@ public final class KnowledgeRelationPersistenceAssembler {
         }
         KnowledgeRelationDO dataObject = new KnowledgeRelationDO();
         dataObject.setId(entity.getId());
-        dataObject.setRelationId(entity.getRelationId());
         dataObject.setRelationKey(entity.getRelationKey());
         dataObject.setSourceEntityKey(entity.getSourceEntityKey());
         dataObject.setTargetEntityKey(entity.getTargetEntityKey());
@@ -37,7 +36,6 @@ public final class KnowledgeRelationPersistenceAssembler {
         }
         KnowledgeRelation entity = new KnowledgeRelation();
         entity.setId(dataObject.getId());
-        entity.setRelationId(dataObject.getRelationId());
         entity.setRelationKey(dataObject.getRelationKey());
         entity.setSourceEntityKey(dataObject.getSourceEntityKey());
         entity.setTargetEntityKey(dataObject.getTargetEntityKey());

@@ -68,7 +68,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_tag_content_ref` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `task_id` bigint NOT NULL,
     `task_type` varchar(32) NOT NULL,
     `scope_type` varchar(32) DEFAULT NULL,
     `scope_json` json DEFAULT NULL,
@@ -84,7 +83,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `completed_at` datetime(3) DEFAULT NULL,
     `applied_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_extraction_task_task_id` (`task_id`),
     KEY `idx_knowledge_graph_extraction_task_status_requested` (`status`, `requested_at`),
     KEY `idx_knowledge_graph_extraction_task_source` (`source_content_type`, `source_content_id`),
     KEY `idx_knowledge_graph_extraction_task_call_candidate` (`ai_call_id`, `ai_candidate_id`)
@@ -92,7 +90,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `version_id` bigint NOT NULL,
     `task_id` bigint NOT NULL,
     `candidate_id` bigint NOT NULL,
     `task_type` varchar(32) NOT NULL,
@@ -106,7 +103,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
     `status` varchar(32) NOT NULL,
     `applied_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_version_version_id` (`version_id`),
     UNIQUE KEY `uk_knowledge_graph_version_task_candidate` (`task_id`, `candidate_id`),
     UNIQUE KEY `uk_knowledge_graph_version_source_version` (`task_type`, `source_content_type`, `source_content_id`, `version_no`),
     KEY `idx_knowledge_graph_version_source_status` (`task_type`, `source_content_type`, `source_content_id`, `status`)
@@ -114,7 +110,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_entity` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `entity_id` bigint NOT NULL,
     `entity_key` varchar(160) NOT NULL,
     `name` varchar(128) NOT NULL,
     `entity_type` varchar(64) NOT NULL,
@@ -126,7 +121,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_entity` (
     `last_extracted_at` datetime(3) NOT NULL,
     `confirmed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_entity_entity_id` (`entity_id`),
     UNIQUE KEY `uk_knowledge_entity_entity_key` (`entity_key`),
     KEY `idx_knowledge_entity_latest_version` (`latest_version_id`),
     KEY `idx_knowledge_entity_confirmation_status` (`confirmation_status`, `last_extracted_at`),
@@ -135,7 +129,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_entity` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_relation` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `relation_id` bigint NOT NULL,
     `relation_key` varchar(256) NOT NULL,
     `source_entity_key` varchar(160) NOT NULL,
     `target_entity_key` varchar(160) NOT NULL,
@@ -150,7 +143,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_relation` (
     `last_extracted_at` datetime(3) NOT NULL,
     `confirmed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_relation_relation_id` (`relation_id`),
     UNIQUE KEY `uk_knowledge_relation_relation_key` (`relation_key`),
     KEY `idx_knowledge_relation_latest_version` (`latest_version_id`),
     KEY `idx_knowledge_relation_confirmation_status` (`confirmation_status`, `last_extracted_at`),
@@ -159,7 +151,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_relation` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_lineage_node` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `node_id` bigint NOT NULL,
     `node_key` varchar(160) NOT NULL,
     `name` varchar(128) NOT NULL,
     `node_type` varchar(64) NOT NULL,
@@ -172,7 +163,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_lineage_node` (
     `last_extracted_at` datetime(3) NOT NULL,
     `confirmed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_lineage_node_node_id` (`node_id`),
     UNIQUE KEY `uk_knowledge_lineage_node_node_key` (`node_key`),
     KEY `idx_knowledge_lineage_node_latest_version` (`latest_version_id`),
     KEY `idx_knowledge_lineage_node_confirmation_status` (`confirmation_status`, `last_extracted_at`),
@@ -181,7 +171,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_lineage_node` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_lineage_relation` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `relation_id` bigint NOT NULL,
     `relation_key` varchar(256) NOT NULL,
     `source_node_key` varchar(160) NOT NULL,
     `target_node_key` varchar(160) NOT NULL,
@@ -196,7 +185,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_lineage_relation` (
     `last_extracted_at` datetime(3) NOT NULL,
     `confirmed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_lineage_relation_relation_id` (`relation_id`),
     UNIQUE KEY `uk_knowledge_lineage_relation_relation_key` (`relation_key`),
     KEY `idx_knowledge_lineage_relation_latest_version` (`latest_version_id`),
     KEY `idx_knowledge_lineage_relation_confirmation_status` (`confirmation_status`, `last_extracted_at`),

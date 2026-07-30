@@ -17,7 +17,6 @@ public class KnowledgeLineageNodeDO {
     @TableId(type = IdType.INPUT)
     private Long id;
 
-    private Long nodeId;
     private String nodeKey;
     private String name;
     private String nodeType;

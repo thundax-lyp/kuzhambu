@@ -17,7 +17,6 @@ public class KnowledgeLineageRelationDO {
     @TableId(type = IdType.INPUT)
     private Long id;
 
-    private Long relationId;
     private String relationKey;
     private String sourceNodeKey;
     private String targetNodeKey;

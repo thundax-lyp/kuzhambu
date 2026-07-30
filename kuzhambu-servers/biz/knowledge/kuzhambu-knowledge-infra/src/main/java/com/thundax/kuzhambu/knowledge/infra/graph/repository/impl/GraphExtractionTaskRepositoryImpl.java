@@ -30,7 +30,7 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     @Override
     public GraphExtractionTask getByTaskId(GraphExtractionTaskId taskId) {
         QueryWrapper<GraphExtractionTaskDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("task_id", valueOf(taskId));
+        wrapper.eq("id", valueOf(taskId));
         return KnowledgeGraphPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
     }
 
@@ -40,11 +40,8 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
         if (dataObject.getId() == null) {
             dataObject.setId(idGenerator.nextId().value());
         }
-        if (dataObject.getTaskId() == null) {
-            dataObject.setTaskId(dataObject.getId());
-        }
         mapper.insert(dataObject);
-        return GraphExtractionTaskIdCodec.toDomain(dataObject.getTaskId());
+        return GraphExtractionTaskIdCodec.toDomain(dataObject.getId());
     }
 
     @Override
@@ -53,7 +50,7 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
         return mapper.update(
                 null,
                 new LambdaUpdateWrapper<GraphExtractionTaskDO>()
-                        .eq(GraphExtractionTaskDO::getTaskId, dataObject.getTaskId())
+                        .eq(GraphExtractionTaskDO::getId, dataObject.getId())
                         .set(GraphExtractionTaskDO::getBatchJobId, dataObject.getBatchJobId())
                         .set(GraphExtractionTaskDO::getTaskType, dataObject.getTaskType())
                         .set(GraphExtractionTaskDO::getScopeType, dataObject.getScopeType())

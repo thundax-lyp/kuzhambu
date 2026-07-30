@@ -43,7 +43,7 @@ public class KnowledgeEntityRepositoryImpl implements KnowledgeEntityRepository 
     @Override
     public KnowledgeEntity getByEntityId(Long entityId) {
         QueryWrapper<KnowledgeEntityDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("entity_id", entityId);
+        wrapper.eq("id", entityId);
         return KnowledgeEntityPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
     }
 
@@ -78,9 +78,6 @@ public class KnowledgeEntityRepositoryImpl implements KnowledgeEntityRepository 
             KnowledgeEntityDO dataObject = KnowledgeEntityPersistenceAssembler.toObject(entity);
             if (dataObject.getId() == null) {
                 dataObject.setId(idGenerator.nextId().value());
-            }
-            if (dataObject.getEntityId() == null) {
-                dataObject.setEntityId(dataObject.getId());
             }
             int updated = mapper.update(
                     null,

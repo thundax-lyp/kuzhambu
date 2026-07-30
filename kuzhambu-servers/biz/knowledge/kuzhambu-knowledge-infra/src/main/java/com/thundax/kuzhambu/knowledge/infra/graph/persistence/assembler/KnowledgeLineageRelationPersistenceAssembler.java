@@ -14,7 +14,6 @@ public final class KnowledgeLineageRelationPersistenceAssembler {
         }
         KnowledgeLineageRelationDO dataObject = new KnowledgeLineageRelationDO();
         dataObject.setId(entity.getId());
-        dataObject.setRelationId(entity.getRelationId());
         dataObject.setRelationKey(entity.getRelationKey());
         dataObject.setSourceNodeKey(entity.getSourceNodeKey());
         dataObject.setTargetNodeKey(entity.getTargetNodeKey());
@@ -37,7 +36,6 @@ public final class KnowledgeLineageRelationPersistenceAssembler {
         }
         KnowledgeLineageRelation entity = new KnowledgeLineageRelation();
         entity.setId(dataObject.getId());
-        entity.setRelationId(dataObject.getRelationId());
         entity.setRelationKey(dataObject.getRelationKey());
         entity.setSourceNodeKey(dataObject.getSourceNodeKey());
         entity.setTargetNodeKey(dataObject.getTargetNodeKey());

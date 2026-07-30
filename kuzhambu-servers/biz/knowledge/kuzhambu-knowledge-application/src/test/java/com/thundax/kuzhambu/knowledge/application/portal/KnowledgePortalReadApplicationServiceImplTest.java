@@ -54,7 +54,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
                         3,
                         1,
                         List.of(new GraphVersion(
-                                1L,
                                 71L,
                                 null,
                                 901L,
@@ -141,7 +140,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
                         1,
                         1,
                         List.of(new GraphVersion(
-                                1L,
                                 71L,
                                 null,
                                 901L,
@@ -157,7 +155,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
                                 new Date(1_700_000_000_000L)))));
         when(knowledgeEntityRepository.getByEntityId(3001L))
                 .thenReturn(new KnowledgeEntity(
-                        1L,
                         3001L,
                         "person:huangdi",
                         "黄帝",
@@ -171,7 +168,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
                         new Date(1_700_000_200_000L)));
         when(knowledgeRelationRepository.listByEntityKey("person:huangdi"))
                 .thenReturn(List.of(new KnowledgeRelation(
-                        1L,
                         4001L,
                         "rel:1",
                         "person:huangdi",
@@ -238,7 +234,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
         when(graphVersionRepository.listAppliedByCategoryCode(null))
                 .thenReturn(List.of(
                         new GraphVersion(
-                                1L,
                                 71L,
                                 null,
                                 901L,
@@ -253,7 +248,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
                                 "APPLIED",
                                 new Date(1_700_000_000_000L)),
                         new GraphVersion(
-                                2L,
                                 72L,
                                 null,
                                 902L,
@@ -270,34 +264,11 @@ class KnowledgePortalReadApplicationServiceImplTest {
         when(knowledgeEntityRepository.listByVersionId(71L))
                 .thenReturn(List.of(
                         new KnowledgeEntity(
-                                1L,
-                                3001L,
-                                "bird:luan",
-                                "鸾",
-                                "CREATURE",
-                                "神鸟",
-                                "CONFIRMED",
-                                71L,
-                                "[]",
-                                null,
-                                null,
-                                null),
+                                3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L, "[]", null, null, null),
                         new KnowledgeEntity(
-                                2L,
-                                3002L,
-                                "bird:feng",
-                                "凤",
-                                "CREATURE",
-                                "瑞鸟",
-                                "CONFIRMED",
-                                71L,
-                                "[]",
-                                null,
-                                null,
-                                null)));
+                                3002L, "bird:feng", "凤", "CREATURE", "瑞鸟", "CONFIRMED", 71L, "[]", null, null, null)));
         when(knowledgeRelationRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeRelation(
-                        1L,
                         4001L,
                         "rel:bird",
                         "bird:luan",
@@ -357,7 +328,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
         KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
         when(graphVersionRepository.findLatestAppliedByCategoryCode("ANIMALS"))
                 .thenReturn(new GraphVersion(
-                        1L,
                         71L,
                         null,
                         901L,
@@ -373,10 +343,9 @@ class KnowledgePortalReadApplicationServiceImplTest {
                         new Date(1_700_000_000_000L)));
         when(knowledgeEntityRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeEntity(
-                        1L, 3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L, "[]", null, null, null)));
+                        3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L, "[]", null, null, null)));
         when(knowledgeRelationRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeRelation(
-                        1L,
                         4001L,
                         "rel:bird",
                         "bird:luan",

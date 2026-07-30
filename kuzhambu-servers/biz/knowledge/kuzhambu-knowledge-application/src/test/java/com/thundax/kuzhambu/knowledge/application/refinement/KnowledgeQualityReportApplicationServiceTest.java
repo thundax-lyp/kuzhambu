@@ -72,7 +72,6 @@ class KnowledgeQualityReportApplicationServiceTest {
                 annotationRepository,
                 reportRepository);
         GraphVersion version = new GraphVersion(
-                1L,
                 71L,
                 null,
                 901L,
@@ -90,7 +89,6 @@ class KnowledgeQualityReportApplicationServiceTest {
         when(entityRepository.listByVersionId(71L))
                 .thenReturn(List.of(
                         new KnowledgeEntity(
-                                1L,
                                 3001L,
                                 "person:huangdi",
                                 "黄帝",
@@ -103,21 +101,9 @@ class KnowledgeQualityReportApplicationServiceTest {
                                 null,
                                 null),
                         new KnowledgeEntity(
-                                2L,
-                                3002L,
-                                "person:fuxi",
-                                "伏羲",
-                                "PERSON",
-                                "始祖",
-                                "PENDING",
-                                71L,
-                                "[]",
-                                null,
-                                null,
-                                null)));
+                                3002L, "person:fuxi", "伏羲", "PERSON", "始祖", "PENDING", 71L, "[]", null, null, null)));
         when(relationRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeRelation(
-                        1L,
                         4001L,
                         "rel:1",
                         "person:huangdi",
@@ -134,7 +120,6 @@ class KnowledgeQualityReportApplicationServiceTest {
                         null)));
         when(lineageNodeRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeLineageNode(
-                        1L,
                         5001L,
                         "lineage:huangdi",
                         "黄帝",
