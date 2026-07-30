@@ -14,6 +14,8 @@ const manuscriptSourcePath = resolve(
 const outputPath = resolve(repoRoot, "db/data/knowledge.sql");
 const GENERATED_REF_BASE = 531000;
 const SANCAI_ENTRY_ID_BASE = 300000000000;
+const STABLE_ID_MODULO = 900000000;
+const ENTRY_DUPLICATE_SLOT_SIZE = 100;
 const THEME_CATEGORY_ID = 1004;
 const SPECIAL_TAG_IDS = new Map([["世系图", 500001]]);
 
@@ -82,11 +84,23 @@ const validateSeed = (seed) => {
 };
 
 const validateManuscripts = (manuscripts) => {
+  const entryIds = new Map();
+  const entryKeyCounts = new Map();
   manuscripts.forEach((entry, index) => {
     requireNonBlank(entry.category, `manuscript ${index + 1} category`);
     requireNonBlank(entry.volume, `manuscript ${index + 1} volume`);
     requireNonBlank(entry.title, `manuscript ${index + 1} title`);
     requireNonBlank(entry.content, `manuscript ${index + 1} content`);
+    const entryKey = buildEntryKey(entry);
+    const occurrence = (entryKeyCounts.get(entryKey) ?? 0) + 1;
+    entryKeyCounts.set(entryKey, occurrence);
+    const entryId = buildEntryId(entry, occurrence);
+    if (entryIds.has(entryId)) {
+      throw new Error(
+        `Duplicate generated manuscript id ${entryId}: "${entryKey}" conflicts with "${entryIds.get(entryId)}"`,
+      );
+    }
+    entryIds.set(entryId, entryKey);
     if (!Array.isArray(entry.tags)) {
       throw new Error(`Invalid tags for manuscript ${index + 1}`);
     }
@@ -101,25 +115,39 @@ const validateManuscripts = (manuscripts) => {
 };
 
 const buildTagIds = (tags) => {
-  const regularNames = tags
-    .map((tag) => tag.name)
-    .filter((name) => !SPECIAL_TAG_IDS.has(name));
-  const regularIds = new Map(
-    regularNames.map((name, index) => [name, 501000 + index + 1]),
-  );
-  return new Map([...SPECIAL_TAG_IDS, ...regularIds]);
+  const tagIds = new Map(SPECIAL_TAG_IDS);
+  const usedIds = new Map([...SPECIAL_TAG_IDS].map(([name, id]) => [id, name]));
+  for (const tag of tags) {
+    if (SPECIAL_TAG_IDS.has(tag.name)) {
+      continue;
+    }
+    const tagId = buildTagId(tag.name);
+    const conflictingName = usedIds.get(tagId);
+    if (conflictingName) {
+      throw new Error(
+        `Duplicate generated tag id ${tagId}: "${tag.name}" conflicts with "${conflictingName}"`,
+      );
+    }
+    tagIds.set(tag.name, tagId);
+    usedIds.set(tagId, tag.name);
+  }
+  return tagIds;
 };
 
 const buildRefs = (manuscripts, tagIds) => {
   const refs = [];
   let refIndex = 1;
-  manuscripts.forEach((entry, entryIndex) => {
+  const entryKeyCounts = new Map();
+  manuscripts.forEach((entry) => {
+    const entryKey = buildEntryKey(entry);
+    const occurrence = (entryKeyCounts.get(entryKey) ?? 0) + 1;
+    entryKeyCounts.set(entryKey, occurrence);
     for (const tag of entry.tags) {
       refs.push({
         refId: GENERATED_REF_BASE + refIndex++,
         tagId: requireLookup(tagIds, tag, "tag"),
         contentType: "SANCAI_ENTRY",
-        contentId: SANCAI_ENTRY_ID_BASE + entryIndex + 1,
+        contentId: buildEntryId(entry, occurrence),
         contentTitle: entry.title,
       });
     }
@@ -165,8 +193,12 @@ const appendTagSql = (lines, tags, tagIds) => {
   }
   lines.push("-- 三才图会标签库种子，来源：db/data-source/sancai-tags.json。");
   lines.push("INSERT INTO `knowledge_tag` (");
-  lines.push("    `tag_id`, `name`, `category_id`, `description`, `status`, `source`,");
-  lines.push("    `review_status`, `review_note`, `created_at`, `reviewed_at`, `merged_to_tag_id`,");
+  lines.push(
+    "    `tag_id`, `name`, `category_id`, `description`, `status`, `source`,",
+  );
+  lines.push(
+    "    `review_status`, `review_note`, `created_at`, `reviewed_at`, `merged_to_tag_id`,",
+  );
   lines.push("    `deprecated_at`, `deprecated_by`");
   lines.push(") VALUES");
   lines.push(
@@ -236,9 +268,13 @@ const appendTagContentRefSql = (lines, refs) => {
   if (refs.length === 0) {
     return;
   }
-  lines.push("-- 三才图会内容标签引用投影，来源：db/data-source/sancai-manuscripts.json。");
+  lines.push(
+    "-- 三才图会内容标签引用投影，来源：db/data-source/sancai-manuscripts.json。",
+  );
   lines.push("INSERT INTO `knowledge_tag_content_ref` (");
-  lines.push("    `ref_id`, `tag_id`, `content_type`, `content_id`, `content_title`, `source`");
+  lines.push(
+    "    `ref_id`, `tag_id`, `content_type`, `content_id`, `content_title`, `source`",
+  );
   lines.push(") VALUES");
   lines.push(
     refs
@@ -300,5 +336,23 @@ const assertUnique = (values, field) => {
     seen.add(value);
   }
 };
+
+const stableHash = (value) => {
+  let hash = 7;
+  for (const codePoint of String(value).trim()) {
+    hash = (hash * 131 + codePoint.codePointAt(0)) % STABLE_ID_MODULO;
+  }
+  return hash;
+};
+
+const buildTagId = (tagName) => 501000 + stableHash(tagName);
+
+const buildEntryKey = (entry) =>
+  `${entry.category}\u0000${entry.volume}\u0000${entry.title}\u0000${entry.content}`;
+
+const buildEntryId = (entry, occurrence = 1) =>
+  SANCAI_ENTRY_ID_BASE +
+  stableHash(buildEntryKey(entry)) * ENTRY_DUPLICATE_SLOT_SIZE +
+  occurrence;
 
 main();

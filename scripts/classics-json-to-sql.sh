@@ -115,16 +115,20 @@ def sql_datetime(v):
     "\u0027" + (v | tostring) + "\u0027"
   end;
 
+def stable_hash(v):
+  reduce ((v | tostring | gsub("^\\s+|\\s+$"; "") | explode)[]) as $code
+    (7; ((. * 131 + $code) % 900000000));
+
+def generated_entry_key(entry):
+  entry.category + "\u0000" + entry.volume + "\u0000" + entry.title + "\u0000" + entry.content;
+
 def generated_tag_id(tag_seed; tag):
-  if tag == "世系图" then
+  if ((tag_seed.tags | map(.name) | index(tag)) == null) then
+    error("Unknown Sancai manuscript tag: " + (tag | tostring))
+  elif tag == "世系图" then
     500001
   else
-    (
-      tag_seed.tags
-      | map(.name)
-      | map(select(. != "世系图"))
-      | index(tag) + 501001
-    )
+    501000 + stable_hash(tag)
   end;
 
 def generated_category_id(categories; category_name):
@@ -138,8 +142,10 @@ def generated_volume_id(volumes; category_name; volume_name):
     | .value.volume_id
   );
 
-def generated_entry_id(entry_index):
-  300000000001 + entry_index;
+def generated_entry_id(entries; entry_index; entry):
+  300000000000
+    + stable_hash(generated_entry_key(entry)) * 100
+    + ([entries[0:entry_index + 1][] | select(generated_entry_key(.) == generated_entry_key(entry))] | length);
 
 def generated_category_priority(category_index):
   category_index * 10;
@@ -250,7 +256,7 @@ def volume_number_from_title(title):
   | .key as $entry_index
   | .value as $entry
   | "INSERT INTO `classics_sancai_entry` (`id`, `volume_id`, `title`, `original_text`, `translation_text`, `summary`, `lifecycle_status`, `visibility`, `translation_status`, `image_status`, `visual_asset_status`, `refinement_status`, `priority`, `current_version_id`, `current_version_no`, `current_versioned_at`, `content_updated_at`) VALUES (" +
-    (generated_entry_id($entry_index) | tostring) + ", " +
+    (generated_entry_id($entries; $entry_index; $entry) | tostring) + ", " +
     (generated_volume_id($volumes; $entry.category; $entry.volume) | tostring) + ", " +
     sql_text($entry.title) + ", " +
     sql_text($entry.content) + ", " +
@@ -281,7 +287,7 @@ def volume_number_from_title(title):
     | .value as $entry
     | ($entry.qa // [])[] as $qa
     | select(($qa.q // "") != "" and ($qa.a // "") != "")
-    | {entry_id: generated_entry_id($entry_index), qa: $qa}
+    | {entry_id: generated_entry_id($entries; $entry_index; $entry), qa: $qa}
   ] as $qa_rows
   | if ($qa_rows | length) > 0 then
       $qa_rows
@@ -310,7 +316,7 @@ def volume_number_from_title(title):
     | .key as $entry_index
     | .value as $entry
     | ($entry.tags // [])[] as $tag
-    | {entry_id: generated_entry_id($entry_index), tag: $tag}
+    | {entry_id: generated_entry_id($entries; $entry_index; $entry), tag: $tag}
   ]
   | to_entries[]
   | .key as $tag_index
