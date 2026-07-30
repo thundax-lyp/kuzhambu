@@ -239,11 +239,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
                     .toList();
         }
         if (CLEANUP_TYPE_EXPIRED_REPORT.equals(cleanupType)) {
-            return reportRepository
-                    .listExpiredReportIds(
-                            OperationsCleanupLegacyTimeAdapter.toDate(cleanupThreshold(requestedAt, retentionDays)),
-                            limit)
-                    .stream()
+            return reportRepository.listExpiredReportIds(cleanupThreshold(requestedAt, retentionDays), limit).stream()
                     .map(ReportId::value)
                     .map(targetId -> new DiscoveredCleanupTarget(
                             OperationsCleanupSupport.resolveItemType(cleanupType), targetId))
