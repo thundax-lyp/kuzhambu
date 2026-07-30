@@ -141,12 +141,13 @@ export const toRequest = (form: SearchFormState): DiscoverySearchRequest => {
 };
 
 export const createClickCommand = (
-    searchEventId: string,
+    searchEventId: string | number | null | undefined,
     group: DiscoverySearchGroupResponse,
     item: DiscoverySearchItemResponse
 ): DiscoverySearchClickEventRequest | null => {
+    const normalizedSearchEventId = normalizeNumericId(searchEventId);
     if (
-        !searchEventId ||
+        !normalizedSearchEventId ||
         !group.groupKey ||
         !item.contentDomain ||
         !item.contentType ||
@@ -165,7 +166,7 @@ export const createClickCommand = (
         groupRank: item.groupRank,
         resultGroupKey: group.groupKey,
         resultRank: item.resultRank,
-        searchEventId,
+        searchEventId: normalizedSearchEventId,
         targetPath: item.targetPath ?? null
     };
 };
@@ -187,4 +188,18 @@ const toIsoStartOfDay = (value: string) => {
 
 const toIsoEndOfDay = (value: string) => {
     return value ? new Date(`${value}T23:59:59`).toISOString() : null;
+};
+
+const normalizeNumericId = (value: string | number | null | undefined) => {
+    if (typeof value === "number") {
+        return Number.isSafeInteger(value) && value > 0 ? String(value) : null;
+    }
+
+    if (typeof value !== "string") {
+        return null;
+    }
+
+    const trimmedValue = value.trim();
+
+    return /^\d+$/u.test(trimmedValue) ? trimmedValue : null;
 };

@@ -72,4 +72,32 @@ describe("discovery search service", () => {
             contentType: "SANCAI_ENTRY"
         });
     });
+
+    it("posts numeric search event id when recording result clicks", async () => {
+        mocks.postJson.mockResolvedValueOnce(true);
+
+        await discoverySearchService.recordSearchClickEvent({
+            contentDomain: "CLASSICS",
+            contentId: "1001",
+            contentTitle: "礼器",
+            contentType: "SANCAI_ENTRY",
+            groupRank: 1,
+            resultGroupKey: "SANCAI_ENTRY",
+            resultRank: 1,
+            searchEventId: "1001",
+            targetPath: "/shares/1001"
+        });
+
+        expect(mocks.postJson).toHaveBeenCalledWith("/portal/discovery/search/click", {
+            contentDomain: "CLASSICS",
+            contentId: "1001",
+            contentTitle: "礼器",
+            contentType: "SANCAI_ENTRY",
+            groupRank: 1,
+            resultGroupKey: "SANCAI_ENTRY",
+            resultRank: 1,
+            searchEventId: "1001",
+            targetPath: "/shares/1001"
+        });
+    });
 });

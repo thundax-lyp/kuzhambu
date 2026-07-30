@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `D-11 discovery-portal-search-frontend`：验收并按需适配 portal 搜索页控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/search/search-page.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/search/components/search-controls.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/search/components/search-results.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/search/search-service.ts`、`kuzhambu-apps/portal-web/src/pages/discovery/search/search-types.ts`、`kuzhambu-apps/portal-web/src/pages/discovery/search/search-page.test.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/search/search-page-results.test.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/search/search-service.test.ts`
-    - 处理动作：验收搜索输入框、筛选控件、结果点击和分页控件对数字字符串 `searchEventId` 的兼容性并按需修正。
-    - 验收点：点击搜索结果会发送数字字符串 `searchEventId`，页面不展示 `{"value":1}` 或 `[object Object]`。
-    - 重要度：8/10
-
 - [ ] `D-12 discovery-portal-qa-frontend`：验收并按需适配 portal QA 页控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
