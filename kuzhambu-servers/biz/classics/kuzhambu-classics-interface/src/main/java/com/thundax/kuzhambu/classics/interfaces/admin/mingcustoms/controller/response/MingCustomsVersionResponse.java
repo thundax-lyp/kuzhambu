@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,7 +30,7 @@ public class MingCustomsVersionResponse implements Serializable {
     private Integer versionNo;
 
     @JsonProperty("versionedAt")
-    private Date versionedAt;
+    private Instant versionedAt;
 
     @JsonProperty("snapshotJson")
     private String snapshotJson;
