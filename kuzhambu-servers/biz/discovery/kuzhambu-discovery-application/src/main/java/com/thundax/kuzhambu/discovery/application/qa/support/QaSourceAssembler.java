@@ -6,8 +6,8 @@ import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatSource;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -84,7 +84,7 @@ public class QaSourceAssembler {
                 sourceRank,
                 null,
                 STATUS_AVAILABLE,
-                new Date());
+                Instant.now());
     }
 
     public QaSource toDomain(ClassicsQaKnowledgeFacadeDto knowledge, Long messageId, Integer sourceRank) {
@@ -107,7 +107,7 @@ public class QaSourceAssembler {
                 sourceRank,
                 null,
                 sourceStatus(sourceId, knowledge.getContentType(), knowledge.getContentId()),
-                new Date());
+                Instant.now());
     }
 
     public QaSource toDomain(KnowledgeChatSource source, Long messageId, Integer sourceRank) {
@@ -130,7 +130,7 @@ public class QaSourceAssembler {
                 sourceRank,
                 toScore(source.score()),
                 sourceStatus(sourceId, source.contentType(), source.contentId()),
-                new Date());
+                Instant.now());
     }
 
     private Long parseLong(String value) {
