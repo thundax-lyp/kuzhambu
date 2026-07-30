@@ -21,8 +21,8 @@ import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContent
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 import org.apache.commons.lang3.StringUtils;
@@ -60,7 +60,6 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
             throw new BizException("Multipart upload owner can not be empty");
         }
         validateMultipartSize(session);
-        Date now = new Date();
         if (StringUtils.isBlank(session.getUploadId())) {
             session.setUploadId(UuidHelper.compact());
         }
@@ -117,7 +116,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         persistCompletedMultipartStorage(session, parts, storage);
         storage.setId(storageApplicationService.create(toCreateStorageCommand(storage)));
 
-        Date now = new Date();
+        Instant now = Instant.now();
         session.setUploadStatus(MultipartUploadStatus.COMPLETED);
         session.setUploadedPartCount(parts.size());
         session.setCompletedDate(now);
@@ -222,7 +221,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
             }
         }
         multipartUploadRepository.deleteMultipartParts(session.getUploadIdRef());
-        Date now = new Date();
+        Instant now = Instant.now();
         session.setUploadStatus(MultipartUploadStatus.ABORTED);
         session.setAbortedDate(now);
         return multipartUploadRepository.updateMultipartSession(session);
