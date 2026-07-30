@@ -14,10 +14,9 @@ import lombok.NoArgsConstructor;
 @TableName("discovery_qa_knowledge_sync_batch")
 public class QaKnowledgeSyncBatchDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    private Long batchId;
     private String triggerType;
     private String provider;
     private Integer totalCount;

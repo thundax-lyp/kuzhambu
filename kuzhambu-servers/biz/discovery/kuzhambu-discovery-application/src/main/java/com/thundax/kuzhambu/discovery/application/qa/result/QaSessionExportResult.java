@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QaSessionExportResult {
-    private Long exportId;
+    private Long id;
     private Long sessionId;
     private String format;
     private Long storageObjectId;
@@ -20,4 +20,12 @@ public class QaSessionExportResult {
     private Long completedAt;
     private String filename;
     private String contentType;
+
+    public Long getExportId() {
+        return id;
+    }
+
+    public void setExportId(Long exportId) {
+        this.id = exportId;
+    }
 }

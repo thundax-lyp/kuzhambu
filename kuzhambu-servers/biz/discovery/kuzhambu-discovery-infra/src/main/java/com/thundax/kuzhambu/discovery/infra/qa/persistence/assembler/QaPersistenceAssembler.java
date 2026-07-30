@@ -65,7 +65,6 @@ public final class QaPersistenceAssembler {
         }
         QaSessionExportDO dataObject = new QaSessionExportDO();
         dataObject.setId(entity.getId());
-        dataObject.setExportId(entity.getExportId());
         dataObject.setSessionId(entity.getSessionId());
         dataObject.setFormat(entity.getFormat());
         dataObject.setStorageObjectId(entity.getStorageObjectId());
@@ -83,7 +82,6 @@ public final class QaPersistenceAssembler {
         }
         QaSessionExport entity = new QaSessionExport();
         entity.setId(dataObject.getId());
-        entity.setExportId(dataObject.getExportId());
         entity.setSessionId(dataObject.getSessionId());
         entity.setFormat(dataObject.getFormat());
         entity.setStorageObjectId(dataObject.getStorageObjectId());
