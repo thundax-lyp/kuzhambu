@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.discovery.domain.search.repository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface SearchEventRepository {
@@ -16,7 +16,7 @@ public interface SearchEventRepository {
 
     SearchEventId save(SearchEvent entity);
 
-    List<SearchEvent> listByCreatedAtRange(Date createdAtStart, Date createdAtEnd);
+    List<SearchEvent> listByCreatedAtRange(Instant createdAtStart, Instant createdAtEnd);
 
     PageResult<SearchEvent> page(
             String queryText, String intentType, String searchStatus, String operatorId, int pageNo, int pageSize);

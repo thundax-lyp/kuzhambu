@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaOwnerRef;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface QaSessionRepository {
@@ -15,9 +15,9 @@ public interface QaSessionRepository {
         return getById(sessionId);
     }
 
-    List<QaSession> listByOpenedAtRange(java.util.Date openedAtStart, java.util.Date openedAtEnd);
+    List<QaSession> listByOpenedAtRange(Instant openedAtStart, Instant openedAtEnd);
 
-    PageResult<QaSession> page(String title, Date openedAtStart, Date openedAtEnd, int pageNo, int pageSize);
+    PageResult<QaSession> page(String title, Instant openedAtStart, Instant openedAtEnd, int pageNo, int pageSize);
 
     List<QaSession> listByOwnerUserId(QaOwnerRef owner, Integer limit);
 
@@ -25,5 +25,5 @@ public interface QaSessionRepository {
 
     int update(QaSession entity);
 
-    int markRemoved(QaSessionId id, Date removedAt);
+    int markRemoved(QaSessionId id, Instant removedAt);
 }
