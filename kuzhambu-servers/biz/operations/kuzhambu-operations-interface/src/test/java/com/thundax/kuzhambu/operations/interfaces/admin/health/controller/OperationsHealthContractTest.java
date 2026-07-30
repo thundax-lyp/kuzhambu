@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertRecoverRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthPageRequest;
+import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthTrendRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthAlertPageResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthAlertSummaryResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthPageResponse;
@@ -27,8 +28,8 @@ class OperationsHealthContractTest {
                   "healthStatus":"DOWN",
                   "probeSource":"HTTP",
                   "probeTarget":"internal/health",
-                  "checkedAtStart":"2024-06-29T03:06:40Z",
-                  "checkedAtEnd":"2024-06-30T03:06:40Z",
+                  "checkedAtStart":1719630400000,
+                  "checkedAtEnd":1719716800000,
                   "pageNo":1,
                   "pageSize":20
                 }
@@ -50,6 +51,17 @@ class OperationsHealthContractTest {
                 "checkedAtEnd",
                 "pageNo",
                 "pageSize");
+
+        OperationsHealthTrendRequest trendRequest = OBJECT_MAPPER.readValue(
+                """
+                {
+                  "periodStart":"2024-06-29T03:06:40Z",
+                  "periodEnd":"2024-06-30T03:06:40Z"
+                }
+                """,
+                OperationsHealthTrendRequest.class);
+        assertEquals(Instant.ofEpochMilli(1_719_630_400_000L), trendRequest.getPeriodStart());
+        assertEquals(Instant.ofEpochMilli(1_719_716_800_000L), trendRequest.getPeriodEnd());
     }
 
     @Test

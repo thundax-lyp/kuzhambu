@@ -24,13 +24,15 @@ class OperationsReportContractTest {
                 {
                   "reportType":"WEEKLY",
                   "format":"PDF",
-                  "periodStart":"2024-06-01T00:00:00.000+08:00",
-                  "periodEnd":"2024-06-07T23:59:59.000+08:00"
+                  "periodStart":1717171200000,
+                  "periodEnd":1717775999000
                 }
                 """,
                 OperationsReportGenerateRequest.class);
         assertEquals("WEEKLY", generateRequest.getReportType());
         assertEquals("PDF", generateRequest.getFormat());
+        assertEquals(Instant.ofEpochMilli(1_717_171_200_000L), generateRequest.getPeriodStart());
+        assertEquals(Instant.ofEpochMilli(1_717_775_999_000L), generateRequest.getPeriodEnd());
         assertJsonFields(generateRequest, "reportType", "format", "periodStart", "periodEnd");
 
         OperationsReportPageRequest pageRequest = OBJECT_MAPPER.readValue(
@@ -50,6 +52,8 @@ class OperationsReportContractTest {
         assertEquals("MONTHLY", pageRequest.getReportType());
         assertEquals("SUCCEEDED", pageRequest.getReportStatus());
         assertEquals(1, pageRequest.getPageNo());
+        assertEquals(Instant.parse("2024-05-31T16:00:00Z"), pageRequest.getPeriodStart());
+        assertEquals(Instant.parse("2024-06-30T15:59:59Z"), pageRequest.getPeriodEnd());
         assertJsonFields(
                 pageRequest,
                 "reportType",
