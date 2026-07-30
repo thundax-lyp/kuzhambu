@@ -8,15 +8,16 @@ import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertRecoverRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthPageRequest;
+import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthTrendRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthAlertPageResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthAlertSummaryResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthPageResponse;
-import java.util.Date;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class OperationsHealthContractTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void healthPageRequestJsonFieldsShouldRemainStable() throws Exception {
@@ -38,8 +39,8 @@ class OperationsHealthContractTest {
         assertEquals("DOWN", pageRequest.getHealthStatus());
         assertEquals("HTTP", pageRequest.getProbeSource());
         assertEquals("internal/health", pageRequest.getProbeTarget());
-        assertEquals(new Date(1_719_630_400_000L), pageRequest.getCheckedAtStart());
-        assertEquals(new Date(1_719_716_800_000L), pageRequest.getCheckedAtEnd());
+        assertEquals(Instant.ofEpochMilli(1_719_630_400_000L), pageRequest.getCheckedAtStart());
+        assertEquals(Instant.ofEpochMilli(1_719_716_800_000L), pageRequest.getCheckedAtEnd());
         assertJsonFields(
                 pageRequest,
                 "component",
@@ -50,6 +51,17 @@ class OperationsHealthContractTest {
                 "checkedAtEnd",
                 "pageNo",
                 "pageSize");
+
+        OperationsHealthTrendRequest trendRequest = OBJECT_MAPPER.readValue(
+                """
+                {
+                  "periodStart":"2024-06-29T03:06:40Z",
+                  "periodEnd":"2024-06-30T03:06:40Z"
+                }
+                """,
+                OperationsHealthTrendRequest.class);
+        assertEquals(Instant.ofEpochMilli(1_719_630_400_000L), trendRequest.getPeriodStart());
+        assertEquals(Instant.ofEpochMilli(1_719_716_800_000L), trendRequest.getPeriodEnd());
     }
 
     @Test
@@ -63,7 +75,7 @@ class OperationsHealthContractTest {
                 .probeSource("HTTP")
                 .probeTarget("http://127.0.0.1:8080/internal/health")
                 .detailsJson("{\"errorType\":\"TIMEOUT\"}")
-                .checkedAt(new Date(1_719_630_400_000L))
+                .checkedAt(Instant.ofEpochMilli(1_719_630_400_000L))
                 .build();
         assertJsonFields(
                 pageResponse,
@@ -141,11 +153,11 @@ class OperationsHealthContractTest {
                 .suggestion("check database")
                 .recoveryAction("OPEN_HEALTH_DETAIL")
                 .recoveryTarget("{\"route\":\"/operations/dashboard\"}")
-                .firstTriggeredAt(new Date(1_719_630_400_000L))
-                .lastTriggeredAt(new Date(1_719_630_500_000L))
-                .ackedAt(new Date(1_719_630_600_000L))
+                .firstTriggeredAt(Instant.ofEpochMilli(1_719_630_400_000L))
+                .lastTriggeredAt(Instant.ofEpochMilli(1_719_630_500_000L))
+                .ackedAt(Instant.ofEpochMilli(1_719_630_600_000L))
                 .ackedByUserId(1001L)
-                .recoveredAt(new Date(1_719_630_700_000L))
+                .recoveredAt(Instant.ofEpochMilli(1_719_630_700_000L))
                 .failureReason("probe timeout")
                 .build();
         assertJsonFields(
@@ -181,7 +193,7 @@ class OperationsHealthContractTest {
                 .suggestion("check database")
                 .recoveryAction("OPEN_HEALTH_DETAIL")
                 .recoveryTarget("{\"route\":\"/operations/dashboard\"}")
-                .lastTriggeredAt(new Date(1_719_630_500_000L))
+                .lastTriggeredAt(Instant.ofEpochMilli(1_719_630_500_000L))
                 .failureReason("probe timeout")
                 .build();
         assertJsonFields(

@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.operations.application.report.support.OperationsRepo
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSnapshot;
 import com.thundax.kuzhambu.operations.domain.report.client.dto.OperationsWorkerRenderDtos;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
@@ -54,7 +54,7 @@ public class OperationsReportSnapshotAssembler {
                 record.getPeriodEnd(),
                 record.getTemplateVersion(),
                 record.getRequesterUserId(),
-                new Date(),
+                Instant.now(),
                 sections);
     }
 

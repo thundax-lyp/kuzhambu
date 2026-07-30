@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository
 import com.thundax.kuzhambu.operations.infra.report.persistence.assembler.ReportPersistenceAssembler;
 import com.thundax.kuzhambu.operations.infra.report.persistence.dataobject.ReportDO;
 import com.thundax.kuzhambu.operations.infra.report.persistence.mapper.ReportMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
@@ -39,8 +39,8 @@ public class ReportRepositoryImpl implements ReportRepository {
             String format,
             String reportStatus,
             Long requesterUserId,
-            Date periodStart,
-            Date periodEnd,
+            Instant periodStart,
+            Instant periodEnd,
             int pageNo,
             int pageSize) {
         Page<ReportDO> page = new Page<>(pageNo, pageSize);
@@ -89,7 +89,7 @@ public class ReportRepositoryImpl implements ReportRepository {
     }
 
     @Override
-    public List<ReportId> listExpiredReportIds(Date requestedBefore, int limit) {
+    public List<ReportId> listExpiredReportIds(Instant requestedBefore, int limit) {
         return mapper
                 .selectObjs(new QueryWrapper<ReportDO>()
                         .select("report_id")
@@ -109,8 +109,8 @@ public class ReportRepositoryImpl implements ReportRepository {
             String format,
             String reportStatus,
             Long requesterUserId,
-            Date periodStart,
-            Date periodEnd) {
+            Instant periodStart,
+            Instant periodEnd) {
         QueryWrapper<ReportDO> wrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(reportType)) {
             wrapper.eq("report_type", reportType);

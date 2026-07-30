@@ -24,7 +24,6 @@ import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDa
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopQueryResult;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopTagResult;
 import com.thundax.kuzhambu.operations.application.dashboard.service.OperationsDashboardApplicationService;
-import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardLegacyTimeAdapter;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionResolver;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionSnapshot;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
@@ -281,7 +280,7 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
                 alert.getSuggestion(),
                 alert.getRecoveryAction(),
                 alert.getRecoveryTarget(),
-                OperationsDashboardLegacyTimeAdapter.toInstant(alert.getLastTriggeredAt()),
+                alert.getLastTriggeredAt(),
                 alert.getFailureReason());
     }
 

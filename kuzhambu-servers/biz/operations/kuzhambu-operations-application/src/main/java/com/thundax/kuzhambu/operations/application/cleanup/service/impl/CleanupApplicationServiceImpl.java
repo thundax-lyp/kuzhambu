@@ -239,11 +239,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
                     .toList();
         }
         if (CLEANUP_TYPE_EXPIRED_REPORT.equals(cleanupType)) {
-            return reportRepository
-                    .listExpiredReportIds(
-                            OperationsCleanupLegacyTimeAdapter.toDate(cleanupThreshold(requestedAt, retentionDays)),
-                            limit)
-                    .stream()
+            return reportRepository.listExpiredReportIds(cleanupThreshold(requestedAt, retentionDays), limit).stream()
                     .map(ReportId::value)
                     .map(targetId -> new DiscoveredCleanupTarget(
                             OperationsCleanupSupport.resolveItemType(cleanupType), targetId))
@@ -251,9 +247,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         }
         if (CLEANUP_TYPE_EXPIRED_HEALTH_CHECK.equals(cleanupType)) {
             return healthCheckRepository
-                    .listExpiredCheckIds(
-                            OperationsCleanupLegacyTimeAdapter.toDate(cleanupThreshold(requestedAt, retentionDays)),
-                            limit)
+                    .listExpiredCheckIds(cleanupThreshold(requestedAt, retentionDays), limit)
                     .stream()
                     .map(HealthCheckId::value)
                     .map(targetId -> new DiscoveredCleanupTarget(

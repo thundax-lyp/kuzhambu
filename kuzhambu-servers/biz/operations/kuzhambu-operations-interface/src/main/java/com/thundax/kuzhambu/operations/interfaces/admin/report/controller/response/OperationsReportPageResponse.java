@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,13 +16,13 @@ public class OperationsReportPageResponse {
     private Long reportId;
     private String reportType;
     private String format;
-    private Date periodStart;
-    private Date periodEnd;
+    private Instant periodStart;
+    private Instant periodEnd;
     private Long storageObjectId;
     private String artifactFilename;
     private String reportStatus;
     private String failureReason;
     private Long requesterUserId;
-    private Date requestedAt;
-    private Date completedAt;
+    private Instant requestedAt;
+    private Instant completedAt;
 }

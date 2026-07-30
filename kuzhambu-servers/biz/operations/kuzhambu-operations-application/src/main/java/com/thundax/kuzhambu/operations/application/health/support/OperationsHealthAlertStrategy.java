@@ -9,7 +9,7 @@ import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthAle
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthAlertRepository;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
 import java.time.Duration;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -87,14 +87,13 @@ public class OperationsHealthAlertStrategy {
     }
 
     public void evaluateStaleAlerts() {
-        Date now = new Date();
-        Date staleBefore =
-                new Date(now.getTime() - Duration.ofMinutes(staleMinutes()).toMillis());
+        Instant now = Instant.now();
+        Instant staleBefore = now.minus(Duration.ofMinutes(staleMinutes()));
         for (HealthCheckRecord latestRecord : healthCheckRepository.listLatestByComponent()) {
             if (latestRecord == null
                     || StringUtils.isBlank(latestRecord.getComponent())
                     || latestRecord.getCheckedAt() == null
-                    || !latestRecord.getCheckedAt().before(staleBefore)) {
+                    || !latestRecord.getCheckedAt().isBefore(staleBefore)) {
                 continue;
             }
             upsertHealthAlert(
@@ -186,7 +185,7 @@ public class OperationsHealthAlertStrategy {
 
     private void upsertHealthAlert(
             HealthCheckRecord record, String alertType, String alertLevel, String message, String suggestion) {
-        Date now = new Date();
+        Instant now = Instant.now();
         HealthAlertRecord alert = findOpenHealthAlert(record.getComponent(), alertType);
         boolean createAlert = alert == null;
         if (alert == null) {
@@ -233,7 +232,7 @@ public class OperationsHealthAlertStrategy {
             return;
         }
         try {
-            Date now = new Date();
+            Instant now = Instant.now();
             HealthAlertRecord alert = healthAlertRepository.getOpenBySource(sourceRefType, sourceRefId, alertType);
             boolean createAlert = alert == null;
             if (alert == null) {

@@ -51,7 +51,6 @@ import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSna
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -230,7 +229,7 @@ class CleanupApplicationServiceImplTest {
         assertEquals("SUCCEEDED", result.getCleanupStatus());
         assertEquals(1, result.getTotalCount());
         assertEquals(1, healthCheckRepository.lastLimit);
-        assertEquals(new Date(1_717_038_400_000L), healthCheckRepository.lastCheckedBefore);
+        assertEquals(Instant.ofEpochMilli(1_717_038_400_000L), healthCheckRepository.lastCheckedBefore);
         assertEquals(
                 "health-check",
                 repository.listItemsByJobId(result.getCleanupId()).get(0).getTargetType());
@@ -471,8 +470,8 @@ class CleanupApplicationServiceImplTest {
                 String format,
                 String reportStatus,
                 Long requesterUserId,
-                Date periodStart,
-                Date periodEnd,
+                Instant periodStart,
+                Instant periodEnd,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, records.size(), List.copyOf(records.values()));
@@ -496,7 +495,7 @@ class CleanupApplicationServiceImplTest {
         }
 
         @Override
-        public List<ReportId> listExpiredReportIds(Date requestedBefore, int limit) {
+        public List<ReportId> listExpiredReportIds(Instant requestedBefore, int limit) {
             return expiredReportIds.stream().limit(limit).toList();
         }
     }
@@ -504,7 +503,7 @@ class CleanupApplicationServiceImplTest {
     private static final class InMemoryHealthCheckRepository implements HealthCheckRepository {
         private final Map<Long, HealthCheckRecord> records = new LinkedHashMap<>();
         private List<HealthCheckId> expiredCheckIds = List.of();
-        private Date lastCheckedBefore;
+        private Instant lastCheckedBefore;
         private int lastLimit;
 
         @Override
@@ -523,8 +522,8 @@ class CleanupApplicationServiceImplTest {
                 String healthStatus,
                 String probeSource,
                 String probeTarget,
-                Date checkedAtStart,
-                Date checkedAtEnd,
+                Instant checkedAtStart,
+                Instant checkedAtEnd,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, records.size(), List.copyOf(records.values()));
@@ -532,7 +531,7 @@ class CleanupApplicationServiceImplTest {
 
         @Override
         public List<HealthTrendBucket> listTrend(
-                String component, String probeSource, Date periodStart, Date periodEnd, String bucketType) {
+                String component, String probeSource, Instant periodStart, Instant periodEnd, String bucketType) {
             return List.of();
         }
 
@@ -554,7 +553,7 @@ class CleanupApplicationServiceImplTest {
         }
 
         @Override
-        public List<HealthCheckId> listExpiredCheckIds(Date checkedBefore, int limit) {
+        public List<HealthCheckId> listExpiredCheckIds(Instant checkedBefore, int limit) {
             lastCheckedBefore = checkedBefore;
             lastLimit = limit;
             return expiredCheckIds.stream().limit(limit).toList();

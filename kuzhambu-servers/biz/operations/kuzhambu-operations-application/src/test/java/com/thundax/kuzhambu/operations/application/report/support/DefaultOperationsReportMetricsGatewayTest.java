@@ -19,7 +19,6 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -46,10 +45,7 @@ class DefaultOperationsReportMetricsGatewayTest {
                 .totalCostAmount(new BigDecimal("8.88"))
                 .build();
         when(summaryGateway.loadSummary(
-                        monthlyRecord().getPeriodStart().toInstant(),
-                        monthlyRecord().getPeriodEnd().toInstant(),
-                        "WEEK",
-                        permissions))
+                        monthlyRecord().getPeriodStart(), monthlyRecord().getPeriodEnd(), "WEEK", permissions))
                 .thenReturn(new OperationsCrossDomainSummary(
                         classicsSummary, aiSummary, discoverySummary, knowledgeSummary));
         DefaultOperationsReportMetricsGateway gateway = new DefaultOperationsReportMetricsGateway(summaryGateway);
@@ -66,11 +62,7 @@ class DefaultOperationsReportMetricsGatewayTest {
         assertEquals("knowledgeSummary", sections.get(3).getSectionKey());
         assertSame(knowledgeSummary, sections.get(3).getPayload().get("summary"));
         verify(summaryGateway)
-                .loadSummary(
-                        monthlyRecord().getPeriodStart().toInstant(),
-                        monthlyRecord().getPeriodEnd().toInstant(),
-                        "WEEK",
-                        permissions);
+                .loadSummary(monthlyRecord().getPeriodStart(), monthlyRecord().getPeriodEnd(), "WEEK", permissions);
     }
 
     @Test
@@ -78,10 +70,7 @@ class DefaultOperationsReportMetricsGatewayTest {
         OperationsDashboardSummaryGateway summaryGateway = mock(OperationsDashboardSummaryGateway.class);
         OperationsDashboardPermissionSnapshot permissions = permissionSnapshotWithAllPrivileges();
         when(summaryGateway.loadSummary(
-                        weeklyRecord().getPeriodStart().toInstant(),
-                        weeklyRecord().getPeriodEnd().toInstant(),
-                        "DAY",
-                        permissions))
+                        weeklyRecord().getPeriodStart(), weeklyRecord().getPeriodEnd(), "DAY", permissions))
                 .thenReturn(new OperationsCrossDomainSummary(
                         ClassicsSummaryFacadeResponse.builder().build(),
                         AiReportSummaryFacadeResponse.builder().build(),
@@ -92,11 +81,7 @@ class DefaultOperationsReportMetricsGatewayTest {
         gateway.loadSections(weeklyRecord());
 
         verify(summaryGateway)
-                .loadSummary(
-                        weeklyRecord().getPeriodStart().toInstant(),
-                        weeklyRecord().getPeriodEnd().toInstant(),
-                        "DAY",
-                        permissions);
+                .loadSummary(weeklyRecord().getPeriodStart(), weeklyRecord().getPeriodEnd(), "DAY", permissions);
     }
 
     private static OperationsDashboardPermissionSnapshot permissionSnapshotWithAllPrivileges() {
@@ -108,8 +93,8 @@ class DefaultOperationsReportMetricsGatewayTest {
                 ReportIdCodec.toDomain(7001L),
                 "MONTHLY",
                 "PDF",
-                Date.from(Instant.parse("2026-06-01T00:00:00Z")),
-                Date.from(Instant.parse("2026-06-30T23:59:59Z")),
+                Instant.from(Instant.parse("2026-06-01T00:00:00Z")),
+                Instant.from(Instant.parse("2026-06-30T23:59:59Z")),
                 "req-month",
                 "trace-month",
                 "2026.06",
@@ -118,7 +103,7 @@ class DefaultOperationsReportMetricsGatewayTest {
                 ReportStatus.PENDING,
                 null,
                 9001L,
-                Date.from(Instant.parse("2026-07-01T00:00:00Z")),
+                Instant.from(Instant.parse("2026-07-01T00:00:00Z")),
                 null);
     }
 
@@ -127,8 +112,8 @@ class DefaultOperationsReportMetricsGatewayTest {
                 ReportIdCodec.toDomain(7002L),
                 "WEEKLY",
                 "PDF",
-                Date.from(Instant.parse("2026-06-22T00:00:00Z")),
-                Date.from(Instant.parse("2026-06-28T23:59:59Z")),
+                Instant.from(Instant.parse("2026-06-22T00:00:00Z")),
+                Instant.from(Instant.parse("2026-06-28T23:59:59Z")),
                 "req-week",
                 "trace-week",
                 "2026.06.28",
@@ -137,7 +122,7 @@ class DefaultOperationsReportMetricsGatewayTest {
                 ReportStatus.PENDING,
                 null,
                 9002L,
-                Date.from(Instant.parse("2026-06-29T00:00:00Z")),
+                Instant.from(Instant.parse("2026-06-29T00:00:00Z")),
                 null);
     }
 }

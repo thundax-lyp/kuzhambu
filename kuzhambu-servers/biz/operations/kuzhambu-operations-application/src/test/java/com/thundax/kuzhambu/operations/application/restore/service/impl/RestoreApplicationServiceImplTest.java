@@ -33,7 +33,7 @@ import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.nio.file.Path;
-import java.util.Date;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -226,8 +226,8 @@ class RestoreApplicationServiceImplTest {
     void pageAndDetailShouldMapRepositoryRecords() {
         InMemoryBackupRepository backupRepository = new InMemoryBackupRepository();
         InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
-        Date writeBlockStartedAt = new Date(1_719_630_410_000L);
-        Date writeBlockReleasedAt = new Date(1_719_630_490_000L);
+        Instant writeBlockStartedAt = Instant.ofEpochMilli(1_719_630_410_000L);
+        Instant writeBlockReleasedAt = Instant.ofEpochMilli(1_719_630_490_000L);
         restoreRepository.records.put(
                 9101L,
                 new RestoreRecord(
@@ -241,8 +241,8 @@ class RestoreApplicationServiceImplTest {
                         writeBlockReleasedAt,
                         null,
                         1001L,
-                        new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L)));
+                        Instant.ofEpochMilli(1_719_630_400_000L),
+                        Instant.ofEpochMilli(1_719_630_500_000L)));
         RestoreApplicationServiceImpl service =
                 service(restoreRepository, backupRepository, new SuccessfulRestoreScriptExecutor());
 
@@ -353,7 +353,7 @@ class RestoreApplicationServiceImplTest {
 
     private static final class FailingRestoreWriteBlocker extends OperationsRestoreWriteBlocker {
         @Override
-        public Date enable(RestoreId restoreId) {
+        public Instant enable(RestoreId restoreId) {
             throw new IllegalStateException("write block failed");
         }
     }

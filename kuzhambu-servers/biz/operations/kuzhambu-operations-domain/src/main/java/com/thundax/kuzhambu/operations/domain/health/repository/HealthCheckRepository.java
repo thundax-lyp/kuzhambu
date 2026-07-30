@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthTrendBucket;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface HealthCheckRepository {
@@ -18,13 +18,13 @@ public interface HealthCheckRepository {
             String healthStatus,
             String probeSource,
             String probeTarget,
-            Date checkedAtStart,
-            Date checkedAtEnd,
+            Instant checkedAtStart,
+            Instant checkedAtEnd,
             int pageNo,
             int pageSize);
 
     List<HealthTrendBucket> listTrend(
-            String component, String probeSource, Date periodStart, Date periodEnd, String bucketType);
+            String component, String probeSource, Instant periodStart, Instant periodEnd, String bucketType);
 
     HealthCheckId insert(HealthCheckRecord record);
 
@@ -32,7 +32,7 @@ public interface HealthCheckRepository {
 
     int deleteById(HealthCheckId id);
 
-    default List<HealthCheckId> listExpiredCheckIds(Date checkedBefore, int limit) {
+    default List<HealthCheckId> listExpiredCheckIds(Instant checkedBefore, int limit) {
         return List.of();
     }
 }

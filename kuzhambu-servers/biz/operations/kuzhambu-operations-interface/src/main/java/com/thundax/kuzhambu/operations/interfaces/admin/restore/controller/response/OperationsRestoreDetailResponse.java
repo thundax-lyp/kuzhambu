@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.response;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,10 +19,10 @@ public class OperationsRestoreDetailResponse {
     private String restoreMode;
     private String restoreStatus;
     private Boolean writeBlockEnabled;
-    private Date writeBlockStartedAt;
-    private Date writeBlockReleasedAt;
+    private Instant writeBlockStartedAt;
+    private Instant writeBlockReleasedAt;
     private String failureReason;
     private Long requesterUserId;
-    private Date startedAt;
-    private Date completedAt;
+    private Instant startedAt;
+    private Instant completedAt;
 }

@@ -20,7 +20,7 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -34,8 +34,8 @@ class ReportApplicationServiceImplTest {
         OperationsReportGenerateCommand command = new OperationsReportGenerateCommand();
         command.setReportType("WEEKLY");
         command.setFormat("PDF");
-        command.setPeriodStart(new Date(1_718_000_000_000L));
-        command.setPeriodEnd(new Date(1_718_086_400_000L));
+        command.setPeriodStart(Instant.ofEpochMilli(1_718_000_000_000L));
+        command.setPeriodEnd(Instant.ofEpochMilli(1_718_086_400_000L));
         command.setRequesterUserId(1001L);
 
         OperationsReportGenerateResult result = service.generate(command);
@@ -66,8 +66,8 @@ class ReportApplicationServiceImplTest {
                         ReportIdCodec.toDomain(9001L),
                         "MONTHLY",
                         "HTML",
-                        new Date(1_718_000_000_000L),
-                        new Date(1_720_419_200_000L),
+                        Instant.ofEpochMilli(1_718_000_000_000L),
+                        Instant.ofEpochMilli(1_720_419_200_000L),
                         "req-1",
                         "trace-1",
                         "2026.06.26",
@@ -76,8 +76,8 @@ class ReportApplicationServiceImplTest {
                         ReportStatus.SUCCEEDED,
                         null,
                         1001L,
-                        new Date(1_720_420_000_000L),
-                        new Date(1_720_420_300_000L))));
+                        Instant.ofEpochMilli(1_720_420_000_000L),
+                        Instant.ofEpochMilli(1_720_420_300_000L))));
         OperationsReportPageQuery query = new OperationsReportPageQuery();
         query.setReportType("MONTHLY");
         query.setFormat("HTML");
@@ -130,8 +130,8 @@ class ReportApplicationServiceImplTest {
         private String lastFormat;
         private String lastReportStatus;
         private Long lastRequesterUserId;
-        private Date lastPeriodStart;
-        private Date lastPeriodEnd;
+        private Instant lastPeriodStart;
+        private Instant lastPeriodEnd;
         private int lastPageNo;
         private int lastPageSize;
 
@@ -146,8 +146,8 @@ class ReportApplicationServiceImplTest {
                 String format,
                 String reportStatus,
                 Long requesterUserId,
-                Date periodStart,
-                Date periodEnd,
+                Instant periodStart,
+                Instant periodEnd,
                 int pageNo,
                 int pageSize) {
             this.lastReportType = reportType;

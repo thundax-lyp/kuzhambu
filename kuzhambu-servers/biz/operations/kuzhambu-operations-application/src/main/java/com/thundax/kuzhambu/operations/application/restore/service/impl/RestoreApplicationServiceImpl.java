@@ -28,12 +28,10 @@ import com.thundax.kuzhambu.operations.domain.restore.repository.RestoreReposito
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +42,8 @@ import org.springframework.stereotype.Service;
 public class RestoreApplicationServiceImpl implements RestoreApplicationService {
 
     private static final long RETENTION_MILLIS = 30L * 24 * 60 * 60 * 1000;
+    private static final DateTimeFormatter BACKUP_TIMESTAMP_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").withZone(ZoneId.of("Asia/Shanghai"));
     private static final String TASK_SOURCE_DOMAIN = "operations";
     private static final String TASK_TYPE_RESTORE = "RESTORE";
     private static final String TASK_STATUS_RUNNING = "RUNNING";
@@ -152,7 +152,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
 
     private OperationsRestoreExecuteResult executeWithGuard(
             OperationsRestoreExecuteCommand command, String sourceBaseName, RestoreMode restoreMode) {
-        Date startedAt = new Date();
+        Instant startedAt = Instant.now();
         String preRestoreTimestamp = formatTimestamp(startedAt);
         BackupRecord preRestoreRecord =
                 buildPreRestoreRecord(command.getRequesterUserId(), startedAt, preRestoreTimestamp);
@@ -197,7 +197,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
             if (writeBlockEnabled) {
                 restoreRecord.setWriteBlockReleasedAt(writeBlocker.disable(restoreId));
             }
-            restoreRecord.setCompletedAt(new Date());
+            restoreRecord.setCompletedAt(Instant.now());
             restoreRepository.update(restoreRecord);
             updateRestoreTaskSnapshot(taskSnapshot, restoreRecord);
         }
@@ -230,7 +230,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 0,
                 null,
                 record.getRequesterUserId(),
-                toInstant(record.getStartedAt()),
+                record.getStartedAt(),
                 null,
                 snapshotAt);
         LongTaskSnapshotId snapshotId = longTaskSnapshotRepository.insert(snapshot);
@@ -247,17 +247,13 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         snapshot.setSuccessCount(succeeded ? 1 : 0);
         snapshot.setFailedCount(succeeded ? 0 : 1);
         snapshot.setFailureReason(record.getFailureReason());
-        snapshot.setCompletedAt(toInstant(record.getCompletedAt()));
+        snapshot.setCompletedAt(record.getCompletedAt());
         snapshot.setSnapshotAt(Instant.now());
         longTaskSnapshotRepository.update(snapshot);
     }
 
     private String taskKey(RestoreId restoreId) {
         return "restore:" + restoreId.value();
-    }
-
-    private static Instant toInstant(Date value) {
-        return value == null ? null : value.toInstant();
     }
 
     private void executeRestoreScript(RestoreMode restoreMode, String sourceBaseName, String preRestoreTimestamp) {
@@ -268,7 +264,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         scriptExecutor.executeRestore(sourceBaseName, preRestoreTimestamp);
     }
 
-    private BackupRecord buildPreRestoreRecord(Long requesterUserId, Date startedAt, String preRestoreTimestamp) {
+    private BackupRecord buildPreRestoreRecord(Long requesterUserId, Instant startedAt, String preRestoreTimestamp) {
         return new BackupRecord(
                 null,
                 BackupType.PRE_RESTORE.value(),
@@ -279,9 +275,9 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 null,
                 null,
                 requesterUserId,
-                startedAt.toInstant(),
+                startedAt,
                 null,
-                startedAt.toInstant().plusMillis(RETENTION_MILLIS));
+                startedAt.plusMillis(RETENTION_MILLIS));
     }
 
     private void updatePreRestoreSuccess(BackupRecord preRestoreRecord, String preRestoreTimestamp) {
@@ -401,10 +397,8 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         return fileName.endsWith(".sql") ? fileName.substring(0, fileName.length() - 4) : fileName;
     }
 
-    private String formatTimestamp(Date date) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ROOT);
-        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-        return formatter.format(date);
+    private String formatTimestamp(Instant date) {
+        return BACKUP_TIMESTAMP_FORMATTER.format(date);
     }
 
     private String truncateFailureReason(String failureReason) {

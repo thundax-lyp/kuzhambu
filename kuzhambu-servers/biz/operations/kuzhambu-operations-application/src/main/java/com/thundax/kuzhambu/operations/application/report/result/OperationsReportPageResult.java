@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.operations.application.report.result;
 
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,13 +16,13 @@ public class OperationsReportPageResult {
     private ReportId reportId;
     private String reportType;
     private String format;
-    private Date periodStart;
-    private Date periodEnd;
+    private Instant periodStart;
+    private Instant periodEnd;
     private Long storageObjectId;
     private String artifactFilename;
     private String reportStatus;
     private String failureReason;
     private Long requesterUserId;
-    private Date requestedAt;
-    private Date completedAt;
+    private Instant requestedAt;
+    private Instant completedAt;
 }

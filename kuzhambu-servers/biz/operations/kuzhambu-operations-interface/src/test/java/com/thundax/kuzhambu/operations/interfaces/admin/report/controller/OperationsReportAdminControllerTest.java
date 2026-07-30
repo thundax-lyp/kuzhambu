@@ -21,7 +21,7 @@ import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportPageRequest;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -77,22 +77,22 @@ class OperationsReportAdminControllerTest {
                                 ReportIdCodec.toDomain(9001L),
                                 "WEEKLY",
                                 "PDF",
-                                new Date(1_718_000_000_000L),
-                                new Date(1_718_086_400_000L),
+                                Instant.ofEpochMilli(1_718_000_000_000L),
+                                Instant.ofEpochMilli(1_718_086_400_000L),
                                 3001L,
                                 "weekly-report.pdf",
                                 "SUCCEEDED",
                                 null,
                                 1001L,
-                                new Date(1_718_086_500_000L),
-                                new Date(1_718_086_600_000L)))));
+                                Instant.ofEpochMilli(1_718_086_500_000L),
+                                Instant.ofEpochMilli(1_718_086_600_000L)))));
         when(service.detail(any()))
                 .thenReturn(new OperationsReportDetailResult(
                         ReportIdCodec.toDomain(9001L),
                         "WEEKLY",
                         "PDF",
-                        new Date(1_718_000_000_000L),
-                        new Date(1_718_086_400_000L),
+                        Instant.ofEpochMilli(1_718_000_000_000L),
+                        Instant.ofEpochMilli(1_718_086_400_000L),
                         "req-1",
                         "trace-1",
                         "2026.06.26",
@@ -101,8 +101,8 @@ class OperationsReportAdminControllerTest {
                         "SUCCEEDED",
                         null,
                         1001L,
-                        new Date(1_718_086_500_000L),
-                        new Date(1_718_086_600_000L)));
+                        Instant.ofEpochMilli(1_718_086_500_000L),
+                        Instant.ofEpochMilli(1_718_086_600_000L)));
         when(service.download(any()))
                 .thenReturn(new OperationsReportDownloadResult(
                         ReportIdCodec.toDomain(9001L),
@@ -116,8 +116,8 @@ class OperationsReportAdminControllerTest {
         OperationsReportGenerateRequest generateRequest = new OperationsReportGenerateRequest();
         generateRequest.setReportType("WEEKLY");
         generateRequest.setFormat("PDF");
-        generateRequest.setPeriodStart(new Date(1_718_000_000_000L));
-        generateRequest.setPeriodEnd(new Date(1_718_086_400_000L));
+        generateRequest.setPeriodStart(Instant.ofEpochMilli(1_718_000_000_000L));
+        generateRequest.setPeriodEnd(Instant.ofEpochMilli(1_718_086_400_000L));
         var generateResponse = controller.generate(generateRequest);
         assertEquals(9001L, generateResponse.getReportId());
         assertEquals("PENDING", generateResponse.getReportStatus());

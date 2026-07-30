@@ -21,7 +21,7 @@ import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthAlertRecord;
 import com.thundax.kuzhambu.operations.infra.health.persistence.dataobject.HealthAlertDO;
 import com.thundax.kuzhambu.operations.infra.health.persistence.mapper.HealthAlertMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.junit.jupiter.api.BeforeAll;
@@ -165,11 +165,11 @@ class HealthAlertRepositoryImplTest {
                 "retry backup",
                 "OPEN_BACKUP",
                 "/operations/backup-restore?backupId=9001",
-                new Date(1_719_630_400_000L),
-                new Date(1_719_630_500_000L),
-                new Date(1_719_630_600_000L),
+                Instant.ofEpochMilli(1_719_630_400_000L),
+                Instant.ofEpochMilli(1_719_630_500_000L),
+                Instant.ofEpochMilli(1_719_630_600_000L),
                 1001L,
-                new Date(1_719_630_700_000L),
+                Instant.ofEpochMilli(1_719_630_700_000L),
                 "network timeout");
     }
 
@@ -188,8 +188,8 @@ class HealthAlertRepositoryImplTest {
                 "retry backup",
                 "OPEN_BACKUP",
                 "/operations/backup-restore?backupId=9001",
-                new Date(1_719_630_400_000L),
-                new Date(1_719_630_500_000L),
+                Instant.ofEpochMilli(1_719_630_400_000L),
+                Instant.ofEpochMilli(1_719_630_500_000L),
                 null,
                 null,
                 null,

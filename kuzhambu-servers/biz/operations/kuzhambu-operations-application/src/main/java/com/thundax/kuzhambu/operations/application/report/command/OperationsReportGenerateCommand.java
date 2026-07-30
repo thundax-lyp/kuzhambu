@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.application.report.command;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ public class OperationsReportGenerateCommand {
 
     private String reportType;
     private String format;
-    private Date periodStart;
-    private Date periodEnd;
+    private Instant periodStart;
+    private Instant periodEnd;
     private Long requesterUserId;
 }

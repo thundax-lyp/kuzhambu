@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.operations.application.health.result;
 
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,5 +19,5 @@ public class OperationsHealthSummaryResult {
     private String message;
     private String probeSource;
     private String probeTarget;
-    private Date checkedAt;
+    private Instant checkedAt;
 }

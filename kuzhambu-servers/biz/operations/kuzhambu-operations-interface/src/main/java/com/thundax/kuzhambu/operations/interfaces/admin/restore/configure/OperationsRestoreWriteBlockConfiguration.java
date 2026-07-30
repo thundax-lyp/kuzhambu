@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.operations.interfaces.admin.restore.configure;
 import com.thundax.kuzhambu.common.web.restore.RestoreWriteBlockState;
 import com.thundax.kuzhambu.operations.application.restore.support.OperationsRestoreWriteBlocker;
 import com.thundax.kuzhambu.operations.domain.restore.model.valueobject.RestoreId;
-import java.util.Date;
+import java.time.Instant;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -26,15 +26,15 @@ public class OperationsRestoreWriteBlockConfiguration {
         }
 
         @Override
-        public Date enable(RestoreId restoreId) {
-            Date enabledAt = super.enable(restoreId);
+        public Instant enable(RestoreId restoreId) {
+            Instant enabledAt = super.enable(restoreId);
             state.enable("operations restore " + restoreId.value());
             return enabledAt;
         }
 
         @Override
-        public Date disable(RestoreId restoreId) {
-            Date disabledAt = super.disable(restoreId);
+        public Instant disable(RestoreId restoreId) {
+            Instant disabledAt = super.disable(restoreId);
             state.disable();
             return disabledAt;
         }

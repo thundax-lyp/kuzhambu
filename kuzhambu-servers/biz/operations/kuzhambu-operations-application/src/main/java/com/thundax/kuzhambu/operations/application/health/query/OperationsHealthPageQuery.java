@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.application.health.query;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +15,6 @@ public class OperationsHealthPageQuery {
     private String healthStatus;
     private String probeSource;
     private String probeTarget;
-    private Date checkedAtStart;
-    private Date checkedAtEnd;
+    private Instant checkedAtStart;
+    private Instant checkedAtEnd;
 }

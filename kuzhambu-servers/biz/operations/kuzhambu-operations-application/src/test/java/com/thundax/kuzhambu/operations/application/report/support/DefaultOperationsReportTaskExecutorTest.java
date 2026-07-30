@@ -38,9 +38,9 @@ import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -102,8 +102,8 @@ class DefaultOperationsReportTaskExecutorTest {
                 ReportIdCodec.toDomain(9001L),
                 "WEEKLY",
                 "PDF",
-                new Date(1_718_000_000_000L),
-                new Date(1_718_086_400_000L),
+                Instant.ofEpochMilli(1_718_000_000_000L),
+                Instant.ofEpochMilli(1_718_086_400_000L),
                 "req-1",
                 "trace-1",
                 "2026.06.26",
@@ -112,7 +112,7 @@ class DefaultOperationsReportTaskExecutorTest {
                 ReportStatus.PENDING,
                 null,
                 1001L,
-                new Date(1_718_086_500_000L),
+                Instant.ofEpochMilli(1_718_086_500_000L),
                 null);
     }
 
@@ -265,8 +265,8 @@ class DefaultOperationsReportTaskExecutorTest {
                 String format,
                 String reportStatus,
                 Long requesterUserId,
-                Date periodStart,
-                Date periodEnd,
+                Instant periodStart,
+                Instant periodEnd,
                 int pageNo,
                 int pageSize) {
             return com.thundax.kuzhambu.common.core.page.PageResult.of(1, 10, 0, List.of());

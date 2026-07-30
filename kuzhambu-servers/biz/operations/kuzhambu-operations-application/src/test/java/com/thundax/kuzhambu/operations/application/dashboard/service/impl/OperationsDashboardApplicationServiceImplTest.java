@@ -40,7 +40,6 @@ import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSna
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -234,7 +233,7 @@ class OperationsDashboardApplicationServiceImplTest {
                 "已重启",
                 "task",
                 null,
-                new Date(1_719_630_410_000L),
+                Instant.ofEpochMilli(1_719_630_410_000L),
                 null,
                 null,
                 null,
@@ -389,7 +388,7 @@ class OperationsDashboardApplicationServiceImplTest {
                 "LOCAL",
                 component,
                 null,
-                new Date(1_719_630_400_000L));
+                Instant.ofEpochMilli(1_719_630_400_000L));
     }
 
     private static OperationsDashboardPermissionResolver permissionResolverWithAllPrivileges() {
@@ -500,8 +499,8 @@ class OperationsDashboardApplicationServiceImplTest {
                 String healthStatus,
                 String probeSource,
                 String probeTarget,
-                Date checkedAtStart,
-                Date checkedAtEnd,
+                Instant checkedAtStart,
+                Instant checkedAtEnd,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, 0, List.of());
@@ -509,7 +508,7 @@ class OperationsDashboardApplicationServiceImplTest {
 
         @Override
         public List<HealthTrendBucket> listTrend(
-                String component, String probeSource, Date periodStart, Date periodEnd, String bucketType) {
+                String component, String probeSource, Instant periodStart, Instant periodEnd, String bucketType) {
             return List.of();
         }
 

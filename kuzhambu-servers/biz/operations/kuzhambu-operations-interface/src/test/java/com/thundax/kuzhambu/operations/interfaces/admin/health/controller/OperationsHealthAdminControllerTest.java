@@ -19,7 +19,7 @@ import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthSummaryRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthTrendRequest;
 import java.lang.reflect.Method;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,7 +63,7 @@ class OperationsHealthAdminControllerTest {
                         "ping ok",
                         "DATABASE",
                         "primary",
-                        new Date(1_719_630_400_000L))));
+                        Instant.ofEpochMilli(1_719_630_400_000L))));
         when(service.page(any(), any()))
                 .thenReturn(PageResult.of(
                         1,
@@ -78,7 +78,7 @@ class OperationsHealthAdminControllerTest {
                                 "DATABASE",
                                 "primary",
                                 "{\"pool\":\"ok\"}",
-                                new Date(1_719_630_400_000L)))));
+                                Instant.ofEpochMilli(1_719_630_400_000L)))));
         when(service.trend(any())).thenReturn(List.of(new OperationsHealthTrendResult("2026-07-06", 2L, 1L, 0L, 12L)));
 
         var summaryResponse = controller.summary(new OperationsHealthSummaryRequest());
@@ -91,8 +91,8 @@ class OperationsHealthAdminControllerTest {
         pageRequest.setHealthStatus("UP");
         pageRequest.setProbeSource("HTTP");
         pageRequest.setProbeTarget("http://127.0.0.1:8080/internal/health");
-        pageRequest.setCheckedAtStart(new Date(1_719_630_400_000L));
-        pageRequest.setCheckedAtEnd(new Date(1_719_716_800_000L));
+        pageRequest.setCheckedAtStart(Instant.ofEpochMilli(1_719_630_400_000L));
+        pageRequest.setCheckedAtEnd(Instant.ofEpochMilli(1_719_716_800_000L));
         pageRequest.setPageNo(1);
         pageRequest.setPageSize(10);
         var pageResponse = controller.page(pageRequest);
@@ -104,8 +104,8 @@ class OperationsHealthAdminControllerTest {
         OperationsHealthTrendRequest trendRequest = new OperationsHealthTrendRequest();
         trendRequest.setComponent("db-master");
         trendRequest.setProbeSource("DATABASE");
-        trendRequest.setPeriodStart(new Date(1_719_630_400_000L));
-        trendRequest.setPeriodEnd(new Date(1_719_716_800_000L));
+        trendRequest.setPeriodStart(Instant.ofEpochMilli(1_719_630_400_000L));
+        trendRequest.setPeriodEnd(Instant.ofEpochMilli(1_719_716_800_000L));
         trendRequest.setBucketType("DAY");
         var trendResponse = controller.trend(trendRequest);
         assertEquals(1, trendResponse.size());
@@ -121,8 +121,8 @@ class OperationsHealthAdminControllerTest {
                                 && "UP".equals(query.getHealthStatus())
                                 && "HTTP".equals(query.getProbeSource())
                                 && "http://127.0.0.1:8080/internal/health".equals(query.getProbeTarget())
-                                && new Date(1_719_630_400_000L).equals(query.getCheckedAtStart())
-                                && new Date(1_719_716_800_000L).equals(query.getCheckedAtEnd())),
+                                && Instant.ofEpochMilli(1_719_630_400_000L).equals(query.getCheckedAtStart())
+                                && Instant.ofEpochMilli(1_719_716_800_000L).equals(query.getCheckedAtEnd())),
                         argThat((PageQuery pageQuery) ->
                                 pageQuery != null && pageQuery.getPageNo() == 1 && pageQuery.getPageSize() == 10));
         verify(service)

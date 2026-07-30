@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,5 +20,5 @@ public class OperationsHealthSummaryResponse {
     private String message;
     private String probeSource;
     private String probeTarget;
-    private Date checkedAt;
+    private Instant checkedAt;
 }

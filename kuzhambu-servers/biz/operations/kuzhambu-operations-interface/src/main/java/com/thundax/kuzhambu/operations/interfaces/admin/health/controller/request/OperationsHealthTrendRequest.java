@@ -3,8 +3,10 @@ package com.thundax.kuzhambu.operations.interfaces.admin.health.controller.reque
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.thundax.kuzhambu.operations.interfaces.admin.support.EpochMillisOrInstantDeserializer;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,11 +27,13 @@ public class OperationsHealthTrendRequest {
 
     @Schema(name = "periodStart", description = "统计起始时间")
     @JsonProperty(value = "periodStart")
-    private Date periodStart;
+    @JsonDeserialize(using = EpochMillisOrInstantDeserializer.class)
+    private Instant periodStart;
 
     @Schema(name = "periodEnd", description = "统计结束时间")
     @JsonProperty(value = "periodEnd")
-    private Date periodEnd;
+    @JsonDeserialize(using = EpochMillisOrInstantDeserializer.class)
+    private Instant periodEnd;
 
     @Schema(name = "bucketType", description = "趋势粒度：HOUR、DAY")
     @JsonProperty(value = "bucketType")

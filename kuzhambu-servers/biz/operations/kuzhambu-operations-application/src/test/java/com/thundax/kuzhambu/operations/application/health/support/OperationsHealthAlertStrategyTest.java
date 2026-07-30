@@ -15,9 +15,9 @@ import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthTre
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthAlertRepository;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -51,20 +51,14 @@ class OperationsHealthAlertStrategyTest {
         InMemoryHealthCheckRepository healthCheckRepository = new InMemoryHealthCheckRepository();
         InMemoryHealthAlertRepository healthAlertRepository = new InMemoryHealthAlertRepository();
         OperationsHealthAlertStrategy strategy = strategy(healthCheckRepository, healthAlertRepository);
-        Date baseTime = now();
+        Instant baseTime = now();
         HealthCheckRecord latest =
                 healthRecord(9103L, "cache", OperationsHealthCollector.HEALTH_STATUS_DEGRADED, baseTime);
         healthCheckRepository.records.add(latest);
         healthCheckRepository.records.add(healthRecord(
-                9102L,
-                "cache",
-                OperationsHealthCollector.HEALTH_STATUS_DEGRADED,
-                new Date(baseTime.getTime() - 1_000L)));
+                9102L, "cache", OperationsHealthCollector.HEALTH_STATUS_DEGRADED, baseTime.minusMillis(1_000L)));
         healthCheckRepository.records.add(healthRecord(
-                9101L,
-                "cache",
-                OperationsHealthCollector.HEALTH_STATUS_DEGRADED,
-                new Date(baseTime.getTime() - 2_000L)));
+                9101L, "cache", OperationsHealthCollector.HEALTH_STATUS_DEGRADED, baseTime.minusMillis(2_000L)));
 
         strategy.evaluateAfterCollect(latest);
 
@@ -81,11 +75,11 @@ class OperationsHealthAlertStrategyTest {
         InMemoryHealthCheckRepository healthCheckRepository = new InMemoryHealthCheckRepository();
         InMemoryHealthAlertRepository healthAlertRepository = new InMemoryHealthAlertRepository();
         OperationsHealthAlertStrategy strategy = strategy(healthCheckRepository, healthAlertRepository);
-        Date baseTime = now();
+        Instant baseTime = now();
         HealthCheckRecord latest = healthRecord(9202L, "search", OperationsHealthCollector.HEALTH_STATUS_UP, baseTime);
         healthCheckRepository.records.add(latest);
         healthCheckRepository.records.add(healthRecord(
-                9201L, "search", OperationsHealthCollector.HEALTH_STATUS_UP, new Date(baseTime.getTime() - 1_000L)));
+                9201L, "search", OperationsHealthCollector.HEALTH_STATUS_UP, baseTime.minusMillis(1_000L)));
         healthAlertRepository.alerts.add(
                 openAlert(9301L, "search", OperationsHealthAlertStrategy.ALERT_TYPE_HEALTH_DOWN, "ACKED"));
 
@@ -107,7 +101,7 @@ class OperationsHealthAlertStrategyTest {
                 9401L,
                 "admin-server",
                 OperationsHealthCollector.HEALTH_STATUS_UP,
-                new Date(now().getTime() - Duration.ofMinutes(11).toMillis())));
+                now().minus(Duration.ofMinutes(11))));
 
         strategy.evaluateStaleAlerts();
 
@@ -163,7 +157,8 @@ class OperationsHealthAlertStrategyTest {
                 healthCheckRepository, healthAlertRepository, properties, new OperationsHealthRecoveryLinkFactory());
     }
 
-    private static HealthCheckRecord healthRecord(long checkId, String component, String healthStatus, Date checkedAt) {
+    private static HealthCheckRecord healthRecord(
+            long checkId, String component, String healthStatus, Instant checkedAt) {
         return new HealthCheckRecord(
                 HealthCheckIdCodec.toDomain(checkId),
                 component,
@@ -198,8 +193,8 @@ class OperationsHealthAlertStrategyTest {
                 "failure");
     }
 
-    private static Date now() {
-        return new Date(1_719_630_500_000L);
+    private static Instant now() {
+        return Instant.ofEpochMilli(1_719_630_500_000L);
     }
 
     private static final class InMemoryHealthCheckRepository implements HealthCheckRepository {
@@ -228,8 +223,8 @@ class OperationsHealthAlertStrategyTest {
                 String healthStatus,
                 String probeSource,
                 String probeTarget,
-                Date checkedAtStart,
-                Date checkedAtEnd,
+                Instant checkedAtStart,
+                Instant checkedAtEnd,
                 int pageNo,
                 int pageSize) {
             List<HealthCheckRecord> matchedRecords = records.stream()
@@ -244,7 +239,7 @@ class OperationsHealthAlertStrategyTest {
 
         @Override
         public List<HealthTrendBucket> listTrend(
-                String component, String probeSource, Date periodStart, Date periodEnd, String bucketType) {
+                String component, String probeSource, Instant periodStart, Instant periodEnd, String bucketType) {
             return List.of();
         }
 

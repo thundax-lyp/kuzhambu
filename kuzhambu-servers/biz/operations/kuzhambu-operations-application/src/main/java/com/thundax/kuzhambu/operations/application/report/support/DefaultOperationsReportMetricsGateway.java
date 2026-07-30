@@ -28,8 +28,8 @@ public class DefaultOperationsReportMetricsGateway implements OperationsReportMe
         }
         String bucketType = resolveBucketType(record.getReportType());
         OperationsCrossDomainSummary summary = summaryGateway.loadSummary(
-                record.getPeriodStart() == null ? null : record.getPeriodStart().toInstant(),
-                record.getPeriodEnd() == null ? null : record.getPeriodEnd().toInstant(),
+                record.getPeriodStart(),
+                record.getPeriodEnd(),
                 bucketType,
                 new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true));
         List<OperationsReportSection> sections = new ArrayList<>();

@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,14 +93,14 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
         record.setStorageObjectId(artifactResult == null ? null : artifactResult.getStorageObjectId());
         record.setReportStatus(ReportStatus.SUCCEEDED);
         record.setFailureReason(null);
-        record.setCompletedAt(new Date());
+        record.setCompletedAt(Instant.now());
         reportRepository.update(record);
     }
 
     private void markFailed(ReportRecord record, String failureReason) {
         record.setReportStatus(ReportStatus.FAILED);
         record.setFailureReason(StringUtils.defaultIfBlank(failureReason, "Operations report task failed."));
-        record.setCompletedAt(new Date());
+        record.setCompletedAt(Instant.now());
         reportRepository.update(record);
         if (healthAlertStrategy != null && record.getId() != null) {
             healthAlertStrategy.recordReportFailed(record.getId().value(), record.getFailureReason());

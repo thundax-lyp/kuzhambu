@@ -3,9 +3,11 @@ package com.thundax.kuzhambu.operations.interfaces.admin.health.controller.reque
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
+import com.thundax.kuzhambu.operations.interfaces.admin.support.EpochMillisOrInstantDeserializer;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,9 +36,11 @@ public class OperationsHealthPageRequest extends PageRequest {
 
     @Schema(name = "checkedAtStart", description = "检查时间起点")
     @JsonProperty(value = "checkedAtStart")
-    private Date checkedAtStart;
+    @JsonDeserialize(using = EpochMillisOrInstantDeserializer.class)
+    private Instant checkedAtStart;
 
     @Schema(name = "checkedAtEnd", description = "检查时间终点")
     @JsonProperty(value = "checkedAtEnd")
-    private Date checkedAtEnd;
+    @JsonDeserialize(using = EpochMillisOrInstantDeserializer.class)
+    private Instant checkedAtEnd;
 }
