@@ -56,7 +56,7 @@ public final class AuthInterfaceAssembler {
                         || result.getPrincipalAccessToken() == null
                         || result.getPrincipalAccessToken().getExpireAt() == null
                 ? null
-                : result.getPrincipalAccessToken().getExpireAt().getTime();
+                : result.getPrincipalAccessToken().getExpireAt().toEpochMilli();
     }
 
     @NonNull

@@ -8,8 +8,8 @@ import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditMetaId;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,7 +40,7 @@ public class AuditLog {
     private AuditSnapshot beforeSnapshot;
     private AuditSnapshot afterSnapshot;
     private List<AuditChangedField> changedFields = new ArrayList<>();
-    private Date occurredAt;
+    private Instant occurredAt;
 
     public String getObjectType() {
         return objectRef == null ? null : objectRef.getObjectType();

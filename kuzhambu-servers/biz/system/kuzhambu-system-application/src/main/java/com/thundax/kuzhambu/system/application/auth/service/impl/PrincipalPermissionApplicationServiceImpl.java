@@ -25,11 +25,11 @@ import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -171,11 +171,11 @@ public class PrincipalPermissionApplicationServiceImpl
             return null;
         }
         PrincipalAccessToken accessToken = principalAccessTokenRepository.getByToken(token);
-        if (accessToken == null || accessToken.getSessionId() == null || !accessToken.canAccess(new Date())) {
+        if (accessToken == null || accessToken.getSessionId() == null || !accessToken.canAccess(Instant.now())) {
             return null;
         }
         PrincipalAuthSession session = principalAuthSessionRepository.getById(accessToken.getSessionId());
-        if (session == null || session.isExpired(new Date())) {
+        if (session == null || session.isExpired(Instant.now())) {
             return null;
         }
         return session;
@@ -236,6 +236,6 @@ public class PrincipalPermissionApplicationServiceImpl
 
     @OneLineMethodAllowed(reason = "表达权限会话缓存 TTL 的安全余量边界")
     private int expiredSeconds(PrincipalAuthSession session) {
-        return session.remainingSeconds(new Date()) + SAFETY_SECONDS;
+        return session.remainingSeconds(Instant.now()) + SAFETY_SECONDS;
     }
 }

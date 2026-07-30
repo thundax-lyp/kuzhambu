@@ -18,7 +18,8 @@ import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -62,7 +63,7 @@ public class PrincipalAuthenticationApplicationServiceImpl implements PrincipalA
 
     private void validateCredential(
             PrincipalCredential credential, String plainPassword, PrincipalPasswordPolicyDTO passwordPolicy) {
-        Date now = new Date();
+        Instant now = Instant.now();
         if (credential.isLocked(now)) {
             throw new BizException("帐号已被锁定，请等待（" + lockedExpireSeconds(credential, passwordPolicy, now) + "）秒后自动解锁!");
         }
@@ -86,7 +87,7 @@ public class PrincipalAuthenticationApplicationServiceImpl implements PrincipalA
         if (credential.getFailedLimit() <= 0) {
             credential.setFailedLimit(passwordPolicy.getMaxFailedCount());
         }
-        Date lockedUntil = new Date(now.getTime() + passwordPolicy.getLockSeconds() * 1000L);
+        Instant lockedUntil = now.plusSeconds(passwordPolicy.getLockSeconds());
         credential.setLockedUntil(lockedUntil);
         PrincipalCredential latestCredential = principalCredentialService.recordFailure(failureCommand(credential));
         if (latestCredential == null) {
@@ -132,11 +133,11 @@ public class PrincipalAuthenticationApplicationServiceImpl implements PrincipalA
     }
 
     private long lockedExpireSeconds(
-            PrincipalCredential credential, PrincipalPasswordPolicyDTO passwordPolicy, Date now) {
+            PrincipalCredential credential, PrincipalPasswordPolicyDTO passwordPolicy, Instant now) {
         if (credential.getLockedUntil() == null) {
             return passwordPolicy.getLockSeconds();
         }
-        long remaining = (credential.getLockedUntil().getTime() - now.getTime()) / 1000L;
+        long remaining = Duration.between(now, credential.getLockedUntil()).getSeconds();
         return Math.max(remaining, 0L);
     }
 }

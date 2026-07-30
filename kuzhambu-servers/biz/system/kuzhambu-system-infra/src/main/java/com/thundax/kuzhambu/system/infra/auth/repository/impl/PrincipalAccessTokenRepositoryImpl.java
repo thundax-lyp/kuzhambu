@@ -22,6 +22,8 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import jakarta.annotation.PreDestroy;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -154,8 +156,8 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
                 tokenHash,
                 seconds,
                 TimeUnit.SECONDS);
-        redis().zadd(principalIndexKey(accessToken), accessToken.getExpireAt().getTime(), tokenHash);
-        redis().zadd(clientIndexKey(accessToken), accessToken.getExpireAt().getTime(), tokenHash);
+        redis().zadd(principalIndexKey(accessToken), accessToken.getExpireAt().toEpochMilli(), tokenHash);
+        redis().zadd(clientIndexKey(accessToken), accessToken.getExpireAt().toEpochMilli(), tokenHash);
     }
 
     private void removeIndex(PrincipalAccessToken accessToken) {
@@ -165,11 +167,11 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
     }
 
     private long remainingSeconds(PrincipalAccessToken accessToken) {
-        Date expireAt = accessToken.getExpireAt();
+        Instant expireAt = accessToken.getExpireAt();
         if (expireAt == null) {
             return 1L;
         }
-        long remainingMillis = expireAt.getTime() - System.currentTimeMillis();
+        long remainingMillis = Duration.between(Instant.now(), expireAt).toMillis();
         return remainingMillis <= 0 ? 1L : (remainingMillis + 999L) / 1000L;
     }
 
@@ -240,8 +242,8 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
         accessToken.setSessionId(PrincipalAuthSessionIdCodec.toDomain(cacheDTO.sessionId));
         accessToken.setPrincipalKey(PrincipalKey.of(PrincipalType.from(cacheDTO.principalType), cacheDTO.principalId));
         accessToken.setScopes(new LinkedHashSet<>(cacheDTO.scopes));
-        accessToken.setIssuedAt(cacheDTO.issuedAt);
-        accessToken.setExpireAt(cacheDTO.expireAt);
+        accessToken.setIssuedAt(toInstant(cacheDTO.issuedAt));
+        accessToken.setExpireAt(toInstant(cacheDTO.expireAt));
         accessToken.setStatus(PrincipalTokenStatus.from(cacheDTO.status));
         return accessToken;
     }
@@ -259,8 +261,8 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
         cacheDTO.principalId = accessToken.getPrincipalKey().getPrincipalId();
         cacheDTO.scopes =
                 accessToken.getScopes() == null ? new ArrayList<>() : new ArrayList<>(accessToken.getScopes());
-        cacheDTO.issuedAt = accessToken.getIssuedAt();
-        cacheDTO.expireAt = accessToken.getExpireAt();
+        cacheDTO.issuedAt = toDate(accessToken.getIssuedAt());
+        cacheDTO.expireAt = toDate(accessToken.getExpireAt());
         cacheDTO.status = accessToken.getStatus().value();
         return cacheDTO;
     }
@@ -276,5 +278,13 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
         private Date issuedAt;
         private Date expireAt;
         private String status;
+    }
+
+    private static Instant toInstant(Date value) {
+        return value == null ? null : value.toInstant();
+    }
+
+    private static Date toDate(Instant value) {
+        return value == null ? null : Date.from(value);
     }
 }

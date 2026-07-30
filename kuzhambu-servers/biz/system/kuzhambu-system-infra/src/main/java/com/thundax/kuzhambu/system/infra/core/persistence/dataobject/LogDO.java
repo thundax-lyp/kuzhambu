@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.system.infra.core.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +18,7 @@ public class LogDO {
 
     private Long userId;
     private String type;
-    private Date logDate;
+    private Instant logDate;
     private String title;
     private String remoteAddr;
     private String userAgent;

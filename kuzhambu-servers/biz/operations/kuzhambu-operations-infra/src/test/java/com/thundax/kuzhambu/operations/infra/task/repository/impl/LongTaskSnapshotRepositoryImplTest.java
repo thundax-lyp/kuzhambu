@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.infra.task.persistence.dataobject.LongTaskSnapshotDO;
 import com.thundax.kuzhambu.operations.infra.task.persistence.mapper.LongTaskSnapshotMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -63,7 +63,8 @@ class LongTaskSnapshotRepositoryImplTest {
         LongTaskSnapshotRepositoryImpl repository = new LongTaskSnapshotRepositoryImpl(mapper);
         when(mapper.selectObjs(any())).thenReturn(List.of(9001L, 9002L));
 
-        List<LongTaskSnapshotId> result = repository.listExpiredSnapshotIds(new Date(1_718_086_500_000L), 2);
+        List<LongTaskSnapshotId> result =
+                repository.listExpiredSnapshotIds(Instant.ofEpochMilli(1_718_086_500_000L), 2);
 
         assertEquals(2, result.size());
         assertEquals(9001L, result.get(0).value());
@@ -89,8 +90,8 @@ class LongTaskSnapshotRepositoryImplTest {
                 40,
                 null,
                 1001L,
-                new Date(1_718_000_000_000L),
-                new Date(1_718_086_400_000L),
-                new Date(1_718_000_100_000L));
+                Instant.ofEpochMilli(1_718_000_000_000L),
+                Instant.ofEpochMilli(1_718_086_400_000L),
+                Instant.ofEpochMilli(1_718_000_100_000L));
     }
 }

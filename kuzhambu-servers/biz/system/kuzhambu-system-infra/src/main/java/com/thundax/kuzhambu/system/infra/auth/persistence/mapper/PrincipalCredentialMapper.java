@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.system.infra.auth.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.thundax.kuzhambu.system.infra.auth.persistence.dataobject.PrincipalCredentialDO;
-import java.util.Date;
+import java.time.Instant;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
@@ -28,5 +28,5 @@ public interface PrincipalCredentialMapper extends BaseMapper<PrincipalCredentia
               AND status = 'ACTIVE'
             """)
     int recordFailure(
-            @Param("id") Long id, @Param("failedLimit") Integer failedLimit, @Param("lockedUntil") Date lockedUntil);
+            @Param("id") Long id, @Param("failedLimit") Integer failedLimit, @Param("lockedUntil") Instant lockedUntil);
 }

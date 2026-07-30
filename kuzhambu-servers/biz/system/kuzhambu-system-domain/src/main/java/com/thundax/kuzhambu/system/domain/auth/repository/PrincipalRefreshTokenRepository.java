@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClient
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface PrincipalRefreshTokenRepository {
@@ -24,5 +24,5 @@ public interface PrincipalRefreshTokenRepository {
 
     int updateStatus(PrincipalRefreshToken refreshToken);
 
-    int markUsedIfActive(PrincipalRefreshToken refreshToken, Date now);
+    int markUsedIfActive(PrincipalRefreshToken refreshToken, Instant now);
 }

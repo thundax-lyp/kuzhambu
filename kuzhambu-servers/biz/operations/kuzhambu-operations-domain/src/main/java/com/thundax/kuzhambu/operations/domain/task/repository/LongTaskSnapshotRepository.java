@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.operations.domain.task.repository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface LongTaskSnapshotRepository {
@@ -19,7 +19,7 @@ public interface LongTaskSnapshotRepository {
 
     int deleteById(LongTaskSnapshotId id);
 
-    default List<LongTaskSnapshotId> listExpiredSnapshotIds(Date snapshotBefore, int limit) {
+    default List<LongTaskSnapshotId> listExpiredSnapshotIds(Instant snapshotBefore, int limit) {
         return List.of();
     }
 }

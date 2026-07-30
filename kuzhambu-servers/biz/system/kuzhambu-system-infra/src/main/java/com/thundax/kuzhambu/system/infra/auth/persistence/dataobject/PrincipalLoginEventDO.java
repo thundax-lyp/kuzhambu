@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.system.infra.auth.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,7 +22,7 @@ public class PrincipalLoginEventDO {
     private String eventType;
     private String authenticationMethod;
     private String identityType;
-    private Date occurredAt;
+    private Instant occurredAt;
     private String ip;
     private String userAgent;
     private String reason;

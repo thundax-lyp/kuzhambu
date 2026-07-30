@@ -39,7 +39,7 @@ import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalRefreshTokenR
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -91,7 +91,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
         PrincipalAuthenticationMethod method =
                 authenticationMethod == null ? PrincipalAuthenticationMethod.PASSWORD : authenticationMethod;
         PrincipalIdentityType type = identityType == null ? PrincipalIdentityType.USER_ACCOUNT : identityType;
-        Date now = new Date();
+        Instant now = Instant.now();
         String token = UuidHelper.compact();
         PrincipalAccessToken accessToken = buildPrincipalAccessToken(
                 token,
@@ -131,10 +131,10 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
                 requirePrincipalAccessTokenRepository().getByToken(token);
         if (accessToken == null
                 || !ADMIN_CLIENT_ID.equals(accessToken.getClientId())
-                || !accessToken.canAccess(new Date())) {
+                || !accessToken.canAccess(Instant.now())) {
             return null;
         }
-        PrincipalAuthSession session = getActivePrincipalAuthSession(accessToken, new Date());
+        PrincipalAuthSession session = getActivePrincipalAuthSession(accessToken, Instant.now());
         if (session == null) {
             return null;
         }
@@ -166,7 +166,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
         AdminAccessTokenResult accessToken = getAccessToken(query);
         return accessToken != null
                 && accessToken.getPrincipalAccessToken() != null
-                && accessToken.getPrincipalAccessToken().canAccess(new Date());
+                && accessToken.getPrincipalAccessToken().canAccess(Instant.now());
     }
 
     @Override
@@ -210,7 +210,8 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
         if (accessToken == null || !validateToken(query)) {
             return AdminTokenQueryResult.inactive(PrincipalAccessTokenCode.ofNullable(token));
         }
-        PrincipalAuthSession session = getActivePrincipalAuthSession(accessToken.getPrincipalAccessToken(), new Date());
+        PrincipalAuthSession session =
+                getActivePrincipalAuthSession(accessToken.getPrincipalAccessToken(), Instant.now());
         if (session == null) {
             return AdminTokenQueryResult.inactive(PrincipalAccessTokenCode.ofNullable(token));
         }
@@ -234,7 +235,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
             requestedClientId = ADMIN_CLIENT_ID;
         }
         PrincipalRefreshToken current = refreshTokenRepository.getByToken(refreshTokenValue(command));
-        Date now = new Date();
+        Instant now = Instant.now();
         if (current == null || !current.canRefresh(now) || !requestedClientId.equals(current.getClientId())) {
             throw invalidToken();
         }
@@ -285,7 +286,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
                 command == null ? null : command.getReason());
     }
 
-    private PrincipalAuthSession getActivePrincipalAuthSession(PrincipalAccessToken accessToken, Date now) {
+    private PrincipalAuthSession getActivePrincipalAuthSession(PrincipalAccessToken accessToken, Instant now) {
         if (accessToken == null || accessToken.getSessionId() == null) {
             return null;
         }
@@ -297,11 +298,11 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
     }
 
     private void touchPrincipalAuthSession(PrincipalAccessToken accessToken) {
-        PrincipalAuthSession session = getActivePrincipalAuthSession(accessToken, new Date());
+        PrincipalAuthSession session = getActivePrincipalAuthSession(accessToken, Instant.now());
         if (session == null) {
             return;
         }
-        principalAuthSessionRepository.touch(session.getId(), new Date(), runtimeExpiredSeconds());
+        principalAuthSessionRepository.touch(session.getId(), Instant.now(), runtimeExpiredSeconds());
     }
 
     private void deletePrincipalAuthSession(PrincipalAccessToken accessToken) {
@@ -339,7 +340,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
         event.setEventType(eventType);
         event.setAuthenticationMethod(authenticationMethod);
         event.setIdentityType(identityType);
-        event.setOccurredAt(new Date());
+        event.setOccurredAt(Instant.now());
         event.setIp(ip);
         event.setUserAgent(userAgent);
         event.setReason(reason);
@@ -355,7 +356,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
     }
 
     private String createPrincipalRefreshToken(
-            PrincipalAccessToken accessToken, PrincipalClientId clientId, Date issuedAt) {
+            PrincipalAccessToken accessToken, PrincipalClientId clientId, Instant issuedAt) {
         String refreshToken = UuidHelper.compact();
         PrincipalRefreshToken entity = new PrincipalRefreshToken();
         entity.setTokenCode(PrincipalRefreshTokenCode.of(UuidHelper.compact()));
@@ -364,7 +365,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
         entity.setSessionId(accessToken.getSessionId());
         entity.setPrincipalKey(accessToken.getPrincipalKey());
         entity.setIssuedAt(issuedAt);
-        entity.setExpireAt(new Date(issuedAt.getTime() + refreshTokenTtlSeconds(clientId) * 1000L));
+        entity.setExpireAt(issuedAt.plusSeconds(refreshTokenTtlSeconds(clientId)));
         entity.setStatus(PrincipalTokenStatus.ACTIVE);
         entity.setId(requirePrincipalRefreshTokenRepository().insert(entity, refreshToken));
         return refreshToken;
@@ -375,7 +376,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
             PrincipalClientId clientId,
             PrincipalKey principalKey,
             Set<String> scopes,
-            Date issuedAt,
+            Instant issuedAt,
             long ttlSeconds) {
         PrincipalAccessToken entity = new PrincipalAccessToken();
         entity.setTokenCode(PrincipalAccessTokenCode.of(UuidHelper.compact()));
@@ -383,7 +384,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
         entity.setPrincipalKey(principalKey);
         entity.setScopes(scopes == null ? new LinkedHashSet<>() : new LinkedHashSet<>(scopes));
         entity.setIssuedAt(issuedAt);
-        entity.setExpireAt(new Date(issuedAt.getTime() + ttlSeconds * 1000L));
+        entity.setExpireAt(issuedAt.plusSeconds(ttlSeconds));
         entity.setStatus(PrincipalTokenStatus.ACTIVE);
         return entity;
     }

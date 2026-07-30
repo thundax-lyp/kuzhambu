@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.task.controller.response;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,7 +23,7 @@ public class OperationsTaskPageResponse {
     private Integer failedCount;
     private String failureReason;
     private Long requestedByUserId;
-    private Date startedAt;
-    private Date completedAt;
-    private Date snapshotAt;
+    private Instant startedAt;
+    private Instant completedAt;
+    private Instant snapshotAt;
 }

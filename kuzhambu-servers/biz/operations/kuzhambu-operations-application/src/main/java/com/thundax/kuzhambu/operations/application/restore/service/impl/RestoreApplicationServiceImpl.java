@@ -29,6 +29,7 @@ import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -217,7 +218,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         if (longTaskSnapshotRepository == null || record == null || record.getId() == null) {
             return null;
         }
-        Date snapshotAt = new Date();
+        Instant snapshotAt = Instant.now();
         LongTaskSnapshot snapshot = new LongTaskSnapshot(
                 null,
                 TASK_SOURCE_DOMAIN,
@@ -229,7 +230,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 0,
                 null,
                 record.getRequesterUserId(),
-                record.getStartedAt(),
+                toInstant(record.getStartedAt()),
                 null,
                 snapshotAt);
         LongTaskSnapshotId snapshotId = longTaskSnapshotRepository.insert(snapshot);
@@ -246,13 +247,17 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         snapshot.setSuccessCount(succeeded ? 1 : 0);
         snapshot.setFailedCount(succeeded ? 0 : 1);
         snapshot.setFailureReason(record.getFailureReason());
-        snapshot.setCompletedAt(record.getCompletedAt());
-        snapshot.setSnapshotAt(new Date());
+        snapshot.setCompletedAt(toInstant(record.getCompletedAt()));
+        snapshot.setSnapshotAt(Instant.now());
         longTaskSnapshotRepository.update(snapshot);
     }
 
     private String taskKey(RestoreId restoreId) {
         return "restore:" + restoreId.value();
+    }
+
+    private static Instant toInstant(Date value) {
+        return value == null ? null : value.toInstant();
     }
 
     private void executeRestoreScript(RestoreMode restoreMode, String sourceBaseName, String preRestoreTimestamp) {

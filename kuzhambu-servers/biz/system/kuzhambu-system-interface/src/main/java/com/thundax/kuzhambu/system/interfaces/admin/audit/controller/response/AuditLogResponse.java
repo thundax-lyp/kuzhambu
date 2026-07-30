@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -69,7 +69,7 @@ public class AuditLogResponse implements Serializable {
     private String summary;
 
     @Schema(name = "occurredAt", description = "发生时间")
-    private Date occurredAt;
+    private Instant occurredAt;
 
     @Schema(name = "changedFields", description = "变更字段")
     @Builder.Default

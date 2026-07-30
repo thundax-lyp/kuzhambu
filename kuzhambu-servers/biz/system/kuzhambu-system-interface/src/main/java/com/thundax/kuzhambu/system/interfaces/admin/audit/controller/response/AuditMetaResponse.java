@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -34,8 +34,8 @@ public class AuditMetaResponse implements Serializable {
     private String lastOperatorName;
 
     @Schema(name = "lastOperatedAt", description = "最后操作时间")
-    private Date lastOperatedAt;
+    private Instant lastOperatedAt;
 
     @Schema(name = "createdAt", description = "审计创建时间")
-    private Date createdAt;
+    private Instant createdAt;
 }

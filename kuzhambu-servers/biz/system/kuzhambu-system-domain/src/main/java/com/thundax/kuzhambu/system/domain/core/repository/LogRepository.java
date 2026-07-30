@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.system.domain.core.repository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface LogRepository {
@@ -19,8 +19,8 @@ public interface LogRepository {
             String userName,
             String title,
             String requestUri,
-            Date beginDate,
-            Date endDate);
+            Instant beginDate,
+            Instant endDate);
 
     PageResult<Log> page(
             String type,
@@ -29,8 +29,8 @@ public interface LogRepository {
             String userName,
             String title,
             String requestUri,
-            Date beginDate,
-            Date endDate,
+            Instant beginDate,
+            Instant endDate,
             int pageNo,
             int pageSize);
 
@@ -42,5 +42,6 @@ public interface LogRepository {
 
     List<LogId> batchInsert(List<Log> list);
 
-    int batchDelete(String type, String remoteAddr, String title, String requestUri, Date beginDate, Date endDate);
+    int batchDelete(
+            String type, String remoteAddr, String title, String requestUri, Instant beginDate, Instant endDate);
 }

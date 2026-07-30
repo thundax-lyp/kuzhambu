@@ -21,7 +21,7 @@ import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
 import com.thundax.kuzhambu.system.domain.audit.repository.AuditLogRepository;
 import com.thundax.kuzhambu.system.domain.audit.repository.AuditMetaRepository;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -62,11 +62,11 @@ public class AuditTrailApplicationServiceImpl implements AuditTrailApplicationSe
 
         AuditMeta meta = auditMetaRepository.getByObjectRef(objectRef);
         long previousVersion = meta == null || meta.getVersion() == null ? 0L : meta.getVersion();
-        Date occurredAt = new Date();
+        Instant occurredAt = Instant.now();
         String idempotencyKey = StringUtils.defaultIfBlank(
                 command.getIdempotencyKey(),
                 objectRef.getObjectType() + ":" + objectRef.getObjectId() + ":" + command.getAction() + ":"
-                        + occurredAt.getTime());
+                        + occurredAt.toEpochMilli());
         AuditOperatorRef operatorRef = operatorRef(command.getOperatorRef());
 
         AuditLog log = new AuditLog();
