@@ -106,7 +106,6 @@ public class RefinementApplySupport {
     private KnowledgeEntity toEntity(Long versionId, RefinementEntityDraft draft) {
         Date now = new Date();
         return new KnowledgeEntity(
-                null,
                 draft.getEntityId(),
                 draft.getEntityKey(),
                 draft.getName(),

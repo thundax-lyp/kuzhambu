@@ -17,7 +17,6 @@ public class KnowledgeEntityDO {
     @TableId(type = IdType.INPUT)
     private Long id;
 
-    private Long entityId;
     private String entityKey;
     private String name;
     private String entityType;

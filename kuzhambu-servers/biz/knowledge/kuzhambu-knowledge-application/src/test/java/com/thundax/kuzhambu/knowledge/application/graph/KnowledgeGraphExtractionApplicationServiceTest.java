@@ -610,7 +610,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void pageEntitiesShouldMapReadableFields() {
         FakeKnowledgeEntityRepository knowledgeEntityRepository = new FakeKnowledgeEntityRepository();
         KnowledgeEntity entity = new KnowledgeEntity();
-        entity.setEntityId(1001L);
+        entity.setId(1001L);
         entity.setEntityKey("person:huangdi");
         entity.setName("黄帝");
         entity.setEntityType("PERSON");
@@ -646,7 +646,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void getEntityDetailShouldMapSingleEntityRecord() {
         FakeKnowledgeEntityRepository knowledgeEntityRepository = new FakeKnowledgeEntityRepository();
         KnowledgeEntity entity = new KnowledgeEntity();
-        entity.setEntityId(1002L);
+        entity.setId(1002L);
         entity.setEntityKey("person:fuxi");
         entity.setName("伏羲");
         entity.setEntityType("PERSON");
@@ -1786,7 +1786,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         @Override
         public KnowledgeEntity getByEntityId(Long entityId) {
             return entities.stream()
-                    .filter(entity -> entityId.equals(entity.getEntityId()))
+                    .filter(entity -> entityId.equals(entity.getId()))
                     .findFirst()
                     .orElse(null);
         }

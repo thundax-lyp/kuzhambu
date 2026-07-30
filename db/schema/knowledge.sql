@@ -110,7 +110,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_entity` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `entity_id` bigint NOT NULL,
     `entity_key` varchar(160) NOT NULL,
     `name` varchar(128) NOT NULL,
     `entity_type` varchar(64) NOT NULL,
@@ -122,7 +121,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_entity` (
     `last_extracted_at` datetime(3) NOT NULL,
     `confirmed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_entity_entity_id` (`entity_id`),
     UNIQUE KEY `uk_knowledge_entity_entity_key` (`entity_key`),
     KEY `idx_knowledge_entity_latest_version` (`latest_version_id`),
     KEY `idx_knowledge_entity_confirmation_status` (`confirmation_status`, `last_extracted_at`),

@@ -155,7 +155,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
                                 new Date(1_700_000_000_000L)))));
         when(knowledgeEntityRepository.getByEntityId(3001L))
                 .thenReturn(new KnowledgeEntity(
-                        1L,
                         3001L,
                         "person:huangdi",
                         "黄帝",
@@ -266,31 +265,9 @@ class KnowledgePortalReadApplicationServiceImplTest {
         when(knowledgeEntityRepository.listByVersionId(71L))
                 .thenReturn(List.of(
                         new KnowledgeEntity(
-                                1L,
-                                3001L,
-                                "bird:luan",
-                                "鸾",
-                                "CREATURE",
-                                "神鸟",
-                                "CONFIRMED",
-                                71L,
-                                "[]",
-                                null,
-                                null,
-                                null),
+                                3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L, "[]", null, null, null),
                         new KnowledgeEntity(
-                                2L,
-                                3002L,
-                                "bird:feng",
-                                "凤",
-                                "CREATURE",
-                                "瑞鸟",
-                                "CONFIRMED",
-                                71L,
-                                "[]",
-                                null,
-                                null,
-                                null)));
+                                3002L, "bird:feng", "凤", "CREATURE", "瑞鸟", "CONFIRMED", 71L, "[]", null, null, null)));
         when(knowledgeRelationRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeRelation(
                         1L,
@@ -368,7 +345,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
                         new Date(1_700_000_000_000L)));
         when(knowledgeEntityRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeEntity(
-                        1L, 3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L, "[]", null, null, null)));
+                        3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L, "[]", null, null, null)));
         when(knowledgeRelationRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeRelation(
                         1L,

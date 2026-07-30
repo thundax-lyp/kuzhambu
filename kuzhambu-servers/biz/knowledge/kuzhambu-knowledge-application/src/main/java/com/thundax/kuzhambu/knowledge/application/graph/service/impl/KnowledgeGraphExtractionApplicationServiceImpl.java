@@ -1069,7 +1069,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             return null;
         }
         return new KnowledgeEntityResult(
-                entity.getEntityId(),
+                entity.getId(),
                 entity.getEntityKey(),
                 entity.getName(),
                 entity.getEntityType(),

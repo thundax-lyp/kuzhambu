@@ -125,7 +125,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         @Override
         public KnowledgeEntity getByEntityId(Long entityId) {
             return store.values().stream()
-                    .filter(item -> entityId.equals(item.getEntityId()))
+                    .filter(item -> entityId.equals(item.getId()))
                     .findFirst()
                     .orElse(null);
         }

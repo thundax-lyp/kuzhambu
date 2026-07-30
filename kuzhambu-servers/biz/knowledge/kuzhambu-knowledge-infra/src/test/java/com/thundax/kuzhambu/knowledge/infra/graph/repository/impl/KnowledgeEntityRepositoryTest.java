@@ -44,7 +44,7 @@ class KnowledgeEntityRepositoryTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    void getByEntityIdShouldQueryBusinessKey() {
+    void getByEntityIdShouldQueryPrimaryKey() {
         KnowledgeEntityMapper mapper = mock(KnowledgeEntityMapper.class);
         when(mapper.selectOne(any())).thenReturn(new KnowledgeEntityDO());
         KnowledgeEntityRepositoryImpl repository = new KnowledgeEntityRepositoryImpl(mapper);
@@ -53,7 +53,7 @@ class KnowledgeEntityRepositoryTest {
 
         ArgumentCaptor<QueryWrapper<KnowledgeEntityDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectOne(captor.capture());
-        assertTrue(captor.getValue().getSqlSegment().contains("entity_id"));
+        assertTrue(captor.getValue().getSqlSegment().contains("id"));
     }
 
     @Test
@@ -105,7 +105,7 @@ class KnowledgeEntityRepositoryTest {
 
         ArgumentCaptor<KnowledgeEntityDO> captor = ArgumentCaptor.forClass(KnowledgeEntityDO.class);
         verify(mapper).insert(captor.capture());
-        assertNotNull(captor.getValue().getEntityId());
+        assertNotNull(captor.getValue().getId());
         assertEquals("renwu:huangdi", captor.getValue().getEntityKey());
     }
 }

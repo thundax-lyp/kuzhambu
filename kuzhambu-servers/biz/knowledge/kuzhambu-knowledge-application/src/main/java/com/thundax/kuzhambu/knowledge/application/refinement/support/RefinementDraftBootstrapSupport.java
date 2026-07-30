@@ -45,7 +45,7 @@ public class RefinementDraftBootstrapSupport {
                     null,
                     null,
                     refinementTaskId,
-                    entity.getEntityId(),
+                    entity.getId(),
                     entity.getEntityKey(),
                     "AI_EXTRACTED",
                     "UNCHANGED",
