@@ -70,8 +70,16 @@ public class QaMessage {
         this.id = QaMessageIdCodec.toDomain(messageId);
     }
 
+    public void setSessionId(QaSessionId sessionId) {
+        this.sessionId = sessionId;
+    }
+
     public void setSessionId(Long sessionId) {
         this.sessionId = QaSessionIdCodec.toDomain(sessionId);
+    }
+
+    public void setRole(QaMessageRole role) {
+        this.role = role;
     }
 
     public void setRole(String role) {

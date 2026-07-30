@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `D-05 discovery-infra-qa-persistence-boundary`：适配 QA infra 持久化边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/assembler/QaPersistenceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaSessionRepositoryImpl.java`、`QaMessageRepositoryImpl.java`、`QaKnowledgeSyncItemRepositoryImpl.java`
-    - 处理动作：在 infra repository 和 persistence assembler 中使用 codec 完成强类型与 DO 基础类型互转。
-    - 验收点：DO 和 mapper 字段仍是基础类型，`QaKnowledgeSyncItemRepositoryImpl.save` 生成数据库 `id` 但返回 `KnowledgeSourceId`。
-    - 重要度：10/10
-
 - [ ] `D-06 discovery-application-qa-adapters`：适配 QA application 和 interface 调用链
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`

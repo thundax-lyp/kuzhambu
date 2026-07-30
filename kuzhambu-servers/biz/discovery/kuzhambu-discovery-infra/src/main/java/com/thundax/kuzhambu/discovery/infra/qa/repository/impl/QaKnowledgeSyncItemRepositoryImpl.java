@@ -2,7 +2,10 @@ package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncItem;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.KnowledgeSourceId;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaKnowledgeSyncStatus;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncItemRepository;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaKnowledgeSyncItemDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaKnowledgeSyncItemMapper;
@@ -20,22 +23,22 @@ public class QaKnowledgeSyncItemRepositoryImpl implements QaKnowledgeSyncItemRep
     }
 
     @Override
-    public QaKnowledgeSyncItem getBySourceId(String sourceId) {
+    public QaKnowledgeSyncItem getBySourceId(KnowledgeSourceId sourceId) {
         if (sourceId == null) {
             return null;
         }
         return toDomain(mapper.selectOne(new QueryWrapper<QaKnowledgeSyncItemDO>()
-                .eq("source_id", sourceId)
+                .eq("source_id", QaStringValueCodec.toValue(sourceId))
                 .last("limit 1")));
     }
 
     @Override
-    public List<QaKnowledgeSyncItem> listBySyncStatus(String syncStatus, Integer limit) {
+    public List<QaKnowledgeSyncItem> listBySyncStatus(QaKnowledgeSyncStatus syncStatus, Integer limit) {
         if (syncStatus == null) {
             return List.of();
         }
         QueryWrapper<QaKnowledgeSyncItemDO> wrapper = new QueryWrapper<QaKnowledgeSyncItemDO>()
-                .eq("sync_status", syncStatus)
+                .eq("sync_status", QaStringValueCodec.toValue(syncStatus))
                 .orderByDesc("updated_at");
         if (limit != null && limit > 0) {
             wrapper.last("limit " + limit);
@@ -44,12 +47,12 @@ public class QaKnowledgeSyncItemRepositoryImpl implements QaKnowledgeSyncItemRep
     }
 
     @Override
-    public Long save(QaKnowledgeSyncItem entity) {
+    public KnowledgeSourceId save(QaKnowledgeSyncItem entity) {
         QaKnowledgeSyncItemDO dataObject = toObject(entity);
         long nextId = idGenerator.nextId().value();
         dataObject.setId(nextId);
         mapper.insert(dataObject);
-        return dataObject.getId();
+        return entity.getSourceId();
     }
 
     @Override
@@ -63,7 +66,7 @@ public class QaKnowledgeSyncItemRepositoryImpl implements QaKnowledgeSyncItemRep
         }
         QaKnowledgeSyncItemDO dataObject = new QaKnowledgeSyncItemDO();
         dataObject.setId(entity.getId());
-        dataObject.setSourceId(entity.getSourceId());
+        dataObject.setSourceId(QaStringValueCodec.toValue(entity.getSourceId()));
         dataObject.setContentType(entity.getContentType());
         dataObject.setContentId(entity.getContentId());
         dataObject.setKnowledgeBaseName(entity.getKnowledgeBaseName());
@@ -72,7 +75,7 @@ public class QaKnowledgeSyncItemRepositoryImpl implements QaKnowledgeSyncItemRep
         dataObject.setProvider(entity.getProvider());
         dataObject.setExternalKnowledgeBaseId(entity.getExternalKnowledgeBaseId());
         dataObject.setExternalKnowledgeItemId(entity.getExternalKnowledgeItemId());
-        dataObject.setSyncStatus(entity.getSyncStatus());
+        dataObject.setSyncStatus(QaStringValueCodec.toValue(entity.getSyncStatus()));
         dataObject.setFailureReason(entity.getFailureReason());
         dataObject.setSyncedAt(entity.getSyncedAt());
         dataObject.setCreatedAt(entity.getCreatedAt());

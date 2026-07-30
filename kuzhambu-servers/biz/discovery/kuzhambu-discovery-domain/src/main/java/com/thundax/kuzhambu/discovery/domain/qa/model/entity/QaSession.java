@@ -111,4 +111,12 @@ public class QaSession {
     public void setContextContentId(Long contextContentId) {
         this.contextContent = QaStringValueCodec.toContextContentRef(getContextContentType(), contextContentId);
     }
+
+    public void setStatus(QaSessionStatus status) {
+        this.status = status;
+    }
+
+    public void setStatus(String status) {
+        this.status = QaStringValueCodec.toSessionStatus(status);
+    }
 }

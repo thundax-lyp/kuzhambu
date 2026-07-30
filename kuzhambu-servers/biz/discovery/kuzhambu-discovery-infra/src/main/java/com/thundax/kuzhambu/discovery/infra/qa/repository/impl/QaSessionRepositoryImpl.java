@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaSessionIdCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaOwnerRef;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.assembler.QaPersistenceAssembler;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSessionDO;
@@ -26,11 +29,11 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     }
 
     @Override
-    public QaSession getById(Long id) {
+    public QaSession getById(QaSessionId id) {
         if (id == null) {
             return null;
         }
-        return QaPersistenceAssembler.toSessionDomain(mapper.selectById(id));
+        return QaPersistenceAssembler.toSessionDomain(mapper.selectById(QaSessionIdCodec.toValue(id)));
     }
 
     @Override
@@ -51,13 +54,13 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     }
 
     @Override
-    public List<QaSession> listByOwnerUserId(String ownerType, String ownerId, Integer limit) {
-        if (ownerType == null || ownerId == null) {
+    public List<QaSession> listByOwnerUserId(QaOwnerRef owner, Integer limit) {
+        if (owner == null || owner.getOwnerType() == null || owner.getOwnerId() == null) {
             return List.of();
         }
         QueryWrapper<QaSessionDO> wrapper = new QueryWrapper<QaSessionDO>()
-                .eq("owner_type", ownerType)
-                .eq("owner_id", ownerId)
+                .eq("owner_type", owner.getOwnerType())
+                .eq("owner_id", owner.getOwnerId())
                 .isNull(REMOVED_AT_COLUMN)
                 .orderByDesc("last_message_at");
         if (limit != null && limit > 0) {
@@ -82,10 +85,10 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     }
 
     @Override
-    public Long save(QaSession entity) {
+    public QaSessionId save(QaSession entity) {
         QaSessionDO dataObject = QaPersistenceAssembler.toObject(entity);
         mapper.insert(dataObject);
-        return dataObject.getId();
+        return QaSessionIdCodec.toDomain(dataObject.getId());
     }
 
     @Override
@@ -94,10 +97,10 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     }
 
     @Override
-    public int markRemoved(Long id, Date removedAt) {
+    public int markRemoved(QaSessionId id, Date removedAt) {
         if (id == null || removedAt == null) {
             return 0;
         }
-        return mapper.markRemoved(id, removedAt);
+        return mapper.markRemoved(QaSessionIdCodec.toValue(id), removedAt);
     }
 }

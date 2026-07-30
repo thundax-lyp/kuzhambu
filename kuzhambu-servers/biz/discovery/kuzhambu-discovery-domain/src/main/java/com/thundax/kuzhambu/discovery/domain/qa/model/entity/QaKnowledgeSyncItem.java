@@ -82,6 +82,14 @@ public class QaKnowledgeSyncItem {
         this.sourceId = QaStringValueCodec.toKnowledgeSourceId(sourceId);
     }
 
+    public void setSourceId(KnowledgeSourceId sourceId) {
+        this.sourceId = sourceId;
+    }
+
+    public void setSyncStatus(QaKnowledgeSyncStatus syncStatus) {
+        this.syncStatus = syncStatus;
+    }
+
     public void setSyncStatus(String syncStatus) {
         this.syncStatus = QaStringValueCodec.toKnowledgeSyncStatus(syncStatus);
     }
