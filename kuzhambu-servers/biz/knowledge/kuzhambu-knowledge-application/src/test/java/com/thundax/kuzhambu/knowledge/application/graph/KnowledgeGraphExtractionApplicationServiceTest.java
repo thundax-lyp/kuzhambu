@@ -816,7 +816,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         FakeKnowledgeLineageRelationRepository knowledgeLineageRelationRepository =
                 new FakeKnowledgeLineageRelationRepository();
         KnowledgeLineageRelation relation = new KnowledgeLineageRelation();
-        relation.setRelationId(4001L);
+        relation.setId(4001L);
         relation.setRelationKey("person:huangdi->person:fuxi:ancestor");
         relation.setSourceName("黄帝");
         relation.setTargetName("伏羲");
@@ -853,7 +853,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         FakeKnowledgeLineageRelationRepository knowledgeLineageRelationRepository =
                 new FakeKnowledgeLineageRelationRepository();
         KnowledgeLineageRelation relation = new KnowledgeLineageRelation();
-        relation.setRelationId(4002L);
+        relation.setId(4002L);
         relation.setRelationKey("person:fuxi->person:huangdi:ancestor");
         relation.setSourceName("伏羲");
         relation.setTargetName("黄帝");
@@ -1952,7 +1952,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         @Override
         public KnowledgeLineageRelation getByRelationId(Long relationId) {
             return relations.stream()
-                    .filter(relation -> relationId.equals(relation.getRelationId()))
+                    .filter(relation -> relationId.equals(relation.getId()))
                     .findFirst()
                     .orElse(null);
         }

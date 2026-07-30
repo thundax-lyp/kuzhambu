@@ -157,7 +157,6 @@ class KnowledgeLineageReadApplicationServiceImplTest {
 
     private static KnowledgeLineageRelation relation() {
         return new KnowledgeLineageRelation(
-                1L,
                 401L,
                 "rel:father-son",
                 "person:father",

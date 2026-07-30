@@ -172,7 +172,7 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
                 .orElse(null);
         if (focusNodeKey == null && query.getFocusRelationId() != null) {
             KnowledgeLineageRelation relation = relations.stream()
-                    .filter(item -> Objects.equals(item.getRelationId(), query.getFocusRelationId()))
+                    .filter(item -> Objects.equals(item.getId(), query.getFocusRelationId()))
                     .findFirst()
                     .orElse(null);
             focusNodeKey = relation == null ? null : relation.getSourceNodeKey();
@@ -298,8 +298,8 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
         KnowledgeLineageNode targetNode = firstNonNull(
                 visibleNodesByKey.get(relation.getTargetNodeKey()), nodesByKey.get(relation.getTargetNodeKey()));
         return new RelationView(
-                "lineage-relation:" + relation.getRelationId(),
-                relation.getRelationId(),
+                "lineage-relation:" + relation.getId(),
+                relation.getId(),
                 sourceNode == null ? null : sourceNode.getId(),
                 sourceNode == null ? relation.getSourceName() : sourceNode.getName(),
                 targetNode == null ? null : targetNode.getId(),

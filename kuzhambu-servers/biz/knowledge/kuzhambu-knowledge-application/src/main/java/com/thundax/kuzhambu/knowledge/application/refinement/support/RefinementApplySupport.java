@@ -158,7 +158,6 @@ public class RefinementApplySupport {
     private KnowledgeLineageRelation toLineageRelation(Long versionId, RefinementLineageRelationDraft draft) {
         Date now = new Date();
         return new KnowledgeLineageRelation(
-                null,
                 draft.getRelationId(),
                 draft.getRelationKey(),
                 draft.getSourceNodeKey(),

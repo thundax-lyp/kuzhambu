@@ -1125,7 +1125,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             return null;
         }
         return new KnowledgeLineageRelationResult(
-                relation.getRelationId(),
+                relation.getId(),
                 relation.getRelationKey(),
                 relation.getSourceName(),
                 relation.getTargetName(),

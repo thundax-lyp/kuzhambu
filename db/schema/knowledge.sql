@@ -171,7 +171,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_lineage_node` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_lineage_relation` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `relation_id` bigint NOT NULL,
     `relation_key` varchar(256) NOT NULL,
     `source_node_key` varchar(160) NOT NULL,
     `target_node_key` varchar(160) NOT NULL,
@@ -186,7 +185,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_lineage_relation` (
     `last_extracted_at` datetime(3) NOT NULL,
     `confirmed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_lineage_relation_relation_id` (`relation_id`),
     UNIQUE KEY `uk_knowledge_lineage_relation_relation_key` (`relation_key`),
     KEY `idx_knowledge_lineage_relation_latest_version` (`latest_version_id`),
     KEY `idx_knowledge_lineage_relation_confirmation_status` (`confirmation_status`, `last_extracted_at`),

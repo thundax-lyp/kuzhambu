@@ -293,7 +293,6 @@ public class KnowledgeGraphCandidateApplySupport {
             if (existing == null) {
                 continue;
             }
-            relation.setRelationId(existing.getRelationId());
             relation.setId(existing.getId());
             relation.setFirstExtractedAt(
                     existing.getFirstExtractedAt() == null ? appliedAt : existing.getFirstExtractedAt());
