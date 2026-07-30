@@ -19,6 +19,15 @@
     gap: 12px;
 }
 
+.classics-content-tag-picker-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 344px;
+    border: 1px solid var(--line-subtle);
+    border-radius: 6px;
+}
+
 .classics-content-tag-picker-list {
     min-height: 344px;
 }

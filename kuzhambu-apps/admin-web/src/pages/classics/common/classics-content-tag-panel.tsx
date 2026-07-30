@@ -1,5 +1,5 @@
 import { PlusOutlined } from "@ant-design/icons";
-import { App, Empty, Input, Pagination, Typography } from "antd";
+import { App, Empty, Input, Pagination, Spin, Typography } from "antd";
 import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -336,40 +336,44 @@ export const ClassicsContentTagPanel = ({
                     <div className="classics-content-tag-picker">
                         <Typography.Text strong>标签库候选</Typography.Text>
                         {taxonomyTagsQuery.isError ? (
-                            <Empty
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                description="标签库候选加载失败"
-                            />
-                        ) : (
-                            <div className="classics-content-tag-picker-columns">
-                                <KuzhambuList
-                                    ariaLabel="标签库候选左列"
-                                    bordered
-                                    className="classics-content-tag-picker-list"
-                                    dataSource={tagPickerLeftRecords}
-                                    empty={
-                                        <Empty
-                                            image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                            description="暂无候选标签"
-                                        />
-                                    }
-                                    itemKey={(tag) => tag.id ?? tag.name ?? ""}
-                                    loading={taxonomyTagsQuery.isFetching}
-                                    renderItem={renderTagPickerItem}
-                                    size="small"
-                                />
-                                <KuzhambuList
-                                    ariaLabel="标签库候选右列"
-                                    bordered
-                                    className="classics-content-tag-picker-list"
-                                    dataSource={tagPickerRightRecords}
-                                    empty={null}
-                                    itemKey={(tag) => tag.id ?? tag.name ?? ""}
-                                    loading={taxonomyTagsQuery.isFetching}
-                                    renderItem={renderTagPickerItem}
-                                    size="small"
+                            <div className="classics-content-tag-picker-empty">
+                                <Empty
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    description="标签库候选加载失败"
                                 />
                             </div>
+                        ) : !taxonomyTagsQuery.isFetching && !tagPickerRecords.length ? (
+                            <div className="classics-content-tag-picker-empty">
+                                <Empty
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    description="暂无候选标签"
+                                />
+                            </div>
+                        ) : (
+                            <Spin spinning={taxonomyTagsQuery.isFetching}>
+                                <div className="classics-content-tag-picker-columns">
+                                    <KuzhambuList
+                                        ariaLabel="标签库候选左列"
+                                        bordered
+                                        className="classics-content-tag-picker-list"
+                                        dataSource={tagPickerLeftRecords}
+                                        empty={null}
+                                        itemKey={(tag) => tag.id ?? tag.name ?? ""}
+                                        renderItem={renderTagPickerItem}
+                                        size="small"
+                                    />
+                                    <KuzhambuList
+                                        ariaLabel="标签库候选右列"
+                                        bordered
+                                        className="classics-content-tag-picker-list"
+                                        dataSource={tagPickerRightRecords}
+                                        empty={null}
+                                        itemKey={(tag) => tag.id ?? tag.name ?? ""}
+                                        renderItem={renderTagPickerItem}
+                                        size="small"
+                                    />
+                                </div>
+                            </Spin>
                         )}
                         <Pagination
                             align="end"
