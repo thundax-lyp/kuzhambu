@@ -679,7 +679,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void pageRelationsShouldMapReadableFields() {
         FakeKnowledgeRelationRepository knowledgeRelationRepository = new FakeKnowledgeRelationRepository();
         KnowledgeRelation relation = new KnowledgeRelation();
-        relation.setRelationId(2001L);
+        relation.setId(2001L);
         relation.setRelationKey("person:huangdi->person:fuxi:ancestor");
         relation.setSourceName("黄帝");
         relation.setTargetName("伏羲");
@@ -714,7 +714,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void getRelationDetailShouldMapSingleRelationRecord() {
         FakeKnowledgeRelationRepository knowledgeRelationRepository = new FakeKnowledgeRelationRepository();
         KnowledgeRelation relation = new KnowledgeRelation();
-        relation.setRelationId(2002L);
+        relation.setId(2002L);
         relation.setRelationKey("person:fuxi->person:huangdi:ancestor");
         relation.setSourceName("伏羲");
         relation.setTargetName("黄帝");
@@ -1843,7 +1843,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         @Override
         public KnowledgeRelation getByRelationId(Long relationId) {
             return relations.stream()
-                    .filter(relation -> relationId.equals(relation.getRelationId()))
+                    .filter(relation -> relationId.equals(relation.getId()))
                     .findFirst()
                     .orElse(null);
         }

@@ -104,7 +104,6 @@ class KnowledgeQualityReportApplicationServiceTest {
                                 3002L, "person:fuxi", "伏羲", "PERSON", "始祖", "PENDING", 71L, "[]", null, null, null)));
         when(relationRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeRelation(
-                        1L,
                         4001L,
                         "rel:1",
                         "person:huangdi",

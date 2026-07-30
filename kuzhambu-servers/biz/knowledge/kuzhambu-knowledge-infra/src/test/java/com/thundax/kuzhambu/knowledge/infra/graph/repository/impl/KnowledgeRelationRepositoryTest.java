@@ -45,7 +45,7 @@ class KnowledgeRelationRepositoryTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    void getByRelationIdShouldQueryBusinessKey() {
+    void getByRelationIdShouldQueryId() {
         KnowledgeRelationMapper mapper = mock(KnowledgeRelationMapper.class);
         when(mapper.selectOne(any())).thenReturn(new KnowledgeRelationDO());
         KnowledgeRelationRepositoryImpl repository = new KnowledgeRelationRepositoryImpl(mapper);
@@ -54,7 +54,7 @@ class KnowledgeRelationRepositoryTest {
 
         ArgumentCaptor<QueryWrapper<KnowledgeRelationDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectOne(captor.capture());
-        assertTrue(captor.getValue().getSqlSegment().contains("relation_id"));
+        assertTrue(captor.getValue().getSqlSegment().contains("id"));
     }
 
     @Test
@@ -112,7 +112,7 @@ class KnowledgeRelationRepositoryTest {
 
         ArgumentCaptor<KnowledgeRelationDO> captor = ArgumentCaptor.forClass(KnowledgeRelationDO.class);
         verify(mapper).insert(captor.capture());
-        assertNotNull(captor.getValue().getRelationId());
+        assertNotNull(captor.getValue().getId());
         assertEquals("renwu:huangdi->fuxi:ancestor", captor.getValue().getRelationKey());
     }
 }

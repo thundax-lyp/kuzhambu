@@ -189,7 +189,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         @Override
         public KnowledgeRelation getByRelationId(Long relationId) {
             return store.values().stream()
-                    .filter(item -> relationId.equals(item.getRelationId()))
+                    .filter(item -> relationId.equals(item.getId()))
                     .findFirst()
                     .orElse(null);
         }

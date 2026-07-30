@@ -73,7 +73,7 @@ public class RefinementDraftBootstrapSupport {
                     null,
                     null,
                     refinementTaskId,
-                    relation.getRelationId(),
+                    relation.getId(),
                     relation.getRelationKey(),
                     "AI_EXTRACTED",
                     "UNCHANGED",

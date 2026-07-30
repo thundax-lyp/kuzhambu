@@ -122,7 +122,6 @@ public class RefinementApplySupport {
     private KnowledgeRelation toRelation(Long versionId, RefinementRelationDraft draft) {
         Date now = new Date();
         return new KnowledgeRelation(
-                null,
                 draft.getRelationId(),
                 draft.getRelationKey(),
                 draft.getSourceEntityKey(),
