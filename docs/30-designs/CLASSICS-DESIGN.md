@@ -20,8 +20,8 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 
 ## Data Model Rules
 
-- 排序字段统一为 `priority int`，并建立单列唯一约束。
-- `priority` 只作为单表内全局排序值，不参与普通 KEY 或组合 KEY。
+- 排序字段统一为 `priority int`，唯一范围必须匹配业务列表的 owner。门类、卷、条目等顶层稳定列表可使用单表全局唯一；图片、标签、问答对、分享目标等子项必须在所属 owner 内唯一。
+- `priority` 只表达同一业务列表内的展示顺序，不得让一个 owner 的排序操作影响其他 owner 的排序。
 - 状态、类型、格式、可见性等业务枚举统一使用 `varchar`。
 - 只有纯 yes/no 技术标志使用 `tinyint(1)`；业务状态、业务类型、业务快照统一使用 `varchar`。
 - 绝对时间点使用 `datetime(3)`。
@@ -108,9 +108,9 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `image_type` | `varchar(16)` |  | 区分原图和 AI 生成图 |
 | `title` | `varchar(512)` |  | 图片展示标题 |
 | `current_used` | `tinyint(1)` |  | 当前使用版本，纯 yes/no 技术标志 |
-| `priority` | `int` | UK | 多图展示排序 |
+| `priority` | `int` | UK(entry_id, priority) | 条目内多图展示排序 |
 
-约束：`id` 主键；`(entry_id, storage_object_id)` 唯一；`priority` 唯一。索引：`entry_id`。
+约束：`id` 主键；`(entry_id, storage_object_id)` 唯一；`(entry_id, priority)` 唯一。索引：`entry_id`。
 
 ### classics_sancai_visual_asset
 
@@ -193,9 +193,9 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `id` | `bigint` | PK, AUTO_INCREMENT | 关键词实体身份 |
 | `custom_id` | `bigint` | UK(custom_id, keyword) | 关键词归属习俗条目 |
 | `keyword` | `varchar(128)` | UK(custom_id, keyword), KEY | 关键词展示和搜索 |
-| `priority` | `int` | UK | 关键词展示排序 |
+| `priority` | `int` | UK(custom_id, priority) | 习俗条目内关键词展示排序 |
 
-约束：`id` 主键；`(custom_id, keyword)` 唯一；`priority` 唯一。索引：`keyword`。
+约束：`id` 主键；`(custom_id, keyword)` 唯一；`(custom_id, priority)` 唯一。索引：`keyword`。
 
 ### classics_content_tag
 
@@ -210,16 +210,18 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `tag_name_snapshot` | `varchar(128)` | UK(content_type, content_id, tag_name_snapshot), KEY | 标签展示和导出快照 |
 | `source` | `varchar(16)` |  | 区分 AI 提取和人工维护 |
 | `status` | `varchar(16)` |  | 标签引用状态 |
-| `priority` | `int` | UK | 标签展示排序 |
+| `priority` | `int` | UK(content_type, content_id, priority) | 内容内标签展示排序 |
 
-约束：`id` 主键；`(content_type, content_id, tag_name_snapshot)` 唯一；`priority` 唯一。索引：`(content_type, content_id)`、`(tag_id, content_type)`、`(tag_name_snapshot, content_type)`。
+约束：`id` 主键；`(content_type, content_id, tag_name_snapshot)` 唯一；`(content_type, content_id, priority)` 唯一。索引：`(content_type, content_id)`、`(tag_id, content_type)`、`(tag_name_snapshot, content_type)`。
 
 协作规则：
 
-- `classics_content_tag` 作为内容标签绑定主事实保存 `tag_id`、`tag_name_snapshot`、`source`、`status` 和全局排序权重。
+- `classics_content_tag` 作为内容标签绑定主事实保存 `tag_id`、`tag_name_snapshot`、`source`、`status` 和内容内排序权重。
 - 手工标签新增、更新、删除必须先经过 Knowledge 统一标签协作语义，再写入 Classics 主事实。
 - AI 标签确认不再直接按本地标签名重建，而是先解析或创建 Knowledge 统一标签，再写回 Classics。
 - `tag_name_snapshot` 只由 Classics 保存，用于内容展示、历史快照和导出，不回写 Knowledge 引用投影。
+- 内容侧标签名称编辑只改变当前内容的绑定和当前快照：先解除旧标签引用，再解析或创建新 Knowledge 标签并绑定到当前内容。该操作不得修改 `knowledge_tag` 主数据名称，也不得影响其他内容的标签绑定。
+- Knowledge taxonomy 发起全局改名、合并、复制、分拆或废弃时，必须通过 Classics 协作接口更新当前内容标签绑定和当前 `tag_name_snapshot`；历史版本 `snapshot_json` 保持创建时快照，不随全局治理回写。
 
 ### classics_content_qa_pair
 
@@ -233,9 +235,9 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `question` | `text` |  | 问题 |
 | `answer` | `longtext` |  | 答案 |
 | `source` | `varchar(16)` |  | 区分 AI 生成和人工维护 |
-| `priority` | `int` | UK | 问答对展示排序 |
+| `priority` | `int` | UK(content_type, content_id, priority) | 内容内问答对展示排序 |
 
-约束：`id` 主键；`priority` 唯一。索引：`(content_type, content_id)`。
+约束：`id` 主键；`(content_type, content_id, priority)` 唯一。索引：`(content_type, content_id)`。
 
 ### classics_content_version
 
@@ -312,9 +314,9 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `content_snapshot_json` | `json` |  | 分享访问第一版返回完整内容快照 |
 | `content_visibility_snapshot` | `varchar(16)` |  | 创建分享时内容可见性快照 |
 | `target_status` | `varchar(16)` |  | 目标可用或内容已删除占位 |
-| `priority` | `int` | UK | 分享页展示排序 |
+| `priority` | `int` | UK(share_link_id, priority) | 分享链接内目标展示排序 |
 
-约束：`id` 主键；`(share_link_id, content_type, content_id)` 唯一；`priority` 唯一。索引：`(content_type, content_id)`。
+约束：`id` 主键；`(share_link_id, content_type, content_id)` 唯一；`(share_link_id, priority)` 唯一。索引：`(content_type, content_id)`。
 
 ### classics_share_access_record
 
