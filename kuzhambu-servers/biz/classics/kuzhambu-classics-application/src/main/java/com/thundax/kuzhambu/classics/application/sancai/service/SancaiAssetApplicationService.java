@@ -21,7 +21,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowc
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface SancaiAssetApplicationService {
@@ -95,7 +95,7 @@ public interface SancaiAssetApplicationService {
             String keyword,
             String status,
             String visibilityRiskStatus,
-            Date requestedAtStart,
-            Date requestedAtEnd,
+            Instant requestedAtStart,
+            Instant requestedAtEnd,
             PageQuery page);
 }

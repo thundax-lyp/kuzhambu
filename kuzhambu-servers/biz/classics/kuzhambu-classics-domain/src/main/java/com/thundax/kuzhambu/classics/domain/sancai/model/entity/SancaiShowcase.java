@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObje
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,8 +16,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SancaiShowcase {
     private SancaiShowcaseId id;
-    private Date requestedAt;
-    private Date completedAt;
+    private Instant requestedAt;
+    private Instant completedAt;
     private SancaiShowcaseStatus status;
     private String scopeJson;
     private String scopeTitle;
@@ -45,7 +45,7 @@ public class SancaiShowcase {
             Long sizeBytes,
             String sha256) {
         this.status = SancaiShowcaseStatus.COMPLETED;
-        this.completedAt = new Date();
+        this.completedAt = Instant.now();
         this.storageObjectId = storageObjectId;
         this.entryCount = entryCount;
         this.assetCount = assetCount;
@@ -63,7 +63,7 @@ public class SancaiShowcase {
 
     public void markFailed(String failureType, String failureMessage) {
         this.status = SancaiShowcaseStatus.FAILED;
-        this.completedAt = new Date();
+        this.completedAt = Instant.now();
         this.failureType = failureType;
         this.failureMessage = failureMessage;
     }
