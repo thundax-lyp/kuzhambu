@@ -204,7 +204,6 @@ class KnowledgeGraphRefinementApplyTest {
         @Override
         public GraphVersion getByVersionId(Long versionId) {
             return new GraphVersion(
-                    7L,
                     versionId,
                     GraphExtractionTaskIdCodec.toDomain(88L),
                     12L,

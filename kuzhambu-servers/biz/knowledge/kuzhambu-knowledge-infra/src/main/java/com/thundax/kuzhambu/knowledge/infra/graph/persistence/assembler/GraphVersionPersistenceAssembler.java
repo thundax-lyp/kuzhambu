@@ -14,7 +14,6 @@ public final class GraphVersionPersistenceAssembler {
         }
         GraphVersionDO dataObject = new GraphVersionDO();
         dataObject.setId(entity.getId());
-        dataObject.setVersionId(entity.getVersionId());
         dataObject.setTaskId(
                 entity.getTaskId() == null ? null : entity.getTaskId().value());
         dataObject.setCandidateId(entity.getCandidateId());
@@ -37,7 +36,6 @@ public final class GraphVersionPersistenceAssembler {
         }
         GraphVersion entity = new GraphVersion();
         entity.setId(dataObject.getId());
-        entity.setVersionId(dataObject.getVersionId());
         entity.setTaskId(GraphExtractionTaskIdCodec.toDomain(dataObject.getTaskId()));
         entity.setCandidateId(dataObject.getCandidateId());
         entity.setTaskType(dataObject.getTaskType());

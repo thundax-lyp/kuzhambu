@@ -13,7 +13,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class GraphVersion {
     private Long id;
-    private Long versionId;
     private GraphExtractionTaskId taskId;
     private Long candidateId;
     private String taskType;

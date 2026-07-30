@@ -102,7 +102,7 @@ public class KnowledgeGraphCandidateApplySupport {
         version.setVersionNo(latest == null || latest.getVersionNo() == null ? 1 : latest.getVersionNo() + 1);
         version.setStatus(STATUS_APPLIED);
         version.setAppliedAt(appliedAt);
-        version.setVersionId(graphVersionRepository.save(version));
+        version.setId(graphVersionRepository.save(version));
         return version;
     }
 
@@ -122,7 +122,7 @@ public class KnowledgeGraphCandidateApplySupport {
             entity.setEntityType(entityType);
             entity.setDescription(optionalText(node, "description", "summary"));
             entity.setConfirmationStatus(STATUS_AI_EXTRACTED);
-            entity.setLatestVersionId(version.getVersionId());
+            entity.setLatestVersionId(version.getId());
             entity.setSourceRefsJson(sourceRefsJson);
             entity.setFirstExtractedAt(appliedAt);
             entity.setLastExtractedAt(appliedAt);
@@ -152,7 +152,7 @@ public class KnowledgeGraphCandidateApplySupport {
             relation.setRelationType(relationType);
             relation.setEvidence(optionalText(node, "evidence", "summary"));
             relation.setConfirmationStatus(STATUS_AI_EXTRACTED);
-            relation.setLatestVersionId(version.getVersionId());
+            relation.setLatestVersionId(version.getId());
             relation.setSourceRefsJson(sourceRefsJson);
             relation.setFirstExtractedAt(appliedAt);
             relation.setLastExtractedAt(appliedAt);
@@ -178,7 +178,7 @@ public class KnowledgeGraphCandidateApplySupport {
             lineageNode.setGeneration(integerValue(node.get("generation")));
             lineageNode.setGender(optionalText(node, "gender"));
             lineageNode.setConfirmationStatus(STATUS_AI_EXTRACTED);
-            lineageNode.setLatestVersionId(version.getVersionId());
+            lineageNode.setLatestVersionId(version.getId());
             lineageNode.setSourceRefsJson(sourceRefsJson);
             lineageNode.setFirstExtractedAt(appliedAt);
             lineageNode.setLastExtractedAt(appliedAt);
@@ -208,7 +208,7 @@ public class KnowledgeGraphCandidateApplySupport {
             relation.setRelationType(relationType);
             relation.setEvidence(optionalText(node, "evidence", "summary"));
             relation.setConfirmationStatus(STATUS_AI_EXTRACTED);
-            relation.setLatestVersionId(version.getVersionId());
+            relation.setLatestVersionId(version.getId());
             relation.setSourceRefsJson(sourceRefsJson);
             relation.setFirstExtractedAt(appliedAt);
             relation.setLastExtractedAt(appliedAt);

@@ -17,7 +17,6 @@ public class GraphVersionDO {
     @TableId(type = IdType.INPUT)
     private Long id;
 
-    private Long versionId;
     private Long taskId;
     private Long candidateId;
     private String taskType;

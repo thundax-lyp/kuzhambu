@@ -54,7 +54,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
                         3,
                         1,
                         List.of(new GraphVersion(
-                                1L,
                                 71L,
                                 null,
                                 901L,
@@ -141,7 +140,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
                         1,
                         1,
                         List.of(new GraphVersion(
-                                1L,
                                 71L,
                                 null,
                                 901L,
@@ -238,7 +236,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
         when(graphVersionRepository.listAppliedByCategoryCode(null))
                 .thenReturn(List.of(
                         new GraphVersion(
-                                1L,
                                 71L,
                                 null,
                                 901L,
@@ -253,7 +250,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
                                 "APPLIED",
                                 new Date(1_700_000_000_000L)),
                         new GraphVersion(
-                                2L,
                                 72L,
                                 null,
                                 902L,
@@ -357,7 +353,6 @@ class KnowledgePortalReadApplicationServiceImplTest {
         KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
         when(graphVersionRepository.findLatestAppliedByCategoryCode("ANIMALS"))
                 .thenReturn(new GraphVersion(
-                        1L,
                         71L,
                         null,
                         901L,

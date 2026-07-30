@@ -90,7 +90,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `version_id` bigint NOT NULL,
     `task_id` bigint NOT NULL,
     `candidate_id` bigint NOT NULL,
     `task_type` varchar(32) NOT NULL,
@@ -104,7 +103,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
     `status` varchar(32) NOT NULL,
     `applied_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_version_version_id` (`version_id`),
     UNIQUE KEY `uk_knowledge_graph_version_task_candidate` (`task_id`, `candidate_id`),
     UNIQUE KEY `uk_knowledge_graph_version_source_version` (`task_type`, `source_content_type`, `source_content_id`, `version_no`),
     KEY `idx_knowledge_graph_version_source_status` (`task_type`, `source_content_type`, `source_content_id`, `status`)

@@ -64,7 +64,7 @@ public class GraphVersionRepositoryImpl implements GraphVersionRepository {
     @Override
     public GraphVersion getByVersionId(Long versionId) {
         QueryWrapper<GraphVersionDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("version_id", versionId);
+        wrapper.eq("id", versionId);
         return GraphVersionPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
     }
 
@@ -102,10 +102,7 @@ public class GraphVersionRepositoryImpl implements GraphVersionRepository {
         if (dataObject.getId() == null) {
             dataObject.setId(idGenerator.nextId().value());
         }
-        if (dataObject.getVersionId() == null) {
-            dataObject.setVersionId(dataObject.getId());
-        }
         mapper.insert(dataObject);
-        return dataObject.getVersionId();
+        return dataObject.getId();
     }
 }

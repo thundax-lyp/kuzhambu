@@ -184,7 +184,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                     "/knowledge/atlas?level=category&categoryCode=" + categorySlot.code());
         }
         GraphVersion latestVersion = versions.get(0);
-        Long versionId = latestVersion.getVersionId();
+        Long versionId = latestVersion.getId();
         List<KnowledgeEntity> entities =
                 versionId == null ? List.of() : defaultList(knowledgeEntityRepository.listByVersionId(versionId));
         List<KnowledgeRelation> relations =
@@ -208,10 +208,10 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
             return buildOverviewAtlas();
         }
         GraphVersion latestVersion = graphVersionRepository.findLatestAppliedByCategoryCode(categoryCode);
-        if (latestVersion == null || latestVersion.getVersionId() == null) {
+        if (latestVersion == null || latestVersion.getId() == null) {
             return buildEmptyCategoryAtlas(categorySlot);
         }
-        Long versionId = latestVersion.getVersionId();
+        Long versionId = latestVersion.getId();
         List<KnowledgeEntity> entities = defaultList(knowledgeEntityRepository.listByVersionId(versionId));
         List<KnowledgeRelation> relations = defaultList(knowledgeRelationRepository.listByVersionId(versionId));
         return new KnowledgePortalAtlasResult(
@@ -227,7 +227,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                 new KnowledgePortalAtlasResult.CategoryView(
                         categorySlot.code(),
                         categorySlot.name(),
-                        latestVersion.getVersionId(),
+                        latestVersion.getId(),
                         latestVersion.getVersionNo(),
                         entities.stream().map(this::toCategoryEntityHighlight).toList(),
                         buildCategoryRelationGroups(relations),

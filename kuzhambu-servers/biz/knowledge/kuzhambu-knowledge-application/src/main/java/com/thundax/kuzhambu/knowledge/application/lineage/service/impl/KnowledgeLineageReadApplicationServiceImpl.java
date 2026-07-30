@@ -84,17 +84,16 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
             GraphVersion latest = latestPage.getRecords().isEmpty()
                     ? null
                     : latestPage.getRecords().get(0);
-            effectiveQuery.setVersionId(latest == null ? null : latest.getVersionId());
+            effectiveQuery.setVersionId(latest == null ? null : latest.getId());
         }
         return getCanvas(effectiveQuery);
     }
 
     private LineageCanvasResult buildCanvas(
             GraphVersion version, LineageCanvasQuery query, AvailableFiltersView availableFilters) {
-        List<KnowledgeLineageNode> allNodes =
-                defaultList(lineageNodeRepository.listByVersionId(version.getVersionId()));
+        List<KnowledgeLineageNode> allNodes = defaultList(lineageNodeRepository.listByVersionId(version.getId()));
         List<KnowledgeLineageRelation> allRelations =
-                defaultList(lineageRelationRepository.listByVersionId(version.getVersionId()));
+                defaultList(lineageRelationRepository.listByVersionId(version.getId()));
         if (allNodes.isEmpty() && allRelations.isEmpty()) {
             return emptyResult(availableFilters, "NO_LINEAGE_DATA", "暂无世系数据", "当前版本尚未沉淀正式世系节点或关系。", null, null);
         }
@@ -221,7 +220,7 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
         List<String> relationTypes = new ArrayList<>();
         List<String> confirmationStatuses = new ArrayList<>();
         for (GraphVersion version : versionPage.getRecords()) {
-            Long versionId = version.getVersionId();
+            Long versionId = version.getId();
             for (KnowledgeLineageNode node : defaultList(lineageNodeRepository.listByVersionId(versionId))) {
                 addDistinct(nodeTypes, node.getNodeType());
                 addDistinct(confirmationStatuses, node.getConfirmationStatus());
@@ -383,7 +382,7 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
 
     private VersionView toVersionView(GraphVersion version) {
         return new VersionView(
-                version.getVersionId(),
+                version.getId(),
                 version.getVersionNo(),
                 version.getTaskType(),
                 version.getStatus(),
@@ -396,7 +395,7 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
 
     private VersionOptionView toVersionOptionView(GraphVersion version) {
         return new VersionOptionView(
-                version.getVersionId(),
+                version.getId(),
                 version.getVersionNo(),
                 version.getTaskType(),
                 version.getStatus(),

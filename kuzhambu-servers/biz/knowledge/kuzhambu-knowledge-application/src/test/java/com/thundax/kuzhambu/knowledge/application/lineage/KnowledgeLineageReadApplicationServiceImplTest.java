@@ -115,7 +115,6 @@ class KnowledgeLineageReadApplicationServiceImplTest {
 
     private static GraphVersion lineageVersion() {
         return new GraphVersion(
-                1L,
                 71L,
                 null,
                 null,

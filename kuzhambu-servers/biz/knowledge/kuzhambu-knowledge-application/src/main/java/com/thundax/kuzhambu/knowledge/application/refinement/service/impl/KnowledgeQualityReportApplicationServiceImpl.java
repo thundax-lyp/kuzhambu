@@ -128,10 +128,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
         List<KnowledgeLineageRelation> lineageRelations = lineageRelationRepository.listByVersionId(graphVersionId);
         List<QualityAnnotation> annotations = qualityAnnotationRepository.listByGraphVersionId(graphVersionId);
         RefinementTask task = refinementTaskRepository.findLatestDraft(
-                version.getTaskType(),
-                version.getSourceContentType(),
-                version.getSourceContentId(),
-                version.getVersionId());
+                version.getTaskType(), version.getSourceContentType(), version.getSourceContentId(), version.getId());
         RefinementCounts refinementCounts = loadRefinementCounts(task);
         Date now = new Date();
         Long reportId = idGenerator.nextId().value();
@@ -273,8 +270,8 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
         return new QualityReport(
                 null,
                 reportId,
-                reportNo(now, version.getVersionId()),
-                version.getVersionId(),
+                reportNo(now, version.getId()),
+                version.getId(),
                 version.getSourceContentType(),
                 version.getSourceContentId(),
                 version.getSourceCategoryCode(),
@@ -413,7 +410,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
                 version.getSourceContentId(),
                 version.getSourceCategoryCode(),
                 version.getSourceCategoryName(),
-                version.getVersionId(),
+                version.getId(),
                 version.getAppliedAt(),
                 (long) size(annotations),
                 (long) size(issues),

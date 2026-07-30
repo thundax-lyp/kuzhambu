@@ -54,7 +54,7 @@ class KnowledgeGraphCandidateApplySupportTest {
 
         GraphVersion version = support.apply(task, candidate);
 
-        assertNotNull(version.getVersionId());
+        assertNotNull(version.getId());
         assertEquals(1, version.getVersionNo());
         assertEquals(1, entityRepository.saved.size());
         assertEquals("person:黄帝", entityRepository.saved.get(0).getEntityKey());
@@ -83,7 +83,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         @Override
         public GraphVersion getByVersionId(Long versionId) {
             return versions.stream()
-                    .filter(version -> versionId.equals(version.getVersionId()))
+                    .filter(version -> versionId.equals(version.getId()))
                     .findFirst()
                     .orElse(null);
         }
@@ -102,7 +102,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         @Override
         public Long save(GraphVersion entity) {
             long versionId = versions.size() + 1L;
-            entity.setVersionId(versionId);
+            entity.setId(versionId);
             versions.add(entity);
             return versionId;
         }

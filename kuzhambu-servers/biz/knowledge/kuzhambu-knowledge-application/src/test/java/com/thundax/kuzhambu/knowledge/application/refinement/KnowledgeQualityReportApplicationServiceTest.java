@@ -72,7 +72,6 @@ class KnowledgeQualityReportApplicationServiceTest {
                 annotationRepository,
                 reportRepository);
         GraphVersion version = new GraphVersion(
-                1L,
                 71L,
                 null,
                 901L,

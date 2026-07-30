@@ -485,7 +485,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void pageVersionsShouldMapVersionRecords() {
         FakeGraphVersionRepository graphVersionRepository = new FakeGraphVersionRepository();
         GraphVersion version = new GraphVersion();
-        version.setVersionId(61L);
+        version.setId(61L);
         version.setTaskId(GraphExtractionTaskIdCodec.toDomain(31L));
         version.setCandidateId(901L);
         version.setTaskType("GRAPH");
@@ -520,7 +520,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void getVersionDetailShouldMapSingleVersionRecord() {
         FakeGraphVersionRepository graphVersionRepository = new FakeGraphVersionRepository();
         GraphVersion version = new GraphVersion();
-        version.setVersionId(71L);
+        version.setId(71L);
         version.setTaskId(GraphExtractionTaskIdCodec.toDomain(41L));
         version.setCandidateId(902L);
         version.setTaskType("LINEAGE");
@@ -555,7 +555,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void pageVersionsShouldExposeLatestAppliedRefinement() {
         FakeGraphVersionRepository graphVersionRepository = new FakeGraphVersionRepository();
         GraphVersion version = new GraphVersion();
-        version.setVersionId(71L);
+        version.setId(71L);
         version.setTaskId(GraphExtractionTaskIdCodec.toDomain(41L));
         version.setCandidateId(902L);
         version.setTaskType("GRAPH");
@@ -1687,7 +1687,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         @Override
         public GraphVersion getByVersionId(Long versionId) {
             return versions.stream()
-                    .filter(version -> versionId.equals(version.getVersionId()))
+                    .filter(version -> versionId.equals(version.getId()))
                     .findFirst()
                     .orElse(null);
         }
@@ -1727,7 +1727,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         @Override
         public Long save(GraphVersion entity) {
             versions.add(entity);
-            return entity.getVersionId();
+            return entity.getId();
         }
     }
 
