@@ -102,7 +102,7 @@ public class KnowledgeFacadeAssembler {
             return null;
         }
         return KnowledgeTagFacadeResponse.builder()
-                .tagId(tag.getTagId() == null ? null : tag.getTagId().value())
+                .tagId(tag.getId() == null ? null : tag.getId().value())
                 .tagName(tag.getName())
                 .build();
     }

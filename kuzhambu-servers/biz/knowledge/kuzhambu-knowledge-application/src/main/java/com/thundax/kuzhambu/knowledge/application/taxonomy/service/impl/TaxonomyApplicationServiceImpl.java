@@ -160,7 +160,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         String name = trimText(effective.getName(), "分类名称");
 
         TagCategory category = new TagCategory();
-        category.setCategoryId(categoryId);
+        category.setId(categoryId);
         category.setName(name);
         category.setDescription(trimOptionalText(effective.getDescription()));
         category.setPriority(tagCategoryRepository.maxPriority() + 1);
@@ -182,7 +182,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         TagCategory category = getExistingCategory(categoryId);
         TagCategory updated = new TagCategory();
-        updated.setCategoryId(categoryId);
         updated.setId(category.getId());
         updated.setName(name);
         updated.setDescription(trimOptionalText(effective.getDescription()));
@@ -215,7 +214,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         TagCategory updated = new TagCategory();
         updated.setId(category.getId());
-        updated.setCategoryId(categoryId);
         updated.setStatus(status);
 
         if (tagCategoryRepository.updateStatus(updated) != 1) {
@@ -246,7 +244,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .map(tag -> TaxonomyApplicationAssembler.toResult(
                                 tag,
                                 getCategoryName(tag.getCategoryId()),
-                                tagContentRefRepository.countByTagId(tag.getTagId())))
+                                tagContentRefRepository.countByTagId(tag.getId())))
                         .collect(Collectors.toList()));
     }
 
@@ -256,8 +254,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         return TaxonomyApplicationAssembler.toDetailResult(
                 tag,
-                tagAliasRepository.listByTagId(tag.getTagId()),
-                tagContentRefRepository.listByTagId(tag.getTagId()),
+                tagAliasRepository.listByTagId(tag.getId()),
+                tagContentRefRepository.listByTagId(tag.getId()),
                 getCategoryName(tag.getCategoryId()));
     }
 
@@ -266,8 +264,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         ensureCommand(query, "标签合并影响预览查询");
         Tag sourceTag = ensureTagExists(query.getSourceTagId());
         Tag targetTag = ensureTagExists(query.getTargetTagId());
-        List<TagAlias> aliasesToMerge = tagAliasRepository.listByTagId(sourceTag.getTagId());
-        List<TagContentRef> impactedContentRefs = tagContentRefRepository.listByTagId(sourceTag.getTagId());
+        List<TagAlias> aliasesToMerge = tagAliasRepository.listByTagId(sourceTag.getId());
+        List<TagContentRef> impactedContentRefs = tagContentRefRepository.listByTagId(sourceTag.getId());
         int pendingReviewCount = sourceTag.getReviewStatus() == TagReviewStatus.PENDING ? 1 : 0;
         int governedRecordCount = pendingReviewCount + aliasesToMerge.size() + impactedContentRefs.size();
 
@@ -277,7 +275,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                 TaxonomyApplicationAssembler.toResult(
                         targetTag,
                         getCategoryName(targetTag.getCategoryId()),
-                        tagContentRefRepository.countByTagId(targetTag.getTagId())),
+                        tagContentRefRepository.countByTagId(targetTag.getId())),
                 TaxonomyApplicationAssembler.toAliasResultList(aliasesToMerge),
                 TaxonomyApplicationAssembler.toContentRefResultList(impactedContentRefs),
                 pendingReviewCount,
@@ -296,8 +294,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         List<TagContentRef> impactedContentRefs = new ArrayList<>();
         int pendingReviewCount = 0;
         for (Tag sourceTag : sourceTags) {
-            aliasesToMerge.addAll(tagAliasRepository.listByTagId(sourceTag.getTagId()));
-            impactedContentRefs.addAll(tagContentRefRepository.listByTagId(sourceTag.getTagId()));
+            aliasesToMerge.addAll(tagAliasRepository.listByTagId(sourceTag.getId()));
+            impactedContentRefs.addAll(tagContentRefRepository.listByTagId(sourceTag.getId()));
             if (sourceTag.getReviewStatus() == TagReviewStatus.PENDING) {
                 pendingReviewCount++;
             }
@@ -309,12 +307,12 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .map(tag -> TaxonomyApplicationAssembler.toResult(
                                 tag,
                                 getCategoryName(tag.getCategoryId()),
-                                tagContentRefRepository.countByTagId(tag.getTagId())))
+                                tagContentRefRepository.countByTagId(tag.getId())))
                         .collect(Collectors.toList()),
                 TaxonomyApplicationAssembler.toResult(
                         targetTag,
                         getCategoryName(targetTag.getCategoryId()),
-                        tagContentRefRepository.countByTagId(targetTag.getTagId())),
+                        tagContentRefRepository.countByTagId(targetTag.getId())),
                 TaxonomyApplicationAssembler.toAliasResultList(aliasesToMerge),
                 TaxonomyApplicationAssembler.toContentRefResultList(impactedContentRefs),
                 pendingReviewCount,
@@ -327,7 +325,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         TagMergeCommand effective = ensureCommand(command, "标签合并命令");
         Tag sourceTag = ensureTagExists(effective.getSourceTagId());
         Tag targetTag = ensureTagExists(effective.getTargetTagId());
-        List<TagContentRef> sourceContentRefs = tagContentRefRepository.listByTagId(sourceTag.getTagId());
+        List<TagContentRef> sourceContentRefs = tagContentRefRepository.listByTagId(sourceTag.getId());
         sourceTag.mergeInto(targetTag);
         if (tagRepository.update(sourceTag) != 1) {
             throw new BizException("标签合并状态更新失败");
@@ -335,7 +333,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         sourceContentRefs.stream()
                 .filter(ref -> ref != null && ref.getContentType() != null && ref.getContentId() != null)
                 .forEach(ref -> knowledgeTagBindingDomainService.syncContentTagRef(
-                        targetTag.getTagId(),
+                        targetTag.getId(),
                         ref.getContentType(),
                         ref.getContentId(),
                         ref.getContentTitle(),
@@ -353,8 +351,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         Map<TagId, List<TagContentRef>> contentRefsBySource = sourceTags.stream()
                 .collect(Collectors.toMap(
-                        Tag::getTagId,
-                        sourceTag -> tagContentRefRepository.listByTagId(sourceTag.getTagId()),
+                        Tag::getId,
+                        sourceTag -> tagContentRefRepository.listByTagId(sourceTag.getId()),
                         (left, right) -> left,
                         LinkedHashMap::new));
         for (Tag sourceTag : sourceTags) {
@@ -362,10 +360,10 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
             if (tagRepository.update(sourceTag) != 1) {
                 throw new BizException("标签批量合并状态更新失败");
             }
-            contentRefsBySource.getOrDefault(sourceTag.getTagId(), List.of()).stream()
+            contentRefsBySource.getOrDefault(sourceTag.getId(), List.of()).stream()
                     .filter(ref -> ref != null && ref.getContentType() != null && ref.getContentId() != null)
                     .forEach(ref -> knowledgeTagBindingDomainService.syncContentTagRef(
-                            targetTag.getTagId(),
+                            targetTag.getId(),
                             ref.getContentType(),
                             ref.getContentId(),
                             ref.getContentTitle(),
@@ -393,7 +391,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         }
 
         Tag tag = new Tag();
-        tag.setTagId(tagId);
+        tag.setId(tagId);
         tag.setName(name);
         tag.setCategoryId(categoryId);
         tag.setDescription(trimOptionalText(effective.getDescription()));
@@ -426,7 +424,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         Tag updated = new Tag();
         updated.setId(existing.getId());
-        updated.setTagId(tagId);
         updated.setName(name);
         updated.setCategoryId(categoryId);
         updated.setDescription(trimOptionalText(effective.getDescription()));
@@ -452,7 +449,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         Tag updated = new Tag();
         updated.setId(tag.getId());
-        updated.setTagId(tagId);
         updated.setName(tag.getName());
         updated.setCategoryId(tag.getCategoryId());
         updated.setDescription(tag.getDescription());
@@ -486,7 +482,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         List<Tag> tags = getExistingTags(normalizeTagIds(effective.getTagIds(), "tagIds"), "tagIds");
         for (Tag tag : tags) {
             if (tag.isDeprecated()) {
-                throw new BizException("标签已废弃: " + tag.getTagId().value());
+                throw new BizException("标签已废弃: " + tag.getId().value());
             }
         }
         for (Tag tag : tags) {
@@ -538,7 +534,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .map(tag -> TaxonomyApplicationAssembler.toResult(
                                 tag,
                                 getCategoryName(tag.getCategoryId()),
-                                tagContentRefRepository.countByTagId(tag.getTagId())))
+                                tagContentRefRepository.countByTagId(tag.getId())))
                         .collect(Collectors.toList()));
     }
 
@@ -552,7 +548,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         Tag reviewed = new Tag();
         reviewed.setId(tag.getId());
-        reviewed.setTagId(tag.getTagId());
         reviewed.setName(tag.getName());
         reviewed.setCategoryId(tag.getCategoryId());
         reviewed.setDescription(tag.getDescription());
@@ -606,7 +601,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         for (Tag tag : tags) {
             if (tag.getReviewStatus() != TagReviewStatus.PENDING) {
-                throw new BizException("标签不是待审核状态: " + tag.getTagId().value());
+                throw new BizException("标签不是待审核状态: " + tag.getId().value());
             }
         }
         for (Tag tag : tags) {
@@ -707,7 +702,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Override
     public List<TagAliasResult> listTagAliases(TagId tagId) {
         Tag tag = ensureTagExists(tagId);
-        return TaxonomyApplicationAssembler.toAliasResultList(tagAliasRepository.listByTagId(tag.getTagId()));
+        return TaxonomyApplicationAssembler.toAliasResultList(tagAliasRepository.listByTagId(tag.getId()));
     }
 
     @Override
@@ -724,7 +719,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         }
 
         TagAlias alias = new TagAlias();
-        alias.setAliasId(aliasId);
+        alias.setId(aliasId);
         alias.setTagId(tagId);
         alias.setName(name);
         alias.setSource(effective.getSource() == null ? TagSource.MANUAL : effective.getSource());
@@ -847,7 +842,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         }
 
         Tag tag = new Tag();
-        tag.setTagId(TagIdCodec.toDomain(idGenerator.nextId().value()));
+        tag.setId(TagIdCodec.toDomain(idGenerator.nextId().value()));
         tag.setName(name);
         tag.setCategoryId(parseCategoryId(effective.getCategoryId()));
         tag.setDescription(trimOptionalText(effective.getReason()));
@@ -939,9 +934,9 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                     Map<String, Object> payload = new LinkedHashMap<>();
                     payload.put(
                             "tagId",
-                            tag.getTagId() == null
+                            tag.getId() == null
                                     ? null
-                                    : String.valueOf(tag.getTagId().value()));
+                                    : String.valueOf(tag.getId().value()));
                     payload.put("name", tag.getName());
                     payload.put(
                             "categoryId",
@@ -964,9 +959,9 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                     Map<String, Object> payload = new LinkedHashMap<>();
                     payload.put(
                             "categoryId",
-                            category.getCategoryId() == null
+                            category.getId() == null
                                     ? null
-                                    : String.valueOf(category.getCategoryId().value()));
+                                    : String.valueOf(category.getId().value()));
                     payload.put("name", category.getName());
                     return payload;
                 })
@@ -978,15 +973,15 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         for (Tag tag : tagRepository
                 .page(null, null, TagStatus.ENABLED, null, null, 1, TAXONOMY_CONTEXT_PAGE_SIZE)
                 .getRecords()) {
-            if (tag == null || tag.getTagId() == null) {
+            if (tag == null || tag.getId() == null) {
                 continue;
             }
-            for (TagAlias alias : tagAliasRepository.listByTagId(tag.getTagId())) {
+            for (TagAlias alias : tagAliasRepository.listByTagId(tag.getId())) {
                 if (alias == null) {
                     continue;
                 }
                 Map<String, Object> payload = new LinkedHashMap<>();
-                payload.put("tagId", String.valueOf(tag.getTagId().value()));
+                payload.put("tagId", String.valueOf(tag.getId().value()));
                 payload.put("name", alias.getName());
                 aliases.add(payload);
             }
@@ -1097,7 +1092,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     private List<Tag> getExistingTags(List<TagId> tagIds, String field) {
         List<Tag> tags = tagRepository.listByTagIds(tagIds);
-        Map<TagId, Tag> tagById = tags.stream().collect(Collectors.toMap(Tag::getTagId, tag -> tag));
+        Map<TagId, Tag> tagById = tags.stream().collect(Collectors.toMap(Tag::getId, tag -> tag));
         for (TagId tagId : tagIds) {
             if (!tagById.containsKey(tagId)) {
                 throw new BizException("标签不存在: " + tagId.value());
@@ -1108,18 +1103,18 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     private Tag ensureTagUsableForBatchMergeTarget(Tag tag) {
         if (!tag.isUsableForNewBinding()) {
-            throw new BizException("目标标签当前不可作为合并目标: " + tag.getTagId().value());
+            throw new BizException("目标标签当前不可作为合并目标: " + tag.getId().value());
         }
         return tag;
     }
 
     private void ensureBatchMergeSourceTags(List<Tag> sourceTags, Tag targetTag) {
         for (Tag sourceTag : sourceTags) {
-            if (sourceTag.getTagId().equals(targetTag.getTagId())) {
-                throw new BizException("源标签不能包含目标标签: " + targetTag.getTagId().value());
+            if (sourceTag.getId().equals(targetTag.getId())) {
+                throw new BizException("源标签不能包含目标标签: " + targetTag.getId().value());
             }
             if (!sourceTag.isUsableForNewBinding()) {
-                throw new BizException("源标签当前不可用于合并: " + sourceTag.getTagId().value());
+                throw new BizException("源标签当前不可用于合并: " + sourceTag.getId().value());
             }
         }
     }
@@ -1127,7 +1122,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     private Tag buildReviewedTag(Tag tag, String decision, TagCategoryId categoryId, String reviewNote) {
         Tag reviewed = new Tag();
         reviewed.setId(tag.getId());
-        reviewed.setTagId(tag.getTagId());
         reviewed.setName(tag.getName());
         reviewed.setCategoryId(APPROVE_DECISION.equals(decision) ? categoryId : tag.getCategoryId());
         reviewed.setDescription(tag.getDescription());

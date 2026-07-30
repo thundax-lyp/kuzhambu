@@ -55,6 +55,9 @@ public class SynonymRepositoryImpl implements SynonymRepository {
     @Override
     public SynonymId insert(Synonym entity) {
         SynonymDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
+        if (dataObject.getId() == null) {
+            dataObject.setId(idGenerator.nextId().value());
+        }
         if (dataObject.getSynonymId() == null) {
             dataObject.setSynonymId(idGenerator.nextId().value());
         }

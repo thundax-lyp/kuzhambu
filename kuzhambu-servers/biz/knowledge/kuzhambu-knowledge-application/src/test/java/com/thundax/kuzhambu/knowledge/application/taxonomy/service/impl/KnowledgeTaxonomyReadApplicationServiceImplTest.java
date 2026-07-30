@@ -209,14 +209,10 @@ class KnowledgeTaxonomyReadApplicationServiceImplTest {
         TagContentRefRepository tagContentRefRepository = mock(TagContentRefRepository.class);
         when(tagRepository.getByName("节俗")).thenReturn(null);
         when(tagAliasRepository.getByName("节俗"))
-                .thenReturn(new TagAlias(
-                        TagAliasIdCodec.toDomain(21L),
-                        TagAliasIdCodec.toDomain(21L),
-                        TagIdCodec.toDomain(7L),
-                        "节俗",
-                        TagSource.MANUAL));
+                .thenReturn(
+                        new TagAlias(TagAliasIdCodec.toDomain(21L), TagIdCodec.toDomain(7L), "节俗", TagSource.MANUAL));
         Tag targetTag = new Tag();
-        targetTag.setTagId(TagIdCodec.toDomain(7L));
+        targetTag.setId(TagIdCodec.toDomain(7L));
         targetTag.setName("民俗");
         when(tagRepository.getByTagId(TagIdCodec.toDomain(7L))).thenReturn(targetTag);
         when(tagContentRefRepository.countByTagId(TagIdCodec.toDomain(7L))).thenReturn(3);

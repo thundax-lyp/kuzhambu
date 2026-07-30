@@ -36,7 +36,7 @@ public class TagRepositoryImpl implements TagRepository {
 
     @Override
     public Tag getById(TagId id) {
-        return TaxonomyPersistenceAssembler.toDomain(mapper.selectById(TagIdCodec.toValue(id)));
+        return getByTagId(id);
     }
 
     @Override
@@ -100,7 +100,7 @@ public class TagRepositoryImpl implements TagRepository {
     @Override
     public int countByName(String name, TagId excludedId) {
         QueryWrapper<TagDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("name", name).ne(excludedId != null, "id", TagIdCodec.toValue(excludedId));
+        wrapper.eq("name", name).ne(excludedId != null, "tag_id", TagIdCodec.toValue(excludedId));
         return mapper.selectCount(wrapper).intValue();
     }
 
@@ -110,6 +110,9 @@ public class TagRepositoryImpl implements TagRepository {
         dataObject.setSource(normalizeSourceValue(dataObject.getSource()));
         if (dataObject.getId() == null) {
             dataObject.setId(idGenerator.nextId().value());
+        }
+        if (dataObject.getTagId() == null) {
+            dataObject.setTagId(idGenerator.nextId().value());
         }
         mapper.insert(dataObject);
         return TagIdCodec.toDomain(dataObject.getTagId());
@@ -121,8 +124,7 @@ public class TagRepositoryImpl implements TagRepository {
         dataObject.setSource(normalizeSourceValue(dataObject.getSource()));
         return mapper.update(
                 null,
-                buildIdUpdateWrapper(dataObject)
-                        .set(TagDO::getTagId, dataObject.getTagId())
+                buildTagIdUpdateWrapper(dataObject)
                         .set(TagDO::getName, dataObject.getName())
                         .set(TagDO::getCategoryId, dataObject.getCategoryId())
                         .set(TagDO::getDescription, dataObject.getDescription())
@@ -138,7 +140,7 @@ public class TagRepositoryImpl implements TagRepository {
     @Override
     public int updateStatus(Tag entity) {
         TagDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
-        return mapper.update(null, buildIdUpdateWrapper(dataObject).set(TagDO::getStatus, dataObject.getStatus()));
+        return mapper.update(null, buildTagIdUpdateWrapper(dataObject).set(TagDO::getStatus, dataObject.getStatus()));
     }
 
     @Override
@@ -146,7 +148,7 @@ public class TagRepositoryImpl implements TagRepository {
         TagDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
         return mapper.update(
                 null,
-                buildIdUpdateWrapper(dataObject)
+                buildTagIdUpdateWrapper(dataObject)
                         .set(TagDO::getReviewStatus, dataObject.getReviewStatus())
                         .set(TagDO::getReviewedAt, dataObject.getReviewedAt())
                         .set(TagDO::getCategoryId, dataObject.getCategoryId())
@@ -168,9 +170,9 @@ public class TagRepositoryImpl implements TagRepository {
         return wrapper;
     }
 
-    private LambdaUpdateWrapper<TagDO> buildIdUpdateWrapper(TagDO dataObject) {
+    private LambdaUpdateWrapper<TagDO> buildTagIdUpdateWrapper(TagDO dataObject) {
         LambdaUpdateWrapper<TagDO> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(TagDO::getId, dataObject.getId());
+        wrapper.eq(TagDO::getTagId, dataObject.getTagId());
         return wrapper;
     }
 

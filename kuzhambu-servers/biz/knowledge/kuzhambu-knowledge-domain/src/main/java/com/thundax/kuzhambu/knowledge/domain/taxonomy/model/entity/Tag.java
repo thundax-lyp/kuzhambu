@@ -18,7 +18,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Tag {
     private TagId id;
-    private TagId tagId;
     private String name;
     private TagCategoryId categoryId;
     private String description;
@@ -34,7 +33,6 @@ public class Tag {
 
     public Tag(
             TagId id,
-            TagId tagId,
             String name,
             TagCategoryId categoryId,
             String description,
@@ -46,7 +44,6 @@ public class Tag {
             Date reviewedAt) {
         this(
                 id,
-                tagId,
                 name,
                 categoryId,
                 description,
@@ -74,13 +71,13 @@ public class Tag {
     }
 
     public void mergeInto(Tag targetTag) {
-        if (targetTag == null || targetTag.getTagId() == null) {
+        if (targetTag == null || targetTag.getId() == null) {
             throw new DomainException("目标标签不能为空");
         }
-        if (tagId == null) {
+        if (id == null) {
             throw new DomainException("源标签不能为空");
         }
-        if (tagId.equals(targetTag.getTagId())) {
+        if (id.equals(targetTag.getId())) {
             throw new DomainException("源标签不能并入自身");
         }
         if (!isUsableForNewBinding()) {
@@ -89,11 +86,11 @@ public class Tag {
         if (!targetTag.isUsableForNewBinding()) {
             throw new DomainException("目标标签当前不可作为合并目标");
         }
-        mergedToTagId = targetTag.getTagId();
+        mergedToTagId = targetTag.getId();
     }
 
     public void deprecate(Date operatedAt, Long operatorId) {
-        if (tagId == null) {
+        if (id == null) {
             throw new DomainException("待废弃标签不能为空");
         }
         if (isDeprecated()) {

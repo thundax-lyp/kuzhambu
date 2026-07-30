@@ -30,7 +30,7 @@ public class TagCategoryRepositoryImpl implements TagCategoryRepository {
 
     @Override
     public TagCategory getById(TagCategoryId id) {
-        return TaxonomyPersistenceAssembler.toDomain(mapper.selectById(TagCategoryIdCodec.toValue(id)));
+        return getByCategoryId(id);
     }
 
     @Override
@@ -56,6 +56,9 @@ public class TagCategoryRepositoryImpl implements TagCategoryRepository {
         if (dataObject.getId() == null) {
             dataObject.setId(idGenerator.nextId().value());
         }
+        if (dataObject.getCategoryId() == null) {
+            dataObject.setCategoryId(idGenerator.nextId().value());
+        }
         mapper.insert(dataObject);
         return TagCategoryIdCodec.toDomain(dataObject.getCategoryId());
     }
@@ -65,10 +68,9 @@ public class TagCategoryRepositoryImpl implements TagCategoryRepository {
         TagCategoryDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
         return mapper.update(
                 null,
-                buildIdUpdateWrapper(dataObject)
+                buildCategoryIdUpdateWrapper(dataObject)
                         .set(TagCategoryDO::getName, dataObject.getName())
                         .set(TagCategoryDO::getDescription, dataObject.getDescription())
-                        .set(TagCategoryDO::getCategoryId, dataObject.getCategoryId())
                         .set(TagCategoryDO::getPriority, dataObject.getPriority())
                         .set(TagCategoryDO::getStatus, dataObject.getStatus()));
     }
@@ -86,14 +88,14 @@ public class TagCategoryRepositoryImpl implements TagCategoryRepository {
     public int updateStatus(TagCategory entity) {
         TagCategoryDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
         return mapper.update(
-                null, buildIdUpdateWrapper(dataObject).set(TagCategoryDO::getStatus, dataObject.getStatus()));
+                null, buildCategoryIdUpdateWrapper(dataObject).set(TagCategoryDO::getStatus, dataObject.getStatus()));
     }
 
     @Override
     public int countByName(String name, TagCategoryId excludedId) {
         QueryWrapper<TagCategoryDO> wrapper = new QueryWrapper<>();
         wrapper.eq("name", name);
-        wrapper.ne(excludedId != null, "id", TagCategoryIdCodec.toValue(excludedId));
+        wrapper.ne(excludedId != null, "category_id", TagCategoryIdCodec.toValue(excludedId));
         return mapper.selectCount(wrapper).intValue();
     }
 
@@ -114,9 +116,9 @@ public class TagCategoryRepositoryImpl implements TagCategoryRepository {
         return wrapper;
     }
 
-    private LambdaUpdateWrapper<TagCategoryDO> buildIdUpdateWrapper(TagCategoryDO dataObject) {
+    private LambdaUpdateWrapper<TagCategoryDO> buildCategoryIdUpdateWrapper(TagCategoryDO dataObject) {
         LambdaUpdateWrapper<TagCategoryDO> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(TagCategoryDO::getId, dataObject.getId());
+        wrapper.eq(TagCategoryDO::getCategoryId, dataObject.getCategoryId());
         return wrapper;
     }
 }

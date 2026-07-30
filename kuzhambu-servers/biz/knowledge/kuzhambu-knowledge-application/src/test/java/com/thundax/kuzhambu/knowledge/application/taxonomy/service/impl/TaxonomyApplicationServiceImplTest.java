@@ -111,7 +111,7 @@ class TaxonomyApplicationServiceImplTest {
                 mock(TagGovernanceMetricsRepository.class));
         Tag tag = new Tag();
         tag.setId(TagIdCodec.toDomain(11L));
-        tag.setTagId(TagIdCodec.toDomain(1L));
+        tag.setId(TagIdCodec.toDomain(1L));
         tag.setStatus(TagStatus.ENABLED);
         when(tagRepository.getByTagId(TagIdCodec.toDomain(1L))).thenReturn(tag);
         when(tagRepository.update(tag)).thenReturn(1);
@@ -139,17 +139,16 @@ class TaxonomyApplicationServiceImplTest {
                 mock(TagGovernanceMetricsRepository.class));
         Tag sourceTag = new Tag();
         sourceTag.setId(TagIdCodec.toDomain(11L));
-        sourceTag.setTagId(TagIdCodec.toDomain(1L));
+        sourceTag.setId(TagIdCodec.toDomain(1L));
         sourceTag.setStatus(TagStatus.ENABLED);
         Tag targetTag = new Tag();
         targetTag.setId(TagIdCodec.toDomain(12L));
-        targetTag.setTagId(TagIdCodec.toDomain(2L));
+        targetTag.setId(TagIdCodec.toDomain(2L));
         targetTag.setStatus(TagStatus.ENABLED);
         when(tagRepository.getByTagId(TagIdCodec.toDomain(1L))).thenReturn(sourceTag);
         when(tagRepository.getByTagId(TagIdCodec.toDomain(2L))).thenReturn(targetTag);
         when(contentRefRepository.listByTagId(TagIdCodec.toDomain(1L)))
                 .thenReturn(List.of(new TagContentRef(
-                        TagContentRefIdCodec.toDomain(31L),
                         TagContentRefIdCodec.toDomain(31L),
                         TagIdCodec.toDomain(1L),
                         ContentType.SANCAI_ENTRY,
@@ -186,7 +185,6 @@ class TaxonomyApplicationServiceImplTest {
 
         Tag sourceTag = new Tag(
                 TagIdCodec.toDomain(1L),
-                TagIdCodec.toDomain(1L),
                 "源标签",
                 TagCategoryIdCodec.toDomain(11L),
                 "source",
@@ -197,7 +195,6 @@ class TaxonomyApplicationServiceImplTest {
                 null,
                 null);
         Tag targetTag = new Tag(
-                TagIdCodec.toDomain(2L),
                 TagIdCodec.toDomain(2L),
                 "目标标签",
                 TagCategoryIdCodec.toDomain(12L),
@@ -211,21 +208,14 @@ class TaxonomyApplicationServiceImplTest {
         when(tagRepository.getByTagId(TagIdCodec.toDomain(1L))).thenReturn(sourceTag);
         when(tagRepository.getByTagId(TagIdCodec.toDomain(2L))).thenReturn(targetTag);
         when(categoryRepository.getByCategoryId(TagCategoryIdCodec.toDomain(11L)))
-                .thenReturn(new TagCategory(
-                        TagCategoryIdCodec.toDomain(11L), TagCategoryIdCodec.toDomain(11L), "源分类", null, 1, null));
+                .thenReturn(new TagCategory(TagCategoryIdCodec.toDomain(11L), "源分类", null, 1, null));
         when(categoryRepository.getByCategoryId(TagCategoryIdCodec.toDomain(12L)))
-                .thenReturn(new TagCategory(
-                        TagCategoryIdCodec.toDomain(12L), TagCategoryIdCodec.toDomain(12L), "目标分类", null, 1, null));
+                .thenReturn(new TagCategory(TagCategoryIdCodec.toDomain(12L), "目标分类", null, 1, null));
         when(aliasRepository.listByTagId(TagIdCodec.toDomain(1L)))
-                .thenReturn(List.of(new TagAlias(
-                        TagAliasIdCodec.toDomain(21L),
-                        TagAliasIdCodec.toDomain(21L),
-                        TagIdCodec.toDomain(1L),
-                        "别名一",
-                        TagSource.MANUAL)));
+                .thenReturn(List.of(
+                        new TagAlias(TagAliasIdCodec.toDomain(21L), TagIdCodec.toDomain(1L), "别名一", TagSource.MANUAL)));
         when(contentRefRepository.listByTagId(TagIdCodec.toDomain(1L)))
                 .thenReturn(List.of(new TagContentRef(
-                        TagContentRefIdCodec.toDomain(31L),
                         TagContentRefIdCodec.toDomain(31L),
                         TagIdCodec.toDomain(1L),
                         ContentType.SANCAI_ENTRY,
@@ -287,18 +277,12 @@ class TaxonomyApplicationServiceImplTest {
         when(tagRepository.listByTagIds(List.of(TagIdCodec.toDomain(1L), TagIdCodec.toDomain(3L))))
                 .thenReturn(List.of(sourceTag, secondSourceTag));
         when(categoryRepository.getByCategoryId(TagCategoryIdCodec.toDomain(11L)))
-                .thenReturn(new TagCategory(
-                        TagCategoryIdCodec.toDomain(11L), TagCategoryIdCodec.toDomain(11L), "源分类", null, 1, null));
+                .thenReturn(new TagCategory(TagCategoryIdCodec.toDomain(11L), "源分类", null, 1, null));
         when(categoryRepository.getByCategoryId(TagCategoryIdCodec.toDomain(12L)))
-                .thenReturn(new TagCategory(
-                        TagCategoryIdCodec.toDomain(12L), TagCategoryIdCodec.toDomain(12L), "目标分类", null, 1, null));
+                .thenReturn(new TagCategory(TagCategoryIdCodec.toDomain(12L), "目标分类", null, 1, null));
         when(aliasRepository.listByTagId(TagIdCodec.toDomain(1L)))
-                .thenReturn(List.of(new TagAlias(
-                        TagAliasIdCodec.toDomain(21L),
-                        TagAliasIdCodec.toDomain(21L),
-                        TagIdCodec.toDomain(1L),
-                        "别名一",
-                        TagSource.MANUAL)));
+                .thenReturn(List.of(
+                        new TagAlias(TagAliasIdCodec.toDomain(21L), TagIdCodec.toDomain(1L), "别名一", TagSource.MANUAL)));
         when(aliasRepository.listByTagId(TagIdCodec.toDomain(3L))).thenReturn(List.of());
         when(contentRefRepository.listByTagId(TagIdCodec.toDomain(1L)))
                 .thenReturn(
@@ -429,13 +413,8 @@ class TaxonomyApplicationServiceImplTest {
                 TagStatus.ENABLED,
                 TagReviewStatus.PENDING);
         when(categoryRepository.getByCategoryId(TagCategoryIdCodec.toDomain(12L)))
-                .thenReturn(new TagCategory(
-                        TagCategoryIdCodec.toDomain(12L),
-                        TagCategoryIdCodec.toDomain(12L),
-                        "正式分类",
-                        null,
-                        1,
-                        TagCategoryStatus.ENABLED));
+                .thenReturn(
+                        new TagCategory(TagCategoryIdCodec.toDomain(12L), "正式分类", null, 1, TagCategoryStatus.ENABLED));
         when(tagRepository.listByTagIds(List.of(TagIdCodec.toDomain(1L), TagIdCodec.toDomain(3L))))
                 .thenReturn(List.of(firstPending, secondPending));
         when(tagRepository.updateReviewStatus(any(Tag.class))).thenReturn(1);
@@ -483,13 +462,8 @@ class TaxonomyApplicationServiceImplTest {
                 TagStatus.ENABLED,
                 TagReviewStatus.APPROVED);
         when(categoryRepository.getByCategoryId(TagCategoryIdCodec.toDomain(12L)))
-                .thenReturn(new TagCategory(
-                        TagCategoryIdCodec.toDomain(12L),
-                        TagCategoryIdCodec.toDomain(12L),
-                        "正式分类",
-                        null,
-                        1,
-                        TagCategoryStatus.ENABLED));
+                .thenReturn(
+                        new TagCategory(TagCategoryIdCodec.toDomain(12L), "正式分类", null, 1, TagCategoryStatus.ENABLED));
         when(tagRepository.listByTagIds(List.of(TagIdCodec.toDomain(1L), TagIdCodec.toDomain(3L))))
                 .thenReturn(List.of(firstPending, approved));
 
@@ -519,15 +493,9 @@ class TaxonomyApplicationServiceImplTest {
                 mock(SynonymRepository.class),
                 mock(KnowledgeTagBindingDomainService.class),
                 mock(TagGovernanceMetricsRepository.class));
-        TagCategory category = new TagCategory(
-                TagCategoryIdCodec.toDomain(11L),
-                TagCategoryIdCodec.toDomain(11L),
-                "制度",
-                null,
-                1,
-                TagCategoryStatus.ENABLED);
+        TagCategory category =
+                new TagCategory(TagCategoryIdCodec.toDomain(11L), "制度", null, 1, TagCategoryStatus.ENABLED);
         Tag tag = new Tag(
-                TagIdCodec.toDomain(21L),
                 TagIdCodec.toDomain(21L),
                 "礼制",
                 TagCategoryIdCodec.toDomain(11L),
@@ -545,12 +513,8 @@ class TaxonomyApplicationServiceImplTest {
         when(tagRepository.page(null, null, TagStatus.ENABLED, null, null, 1, 200))
                 .thenReturn(PageResult.of(1, 200, 1, List.of(tag)));
         when(aliasRepository.listByTagId(TagIdCodec.toDomain(21L)))
-                .thenReturn(List.of(new TagAlias(
-                        TagAliasIdCodec.toDomain(31L),
-                        TagAliasIdCodec.toDomain(31L),
-                        TagIdCodec.toDomain(21L),
-                        "礼法",
-                        TagSource.MANUAL)));
+                .thenReturn(List.of(
+                        new TagAlias(TagAliasIdCodec.toDomain(31L), TagIdCodec.toDomain(21L), "礼法", TagSource.MANUAL)));
         when(aiFacade.extractKnowledgeTags(any()))
                 .thenReturn(KnowledgeAiExtractionFacadeResponse.builder()
                         .callId(501L)
@@ -632,7 +596,7 @@ class TaxonomyApplicationServiceImplTest {
                 .status("PENDING")
                 .build();
         Tag existing = new Tag();
-        existing.setTagId(TagIdCodec.toDomain(21L));
+        existing.setId(TagIdCodec.toDomain(21L));
         existing.setName("礼制");
         when(aiFacade.getCandidate(any())).thenReturn(candidate);
         when(aiFacade.requirePendingCandidate(any())).thenReturn(candidate);
@@ -671,11 +635,10 @@ class TaxonomyApplicationServiceImplTest {
 
     private static Tag tag(
             TagId tagId, String name, TagCategoryId categoryId, TagStatus status, TagReviewStatus reviewStatus) {
-        return new Tag(
-                tagId, tagId, name, categoryId, name + "描述", status, TagSource.MANUAL, reviewStatus, null, null, null);
+        return new Tag(tagId, name, categoryId, name + "描述", status, TagSource.MANUAL, reviewStatus, null, null, null);
     }
 
     private static TagContentRef contentRef(TagContentRefId id, TagId tagId, Long contentId, String title) {
-        return new TagContentRef(id, id, tagId, ContentType.SANCAI_ENTRY, contentId, title, TagSource.AI_EXTRACTED);
+        return new TagContentRef(id, tagId, ContentType.SANCAI_ENTRY, contentId, title, TagSource.AI_EXTRACTED);
     }
 }

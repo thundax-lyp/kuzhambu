@@ -25,9 +25,9 @@ public final class TaxonomyApplicationAssembler {
         }
 
         return new TagCategoryResult(
-                category.getCategoryId() == null
+                category.getId() == null
                         ? null
-                        : String.valueOf(category.getCategoryId().value()),
+                        : String.valueOf(category.getId().value()),
                 category.getName(),
                 category.getDescription(),
                 category.getPriority(),
@@ -40,7 +40,7 @@ public final class TaxonomyApplicationAssembler {
         }
 
         return new TagResult(
-                tag.getTagId() == null ? null : String.valueOf(tag.getTagId().value()),
+                tag.getId() == null ? null : String.valueOf(tag.getId().value()),
                 tag.getName(),
                 categoryId,
                 categoryName,
@@ -81,9 +81,7 @@ public final class TaxonomyApplicationAssembler {
         }
 
         return new TagAliasResult(
-                alias.getAliasId() == null
-                        ? null
-                        : String.valueOf(alias.getAliasId().value()),
+                alias.getId() == null ? null : String.valueOf(alias.getId().value()),
                 alias.getName(),
                 alias.getSource() == null ? null : alias.getSource().value());
     }
@@ -103,7 +101,7 @@ public final class TaxonomyApplicationAssembler {
         }
 
         return new TagContentRefResult(
-                ref.getRefId() == null ? null : String.valueOf(ref.getRefId().value()),
+                ref.getId() == null ? null : String.valueOf(ref.getId().value()),
                 ref.getContentType() == null ? null : ref.getContentType().value(),
                 ref.getContentId() == null ? null : String.valueOf(ref.getContentId()),
                 ref.getContentTitle(),

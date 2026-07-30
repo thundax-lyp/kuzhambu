@@ -128,7 +128,7 @@ class KnowledgeFacadeImplTest {
         KnowledgeTagBindingDomainService knowledgeTagBindingDomainService =
                 mock(KnowledgeTagBindingDomainService.class);
         Tag tag = new Tag();
-        tag.setTagId(TagIdCodec.toDomain(9L));
+        tag.setId(TagIdCodec.toDomain(9L));
         tag.setName("礼制");
         when(knowledgeTagBindingDomainService.resolveOrCreateManualTag("礼制")).thenReturn(tag);
         when(knowledgeTagBindingDomainService.resolveOrCreateAiTag("礼制")).thenReturn(tag);

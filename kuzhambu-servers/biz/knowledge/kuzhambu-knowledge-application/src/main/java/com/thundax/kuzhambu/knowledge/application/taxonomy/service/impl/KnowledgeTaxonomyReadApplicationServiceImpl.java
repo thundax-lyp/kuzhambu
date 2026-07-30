@@ -103,9 +103,9 @@ public class KnowledgeTaxonomyReadApplicationServiceImpl implements KnowledgeTax
         }
 
         Tag directTag = tagRepository.getByName(normalizedTerm);
-        if (directTag != null && directTag.getTagId() != null) {
+        if (directTag != null && directTag.getId() != null) {
             return new DiscoveryTagHintResult(term, normalizedTerm, directTag.getName(), null, (long)
-                    tagContentRefRepository.countByTagId(directTag.getTagId()));
+                    tagContentRefRepository.countByTagId(directTag.getId()));
         }
 
         TagAlias alias = tagAliasRepository.getByName(normalizedTerm);
@@ -113,9 +113,9 @@ public class KnowledgeTaxonomyReadApplicationServiceImpl implements KnowledgeTax
             return new DiscoveryTagHintResult(term, normalizedTerm, null, null, 0L);
         }
         Tag targetTag = tagRepository.getByTagId(alias.getTagId());
-        Long contentRefCount = targetTag == null || targetTag.getTagId() == null
+        Long contentRefCount = targetTag == null || targetTag.getId() == null
                 ? 0L
-                : (long) tagContentRefRepository.countByTagId(targetTag.getTagId());
+                : (long) tagContentRefRepository.countByTagId(targetTag.getId());
         return new DiscoveryTagHintResult(
                 term, normalizedTerm, targetTag == null ? null : targetTag.getName(), alias.getName(), contentRefCount);
     }

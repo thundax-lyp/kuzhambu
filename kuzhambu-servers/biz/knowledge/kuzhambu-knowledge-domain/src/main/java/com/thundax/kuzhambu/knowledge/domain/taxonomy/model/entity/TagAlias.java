@@ -14,7 +14,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TagAlias {
     private TagAliasId id;
-    private TagAliasId aliasId;
     private TagId tagId;
     private String name;
     private TagSource source;

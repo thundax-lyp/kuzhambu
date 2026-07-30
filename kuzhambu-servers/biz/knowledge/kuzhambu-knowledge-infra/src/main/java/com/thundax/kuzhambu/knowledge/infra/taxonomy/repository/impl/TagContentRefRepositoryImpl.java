@@ -55,7 +55,7 @@ public class TagContentRefRepositoryImpl implements TagContentRefRepository {
         wrapper.eq("tag_id", TagIdCodec.toValue(tagId))
                 .eq("content_type", contentType.value())
                 .eq("content_id", contentId)
-                .ne(excludedId != null, "id", TagContentRefIdCodec.toValue(excludedId));
+                .ne(excludedId != null, "ref_id", TagContentRefIdCodec.toValue(excludedId));
         return mapper.selectCount(wrapper).intValue();
     }
 
@@ -65,13 +65,18 @@ public class TagContentRefRepositoryImpl implements TagContentRefRepository {
         if (dataObject.getId() == null) {
             dataObject.setId(idGenerator.nextId().value());
         }
+        if (dataObject.getRefId() == null) {
+            dataObject.setRefId(idGenerator.nextId().value());
+        }
         mapper.insert(dataObject);
         return TagContentRefIdCodec.toDomain(dataObject.getRefId());
     }
 
     @Override
     public int deleteById(TagContentRefId id) {
-        return mapper.deleteById(TagContentRefIdCodec.toValue(id));
+        QueryWrapper<TagContentRefDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("ref_id", TagContentRefIdCodec.toValue(id));
+        return mapper.delete(wrapper);
     }
 
     @Override

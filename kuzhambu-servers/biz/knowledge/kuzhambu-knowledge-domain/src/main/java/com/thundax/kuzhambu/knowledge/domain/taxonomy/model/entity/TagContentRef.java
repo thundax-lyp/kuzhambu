@@ -15,7 +15,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TagContentRef {
     private TagContentRefId id;
-    private TagContentRefId refId;
     private TagId tagId;
     private ContentType contentType;
     private Long contentId;
