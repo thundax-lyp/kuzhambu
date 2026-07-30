@@ -172,14 +172,14 @@
   - 单列表页面分页请求状态固定命名为 `query` / `setQuery`，类型为 `XxxQuery`。
   - 筛选面板临时 UI 状态固定命名为 `filters` / `setFilters`，类型为 `XxxFilters`。
   - 搜索框文本固定命名为 `searchText` / `setSearchText`；活跃筛选派生值固定命名为 `hasActiveFilters`。
-  - 同页多个独立列表必须加领域前缀，例如 `tagQuery`、`synonymQuery`。
+  - 同页多个独立列表必须加领域前缀，例如 `tagQuery`、`reviewQuery`。
 - TanStack Query 命名：
   - `useQuery` 返回值固定使用 `<subject>Query`，其中 `<subject>` 表达数据对象，例如 `userPageQuery`、`roleOptionsQuery`、`detailQuery`、`currentUserQuery`。
-  - 同页多列表必须写清领域对象，例如 `categoryPageQuery`、`tagPageQuery`、`synonymPageQuery`。
+  - 同页多列表必须写清领域对象，例如 `categoryPageQuery`、`tagPageQuery`、`reviewPageQuery`。
   - 从分页 query 解出的数据固定优先使用 `pageResult`、`records`、`totalCount`、`currentPageNo`、`currentPageSize`；同页多列表时使用领域名，例如 `tagPage`、`tags`。
 - Mutation 命名：
   - `useMutation` 返回值固定使用 `<action>Mutation`，例如 `createMutation`、`updateMutation`、`deleteMutation`、`statusMutation`、`sortMutation`。
-  - 同页多个领域对象时必须加领域前缀，例如 `createTagMutation`、`updateCategoryMutation`、`deleteSynonymMutation`。
+  - 同页多个领域对象时必须加领域前缀，例如 `createTagMutation`、`updateCategoryMutation`、`deleteAliasMutation`。
 - 编辑、详情和选择对象命名：
   - 正在编辑的领域对象固定命名为 `editing<Xxx>`，例如 `editingUser`、`editingRole`。
   - 当前激活上下文使用 `active<Xxx>`；当前登录用户使用 `currentUser`；用户主动选择但未进入编辑态的对象使用 `selected<Xxx>`。
