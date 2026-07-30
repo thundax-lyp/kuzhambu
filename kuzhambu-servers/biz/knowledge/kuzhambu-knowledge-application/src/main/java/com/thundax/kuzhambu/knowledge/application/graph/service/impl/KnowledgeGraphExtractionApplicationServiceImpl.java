@@ -648,7 +648,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 forceJson,
                 locale);
         GraphExtractionTaskId parentId = repository.save(parentTask);
-        parentTask.setTaskId(parentId);
+        parentTask.setId(parentId);
         for (ExtractionTarget target : targets) {
             validateTarget(sourceContentType, target.sourceContentId());
             GraphExtractionTask childTask = buildTask(
@@ -664,7 +664,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                     target.sourceContentId(),
                     requestedBy);
             GraphExtractionTaskId childId = repository.save(childTask);
-            childTask.setTaskId(childId);
+            childTask.setId(childId);
             if (!aiFacade.canDispatchNextBatchUnit(batchJobId)) {
                 childTask.setStatus(STATUS_CANCELLED);
                 childTask.setCompletedAt(new Date());
@@ -789,9 +789,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                         requestedBy)
                 : preparedTask;
         fillRequestSnapshot(task, aiRequest);
-        if (task.getTaskId() == null) {
+        if (task.getId() == null) {
             GraphExtractionTaskId taskId = repository.save(task);
-            task.setTaskId(taskId);
+            task.setId(taskId);
         }
         try {
             KnowledgeAiExtractionFacadeResponse result = operation.invoke(aiRequest);
@@ -950,9 +950,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             return null;
         }
         return new GraphExtractionTaskResult(
-                task.getTaskId() == null
-                        ? null
-                        : String.valueOf(task.getTaskId().value()),
+                task.getId() == null ? null : String.valueOf(task.getId().value()),
                 task.getBatchJobId(),
                 task.getTaskType(),
                 task.getScopeType(),
@@ -1044,9 +1042,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         }
         RefinementTask lastAppliedRefinement = refinementTaskRepository == null
                 ? null
-                : refinementTaskRepository.findLatestAppliedByGraphVersionId(version.getVersionId());
+                : refinementTaskRepository.findLatestAppliedByGraphVersionId(version.getId());
         return new GraphVersionResult(
-                version.getVersionId(),
+                version.getId(),
                 version.getTaskId() == null
                         ? null
                         : String.valueOf(version.getTaskId().value()),
@@ -1071,7 +1069,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             return null;
         }
         return new KnowledgeEntityResult(
-                entity.getEntityId(),
+                entity.getId(),
                 entity.getEntityKey(),
                 entity.getName(),
                 entity.getEntityType(),
@@ -1089,7 +1087,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             return null;
         }
         return new KnowledgeRelationResult(
-                relation.getRelationId(),
+                relation.getId(),
                 relation.getRelationKey(),
                 relation.getSourceName(),
                 relation.getTargetName(),
@@ -1108,7 +1106,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             return null;
         }
         return new KnowledgeLineageNodeResult(
-                node.getNodeId(),
+                node.getId(),
                 node.getNodeKey(),
                 node.getName(),
                 node.getNodeType(),
@@ -1127,7 +1125,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             return null;
         }
         return new KnowledgeLineageRelationResult(
-                relation.getRelationId(),
+                relation.getId(),
                 relation.getRelationKey(),
                 relation.getSourceName(),
                 relation.getTargetName(),

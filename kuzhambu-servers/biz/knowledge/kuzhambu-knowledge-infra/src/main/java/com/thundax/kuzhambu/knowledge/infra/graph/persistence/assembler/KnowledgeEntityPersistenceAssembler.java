@@ -14,7 +14,6 @@ public final class KnowledgeEntityPersistenceAssembler {
         }
         KnowledgeEntityDO dataObject = new KnowledgeEntityDO();
         dataObject.setId(entity.getId());
-        dataObject.setEntityId(entity.getEntityId());
         dataObject.setEntityKey(entity.getEntityKey());
         dataObject.setName(entity.getName());
         dataObject.setEntityType(entity.getEntityType());
@@ -34,7 +33,6 @@ public final class KnowledgeEntityPersistenceAssembler {
         }
         KnowledgeEntity entity = new KnowledgeEntity();
         entity.setId(dataObject.getId());
-        entity.setEntityId(dataObject.getEntityId());
         entity.setEntityKey(dataObject.getEntityKey());
         entity.setName(dataObject.getName());
         entity.setEntityType(dataObject.getEntityType());

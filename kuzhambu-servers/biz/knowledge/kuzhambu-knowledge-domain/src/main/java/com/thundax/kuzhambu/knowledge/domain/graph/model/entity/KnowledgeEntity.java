@@ -12,7 +12,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class KnowledgeEntity {
     private Long id;
-    private Long entityId;
     private String entityKey;
     private String name;
     private String entityType;

@@ -46,7 +46,7 @@ class GraphVersionRepositoryTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    void getByVersionIdShouldQueryBusinessKey() {
+    void getByVersionIdShouldQueryPrimaryKey() {
         GraphVersionMapper mapper = mock(GraphVersionMapper.class);
         when(mapper.selectOne(any())).thenReturn(new GraphVersionDO());
         GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
@@ -55,7 +55,7 @@ class GraphVersionRepositoryTest {
 
         ArgumentCaptor<QueryWrapper<GraphVersionDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectOne(captor.capture());
-        assertTrue(captor.getValue().getSqlSegment().contains("version_id"));
+        assertTrue(captor.getValue().getSqlSegment().contains("id"));
     }
 
     @Test

@@ -12,7 +12,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class KnowledgeRelation {
     private Long id;
-    private Long relationId;
     private String relationKey;
     private String sourceEntityKey;
     private String targetEntityKey;

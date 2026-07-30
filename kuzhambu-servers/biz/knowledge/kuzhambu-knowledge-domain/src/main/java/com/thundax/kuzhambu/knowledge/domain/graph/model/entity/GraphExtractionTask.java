@@ -13,7 +13,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class GraphExtractionTask {
     private GraphExtractionTaskId id;
-    private GraphExtractionTaskId taskId;
     private Long batchJobId;
     private String taskType;
     private String scopeType;

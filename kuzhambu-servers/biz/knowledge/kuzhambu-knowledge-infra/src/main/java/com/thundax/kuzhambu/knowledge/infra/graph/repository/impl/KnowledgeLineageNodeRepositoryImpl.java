@@ -43,7 +43,7 @@ public class KnowledgeLineageNodeRepositoryImpl implements KnowledgeLineageNodeR
     @Override
     public KnowledgeLineageNode getByNodeId(Long nodeId) {
         QueryWrapper<KnowledgeLineageNodeDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("node_id", nodeId);
+        wrapper.eq("id", nodeId);
         return KnowledgeLineageNodePersistenceAssembler.toDomain(mapper.selectOne(wrapper));
     }
 
@@ -71,9 +71,6 @@ public class KnowledgeLineageNodeRepositoryImpl implements KnowledgeLineageNodeR
             KnowledgeLineageNodeDO dataObject = KnowledgeLineageNodePersistenceAssembler.toObject(node);
             if (dataObject.getId() == null) {
                 dataObject.setId(idGenerator.nextId().value());
-            }
-            if (dataObject.getNodeId() == null) {
-                dataObject.setNodeId(dataObject.getId());
             }
             int updated = mapper.update(
                     null,

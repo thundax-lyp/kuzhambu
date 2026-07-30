@@ -43,7 +43,7 @@ public class KnowledgeLineageRelationRepositoryImpl implements KnowledgeLineageR
     @Override
     public KnowledgeLineageRelation getByRelationId(Long relationId) {
         QueryWrapper<KnowledgeLineageRelationDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("relation_id", relationId);
+        wrapper.eq("id", relationId);
         return KnowledgeLineageRelationPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
     }
 
@@ -73,9 +73,6 @@ public class KnowledgeLineageRelationRepositoryImpl implements KnowledgeLineageR
             KnowledgeLineageRelationDO dataObject = KnowledgeLineageRelationPersistenceAssembler.toObject(relation);
             if (dataObject.getId() == null) {
                 dataObject.setId(idGenerator.nextId().value());
-            }
-            if (dataObject.getRelationId() == null) {
-                dataObject.setRelationId(dataObject.getId());
             }
             int updated = mapper.update(
                     null,

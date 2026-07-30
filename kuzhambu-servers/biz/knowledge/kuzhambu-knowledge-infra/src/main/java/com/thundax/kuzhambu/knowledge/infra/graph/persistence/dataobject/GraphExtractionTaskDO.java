@@ -17,7 +17,6 @@ public class GraphExtractionTaskDO {
     @TableId(type = IdType.INPUT)
     private Long id;
 
-    private Long taskId;
     private Long batchJobId;
     private String taskType;
     private String scopeType;

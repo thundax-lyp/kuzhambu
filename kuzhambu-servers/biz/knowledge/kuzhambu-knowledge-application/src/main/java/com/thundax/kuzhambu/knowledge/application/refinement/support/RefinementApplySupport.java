@@ -106,7 +106,6 @@ public class RefinementApplySupport {
     private KnowledgeEntity toEntity(Long versionId, RefinementEntityDraft draft) {
         Date now = new Date();
         return new KnowledgeEntity(
-                null,
                 draft.getEntityId(),
                 draft.getEntityKey(),
                 draft.getName(),
@@ -123,7 +122,6 @@ public class RefinementApplySupport {
     private KnowledgeRelation toRelation(Long versionId, RefinementRelationDraft draft) {
         Date now = new Date();
         return new KnowledgeRelation(
-                null,
                 draft.getRelationId(),
                 draft.getRelationKey(),
                 draft.getSourceEntityKey(),
@@ -143,7 +141,6 @@ public class RefinementApplySupport {
     private KnowledgeLineageNode toLineageNode(Long versionId, RefinementLineageNodeDraft draft) {
         Date now = new Date();
         return new KnowledgeLineageNode(
-                null,
                 draft.getNodeId(),
                 draft.getNodeKey(),
                 draft.getName(),
@@ -161,7 +158,6 @@ public class RefinementApplySupport {
     private KnowledgeLineageRelation toLineageRelation(Long versionId, RefinementLineageRelationDraft draft) {
         Date now = new Date();
         return new KnowledgeLineageRelation(
-                null,
                 draft.getRelationId(),
                 draft.getRelationKey(),
                 draft.getSourceNodeKey(),

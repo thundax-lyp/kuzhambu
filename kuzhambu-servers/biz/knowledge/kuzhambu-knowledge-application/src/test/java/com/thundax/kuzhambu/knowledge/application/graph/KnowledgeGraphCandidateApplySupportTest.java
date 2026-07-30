@@ -38,7 +38,7 @@ class KnowledgeGraphCandidateApplySupportTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository());
         GraphExtractionTask task = new GraphExtractionTask();
-        task.setTaskId(GraphExtractionTaskIdCodec.toDomain(11L));
+        task.setId(GraphExtractionTaskIdCodec.toDomain(11L));
         task.setTaskType("GRAPH");
         task.setScopeType("ENTRY");
         task.setScopeJson("{\"entryIds\":[1]}");
@@ -54,7 +54,7 @@ class KnowledgeGraphCandidateApplySupportTest {
 
         GraphVersion version = support.apply(task, candidate);
 
-        assertNotNull(version.getVersionId());
+        assertNotNull(version.getId());
         assertEquals(1, version.getVersionNo());
         assertEquals(1, entityRepository.saved.size());
         assertEquals("person:黄帝", entityRepository.saved.get(0).getEntityKey());
@@ -83,7 +83,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         @Override
         public GraphVersion getByVersionId(Long versionId) {
             return versions.stream()
-                    .filter(version -> versionId.equals(version.getVersionId()))
+                    .filter(version -> versionId.equals(version.getId()))
                     .findFirst()
                     .orElse(null);
         }
@@ -102,7 +102,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         @Override
         public Long save(GraphVersion entity) {
             long versionId = versions.size() + 1L;
-            entity.setVersionId(versionId);
+            entity.setId(versionId);
             versions.add(entity);
             return versionId;
         }
@@ -125,7 +125,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         @Override
         public KnowledgeEntity getByEntityId(Long entityId) {
             return store.values().stream()
-                    .filter(item -> entityId.equals(item.getEntityId()))
+                    .filter(item -> entityId.equals(item.getId()))
                     .findFirst()
                     .orElse(null);
         }
@@ -189,7 +189,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         @Override
         public KnowledgeRelation getByRelationId(Long relationId) {
             return store.values().stream()
-                    .filter(item -> relationId.equals(item.getRelationId()))
+                    .filter(item -> relationId.equals(item.getId()))
                     .findFirst()
                     .orElse(null);
         }

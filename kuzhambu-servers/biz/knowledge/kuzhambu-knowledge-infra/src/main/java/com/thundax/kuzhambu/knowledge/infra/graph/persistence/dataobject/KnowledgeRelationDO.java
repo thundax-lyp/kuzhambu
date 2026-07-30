@@ -17,7 +17,6 @@ public class KnowledgeRelationDO {
     @TableId(type = IdType.INPUT)
     private Long id;
 
-    private Long relationId;
     private String relationKey;
     private String sourceEntityKey;
     private String targetEntityKey;
