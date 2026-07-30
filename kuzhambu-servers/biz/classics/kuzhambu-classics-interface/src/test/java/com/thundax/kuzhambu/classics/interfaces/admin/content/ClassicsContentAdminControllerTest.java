@@ -43,6 +43,8 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -190,6 +192,35 @@ class ClassicsContentAdminControllerTest {
     }
 
     @Test
+    void aiCandidateApplyRequestShouldRejectUnknownTagApplyMode() {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        ClassicsContentRequest.AiCandidateApplyRequest request = validAiCandidateApplyRequest();
+
+        assertEquals(0, validator.validate(request).size());
+        request.setTagApplyMode("REPLACE");
+        assertEquals(1, validator.validate(request).size());
+
+        request.setTagApplyMode("APPEND");
+        assertEquals(0, validator.validate(request).size());
+        request.setTagApplyMode("COVER");
+        assertEquals(0, validator.validate(request).size());
+        request.setTagApplyMode(null);
+        assertEquals(0, validator.validate(request).size());
+    }
+
+    @Test
+    void aiCandidateBatchApplyRequestShouldValidateNestedTagApplyMode() {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        ClassicsContentRequest.AiCandidateBatchApplyRequest request =
+                new ClassicsContentRequest.AiCandidateBatchApplyRequest();
+        ClassicsContentRequest.AiCandidateApplyRequest item = validAiCandidateApplyRequest();
+        item.setTagApplyMode("REPLACE");
+        request.setItems(List.of(item));
+
+        assertEquals(1, validator.validate(request).size());
+    }
+
+    @Test
     void aiCandidateBatchApplyRequestShouldMapToServiceCommandAndReturnResponse() {
         ClassicsContentRequest.AiCandidateBatchApplyRequest request =
                 new ClassicsContentRequest.AiCandidateBatchApplyRequest();
@@ -281,6 +312,17 @@ class ClassicsContentAdminControllerTest {
         rejectRequest.setItems(List.of(rejectItem, rejectItem));
 
         assertThrows(RuntimeException.class, () -> controller.removeAiCandidates(rejectRequest));
+    }
+
+    private static ClassicsContentRequest.AiCandidateApplyRequest validAiCandidateApplyRequest() {
+        ClassicsContentRequest.AiCandidateApplyRequest request = new ClassicsContentRequest.AiCandidateApplyRequest();
+        request.setCandidateId(123L);
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentId(456L);
+        request.setCapability("tags");
+        request.setResultFormat("STRUCTURED");
+        request.setResultPayload("{\"tags\":[\"三才\"]}");
+        return request;
     }
 
     @Test

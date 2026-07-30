@@ -329,23 +329,17 @@ export const ClassicsContentTagAiPanel = ({
         }
     };
 
-    const addTag = async (tagName: string, source: string = "AI") => {
-        await contentService.addTag({
-            contentId,
-            contentType,
-            tagNameSnapshot: tagName,
-            source,
-            status: "ACTIVE"
-        });
-    };
-
     const deleteTag = async (tag: ClassicsContentTagRecord) => {
         if (tag.id) {
             await contentService.deleteTag({ id: tag.id });
         }
     };
 
-    const markCandidateApplied = async (candidate: AiCandidateRecord, appliedTags: string[]) => {
+    const markCandidateApplied = async (
+        candidate: AiCandidateRecord,
+        appliedTags: string[],
+        tagApplyMode?: "APPEND"
+    ) => {
         if (!appliedTags.length) {
             await aiCandidateService.reject({
                 candidateId: getCandidateStableId(candidate),
@@ -362,7 +356,8 @@ export const ClassicsContentTagAiPanel = ({
             objectId: candidate.objectId,
             resultFormat: candidate.resultFormat || "STRUCTURED",
             resultPayload: JSON.stringify({ tags: appliedTags }),
-            changeSummary: "AI 应用：标签"
+            changeSummary: "AI 应用：标签",
+            tagApplyMode
         });
     };
 
@@ -429,29 +424,11 @@ export const ClassicsContentTagAiPanel = ({
             const existingByName = new Map(
                 existingTags.map((tag) => [tagKey(normalizeTagName(tag.tagNameSnapshot)), tag])
             );
-            const existingNames = uniqueTagNames(existingTags.map((tag) => tag.tagNameSnapshot));
             const candidateTags = readCandidateTagsOrThrow(candidate);
             const candidateTagsToApply = candidateTags.filter(
                 (tagName) => !existingByName.has(tagKey(tagName))
             );
-            await markCandidateApplied(candidate, candidateTagsToApply);
-            const targetNames = uniqueTagNames([...existingNames, ...candidateTags]);
-            const refreshedTags = await contentService.listTags({ contentId, contentType });
-            const refreshedKeys = new Set(
-                refreshedTags
-                    .filter((tag) => (tag.status || "ACTIVE") !== "REMOVED")
-                    .map((tag) => tagKey(normalizeTagName(tag.tagNameSnapshot)))
-            );
-            await Promise.all(
-                targetNames
-                    .filter((tagName) => !refreshedKeys.has(tagKey(tagName)))
-                    .map((tagName) =>
-                        addTag(
-                            tagName,
-                            existingByName.get(tagKey(tagName))?.source === "AI" ? "AI" : "MANUAL"
-                        )
-                    )
-            );
+            await markCandidateApplied(candidate, candidateTagsToApply, "APPEND");
         },
         onSuccess: async () => {
             await refresh();

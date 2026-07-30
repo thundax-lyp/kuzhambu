@@ -93,8 +93,10 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -141,6 +143,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private static final String APPLIED_STATUS = "APPLIED";
     private static final String REJECTED_STATUS = "REJECTED";
+    private static final String TAG_APPLY_MODE_APPEND = "APPEND";
 
     @Autowired
     public ClassicsContentApplicationServiceImpl(
@@ -445,8 +448,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 touchContentUpdatedAt(ClassicsContentType.SANCAI_ENTRY, entry);
                 ensureUpdate(repository.updateSancaiEntryAiFields(entry), "更新三才内容失败");
             } else if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
-                applySummaryTagsAndQaFromAiCandidate(
-                        contentType, entry, capability, command.getResultPayload(), "更新三才内容失败");
+                applySummaryTagsAndQaFromAiCandidate(contentType, entry, capability, command, "更新三才内容失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
@@ -462,8 +464,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 throw new BizException("王圻文档不存在: " + contentId.value());
             }
             if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
-                applySummaryTagsAndQaFromAiCandidate(
-                        contentType, document, capability, command.getResultPayload(), "更新王圻文档失败");
+                applySummaryTagsAndQaFromAiCandidate(contentType, document, capability, command, "更新王圻文档失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
@@ -474,8 +475,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 throw new BizException("明代习俗不存在: " + contentId.value());
             }
             if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
-                applySummaryTagsAndQaFromAiCandidate(
-                        contentType, entry, capability, command.getResultPayload(), "更新明代习俗失败");
+                applySummaryTagsAndQaFromAiCandidate(contentType, entry, capability, command, "更新明代习俗失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
@@ -838,8 +838,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             ClassicsContentType contentType,
             Versionable content,
             String capability,
-            String resultPayload,
+            AiCandidateApplyContentCommand command,
             String updateFailureMessage) {
+        String resultPayload = command == null ? null : command.getResultPayload();
         String summary = resolveSummaryIfPresent(resultPayload);
         List<String> tags = aiCandidatePayloadParser.parseTagsIfPresent(resultPayload);
         List<AiCandidateQaPairPayload> qaPairs = aiCandidatePayloadParser.parseQaPairsIfPresent(resultPayload);
@@ -862,7 +863,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (tags == null || tags.isEmpty()) {
                 throw new BizException("AI候选标签为空");
             }
-            applyTags(contentType, content, tags);
+            applyTags(contentType, content, tags, shouldAppendAiTags(command));
         } else if ("qa".equals(capability)) {
             if (qaPairs == null || qaPairs.isEmpty()) {
                 throw new BizException("AI候选问答为空");
@@ -870,7 +871,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             applyQaPairs(contentType, content, qaPairs);
         } else {
             if (!tags.isEmpty()) {
-                applyTags(contentType, content, tags);
+                applyTags(contentType, content, tags, shouldAppendAiTags(command));
             }
             if (!qaPairs.isEmpty()) {
                 applyQaPairs(contentType, content, qaPairs);
@@ -885,6 +886,10 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         } else if (content instanceof MingCustomsEntry entry) {
             ensureUpdate(repository.updateMingCustomsEntryAiFields(entry), updateFailureMessage);
         }
+    }
+
+    private boolean shouldAppendAiTags(AiCandidateApplyContentCommand command) {
+        return command != null && TAG_APPLY_MODE_APPEND.equalsIgnoreCase(command.getTagApplyMode());
     }
 
     private String resolveSummaryIfPresent(String resultPayload) {
@@ -927,7 +932,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         };
     }
 
-    private void applyTags(ClassicsContentType contentType, Versionable content, List<String> tags) {
+    private void applyTags(
+            ClassicsContentType contentType, Versionable content, List<String> tags, boolean appendMode) {
         ClassicsContentId contentId = content == null ? null : content.contentId();
         if (contentId == null) {
             throw new BizException("标签应用目标内容不存在");
@@ -935,14 +941,31 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (tags == null || tags.isEmpty()) {
             throw new BizException("AI候选标签为空");
         }
-        if (tagBindingSupport != null) {
-            repository.listTags(contentType.value(), contentId, SortDirection.ASC).stream()
-                    .filter(tag -> tag != null && tag.getSource() == ClassicsContentSource.AI)
-                    .forEach(tagBindingSupport::removeTagRef);
+        Set<String> existingTagNames = new HashSet<>();
+        List<ClassicsContentTag> currentTags = repository.listTags(contentType.value(), contentId, SortDirection.ASC);
+        if (appendMode) {
+            currentTags.stream()
+                    .filter(Objects::nonNull)
+                    .filter(tag -> tag.getStatus() == null || tag.getStatus() == ClassicsContentTagStatus.ACTIVE)
+                    .map(ClassicsContentTag::getTagNameSnapshot)
+                    .filter(StringUtils::isNotBlank)
+                    .map(String::trim)
+                    .map(String::toLowerCase)
+                    .forEach(existingTagNames::add);
+        } else {
+            if (tagBindingSupport != null) {
+                currentTags.stream()
+                        .filter(tag -> tag != null && tag.getSource() == ClassicsContentSource.AI)
+                        .forEach(tagBindingSupport::removeTagRef);
+            }
+            repository.deleteAiTags(contentType.value(), contentId);
         }
-        repository.deleteAiTags(contentType.value(), contentId);
         for (String tagName : tags) {
             if (StringUtils.isBlank(tagName)) {
+                continue;
+            }
+            String normalizedTagName = tagName.trim();
+            if (appendMode && !existingTagNames.add(normalizedTagName.toLowerCase())) {
                 continue;
             }
             insertTagWithoutVersion(new ContentTagCommand(
@@ -950,7 +973,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     contentType,
                     contentId.value(),
                     null,
-                    tagName.trim(),
+                    normalizedTagName,
                     ClassicsContentSource.AI,
                     ClassicsContentTagStatus.ACTIVE));
         }

@@ -157,7 +157,8 @@ public final class ClassicsContentInterfaceAssembler {
                 request.getCapability(),
                 request.getResultFormat(),
                 request.getResultPayload(),
-                request.getChangeSummary());
+                request.getChangeSummary(),
+                request.getTagApplyMode());
     }
 
     public static ClassicsContentResponse.AiCandidateApplyResponse toAiCandidateApplyResponse(
