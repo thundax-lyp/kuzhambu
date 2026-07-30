@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -28,8 +28,8 @@ class DiscoverySearchDocumentAssemblerTest {
                 "PUBLISHED",
                 "PUBLIC",
                 3,
-                new Date(1_718_000_000_000L),
-                new Date(1_718_100_000_000L));
+                Instant.ofEpochMilli(1_718_000_000_000L),
+                Instant.ofEpochMilli(1_718_100_000_000L));
 
         DiscoverySearchDocument document = assembler.toDocument(sourceContent);
 

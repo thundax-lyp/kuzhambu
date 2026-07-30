@@ -15,6 +15,8 @@ class SearchEventPersistenceAssemblerTest {
 
     @Test
     void toObjectAndToDomainShouldKeepSearchLatencyMs() {
+        Instant dateFrom = Instant.ofEpochMilli(1_718_000_000_000L);
+        Instant dateTo = Instant.ofEpochMilli(1_720_419_200_000L);
         SearchEvent entity = new SearchEvent(
                 1L,
                 "1",
@@ -29,8 +31,8 @@ class SearchEventPersistenceAssemblerTest {
                         List.of(),
                         List.of(),
                         List.of(),
-                        null,
-                        null),
+                        dateFrom,
+                        dateTo),
                 2,
                 1,
                 123L,
@@ -50,6 +52,8 @@ class SearchEventPersistenceAssemblerTest {
         assertEquals(123L, restored.getSearchLatencyMs());
         assertEquals(SearchIntentType.KEYWORD_SEARCH, restored.getIntentType());
         assertEquals(List.of("SANCAI_ENTRY"), restored.getSearchScope().getKnowledgeBases());
+        assertEquals(dateFrom, restored.getSearchScope().getDateFrom());
+        assertEquals(dateTo, restored.getSearchScope().getDateTo());
     }
 
     @Test

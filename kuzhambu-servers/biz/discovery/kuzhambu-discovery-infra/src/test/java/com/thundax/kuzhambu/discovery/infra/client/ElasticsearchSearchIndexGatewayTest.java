@@ -17,7 +17,6 @@ import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScop
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -192,8 +191,8 @@ class ElasticsearchSearchIndexGatewayTest {
                         List.of("PUBLISHED"),
                         List.of("PUBLIC"),
                         List.of(),
-                        new Date(1_718_000_000_000L),
-                        new Date(1_720_419_200_000L)),
+                        Instant.ofEpochMilli(1_718_000_000_000L),
+                        Instant.ofEpochMilli(1_720_419_200_000L)),
                 1,
                 20);
 
@@ -426,7 +425,7 @@ class ElasticsearchSearchIndexGatewayTest {
         ElasticsearchSearchIndexGateway gateway =
                 new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
 
-        gateway.markDocumentDeleted("SANCAI_ENTRY", "1001", 4, new Date());
+        gateway.markDocumentDeleted("SANCAI_ENTRY", "1001", 4, Instant.now());
 
         verify(operations, never()).save(any(DiscoverySearchDocument.class), any());
     }
