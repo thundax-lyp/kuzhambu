@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.search.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -27,6 +28,8 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchStatisticsSummaryRequest;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
@@ -244,6 +247,33 @@ class DiscoverySearchStatisticsControllerTest {
 
         verify(service).recordClick(any());
         assertEquals(Boolean.TRUE, result);
+    }
+
+    @Test
+    void clickRequestShouldRejectNonnumericSearchEventId() {
+        DiscoverySearchClickEventRequest request = new DiscoverySearchClickEventRequest();
+        request.setSearchEventId("EVT-1001");
+        request.setContentDomain("CLASSICS");
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentId("1001");
+        request.setResultGroupKey("SANCAI_ENTRY");
+        request.setResultRank(1);
+        request.setGroupRank(1);
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+        assertFalse(validator.validate(request).isEmpty());
+    }
+
+    @Test
+    void getRequestShouldRejectNonPositiveSearchEventId() {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        DiscoverySearchEventGetRequest zeroRequest = new DiscoverySearchEventGetRequest();
+        zeroRequest.setId("0");
+        DiscoverySearchEventGetRequest negativeRequest = new DiscoverySearchEventGetRequest();
+        negativeRequest.setId("-1");
+
+        assertFalse(validator.validate(zeroRequest).isEmpty());
+        assertFalse(validator.validate(negativeRequest).isEmpty());
     }
 
     @Test

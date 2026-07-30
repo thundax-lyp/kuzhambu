@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.portal.search.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -19,6 +20,8 @@ import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickEventRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -242,6 +245,21 @@ class DiscoverySearchPortalControllerTest {
                         && "SANCAI_ENTRY".equals(command.getResultGroupKey())
                         && "/classics/sancai/1001".equals(command.getTargetPath())));
         assertTrue(result);
+    }
+
+    @Test
+    void clickRequestShouldRejectNonnumericSearchEventId() {
+        DiscoverySearchClickEventRequest request = new DiscoverySearchClickEventRequest();
+        request.setSearchEventId("EVT-1001");
+        request.setContentDomain("CLASSICS");
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentId("1001");
+        request.setResultGroupKey("SANCAI_ENTRY");
+        request.setResultRank(1);
+        request.setGroupRank(1);
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+        assertFalse(validator.validate(request).isEmpty());
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {
