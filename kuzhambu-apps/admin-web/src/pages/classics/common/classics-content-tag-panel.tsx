@@ -1,19 +1,19 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Empty, Form, Input } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import { App, Empty, Form } from "antd";
 import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+    KuzhambuButton,
+    KuzhambuCard,
     KuzhambuForm,
     KuzhambuFormItem,
-    KuzhambuModal,
+    KuzhambuSelect,
     KuzhambuSpace,
-    KuzhambuTable,
-    type KuzhambuTableSortPosition,
-    KuzhambuButton,
-    KuzhambuCard
+    KuzhambuTag
 } from "@/components";
 
 import * as contentService from "./classics-content-service";
+import * as taxonomyService from "@/pages/knowledge/taxonomy/taxonomy-service";
 import type { ClassicsContentTagRecord, ClassicsContentType } from "./classics-content-types";
 import { type ClassicsContentTagCommand } from "./classics-content-service";
 
@@ -27,26 +27,50 @@ interface ClassicsContentTagPanelProps {
 }
 
 interface TagEditorValues {
-    contentId: string;
-    contentType: ClassicsContentType;
-    id?: string | null;
-    tagId?: string | null;
-    tagNameSnapshot: string;
+    tagNames?: string[];
 }
 
 const getActiveTags = (tags: ClassicsContentTagRecord[] | unknown) =>
     (Array.isArray(tags) ? tags : []).filter((tag) => (tag.status || "ACTIVE") !== "REMOVED");
 
+const normalizeTagName = (value?: string | null) => value?.trim() || "";
+
+const uniqueTagNames = (values: Array<string | null | undefined>) => {
+    const seen = new Set<string>();
+    return values.map(normalizeTagName).filter((value) => {
+        if (!value) {
+            return false;
+        }
+        const key = value.toLocaleLowerCase();
+        if (seen.has(key)) {
+            return false;
+        }
+        seen.add(key);
+        return true;
+    });
+};
+
+const readSourceType = (source?: string | null) => {
+    switch (source) {
+        case "AI":
+        case "AI_EXTRACTED":
+            return "accent";
+        case "MANUAL":
+            return "info";
+        default:
+            return "neutral";
+    }
+};
+
 const readSourceLabel = (source?: string | null) => {
     switch (source) {
         case "AI":
-            return "AI";
         case "AI_EXTRACTED":
-            return "AI 提取";
+            return "AI";
         case "MANUAL":
             return "手工";
         default:
-            return source || "—";
+            return source || "未知";
     }
 };
 
@@ -60,9 +84,8 @@ export const ClassicsContentTagPanel = ({
 }: ClassicsContentTagPanelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
-    const [isEditorOpen, setIsEditorOpen] = useState(false);
-    const [editingTag, setEditingTag] = useState<ClassicsContentTagRecord | undefined>(undefined);
     const [form] = Form.useForm<TagEditorValues>();
+    const [tagSearchText, setTagSearchText] = useState("");
 
     const queryKey = ["classics", "content", "tags", contentType, contentId] as const;
 
@@ -78,6 +101,35 @@ export const ClassicsContentTagPanel = ({
     });
 
     const tags = useMemo(() => getActiveTags(tagsQuery.data), [tagsQuery.data]);
+    const taxonomyTagsQuery = useQuery({
+        queryKey: ["knowledge", "taxonomy", "tags", "content-picker", tagSearchText],
+        queryFn: () =>
+            taxonomyService.pageTags({
+                pageNo: 1,
+                pageSize: 20,
+                name: tagSearchText,
+                status: "ENABLED",
+                sortDirection: "ASC"
+            }),
+        enabled: Boolean(contentId),
+        retry: false
+    });
+    const existingTagNameKeys = useMemo(
+        () =>
+            new Set(
+                tags
+                    .map((tag) => normalizeTagName(tag.tagNameSnapshot).toLocaleLowerCase())
+                    .filter(Boolean)
+            ),
+        [tags]
+    );
+    const tagOptions = useMemo(() => {
+        const optionNames = uniqueTagNames([
+            ...(taxonomyTagsQuery.data?.records || []).map((tag) => tag.name),
+            ...tags.map((tag) => tag.tagNameSnapshot)
+        ]);
+        return optionNames.map((tagName) => ({ label: tagName, value: tagName }));
+    }, [tags, taxonomyTagsQuery.data?.records]);
 
     const refreshTags = async () => {
         await queryClient.invalidateQueries({ queryKey });
@@ -99,29 +151,9 @@ export const ClassicsContentTagPanel = ({
             }),
         onSuccess: async () => {
             await notifyChanged();
-            setIsEditorOpen(false);
-            messageApi.success("标签已添加");
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "添加标签失败");
-        }
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: (request: ClassicsContentTagCommand) =>
-            contentService.updateTag({
-                ...request,
-                contentId,
-                contentType,
-                id: request.id ?? editingTag?.id
-            }),
-        onSuccess: async () => {
-            await notifyChanged();
-            setIsEditorOpen(false);
-            messageApi.success("标签已更新");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "更新标签失败");
         }
     });
 
@@ -136,37 +168,31 @@ export const ClassicsContentTagPanel = ({
         }
     });
 
-    const sortMutation = useMutation({
-        mutationFn: contentService.sortTags,
-        onSuccess: async () => {
-            await notifyChanged();
-            messageApi.success("标签顺序已保存");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "排序失败");
+    const submitTags = async () => {
+        const formValues = await form.validateFields();
+        const tagNames = uniqueTagNames(formValues.tagNames || []).filter(
+            (tagName) => !existingTagNameKeys.has(tagName.toLocaleLowerCase())
+        );
+        if (!tagNames.length) {
+            messageApi.info("没有需要添加的新标签");
+            form.resetFields();
+            return;
         }
-    });
 
-    const openCreate = () => {
-        setEditingTag(undefined);
-        setIsEditorOpen(true);
-        form.setFieldsValue({
-            contentId,
-            contentType,
-            tagNameSnapshot: ""
-        });
-    };
-
-    const openEdit = (tag: ClassicsContentTagRecord) => {
-        setEditingTag(tag);
-        setIsEditorOpen(true);
-        form.setFieldsValue({
-            contentId,
-            contentType,
-            id: tag.id,
-            tagId: tag.tagId,
-            tagNameSnapshot: tag.tagNameSnapshot || ""
-        });
+        await Promise.all(
+            tagNames.map((tagName) =>
+                addMutation.mutateAsync({
+                    contentId,
+                    contentType,
+                    tagNameSnapshot: tagName,
+                    source: "MANUAL",
+                    status: "ACTIVE"
+                })
+            )
+        );
+        form.resetFields();
+        setTagSearchText("");
+        messageApi.success(`已添加 ${tagNames.length} 个标签`);
     };
 
     const markRemoved = async (tag: ClassicsContentTagRecord) => {
@@ -174,65 +200,6 @@ export const ClassicsContentTagPanel = ({
             return;
         }
         await deleteMutation.mutateAsync({ id: tag.id });
-    };
-
-    const submitTag = async () => {
-        const formValues = await form.validateFields();
-        const command: ClassicsContentTagCommand = {
-            ...formValues,
-            id: editingTag?.id,
-            tagId: formValues.tagId,
-            tagNameSnapshot: formValues.tagNameSnapshot.trim(),
-            source: "MANUAL",
-            status: "ACTIVE"
-        };
-
-        if (editingTag) {
-            await updateMutation.mutateAsync(command);
-            return;
-        }
-
-        await addMutation.mutateAsync(command);
-    };
-
-    const submitSort = (
-        sourceTag: ClassicsContentTagRecord,
-        targetTag: ClassicsContentTagRecord,
-        sortDirection: KuzhambuTableSortPosition
-    ) => {
-        if (!sourceTag.id || !targetTag.id || sourceTag.id === targetTag.id) {
-            return;
-        }
-
-        const filtered = [...tags];
-        const sourceTagId = String(sourceTag.id);
-        const targetTagId = String(targetTag.id);
-        const sourceIndex = filtered.findIndex((tag) => String(tag.id) === sourceTagId);
-        const targetIndex = filtered.findIndex((tag) => String(tag.id) === targetTagId);
-        if (sourceIndex < 0 || targetIndex < 0) {
-            return;
-        }
-
-        const sorted = [...filtered];
-        const [sourceItem] = sorted.splice(sourceIndex, 1);
-        const insertIndex = sortDirection === "before" ? targetIndex : targetIndex + 1;
-        sorted.splice(insertIndex, 0, sourceItem);
-
-        sortMutation.mutate({
-            contentId,
-            contentType,
-            orderedIds: sorted
-                .map((tag) => tag.id)
-                .filter((id) => id != null && String(id).length > 0)
-                .map(String),
-            sortDirection: "ASC"
-        });
-    };
-
-    const closeEditor = () => {
-        setIsEditorOpen(false);
-        setEditingTag(undefined);
-        form.resetFields();
     };
 
     if (tagsQuery.isError) {
@@ -244,109 +211,64 @@ export const ClassicsContentTagPanel = ({
     return (
         <KuzhambuCard size="small" title={cardTitle}>
             <KuzhambuSpace orientation="vertical" size={16}>
-                <KuzhambuSpace wrap>
-                    <KuzhambuButton
-                        testId="classics-common-classics-content-tag-action-button"
-                        icon={<PlusOutlined />}
-                        type="primary"
-                        onClick={openCreate}
-                    >
-                        添加标签
-                    </KuzhambuButton>
-                    {toolbarExtra}
-                </KuzhambuSpace>
-
-                <KuzhambuTable
-                    ariaLabel="标签列表"
-                    dataSource={tags}
-                    columns={[
-                        {
-                            key: "tagNameSnapshot",
-                            title: "标签",
-                            render: (_value, tag) => tag.tagNameSnapshot || "-"
-                        },
-                        {
-                            key: "source",
-                            title: "来源",
-                            render: (_value, tag) => readSourceLabel(tag.source)
-                        },
-                        {
-                            key: "actions",
-                            title: "操作",
-                            width: 180,
-                            render: (_value, tag) => (
-                                <KuzhambuSpace size="small" orientation="horizontal">
-                                    <KuzhambuButton
-                                        testId="classics-common-classics-content-tag-action-button-2"
-                                        icon={<EditOutlined />}
-                                        size="small"
-                                        onClick={() => openEdit(tag)}
-                                    >
-                                        更换
-                                    </KuzhambuButton>
-                                    <KuzhambuButton
-                                        testId="classics-common-classics-content-tag-action-button-3"
-                                        danger
-                                        icon={<DeleteOutlined />}
-                                        loading={deleteMutation.isPending}
-                                        size="small"
-                                        onClick={() => markRemoved(tag)}
-                                    >
-                                        移除
-                                    </KuzhambuButton>
-                                </KuzhambuSpace>
-                            )
-                        }
-                    ]}
-                    rowKey="id"
-                    loading={tagsQuery.isLoading}
-                    locale={{
-                        emptyText: tagsQuery.isFetching ? (
-                            "加载中"
-                        ) : (
-                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
-                        )
-                    }}
-                    pagination={false}
-                    sortable
-                    onSort={submitSort}
-                />
-
-                <KuzhambuModal
-                    testId="classics-content-tag-editor-modal"
-                    destroyOnHidden
-                    okButtonProps={{
-                        loading: addMutation.isPending || updateMutation.isPending
-                    }}
-                    open={isEditorOpen}
-                    title={editingTag ? "更换标签" : "添加标签"}
-                    onCancel={closeEditor}
-                    onOk={submitTag}
-                >
-                    <KuzhambuForm
-                        form={form}
-                        initialValues={{
-                            contentId,
-                            contentType
-                        }}
-                        labelWrap
-                    >
+                <KuzhambuForm form={form} labelWrap>
+                    <KuzhambuSpace wrap align="start">
                         <KuzhambuFormItem
-                            label={editingTag ? "目标标签" : "标签名称"}
-                            name="tagNameSnapshot"
+                            label="添加标签"
+                            name="tagNames"
                             layoutSize="large"
-                            rules={[{ required: true, message: "请输入标签名称" }]}
                             extra="输入已有标签名会绑定已有标签；输入新标签名会创建并绑定到当前内容。"
                         >
-                            <Input
-                                aria-label={editingTag ? "目标标签" : "标签名称"}
-                                placeholder={
-                                    editingTag ? "请输入要绑定的目标标签" : "请输入要添加的标签"
-                                }
+                            <KuzhambuSelect<string[]>
+                                aria-label="添加标签"
+                                mode="tags"
+                                options={tagOptions}
+                                placeholder="输入标签后回车"
+                                style={{ minWidth: 280 }}
+                                tokenSeparators={[",", "，", "\n"]}
+                                onSearch={setTagSearchText}
                             />
                         </KuzhambuFormItem>
-                    </KuzhambuForm>
-                </KuzhambuModal>
+                        <KuzhambuButton
+                            testId="classics-common-classics-content-tag-action-button"
+                            icon={<PlusOutlined />}
+                            loading={addMutation.isPending}
+                            type="primary"
+                            onClick={submitTags}
+                        >
+                            添加
+                        </KuzhambuButton>
+                        {toolbarExtra}
+                    </KuzhambuSpace>
+                </KuzhambuForm>
+
+                {tagsQuery.isLoading ? (
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="加载中" />
+                ) : tags.length ? (
+                    <KuzhambuSpace wrap aria-label="标签列表">
+                        {tags.map((tag) => {
+                            const tagName = normalizeTagName(tag.tagNameSnapshot) || "-";
+                            return (
+                                <KuzhambuTag
+                                    key={tag.id ?? `${tagName}-${tag.source ?? ""}`}
+                                    closable={Boolean(tag.id)}
+                                    type={readSourceType(tag.source)}
+                                    onClose={(event) => {
+                                        event.preventDefault();
+                                        void markRemoved(tag);
+                                    }}
+                                >
+                                    {tagName}
+                                    <span style={{ marginLeft: 6, opacity: 0.72 }}>
+                                        {readSourceLabel(tag.source)}
+                                    </span>
+                                </KuzhambuTag>
+                            );
+                        })}
+                    </KuzhambuSpace>
+                ) : (
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
+                )}
             </KuzhambuSpace>
         </KuzhambuCard>
     );

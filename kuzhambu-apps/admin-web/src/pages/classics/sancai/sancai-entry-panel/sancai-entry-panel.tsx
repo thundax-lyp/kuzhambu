@@ -12,6 +12,7 @@ import * as exportService from "@/pages/classics/common/classics-export-service"
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/classics-content-tag-panel";
+import { ClassicsContentTagAiPanel } from "@/pages/classics/common/classics-content-tag-ai-panel";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/ai-candidate-batch-drawer";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import { SancaiEntryList } from "./sancai-entry-list";
@@ -675,6 +676,15 @@ export const SancaiEntryPanel = ({
                                 contentId={selectedEntry.id}
                                 contentType="SANCAI_ENTRY"
                                 panelTitle="当前条目标签"
+                                toolbarExtra={
+                                    <ClassicsContentTagAiPanel
+                                        contentId={selectedEntry.id}
+                                        contentType="SANCAI_ENTRY"
+                                        creatingTask={creatingRefinementCapability === "tags"}
+                                        onChanged={invalidateSancaiContentGovernance}
+                                        onCreateTask={() => createRefinementTask("tags", null)}
+                                    />
+                                }
                                 onChanged={invalidateSancaiContentGovernance}
                             />
                         </div>

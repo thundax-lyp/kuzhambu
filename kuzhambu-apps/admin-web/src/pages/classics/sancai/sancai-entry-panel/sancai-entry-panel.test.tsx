@@ -155,9 +155,15 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
     getTaskRetryable: vi.fn(
         (status: string, capability: string) =>
             ["FAILED", "PARTIAL", "CANCELLED"].includes(status) &&
-            ["translate", "summary", "image_analysis", "fusion", "visual", "image_gen"].includes(
-                normalizeTaskCapabilityMock(capability)
-            )
+            [
+                "translate",
+                "summary",
+                "tags",
+                "image_analysis",
+                "fusion",
+                "visual",
+                "image_gen"
+            ].includes(normalizeTaskCapabilityMock(capability))
     )
 }));
 vi.mock("@/pages/classics/common/ai-candidate-service", () => ({
@@ -169,6 +175,27 @@ vi.mock("@/pages/classics/common/ai-candidate-service", () => ({
         versionNo: 2
     })),
     reject: vi.fn(async () => ({}))
+}));
+
+vi.mock("@/pages/knowledge/taxonomy/taxonomy-service", () => ({
+    pageTags: vi.fn(async () => ({
+        pageNo: 1,
+        pageSize: 20,
+        totalPage: 1,
+        count: 2,
+        records: [
+            {
+                id: "8001",
+                name: "三才",
+                status: "ENABLED"
+            },
+            {
+                id: "8002",
+                name: "天文",
+                status: "ENABLED"
+            }
+        ]
+    }))
 }));
 
 vi.mock("@/pages/classics/common/sancai-visual-preview-service", () => ({
@@ -1255,6 +1282,8 @@ describe("SancaiEntryPanel batch operations", () => {
 
         await openTagSection(user);
         expect(await screen.findByText("当前条目标签")).toBeInTheDocument();
+        expect(await screen.findByLabelText("标签列表")).toBeInTheDocument();
+        expect(await screen.findByText("AI 生成")).toBeInTheDocument();
         await openQaSection(user);
         expect(await screen.findByText("三才图会问答对治理")).toBeInTheDocument();
         expect(screen.queryByLabelText("三才图会内容上下文")).not.toBeInTheDocument();
