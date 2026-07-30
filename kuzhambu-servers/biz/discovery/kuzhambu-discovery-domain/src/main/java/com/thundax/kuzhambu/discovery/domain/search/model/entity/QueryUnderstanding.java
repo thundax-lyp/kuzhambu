@@ -19,7 +19,6 @@ public class QueryUnderstanding {
     private String rewrittenQueryText;
     private SearchIntentType intentType;
     private String recognizedEntitiesJson;
-    private String expandedSynonymsJson;
     private String understandingStatus;
     private String failureCode;
     private String failureMessage;
@@ -36,7 +35,6 @@ public class QueryUnderstanding {
             String rewrittenQueryText,
             SearchIntentType intentType,
             String recognizedEntitiesJson,
-            String expandedSynonymsJson,
             String understandingStatus,
             String failureCode,
             String failureMessage,
@@ -50,7 +48,6 @@ public class QueryUnderstanding {
         this.rewrittenQueryText = rewrittenQueryText;
         this.intentType = intentType;
         this.recognizedEntitiesJson = recognizedEntitiesJson;
-        this.expandedSynonymsJson = expandedSynonymsJson;
         this.understandingStatus = understandingStatus;
         this.failureCode = failureCode;
         this.failureMessage = failureMessage;

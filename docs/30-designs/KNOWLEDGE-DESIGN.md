@@ -2,7 +2,7 @@
 
 ## Purpose
 
-本文档定义 Knowledge 域当前已落地设计，覆盖标签治理、同义词、知识抽取任务、数据精修、质量标注报告和正式结果读取闭环。
+本文档定义 Knowledge 域当前已落地设计，覆盖标签治理、知识抽取任务、数据精修、质量标注报告和正式结果读取闭环。
 
 ## Module
 
@@ -16,7 +16,7 @@ kuzhambu-servers/biz/knowledge/
 
 ## Business Boundary
 
-Knowledge 拥有统一标签、同义词、知识抽取任务、图谱版本以及正式实体、关系和世系事实。Knowledge 消费 Classics 内容和 AI 提取能力，但不拥有正式内容主数据。对于 Classics 通用标签，Knowledge 负责统一标签解释权、别名解析、自动创建策略和内容引用投影；对于知识抽取候选结果，Knowledge 负责任务台账、候选应用和正式知识事实落库。
+Knowledge 拥有统一标签、知识抽取任务、图谱版本以及正式实体、关系和世系事实。Knowledge 消费 Classics 内容和 AI 提取能力，但不拥有正式内容主数据。对于 Classics 通用标签，Knowledge 负责统一标签解释权、别名解析、自动创建策略和内容引用投影；对于知识抽取候选结果，Knowledge 负责任务台账、候选应用和正式知识事实落库。
 
 Knowledge 也是知识质量治理的唯一写入方。后台人工精修、质量标注和质量报告生成均在 Knowledge 域内闭合；Portal 只读取最新已发布报告快照，不临时计算质量指标。
 
@@ -26,7 +26,6 @@ Knowledge 也是知识质量治理的唯一写入方。后台人工精修、质�
 - `TagCategory`
 - `TagAlias`
 - `TagReviewItem`
-- `Synonym`
 - `GraphExtractionTask`
 - `GraphVersion`
 - `KnowledgeEntity`
@@ -50,7 +49,6 @@ Knowledge 也是知识质量治理的唯一写入方。后台人工精修、质�
 - `knowledge_tag_alias`
 - `knowledge_tag_content_ref`
 - `knowledge_tag_review_item`
-- `knowledge_synonym`
 - `knowledge_entity`
 - `knowledge_relation`
 - `knowledge_graph_extraction_task`
@@ -70,13 +68,12 @@ Knowledge 也是知识质量治理的唯一写入方。后台人工精修、质�
 ## Application Layer
 
 - `TaxonomyApplicationService`
-- `SynonymApplicationService`
 - `KnowledgeGraphExtractionApplicationService`
 - `KnowledgeGraphRefinementApplicationService`
 - `KnowledgeLineageReadApplicationService`
 - `KnowledgeQualityReportApplicationService`
 
-Application 层负责标签治理、同义词扩展、知识抽取任务编排、AI 候选状态回填、候选结果应用、图谱版本关联、精修草稿确认、正式事实回写、人工质量标注、质量报告快照生成、正式结果读取和世系画布聚合读取。
+Application 层负责标签治理、知识抽取任务编排、AI 候选状态回填、候选结果应用、图谱版本关联、精修草稿确认、正式事实回写、人工质量标注、质量报告快照生成、正式结果读取和世系画布聚合读取。
 
 质量报告生成规则：
 
@@ -97,7 +94,6 @@ Application 层负责标签治理、同义词扩展、知识抽取任务编排�
 Admin 入口：
 
 - 标签治理。
-- 同义词维护。
 - 知识抽取任务创建、分页、详情和候选应用。
 - 知识图谱工作台，支持实体、关系、世系节点和世系关系的人工确认、编辑、删除、新增与质量标注。
 - 正式结果读取，包括图谱版本列表/详情，以及从版本下钻的正式实体、正式关系和正式世系结果。
@@ -136,7 +132,7 @@ Knowledge 是 `knowledge_*` 表的唯一写入方。Classics 删除或下线内�
 
 ## Acceptance
 
-- 标签、同义词、知识抽取任务、正式知识事实和正式结果读取在一个业务域内闭合。
+- 标签、知识抽取任务、正式知识事实和正式结果读取在一个业务域内闭合。
 - 独立世系图浏览在 Admin 和 Portal 入口内闭合，画布、节点/关系列表、节点/关系详情均读取同一份正式世系事实。
 - 人工精修、人工质量标注、质量报告生成、后台报告展示和 Portal 质量展示在 Knowledge 域内闭合。
 - 搜索和问答可消费 Knowledge 增强能力，但当前不依赖图谱浏览或质量报告作为前置。

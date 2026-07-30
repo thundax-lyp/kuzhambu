@@ -1,22 +1,18 @@
 package com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.assembler;
 
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.SynonymIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagAliasIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagCategoryIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagContentRefIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Synonym;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagCategory;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagContentRef;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.ContentType;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.SynonymStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagCategoryStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
-import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.SynonymDO;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.TagAliasDO;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.TagCategoryDO;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.TagContentRefDO;
@@ -34,8 +30,7 @@ public final class TaxonomyPersistenceAssembler {
         }
 
         TagCategoryDO dataObject = new TagCategoryDO();
-        dataObject.setId(TagCategoryIdCodec.toValue(entity.getId()));
-        dataObject.setCategoryId(TagCategoryIdCodec.toValue(entity.getCategoryId()));
+        dataObject.setCategoryId(TagCategoryIdCodec.toValue(entity.getId()));
         dataObject.setName(entity.getName());
         dataObject.setDescription(entity.getDescription());
         dataObject.setPriority(entity.getPriority());
@@ -49,8 +44,7 @@ public final class TaxonomyPersistenceAssembler {
         }
 
         TagCategory entity = new TagCategory();
-        entity.setId(TagCategoryIdCodec.toDomain(dataObject.getId()));
-        entity.setCategoryId(TagCategoryIdCodec.toDomain(dataObject.getCategoryId()));
+        entity.setId(TagCategoryIdCodec.toDomain(dataObject.getCategoryId()));
         entity.setName(dataObject.getName());
         entity.setDescription(dataObject.getDescription());
         entity.setPriority(priorityOrDefault(dataObject.getPriority()));
@@ -76,8 +70,7 @@ public final class TaxonomyPersistenceAssembler {
         }
 
         TagDO dataObject = new TagDO();
-        dataObject.setId(TagIdCodec.toValue(entity.getId()));
-        dataObject.setTagId(TagIdCodec.toValue(entity.getTagId()));
+        dataObject.setTagId(TagIdCodec.toValue(entity.getId()));
         dataObject.setName(entity.getName());
         dataObject.setCategoryId(TagCategoryIdCodec.toValue(entity.getCategoryId()));
         dataObject.setDescription(entity.getDescription());
@@ -99,8 +92,7 @@ public final class TaxonomyPersistenceAssembler {
         }
 
         Tag entity = new Tag();
-        entity.setId(TagIdCodec.toDomain(dataObject.getId()));
-        entity.setTagId(TagIdCodec.toDomain(dataObject.getTagId()));
+        entity.setId(TagIdCodec.toDomain(dataObject.getTagId()));
         entity.setName(dataObject.getName());
         entity.setCategoryId(TagCategoryIdCodec.toDomain(dataObject.getCategoryId()));
         entity.setDescription(dataObject.getDescription());
@@ -134,8 +126,7 @@ public final class TaxonomyPersistenceAssembler {
         }
 
         TagAliasDO dataObject = new TagAliasDO();
-        dataObject.setId(TagAliasIdCodec.toValue(entity.getId()));
-        dataObject.setAliasId(TagAliasIdCodec.toValue(entity.getAliasId()));
+        dataObject.setAliasId(TagAliasIdCodec.toValue(entity.getId()));
         dataObject.setTagId(TagIdCodec.toValue(entity.getTagId()));
         dataObject.setName(entity.getName());
         dataObject.setSource(sourceValue(entity.getSource()));
@@ -148,8 +139,7 @@ public final class TaxonomyPersistenceAssembler {
         }
 
         TagAlias entity = new TagAlias();
-        entity.setId(TagAliasIdCodec.toDomain(dataObject.getId()));
-        entity.setAliasId(TagAliasIdCodec.toDomain(dataObject.getAliasId()));
+        entity.setId(TagAliasIdCodec.toDomain(dataObject.getAliasId()));
         entity.setTagId(TagIdCodec.toDomain(dataObject.getTagId()));
         entity.setName(dataObject.getName());
         entity.setSource(sourceFrom(dataObject.getSource()));
@@ -174,8 +164,7 @@ public final class TaxonomyPersistenceAssembler {
         }
 
         TagContentRefDO dataObject = new TagContentRefDO();
-        dataObject.setId(TagContentRefIdCodec.toValue(entity.getId()));
-        dataObject.setRefId(TagContentRefIdCodec.toValue(entity.getRefId()));
+        dataObject.setRefId(TagContentRefIdCodec.toValue(entity.getId()));
         dataObject.setTagId(TagIdCodec.toValue(entity.getTagId()));
         dataObject.setContentType(contentTypeValue(entity.getContentType()));
         dataObject.setContentId(entity.getContentId());
@@ -190,8 +179,7 @@ public final class TaxonomyPersistenceAssembler {
         }
 
         TagContentRef entity = new TagContentRef();
-        entity.setId(TagContentRefIdCodec.toDomain(dataObject.getId()));
-        entity.setRefId(TagContentRefIdCodec.toDomain(dataObject.getRefId()));
+        entity.setId(TagContentRefIdCodec.toDomain(dataObject.getRefId()));
         entity.setTagId(TagIdCodec.toDomain(dataObject.getTagId()));
         entity.setContentType(contentTypeFrom(dataObject.getContentType()));
         entity.setContentId(dataObject.getContentId());
@@ -207,46 +195,6 @@ public final class TaxonomyPersistenceAssembler {
 
         List<TagContentRef> entities = new ArrayList<>();
         for (TagContentRefDO dataObject : dataObjects) {
-            entities.add(toDomain(dataObject));
-        }
-        return entities;
-    }
-
-    public static SynonymDO toObject(Synonym entity) {
-        if (entity == null) {
-            return null;
-        }
-
-        SynonymDO dataObject = new SynonymDO();
-        dataObject.setId(SynonymIdCodec.toValue(entity.getId()));
-        dataObject.setSynonymId(SynonymIdCodec.toValue(entity.getSynonymId()));
-        dataObject.setTerm(entity.getTerm());
-        dataObject.setSynonym(entity.getSynonym());
-        dataObject.setStatus(statusValue(entity.getStatus()));
-        return dataObject;
-    }
-
-    public static Synonym toDomain(SynonymDO dataObject) {
-        if (dataObject == null) {
-            return null;
-        }
-
-        Synonym entity = new Synonym();
-        entity.setId(SynonymIdCodec.toDomain(dataObject.getId()));
-        entity.setSynonymId(SynonymIdCodec.toDomain(dataObject.getSynonymId()));
-        entity.setTerm(dataObject.getTerm());
-        entity.setSynonym(dataObject.getSynonym());
-        entity.setStatus(synonymStatusFrom(dataObject.getStatus()));
-        return entity;
-    }
-
-    public static List<Synonym> toSynonymDomainList(List<SynonymDO> dataObjects) {
-        if (dataObjects == null) {
-            return null;
-        }
-
-        List<Synonym> entities = new ArrayList<>();
-        for (SynonymDO dataObject : dataObjects) {
             entities.add(toDomain(dataObject));
         }
         return entities;
@@ -294,13 +242,5 @@ public final class TaxonomyPersistenceAssembler {
 
     private static ContentType contentTypeFrom(String contentType) {
         return contentType == null ? null : ContentType.from(contentType);
-    }
-
-    private static String statusValue(SynonymStatus status) {
-        return status == null ? null : status.value();
-    }
-
-    private static SynonymStatus synonymStatusFrom(String status) {
-        return status == null ? null : SynonymStatus.from(status);
     }
 }

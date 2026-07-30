@@ -41,7 +41,6 @@ public class QueryUnderstandingPayloadBuilder {
         payload.put("tagNames", query.getTagNames());
         payload.put("contentStatuses", query.getContentStatuses());
         payload.put("visibilityScopes", query.getVisibilityScopes());
-        payload.put("expandedSynonyms", enhancement.expandedSynonyms());
         payload.put("tagHint", enhancement.tagHint());
         payload.put("recognizedEntities", enhancement.recognizedEntities());
         payload.put("requestId", query.getRequestId());

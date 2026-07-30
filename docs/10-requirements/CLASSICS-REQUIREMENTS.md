@@ -269,5 +269,5 @@ Classics 古籍域承载平台三类古籍知识库内容和跨知识库在线�
 - [STORAGE-REQUIREMENTS.md](./STORAGE-REQUIREMENTS.md)：提供原始文件、配图、导出产物和分享页文件读取能力。
 - [AI-REQUIREMENTS.md](./AI-REQUIREMENTS.md)：提供 AI 配置、翻译、摘要、标签、问答对、图片理解、条目拆分和视觉资产 AI 能力。
 - [WORKERS-REQUIREMENTS.md](./WORKERS-REQUIREMENTS.md)：提供 render workers 文件生成边界；AI workers 调用必须经由 AI 域。
-- [KNOWLEDGE-REQUIREMENTS.md](./KNOWLEDGE-REQUIREMENTS.md)：治理标签、同义词、实体关系和知识图谱。
+- [KNOWLEDGE-REQUIREMENTS.md](./KNOWLEDGE-REQUIREMENTS.md)：治理标签、实体关系和知识图谱。
 - [DISCOVERY-REQUIREMENTS.md](./DISCOVERY-REQUIREMENTS.md)：消费古籍内容完成搜索和问答。

@@ -76,8 +76,7 @@ class SearchApplicationServiceImplTest {
                 null,
                 null);
         when(queryUnderstandingApplicationService.understand(query))
-                .thenReturn(
-                        new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
+                .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenThrow(new UnsupportedOperationException("not ready"));
 
@@ -140,7 +139,12 @@ class SearchApplicationServiceImplTest {
                 "trace-1");
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(new QueryUnderstandingResult(
-                        "黄帝", "黄帝 传说", "NATURAL_LANGUAGE_SEARCH", List.of("轩辕"), List.of(), "req-1", "trace-1"));
+                        "黄帝",
+                        "黄帝 传说",
+                        "NATURAL_LANGUAGE_SEARCH",
+                        List.of(new QueryUnderstandingResult.RecognizedEntityResult("轩辕", "ENTITY", "轩辕")),
+                        "req-1",
+                        "trace-1"));
 
         var result = service.search(query);
         ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
@@ -195,8 +199,8 @@ class SearchApplicationServiceImplTest {
                 "req-blank",
                 "trace-blank");
         when(queryUnderstandingApplicationService.understand(query))
-                .thenReturn(new QueryUnderstandingResult(
-                        "", "", "KEYWORD_SEARCH", List.of(), List.of(), "req-blank", "trace-blank"));
+                .thenReturn(
+                        new QueryUnderstandingResult("", "", "KEYWORD_SEARCH", List.of(), "req-blank", "trace-blank"));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenReturn(searchPageResult(
                         20,
@@ -246,7 +250,7 @@ class SearchApplicationServiceImplTest {
                 "trace-null-query");
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(new QueryUnderstandingResult(
-                        "", "", "KEYWORD_SEARCH", List.of(), List.of(), "req-null-query", "trace-null-query"));
+                        "", "", "KEYWORD_SEARCH", List.of(), "req-null-query", "trace-null-query"));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenReturn(searchPageResult(0));
         ArgumentCaptor<SearchKeyword> keywordCaptor = ArgumentCaptor.forClass(SearchKeyword.class);
@@ -292,8 +296,7 @@ class SearchApplicationServiceImplTest {
                 "req-3",
                 "trace-3");
         when(queryUnderstandingApplicationService.understand(query))
-                .thenReturn(
-                        new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
+                .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenReturn(searchPageResult(
                         1,
@@ -343,8 +346,7 @@ class SearchApplicationServiceImplTest {
                 "req-total",
                 "trace-total");
         when(queryUnderstandingApplicationService.understand(query))
-                .thenReturn(
-                        new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
+                .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenReturn(searchPageResult(
                         2,
@@ -398,8 +400,7 @@ class SearchApplicationServiceImplTest {
                 "req-4",
                 "trace-4");
         when(queryUnderstandingApplicationService.understand(query))
-                .thenReturn(
-                        new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
+                .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenReturn(searchPageResult(
                         1,
@@ -443,8 +444,7 @@ class SearchApplicationServiceImplTest {
                 "req-5",
                 "trace-5");
         when(queryUnderstandingApplicationService.understand(query))
-                .thenReturn(
-                        new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
+                .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenReturn(searchPageResult(0));
 
@@ -740,8 +740,7 @@ class SearchApplicationServiceImplTest {
                 "req-2",
                 "trace-2");
         when(queryUnderstandingApplicationService.understand(query))
-                .thenReturn(new QueryUnderstandingResult(
-                        "黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), "req-2", "trace-2"));
+                .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), "req-2", "trace-2"));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenThrow(new BizException("DISCOVERY-29999", "discovery.search.test", "boom"));
 

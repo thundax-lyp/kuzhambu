@@ -77,9 +77,7 @@ class QueryUnderstandingApplicationServiceImplTest {
         AiFacade aiFacade = mock(AiFacade.class);
         when(enhancementProvider.enhance("礼制"))
                 .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
-                        List.of("礼学", "典礼"),
-                        null,
-                        List.of(new QueryUnderstandingResult.RecognizedEntityResult("礼制", "TAG", "礼制"))));
+                        null, List.of(new QueryUnderstandingResult.RecognizedEntityResult("礼制", "TAG", "礼制"))));
         when(payloadBuilder.buildPromptMessagesJson(any(), any(), any())).thenReturn("[]");
         when(payloadBuilder.buildInputPayloadJson(any(), any(), any())).thenReturn("{\"query\":\"礼制\"}");
         when(payloadBuilder.buildOutputSchemaJson()).thenReturn("{\"type\":\"object\"}");
@@ -118,7 +116,6 @@ class QueryUnderstandingApplicationServiceImplTest {
         assertEquals("礼制", result.getNormalizedQueryText());
         assertEquals("礼制 礼学", result.getRewrittenQueryText());
         assertEquals("NATURAL_LANGUAGE_SEARCH", result.getIntent());
-        assertEquals(List.of("礼学", "典礼"), result.getExpandedSynonyms());
         assertEquals("SUCCEEDED", captor.getValue().getUnderstandingStatus());
         assertEquals("礼制", captor.getValue().getNormalizedQueryText());
     }
@@ -131,7 +128,7 @@ class QueryUnderstandingApplicationServiceImplTest {
         AiFacade aiFacade = mock(AiFacade.class);
         when(enhancementProvider.enhance("礼制"))
                 .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
-                        List.of("礼学"), null, List.of()));
+                        null, List.of()));
         when(payloadBuilder.buildPromptMessagesJson(any(), any(), any())).thenReturn("[]");
         when(payloadBuilder.buildInputPayloadJson(any(), any(), any())).thenReturn("{\"query\":\"礼制\"}");
         when(payloadBuilder.buildOutputSchemaJson()).thenReturn("{\"type\":\"object\"}");
@@ -165,7 +162,6 @@ class QueryUnderstandingApplicationServiceImplTest {
         assertEquals("礼制", result.getNormalizedQueryText());
         assertEquals("礼制", result.getRewrittenQueryText());
         assertEquals("KEYWORD_SEARCH", result.getIntent());
-        assertEquals(List.of("礼学"), result.getExpandedSynonyms());
         assertEquals("FAILED", captor.getValue().getUnderstandingStatus());
         assertEquals("DISCOVERY-29999", captor.getValue().getFailureCode());
     }

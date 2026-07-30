@@ -18,7 +18,7 @@ kuzhambu-servers/biz/discovery/
 
 ## Business Boundary
 
-Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息、来源引用、provider trace 和知识同步状态。Discovery 消费 Classics 内容、Knowledge 同义词和实体、公共 Knowledge Base adapter、System 权限上下文。
+Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息、来源引用、provider trace 和知识同步状态。Discovery 消费 Classics 内容、Knowledge 标签和实体、公共 Knowledge Base adapter、System 权限上下文。
 
 当前阶段固定边界：
 
@@ -44,7 +44,7 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 
 - `SearchEvent`：记录一次搜索请求的输入、范围、结果数量和失败摘要。
 - `SearchClickEvent`：记录一次搜索结果点击，保存内容快照标识和命中位置。
-- `QueryUnderstanding`：记录查询清洗、改写、实体识别和同义词扩展的结果；当前阶段允许是占位结构。
+- `QueryUnderstanding`：记录查询清洗、改写和实体识别的结果；当前阶段允许是占位结构。
 - `SearchScope`：承载知识库、门类、标签、状态、可见性和时间范围。
 - `SearchKeyword`：承载原始 query、清洗后 query 和展示 query。
 - `SearchIntentType`：当前固定为 `KEYWORD_SEARCH`、`NATURAL_LANGUAGE_SEARCH`、`UNKNOWN`。
@@ -113,7 +113,7 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 - 主键：`id bigint`
 - 关联字段：`search_event_id bigint`
 - 查询字段：`query_text`、`normalized_query_text`、`rewritten_query_text`
-- 理解字段：`intent_type`、`recognized_entities_json`、`expanded_synonyms_json`
+- 理解字段：`intent_type`、`recognized_entities_json`
 - 状态字段：`understanding_status`、`failure_code`、`failure_message`
 - 请求上下文：`request_id`、`trace_id`
 - 时间字段：`created_at`
@@ -121,7 +121,7 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 当前规则：
 
 - Search 相关表固定使用 `id` 作为本体身份；引用其他 Discovery 实体时使用 `{domain}_id`。
-- `search_scopes_json`、`recognized_entities_json`、`expanded_synonyms_json` 当前只做 JSON 原样存取，不拆分二级列。
+- `search_scopes_json`、`recognized_entities_json` 当前只做 JSON 原样存取，不拆分二级列。
 - 搜索索引是派生读模型，不替代 `discovery_search_event` 等业务表。
 
 ## Application Layer
@@ -132,7 +132,7 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 - `QaSessionApplicationService`
 - `KnowledgeSyncApplicationService`
 
-Application 层负责权限过滤、查询理解、同义词扩展、实体增强、搜索结果分组、问答会话管理、知识库同步、来源引用和 provider trace 记录。
+Application 层负责权限过滤、查询理解、实体增强、搜索结果分组、问答会话管理、知识库同步、来源引用和 provider trace 记录。
 
 ### Search Application Service
 

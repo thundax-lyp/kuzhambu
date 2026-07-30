@@ -1,14 +1,8 @@
 import type { Key } from "react";
 import { useState } from "react";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import type { TagCategoryPageQuery, TagPageQuery, TagReviewPageQuery } from "../taxonomy-service";
 import type {
-    SynonymPageQuery,
-    TagCategoryPageQuery,
-    TagPageQuery,
-    TagReviewPageQuery
-} from "../taxonomy-service";
-import type {
-    SynonymRecord,
     TagBatchMergePreviewRecord,
     TagCategoryRecord,
     TagExtractionResultRecord,
@@ -30,17 +24,11 @@ export const useTaxonomyEditors = () => {
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
     });
-    const [synonymQuery, setSynonymQuery] = useState<SynonymPageQuery>({
-        pageNo: DEFAULT_PAGE_NO,
-        pageSize: DEFAULT_PAGE_SIZE
-    });
     const [editingCategory, setEditingCategory] = useState<TagCategoryRecord | null>(null);
     const [editingTag, setEditingTag] = useState<TagRecord | null>(null);
-    const [editingSynonym, setEditingSynonym] = useState<SynonymRecord | null>(null);
     const [selectedTag, setSelectedTag] = useState<TagRecord | null>(null);
     const [categoryEditDrawerOpen, setCategoryEditDrawerOpen] = useState(false);
     const [tagEditDrawerOpen, setTagEditDrawerOpen] = useState(false);
-    const [synonymEditDrawerOpen, setSynonymEditDrawerOpen] = useState(false);
     const [tagDetailDrawerOpen, setTagDetailDrawerOpen] = useState(false);
     const [tagDetailReviewMode, setTagDetailReviewMode] = useState(false);
     const [removingAliasId, setRemovingAliasId] = useState<string | null>(null);
@@ -63,7 +51,6 @@ export const useTaxonomyEditors = () => {
         categoryEditDrawerOpen,
         categoryQuery,
         editingCategory,
-        editingSynonym,
         editingTag,
         removingAliasId,
         reviewQuery,
@@ -74,15 +61,12 @@ export const useTaxonomyEditors = () => {
         setCategoryEditDrawerOpen,
         setCategoryQuery,
         setEditingCategory,
-        setEditingSynonym,
         setEditingTag,
         setRemovingAliasId,
         setReviewQuery,
         setSelectedReviewRowKeys,
         setSelectedTag,
         setSelectedTagRowKeys,
-        setSynonymEditDrawerOpen,
-        setSynonymQuery,
         setTagBatchMergeOpen,
         setTagBatchMergePreview,
         setTagBatchReviewDecision,
@@ -94,8 +78,6 @@ export const useTaxonomyEditors = () => {
         setTagExtractionResult,
         setTagMergePreview,
         setTagQuery,
-        synonymEditDrawerOpen,
-        synonymQuery,
         tagBatchMergeOpen,
         tagBatchMergePreview,
         tagBatchReviewDecision,

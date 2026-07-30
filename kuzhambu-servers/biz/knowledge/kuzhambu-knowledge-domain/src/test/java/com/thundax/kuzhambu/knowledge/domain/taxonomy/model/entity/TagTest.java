@@ -72,7 +72,7 @@ class TagTest {
 
     private static Tag enabledTag(Long tagId) {
         Tag tag = new Tag();
-        tag.setTagId(TagIdCodec.toDomain(tagId));
+        tag.setId(TagIdCodec.toDomain(tagId));
         tag.setStatus(TagStatus.ENABLED);
         return tag;
     }

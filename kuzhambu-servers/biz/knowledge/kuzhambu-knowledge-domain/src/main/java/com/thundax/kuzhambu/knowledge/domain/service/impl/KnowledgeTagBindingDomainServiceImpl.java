@@ -96,7 +96,7 @@ public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBinding
         }
 
         TagContentRef ref = new TagContentRef();
-        ref.setRefId(TagContentRefIdCodec.toDomain(idGenerator.nextId().value()));
+        ref.setId(TagContentRefIdCodec.toDomain(idGenerator.nextId().value()));
         ref.setTagId(tagId);
         ref.setContentType(contentType);
         ref.setContentId(contentId);
@@ -127,9 +127,9 @@ public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBinding
         TagCategory category = requireDefaultCategory();
         Date now = new Date();
         Tag tag = new Tag();
-        tag.setTagId(TagIdCodec.toDomain(idGenerator.nextId().value()));
+        tag.setId(TagIdCodec.toDomain(idGenerator.nextId().value()));
         tag.setName(normalizedName);
-        tag.setCategoryId(category.getCategoryId());
+        tag.setCategoryId(category.getId());
         tag.setStatus(TagStatus.ENABLED);
         tag.setSource(source);
         tag.setReviewStatus(reviewStatus);

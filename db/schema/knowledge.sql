@@ -66,19 +66,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_tag_content_ref` (
     KEY `idx_knowledge_tag_content_ref_content` (`content_type`, `content_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='内容标签关联表';
 
-CREATE TABLE IF NOT EXISTS `knowledge_synonym` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `synonym_id` bigint NOT NULL,
-    `term` varchar(128) NOT NULL,
-    `synonym` varchar(128) NOT NULL,
-    `status` varchar(32) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_synonym_synonym_id` (`synonym_id`),
-    UNIQUE KEY `uk_knowledge_synonym_pair` (`term`, `synonym`),
-    KEY `idx_knowledge_synonym_term_status` (`term`, `status`),
-    KEY `idx_knowledge_synonym_synonym_status` (`synonym`, `status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='同义词表';
-
 CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `task_id` bigint NOT NULL,

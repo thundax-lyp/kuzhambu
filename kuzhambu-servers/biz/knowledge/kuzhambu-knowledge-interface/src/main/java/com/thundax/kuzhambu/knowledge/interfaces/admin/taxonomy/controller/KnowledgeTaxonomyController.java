@@ -11,11 +11,6 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.service.TaxonomyAppli
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.assembler.KnowledgeTaxonomyInterfaceAssembler;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymCreateRequest;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymPageRequest;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymRemoveRequest;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymStatusRequest;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymUpdateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasCreateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasRemoveRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagBatchDeprecateRequest;
@@ -37,7 +32,6 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagReviewRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagStatusRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagUpdateRequest;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.SynonymResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagAliasResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagBatchMergePreviewResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagCategoryResponse;
@@ -56,7 +50,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "知识模块-标签治理", description = "知识标签与同义词")
+@Tag(name = "知识模块-标签治理", description = "知识标签治理")
 @SysLogger(module = {"知识", "标签治理"})
 @RequestMapping("/api/knowledge/taxonomy")
 @WrappedApiController
@@ -461,89 +455,6 @@ public class KnowledgeTaxonomyController {
     @PostMapping("tag/alias/remove")
     public Boolean removeTagAlias(@Valid @RequestBody TagAliasRemoveRequest request) {
         taxonomyService.removeTagAlias(KnowledgeTaxonomyInterfaceAssembler.toAliasRemoveCommand(request));
-        return true;
-    }
-
-    @Operation(summary = "分页查询同义词", description = "knowledge:taxonomy:view")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission("knowledge:taxonomy:view")
-    @SysLogger(value = "同义词分页")
-    @PostMapping("synonym/page")
-    public PageResponse<SynonymResponse> pageSynonyms(@Valid @RequestBody SynonymPageRequest request) {
-        return PageResponseHelper.fromPageResult(
-                taxonomyService.pageSynonyms(
-                        KnowledgeTaxonomyInterfaceAssembler.toQuery(request),
-                        PageInterfaceAssembler.toPageQuery(request)),
-                KnowledgeTaxonomyInterfaceAssembler::toResponse);
-    }
-
-    @Operation(summary = "创建同义词", description = "knowledge:taxonomy:edit")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission("knowledge:taxonomy:edit")
-    @SysLogger(value = "创建同义词")
-    @PostMapping("synonym/create")
-    public Boolean createSynonym(@Valid @RequestBody SynonymCreateRequest request) {
-        taxonomyService.createSynonym(KnowledgeTaxonomyInterfaceAssembler.toCreateCommand(request));
-        return true;
-    }
-
-    @Operation(summary = "更新同义词", description = "knowledge:taxonomy:edit")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission("knowledge:taxonomy:edit")
-    @SysLogger(value = "更新同义词")
-    @PostMapping("synonym/update")
-    public Boolean updateSynonym(@Valid @RequestBody SynonymUpdateRequest request) {
-        taxonomyService.updateSynonym(KnowledgeTaxonomyInterfaceAssembler.toUpdateCommand(request));
-        return true;
-    }
-
-    @Operation(summary = "变更同义词状态", description = "knowledge:taxonomy:edit")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission("knowledge:taxonomy:edit")
-    @SysLogger(value = "变更同义词状态")
-    @PostMapping("synonym/status")
-    public Boolean changeSynonymStatus(@Valid @RequestBody SynonymStatusRequest request) {
-        taxonomyService.changeSynonymStatus(KnowledgeTaxonomyInterfaceAssembler.toStatusCommand(request));
-        return true;
-    }
-
-    @Operation(summary = "删除同义词", description = "knowledge:taxonomy:edit")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission("knowledge:taxonomy:edit")
-    @SysLogger(value = "删除同义词")
-    @PostMapping("synonym/remove")
-    public Boolean removeSynonym(@Valid @RequestBody SynonymRemoveRequest request) {
-        taxonomyService.removeSynonym(KnowledgeTaxonomyInterfaceAssembler.toRemoveCommand(request));
         return true;
     }
 }

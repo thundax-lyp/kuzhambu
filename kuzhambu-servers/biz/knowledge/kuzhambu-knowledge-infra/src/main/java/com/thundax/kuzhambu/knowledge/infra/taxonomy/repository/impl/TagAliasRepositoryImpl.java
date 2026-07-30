@@ -26,7 +26,9 @@ public class TagAliasRepositoryImpl implements TagAliasRepository {
 
     @Override
     public TagAlias getById(TagAliasId id) {
-        return TaxonomyPersistenceAssembler.toDomain(mapper.selectById(TagAliasIdCodec.toValue(id)));
+        QueryWrapper<TagAliasDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("alias_id", TagAliasIdCodec.toValue(id));
+        return TaxonomyPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
     }
 
     @Override
@@ -46,7 +48,7 @@ public class TagAliasRepositoryImpl implements TagAliasRepository {
     @Override
     public int countByName(String name, TagAliasId excludedId) {
         QueryWrapper<TagAliasDO> wrapper = new QueryWrapper<>();
-        wrapper.eq("name", name).ne(excludedId != null, "id", TagAliasIdCodec.toValue(excludedId));
+        wrapper.eq("name", name).ne(excludedId != null, "alias_id", TagAliasIdCodec.toValue(excludedId));
         return mapper.selectCount(wrapper).intValue();
     }
 
@@ -56,12 +58,17 @@ public class TagAliasRepositoryImpl implements TagAliasRepository {
         if (dataObject.getId() == null) {
             dataObject.setId(idGenerator.nextId().value());
         }
+        if (dataObject.getAliasId() == null) {
+            dataObject.setAliasId(idGenerator.nextId().value());
+        }
         mapper.insert(dataObject);
         return TagAliasIdCodec.toDomain(dataObject.getAliasId());
     }
 
     @Override
     public int deleteById(TagAliasId id) {
-        return mapper.deleteById(TagAliasIdCodec.toValue(id));
+        QueryWrapper<TagAliasDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("alias_id", TagAliasIdCodec.toValue(id));
+        return mapper.delete(wrapper);
     }
 }

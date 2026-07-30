@@ -5,9 +5,6 @@ import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportS
 import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportSummaryResult.MonthlyNewTagResult;
 import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportSummaryResult.TopTagResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryEntityHintResult;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymExpandResult;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymMatchResult;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymQueryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
@@ -17,14 +14,11 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeCategoryDistributionFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeEntityHintFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeMonthlyNewTagFacadeDto;
-import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeSynonymMatchFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeTopTagFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeContentTagRefFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeRemoveContentTagRefFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeEntityHintsFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
-import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSynonymExpandFacadeResponse;
-import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSynonymQueryFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagHintFacadeResponse;
 import java.util.Collections;
@@ -45,36 +39,6 @@ public class KnowledgeFacadeAssembler {
                 .topTags(toTopTagFacadeDtos(result.getTopTags()))
                 .categoryDistributions(toCategoryDistributionFacadeDtos(result.getCategoryDistributions()))
                 .monthlyNewTags(toMonthlyNewTagFacadeDtos(result.getMonthlyNewTags()))
-                .build();
-    }
-
-    public KnowledgeSynonymExpandFacadeResponse toSynonymExpandResponse(DiscoverySynonymExpandResult result) {
-        if (result == null) {
-            return null;
-        }
-        return KnowledgeSynonymExpandFacadeResponse.builder()
-                .term(result.getTerm())
-                .normalizedTerm(result.getNormalizedTerm())
-                .expandedTerms(result.getExpandedTerms())
-                .build();
-    }
-
-    public KnowledgeSynonymQueryFacadeResponse toSynonymQueryResponse(DiscoverySynonymQueryResult result) {
-        if (result == null) {
-            return null;
-        }
-        return KnowledgeSynonymQueryFacadeResponse.builder()
-                .term(result.getTerm())
-                .normalizedTerm(result.getNormalizedTerm())
-                .direction(result.getDirection())
-                .limit(result.getLimit())
-                .matches(toSynonymMatchFacadeDtos(result.getMatches()))
-                .expandedTerms(
-                        result.getMatches() == null
-                                ? Collections.emptyList()
-                                : result.getMatches().stream()
-                                        .map(DiscoverySynonymMatchResult::getExpandedTerm)
-                                        .toList())
                 .build();
     }
 
@@ -102,7 +66,7 @@ public class KnowledgeFacadeAssembler {
             return null;
         }
         return KnowledgeTagFacadeResponse.builder()
-                .tagId(tag.getTagId() == null ? null : tag.getTagId().value())
+                .tagId(tag.getId() == null ? null : tag.getId().value())
                 .tagName(tag.getName())
                 .build();
     }
@@ -175,21 +139,6 @@ public class KnowledgeFacadeAssembler {
                         .entityName(result.getEntityName())
                         .entityType(result.getEntityType())
                         .contentRefCount(result.getContentRefCount())
-                        .build())
-                .toList();
-    }
-
-    private List<KnowledgeSynonymMatchFacadeDto> toSynonymMatchFacadeDtos(List<DiscoverySynonymMatchResult> results) {
-        if (results == null || results.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return results.stream()
-                .map(result -> KnowledgeSynonymMatchFacadeDto.builder()
-                        .sourceTerm(result.getSourceTerm())
-                        .targetTerm(result.getTargetTerm())
-                        .matchedTerm(result.getMatchedTerm())
-                        .expandedTerm(result.getExpandedTerm())
-                        .direction(result.getDirection())
                         .build())
                 .toList();
     }

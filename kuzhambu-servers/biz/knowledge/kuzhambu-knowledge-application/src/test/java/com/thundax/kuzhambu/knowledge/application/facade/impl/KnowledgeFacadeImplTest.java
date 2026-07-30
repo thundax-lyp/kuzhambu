@@ -10,9 +10,6 @@ import com.thundax.kuzhambu.knowledge.application.facade.assembler.KnowledgeFaca
 import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportSummaryResult;
 import com.thundax.kuzhambu.knowledge.application.report.service.KnowledgeReportApplicationService;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryEntityHintResult;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymExpandResult;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymMatchResult;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymQueryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.KnowledgeTaxonomyReadApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
@@ -26,7 +23,6 @@ import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeDiscoveryTermFacad
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeRemoveContentTagRefFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeResolveTagFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSummaryFacadeRequest;
-import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSynonymQueryFacadeRequest;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -75,52 +71,25 @@ class KnowledgeFacadeImplTest {
     void discoveryReadMethodsShouldDelegateAndMapFacadeResponses() {
         KnowledgeTaxonomyReadApplicationService knowledgeTaxonomyReadApplicationService =
                 mock(KnowledgeTaxonomyReadApplicationService.class);
-        when(knowledgeTaxonomyReadApplicationService.expandSynonyms("礼制"))
-                .thenReturn(new DiscoverySynonymExpandResult("礼制", "礼制", List.of("礼学", "典礼")));
         when(knowledgeTaxonomyReadApplicationService.getTagHint("礼制"))
                 .thenReturn(new DiscoveryTagHintResult("礼制", "礼制", "礼制", null, 6L));
         when(knowledgeTaxonomyReadApplicationService.listEntityHints("礼制"))
                 .thenReturn(List.of(new DiscoveryEntityHintResult("礼制", "礼制", "周礼", "BOOK", 2L)));
-        when(knowledgeTaxonomyReadApplicationService.querySynonyms("礼制", "BIDIRECTIONAL", 50))
-                .thenReturn(new DiscoverySynonymQueryResult(
-                        "礼制",
-                        "礼制",
-                        "BIDIRECTIONAL",
-                        50,
-                        List.of(
-                                new DiscoverySynonymMatchResult("礼制", "礼学", "礼制", "礼学", "FORWARD"),
-                                new DiscoverySynonymMatchResult("典礼", "礼制", "礼制", "典礼", "REVERSE"))));
         KnowledgeFacadeImpl facade = newFacade(
                 mock(KnowledgeReportApplicationService.class),
                 knowledgeTaxonomyReadApplicationService,
                 mock(KnowledgeTagBindingDomainService.class));
         KnowledgeDiscoveryTermFacadeRequest request =
                 KnowledgeDiscoveryTermFacadeRequest.builder().term("礼制").build();
-        KnowledgeSynonymQueryFacadeRequest queryRequest = KnowledgeSynonymQueryFacadeRequest.builder()
-                .term("礼制")
-                .direction("BIDIRECTIONAL")
-                .limit(50)
-                .build();
 
-        var synonyms = facade.expandSynonyms(request);
         var tagHint = facade.getTagHint(request);
         var entityHints = facade.listEntityHints(request);
-        var querySynonyms = facade.querySynonyms(queryRequest);
 
-        assertEquals(List.of("礼学", "典礼"), synonyms.getExpandedTerms());
         assertEquals("礼制", tagHint.getMatchedTagName());
         assertEquals(6L, tagHint.getContentRefCount());
         assertEquals(1, entityHints.getEntityHints().size());
         assertEquals("周礼", entityHints.getEntityHints().get(0).getEntityName());
         assertEquals("BOOK", entityHints.getEntityHints().get(0).getEntityType());
-        assertEquals("礼制", querySynonyms.getTerm());
-        assertEquals("礼制", querySynonyms.getNormalizedTerm());
-        assertEquals("BIDIRECTIONAL", querySynonyms.getDirection());
-        assertEquals(50, querySynonyms.getLimit());
-        assertEquals("FORWARD", querySynonyms.getMatches().get(0).getDirection());
-        assertEquals("礼学", querySynonyms.getMatches().get(0).getExpandedTerm());
-        assertEquals("礼学", querySynonyms.getExpandedTerms().get(0));
-        assertEquals("典礼", querySynonyms.getExpandedTerms().get(1));
     }
 
     @Test
@@ -128,7 +97,7 @@ class KnowledgeFacadeImplTest {
         KnowledgeTagBindingDomainService knowledgeTagBindingDomainService =
                 mock(KnowledgeTagBindingDomainService.class);
         Tag tag = new Tag();
-        tag.setTagId(TagIdCodec.toDomain(9L));
+        tag.setId(TagIdCodec.toDomain(9L));
         tag.setName("礼制");
         when(knowledgeTagBindingDomainService.resolveOrCreateManualTag("礼制")).thenReturn(tag);
         when(knowledgeTagBindingDomainService.resolveOrCreateAiTag("礼制")).thenReturn(tag);
@@ -215,7 +184,6 @@ class KnowledgeFacadeImplTest {
                 knowledgeTagBindingDomainService);
 
         assertEquals(null, facade.summary(null));
-        assertEquals(null, facade.expandSynonyms(null));
         assertEquals(null, facade.getTagHint(null));
         assertEquals(null, facade.listEntityHints(null));
         assertEquals(null, facade.resolveOrCreateManualTag(null));

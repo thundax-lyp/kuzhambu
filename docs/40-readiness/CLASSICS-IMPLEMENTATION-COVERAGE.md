@@ -20,7 +20,7 @@
 ## Open Items
 
 - 无当前需求阻塞项。
-- Knowledge 标签分类、同义词、审核、合并等完整 taxonomy 治理属于 Knowledge 独立页面，不作为 Classics 页面内联治理阻塞项。
+- Knowledge 标签分类、审核、合并等完整 taxonomy 治理属于 Knowledge 独立页面，不作为 Classics 页面内联治理阻塞项。
 - Discovery 搜索和 QA 质量继续由 Discovery / AI 演进，Classics 只提供内容、上下文入口和快照。
 
 ## Validation Evidence

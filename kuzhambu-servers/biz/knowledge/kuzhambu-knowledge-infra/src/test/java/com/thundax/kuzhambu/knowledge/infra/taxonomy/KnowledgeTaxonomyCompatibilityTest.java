@@ -34,7 +34,7 @@ class KnowledgeTaxonomyCompatibilityTest {
         TagRepositoryImpl repository = new TagRepositoryImpl(mapper);
         Tag tag = new Tag();
         tag.setId(TagIdCodec.toDomain(100L));
-        tag.setTagId(TagIdCodec.toDomain(1001L));
+        tag.setId(TagIdCodec.toDomain(1001L));
         tag.setName("祭祀");
         tag.setCategoryId(TagCategoryIdCodec.toDomain(1999L));
         tag.setStatus(TagStatus.ENABLED);

@@ -13,7 +13,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TagCategory {
     private TagCategoryId id;
-    private TagCategoryId categoryId;
     private String name;
     private String description;
     private int priority;

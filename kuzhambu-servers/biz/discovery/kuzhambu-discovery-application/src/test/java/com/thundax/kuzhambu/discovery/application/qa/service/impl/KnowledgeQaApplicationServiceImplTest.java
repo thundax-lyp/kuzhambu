@@ -113,7 +113,7 @@ class KnowledgeQaApplicationServiceImplTest {
         when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(6201L);
         when(enhancementProvider.enhance("这份文档说了什么？"))
                 .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
-                        List.of("礼学", "典礼"), null, List.of()));
+                        null, List.of()));
         when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
                 .thenReturn(qaKnowledge());
 
@@ -190,7 +190,7 @@ class KnowledgeQaApplicationServiceImplTest {
         when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(6201L);
         when(enhancementProvider.enhance("这份文档说了什么？"))
                 .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
-                        List.of("礼学", "典礼"), null, List.of()));
+                        null, List.of()));
         List<String> deltas = new java.util.ArrayList<>();
 
         ChatCompletionResult result = service.chatCompletionStream(wangqiCommand(3001L), deltas::add);
@@ -309,7 +309,7 @@ class KnowledgeQaApplicationServiceImplTest {
         when(messageRepository.save(any(QaMessage.class))).thenReturn(6001L, 6002L);
         when(enhancementProvider.enhance("什么是三才？"))
                 .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
-                        List.of("天地人"), null, List.of()));
+                        null, List.of()));
         when(knowledgeBaseClient.chat(any(KnowledgeChatRequest.class)))
                 .thenThrow(new IllegalStateException("System not embedding model"));
         when(syncItemRepository.listBySyncStatus("SUCCEEDED", 20)).thenReturn(List.of(sancaiSyncItem()));

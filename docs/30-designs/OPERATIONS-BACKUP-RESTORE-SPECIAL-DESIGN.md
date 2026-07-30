@@ -215,7 +215,7 @@ portal-starter / other app container (C)
 - 古籍内容主事实。
 - AI 候选与调用相关业务事实。
 - Discovery 搜索和问答相关业务事实。
-- Knowledge 标签、同义词、图谱与精修相关业务事实。
+- Knowledge 标签、图谱与精修相关业务事实。
 - Storage 对象元数据与引用关系。
 
 ### Excluded Data

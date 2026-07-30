@@ -50,7 +50,6 @@ knowledge_refinement_lineage_relation_draft
 knowledge_refinement_relation_draft
 knowledge_refinement_task
 knowledge_relation
-knowledge_synonym
 knowledge_tag
 knowledge_tag_alias
 knowledge_tag_category

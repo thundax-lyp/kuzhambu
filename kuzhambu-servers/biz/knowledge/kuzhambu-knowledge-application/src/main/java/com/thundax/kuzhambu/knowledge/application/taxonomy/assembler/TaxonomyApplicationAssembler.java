@@ -1,12 +1,10 @@
 package com.thundax.kuzhambu.knowledge.application.taxonomy.assembler;
 
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagContentRefResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Synonym;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagCategory;
@@ -25,9 +23,9 @@ public final class TaxonomyApplicationAssembler {
         }
 
         return new TagCategoryResult(
-                category.getCategoryId() == null
+                category.getId() == null
                         ? null
-                        : String.valueOf(category.getCategoryId().value()),
+                        : String.valueOf(category.getId().value()),
                 category.getName(),
                 category.getDescription(),
                 category.getPriority(),
@@ -40,7 +38,7 @@ public final class TaxonomyApplicationAssembler {
         }
 
         return new TagResult(
-                tag.getTagId() == null ? null : String.valueOf(tag.getTagId().value()),
+                tag.getId() == null ? null : String.valueOf(tag.getId().value()),
                 tag.getName(),
                 categoryId,
                 categoryName,
@@ -81,9 +79,7 @@ public final class TaxonomyApplicationAssembler {
         }
 
         return new TagAliasResult(
-                alias.getAliasId() == null
-                        ? null
-                        : String.valueOf(alias.getAliasId().value()),
+                alias.getId() == null ? null : String.valueOf(alias.getId().value()),
                 alias.getName(),
                 alias.getSource() == null ? null : alias.getSource().value());
     }
@@ -103,7 +99,7 @@ public final class TaxonomyApplicationAssembler {
         }
 
         return new TagContentRefResult(
-                ref.getRefId() == null ? null : String.valueOf(ref.getRefId().value()),
+                ref.getId() == null ? null : String.valueOf(ref.getId().value()),
                 ref.getContentType() == null ? null : ref.getContentType().value(),
                 ref.getContentId() == null ? null : String.valueOf(ref.getContentId()),
                 ref.getContentTitle(),
@@ -116,29 +112,6 @@ public final class TaxonomyApplicationAssembler {
                 : list.stream()
                         .filter(Objects::nonNull)
                         .map(TaxonomyApplicationAssembler::toContentRefResult)
-                        .collect(Collectors.toList());
-    }
-
-    public static SynonymResult toSynonymResult(Synonym synonym) {
-        if (synonym == null) {
-            return new SynonymResult();
-        }
-
-        return new SynonymResult(
-                synonym.getSynonymId() == null
-                        ? null
-                        : String.valueOf(synonym.getSynonymId().value()),
-                synonym.getTerm(),
-                synonym.getSynonym(),
-                synonym.getStatus() == null ? null : synonym.getStatus().value());
-    }
-
-    public static List<SynonymResult> toSynonymResultList(List<Synonym> list) {
-        return list == null
-                ? new ArrayList<>()
-                : list.stream()
-                        .filter(Objects::nonNull)
-                        .map(TaxonomyApplicationAssembler::toSynonymResult)
                         .collect(Collectors.toList());
     }
 }

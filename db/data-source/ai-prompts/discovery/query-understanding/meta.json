@@ -28,14 +28,12 @@
     "properties": {
       "normalizedQueryText": { "type": "string" },
       "rewrittenQueryText": { "type": "string" },
-      "expandedSynonyms": { "type": "array", "items": { "type": "string" } },
       "recognizedEntities": { "type": "array", "items": { "type": "string" } },
       "intentType": { "type": "string" }
     },
     "required": [
       "normalizedQueryText",
       "rewrittenQueryText",
-      "expandedSynonyms",
       "recognizedEntities",
       "intentType"
     ]

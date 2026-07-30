@@ -75,9 +75,8 @@ public class TagGovernanceMetricsRepositoryImpl implements TagGovernanceMetricsR
                 .collect(Collectors.groupingBy(TagContentRefDO::getTagId, Collectors.counting()));
         long coveredTagCount = activeTags.stream()
                 .filter(Objects::nonNull)
-                .filter(tag -> tag.getTagId() != null)
-                .filter(tag ->
-                        contentRefCountByTagId.getOrDefault(tag.getTagId().value(), 0L) > 0)
+                .filter(tag -> tag.getId() != null)
+                .filter(tag -> contentRefCountByTagId.getOrDefault(tag.getId().value(), 0L) > 0)
                 .count();
         return BigDecimal.valueOf(coveredTagCount)
                 .divide(BigDecimal.valueOf(activeTags.size()), 4, RoundingMode.HALF_UP);
@@ -106,7 +105,7 @@ public class TagGovernanceMetricsRepositoryImpl implements TagGovernanceMetricsR
                 .filter(Objects::nonNull)
                 .map(tag -> new TagGovernanceMetrics.TagUsageMetric(
                         tag.getName(),
-                        contentRefCountByTagId.getOrDefault(tag.getTagId().value(), 0L)))
+                        contentRefCountByTagId.getOrDefault(tag.getId().value(), 0L)))
                 .sorted(Comparator.comparing(TagGovernanceMetrics.TagUsageMetric::getContentRefCount)
                         .reversed()
                         .thenComparing(
@@ -120,9 +119,9 @@ public class TagGovernanceMetricsRepositoryImpl implements TagGovernanceMetricsR
             List<Tag> activeTags, List<TagCategory> categories) {
         Map<Long, String> categoryNameById = categories.stream()
                 .filter(Objects::nonNull)
-                .filter(category -> category.getCategoryId() != null)
+                .filter(category -> category.getId() != null)
                 .collect(Collectors.toMap(
-                        category -> category.getCategoryId().value(), TagCategory::getName, (left, right) -> left));
+                        category -> category.getId().value(), TagCategory::getName, (left, right) -> left));
 
         return activeTags.stream()
                 .filter(Objects::nonNull)

@@ -64,7 +64,6 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     "",
                     SearchIntentType.KEYWORD_SEARCH.value(),
                     List.of(),
-                    List.of(),
                     query.getRequestId(),
                     query.getTraceId());
         }
@@ -89,12 +88,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     .build();
             DiscoveryAiFacadeResponse aiResult = aiFacade.understandDiscoveryQuery(aiRequest);
             ensureAiSucceeded(aiResult, "DISCOVERY-20003", "discovery.search.query-understanding.ai-failed");
-            QueryUnderstandingResult result = toResult(
-                    normalizedQueryText,
-                    enhancement.expandedSynonyms(),
-                    enhancement.recognizedEntities(),
-                    query,
-                    aiResult);
+            QueryUnderstandingResult result =
+                    toResult(normalizedQueryText, enhancement.recognizedEntities(), query, aiResult);
             queryUnderstandingRepository.save(toSucceededEntity(query, result));
             return result;
         } catch (RuntimeException exception) {
@@ -111,7 +106,6 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 normalizedQueryText,
                 normalizedQueryText,
                 SearchIntentType.KEYWORD_SEARCH.value(),
-                safeList(enhancement.expandedSynonyms()),
                 safeList(enhancement.recognizedEntities()),
                 query.getRequestId(),
                 query.getTraceId());
@@ -119,7 +113,6 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
 
     private QueryUnderstandingResult toResult(
             String normalizedQueryText,
-            List<String> expandedSynonyms,
             List<QueryUnderstandingResult.RecognizedEntityResult> defaultRecognizedEntities,
             SearchQuery query,
             DiscoveryAiFacadeResponse aiResult) {
@@ -130,7 +123,6 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     normalizedQueryText,
                     normalizedQueryText,
                     SearchIntentType.KEYWORD_SEARCH.value(),
-                    safeList(expandedSynonyms),
                     safeList(defaultRecognizedEntities),
                     query.getRequestId(),
                     query.getTraceId());
@@ -149,7 +141,6 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     normalizedQueryText,
                     rewrittenQueryText,
                     intent,
-                    safeList(expandedSynonyms),
                     recognizedEntities,
                     query.getRequestId(),
                     query.getTraceId());
@@ -172,7 +163,6 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 result.getRewrittenQueryText(),
                 parseIntent(result.getIntent()),
                 writeJson(result.getRecognizedEntities()),
-                writeJson(result.getExpandedSynonyms()),
                 "SUCCEEDED",
                 null,
                 null,
@@ -198,7 +188,6 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 normalizedQueryText,
                 SearchIntentType.UNKNOWN,
                 writeJson(enhancement.recognizedEntities()),
-                writeJson(enhancement.expandedSynonyms()),
                 "FAILED",
                 failureCode,
                 exception.getMessage(),

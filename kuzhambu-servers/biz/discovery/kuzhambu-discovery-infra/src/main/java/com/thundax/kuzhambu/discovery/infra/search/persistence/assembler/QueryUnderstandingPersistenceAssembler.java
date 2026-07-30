@@ -23,7 +23,6 @@ public final class QueryUnderstandingPersistenceAssembler {
         dataObject.setRewrittenQueryText(entity.getRewrittenQueryText());
         dataObject.setIntentType(intentTypeValue(entity.getIntentType()));
         dataObject.setRecognizedEntitiesJson(entity.getRecognizedEntitiesJson());
-        dataObject.setExpandedSynonymsJson(entity.getExpandedSynonymsJson());
         dataObject.setUnderstandingStatus(entity.getUnderstandingStatus());
         dataObject.setFailureCode(entity.getFailureCode());
         dataObject.setFailureMessage(entity.getFailureMessage());
@@ -46,7 +45,6 @@ public final class QueryUnderstandingPersistenceAssembler {
         entity.setRewrittenQueryText(dataObject.getRewrittenQueryText());
         entity.setIntentType(intentTypeFrom(dataObject.getIntentType()));
         entity.setRecognizedEntitiesJson(dataObject.getRecognizedEntitiesJson());
-        entity.setExpandedSynonymsJson(dataObject.getExpandedSynonymsJson());
         entity.setUnderstandingStatus(dataObject.getUnderstandingStatus());
         entity.setFailureCode(dataObject.getFailureCode());
         entity.setFailureMessage(dataObject.getFailureMessage());

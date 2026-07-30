@@ -1,10 +1,6 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.assembler;
 
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymCreateCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymRemoveCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymStatusCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasRemoveCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchDeprecateCommand;
@@ -22,14 +18,12 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeComma
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.SynonymPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagBatchMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
@@ -39,20 +33,13 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagExtractionR
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagGovernanceMetricsResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.SynonymIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagAliasIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagCategoryIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.SynonymStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagCategoryStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymCreateRequest;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymPageRequest;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymRemoveRequest;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymStatusRequest;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymUpdateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasCreateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasRemoveRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagBatchDeprecateRequest;
@@ -75,7 +62,6 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagReviewRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagStatusRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagUpdateRequest;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.SynonymResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagAliasResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagBatchMergePreviewResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagCategoryResponse;
@@ -275,40 +261,6 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
         return new TagAliasRemoveCommand(TagAliasIdCodec.toDomain(request.getId()));
     }
 
-    public static SynonymPageQuery toQuery(SynonymPageRequest request) {
-        SynonymPageQuery query = new SynonymPageQuery();
-        query.setTerm(request == null ? null : request.getTerm());
-        query.setSynonym(request == null ? null : request.getSynonym());
-        query.setStatus(
-                request == null || StringUtils.isBlank(request.getStatus())
-                        ? null
-                        : SynonymStatus.from(request.getStatus()));
-        query.setSortDirection(resolveSortDirection(request == null ? null : request.getSortDirection()));
-        return query;
-    }
-
-    public static SynonymCreateCommand toCreateCommand(SynonymCreateRequest request) {
-        return new SynonymCreateCommand(
-                SynonymIdCodec.toDomain(request.getId()),
-                request.getTerm(),
-                request.getSynonym(),
-                StringUtils.isBlank(request.getStatus()) ? null : SynonymStatus.from(request.getStatus()));
-    }
-
-    public static SynonymUpdateCommand toUpdateCommand(SynonymUpdateRequest request) {
-        return new SynonymUpdateCommand(
-                SynonymIdCodec.toDomain(request.getId()), request.getTerm(), request.getSynonym());
-    }
-
-    public static SynonymStatusCommand toStatusCommand(SynonymStatusRequest request) {
-        return new SynonymStatusCommand(
-                SynonymIdCodec.toDomain(request.getId()), SynonymStatus.from(request.getStatus()));
-    }
-
-    public static SynonymRemoveCommand toRemoveCommand(SynonymRemoveRequest request) {
-        return new SynonymRemoveCommand(SynonymIdCodec.toDomain(request.getId()));
-    }
-
     public static TagCategoryResponse toResponse(TagCategoryResult result) {
         TagCategoryResponse response = new TagCategoryResponse();
         response.setId(result == null ? null : result.getId());
@@ -493,23 +445,6 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
         response.setMonth(result == null ? null : result.getMonth());
         response.setTagCount(result == null ? null : result.getTagCount());
         return response;
-    }
-
-    public static SynonymResponse toResponse(SynonymResult result) {
-        SynonymResponse response = new SynonymResponse();
-        response.setId(result == null ? null : result.getId());
-        response.setTerm(result == null ? null : result.getTerm());
-        response.setSynonym(result == null ? null : result.getSynonym());
-        response.setStatus(result == null ? null : result.getStatus());
-        return response;
-    }
-
-    public static List<SynonymResponse> toResponses(List<SynonymResult> list) {
-        return list == null
-                ? List.of()
-                : list.stream()
-                        .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
-                        .toList();
     }
 
     private static List<com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId> toTagIds(

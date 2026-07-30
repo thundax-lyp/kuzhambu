@@ -175,7 +175,7 @@ class KnowledgeTagBindingDomainServiceTest {
         ArgumentCaptor<TagContentRef> captor = ArgumentCaptor.forClass(TagContentRef.class);
         verify(tagContentRefRepository).insert(captor.capture());
         TagContentRef inserted = captor.getValue();
-        assertNotNull(inserted.getRefId());
+        assertNotNull(inserted.getId());
         assertEquals(TagIdCodec.toDomain(1001L), inserted.getTagId());
         assertEquals(ContentType.SANCAI_ENTRY, inserted.getContentType());
         assertEquals(88L, inserted.getContentId());
@@ -229,7 +229,7 @@ class KnowledgeTagBindingDomainServiceTest {
 
     private static Tag enabledTag(Long tagId, String name) {
         Tag tag = new Tag();
-        tag.setTagId(TagIdCodec.toDomain(tagId));
+        tag.setId(TagIdCodec.toDomain(tagId));
         tag.setName(name);
         tag.setStatus(TagStatus.ENABLED);
         return tag;
@@ -237,7 +237,7 @@ class KnowledgeTagBindingDomainServiceTest {
 
     private static TagCategory enabledCategory() {
         TagCategory category = new TagCategory();
-        category.setCategoryId(TagCategoryIdCodec.toDomain(1999L));
+        category.setId(TagCategoryIdCodec.toDomain(1999L));
         category.setStatus(TagCategoryStatus.ENABLED);
         return category;
     }
