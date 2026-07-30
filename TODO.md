@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `D-04 discovery-domain-qa-entity-repository-contracts`：强类型化 QA 核心实体和仓储端口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaSession.java`、`QaMessage.java`、`QaKnowledgeSyncItem.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaSessionRepository.java`、`QaMessageRepository.java`、`QaKnowledgeSyncItemRepository.java`
-    - 处理动作：把 QA 核心实体字段和 repository 参数/返回值改为强类型。
-    - 验收点：`QaKnowledgeSyncItem.sourceId` 为 `KnowledgeSourceId`，`QaKnowledgeSyncItemRepository.save` 返回 `KnowledgeSourceId` 而不是数据库 `id`。
-    - 重要度：10/10
-
 - [ ] `D-05 discovery-infra-qa-persistence-boundary`：适配 QA infra 持久化边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
