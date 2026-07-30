@@ -271,7 +271,6 @@ public class KnowledgeGraphCandidateApplySupport {
             if (existing == null) {
                 continue;
             }
-            node.setNodeId(existing.getNodeId());
             node.setId(existing.getId());
             node.setFirstExtractedAt(
                     existing.getFirstExtractedAt() == null ? appliedAt : existing.getFirstExtractedAt());

@@ -14,7 +14,6 @@ public final class KnowledgeLineageNodePersistenceAssembler {
         }
         KnowledgeLineageNodeDO dataObject = new KnowledgeLineageNodeDO();
         dataObject.setId(entity.getId());
-        dataObject.setNodeId(entity.getNodeId());
         dataObject.setNodeKey(entity.getNodeKey());
         dataObject.setName(entity.getName());
         dataObject.setNodeType(entity.getNodeType());
@@ -35,7 +34,6 @@ public final class KnowledgeLineageNodePersistenceAssembler {
         }
         KnowledgeLineageNode entity = new KnowledgeLineageNode();
         entity.setId(dataObject.getId());
-        entity.setNodeId(dataObject.getNodeId());
         entity.setNodeKey(dataObject.getNodeKey());
         entity.setName(dataObject.getName());
         entity.setNodeType(dataObject.getNodeType());

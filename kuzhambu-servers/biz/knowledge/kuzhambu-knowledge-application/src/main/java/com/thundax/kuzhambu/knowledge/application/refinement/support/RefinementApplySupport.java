@@ -141,7 +141,6 @@ public class RefinementApplySupport {
     private KnowledgeLineageNode toLineageNode(Long versionId, RefinementLineageNodeDraft draft) {
         Date now = new Date();
         return new KnowledgeLineageNode(
-                null,
                 draft.getNodeId(),
                 draft.getNodeKey(),
                 draft.getName(),

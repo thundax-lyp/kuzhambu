@@ -44,7 +44,7 @@ class KnowledgeLineageNodeRepositoryTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    void getByNodeIdShouldQueryBusinessKey() {
+    void getByNodeIdShouldQueryId() {
         KnowledgeLineageNodeMapper mapper = mock(KnowledgeLineageNodeMapper.class);
         when(mapper.selectOne(any())).thenReturn(new KnowledgeLineageNodeDO());
         KnowledgeLineageNodeRepositoryImpl repository = new KnowledgeLineageNodeRepositoryImpl(mapper);
@@ -53,7 +53,7 @@ class KnowledgeLineageNodeRepositoryTest {
 
         ArgumentCaptor<QueryWrapper<KnowledgeLineageNodeDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectOne(captor.capture());
-        assertTrue(captor.getValue().getSqlSegment().contains("node_id"));
+        assertTrue(captor.getValue().getSqlSegment().contains("id"));
     }
 
     @Test
@@ -92,7 +92,7 @@ class KnowledgeLineageNodeRepositoryTest {
 
         ArgumentCaptor<KnowledgeLineageNodeDO> captor = ArgumentCaptor.forClass(KnowledgeLineageNodeDO.class);
         verify(mapper).insert(captor.capture());
-        assertNotNull(captor.getValue().getNodeId());
+        assertNotNull(captor.getValue().getId());
         assertEquals("junzhu:huangdi", captor.getValue().getNodeKey());
     }
 }

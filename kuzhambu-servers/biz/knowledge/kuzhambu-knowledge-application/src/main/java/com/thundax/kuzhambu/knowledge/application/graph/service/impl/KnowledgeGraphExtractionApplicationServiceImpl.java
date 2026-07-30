@@ -1106,7 +1106,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             return null;
         }
         return new KnowledgeLineageNodeResult(
-                node.getNodeId(),
+                node.getId(),
                 node.getNodeKey(),
                 node.getName(),
                 node.getNodeType(),

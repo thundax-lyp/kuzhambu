@@ -120,7 +120,6 @@ class KnowledgeQualityReportApplicationServiceTest {
                         null)));
         when(lineageNodeRepository.listByVersionId(71L))
                 .thenReturn(List.of(new KnowledgeLineageNode(
-                        1L,
                         5001L,
                         "lineage:huangdi",
                         "黄帝",

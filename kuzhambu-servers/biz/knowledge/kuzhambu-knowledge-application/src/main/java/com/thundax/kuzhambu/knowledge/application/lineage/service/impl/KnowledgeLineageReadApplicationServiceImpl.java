@@ -165,7 +165,7 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
     private Set<String> resolveFocusedNodeKeys(
             List<KnowledgeLineageNode> nodes, List<KnowledgeLineageRelation> relations, LineageCanvasQuery query) {
         String focusNodeKey = nodes.stream()
-                .filter(node -> Objects.equals(node.getNodeId(), query.getFocusNodeId()))
+                .filter(node -> Objects.equals(node.getId(), query.getFocusNodeId()))
                 .map(KnowledgeLineageNode::getNodeKey)
                 .filter(StringUtils::isNotBlank)
                 .findFirst()
@@ -272,8 +272,8 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
 
     private NodeView toNodeView(KnowledgeLineageNode node) {
         return new NodeView(
-                "lineage-node:" + node.getNodeId(),
-                node.getNodeId(),
+                "lineage-node:" + node.getId(),
+                node.getId(),
                 node.getNodeKey(),
                 node.getName(),
                 node.getNodeType(),
@@ -300,9 +300,9 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
         return new RelationView(
                 "lineage-relation:" + relation.getRelationId(),
                 relation.getRelationId(),
-                sourceNode == null ? null : sourceNode.getNodeId(),
+                sourceNode == null ? null : sourceNode.getId(),
                 sourceNode == null ? relation.getSourceName() : sourceNode.getName(),
-                targetNode == null ? null : targetNode.getNodeId(),
+                targetNode == null ? null : targetNode.getId(),
                 targetNode == null ? relation.getTargetName() : targetNode.getName(),
                 relation.getRelationType(),
                 relationLabel(relation.getRelationType()),

@@ -104,7 +104,7 @@ public class RefinementDraftBootstrapSupport {
                     null,
                     null,
                     refinementTaskId,
-                    node.getNodeId(),
+                    node.getId(),
                     node.getNodeKey(),
                     "AI_EXTRACTED",
                     "UNCHANGED",

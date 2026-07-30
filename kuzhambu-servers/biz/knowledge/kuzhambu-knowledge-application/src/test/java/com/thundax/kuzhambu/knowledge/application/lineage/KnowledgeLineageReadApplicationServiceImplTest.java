@@ -50,8 +50,8 @@ class KnowledgeLineageReadApplicationServiceImplTest {
         KnowledgeLineageReadApplicationServiceImpl service =
                 new KnowledgeLineageReadApplicationServiceImpl(versionRepository, nodeRepository, relationRepository);
         GraphVersion version = lineageVersion();
-        KnowledgeLineageNode father = node(1L, 301L, "person:father", "贾代善", "MALE", "CONFIRMED");
-        KnowledgeLineageNode son = node(2L, 302L, "person:son", "贾政", "MALE", "PENDING");
+        KnowledgeLineageNode father = node(301L, "person:father", "贾代善", "MALE", "CONFIRMED");
+        KnowledgeLineageNode son = node(302L, "person:son", "贾政", "MALE", "PENDING");
         KnowledgeLineageRelation relation = relation();
         when(versionRepository.page("LINEAGE", "APPLIED", null, null, 1, 1))
                 .thenReturn(PageResult.of(1, 1, 1, List.of(version)));
@@ -99,7 +99,7 @@ class KnowledgeLineageReadApplicationServiceImplTest {
                 .thenReturn(PageResult.of(1, 200, 1, List.of(version)));
         when(versionRepository.getByVersionId(71L)).thenReturn(version);
         when(nodeRepository.listByVersionId(71L))
-                .thenReturn(List.of(node(1L, 301L, "person:father", "贾代善", "MALE", "CONFIRMED")));
+                .thenReturn(List.of(node(301L, "person:father", "贾代善", "MALE", "CONFIRMED")));
         when(relationRepository.listByVersionId(71L)).thenReturn(List.of());
         LineageCanvasQuery query = new LineageCanvasQuery();
         query.setVersionId(71L);
@@ -131,9 +131,8 @@ class KnowledgeLineageReadApplicationServiceImplTest {
     }
 
     private static KnowledgeLineageNode node(
-            Long id, Long nodeId, String nodeKey, String name, String gender, String confirmationStatus) {
+            Long nodeId, String nodeKey, String name, String gender, String confirmationStatus) {
         return new KnowledgeLineageNode(
-                id,
                 nodeId,
                 nodeKey,
                 name,

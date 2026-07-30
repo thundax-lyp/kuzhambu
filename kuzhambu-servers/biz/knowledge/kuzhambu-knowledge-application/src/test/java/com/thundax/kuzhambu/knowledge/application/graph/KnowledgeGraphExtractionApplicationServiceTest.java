@@ -747,7 +747,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void pageLineageNodesShouldMapReadableFields() {
         FakeKnowledgeLineageNodeRepository knowledgeLineageNodeRepository = new FakeKnowledgeLineageNodeRepository();
         KnowledgeLineageNode node = new KnowledgeLineageNode();
-        node.setNodeId(3001L);
+        node.setId(3001L);
         node.setNodeKey("person:huangdi");
         node.setName("黄帝");
         node.setNodeType("PERSON");
@@ -782,7 +782,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void getLineageNodeDetailShouldMapSingleNodeRecord() {
         FakeKnowledgeLineageNodeRepository knowledgeLineageNodeRepository = new FakeKnowledgeLineageNodeRepository();
         KnowledgeLineageNode node = new KnowledgeLineageNode();
-        node.setNodeId(3002L);
+        node.setId(3002L);
         node.setNodeKey("person:fuxi");
         node.setName("伏羲");
         node.setNodeType("PERSON");
@@ -1901,7 +1901,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         @Override
         public KnowledgeLineageNode getByNodeId(Long nodeId) {
             return nodes.stream()
-                    .filter(node -> nodeId.equals(node.getNodeId()))
+                    .filter(node -> nodeId.equals(node.getId()))
                     .findFirst()
                     .orElse(null);
         }
