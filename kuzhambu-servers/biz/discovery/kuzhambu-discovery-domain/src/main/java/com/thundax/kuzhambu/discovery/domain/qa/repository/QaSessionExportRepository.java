@@ -8,5 +8,9 @@ public interface QaSessionExportRepository {
 
     int update(QaSessionExport entity);
 
-    QaSessionExport getByExportId(Long exportId);
+    QaSessionExport getById(Long id);
+
+    default QaSessionExport getByExportId(Long exportId) {
+        return getById(exportId);
+    }
 }

@@ -4,7 +4,11 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncBatc
 
 public interface QaKnowledgeSyncBatchRepository {
 
-    QaKnowledgeSyncBatch getByBatchId(Long batchId);
+    QaKnowledgeSyncBatch getById(Long id);
+
+    default QaKnowledgeSyncBatch getByBatchId(Long batchId) {
+        return getById(batchId);
+    }
 
     Long save(QaKnowledgeSyncBatch entity);
 

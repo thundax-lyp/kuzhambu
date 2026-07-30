@@ -12,7 +12,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class QaKnowledgeSyncBatch {
     private Long id;
-    private Long batchId;
     private String triggerType;
     private String provider;
     private Integer totalCount;
@@ -20,4 +19,32 @@ public class QaKnowledgeSyncBatch {
     private Integer failureCount;
     private Date startedAt;
     private Date finishedAt;
+
+    public QaKnowledgeSyncBatch(
+            Long id,
+            Long batchId,
+            String triggerType,
+            String provider,
+            Integer totalCount,
+            Integer successCount,
+            Integer failureCount,
+            Date startedAt,
+            Date finishedAt) {
+        this.id = id == null ? batchId : id;
+        this.triggerType = triggerType;
+        this.provider = provider;
+        this.totalCount = totalCount;
+        this.successCount = successCount;
+        this.failureCount = failureCount;
+        this.startedAt = startedAt;
+        this.finishedAt = finishedAt;
+    }
+
+    public Long getBatchId() {
+        return id;
+    }
+
+    public void setBatchId(Long batchId) {
+        this.id = batchId;
+    }
 }

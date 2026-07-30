@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `06 qa-export-sync-domain`：清理 QA 导出和同步批次本体 ID
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaSessionExport.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaKnowledgeSyncBatch.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaSessionExportRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaKnowledgeSyncBatchRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaSessionExportRepositoryImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaKnowledgeSyncBatchRepositoryImpl.java`
-    - 处理动作：删除 `exportId` 和 `batchId` 本体字段，并把导出、同步批次自身查询改为 `getById`。
-    - 验收点：`QaSessionExport.exportId`、`QaKnowledgeSyncBatch.batchId` 不存在，相关 repository save 返回数据库回填 `id`。
-    - 重要度：9/10
-
 - [ ] `07 qa-export-sync-persistence`：同步 QA 导出和同步批次持久化及结果契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
