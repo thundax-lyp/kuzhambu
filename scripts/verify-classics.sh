@@ -23,8 +23,8 @@ if [[ ! -f "${ROOT_DIR}/db/data-source/sancai-tags.json" ]]; then
     exit 1
 fi
 
-if [[ ! -f "${ROOT_DIR}/db/data-source/sancai-tree.json" ]]; then
-    echo "Missing db/data-source/sancai-tree.json" >&2
+if [[ ! -f "${ROOT_DIR}/db/data-source/sancai-manuscripts.json" ]]; then
+    echo "Missing db/data-source/sancai-manuscripts.json" >&2
     exit 1
 fi
 
@@ -33,8 +33,8 @@ if ! jq -e '.schema == "classics_sancai_tag_seed"' "${ROOT_DIR}/db/data-source/s
     exit 1
 fi
 
-if ! jq -e '.schema == "classics_sancai_tree"' "${ROOT_DIR}/db/data-source/sancai-tree.json" >/dev/null; then
-    echo "Invalid sancai tree source schema" >&2
+if ! jq -e 'type == "array"' "${ROOT_DIR}/db/data-source/sancai-manuscripts.json" >/dev/null; then
+    echo "Invalid sancai manuscript source schema" >&2
     exit 1
 fi
 

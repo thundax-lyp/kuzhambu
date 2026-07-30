@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-SOURCE="db/data-source/sancai-tree.json"
+SOURCE="db/data-source/sancai-manuscripts.json"
 OUTPUT="db/data/classics.sql"
 TAG_SEED="db/data-source/sancai-tags.json"
 
@@ -17,14 +17,14 @@ Usage:
   scripts/classics-json-to-sql.sh [source_json] [output_sql] [tag_seed_json]
 
 Defaults:
-  source_json    db/data-source/sancai-tree.json
+  source_json    db/data-source/sancai-manuscripts.json
   output_sql     db/data/classics.sql
   tag_seed_json  db/data-source/sancai-tags.json
 
 Examples:
   scripts/classics-json-to-sql.sh
-  scripts/classics-json-to-sql.sh db/data-source/sancai-tree.json db/data/classics.sql
-  scripts/classics-json-to-sql.sh db/data-source/sancai-tree.json db/data/classics.sql db/data-source/sancai-tags.json
+  scripts/classics-json-to-sql.sh db/data-source/sancai-manuscripts.json db/data/classics.sql
+  scripts/classics-json-to-sql.sh db/data-source/sancai-manuscripts.json db/data/classics.sql db/data-source/sancai-tags.json
 USAGE
 }
 
@@ -66,8 +66,8 @@ if [[ ! -f "$TAG_SEED" ]]; then
     exit 1
 fi
 
-if ! jq -e '.schema == "classics_sancai_tree"' "$SOURCE" >/dev/null; then
-    echo "error: invalid source data format, expected schema=classics_sancai_tree" >&2
+if ! jq -e 'type == "array"' "$SOURCE" >/dev/null; then
+    echo "error: invalid source data format, expected manuscript array" >&2
     exit 1
 fi
 
@@ -88,8 +88,8 @@ fi
 cat > "$TMP_OUTPUT" <<'SQL'
 SET NAMES utf8mb4;
 
--- Seed data generated from db/data-source/sancai-tree.json.
--- The source data uses Sancai tree field names; this file targets the current Classics schema.
+-- Seed data generated from db/data-source/sancai-manuscripts.json.
+-- Database ids and priorities are derived by generation script, not stored in source data.
 
 SQL
 
@@ -115,88 +115,158 @@ def sql_datetime(v):
     "\u0027" + (v | tostring) + "\u0027"
   end;
 
-def category_type(c):
-  if ((c.formal // 1) | tostring) == "0" or ((c.formal // 1) == false) then
-    "AUXILIARY"
-  else
-    "FORMAL"
-  end;
-
-def volume_type(v):
-  if ((v.auxiliary // 0) | tostring) == "1" or ((v.auxiliary // 0) == true) then
-    "AUXILIARY"
-  else
-    "MAIN"
-  end;
-
 def generated_tag_id(tag_seed; tag):
-  first(tag_seed.tags[] | select(.name == tag) | .tag_id);
+  if tag == "世系图" then
+    500001
+  else
+    (
+      tag_seed.tags
+      | map(.name)
+      | map(select(. != "世系图"))
+      | index(tag) + 501001
+    )
+  end;
 
-. as $root
+def generated_category_id(categories; category_name):
+  (categories | map(.category) | index(category_name)) + 1;
+
+def generated_volume_id(volumes; category_name; volume_name):
+  first(
+    volumes
+    | to_entries[]
+    | select(.value.category == category_name and .value.volume == volume_name)
+    | .value.volume_id
+  );
+
+def generated_entry_id(entry_index):
+  300000000001 + entry_index;
+
+def generated_category_priority(category_index):
+  category_index * 10;
+
+def generated_volume_priority(volume_id):
+  volume_id;
+
+def volume_number_from_title(title):
+  if (title | endswith("图序")) then 0
+  elif (title | endswith("卷二十")) then 20
+  elif (title | endswith("卷十九")) then 19
+  elif (title | endswith("卷十八")) then 18
+  elif (title | endswith("卷十七")) then 17
+  elif (title | endswith("卷十六")) then 16
+  elif (title | endswith("卷十五")) then 15
+  elif (title | endswith("卷十四")) then 14
+  elif (title | endswith("卷十三")) then 13
+  elif (title | endswith("卷十二")) then 12
+  elif (title | endswith("卷十一")) then 11
+  elif (title | endswith("卷十")) then 10
+  elif (title | endswith("卷九")) then 9
+  elif (title | endswith("卷八")) then 8
+  elif (title | endswith("卷七")) then 7
+  elif (title | endswith("卷六")) then 6
+  elif (title | endswith("卷五")) then 5
+  elif (title | endswith("卷四")) then 4
+  elif (title | endswith("卷三")) then 3
+  elif (title | endswith("卷二")) then 2
+  elif (title | endswith("卷一")) then 1
+  else null
+  end;
+
+. as $entries
 | $tag_seed[0] as $tag_seed_doc
+| (
+    reduce $entries[] as $entry (
+      [];
+      if (map(.category) | index($entry.category)) then
+        .
+      else
+        . + [{
+          category: $entry.category,
+          categoryType: ($entry.categoryType // "FORMAL")
+        }]
+      end
+    )
+  ) as $categories
+| (
+    reduce $entries[] as $entry (
+      [];
+      if (map(.category + "\u0000" + .volume) | index($entry.category + "\u0000" + $entry.volume)) then
+        .
+      else
+        . + [
+          {
+            category: $entry.category,
+            volume: $entry.volume,
+            volumeType: ($entry.volumeType // "MAIN"),
+            volume_id:
+              (if (generated_category_id($categories; $entry.category) == 1) then
+              1
+            else
+                ((generated_category_id($categories; $entry.category) - 1) * 100
+                  + (
+                    volume_number_from_title($entry.volume)
+                    // ([.[] | select(.category == $entry.category)] | length)
+                  ))
+            end)
+          }
+        ]
+      end
+    )
+  ) as $volumes
 |
 "-- 三才图会门类",
 (
-  $root.categories
+  $categories
   | to_entries[]
   | .key as $category_index
   | .value as $category
   | "INSERT INTO `classics_sancai_category` (`id`, `title`, `category_type`, `priority`) VALUES (" +
     (($category_index + 1) | tostring) + ", " +
-    sql_text($category.title // $category.name) + ", " +
-    sql_text(category_type($category)) + ", " +
-    (($category.priority // $category.sort_order // ($category_index + 1)) | tostring) +
+    sql_text($category.category) + ", " +
+    sql_text($category.categoryType) + ", " +
+    (generated_category_priority($category_index) | tostring) +
     ") ON DUPLICATE KEY UPDATE " +
     "`title` = VALUES(`title`), `category_type` = VALUES(`category_type`), `priority` = VALUES(`priority`);"
 ),
 "",
 "-- 三才图会卷",
 (
-  $root.categories
-  | to_entries[]
-  | .key as $category_index
-  | .value as $category
-  | ($category.volumes // [])[] as $volume
+  $volumes[]
+  | . as $volume
   | "INSERT INTO `classics_sancai_volume` (`id`, `category_id`, `title`, `volume_type`, `priority`) VALUES (" +
-    (($volume.id // $volume.volume_id) | tostring) + ", " +
-    (($category_index + 1) | tostring) + ", " +
-    sql_text($volume.title) + ", " +
-    sql_text(volume_type($volume)) + ", " +
-    (($volume.priority // $volume.sort_order) | tostring) +
+    ($volume.volume_id | tostring) + ", " +
+    (generated_category_id($categories; $volume.category) | tostring) + ", " +
+    sql_text($volume.volume) + ", " +
+    sql_text($volume.volumeType) + ", " +
+    (generated_volume_priority($volume.volume_id) | tostring) +
     ") ON DUPLICATE KEY UPDATE " +
     "`category_id` = VALUES(`category_id`), `title` = VALUES(`title`), `volume_type` = VALUES(`volume_type`), `priority` = VALUES(`priority`);"
 ),
 "",
 "-- 三才图会条目",
 (
-  [
-    $root.categories[]
-    | (.volumes // [])[] as $volume
-    | ($volume.entries // [])[]
-    | {volume_id: ($volume.id // $volume.volume_id), entry: .}
-  ]
+  $entries
   | to_entries[]
   | .key as $entry_index
-  | .value as $row
-  | $row.entry as $entry
+  | .value as $entry
   | "INSERT INTO `classics_sancai_entry` (`id`, `volume_id`, `title`, `original_text`, `translation_text`, `summary`, `lifecycle_status`, `visibility`, `translation_status`, `image_status`, `visual_asset_status`, `refinement_status`, `priority`, `current_version_id`, `current_version_no`, `current_versioned_at`, `content_updated_at`) VALUES (" +
-    (($entry.id // $entry.entry_id) | tostring) + ", " +
-    ($row.volume_id | tostring) + ", " +
+    (generated_entry_id($entry_index) | tostring) + ", " +
+    (generated_volume_id($volumes; $entry.category; $entry.volume) | tostring) + ", " +
     sql_text($entry.title) + ", " +
-    sql_text($entry.original_text) + ", " +
-    sql_text($entry.translation_text) + ", " +
+    sql_text($entry.content) + ", " +
+    sql_text($entry.translation) + ", " +
     sql_text($entry.summary) + ", " +
-    sql_text($entry.lifecycle_status // "PUBLISHED") + ", " +
-    sql_text($entry.visibility // "PUBLIC") + ", " +
-    sql_text($entry.translation_status // "MISSING") + ", " +
-    sql_text($entry.image_status // "MISSING") + ", " +
-    sql_text($entry.visual_asset_status // "MISSING") + ", " +
-    sql_text($entry.refinement_status // "RAW") + ", " +
+    sql_text($entry.status // "PUBLISHED") + ", " +
+    sql_text("PUBLIC") + ", " +
+    sql_text(if (($entry.translation // "") == "") then "MISSING" else "READY" end) + ", " +
+    sql_text("MISSING") + ", " +
+    sql_text("MISSING") + ", " +
+    sql_text("RAW") + ", " +
     (($entry_index + 1) | tostring) + ", " +
-    (($entry.current_version_id // "NULL") | tostring) + ", " +
-    (if (($entry.current_version // 0) | tonumber) > 0 then (($entry.current_version // $entry.current_version_no) | tostring) else "NULL" end) + ", " +
-    sql_datetime($entry.current_versioned_at) + ", " +
-    sql_datetime($entry.content_updated_at // "2026-01-01 00:00:00.000") +
+    "NULL, " +
+    "NULL, " +
+    "NULL, " +
+    sql_datetime("2026-01-01 00:00:00.000") +
     ") ON DUPLICATE KEY UPDATE " +
     "`volume_id` = VALUES(`volume_id`), `title` = VALUES(`title`), `original_text` = VALUES(`original_text`), `translation_text` = VALUES(`translation_text`), `summary` = VALUES(`summary`), `lifecycle_status` = VALUES(`lifecycle_status`), `visibility` = VALUES(`visibility`), `translation_status` = VALUES(`translation_status`), `image_status` = VALUES(`image_status`), `visual_asset_status` = VALUES(`visual_asset_status`), `refinement_status` = VALUES(`refinement_status`), `priority` = VALUES(`priority`), `current_version_id` = VALUES(`current_version_id`), `current_version_no` = VALUES(`current_version_no`), `current_versioned_at` = VALUES(`current_versioned_at`), `content_updated_at` = VALUES(`content_updated_at`);"
 ),
@@ -205,12 +275,13 @@ def generated_tag_id(tag_seed; tag):
 "DELETE FROM `classics_content_qa_pair` WHERE `content_type` = \u0027SANCAI_ENTRY\u0027;",
 (
   [
-    $root.categories[]
-    | (.volumes // [])[] as $volume
-    | ($volume.entries // [])[] as $entry
-    | ($entry.entry_qas // [])[] as $qa
-    | select(($qa.question // "") != "" and ($qa.answer // "") != "")
-    | {entry_id: ($entry.id // $entry.entry_id), qa: $qa}
+    $entries
+    | to_entries[]
+    | .key as $entry_index
+    | .value as $entry
+    | ($entry.qa // [])[] as $qa
+    | select(($qa.q // "") != "" and ($qa.a // "") != "")
+    | {entry_id: generated_entry_id($entry_index), qa: $qa}
   ] as $qa_rows
   | if ($qa_rows | length) > 0 then
       $qa_rows
@@ -220,8 +291,8 @@ def generated_tag_id(tag_seed; tag):
       | "INSERT INTO `classics_content_qa_pair` (`content_type`, `content_id`, `question`, `answer`, `source`, `priority`) VALUES (" +
         sql_text("SANCAI_ENTRY") + ", " +
         ($row.entry_id | tostring) + ", " +
-        sql_text($row.qa.question) + ", " +
-        sql_text($row.qa.answer) + ", " +
+        sql_text($row.qa.q) + ", " +
+        sql_text($row.qa.a) + ", " +
         sql_text($row.qa.source // "MANUAL") + ", " +
         (($qa_index + 3001) | tostring) +
         ") ON DUPLICATE KEY UPDATE " +
@@ -234,10 +305,12 @@ def generated_tag_id(tag_seed; tag):
 "-- 三才图会条目标签",
 (
   [
-    $tag_seed_doc.entries[]
-    | . as $entry
+    $entries
+    | to_entries[]
+    | .key as $entry_index
+    | .value as $entry
     | ($entry.tags // [])[] as $tag
-    | {entry_id: $entry.content_id, tag: $tag}
+    | {entry_id: generated_entry_id($entry_index), tag: $tag}
   ]
   | to_entries[]
   | .key as $tag_index

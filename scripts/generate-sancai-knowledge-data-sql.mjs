@@ -6,16 +6,23 @@ import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
-const sourcePath = resolve(repoRoot, "db/data-source/sancai-tags.json");
+const tagSourcePath = resolve(repoRoot, "db/data-source/sancai-tags.json");
+const manuscriptSourcePath = resolve(
+  repoRoot,
+  "db/data-source/sancai-manuscripts.json",
+);
 const outputPath = resolve(repoRoot, "db/data/knowledge.sql");
 const GENERATED_REF_BASE = 531000;
+const SANCAI_ENTRY_ID_BASE = 300000000000;
 const THEME_CATEGORY_ID = 1004;
+const SPECIAL_TAG_IDS = new Map([["世系图", 500001]]);
 
 const main = () => {
-  const seed = readSeed(sourcePath);
-  const tagIds = indexTags(seed.tags);
-  const refs = buildRefs(seed.entries, tagIds);
-  const sql = generateSql(seed.tags, seed.aliases, refs);
+  const seed = readSeed(tagSourcePath);
+  const manuscripts = readManuscripts(manuscriptSourcePath);
+  const tagIds = buildTagIds(seed.tags);
+  const refs = buildRefs(manuscripts, tagIds);
+  const sql = generateSql(seed.tags, seed.aliases, refs, tagIds);
 
   if (process.argv.includes("--check")) {
     const current = readFileSync(outputPath, "utf8");
@@ -31,97 +38,100 @@ const main = () => {
   writeFileSync(outputPath, sql);
 };
 
-const readSeedFile = (path) => {
+const readSeed = (path) => {
   const seed = JSON.parse(readFileSync(path, "utf8"));
   if (seed.schema !== "classics_sancai_tag_seed") {
     throw new Error(
       "Invalid seed format, expected schema=classics_sancai_tag_seed",
     );
   }
+  validateSeed(seed);
   return seed;
 };
 
-const readSeed = (path) => {
-  const seed = readSeedFile(path);
-  validateSeed(seed);
-  return seed;
+const readManuscripts = (path) => {
+  const manuscripts = JSON.parse(readFileSync(path, "utf8"));
+  if (!Array.isArray(manuscripts)) {
+    throw new Error("sancai manuscript source must be an array");
+  }
+  validateManuscripts(manuscripts);
+  return manuscripts;
 };
 
 const validateSeed = (seed) => {
   if (!Array.isArray(seed.tags)) {
     throw new Error("sancai tag seed must contain tags array");
   }
-  if (!Array.isArray(seed.entries)) {
-    throw new Error("sancai tag seed must contain entries array");
-  }
   if (!Array.isArray(seed.aliases)) {
     throw new Error("sancai tag seed must contain aliases array");
   }
 
   assertUnique(
-    seed.tags.map((tag) => tag.tag_id),
-    "tag_id",
-  );
-  assertUnique(
     seed.tags.map((tag) => tag.name),
     "tag name",
   );
-  assertUnique(
-    seed.aliases.map((alias) => alias.alias_id),
-    "alias_id",
-  );
 
   const tagNames = new Set(seed.tags.map((tag) => tag.name));
-  for (const entry of seed.entries) {
-    if (!Number.isInteger(entry.content_id)) {
-      throw new Error(`Invalid content_id: ${entry.content_id}`);
+  for (const alias of seed.aliases) {
+    requireNonBlank(alias.name, "alias name");
+    requireNonBlank(alias.target, `alias ${alias.name} target`);
+    if (!tagNames.has(alias.target)) {
+      throw new Error(`Unknown alias target "${alias.target}"`);
     }
-    requireNonBlank(entry.content_title, `entry ${entry.content_id} title`);
+  }
+};
+
+const validateManuscripts = (manuscripts) => {
+  manuscripts.forEach((entry, index) => {
+    requireNonBlank(entry.category, `manuscript ${index + 1} category`);
+    requireNonBlank(entry.volume, `manuscript ${index + 1} volume`);
+    requireNonBlank(entry.title, `manuscript ${index + 1} title`);
+    requireNonBlank(entry.content, `manuscript ${index + 1} content`);
     if (!Array.isArray(entry.tags)) {
-      throw new Error(`Invalid tags for entry ${entry.content_id}`);
+      throw new Error(`Invalid tags for manuscript ${index + 1}`);
     }
-    for (const tagName of entry.tags) {
-      if (!tagNames.has(tagName)) {
-        throw new Error(`Unknown tag "${tagName}" on entry ${entry.content_id}`);
-      }
+    if (!Array.isArray(entry.qa)) {
+      throw new Error(`Invalid qa for manuscript ${index + 1}`);
     }
-  }
+    entry.qa.forEach((qa, qaIndex) => {
+      requireNonBlank(qa.q, `manuscript ${index + 1} qa ${qaIndex + 1} q`);
+      requireNonBlank(qa.a, `manuscript ${index + 1} qa ${qaIndex + 1} a`);
+    });
+  });
 };
 
-const indexTags = (tags) => {
-  const tagIds = new Map();
-  for (const tag of tags) {
-    const tagId = tag.tag_id;
-    if ([...tagIds.values()].includes(tagId)) {
-      throw new Error(`Duplicate tag id: ${tagId}`);
-    }
-    tagIds.set(tag.name, tagId);
-  }
-  return tagIds;
+const buildTagIds = (tags) => {
+  const regularNames = tags
+    .map((tag) => tag.name)
+    .filter((name) => !SPECIAL_TAG_IDS.has(name));
+  const regularIds = new Map(
+    regularNames.map((name, index) => [name, 501000 + index + 1]),
+  );
+  return new Map([...SPECIAL_TAG_IDS, ...regularIds]);
 };
 
-const buildRefs = (entries, tagIds) => {
+const buildRefs = (manuscripts, tagIds) => {
   const refs = [];
   let refIndex = 1;
-  for (const entry of entries) {
+  manuscripts.forEach((entry, entryIndex) => {
     for (const tag of entry.tags) {
       refs.push({
         refId: GENERATED_REF_BASE + refIndex++,
         tagId: requireLookup(tagIds, tag, "tag"),
         contentType: "SANCAI_ENTRY",
-        contentId: entry.content_id,
-        contentTitle: entry.content_title,
+        contentId: SANCAI_ENTRY_ID_BASE + entryIndex + 1,
+        contentTitle: entry.title,
       });
     }
-  }
+  });
   return refs;
 };
 
-const generateSql = (tags, aliases, refs) => {
+const generateSql = (tags, aliases, refs, tagIds) => {
   const lines = ["SET NAMES utf8mb4;", ""];
   appendTagCategorySql(lines);
-  appendTagSql(lines, tags);
-  appendTagAliasSql(lines, aliases);
+  appendTagSql(lines, tags, tagIds);
+  appendTagAliasSql(lines, aliases, tagIds);
   appendTagContentRefSql(lines, refs);
   while (lines.at(-1) === "") {
     lines.pop();
@@ -149,7 +159,7 @@ const appendTagCategorySql = (lines) => {
   lines.push("");
 };
 
-const appendTagSql = (lines, tags) => {
+const appendTagSql = (lines, tags, tagIds) => {
   if (tags.length === 0) {
     return;
   }
@@ -163,16 +173,16 @@ const appendTagSql = (lines, tags) => {
     tags
       .map((tag) =>
         row([
-          tag.tag_id,
+          requireLookup(tagIds, tag.name, "tag"),
           tag.name,
-          tag.category_id ?? THEME_CATEGORY_ID,
+          THEME_CATEGORY_ID,
           tag.description,
           tag.status,
           tag.source,
-          tag.review_status,
-          tag.review_note,
-          tag.created_at,
-          tag.reviewed_at,
+          tag.reviewStatus,
+          tag.reviewNote,
+          tag.createdAt,
+          tag.reviewedAt,
           null,
           null,
           null,
@@ -196,7 +206,7 @@ const appendTagSql = (lines, tags) => {
   lines.push("");
 };
 
-const appendTagAliasSql = (lines, aliases) => {
+const appendTagAliasSql = (lines, aliases, tagIds) => {
   if (aliases.length === 0) {
     return;
   }
@@ -205,8 +215,13 @@ const appendTagAliasSql = (lines, aliases) => {
   lines.push(") VALUES");
   lines.push(
     aliases
-      .map((alias) =>
-        row([alias.alias_id, alias.tag_id, alias.name, alias.source]),
+      .map((alias, index) =>
+        row([
+          510000 + index + 1,
+          requireLookup(tagIds, alias.target, "tag"),
+          alias.name,
+          alias.source,
+        ]),
       )
       .join(",\n"),
   );
@@ -221,7 +236,7 @@ const appendTagContentRefSql = (lines, refs) => {
   if (refs.length === 0) {
     return;
   }
-  lines.push("-- 三才图会内容标签引用投影，来源：db/data-source/sancai-tags.json。");
+  lines.push("-- 三才图会内容标签引用投影，来源：db/data-source/sancai-manuscripts.json。");
   lines.push("INSERT INTO `knowledge_tag_content_ref` (");
   lines.push("    `ref_id`, `tag_id`, `content_type`, `content_id`, `content_title`, `source`");
   lines.push(") VALUES");
