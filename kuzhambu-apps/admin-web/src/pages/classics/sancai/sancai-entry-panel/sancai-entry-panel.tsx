@@ -674,7 +674,7 @@ export const SancaiEntryPanel = ({
                             <ClassicsContentTagPanel
                                 contentId={selectedEntry.id}
                                 contentType="SANCAI_ENTRY"
-                                panelTitle="三才图会标签治理"
+                                panelTitle="当前条目标签"
                                 onChanged={invalidateSancaiContentGovernance}
                             />
                         </div>

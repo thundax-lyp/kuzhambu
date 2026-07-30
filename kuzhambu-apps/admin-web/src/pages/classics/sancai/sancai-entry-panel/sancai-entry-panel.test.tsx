@@ -1254,7 +1254,7 @@ describe("SancaiEntryPanel batch operations", () => {
         await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         await openTagSection(user);
-        expect(await screen.findByText("三才图会标签治理")).toBeInTheDocument();
+        expect(await screen.findByText("当前条目标签")).toBeInTheDocument();
         await openQaSection(user);
         expect(await screen.findByText("三才图会问答对治理")).toBeInTheDocument();
         expect(screen.queryByLabelText("三才图会内容上下文")).not.toBeInTheDocument();

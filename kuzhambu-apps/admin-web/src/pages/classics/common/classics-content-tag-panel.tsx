@@ -10,7 +10,6 @@ import {
     KuzhambuTable,
     type KuzhambuTableSortPosition,
     KuzhambuButton,
-    KuzhambuSelect,
     KuzhambuCard
 } from "@/components";
 
@@ -33,8 +32,6 @@ interface TagEditorValues {
     id?: string | null;
     tagId?: string | null;
     tagNameSnapshot: string;
-    source: string;
-    status: string;
 }
 
 const getActiveTags = (tags: ClassicsContentTagRecord[] | unknown) =>
@@ -50,17 +47,6 @@ const readSourceLabel = (source?: string | null) => {
             return "手工";
         default:
             return source || "—";
-    }
-};
-
-const readStatusLabel = (status?: string | null) => {
-    switch (status) {
-        case "ACTIVE":
-            return "启用";
-        case "REMOVED":
-            return "已移除";
-        default:
-            return status || "—";
     }
 };
 
@@ -114,10 +100,10 @@ export const ClassicsContentTagPanel = ({
         onSuccess: async () => {
             await notifyChanged();
             setIsEditorOpen(false);
-            messageApi.success("标签已新增");
+            messageApi.success("标签已添加");
         },
         onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "新增标签失败");
+            messageApi.error(error instanceof Error ? error.message : "添加标签失败");
         }
     });
 
@@ -167,8 +153,6 @@ export const ClassicsContentTagPanel = ({
         form.setFieldsValue({
             contentId,
             contentType,
-            source: "MANUAL",
-            status: "ACTIVE",
             tagNameSnapshot: ""
         });
     };
@@ -181,8 +165,6 @@ export const ClassicsContentTagPanel = ({
             contentType,
             id: tag.id,
             tagId: tag.tagId,
-            source: tag.source || "MANUAL",
-            status: tag.status || "ACTIVE",
             tagNameSnapshot: tag.tagNameSnapshot || ""
         });
     };
@@ -201,8 +183,8 @@ export const ClassicsContentTagPanel = ({
             id: editingTag?.id,
             tagId: formValues.tagId,
             tagNameSnapshot: formValues.tagNameSnapshot.trim(),
-            source: formValues.source || "MANUAL",
-            status: formValues.status || "ACTIVE"
+            source: "MANUAL",
+            status: "ACTIVE"
         };
 
         if (editingTag) {
@@ -257,7 +239,7 @@ export const ClassicsContentTagPanel = ({
         return <Empty description="标签列表加载失败" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
     }
 
-    const cardTitle = showHeader ? panelTitle || "标签治理" : undefined;
+    const cardTitle = showHeader ? panelTitle || "内容标签" : undefined;
 
     return (
         <KuzhambuCard size="small" title={cardTitle}>
@@ -269,7 +251,7 @@ export const ClassicsContentTagPanel = ({
                         type="primary"
                         onClick={openCreate}
                     >
-                        新增标签
+                        添加标签
                     </KuzhambuButton>
                     {toolbarExtra}
                 </KuzhambuSpace>
@@ -289,11 +271,6 @@ export const ClassicsContentTagPanel = ({
                             render: (_value, tag) => readSourceLabel(tag.source)
                         },
                         {
-                            key: "status",
-                            title: "状态",
-                            render: (_value, tag) => readStatusLabel(tag.status)
-                        },
-                        {
                             key: "actions",
                             title: "操作",
                             width: 180,
@@ -305,7 +282,7 @@ export const ClassicsContentTagPanel = ({
                                         size="small"
                                         onClick={() => openEdit(tag)}
                                     >
-                                        编辑
+                                        更换
                                     </KuzhambuButton>
                                     <KuzhambuButton
                                         testId="classics-common-classics-content-tag-action-button-3"
@@ -342,7 +319,7 @@ export const ClassicsContentTagPanel = ({
                         loading: addMutation.isPending || updateMutation.isPending
                     }}
                     open={isEditorOpen}
-                    title={editingTag ? "编辑标签" : "新增标签"}
+                    title={editingTag ? "更换标签" : "添加标签"}
                     onCancel={closeEditor}
                     onOk={submitTag}
                 >
@@ -350,36 +327,22 @@ export const ClassicsContentTagPanel = ({
                         form={form}
                         initialValues={{
                             contentId,
-                            contentType,
-                            source: "MANUAL",
-                            status: "ACTIVE"
+                            contentType
                         }}
                         labelWrap
                     >
                         <KuzhambuFormItem
-                            label="标签名称"
+                            label={editingTag ? "目标标签" : "标签名称"}
                             name="tagNameSnapshot"
                             layoutSize="large"
                             rules={[{ required: true, message: "请输入标签名称" }]}
+                            extra="输入已有标签名会绑定已有标签；输入新标签名会创建并绑定到当前内容。"
                         >
-                            <Input aria-label="标签名称" placeholder="请输入标签名称" />
-                        </KuzhambuFormItem>
-                        <KuzhambuFormItem label="来源" name="source">
-                            <KuzhambuSelect
-                                aria-label="标签来源"
-                                options={[
-                                    { label: "手工", value: "MANUAL" },
-                                    { label: "AI 提取", value: "AI_EXTRACTED" }
-                                ]}
-                            />
-                        </KuzhambuFormItem>
-                        <KuzhambuFormItem label="状态" name="status">
-                            <KuzhambuSelect
-                                aria-label="标签状态"
-                                options={[
-                                    { label: "启用", value: "ACTIVE" },
-                                    { label: "已移除", value: "REMOVED" }
-                                ]}
+                            <Input
+                                aria-label={editingTag ? "目标标签" : "标签名称"}
+                                placeholder={
+                                    editingTag ? "请输入要绑定的目标标签" : "请输入要添加的标签"
+                                }
                             />
                         </KuzhambuFormItem>
                     </KuzhambuForm>
