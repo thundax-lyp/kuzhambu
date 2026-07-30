@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `D-13 discovery-validation`：运行 Discovery 与 portal-web 相关验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery`、`kuzhambu-apps/portal-web`
-    - 处理动作：运行 RUNBOOK 指定的后端 Maven 验证和按需 portal-web 格式、lint、test。
-    - 验收点：`mvn -pl biz/discovery -am spotless:check`、`checkstyle:check`、`test` 通过；如改 portal-web，则 `pnpm run format:check`、`pnpm run lint`、`pnpm --filter portal-web run test` 通过。
-    - 重要度：10/10
-
 - [ ] `D-14 discovery-runbook-cleanup`：完成强类型化闭环后清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
