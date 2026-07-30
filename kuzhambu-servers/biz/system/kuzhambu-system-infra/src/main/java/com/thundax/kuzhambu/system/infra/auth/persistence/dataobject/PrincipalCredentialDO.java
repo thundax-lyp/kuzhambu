@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.system.infra.auth.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,7 +25,7 @@ public class PrincipalCredentialDO {
     private Boolean needChangePassword;
     private Integer failedCount;
     private Integer failedLimit;
-    private Date lockedUntil;
-    private Date expiresAt;
-    private Date lastVerifiedAt;
+    private Instant lockedUntil;
+    private Instant expiresAt;
+    private Instant lastVerifiedAt;
 }

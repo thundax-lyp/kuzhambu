@@ -52,7 +52,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.Date;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -334,7 +334,7 @@ public class AuthController {
     private void writeLog(HttpServletRequest currentRequest, String title, AuthLoginRequest request) {
         Log log = new Log();
         log.setTitle("系统-登录-" + title);
-        log.setLogDate(new Date());
+        log.setLogDate(Instant.now());
         log.setRemoteAddr(RequestIpUtils.getIpAddr(currentRequest));
         log.setUserAgent(currentRequest.getHeader("user-agent"));
         log.setRequestUri(currentRequest.getRequestURI());
@@ -348,7 +348,7 @@ public class AuthController {
         Log log = new Log();
         log.setUserId(user.getId());
         log.setTitle("系统-登录-" + title);
-        log.setLogDate(new Date());
+        log.setLogDate(Instant.now());
         log.setRemoteAddr(RequestIpUtils.getIpAddr(currentRequest));
         log.setUserAgent(currentRequest.getHeader("user-agent"));
         log.setRequestUri(currentRequest.getRequestURI());

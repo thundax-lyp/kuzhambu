@@ -12,10 +12,10 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAuthSessionRepository;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -53,7 +53,7 @@ public class PrincipalAuthSessionRepositoryImpl implements PrincipalAuthSessionR
     }
 
     @Override
-    public void touch(PrincipalAuthSessionId id, Date accessTime, int expireSeconds) {
+    public void touch(PrincipalAuthSessionId id, Instant accessTime, int expireSeconds) {
         PrincipalAuthSessionCacheDTO cacheDTO = cache.get(sessionKey(id));
         if (cacheDTO == null || expireSeconds <= 0) {
             return;
@@ -161,8 +161,8 @@ public class PrincipalAuthSessionRepositoryImpl implements PrincipalAuthSessionR
         private Long principalId;
         private String clientId;
         private Map<String, Object> values = new LinkedHashMap<>();
-        private Date issuedAt;
-        private Date lastAccessTime;
-        private Date expireAt;
+        private Instant issuedAt;
+        private Instant lastAccessTime;
+        private Instant expireAt;
     }
 }

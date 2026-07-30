@@ -24,8 +24,9 @@ import io.lettuce.core.SetArgs;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import jakarta.annotation.PreDestroy;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -138,7 +139,7 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
     }
 
     @Override
-    public int markUsedIfActive(PrincipalRefreshToken refreshToken, Date now) {
+    public int markUsedIfActive(PrincipalRefreshToken refreshToken, Instant now) {
         Assert.notNull(refreshToken, "refreshToken can not be null");
         String tokenHash = tokenHashById(refreshToken.getId());
         if (StringUtils.isBlank(tokenHash)) {
@@ -174,7 +175,7 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
                 tokenHash,
                 seconds,
                 TimeUnit.SECONDS);
-        redis().zadd(principalIndexKey(refreshToken), refreshToken.getExpireAt().getTime(), tokenHash);
+        redis().zadd(principalIndexKey(refreshToken), refreshToken.getExpireAt().toEpochMilli(), tokenHash);
     }
 
     private String tokenHashById(PrincipalRefreshTokenId id) {
@@ -185,11 +186,11 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
     }
 
     private long remainingSeconds(PrincipalRefreshToken refreshToken) {
-        Date expireAt = refreshToken.getExpireAt();
+        Instant expireAt = refreshToken.getExpireAt();
         if (expireAt == null) {
             return 1L;
         }
-        long remainingMillis = expireAt.getTime() - System.currentTimeMillis();
+        long remainingMillis = Duration.between(Instant.now(), expireAt).toMillis();
         return remainingMillis <= 0 ? 1L : (remainingMillis + 999L) / 1000L;
     }
 
@@ -273,8 +274,8 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
         private String sessionId;
         private String principalType;
         private Long principalId;
-        private Date issuedAt;
-        private Date expireAt;
+        private Instant issuedAt;
+        private Instant expireAt;
         private String status;
     }
 }

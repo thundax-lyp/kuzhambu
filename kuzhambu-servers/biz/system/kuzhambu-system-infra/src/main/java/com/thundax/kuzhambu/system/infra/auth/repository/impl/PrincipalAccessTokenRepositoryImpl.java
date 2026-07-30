@@ -22,8 +22,9 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import jakarta.annotation.PreDestroy;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -154,8 +155,8 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
                 tokenHash,
                 seconds,
                 TimeUnit.SECONDS);
-        redis().zadd(principalIndexKey(accessToken), accessToken.getExpireAt().getTime(), tokenHash);
-        redis().zadd(clientIndexKey(accessToken), accessToken.getExpireAt().getTime(), tokenHash);
+        redis().zadd(principalIndexKey(accessToken), accessToken.getExpireAt().toEpochMilli(), tokenHash);
+        redis().zadd(clientIndexKey(accessToken), accessToken.getExpireAt().toEpochMilli(), tokenHash);
     }
 
     private void removeIndex(PrincipalAccessToken accessToken) {
@@ -165,11 +166,11 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
     }
 
     private long remainingSeconds(PrincipalAccessToken accessToken) {
-        Date expireAt = accessToken.getExpireAt();
+        Instant expireAt = accessToken.getExpireAt();
         if (expireAt == null) {
             return 1L;
         }
-        long remainingMillis = expireAt.getTime() - System.currentTimeMillis();
+        long remainingMillis = Duration.between(Instant.now(), expireAt).toMillis();
         return remainingMillis <= 0 ? 1L : (remainingMillis + 999L) / 1000L;
     }
 
@@ -273,8 +274,8 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
         private String principalType;
         private Long principalId;
         private List<String> scopes = new ArrayList<>();
-        private Date issuedAt;
-        private Date expireAt;
+        private Instant issuedAt;
+        private Instant expireAt;
         private String status;
     }
 }
