@@ -60,6 +60,7 @@ import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -91,11 +92,11 @@ class ClassicsSharingApplicationServiceImplTest {
         entry.setId(SancaiEntryIdCodec.toDomain(100L));
         entry.setTitle("正式标题");
         entry.setVisibility(SancaiEntryVisibility.PUBLIC);
-        entry.setContentUpdatedAt(new Date(1_000L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
         ClassicsContentVersion version = new ClassicsContentVersion();
         version.setId(ClassicsContentVersionIdCodec.toDomain(9L));
         version.setVersionNo(2);
-        version.setVersionedAt(new Date(2_000L));
+        version.setVersionedAt(Instant.ofEpochMilli(2_000L));
         version.setSnapshotJson("{\"title\":\"正式标题\"}");
 
         when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any()))
@@ -830,7 +831,7 @@ class ClassicsSharingApplicationServiceImplTest {
         ClassicsContentVersion version = new ClassicsContentVersion();
         version.setId(ClassicsContentVersionIdCodec.toDomain(id));
         version.setVersionNo(versionNo);
-        version.setVersionedAt(new Date(versionNo));
+        version.setVersionedAt(Instant.ofEpochMilli(versionNo));
         version.setSnapshotJson(snapshotJson);
         return version;
     }

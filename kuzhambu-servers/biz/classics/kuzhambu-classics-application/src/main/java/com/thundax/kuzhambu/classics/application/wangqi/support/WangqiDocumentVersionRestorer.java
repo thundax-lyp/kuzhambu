@@ -25,7 +25,6 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -62,7 +61,7 @@ public class WangqiDocumentVersionRestorer {
         WangqiDocumentVersionSnapshot parsedSnapshot = WangqiDocumentVersionSnapshot.from(snapshot);
         WangqiDocument restored = toDocument(parsedSnapshot);
         restored.setId(current.getId());
-        restored.setContentUpdatedAt(new Date());
+        restored.setContentUpdatedAt(Instant.now());
         restoreTags(restored, parsedSnapshot);
         restoreQaPairs(restored, parsedSnapshot);
         repository.updateRestoredVersion(restored);
@@ -249,8 +248,8 @@ public class WangqiDocumentVersionRestorer {
         return StringUtils.isBlank(value) ? ClassicsContentTagStatus.ACTIVE : ClassicsContentTagStatus.valueOf(value);
     }
 
-    private static Date date(String value) {
-        return StringUtils.isBlank(value) ? null : Date.from(Instant.parse(value));
+    private static Instant date(String value) {
+        return StringUtils.isBlank(value) ? null : Instant.parse(value);
     }
 
     private static Long longValue(JsonNode snapshot, String fieldName) {

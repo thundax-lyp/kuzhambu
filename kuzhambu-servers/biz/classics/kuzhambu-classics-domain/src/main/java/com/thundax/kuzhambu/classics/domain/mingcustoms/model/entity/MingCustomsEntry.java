@@ -9,7 +9,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,8 +32,8 @@ public class MingCustomsEntry implements Versionable {
     private MingCustomsVisibility visibility;
     private ClassicsContentVersionId currentVersionId;
     private Integer currentVersionNo;
-    private Date currentVersionedAt;
-    private Date contentUpdatedAt;
+    private Instant currentVersionedAt;
+    private Instant contentUpdatedAt;
 
     public MingCustomsEntry(
             MingCustomsEntryId id,
@@ -79,12 +79,12 @@ public class MingCustomsEntry implements Versionable {
     }
 
     @Override
-    public Date currentVersionedAt() {
+    public Instant currentVersionedAt() {
         return currentVersionedAt;
     }
 
     @Override
-    public Date contentUpdatedAt() {
+    public Instant contentUpdatedAt() {
         return contentUpdatedAt;
     }
 

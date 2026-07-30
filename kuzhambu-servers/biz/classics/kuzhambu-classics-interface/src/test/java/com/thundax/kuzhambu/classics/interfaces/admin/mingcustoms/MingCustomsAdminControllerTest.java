@@ -32,14 +32,14 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import java.lang.reflect.Method;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.web.bind.annotation.PostMapping;
 
 class MingCustomsAdminControllerTest {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
     private static final String V1_JSON =
             """
                 {
@@ -128,7 +128,7 @@ class MingCustomsAdminControllerTest {
                 ClassicsContentType.MING_CUSTOMS,
                 ClassicsContentIdCodec.toDomain(500000000001L),
                 1,
-                new Date(1767225600000L),
+                Instant.ofEpochMilli(1767225600000L),
                 "{\"contentType\":\"MING_CUSTOMS\",\"contentId\":500000000001}",
                 ClassicsContentChangeType.MANUAL_SAVE,
                 "手动保存");
@@ -283,7 +283,7 @@ class MingCustomsAdminControllerTest {
                 contentType,
                 contentId,
                 1,
-                new Date(1767225600000L),
+                Instant.ofEpochMilli(1767225600000L),
                 "{\"contentType\":\"MING_CUSTOMS\",\"contentId\":500000000001}",
                 ClassicsContentChangeType.HISTORY_RESTORED,
                 "恢复历史版本 v1");

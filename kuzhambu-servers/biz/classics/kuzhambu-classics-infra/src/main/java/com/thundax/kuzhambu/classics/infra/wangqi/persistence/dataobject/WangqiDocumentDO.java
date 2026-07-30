@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.classics.infra.wangqi.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,11 +20,11 @@ public class WangqiDocumentDO {
     private String summary;
     private String contentFormat;
     private String content;
-    private Date documentTime;
+    private Instant documentTime;
     private Long storageObjectId;
     private String visibility;
     private Long currentVersionId;
     private Integer currentVersionNo;
-    private Date currentVersionedAt;
-    private Date contentUpdatedAt;
+    private Instant currentVersionedAt;
+    private Instant contentUpdatedAt;
 }

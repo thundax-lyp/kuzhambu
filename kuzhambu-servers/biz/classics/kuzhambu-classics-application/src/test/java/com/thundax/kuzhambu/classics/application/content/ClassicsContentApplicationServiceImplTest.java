@@ -76,6 +76,7 @@ import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -94,7 +95,7 @@ class ClassicsContentApplicationServiceImplTest {
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(100L));
         entry.setTitle("entry");
-        entry.setContentUpdatedAt(new Date(1_000L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
 
         ClassicsContentVersion version = service.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
 
@@ -127,7 +128,7 @@ class ClassicsContentApplicationServiceImplTest {
     @Test
     void ensureVersionedShouldNotInsertWhenContentIsAlreadyVersioned() {
         FakeRepository repository = new FakeRepository();
-        ClassicsContentVersion existing = existingVersion(9L, 2, new Date(2_000L));
+        ClassicsContentVersion existing = existingVersion(9L, 2, Instant.ofEpochMilli(2_000L));
         repository.insertedVersions.add(existing);
         ClassicsContentApplicationServiceImpl service =
                 new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
@@ -136,7 +137,7 @@ class ClassicsContentApplicationServiceImplTest {
         entry.setCurrentVersionId(existing.getId());
         entry.setCurrentVersionNo(existing.getVersionNo());
         entry.setCurrentVersionedAt(existing.getVersionedAt());
-        entry.setContentUpdatedAt(new Date(1_000L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
 
         ClassicsContentVersion version = service.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
 
@@ -147,7 +148,7 @@ class ClassicsContentApplicationServiceImplTest {
     @Test
     void restoreHistoryVersionShouldDispatchSancaiEntryAndCreateRestoredVersion() {
         FakeRepository repository = new FakeRepository();
-        ClassicsContentVersion restoredFrom = existingVersion(9L, 1, new Date(2_000L));
+        ClassicsContentVersion restoredFrom = existingVersion(9L, 1, Instant.ofEpochMilli(2_000L));
         restoredFrom.setContentType(ClassicsContentType.SANCAI_ENTRY);
         restoredFrom.setContentId(ClassicsContentIdCodec.toDomain(100L));
         restoredFrom.setSnapshotJson(sancaiSnapshotJson());
@@ -182,7 +183,7 @@ class ClassicsContentApplicationServiceImplTest {
     @Test
     void restoreHistoryVersionShouldRestoreMingCustomsEntryFieldsAndPublishUpsert() {
         FakeRepository repository = new FakeRepository();
-        ClassicsContentVersion restoredFrom = existingVersion(11L, 1, new Date(2_000L));
+        ClassicsContentVersion restoredFrom = existingVersion(11L, 1, Instant.ofEpochMilli(2_000L));
         restoredFrom.setContentType(ClassicsContentType.MING_CUSTOMS);
         restoredFrom.setContentId(ClassicsContentIdCodec.toDomain(100L));
         restoredFrom.setSnapshotJson(mingCustomsSnapshotJson());
@@ -214,14 +215,14 @@ class ClassicsContentApplicationServiceImplTest {
         assertEquals(restoredVersion.getId(), restoredEntry.getCurrentVersionId());
         assertEquals(restoredVersion.getVersionNo(), restoredEntry.getCurrentVersionNo());
         assertNotNull(restoredEntry.getCurrentVersionedAt());
-        assertNotEquals(1L, restoredEntry.getContentUpdatedAt().getTime());
+        assertNotEquals(1L, restoredEntry.getContentUpdatedAt().toEpochMilli());
         verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.MING_CUSTOMS, "100", 2);
     }
 
     @Test
     void restoreHistoryVersionShouldThrowWhenMingCustomsSnapshotCannotBeParsed() {
         FakeRepository repository = new FakeRepository();
-        ClassicsContentVersion restoredFrom = existingVersion(12L, 1, new Date(2_000L));
+        ClassicsContentVersion restoredFrom = existingVersion(12L, 1, Instant.ofEpochMilli(2_000L));
         restoredFrom.setContentType(ClassicsContentType.MING_CUSTOMS);
         restoredFrom.setContentId(ClassicsContentIdCodec.toDomain(100L));
         restoredFrom.setSnapshotJson("{bad json");
@@ -239,7 +240,7 @@ class ClassicsContentApplicationServiceImplTest {
     @Test
     void restoreHistoryVersionShouldThrowWhenMingCustomsSnapshotNotBelonging() {
         FakeRepository repository = new FakeRepository();
-        ClassicsContentVersion restoredFrom = existingVersion(13L, 1, new Date(2_000L));
+        ClassicsContentVersion restoredFrom = existingVersion(13L, 1, Instant.ofEpochMilli(2_000L));
         restoredFrom.setContentType(ClassicsContentType.MING_CUSTOMS);
         restoredFrom.setContentId(ClassicsContentIdCodec.toDomain(100L));
         restoredFrom.setSnapshotJson(mingCustomsSnapshotJsonWithDifferentContentId());
@@ -257,7 +258,7 @@ class ClassicsContentApplicationServiceImplTest {
     @Test
     void restoreHistoryVersionShouldThrowWhenMingCustomsEntryNotFound() {
         FakeRepository repository = new FakeRepository();
-        ClassicsContentVersion restoredFrom = existingVersion(14L, 1, new Date(2_000L));
+        ClassicsContentVersion restoredFrom = existingVersion(14L, 1, Instant.ofEpochMilli(2_000L));
         restoredFrom.setContentType(ClassicsContentType.MING_CUSTOMS);
         restoredFrom.setContentId(ClassicsContentIdCodec.toDomain(100L));
         restoredFrom.setSnapshotJson(mingCustomsSnapshotJson());
@@ -792,7 +793,7 @@ class ClassicsContentApplicationServiceImplTest {
         return UploadStorageFacadeResponse.builder().storageObjectId(7001L).build();
     }
 
-    private static ClassicsContentVersion existingVersion(Long id, int versionNo, Date versionedAt) {
+    private static ClassicsContentVersion existingVersion(Long id, int versionNo, Instant versionedAt) {
         ClassicsContentVersion version = new ClassicsContentVersion();
         version.setId(ClassicsContentVersionIdCodec.toDomain(id));
         version.setVersionNo(versionNo);
@@ -872,7 +873,7 @@ class ClassicsContentApplicationServiceImplTest {
         entry.setContent("旧正文");
         entry.setOriginalExcerpts("旧原文");
         entry.setVisibility(MingCustomsVisibility.PRIVATE);
-        entry.setContentUpdatedAt(new Date(1_000L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
         return entry;
     }
 
@@ -902,7 +903,7 @@ class ClassicsContentApplicationServiceImplTest {
         entry.setImageStatus(SancaiEntryImageStatus.READY);
         entry.setVisualAssetStatus(SancaiEntryVisualAssetStatus.READY);
         entry.setRefinementStatus(SancaiEntryRefinementStatus.COMPLETE);
-        entry.setContentUpdatedAt(new Date(1_000L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
         return entry;
     }
 

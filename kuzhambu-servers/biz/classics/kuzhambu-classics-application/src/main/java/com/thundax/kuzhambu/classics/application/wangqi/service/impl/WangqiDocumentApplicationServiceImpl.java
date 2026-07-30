@@ -37,8 +37,8 @@ import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeReque
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import org.springframework.stereotype.Service;
@@ -107,7 +107,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     public WangqiDocumentId add(WangqiDocumentCommand command) {
         WangqiDocument document = toDocument(command);
         document.setId(null);
-        document.setContentUpdatedAt(new Date());
+        document.setContentUpdatedAt(Instant.now());
         WangqiDocumentId id = repository.insert(document);
         document.setId(id);
         bindStorageObjectIfNeeded(document);
@@ -122,7 +122,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         WangqiDocument document = toDocument(command);
         requireDocument(document.getId());
         bindStorageObjectIfNeeded(document);
-        document.setContentUpdatedAt(new Date());
+        document.setContentUpdatedAt(Instant.now());
         repository.update(document);
         markManualSaveVersion(document);
         publishSearchSyncAfterCommit(document);
@@ -149,7 +149,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         }
         bindStorageOwner(uploadResponse.getStorageObjectId(), documentId);
         document.setStorageObjectId(StorageObjectIdCodec.toDomain(uploadResponse.getStorageObjectId()));
-        document.setContentUpdatedAt(new Date());
+        document.setContentUpdatedAt(Instant.now());
         markVersion(document, replacing ? "替换原始文件" : "上传原始文件");
         publishSearchSyncAfterCommit(document);
         return toSourceFile(documentId, uploadResponse.getStorageObjectId(), uploadResponse);
@@ -260,7 +260,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         }
         WangqiDocument document = get(id);
         if (document != null) {
-            document.setContentUpdatedAt(new Date());
+            document.setContentUpdatedAt(Instant.now());
             contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
             if (sharingApplicationService != null) {
                 sharingApplicationService.syncContentDeleted(ClassicsContentType.WANGQI_DOCUMENT, id.value());
@@ -302,7 +302,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     private void changeExistingVisibility(WangqiDocument document, WangqiDocumentVisibility visibility) {
         document.setVisibility(visibility);
-        document.setContentUpdatedAt(new Date());
+        document.setContentUpdatedAt(Instant.now());
         markVersion(document, "更新可见性");
         publishSearchSyncAfterCommit(document);
     }

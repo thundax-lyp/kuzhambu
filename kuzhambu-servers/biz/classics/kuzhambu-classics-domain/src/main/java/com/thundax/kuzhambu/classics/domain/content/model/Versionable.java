@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
-import java.util.Date;
+import java.time.Instant;
 
 public interface Versionable {
 
@@ -16,9 +16,9 @@ public interface Versionable {
 
     Integer currentVersionNo();
 
-    Date currentVersionedAt();
+    Instant currentVersionedAt();
 
-    Date contentUpdatedAt();
+    Instant contentUpdatedAt();
 
     void markVersioned(ClassicsContentVersion version);
 }
