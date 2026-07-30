@@ -48,6 +48,12 @@ class SystemLogContractTest {
 
     @Test
     void logPageRequestsShouldKeepJsonFieldNames() throws Exception {
+        AuditLogPageRequest parsedAuditRequest = OBJECT_MAPPER.readValue(
+                "{\"beginDate\":\"2026-06-18 00:00:00\",\"endDate\":\"2026-06-18 23:59:59\"}",
+                AuditLogPageRequest.class);
+        assertEquals(Instant.parse("2026-06-17T16:00:00Z"), parsedAuditRequest.getBeginDate());
+        assertEquals(Instant.parse("2026-06-18T15:59:59Z"), parsedAuditRequest.getEndDate());
+
         AuditLogPageRequest auditLogPageRequest = new AuditLogPageRequest();
         auditLogPageRequest.setPageNo(1);
         auditLogPageRequest.setPageSize(20);

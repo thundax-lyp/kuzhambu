@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
@@ -36,9 +37,11 @@ public class AuditLogPageRequest extends PageRequest {
     @Schema(name = "requestId", description = "请求ID")
     private String requestId;
 
-    @Schema(name = "beginDate", description = "开始时间")
+    @Schema(name = "beginDate", description = "开始时间，格式: yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Instant beginDate;
 
-    @Schema(name = "endDate", description = "结束时间")
+    @Schema(name = "endDate", description = "结束时间，格式: yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Instant endDate;
 }
