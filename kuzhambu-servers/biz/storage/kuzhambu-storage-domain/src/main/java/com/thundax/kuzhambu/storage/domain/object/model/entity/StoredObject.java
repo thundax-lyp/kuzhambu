@@ -13,9 +13,9 @@ import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteS
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageObjectKey;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +26,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StoredObject implements Sortable {
-    private static final String PATH_FORMAT = "yyyyMM";
+    private static final ZoneId PATH_ZONE = ZoneId.of("Asia/Shanghai");
+    private static final DateTimeFormatter PATH_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMM").withZone(PATH_ZONE);
     private static final String DOT = ".";
     private static final String PATH_SEPARATOR = "/";
 
@@ -143,7 +145,11 @@ public class StoredObject implements Sortable {
     }
 
     public String getPathName() {
-        return new SimpleDateFormat(PATH_FORMAT).format(new Date()) + PATH_SEPARATOR + this.getFileName();
+        return getPathName(Instant.now());
+    }
+
+    String getPathName(Instant now) {
+        return PATH_FORMATTER.format(now) + PATH_SEPARATOR + this.getFileName();
     }
 
     private static boolean isBlank(String value) {
