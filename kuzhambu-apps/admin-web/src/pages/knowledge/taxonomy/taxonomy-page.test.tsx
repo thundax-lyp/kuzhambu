@@ -72,14 +72,6 @@ vi.mock("./taxonomy-service", () => ({
         records: []
     })),
     getTagDetail: vi.fn(async () => null),
-    pageSynonyms: vi.fn(async () => ({
-        pageNo: 1,
-        pageSize: 20,
-        totalCount: 0,
-        totalPage: 0,
-        count: 0,
-        records: []
-    })),
     previewTagMergeImpact: vi.fn(async () => null),
     applyTagMerge: vi.fn(async () => true),
     previewTagBatchMergeImpact: vi.fn(async () => ({
@@ -145,11 +137,7 @@ vi.mock("./taxonomy-service", () => ({
     removeTagAlias: vi.fn(async () => true),
     changeCategoryStatus: vi.fn(async () => true),
     createCategory: vi.fn(async () => true),
-    updateCategory: vi.fn(async () => true),
-    createSynonym: vi.fn(async () => true),
-    updateSynonym: vi.fn(async () => true),
-    changeSynonymStatus: vi.fn(async () => true),
-    removeSynonym: vi.fn(async () => true)
+    updateCategory: vi.fn(async () => true)
 }));
 
 describe("TaxonomyPage", () => {

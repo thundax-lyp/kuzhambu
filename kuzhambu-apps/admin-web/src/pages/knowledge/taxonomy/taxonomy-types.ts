@@ -120,10 +120,3 @@ export interface TagContentRefRecord {
     contentTitle?: string | null;
     source?: string | null;
 }
-
-export interface SynonymRecord {
-    id: string;
-    term?: string | null;
-    synonym?: string | null;
-    status?: string | null;
-}

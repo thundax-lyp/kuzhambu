@@ -2,7 +2,6 @@ import { postJson } from "@/api/http";
 import { normalizeId } from "@/types/id";
 import type { Page } from "@/types/page";
 import type {
-    SynonymRecord,
     TagAliasRecord,
     TagBatchMergePreviewRecord,
     TagCategoryRecord,
@@ -43,15 +42,6 @@ export interface TagReviewPageQuery {
     pageSize?: number;
     name?: string | null;
     source?: string | null;
-    sortDirection?: "ASC" | "DESC" | null;
-}
-
-export interface SynonymPageQuery {
-    pageNo?: number;
-    pageSize?: number;
-    term?: string | null;
-    synonym?: string | null;
-    status?: string | null;
     sortDirection?: "ASC" | "DESC" | null;
 }
 
@@ -169,28 +159,6 @@ export interface TagAliasRemoveCommand {
 
 export interface TagAliasListCommand {
     tagId: string;
-}
-
-export interface SynonymCreateCommand {
-    id: string;
-    term: string;
-    synonym: string;
-    status?: string | null;
-}
-
-export interface SynonymUpdateCommand {
-    id: string;
-    term: string;
-    synonym: string;
-}
-
-export interface SynonymStatusCommand {
-    id: string;
-    status: string;
-}
-
-export interface SynonymRemoveCommand {
-    id: string;
 }
 
 export const pageCategories = (request: TagCategoryPageQuery = {}) => {
@@ -388,36 +356,6 @@ export const createTagAlias = (request: TagAliasCreateCommand) => {
 
 export const removeTagAlias = (request: TagAliasRemoveCommand) => {
     return postJson<boolean, TagAliasRemoveCommand>(`${API_PREFIX}/tag/alias/remove`, {
-        body: request
-    });
-};
-
-export const pageSynonyms = (request: SynonymPageQuery = {}) => {
-    return postJson<Page<SynonymRecord>, SynonymPageQuery>(`${API_PREFIX}/synonym/page`, {
-        body: request
-    });
-};
-
-export const createSynonym = (request: SynonymCreateCommand) => {
-    return postJson<boolean, SynonymCreateCommand>(`${API_PREFIX}/synonym/create`, {
-        body: request
-    });
-};
-
-export const updateSynonym = (request: SynonymUpdateCommand) => {
-    return postJson<boolean, SynonymUpdateCommand>(`${API_PREFIX}/synonym/update`, {
-        body: request
-    });
-};
-
-export const changeSynonymStatus = (request: SynonymStatusCommand) => {
-    return postJson<boolean, SynonymStatusCommand>(`${API_PREFIX}/synonym/status`, {
-        body: request
-    });
-};
-
-export const removeSynonym = (request: SynonymRemoveCommand) => {
-    return postJson<boolean, SynonymRemoveCommand>(`${API_PREFIX}/synonym/remove`, {
         body: request
     });
 };

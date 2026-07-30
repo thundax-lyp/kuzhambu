@@ -5,7 +5,6 @@ import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { normalizeId } from "@/types/id";
 import { CategoryEditDrawer } from "./category-edit-drawer";
-import { SynonymEditDrawer } from "./synonym-edit-drawer";
 import { TagBatchReviewPanel } from "./tag-batch-review-panel";
 import { TagDetailDrawer } from "./tag-detail-drawer";
 import { TagEditDrawer } from "./tag-edit-drawer";
@@ -13,7 +12,6 @@ import { TagExtractionDrawer } from "./tag-extraction-drawer";
 import { TagBatchMergePanel } from "./tag-batch-merge-panel";
 import { TaxonomyCategorySection } from "./taxonomy-category-section";
 import { TaxonomyGovernanceSection } from "./taxonomy-governance-section";
-import { TaxonomySynonymSection } from "./taxonomy-synonym-section";
 import { TaxonomyTagSection } from "./taxonomy-tag-section";
 import * as service from "./taxonomy-service";
 import type {
@@ -28,19 +26,16 @@ import type {
     TagDeprecateCommand,
     TagGovernanceMetricsQuery,
     TagReviewCommand,
-    TagUpdateCommand,
-    SynonymCreateCommand,
-    SynonymUpdateCommand
+    TagUpdateCommand
 } from "./taxonomy-service";
-import type { SynonymRecord, TagCategoryRecord, TagRecord } from "./taxonomy-types";
+import type { TagCategoryRecord, TagRecord } from "./taxonomy-types";
 import { useTaxonomyEditors } from "./hooks/use-taxonomy-editors";
 import "./taxonomy-page.css";
 
 const TAXONOMY_TAB_ITEMS = [
     { key: "categories", label: "标签分类" },
     { key: "tags", label: "统一标签" },
-    { key: "reviews", label: "待审核标签", description: "待审核标签列表" },
-    { key: "synonyms", label: "同义词", description: "同义词管理" }
+    { key: "reviews", label: "待审核标签", description: "待审核标签列表" }
 ];
 
 const readTotalCount = <TRecord,>(
@@ -66,7 +61,6 @@ export const TaxonomyPage = () => {
         categoryEditDrawerOpen,
         categoryQuery,
         editingCategory,
-        editingSynonym,
         editingTag,
         removingAliasId,
         reviewQuery,
@@ -77,15 +71,12 @@ export const TaxonomyPage = () => {
         setCategoryEditDrawerOpen,
         setCategoryQuery,
         setEditingCategory,
-        setEditingSynonym,
         setEditingTag,
         setRemovingAliasId,
         setReviewQuery,
         setSelectedReviewRowKeys,
         setSelectedTag,
         setSelectedTagRowKeys,
-        setSynonymEditDrawerOpen,
-        setSynonymQuery,
         setTagBatchMergeOpen,
         setTagBatchMergePreview,
         setTagBatchReviewDecision,
@@ -97,8 +88,6 @@ export const TaxonomyPage = () => {
         setTagExtractionResult,
         setTagMergePreview,
         setTagQuery,
-        synonymEditDrawerOpen,
-        synonymQuery,
         tagBatchMergeOpen,
         tagBatchMergePreview,
         tagBatchReviewDecision,
@@ -134,12 +123,6 @@ export const TaxonomyPage = () => {
         queryKey: ["knowledge", "taxonomy", "tag-detail", selectedTag?.id],
         queryFn: () => service.getTagDetail({ tagId: selectedTag?.id || "" }),
         enabled: tagDetailDrawerOpen && Boolean(selectedTag?.id),
-        retry: false
-    });
-    const synonymPageQuery = useQuery({
-        queryKey: ["knowledge", "taxonomy", "synonyms", synonymQuery],
-        queryFn: () => service.pageSynonyms(synonymQuery),
-        enabled: canViewTaxonomy || canEditTaxonomy,
         retry: false
     });
     const governanceMetricsQuery = useQuery({
@@ -378,47 +361,6 @@ export const TaxonomyPage = () => {
             setRemovingAliasId(null);
         }
     });
-    const saveSynonymMutation = useMutation({
-        mutationFn: (request: SynonymCreateCommand | SynonymUpdateCommand) =>
-            editingSynonym
-                ? service.updateSynonym(request as SynonymUpdateCommand)
-                : service.createSynonym(request as SynonymCreateCommand),
-        onSuccess: async () => {
-            setSynonymEditDrawerOpen(false);
-            setEditingSynonym(null);
-            await queryClient.invalidateQueries({
-                queryKey: ["knowledge", "taxonomy", "synonyms"]
-            });
-            messageApi.success("同义词已保存");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "同义词保存失败");
-        }
-    });
-    const synonymStatusMutation = useMutation({
-        mutationFn: service.changeSynonymStatus,
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({
-                queryKey: ["knowledge", "taxonomy", "synonyms"]
-            });
-            messageApi.success("同义词状态已更新");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "同义词状态更新失败");
-        }
-    });
-    const removeSynonymMutation = useMutation({
-        mutationFn: service.removeSynonym,
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({
-                queryKey: ["knowledge", "taxonomy", "synonyms"]
-            });
-            messageApi.success("同义词已删除");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "同义词删除失败");
-        }
-    });
     const requestTagExtractionMutation = useMutation({
         mutationFn: service.requestTagExtraction,
         onSuccess: (result) => {
@@ -450,11 +392,9 @@ export const TaxonomyPage = () => {
     const categoryPage = categoryPageQuery.data;
     const tagPage = tagPageQuery.data;
     const reviewPage = reviewPageQuery.data;
-    const synonymPage = synonymPageQuery.data;
     const categories = categoryPage?.records || [];
     const tags = tagPage?.records || [];
     const reviewTags = reviewPage?.records || [];
-    const synonyms = synonymPage?.records || [];
     const selectedTagIds = selectedTagRowKeys.map(String);
     const selectedTags = tags.filter((tag) => selectedTagIds.includes(normalizeId(tag.id)));
     const candidateTargetTags = tags.filter((tag) => !selectedTagIds.includes(normalizeId(tag.id)));
@@ -510,30 +450,12 @@ export const TaxonomyPage = () => {
         setTagDetailDrawerOpen(true);
     };
 
-    const openCreateSynonym = () => {
-        setEditingSynonym(null);
-        setSynonymEditDrawerOpen(true);
-    };
-
-    const openEditSynonym = (record: SynonymRecord) => {
-        setEditingSynonym(record);
-        setSynonymEditDrawerOpen(true);
-    };
-
     const closeTagEditDrawer = () => {
         if (saveTagMutation.isPending) {
             return;
         }
         setTagEditDrawerOpen(false);
         setEditingTag(null);
-    };
-
-    const closeSynonymEditDrawer = () => {
-        if (saveSynonymMutation.isPending) {
-            return;
-        }
-        setSynonymEditDrawerOpen(false);
-        setEditingSynonym(null);
     };
 
     const closeTagDetailDrawer = () => {
@@ -712,31 +634,6 @@ export const TaxonomyPage = () => {
                         };
                     }
 
-                    if (key === "synonyms") {
-                        return {
-                            key,
-                            label,
-                            children: (
-                                <TaxonomySynonymSection
-                                    canEditTaxonomy={canEditTaxonomy}
-                                    loading={synonymPageQuery.isFetching}
-                                    query={synonymQuery}
-                                    removing={removeSynonymMutation.isPending}
-                                    synonyms={synonyms}
-                                    totalCount={readTotalCount(synonymPage)}
-                                    onAdd={openCreateSynonym}
-                                    onChange={setSynonymQuery}
-                                    onEdit={openEditSynonym}
-                                    onRefresh={() => synonymPageQuery.refetch()}
-                                    onRemove={(request) => removeSynonymMutation.mutate(request)}
-                                    onStatusChange={(request) =>
-                                        synonymStatusMutation.mutate(request)
-                                    }
-                                />
-                            )
-                        };
-                    }
-
                     return {
                         key,
                         label,
@@ -762,15 +659,6 @@ export const TaxonomyPage = () => {
                 onClose={closeTagEditDrawer}
                 onCreate={(request) => saveTagMutation.mutate(request)}
                 onSave={(request) => saveTagMutation.mutate(request)}
-            />
-
-            <SynonymEditDrawer
-                open={synonymEditDrawerOpen}
-                saving={saveSynonymMutation.isPending}
-                synonym={editingSynonym}
-                onClose={closeSynonymEditDrawer}
-                onCreate={(request) => saveSynonymMutation.mutate(request)}
-                onSave={(request) => saveSynonymMutation.mutate(request)}
             />
 
             <TagDetailDrawer
