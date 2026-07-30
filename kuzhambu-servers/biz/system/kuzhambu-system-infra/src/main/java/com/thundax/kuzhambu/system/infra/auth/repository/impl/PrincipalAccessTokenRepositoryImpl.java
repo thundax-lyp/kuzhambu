@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
 @Profile("!test")
 public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenRepository {
 
-    private static final String CACHE_SECTION = KuzhambuCacheNames.PREFIX + "PRINCIPAL_ACCESS_TOKEN_";
+    private static final String CACHE_SECTION = KuzhambuCacheNames.PREFIX + "PRINCIPAL_ACCESS_TOKEN_V2_";
     private static final String TOKEN_HASH_PREFIX = CACHE_SECTION + "HASH_";
     private static final String TOKEN_CODE_PREFIX = CACHE_SECTION + "TOKEN_CODE_";
     private static final String PRINCIPAL_INDEX_PREFIX = CACHE_SECTION + "PRINCIPAL_";
