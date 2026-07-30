@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.application.health.query;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import lombok.Setter;
 public class OperationsHealthTrendQuery {
     private String component;
     private String probeSource;
-    private Date periodStart;
-    private Date periodEnd;
+    private Instant periodStart;
+    private Instant periodEnd;
     private String bucketType;
 }
