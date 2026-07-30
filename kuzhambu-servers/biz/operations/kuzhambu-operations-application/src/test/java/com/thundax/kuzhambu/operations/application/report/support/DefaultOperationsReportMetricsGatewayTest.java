@@ -37,8 +37,8 @@ class DefaultOperationsReportMetricsGatewayTest {
                 .tagCoverageRate(new BigDecimal("0.75"))
                 .build();
         AiReportSummaryFacadeResponse aiSummary = AiReportSummaryFacadeResponse.builder()
-                .periodStart(Date.from(Instant.parse("2026-06-01T00:00:00Z")))
-                .periodEnd(Date.from(Instant.parse("2026-06-30T23:59:59Z")))
+                .periodStart(Instant.parse("2026-06-01T00:00:00Z"))
+                .periodEnd(Instant.parse("2026-06-30T23:59:59Z"))
                 .invocationCount(9L)
                 .succeededInvocationCount(7L)
                 .failedInvocationCount(2L)

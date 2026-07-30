@@ -82,10 +82,8 @@ public class AiFacadeImpl implements AiFacade {
             return null;
         }
         return aiFacadeAssembler.toFacadeResponse(aiReportApplicationService.summary(new AiReportSummaryQuery(
-                request.getPeriodStart() == null
-                        ? null
-                        : request.getPeriodStart().toInstant(),
-                request.getPeriodEnd() == null ? null : request.getPeriodEnd().toInstant(),
+                request.getPeriodStart(),
+                request.getPeriodEnd(),
                 request.getBucketType() == null ? null : AiReportBucketType.from(request.getBucketType()))));
     }
 
