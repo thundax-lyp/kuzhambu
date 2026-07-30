@@ -1059,7 +1059,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (content == null) {
             return;
         }
-        Date now = new Date();
+        Instant now = Instant.now();
         if (contentType == ClassicsContentType.SANCAI_ENTRY) {
             ((SancaiEntry) content).setContentUpdatedAt(now);
             return;

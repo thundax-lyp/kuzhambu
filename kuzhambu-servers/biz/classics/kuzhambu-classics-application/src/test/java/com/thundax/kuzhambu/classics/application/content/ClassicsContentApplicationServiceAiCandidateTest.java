@@ -77,7 +77,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setTranslationText("old translation");
-        entry.setContentUpdatedAt(new Date(1L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1L));
         repository.sancaiEntryForAiApply = entry;
 
         AiFacade aiFacade = mockAiFacade(
@@ -119,7 +119,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setSummary("old summary");
-        entry.setContentUpdatedAt(new Date(1L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1L));
         repository.sancaiEntryForAiApply = entry;
 
         AiFacade aiFacade = mockAiFacade(
@@ -161,7 +161,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(11L));
-        entry.setContentUpdatedAt(new Date(1L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1L));
         repository.sancaiEntryForAiApply = entry;
 
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
@@ -209,7 +209,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(11L));
-        entry.setContentUpdatedAt(new Date(1L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1L));
         repository.sancaiEntryForAiApply = entry;
 
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
@@ -260,7 +260,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(11L));
-        entry.setContentUpdatedAt(new Date(1L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1L));
         repository.sancaiEntryForAiApply = entry;
 
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
@@ -404,7 +404,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(11L));
-        entry.setContentUpdatedAt(new Date(1L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1L));
         repository.sancaiEntryForAiApply = entry;
 
         AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> {
@@ -463,7 +463,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 "old summary",
                 WangqiContentFormat.HTML,
                 "content",
-                new Date(),
+                Instant.now(),
                 null,
                 WangqiDocumentVisibility.PUBLIC);
         repository.wangqiDocumentForAiApply = document;
@@ -718,7 +718,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 "old summary",
                 WangqiContentFormat.HTML,
                 "content",
-                new Date(),
+                Instant.now(),
                 null,
                 WangqiDocumentVisibility.PUBLIC);
         repository.wangqiDocumentForAiApply = document;
@@ -849,7 +849,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setTranslationText("old translation");
-        entry.setContentUpdatedAt(new Date(1L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1L));
         repository.sancaiEntryForAiApply = entry;
 
         AiFacade aiFacade = mockAiFacade(
@@ -971,7 +971,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(11L));
-        entry.setContentUpdatedAt(new Date(1L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1L));
         repository.sancaiEntryForAiApply = entry;
 
         SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);

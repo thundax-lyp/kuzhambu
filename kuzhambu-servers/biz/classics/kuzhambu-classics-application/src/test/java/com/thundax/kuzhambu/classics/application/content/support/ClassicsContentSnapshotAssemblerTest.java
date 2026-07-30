@@ -24,7 +24,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +47,7 @@ class ClassicsContentSnapshotAssemblerTest {
         entry.setVisualAssetStatus(SancaiEntryVisualAssetStatus.PROCESSING);
         entry.setRefinementStatus(SancaiEntryRefinementStatus.COMPLETE);
         entry.setPriority(7);
-        entry.setContentUpdatedAt(new Date(1_000L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
 
         String snapshotJson = assembler.toSnapshotJson(entry);
 
@@ -136,10 +136,10 @@ class ClassicsContentSnapshotAssemblerTest {
         document.setSummary("摘要");
         document.setContentFormat(WangqiContentFormat.MARKDOWN);
         document.setContent("正文");
-        document.setDocumentTime(new Date(2_000L));
+        document.setDocumentTime(Instant.ofEpochMilli(2_000L));
         document.setStorageObjectId(StorageObjectIdCodec.toDomain(8L));
         document.setVisibility(WangqiDocumentVisibility.PUBLIC);
-        document.setContentUpdatedAt(new Date(1_000L));
+        document.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
 
         String snapshotJson = assembler.toSnapshotJson(document);
 
@@ -165,7 +165,7 @@ class ClassicsContentSnapshotAssemblerTest {
         entry.setContent("正文");
         entry.setOriginalExcerpts("摘录");
         entry.setVisibility(MingCustomsVisibility.PUBLIC);
-        entry.setContentUpdatedAt(new Date(1_000L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
 
         String snapshotJson = assembler.toSnapshotJson(entry);
 
