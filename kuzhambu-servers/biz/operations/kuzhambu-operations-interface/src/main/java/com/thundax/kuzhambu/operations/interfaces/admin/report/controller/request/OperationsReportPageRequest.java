@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,9 +34,9 @@ public class OperationsReportPageRequest extends PageRequest {
 
     @Schema(name = "periodStart", description = "统计起始时间")
     @JsonProperty(value = "periodStart")
-    private Date periodStart;
+    private Instant periodStart;
 
     @Schema(name = "periodEnd", description = "统计结束时间")
     @JsonProperty(value = "periodEnd")
-    private Date periodEnd;
+    private Instant periodEnd;
 }

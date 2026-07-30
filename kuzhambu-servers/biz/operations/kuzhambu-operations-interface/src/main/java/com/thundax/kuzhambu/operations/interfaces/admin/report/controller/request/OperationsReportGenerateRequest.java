@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,10 +30,10 @@ public class OperationsReportGenerateRequest {
     @NotNull
     @Schema(name = "periodStart", description = "统计起始时间")
     @JsonProperty(value = "periodStart")
-    private Date periodStart;
+    private Instant periodStart;
 
     @NotNull
     @Schema(name = "periodEnd", description = "统计结束时间")
     @JsonProperty(value = "periodEnd")
-    private Date periodEnd;
+    private Instant periodEnd;
 }
