@@ -17,7 +17,7 @@ import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthAlertRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthAlertId;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthAlertRepository;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,7 +74,7 @@ public class HealthAlertApplicationServiceImpl implements HealthAlertApplication
     public void ack(OperationsHealthAlertAckCommand command) {
         HealthAlertRecord record = requireAlert(command == null ? null : command.getAlertId());
         record.setAlertStatus(ALERT_STATUS_ACKED);
-        record.setAckedAt(new Date());
+        record.setAckedAt(Instant.now());
         record.setAckedByUserId(command.getAckedByUserId());
         healthAlertRepository.update(record);
     }
@@ -84,7 +84,7 @@ public class HealthAlertApplicationServiceImpl implements HealthAlertApplication
         HealthAlertRecord record = requireAlert(command == null ? null : command.getAlertId());
         executeRecoveryAction(record, command);
         record.setAlertStatus(ALERT_STATUS_RECOVERED);
-        record.setRecoveredAt(new Date());
+        record.setRecoveredAt(Instant.now());
         record.setFailureReason(null);
         healthAlertRepository.update(record);
     }

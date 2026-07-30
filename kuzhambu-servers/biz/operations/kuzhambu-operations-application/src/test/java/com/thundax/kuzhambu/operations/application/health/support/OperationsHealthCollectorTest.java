@@ -16,8 +16,8 @@ import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRec
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthTrendBucket;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -206,8 +206,8 @@ class OperationsHealthCollectorTest {
                 String healthStatus,
                 String probeSource,
                 String probeTarget,
-                Date checkedAtStart,
-                Date checkedAtEnd,
+                Instant checkedAtStart,
+                Instant checkedAtEnd,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, records.size(), List.copyOf(records));
@@ -215,7 +215,7 @@ class OperationsHealthCollectorTest {
 
         @Override
         public List<HealthTrendBucket> listTrend(
-                String component, String probeSource, Date periodStart, Date periodEnd, String bucketType) {
+                String component, String probeSource, Instant periodStart, Instant periodEnd, String bucketType) {
             return List.of();
         }
 

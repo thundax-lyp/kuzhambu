@@ -251,9 +251,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         }
         if (CLEANUP_TYPE_EXPIRED_HEALTH_CHECK.equals(cleanupType)) {
             return healthCheckRepository
-                    .listExpiredCheckIds(
-                            OperationsCleanupLegacyTimeAdapter.toDate(cleanupThreshold(requestedAt, retentionDays)),
-                            limit)
+                    .listExpiredCheckIds(cleanupThreshold(requestedAt, retentionDays), limit)
                     .stream()
                     .map(HealthCheckId::value)
                     .map(targetId -> new DiscoveredCleanupTarget(

@@ -8,8 +8,8 @@ import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -66,7 +66,7 @@ public class OperationsHealthCollector {
     }
 
     private HealthCheckRecord buildRecord(OperationsHealthProbe probe) {
-        Date checkedAt = new Date();
+        Instant checkedAt = Instant.now();
         try {
             OperationsHealthProbeOutcome result = probe.probe();
             if (result == null) {
@@ -87,7 +87,7 @@ public class OperationsHealthCollector {
         }
     }
 
-    private HealthCheckRecord failureRecord(OperationsHealthProbe probe, String message, Date checkedAt) {
+    private HealthCheckRecord failureRecord(OperationsHealthProbe probe, String message, Instant checkedAt) {
         return new HealthCheckRecord(
                 nextHealthCheckId(),
                 normalizeRequired(probe.component(), "unknown"),
