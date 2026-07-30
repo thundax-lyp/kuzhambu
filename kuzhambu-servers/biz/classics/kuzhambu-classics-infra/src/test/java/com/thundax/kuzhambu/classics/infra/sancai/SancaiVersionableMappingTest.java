@@ -9,15 +9,15 @@ import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.assembler.SancaiPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject.SancaiEntryDO;
-import java.util.Date;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class SancaiVersionableMappingTest {
 
     @Test
     void entryMappingShouldRoundTripVersionMarkerFields() {
-        Date versionedAt = new Date(2_000L);
-        Date contentUpdatedAt = new Date(3_000L);
+        Instant versionedAt = Instant.ofEpochMilli(2_000L);
+        Instant contentUpdatedAt = Instant.ofEpochMilli(3_000L);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(10L));
         entry.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain(20L));
