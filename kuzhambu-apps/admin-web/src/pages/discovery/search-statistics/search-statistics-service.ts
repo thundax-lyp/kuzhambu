@@ -17,7 +17,7 @@ export interface DiscoverySearchEventPageQuery {
 }
 
 export interface DiscoverySearchEventGetCommand {
-    searchEventId: string;
+    id: string;
 }
 
 export interface DiscoverySearchIndexRebuildCommand {

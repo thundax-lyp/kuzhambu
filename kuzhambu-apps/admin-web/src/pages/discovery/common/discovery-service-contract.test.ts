@@ -257,10 +257,10 @@ describe("discovery admin service contracts", () => {
             }
         });
 
-        await searchService.getSearchEventDetail({ searchEventId: "EVT-1001" });
+        await searchService.getSearchEventDetail({ id: "EVT-1001" });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/search-statistics/events/get", {
             body: {
-                searchEventId: "EVT-1001"
+                id: "EVT-1001"
             }
         });
 

@@ -4,11 +4,11 @@ export interface DiscoverySearchEventRecord {
     createdAt?: string | null;
     displayQueryText?: string | null;
     groupTotalCount?: number | null;
+    id?: string | null;
     intentType?: string | null;
     operatorId?: string | null;
     queryText?: string | null;
     resultTotalCount?: number | null;
-    searchEventId?: string | null;
     searchStatus?: string | null;
 }
 
@@ -18,13 +18,13 @@ export interface DiscoverySearchEventDetailRecord {
     failureCode?: string | null;
     failureMessage?: string | null;
     groupTotalCount?: number | null;
+    id?: string | null;
     intentType?: string | null;
     normalizedQueryText?: string | null;
     operatorId?: string | null;
     queryText?: string | null;
     requestId?: string | null;
     resultTotalCount?: number | null;
-    searchEventId?: string | null;
     searchScopesJson?: string | null;
     searchStatus?: string | null;
     traceId?: string | null;

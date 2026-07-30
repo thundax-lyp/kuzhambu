@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `15 admin-search-frontend`：调整 Admin Search 页面和搜索统计控件 ID 口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/discovery/search/search-types.ts`、`kuzhambu-apps/admin-web/src/pages/discovery/search/search-service.ts`、`kuzhambu-apps/admin-web/src/pages/discovery/search/search-page.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/search/search-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/search-statistics/search-statistics-types.ts`、`kuzhambu-apps/admin-web/src/pages/discovery/search-statistics/search-statistics-page.tsx`
-    - 处理动作：把搜索响应、搜索结果点击、搜索统计表格展开和详情请求中的本体身份改为 `id`。
-    - 验收点：搜索输入框、搜索按钮、预览、筛选、日期 RangePicker、重建索引按钮不变；搜索统计“检索编号”列、展开缓存 key 和详情请求使用 `id`。
-    - 重要度：9/10
-
 - [ ] `16 frontend-tests-e2e`：更新 Discovery 前端测试和 Portal E2E
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`

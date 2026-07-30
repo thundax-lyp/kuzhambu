@@ -21,8 +21,8 @@ export interface DiscoverySearchResultRecord {
     displayQueryText?: string | null;
     groupCount?: number | null;
     groups?: DiscoverySearchGroupRecord[] | null;
+    id?: string | null;
     queryText?: string | null;
-    searchEventId?: string | null;
     totalCount?: number | null;
 }
 
