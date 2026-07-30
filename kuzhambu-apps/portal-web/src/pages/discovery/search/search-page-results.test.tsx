@@ -89,8 +89,8 @@ const emptySearchResponse = {
     displayQueryText: "",
     groupCount: 0,
     groups: [],
+    id: "EVT-EMPTY",
     queryText: "",
-    searchEventId: "EVT-EMPTY",
     totalCount: 0
 };
 
@@ -143,9 +143,9 @@ describe("DiscoverySearchPage", () => {
                     ]
                 }
             ],
+            id: "EVT-1001",
             permissionDebugTrace: "DO_NOT_RENDER_RESPONSE_TRACE",
             queryText: "礼器",
-            searchEventId: "EVT-1001",
             totalCount: 2
         });
 
@@ -249,8 +249,8 @@ describe("DiscoverySearchPage", () => {
                     ]
                 }
             ],
+            id: "EVT-1008",
             queryText: "礼器",
-            searchEventId: "EVT-1008",
             totalCount: 1
         });
 
@@ -305,8 +305,8 @@ describe("DiscoverySearchPage", () => {
                     ]
                 }
             ],
+            id: "EVT-1009",
             queryText: "王圻",
-            searchEventId: "EVT-1009",
             totalCount: 1
         });
 
@@ -355,8 +355,8 @@ describe("DiscoverySearchPage", () => {
                     ]
                 }
             ],
+            id: "EVT-1010",
             queryText: "节令",
-            searchEventId: "EVT-1010",
             totalCount: 1
         });
 

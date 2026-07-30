@@ -2,19 +2,16 @@ SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `discovery_search_config` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `config_id` bigint NOT NULL,
     `config_key` varchar(128) NOT NULL,
     `config_value` text NOT NULL,
     `description` varchar(512) DEFAULT NULL,
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_discovery_search_config_id` (`config_id`),
     UNIQUE KEY `uk_discovery_search_config_key` (`config_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索配置表';
 
 CREATE TABLE IF NOT EXISTS `discovery_search_query_event` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `query_id` bigint NOT NULL,
     `user_id` bigint DEFAULT NULL,
     `raw_query` varchar(512) NOT NULL,
     `normalized_query` varchar(512) DEFAULT NULL,
@@ -26,7 +23,6 @@ CREATE TABLE IF NOT EXISTS `discovery_search_query_event` (
     `result_count` int NOT NULL DEFAULT 0,
     `searched_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_discovery_search_query_event_id` (`query_id`),
     KEY `idx_discovery_search_query_event_user` (`user_id`, `searched_at`),
     KEY `idx_discovery_search_query_event_intent` (`intent`, `searched_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索查询事件表';

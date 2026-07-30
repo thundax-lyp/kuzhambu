@@ -111,7 +111,7 @@ describe("DiscoveryQaPage", () => {
             lastMessageAt: null,
             openedAt: 1699999999000,
             scope: "PORTAL",
-            sessionId: "2001",
+            id: "2001",
             status: "OPEN",
             title: "知识中心问答"
         });
@@ -203,7 +203,7 @@ describe("DiscoveryQaPage", () => {
             lastMessageAt: null,
             openedAt: 1699999999000,
             scope: "PORTAL",
-            sessionId: "2101",
+            id: "2101",
             status: "OPEN",
             title: "知识中心问答"
         });

@@ -113,8 +113,8 @@ const emptySearchResponse = {
     displayQueryText: "",
     groupCount: 0,
     groups: [],
+    id: "EVT-EMPTY",
     queryText: "",
-    searchEventId: "EVT-EMPTY",
     totalCount: 0
 };
 
@@ -142,8 +142,8 @@ describe("DiscoverySearchPage", () => {
             displayQueryText: "礼器",
             groupCount: 0,
             groups: [],
+            id: "EVT-1002",
             queryText: "礼器",
-            searchEventId: "EVT-1002",
             totalCount: 0
         });
 
@@ -184,8 +184,8 @@ describe("DiscoverySearchPage", () => {
             displayQueryText: "官制",
             groupCount: 0,
             groups: [],
+            id: "EVT-1003",
             queryText: "官制",
-            searchEventId: "EVT-1003",
             totalCount: 0
         });
 
@@ -230,8 +230,8 @@ describe("DiscoverySearchPage", () => {
             displayQueryText: "礼俗",
             groupCount: 0,
             groups: [],
+            id: "EVT-1004",
             queryText: "礼俗",
-            searchEventId: "EVT-1004",
             totalCount: 0
         });
 

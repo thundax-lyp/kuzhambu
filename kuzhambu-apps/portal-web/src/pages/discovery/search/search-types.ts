@@ -70,7 +70,7 @@ export interface DiscoverySearchResponse {
     displayQueryText?: string | null;
     groupCount?: number | null;
     groups?: DiscoverySearchGroupResponse[] | null;
+    id?: string | null;
     queryText?: string | null;
-    searchEventId?: string | null;
     totalCount?: number | null;
 }

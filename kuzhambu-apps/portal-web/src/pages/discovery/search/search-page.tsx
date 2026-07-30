@@ -174,9 +174,7 @@ export const DiscoverySearchPage = () => {
         group: DiscoverySearchGroupResponse,
         item: DiscoverySearchItemResponse
     ) => {
-        const command = response?.searchEventId
-            ? createClickCommand(response.searchEventId, group, item)
-            : null;
+        const command = response?.id ? createClickCommand(response.id, group, item) : null;
 
         if (command) {
             void discoverySearchService.recordSearchClickEvent(command);

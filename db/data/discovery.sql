@@ -2,7 +2,7 @@ SET NAMES utf8mb4;
 
 -- Search has no required seed data.
 INSERT INTO `discovery_search_query_event` (
-    `query_id`, `user_id`, `raw_query`, `normalized_query`, `intent`, `rewritten_query`,
+    `id`, `user_id`, `raw_query`, `normalized_query`, `intent`, `rewritten_query`,
     `filters_json`, `expanded_terms_json`, `linked_entities_json`, `result_count`, `searched_at`
 ) VALUES (
     1001,

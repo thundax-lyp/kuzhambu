@@ -65,8 +65,8 @@ const emptySearchResponse = {
     displayQueryText: "",
     groupCount: 0,
     groups: [],
+    id: "EVT-EMPTY",
     queryText: "",
-    searchEventId: "EVT-EMPTY",
     totalCount: 0
 };
 
@@ -142,8 +142,8 @@ describe("DiscoverySearchPage", () => {
                     ]
                 }
             ],
+            id: "EVT-1005",
             queryText: "礼器",
-            searchEventId: "EVT-1005",
             totalCount: 1
         });
 
