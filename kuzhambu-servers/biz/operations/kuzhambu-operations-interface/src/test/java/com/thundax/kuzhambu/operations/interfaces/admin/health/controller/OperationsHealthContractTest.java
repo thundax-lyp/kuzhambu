@@ -27,8 +27,8 @@ class OperationsHealthContractTest {
                   "healthStatus":"DOWN",
                   "probeSource":"HTTP",
                   "probeTarget":"internal/health",
-                  "checkedAtStart":1719630400000,
-                  "checkedAtEnd":1719716800000,
+                  "checkedAtStart":"2024-06-29T03:06:40Z",
+                  "checkedAtEnd":"2024-06-30T03:06:40Z",
                   "pageNo":1,
                   "pageSize":20
                 }
