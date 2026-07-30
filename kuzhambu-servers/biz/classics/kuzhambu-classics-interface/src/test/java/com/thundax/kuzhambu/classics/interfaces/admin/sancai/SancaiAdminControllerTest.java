@@ -61,7 +61,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 class SancaiAdminControllerTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void routesShouldKeepAdminApiPaths() throws Exception {
@@ -265,8 +265,8 @@ class SancaiAdminControllerTest {
                         .refinementStatus("COMPLETE")
                         .currentVersionId(9001L)
                         .currentVersionNo(1)
-                        .currentVersionedAt(new java.util.Date(1_000L))
-                        .contentUpdatedAt(new java.util.Date(1_000L))
+                        .currentVersionedAt(java.time.Instant.ofEpochMilli(1_000L))
+                        .contentUpdatedAt(java.time.Instant.ofEpochMilli(1_000L))
                         .versionDirty(false)
                         .tags(List.of(com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response
                                 .ClassicsContentResponse.builder()
@@ -303,7 +303,7 @@ class SancaiAdminControllerTest {
                         .contentType("SANCAI_ENTRY")
                         .contentId(3001L)
                         .versionNo(1)
-                        .versionedAt(new java.util.Date(1_000L))
+                        .versionedAt(java.time.Instant.ofEpochMilli(1_000L))
                         .snapshotJson("{}")
                         .changeType("MANUAL_SAVE")
                         .changeSummary("手动保存")
@@ -648,7 +648,7 @@ class SancaiAdminControllerTest {
         version.setContentType(ClassicsContentType.SANCAI_ENTRY);
         version.setContentId(ClassicsContentIdCodec.toDomain(contentId));
         version.setVersionNo(versionNo);
-        version.setVersionedAt(new java.util.Date(1_000L));
+        version.setVersionedAt(java.time.Instant.ofEpochMilli(1_000L));
         version.setSnapshotJson("{}");
         version.setChangeType(changeType);
         version.setChangeSummary(changeType == ClassicsContentChangeType.HISTORY_RESTORED ? "恢复历史版本 v1" : "手动保存");
