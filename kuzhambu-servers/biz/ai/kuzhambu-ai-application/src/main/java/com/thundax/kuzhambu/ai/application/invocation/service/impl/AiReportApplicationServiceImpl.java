@@ -11,7 +11,6 @@ import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -69,17 +68,13 @@ public class AiReportApplicationServiceImpl implements AiReportApplicationServic
                 .toList();
 
         return new AiReportSummaryResult(
-                toDate(periodStart),
-                toDate(periodEnd),
+                periodStart,
+                periodEnd,
                 invocationCount,
                 succeededInvocationCount,
                 failedInvocationCount,
                 avgLatencyMs,
                 totalCostAmount,
                 topCapabilities);
-    }
-
-    private Date toDate(Instant value) {
-        return value == null ? null : Date.from(value);
     }
 }

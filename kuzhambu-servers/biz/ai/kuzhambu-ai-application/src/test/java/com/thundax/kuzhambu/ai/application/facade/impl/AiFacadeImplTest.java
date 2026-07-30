@@ -56,7 +56,6 @@ import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -66,11 +65,11 @@ class AiFacadeImplTest {
     @Test
     void summaryShouldDelegateAndMapFacadeResponse() {
         AiReportApplicationService aiReportApplicationService = mock(AiReportApplicationService.class);
-        Date periodStart = Date.from(Instant.parse("2025-01-01T00:00:00Z"));
-        Date periodEnd = Date.from(Instant.parse("2025-01-31T23:59:59Z"));
+        Instant periodStart = Instant.parse("2025-01-01T00:00:00.123456Z");
+        Instant periodEnd = Instant.parse("2025-01-31T23:59:59.987654Z");
         when(aiReportApplicationService.summary(argThat(query -> query != null
-                        && periodStart.toInstant().equals(query.getPeriodStart())
-                        && periodEnd.toInstant().equals(query.getPeriodEnd())
+                        && periodStart.equals(query.getPeriodStart())
+                        && periodEnd.equals(query.getPeriodEnd())
                         && AiReportBucketType.DAY == query.getBucketType())))
                 .thenReturn(new AiReportSummaryResult(
                         periodStart,
