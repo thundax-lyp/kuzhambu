@@ -27,8 +27,8 @@ public interface QaSessionMapper extends BaseMapper<QaSessionDO> {
             update discovery_qa_session
             set status = 'REMOVED',
                 removed_at = #{removedAt}
-            where session_id = #{sessionId}
+            where id = #{id}
               and removed_at is null
             """)
-    int markRemoved(@Param("sessionId") Long sessionId, @Param("removedAt") Date removedAt);
+    int markRemoved(@Param("id") Long id, @Param("removedAt") Date removedAt);
 }

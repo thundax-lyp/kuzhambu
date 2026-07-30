@@ -23,7 +23,6 @@ public final class QaPersistenceAssembler {
         }
         QaSessionDO dataObject = new QaSessionDO();
         dataObject.setId(entity.getId());
-        dataObject.setSessionId(entity.getSessionId());
         dataObject.setOwnerType(entity.getOwnerType());
         dataObject.setOwnerId(entity.getOwnerId());
         dataObject.setKnowledgeBaseName(entity.getKnowledgeBaseName());
@@ -45,7 +44,6 @@ public final class QaPersistenceAssembler {
         }
         QaSession entity = new QaSession();
         entity.setId(dataObject.getId());
-        entity.setSessionId(dataObject.getSessionId());
         entity.setOwnerType(dataObject.getOwnerType());
         entity.setOwnerId(dataObject.getOwnerId());
         entity.setKnowledgeBaseName(dataObject.getKnowledgeBaseName());

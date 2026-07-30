@@ -7,7 +7,11 @@ import java.util.List;
 
 public interface QaSessionRepository {
 
-    QaSession getBySessionId(Long sessionId);
+    QaSession getById(Long id);
+
+    default QaSession getBySessionId(Long sessionId) {
+        return getById(sessionId);
+    }
 
     List<QaSession> listByOpenedAtRange(java.util.Date openedAtStart, java.util.Date openedAtEnd);
 
@@ -19,5 +23,5 @@ public interface QaSessionRepository {
 
     int update(QaSession entity);
 
-    int markRemoved(Long sessionId, Date removedAt);
+    int markRemoved(Long id, Date removedAt);
 }

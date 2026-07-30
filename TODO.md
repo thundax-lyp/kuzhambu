@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `02 qa-session`：清理 QA 会话自身 `sessionId`
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaSession.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaSessionRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/dataobject/QaSessionDO.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/mapper/QaSessionMapper.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaSessionRepositoryImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/assembler/QaPersistenceAssembler.java`
-    - 处理动作：删除 QA 会话本体 `sessionId` 字段并把自身查询、删除标记和持久化保存改为使用数据库回填 `id`。
-    - 验收点：`QaSession` 和 `QaSessionDO` 不再声明 `sessionId`，`QaSessionRepository` 自身查询为 `getById(Long)`，保存逻辑不再使用 `SnowflakeIdGenerator`。
-    - 重要度：10/10
-
 - [ ] `03 qa-message`：清理 QA 消息自身 `messageId`
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`

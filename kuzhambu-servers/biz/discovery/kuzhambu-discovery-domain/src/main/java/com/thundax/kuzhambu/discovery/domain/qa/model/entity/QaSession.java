@@ -14,7 +14,6 @@ public class QaSession {
     private static final String REMOVED_STATUS = "REMOVED";
 
     private Long id;
-    private Long sessionId;
     private String ownerType;
     private String ownerId;
     private String knowledgeBaseName;
@@ -28,6 +27,36 @@ public class QaSession {
     private Date lastMessageAt;
     private Date removedAt;
 
+    public QaSession(
+            Long id,
+            Long sessionId,
+            String ownerType,
+            String ownerId,
+            String knowledgeBaseName,
+            String title,
+            String scope,
+            String contextMode,
+            String contextContentType,
+            Long contextContentId,
+            String status,
+            Date openedAt,
+            Date lastMessageAt,
+            Date removedAt) {
+        this.id = id == null ? sessionId : id;
+        this.ownerType = ownerType;
+        this.ownerId = ownerId;
+        this.knowledgeBaseName = knowledgeBaseName;
+        this.title = title;
+        this.scope = scope;
+        this.contextMode = contextMode;
+        this.contextContentType = contextContentType;
+        this.contextContentId = contextContentId;
+        this.status = status;
+        this.openedAt = openedAt;
+        this.lastMessageAt = lastMessageAt;
+        this.removedAt = removedAt;
+    }
+
     public void markRemoved(Date removedAt) {
         this.status = REMOVED_STATUS;
         this.removedAt = removedAt;
@@ -35,5 +64,13 @@ public class QaSession {
 
     public boolean isRemoved() {
         return removedAt != null || REMOVED_STATUS.equals(status);
+    }
+
+    public Long getSessionId() {
+        return id;
+    }
+
+    public void setSessionId(Long sessionId) {
+        this.id = sessionId;
     }
 }
