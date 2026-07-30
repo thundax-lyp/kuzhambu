@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityR
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +23,7 @@ public class ClassicsShareLink {
     private ClassicsShareLinkStatus status;
     private SancaiVisibilityRiskStatus visibilityRiskStatus;
     private Long createdByUserId;
-    private Date issuedAt;
-    private Date expiresAt;
+    private Instant issuedAt;
+    private Instant expiresAt;
     private long accessCount;
 }

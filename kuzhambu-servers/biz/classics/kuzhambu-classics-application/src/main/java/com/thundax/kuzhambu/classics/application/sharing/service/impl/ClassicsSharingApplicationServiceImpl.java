@@ -59,9 +59,9 @@ import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -132,7 +132,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     @Override
     public PageResult<ClassicsSharePortalListItem> pagePortalShares(
-            String contentType, String title, Date issuedAfter, Date issuedBefore, PageQuery page) {
+            String contentType, String title, Instant issuedAfter, Instant issuedBefore, PageQuery page) {
         return repository.pagePortalShares(
                 contentType, title, issuedAfter, issuedBefore, page.getPageNo(), page.getPageSize());
     }
@@ -151,7 +151,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         ClassicsShareLink link =
                 ClassicsSharingApplicationAssembler.toLink(command, shareToken, shareTokenHasher.hash(shareToken));
         if (link.getIssuedAt() == null) {
-            link.setIssuedAt(new Date());
+            link.setIssuedAt(Instant.now());
         }
         ClassicsShareLinkId linkId = repository.insertLink(link);
         int nextPriority = repository.maxTargetPriority() + 1;
@@ -340,7 +340,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                 || link.getStatus() != ClassicsShareLinkStatus.ACTIVE) {
             return false;
         }
-        return link.getExpiresAt() == null || link.getExpiresAt().after(new Date());
+        return link.getExpiresAt() == null || link.getExpiresAt().isAfter(Instant.now());
     }
 
     private static boolean isPrivatePortalShareRequiringAuth(ClassicsShareLink link) {
@@ -348,7 +348,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                 && link.getId() != null
                 && link.getVisibility() == ClassicsShareVisibility.PRIVATE
                 && link.getStatus() == ClassicsShareLinkStatus.ACTIVE
-                && (link.getExpiresAt() == null || link.getExpiresAt().after(new Date()));
+                && (link.getExpiresAt() == null || link.getExpiresAt().isAfter(Instant.now()));
     }
 
     private static boolean isPrivatePortalVisible(
@@ -499,7 +499,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Transactional(rollbackFor = Exception.class)
     public void recordAccess(ClassicsShareAccessRecord record) {
         if (record.getAccessedAt() == null) {
-            record.setAccessedAt(new Date());
+            record.setAccessedAt(Instant.now());
         }
         repository.insertAccessRecord(record);
         repository.increaseAccessCount(record.getShareLinkId());
@@ -850,7 +850,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     private static boolean isExpired(ClassicsShareLink link) {
         return link != null
                 && link.getExpiresAt() != null
-                && !link.getExpiresAt().after(new Date());
+                && !link.getExpiresAt().isAfter(Instant.now());
     }
 
     private static BizException shareContentNotFound() {

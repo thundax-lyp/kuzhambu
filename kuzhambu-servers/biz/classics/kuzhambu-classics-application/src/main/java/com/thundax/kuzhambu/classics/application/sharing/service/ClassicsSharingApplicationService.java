@@ -17,7 +17,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTa
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +30,7 @@ public interface ClassicsSharingApplicationService {
     PageResult<ClassicsShareLink> pageLinks(String status, String visibility, PageQuery page);
 
     PageResult<ClassicsSharePortalListItem> pagePortalShares(
-            String contentType, String title, Date issuedAfter, Date issuedBefore, PageQuery page);
+            String contentType, String title, Instant issuedAfter, Instant issuedBefore, PageQuery page);
 
     ShareLinkCreateResult createLink(ShareLinkCreateCommand command);
 
