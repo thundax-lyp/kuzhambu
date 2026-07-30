@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `16 frontend-tests-e2e`：更新 Discovery 前端测试和 Portal E2E
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/discovery/qa/qa-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/qa-console/qa-console-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/search/search-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/search-statistics/search-statistics-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/common/discovery-service-contract.test.ts`、`kuzhambu-apps/portal-web/e2e/discovery/search/search.spec.ts`、`kuzhambu-apps/portal-web/e2e/discovery/qa/qa.spec.ts`
-    - 处理动作：把前端 mock、用户操作断言和 e2e 响应中的本体身份字段改为 `id`。
-    - 验收点：前端测试断言会话点击、删除、导出、搜索结果点击、搜索统计展开均按 `id` 工作；点击请求仍包含引用 `searchEventId`。
-    - 重要度：9/10
-
 - [ ] `17 backend-tests`：更新 Discovery 后端测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`

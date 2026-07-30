@@ -82,8 +82,8 @@ describe("QaConsolePage", () => {
             status: "AVAILABLE"
         });
         mocks.getQaSession.mockResolvedValue({
+            id: "2001",
             ownerUserId: "1001",
-            sessionId: "2001",
             title: "礼器问答",
             status: "OPEN",
             scope: "PORTAL",
@@ -92,7 +92,7 @@ describe("QaConsolePage", () => {
             openedAt: 1700000000000,
             messages: [
                 {
-                    messageId: "4001",
+                    id: "4001",
                     role: "USER",
                     content: "礼器在哪里出现？",
                     messageStatus: "SUCCEEDED"
@@ -107,8 +107,8 @@ describe("QaConsolePage", () => {
             totalPage: 1,
             records: [
                 {
+                    id: "2001",
                     ownerUserId: "1001",
-                    sessionId: "2001",
                     title: "礼器问答",
                     status: "OPEN",
                     scope: "PORTAL",
@@ -149,7 +149,7 @@ describe("QaConsolePage", () => {
         });
         mocks.deleteQaSession.mockResolvedValue(undefined);
         mocks.createQaSessionExport.mockResolvedValue({
-            exportId: "7001",
+            id: "7001",
             exportStatus: "SUCCEEDED",
             filename: "discovery-qa-session-2001-7001.csv",
             sessionId: "2001",
@@ -285,8 +285,8 @@ describe("QaConsolePage", () => {
                 totalPage: 1,
                 records: [
                     {
+                        id: "2001",
                         ownerUserId: "1001",
-                        sessionId: "2001",
                         title: "礼器问答",
                         status: "OPEN",
                         scope: "PORTAL",
@@ -304,8 +304,8 @@ describe("QaConsolePage", () => {
                 totalPage: 1,
                 records: [
                     {
+                        id: "2001",
                         ownerUserId: "1001",
-                        sessionId: "2001",
                         title: "礼器问答",
                         status: "REMOVED",
                         scope: "PORTAL",

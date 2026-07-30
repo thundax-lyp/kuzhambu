@@ -44,8 +44,8 @@ const createSearchMockHandlers = async (page: Page) => {
             await fulfillSuccess(route, {
                 displayQueryText: "",
                 groupCount: 1,
+                id: "search-event-empty",
                 queryText: "",
-                searchEventId: "search-event-empty",
                 totalCount: isSecondPage ? 21 : 1,
                 groups: [
                     {
@@ -85,8 +85,8 @@ const createSearchMockHandlers = async (page: Page) => {
         await fulfillSuccess(route, {
             displayQueryText: "礼学",
             groupCount: 1,
+            id: "search-event-1",
             queryText: "礼学",
-            searchEventId: "search-event-1",
             totalCount: 1,
             groups: [
                 {
