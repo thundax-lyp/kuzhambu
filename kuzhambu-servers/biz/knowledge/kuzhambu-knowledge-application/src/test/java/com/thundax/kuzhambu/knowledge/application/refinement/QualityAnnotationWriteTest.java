@@ -19,10 +19,12 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineage
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionAiCandidateId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionSourceContentId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.KnowledgeEntityId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
@@ -290,21 +292,21 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public List<KnowledgeEntity> listByVersionId(Long versionId) {
+        public List<KnowledgeEntity> listByVersionId(GraphVersionId versionId) {
             return List.of();
         }
 
         @Override
-        public KnowledgeEntity getByEntityId(Long entityId) {
+        public KnowledgeEntity getByEntityId(KnowledgeEntityId entityId) {
             return null;
         }
 
         @Override
         public PageResult<KnowledgeEntity> page(
-                Long versionId,
+                GraphVersionId versionId,
                 String keyword,
                 String entityType,
-                String confirmationStatus,
+                KnowledgeConfirmationStatus confirmationStatus,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, 0, List.of());
