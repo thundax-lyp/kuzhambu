@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementLineageRelationDraft;
 import com.thundax.kuzhambu.knowledge.infra.refinement.persistence.dataobject.RefinementLineageRelationDraftDO;
 import com.thundax.kuzhambu.knowledge.infra.refinement.persistence.mapper.RefinementLineageRelationDraftMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -39,9 +39,9 @@ class RefinementLineageRelationDraftRepositoryTest {
                 "[]",
                 1,
                 1L,
-                new Date(),
+                Instant.now(),
                 1L,
-                new Date());
+                Instant.now());
 
         repository.saveOrUpdateBatch(List.of(draft));
 
