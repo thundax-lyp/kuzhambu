@@ -43,6 +43,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionRequeste
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTraceIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
@@ -51,6 +52,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineage
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
@@ -384,10 +386,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<GraphVersion> versionPage = graphVersionRepository.page(
-                taskType,
-                status,
+                GraphExtractionTaskType.from(taskType),
+                GraphVersionStatus.from(status),
                 sourceContentType,
-                sourceContentId,
+                GraphExtractionSourceContentIdCodec.toDomain(sourceContentId),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -401,7 +403,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     public GraphVersionResult getVersionDetail(Long versionId) {
-        GraphVersion version = graphVersionRepository.getByVersionId(versionId);
+        GraphVersion version = graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(versionId));
         if (version == null) {
             throw new BizException("Graph version not found: " + versionId);
         }
@@ -1066,19 +1068,20 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         }
         RefinementTask lastAppliedRefinement = refinementTaskRepository == null
                 ? null
-                : refinementTaskRepository.findLatestAppliedByGraphVersionId(version.getId());
+                : refinementTaskRepository.findLatestAppliedByGraphVersionId(
+                        GraphVersionIdCodec.toValue(version.getId()));
         return new GraphVersionResult(
-                version.getId(),
+                GraphVersionIdCodec.toValue(version.getId()),
                 version.getTaskId() == null
                         ? null
                         : String.valueOf(version.getTaskId().value()),
-                version.getCandidateId(),
-                version.getTaskType(),
+                GraphExtractionAiCandidateIdCodec.toValue(version.getCandidateId()),
+                version.getTaskType() == null ? null : version.getTaskType().value(),
                 version.getSourceContentType(),
-                version.getSourceContentId(),
+                GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId()),
                 version.getVersionNo(),
-                version.getStatus(),
-                version.getAppliedAt() == null ? null : version.getAppliedAt().getTime(),
+                version.getStatus() == null ? null : version.getStatus().value(),
+                version.getAppliedAt() == null ? null : version.getAppliedAt().toEpochMilli(),
                 lastAppliedRefinement != null,
                 lastAppliedRefinement == null || lastAppliedRefinement.getRefinementTaskId() == null
                         ? null

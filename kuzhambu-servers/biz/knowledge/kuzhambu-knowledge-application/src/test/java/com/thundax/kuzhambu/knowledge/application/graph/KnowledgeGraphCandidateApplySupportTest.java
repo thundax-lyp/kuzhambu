@@ -8,12 +8,17 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionAiCandidateId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionSourceContentId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
@@ -69,12 +74,15 @@ class KnowledgeGraphCandidateApplySupportTest {
         private final List<GraphVersion> versions = new ArrayList<>();
 
         @Override
-        public GraphVersion findLatest(String taskType, String sourceContentType, Long sourceContentId) {
+        public GraphVersion findLatest(
+                GraphExtractionTaskType taskType,
+                String sourceContentType,
+                GraphExtractionSourceContentId sourceContentId) {
             return versions.stream().reduce((first, second) -> second).orElse(null);
         }
 
         @Override
-        public GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, Long candidateId) {
+        public GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, GraphExtractionAiCandidateId candidateId) {
             return versions.stream()
                     .filter(version -> version.getTaskId().equals(taskId)
                             && version.getCandidateId().equals(candidateId))
@@ -83,7 +91,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
-        public GraphVersion getByVersionId(Long versionId) {
+        public GraphVersion getByVersionId(GraphVersionId versionId) {
             return versions.stream()
                     .filter(version -> versionId.equals(version.getId()))
                     .findFirst()
@@ -92,21 +100,21 @@ class KnowledgeGraphCandidateApplySupportTest {
 
         @Override
         public PageResult<GraphVersion> page(
-                String taskType,
-                String status,
+                GraphExtractionTaskType taskType,
+                GraphVersionStatus status,
                 String sourceContentType,
-                Long sourceContentId,
+                GraphExtractionSourceContentId sourceContentId,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, versions.size(), versions);
         }
 
         @Override
-        public Long save(GraphVersion entity) {
+        public GraphVersionId save(GraphVersion entity) {
             long versionId = versions.size() + 1L;
-            entity.setId(versionId);
+            entity.setId(GraphVersionIdCodec.toDomain(versionId));
             versions.add(entity);
-            return versionId;
+            return entity.getId();
         }
     }
 
