@@ -125,9 +125,7 @@ public final class TaxonomyApplicationAssembler {
         }
 
         return new SynonymResult(
-                synonym.getSynonymId() == null
-                        ? null
-                        : String.valueOf(synonym.getSynonymId().value()),
+                synonym.getId() == null ? null : String.valueOf(synonym.getId().value()),
                 synonym.getTerm(),
                 synonym.getSynonym(),
                 synonym.getStatus() == null ? null : synonym.getStatus().value());

@@ -29,7 +29,7 @@ public class SynonymRepositoryImpl implements SynonymRepository {
 
     @Override
     public Synonym getById(SynonymId id) {
-        return TaxonomyPersistenceAssembler.toDomain(mapper.selectById(SynonymIdCodec.toValue(id)));
+        return TaxonomyPersistenceAssembler.toDomain(mapper.selectOne(buildSynonymIdQueryWrapper(id)));
     }
 
     @Override
@@ -48,15 +48,15 @@ public class SynonymRepositoryImpl implements SynonymRepository {
         QueryWrapper<SynonymDO> wrapper = new QueryWrapper<>();
         wrapper.eq("term", term)
                 .eq("synonym", synonym)
-                .ne(excludedId != null, "id", SynonymIdCodec.toValue(excludedId));
+                .ne(excludedId != null, "synonym_id", SynonymIdCodec.toValue(excludedId));
         return mapper.selectCount(wrapper).intValue();
     }
 
     @Override
     public SynonymId insert(Synonym entity) {
         SynonymDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
-        if (dataObject.getId() == null) {
-            dataObject.setId(idGenerator.nextId().value());
+        if (dataObject.getSynonymId() == null) {
+            dataObject.setSynonymId(idGenerator.nextId().value());
         }
         mapper.insert(dataObject);
         return SynonymIdCodec.toDomain(dataObject.getSynonymId());
@@ -67,22 +67,22 @@ public class SynonymRepositoryImpl implements SynonymRepository {
         SynonymDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
         return mapper.update(
                 null,
-                buildIdUpdateWrapper(dataObject)
+                buildSynonymIdUpdateWrapper(dataObject)
                         .set(SynonymDO::getTerm, dataObject.getTerm())
                         .set(SynonymDO::getSynonym, dataObject.getSynonym())
-                        .set(SynonymDO::getStatus, dataObject.getStatus())
-                        .set(SynonymDO::getSynonymId, dataObject.getSynonymId()));
+                        .set(SynonymDO::getStatus, dataObject.getStatus()));
     }
 
     @Override
     public int updateStatus(Synonym entity) {
         SynonymDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
-        return mapper.update(null, buildIdUpdateWrapper(dataObject).set(SynonymDO::getStatus, dataObject.getStatus()));
+        return mapper.update(
+                null, buildSynonymIdUpdateWrapper(dataObject).set(SynonymDO::getStatus, dataObject.getStatus()));
     }
 
     @Override
     public int deleteById(SynonymId id) {
-        return mapper.deleteById(SynonymIdCodec.toValue(id));
+        return mapper.delete(buildSynonymIdQueryWrapper(id));
     }
 
     private QueryWrapper<SynonymDO> buildQueryWrapper(String term, String synonym, SynonymStatus status) {
@@ -94,9 +94,15 @@ public class SynonymRepositoryImpl implements SynonymRepository {
         return wrapper;
     }
 
-    private LambdaUpdateWrapper<SynonymDO> buildIdUpdateWrapper(SynonymDO dataObject) {
+    private LambdaUpdateWrapper<SynonymDO> buildSynonymIdUpdateWrapper(SynonymDO dataObject) {
         LambdaUpdateWrapper<SynonymDO> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(SynonymDO::getId, dataObject.getId());
+        wrapper.eq(SynonymDO::getSynonymId, dataObject.getSynonymId());
+        return wrapper;
+    }
+
+    private QueryWrapper<SynonymDO> buildSynonymIdQueryWrapper(SynonymId id) {
+        QueryWrapper<SynonymDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("synonym_id", SynonymIdCodec.toValue(id));
         return wrapper;
     }
 }

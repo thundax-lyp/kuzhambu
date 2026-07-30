@@ -777,7 +777,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         }
 
         Synonym synonym = new Synonym();
-        synonym.setSynonymId(synonymId);
+        synonym.setId(synonymId);
         synonym.setTerm(term);
         synonym.setSynonym(synonymText);
         synonym.setStatus(command.getStatus() == null ? SynonymStatus.ENABLED : command.getStatus());
@@ -803,7 +803,6 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         Synonym updated = new Synonym();
         updated.setId(existing.getId());
-        updated.setSynonymId(id);
         updated.setTerm(term);
         updated.setSynonym(synonymText);
         updated.setStatus(existing.getStatus());

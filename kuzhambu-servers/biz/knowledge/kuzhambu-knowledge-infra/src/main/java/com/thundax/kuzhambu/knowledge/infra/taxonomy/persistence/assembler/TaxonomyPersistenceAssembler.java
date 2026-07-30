@@ -218,8 +218,7 @@ public final class TaxonomyPersistenceAssembler {
         }
 
         SynonymDO dataObject = new SynonymDO();
-        dataObject.setId(SynonymIdCodec.toValue(entity.getId()));
-        dataObject.setSynonymId(SynonymIdCodec.toValue(entity.getSynonymId()));
+        dataObject.setSynonymId(SynonymIdCodec.toValue(entity.getId()));
         dataObject.setTerm(entity.getTerm());
         dataObject.setSynonym(entity.getSynonym());
         dataObject.setStatus(statusValue(entity.getStatus()));
@@ -232,8 +231,7 @@ public final class TaxonomyPersistenceAssembler {
         }
 
         Synonym entity = new Synonym();
-        entity.setId(SynonymIdCodec.toDomain(dataObject.getId()));
-        entity.setSynonymId(SynonymIdCodec.toDomain(dataObject.getSynonymId()));
+        entity.setId(SynonymIdCodec.toDomain(dataObject.getSynonymId()));
         entity.setTerm(dataObject.getTerm());
         entity.setSynonym(dataObject.getSynonym());
         entity.setStatus(synonymStatusFrom(dataObject.getStatus()));

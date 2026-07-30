@@ -13,7 +13,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Synonym {
     private SynonymId id;
-    private SynonymId synonymId;
     private String term;
     private String synonym;
     private SynonymStatus status;

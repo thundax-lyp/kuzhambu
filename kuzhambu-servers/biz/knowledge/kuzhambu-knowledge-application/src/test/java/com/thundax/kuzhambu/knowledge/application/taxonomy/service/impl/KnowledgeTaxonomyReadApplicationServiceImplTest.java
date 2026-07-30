@@ -35,23 +35,13 @@ class KnowledgeTaxonomyReadApplicationServiceImplTest {
                         1,
                         50,
                         1,
-                        List.of(new Synonym(
-                                SynonymIdCodec.toDomain(1L),
-                                SynonymIdCodec.toDomain(1L),
-                                "礼制",
-                                "礼学",
-                                SynonymStatus.ENABLED))));
+                        List.of(new Synonym(SynonymIdCodec.toDomain(1L), "礼制", "礼学", SynonymStatus.ENABLED))));
         when(synonymRepository.page(isNull(), eq("礼制"), eq(SynonymStatus.ENABLED), eq(1), eq(50)))
                 .thenReturn(PageResult.of(
                         1,
                         50,
                         1,
-                        List.of(new Synonym(
-                                SynonymIdCodec.toDomain(2L),
-                                SynonymIdCodec.toDomain(2L),
-                                "典礼",
-                                "礼制",
-                                SynonymStatus.ENABLED))));
+                        List.of(new Synonym(SynonymIdCodec.toDomain(2L), "典礼", "礼制", SynonymStatus.ENABLED))));
 
         KnowledgeTaxonomyReadApplicationServiceImpl service = new KnowledgeTaxonomyReadApplicationServiceImpl(
                 synonymRepository,
@@ -74,23 +64,13 @@ class KnowledgeTaxonomyReadApplicationServiceImplTest {
                         1,
                         10,
                         1,
-                        List.of(new Synonym(
-                                SynonymIdCodec.toDomain(1L),
-                                SynonymIdCodec.toDomain(1L),
-                                "礼制",
-                                "礼学",
-                                SynonymStatus.ENABLED))));
+                        List.of(new Synonym(SynonymIdCodec.toDomain(1L), "礼制", "礼学", SynonymStatus.ENABLED))));
         when(synonymRepository.page(isNull(), eq("礼制"), eq(SynonymStatus.ENABLED), eq(1), eq(10)))
                 .thenReturn(PageResult.of(
                         1,
                         10,
                         1,
-                        List.of(new Synonym(
-                                SynonymIdCodec.toDomain(2L),
-                                SynonymIdCodec.toDomain(2L),
-                                "礼法",
-                                "礼制",
-                                SynonymStatus.ENABLED))));
+                        List.of(new Synonym(SynonymIdCodec.toDomain(2L), "礼法", "礼制", SynonymStatus.ENABLED))));
 
         KnowledgeTaxonomyReadApplicationServiceImpl service = new KnowledgeTaxonomyReadApplicationServiceImpl(
                 synonymRepository,
@@ -119,23 +99,13 @@ class KnowledgeTaxonomyReadApplicationServiceImplTest {
                         1,
                         10,
                         1,
-                        List.of(new Synonym(
-                                SynonymIdCodec.toDomain(1L),
-                                SynonymIdCodec.toDomain(1L),
-                                "典礼",
-                                "礼制",
-                                SynonymStatus.ENABLED))));
+                        List.of(new Synonym(SynonymIdCodec.toDomain(1L), "典礼", "礼制", SynonymStatus.ENABLED))));
         when(synonymRepository.page(eq("礼制"), isNull(), eq(SynonymStatus.ENABLED), eq(1), eq(10)))
                 .thenReturn(PageResult.of(
                         1,
                         10,
                         1,
-                        List.of(new Synonym(
-                                SynonymIdCodec.toDomain(2L),
-                                SynonymIdCodec.toDomain(2L),
-                                "礼制",
-                                "礼学",
-                                SynonymStatus.ENABLED))));
+                        List.of(new Synonym(SynonymIdCodec.toDomain(2L), "礼制", "礼学", SynonymStatus.ENABLED))));
 
         KnowledgeTaxonomyReadApplicationServiceImpl service = new KnowledgeTaxonomyReadApplicationServiceImpl(
                 synonymRepository,
@@ -165,42 +135,17 @@ class KnowledgeTaxonomyReadApplicationServiceImplTest {
                         50,
                         3,
                         List.of(
-                                new Synonym(
-                                        SynonymIdCodec.toDomain(1L),
-                                        SynonymIdCodec.toDomain(1L),
-                                        "礼制",
-                                        "礼学",
-                                        SynonymStatus.ENABLED),
-                                new Synonym(
-                                        SynonymIdCodec.toDomain(2L),
-                                        SynonymIdCodec.toDomain(2L),
-                                        "礼制",
-                                        "典礼",
-                                        SynonymStatus.ENABLED),
-                                new Synonym(
-                                        SynonymIdCodec.toDomain(3L),
-                                        SynonymIdCodec.toDomain(3L),
-                                        "礼法",
-                                        "礼制",
-                                        SynonymStatus.ENABLED))));
+                                new Synonym(SynonymIdCodec.toDomain(1L), "礼制", "礼学", SynonymStatus.ENABLED),
+                                new Synonym(SynonymIdCodec.toDomain(2L), "礼制", "典礼", SynonymStatus.ENABLED),
+                                new Synonym(SynonymIdCodec.toDomain(3L), "礼法", "礼制", SynonymStatus.ENABLED))));
         when(synonymRepository.page(isNull(), eq("礼制"), eq(SynonymStatus.ENABLED), eq(1), eq(50)))
                 .thenReturn(PageResult.of(
                         1,
                         50,
                         2,
                         List.of(
-                                new Synonym(
-                                        SynonymIdCodec.toDomain(4L),
-                                        SynonymIdCodec.toDomain(4L),
-                                        "典礼",
-                                        "礼制",
-                                        SynonymStatus.ENABLED),
-                                new Synonym(
-                                        SynonymIdCodec.toDomain(5L),
-                                        SynonymIdCodec.toDomain(5L),
-                                        "礼法",
-                                        "礼制",
-                                        SynonymStatus.ENABLED))));
+                                new Synonym(SynonymIdCodec.toDomain(4L), "典礼", "礼制", SynonymStatus.ENABLED),
+                                new Synonym(SynonymIdCodec.toDomain(5L), "礼法", "礼制", SynonymStatus.ENABLED))));
 
         KnowledgeTaxonomyReadApplicationServiceImpl service = new KnowledgeTaxonomyReadApplicationServiceImpl(
                 synonymRepository,
@@ -231,29 +176,14 @@ class KnowledgeTaxonomyReadApplicationServiceImplTest {
                         50,
                         2,
                         List.of(
-                                new Synonym(
-                                        SynonymIdCodec.toDomain(1L),
-                                        SynonymIdCodec.toDomain(1L),
-                                        "礼制",
-                                        "   ",
-                                        SynonymStatus.ENABLED),
-                                new Synonym(
-                                        SynonymIdCodec.toDomain(2L),
-                                        SynonymIdCodec.toDomain(2L),
-                                        "礼制",
-                                        "礼学",
-                                        SynonymStatus.ENABLED))));
+                                new Synonym(SynonymIdCodec.toDomain(1L), "礼制", "   ", SynonymStatus.ENABLED),
+                                new Synonym(SynonymIdCodec.toDomain(2L), "礼制", "礼学", SynonymStatus.ENABLED))));
         when(synonymRepository.page(isNull(), eq("礼制"), eq(SynonymStatus.ENABLED), eq(1), eq(50)))
                 .thenReturn(PageResult.of(
                         1,
                         50,
                         1,
-                        List.of(new Synonym(
-                                SynonymIdCodec.toDomain(3L),
-                                SynonymIdCodec.toDomain(3L),
-                                "礼制",
-                                "礼制",
-                                SynonymStatus.ENABLED))));
+                        List.of(new Synonym(SynonymIdCodec.toDomain(3L), "礼制", "礼制", SynonymStatus.ENABLED))));
 
         KnowledgeTaxonomyReadApplicationServiceImpl service = new KnowledgeTaxonomyReadApplicationServiceImpl(
                 synonymRepository,
