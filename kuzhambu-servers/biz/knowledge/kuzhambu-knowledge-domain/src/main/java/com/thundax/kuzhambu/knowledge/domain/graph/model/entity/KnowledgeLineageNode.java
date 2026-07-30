@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.knowledge.domain.graph.model.entity;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +20,7 @@ public class KnowledgeLineageNode {
     private String confirmationStatus;
     private Long latestVersionId;
     private String sourceRefsJson;
-    private Date firstExtractedAt;
-    private Date lastExtractedAt;
-    private Date confirmedAt;
+    private Instant firstExtractedAt;
+    private Instant lastExtractedAt;
+    private Instant confirmedAt;
 }
