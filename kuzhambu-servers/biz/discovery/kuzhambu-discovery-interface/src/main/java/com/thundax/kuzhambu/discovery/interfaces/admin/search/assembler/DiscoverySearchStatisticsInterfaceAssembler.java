@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery;
@@ -12,6 +14,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResul
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchStatisticsSummaryResult;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchClickEventRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchEventPageRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchPreviewRequest;
@@ -23,7 +26,6 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.respons
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchPreviewResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchStatisticsSummaryResponse;
-import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
@@ -53,8 +55,8 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 request.getPageSize() == null ? 20 : request.getPageSize(),
                 ADMIN_OPERATOR_TYPE,
                 KuzhambuContextHolder.currentSubjectId(),
-                newRequestId(),
-                newTraceId());
+                RequestIdCodec.toDomain(newRequestId()),
+                TraceIdCodec.toDomain(newTraceId()));
     }
 
     public static SearchEventPageQuery toQuery(DiscoverySearchEventPageRequest request) {
@@ -77,7 +79,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
             return null;
         }
         return new SearchClickEventCreateCommand(
-                request.getSearchEventId(),
+                SearchEventIdCodec.toDomain(request.getSearchEventId()),
                 request.getContentDomain(),
                 request.getContentType(),
                 request.getContentId(),
@@ -88,8 +90,8 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 request.getTargetPath(),
                 ADMIN_OPERATOR_TYPE,
                 KuzhambuContextHolder.currentSubjectId(),
-                newRequestId(),
-                newTraceId());
+                RequestIdCodec.toDomain(newRequestId()),
+                TraceIdCodec.toDomain(newTraceId()));
     }
 
     public static SearchPreviewQuery toQuery(DiscoverySearchPreviewRequest request) {
@@ -118,7 +120,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
             return null;
         }
         return DiscoverySearchEventResponse.builder()
-                .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
+                .id(SearchEventIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
                 .displayQueryText(result.getDisplayQueryText())
                 .intentType(result.getIntentType())
@@ -135,7 +137,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
             return null;
         }
         return DiscoverySearchEventDetailResponse.builder()
-                .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
+                .id(SearchEventIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
                 .normalizedQueryText(result.getNormalizedQueryText())
                 .displayQueryText(result.getDisplayQueryText())
@@ -158,7 +160,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
             return null;
         }
         return DiscoverySearchResponse.builder()
-                .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
+                .id(SearchEventIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
                 .displayQueryText(result.getDisplayQueryText())
                 .totalCount(result.getResultTotalCount())

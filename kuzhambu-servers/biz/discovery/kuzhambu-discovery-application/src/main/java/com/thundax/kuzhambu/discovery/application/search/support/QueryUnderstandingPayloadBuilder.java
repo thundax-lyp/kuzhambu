@@ -3,6 +3,8 @@ package com.thundax.kuzhambu.discovery.application.search.support;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,8 +45,8 @@ public class QueryUnderstandingPayloadBuilder {
         payload.put("visibilityScopes", query.getVisibilityScopes());
         payload.put("tagHint", enhancement.tagHint());
         payload.put("recognizedEntities", enhancement.recognizedEntities());
-        payload.put("requestId", query.getRequestId());
-        payload.put("traceId", query.getTraceId());
+        payload.put("requestId", RequestIdCodec.toValue(query.getRequestId()));
+        payload.put("traceId", TraceIdCodec.toValue(query.getTraceId()));
         return writeJson(payload);
     }
 

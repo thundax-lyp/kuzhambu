@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
@@ -64,8 +66,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     "",
                     SearchIntentType.KEYWORD_SEARCH.value(),
                     List.of(),
-                    query.getRequestId(),
-                    query.getTraceId());
+                    RequestIdCodec.toValue(query.getRequestId()),
+                    TraceIdCodec.toValue(query.getTraceId()));
         }
         String normalizedQueryText =
                 searchDomainService.normalizeKeyword(query.getQueryText()).getNormalizedText();
@@ -77,8 +79,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     .modelId(DEFAULT_MODEL_ID)
                     .modelName(DEFAULT_MODEL_NAME)
                     .promptVersionId(DEFAULT_PROMPT_VERSION_ID)
-                    .requestId(query.getRequestId())
-                    .traceId(query.getTraceId())
+                    .requestId(RequestIdCodec.toValue(query.getRequestId()))
+                    .traceId(TraceIdCodec.toValue(query.getTraceId()))
                     .promptMessagesJson(payloadBuilder.buildPromptMessagesJson(query, normalizedQueryText, enhancement))
                     .inputPayloadJson(payloadBuilder.buildInputPayloadJson(query, normalizedQueryText, enhancement))
                     .outputSchemaJson(payloadBuilder.buildOutputSchemaJson())
@@ -107,8 +109,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 normalizedQueryText,
                 SearchIntentType.KEYWORD_SEARCH.value(),
                 safeList(enhancement.recognizedEntities()),
-                query.getRequestId(),
-                query.getTraceId());
+                RequestIdCodec.toValue(query.getRequestId()),
+                TraceIdCodec.toValue(query.getTraceId()));
     }
 
     private QueryUnderstandingResult toResult(
@@ -124,8 +126,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     normalizedQueryText,
                     SearchIntentType.KEYWORD_SEARCH.value(),
                     safeList(defaultRecognizedEntities),
-                    query.getRequestId(),
-                    query.getTraceId());
+                    RequestIdCodec.toValue(query.getRequestId()),
+                    TraceIdCodec.toValue(query.getTraceId()));
         }
         try {
             JsonNode root = OBJECT_MAPPER.readTree(aiResult.getResultPayload());
@@ -142,8 +144,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     rewrittenQueryText,
                     intent,
                     recognizedEntities,
-                    query.getRequestId(),
-                    query.getTraceId());
+                    RequestIdCodec.toValue(query.getRequestId()),
+                    TraceIdCodec.toValue(query.getTraceId()));
         } catch (JsonProcessingException exception) {
             throw new BizException(
                     "DISCOVERY-20004",
@@ -166,8 +168,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 "SUCCEEDED",
                 null,
                 null,
-                query.getRequestId(),
-                query.getTraceId(),
+                RequestIdCodec.toValue(query.getRequestId()),
+                TraceIdCodec.toValue(query.getTraceId()),
                 new Date());
     }
 
@@ -191,8 +193,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 "FAILED",
                 failureCode,
                 exception.getMessage(),
-                query.getRequestId(),
-                query.getTraceId(),
+                RequestIdCodec.toValue(query.getRequestId()),
+                TraceIdCodec.toValue(query.getTraceId()),
                 new Date());
     }
 

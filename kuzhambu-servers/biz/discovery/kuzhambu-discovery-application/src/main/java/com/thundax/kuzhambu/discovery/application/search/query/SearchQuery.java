@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.discovery.application.search.query;
 
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.util.Date;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -24,6 +26,6 @@ public class SearchQuery {
     private int pageSize;
     private String operatorType;
     private String operatorId;
-    private String requestId;
-    private String traceId;
+    private RequestId requestId;
+    private TraceId traceId;
 }
