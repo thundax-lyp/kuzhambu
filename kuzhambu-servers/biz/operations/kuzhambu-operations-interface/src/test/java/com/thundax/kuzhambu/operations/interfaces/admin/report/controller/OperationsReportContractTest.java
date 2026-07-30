@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportGenerateResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportPageResponse;
-import java.util.Date;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class OperationsReportContractTest {
@@ -81,15 +81,15 @@ class OperationsReportContractTest {
                 .reportId(9001L)
                 .reportType("WEEKLY")
                 .format("PDF")
-                .periodStart(new Date(1_718_000_000_000L))
-                .periodEnd(new Date(1_718_086_400_000L))
+                .periodStart(Instant.ofEpochMilli(1_718_000_000_000L))
+                .periodEnd(Instant.ofEpochMilli(1_718_086_400_000L))
                 .storageObjectId(3001L)
                 .artifactFilename("weekly-report.pdf")
                 .reportStatus("SUCCEEDED")
                 .failureReason(null)
                 .requesterUserId(1001L)
-                .requestedAt(new Date(1_718_086_500_000L))
-                .completedAt(new Date(1_718_086_600_000L))
+                .requestedAt(Instant.ofEpochMilli(1_718_086_500_000L))
+                .completedAt(Instant.ofEpochMilli(1_718_086_600_000L))
                 .build();
         assertJsonFields(
                 pageResponse,
@@ -110,8 +110,8 @@ class OperationsReportContractTest {
                 .reportId(9001L)
                 .reportType("WEEKLY")
                 .format("PDF")
-                .periodStart(new Date(1_718_000_000_000L))
-                .periodEnd(new Date(1_718_086_400_000L))
+                .periodStart(Instant.ofEpochMilli(1_718_000_000_000L))
+                .periodEnd(Instant.ofEpochMilli(1_718_086_400_000L))
                 .requestId("req-1")
                 .traceId("trace-1")
                 .templateVersion("2026.06.26")
@@ -120,8 +120,8 @@ class OperationsReportContractTest {
                 .reportStatus("SUCCEEDED")
                 .failureReason(null)
                 .requesterUserId(1001L)
-                .requestedAt(new Date(1_718_086_500_000L))
-                .completedAt(new Date(1_718_086_600_000L))
+                .requestedAt(Instant.ofEpochMilli(1_718_086_500_000L))
+                .completedAt(Instant.ofEpochMilli(1_718_086_600_000L))
                 .build();
         assertJsonFields(
                 detailResponse,
