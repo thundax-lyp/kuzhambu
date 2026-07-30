@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `D-02 discovery-domain-qa-ref-status-valueobjects`：新增 QA 引用、状态和来源值对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/valueobject/QaOwnerRef.java`、`QaContextContentRef.java`、`KnowledgeContentRef.java`、`KnowledgeSourceId.java`、`QaSessionStatus.java`、`QaMessageRole.java`、`QaKnowledgeSyncStatus.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/codec/QaStringValueCodec.java`
-    - 处理动作：新增 QA owner、content、knowledge source 和核心状态值对象。
-    - 验收点：`KnowledgeSourceId` 可表达 `SANCAI_ENTRY:1001` 业务唯一键，状态值对象不向 HTTP/DO 泄漏。
-    - 重要度：9/10
-
 - [ ] `D-03 discovery-domain-search-valueobjects`：新增 Search ID、引用、状态值对象和 codec
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
