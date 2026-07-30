@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.operations.domain.cleanup.model.entity;
 
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +23,7 @@ public class CleanupJob {
     private Integer failedCount;
     private String failureReason;
     private Long requesterUserId;
-    private Date startedAt;
-    private Date completedAt;
+    private Instant startedAt;
+    private Instant completedAt;
     private List<CleanupItem> cleanupItems = new ArrayList<>();
 }
