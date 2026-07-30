@@ -7,7 +7,11 @@ import java.util.List;
 
 public interface SearchEventRepository {
 
-    SearchEvent getBySearchEventId(String searchEventId);
+    SearchEvent getById(Long id);
+
+    default SearchEvent getBySearchEventId(String searchEventId) {
+        return getById(searchEventId == null ? null : Long.valueOf(searchEventId));
+    }
 
     Long save(SearchEvent entity);
 
