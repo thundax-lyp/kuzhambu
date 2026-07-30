@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,10 +37,16 @@ class QaSourceRepositoryImplTest {
                 new BigDecimal("0.98"),
                 "CITED",
                 new Date());
+        doAnswer(invocation -> {
+                    invocation.getArgument(0, QaSourceDO.class).setId(6001L);
+                    return 1;
+                })
+                .when(mapper)
+                .insert(any(QaSourceDO.class));
 
         Long savedId = repository.save(entity);
 
-        assertNotNull(savedId);
+        assertEquals(6001L, savedId);
         verify(mapper).insert(any(QaSourceDO.class));
     }
 
@@ -49,7 +55,6 @@ class QaSourceRepositoryImplTest {
         QaSourceMapper mapper = mock(QaSourceMapper.class);
         QaSourceRepositoryImpl repository = new QaSourceRepositoryImpl(mapper);
         QaSourceDO dataObject = new QaSourceDO(
-                1L,
                 6001L,
                 "SANCAI:1001",
                 2001L,
@@ -69,7 +74,7 @@ class QaSourceRepositoryImplTest {
         List<QaSource> result = repository.listByMessageId(2001L);
 
         assertEquals(1, result.size());
-        assertEquals(6001L, result.get(0).getSourceId());
+        assertEquals(6001L, result.get(0).getId());
         assertEquals("黄帝", result.get(0).getTitleSnapshot());
     }
 }

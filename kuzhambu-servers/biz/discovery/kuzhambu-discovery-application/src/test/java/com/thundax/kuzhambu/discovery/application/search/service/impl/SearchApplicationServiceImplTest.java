@@ -153,7 +153,7 @@ class SearchApplicationServiceImplTest {
         assertEquals("SUCCEEDED", searchEventCaptor.getValue().getSearchStatus());
         assertEquals("黄帝 传说", searchEventCaptor.getValue().getDisplayQueryText());
         assertTrue(searchEventCaptor.getValue().getSearchLatencyMs() >= 0);
-        assertEquals(searchEventCaptor.getValue().getSearchEventId(), result.getSearchEventId());
+        assertEquals(searchEventCaptor.getValue().getId(), result.getId());
         assertTrue(result.getSearchScopesJson().contains("SANCAI_ENTRY"));
         assertTrue(result.getSearchScopesJson().contains("\"categoryCodes\":[\"11\"]"));
         assertTrue(result.getSearchScopesJson().contains("\"tagNames\":[\"上古\"]"));
@@ -521,10 +521,10 @@ class SearchApplicationServiceImplTest {
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
-        when(searchEventRepository.getBySearchEventId("s-1"))
+        when(searchEventRepository.getById(1L))
                 .thenReturn(new SearchEvent(
                         1L,
-                        "s-1",
+                        "1",
                         "黄帝",
                         "黄帝",
                         "黄帝",
@@ -543,7 +543,7 @@ class SearchApplicationServiceImplTest {
                         new Date()));
 
         Boolean result = service.recordClick(new SearchClickEventCreateCommand(
-                "s-1",
+                "1",
                 "CLASSICS",
                 "SANCAI_ENTRY",
                 "1001",
@@ -574,12 +574,12 @@ class SearchApplicationServiceImplTest {
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
-        when(searchEventRepository.getBySearchEventId("missing")).thenReturn(null);
+        when(searchEventRepository.getBySearchEventId("404")).thenReturn(null);
 
         BizException exception = assertThrows(
                 BizException.class,
                 () -> service.recordClick(new SearchClickEventCreateCommand(
-                        "missing",
+                        "404",
                         "CLASSICS",
                         "SANCAI_ENTRY",
                         "1001",
@@ -616,7 +616,7 @@ class SearchApplicationServiceImplTest {
                         1,
                         List.of(new SearchEvent(
                                 1L,
-                                "s-1",
+                                "1",
                                 "黄帝",
                                 "黄帝",
                                 "黄帝",
@@ -639,7 +639,7 @@ class SearchApplicationServiceImplTest {
 
         verify(searchEventRepository).page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20);
         assertEquals(1, result.getRecords().size());
-        assertEquals("s-1", result.getRecords().get(0).getSearchEventId());
+        assertEquals(1L, result.getRecords().get(0).getId());
     }
 
     @Test

@@ -212,7 +212,7 @@ class DiscoveryQaPortalControllerTest {
                         && command.getOwnerUserId().equals(1001L)
                         && "黄帝问答".equals(command.getTitle())
                         && "GLOBAL".equals(command.getScope())));
-        assertEquals("9001", response.getSessionId());
+        assertEquals("9001", response.getId());
         assertEquals("黄帝问答", response.getTitle());
     }
 
@@ -273,7 +273,7 @@ class DiscoveryQaPortalControllerTest {
         assertEquals(1, response.getPageNo());
         assertEquals(20, response.getPageSize());
         assertEquals(1L, response.getCount());
-        assertEquals("5001", response.getRecords().get(0).getSessionId());
+        assertEquals("5001", response.getRecords().get(0).getId());
     }
 
     @Test
@@ -290,7 +290,7 @@ class DiscoveryQaPortalControllerTest {
         var response = controller.getSession(request);
 
         verify(service).getPortalSessionDetail(5001L, "USER", "1001");
-        assertEquals("5001", response.getSessionId());
+        assertEquals("5001", response.getId());
         assertEquals(1, response.getMessages().size());
         assertEquals("黄帝是谁", response.getMessages().get(0).getContent());
     }
@@ -336,7 +336,7 @@ class DiscoveryQaPortalControllerTest {
         var response = controller.exportSession(request);
 
         verify(service).exportSession(argThat(command -> matchesExportCommand(command)));
-        assertEquals("7001", response.getExportId());
+        assertEquals("7001", response.getId());
         assertEquals("5001", response.getSessionId());
         assertEquals("CSV", response.getFormat());
         assertEquals("8001", response.getStorageObjectId());

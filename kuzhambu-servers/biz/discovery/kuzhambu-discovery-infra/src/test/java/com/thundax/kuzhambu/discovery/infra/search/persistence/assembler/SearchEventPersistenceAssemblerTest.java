@@ -55,7 +55,7 @@ class SearchEventPersistenceAssemblerTest {
     @Test
     void toDomainShouldAllowEmptySearchLatencyMs() {
         SearchEventDO dataObject = new SearchEventDO();
-        dataObject.setSearchEventId("s-2");
+        dataObject.setId(2L);
 
         SearchEvent restored = SearchEventPersistenceAssembler.toDomain(dataObject);
 

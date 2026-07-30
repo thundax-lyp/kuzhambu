@@ -49,7 +49,7 @@ class QaApplicationServiceImplAdminReadTest {
 
         when(sessionRepository.getBySessionId(5001L))
                 .thenReturn(new QaSession(
-                        1L,
+                        5001L,
                         5001L,
                         "USER",
                         "1001",
@@ -98,10 +98,10 @@ class QaApplicationServiceImplAdminReadTest {
         when(traceRepository.getByTraceId(8001L)).thenReturn(trace());
 
         QaSessionDetailResult sessionDetail = service.getSessionDetail(5001L);
-        assertEquals(5001L, sessionDetail.getSessionId());
+        assertEquals(5001L, sessionDetail.getId());
         assertEquals(1, sessionDetail.getMessages().size());
         QaMessageResult message = sessionDetail.getMessages().get(0);
-        assertEquals(7001L, message.getMessageId());
+        assertEquals(7001L, message.getId());
         assertEquals("USER", message.getRole());
 
         var sources = service.listSourcesByMessageId(7002L);

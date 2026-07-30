@@ -76,7 +76,7 @@ class QaApplicationServiceImplTest {
         var result = service.openSession(new OpenQaSessionCommand(
                 1001L, "黄帝问答", "GLOBAL", "SEARCH", "SANCAI_ENTRY", 10001L, "req-1", "trace-1"));
 
-        assertEquals(9001L, result.getSessionId());
+        assertEquals(9001L, result.getId());
         assertEquals("黄帝问答", result.getTitle());
         assertEquals(1001L, result.getOwnerUserId());
         verify(sessionRepository).save(any(QaSession.class));
@@ -190,7 +190,7 @@ class QaApplicationServiceImplTest {
                 new QaTraceAssembler());
 
         QaSession session = new QaSession(
-                1L,
+                5001L,
                 5001L,
                 "USER",
                 "1001",
@@ -213,7 +213,7 @@ class QaApplicationServiceImplTest {
 
         QaSessionDetailResult result = service.getSessionDetail(5001L);
 
-        assertEquals(5001L, result.getSessionId());
+        assertEquals(5001L, result.getId());
         assertEquals("黄帝问答", result.getTitle());
         assertEquals(1, result.getMessages().size());
         verify(messageRepository).listBySessionId(5001L);
@@ -313,7 +313,7 @@ class QaApplicationServiceImplTest {
         List<QaSessionResult> results = service.listPortalSessions("USER", "1001", 10);
 
         assertEquals(1, results.size());
-        assertEquals(5001L, results.get(0).getSessionId());
+        assertEquals(5001L, results.get(0).getId());
     }
 
     @Test
@@ -331,7 +331,7 @@ class QaApplicationServiceImplTest {
         assertEquals(2, result.getPageNo());
         assertEquals(100, result.getPageSize());
         assertEquals(101, result.getTotalCount());
-        assertEquals(5001L, result.getRecords().get(0).getSessionId());
+        assertEquals(5001L, result.getRecords().get(0).getId());
         verify(sessionRepository).page("黄帝", openedAtStart, openedAtEnd, 2, 100);
         verify(sessionRepository, never()).listByOpenedAtRange(any(), any());
     }
@@ -359,7 +359,7 @@ class QaApplicationServiceImplTest {
         QaSessionExportResult result =
                 service.exportSession(new ExportQaSessionCommand(5001L, 1001L, "USER", "1001", false, "csv"));
 
-        assertEquals(7001L, result.getExportId());
+        assertEquals(7001L, result.getId());
         assertEquals(8001L, result.getStorageObjectId());
         assertEquals("SUCCEEDED", result.getExportStatus());
         assertEquals("discovery-qa-session-5001-7001.csv", result.getFilename());
@@ -506,7 +506,7 @@ class QaApplicationServiceImplTest {
 
     private static QaSession openSession() {
         return new QaSession(
-                1L,
+                5001L,
                 5001L,
                 "USER",
                 "1001",
@@ -524,7 +524,7 @@ class QaApplicationServiceImplTest {
 
     private static QaMessage answerMessage() {
         return new QaMessage(
-                1L,
+                6001L,
                 6001L,
                 5001L,
                 "ASSISTANT",
@@ -541,7 +541,7 @@ class QaApplicationServiceImplTest {
 
     private static QaSource source() {
         return new QaSource(
-                1L,
+                6101L,
                 6101L,
                 "SANCAI_ENTRY:1",
                 6001L,
@@ -560,7 +560,7 @@ class QaApplicationServiceImplTest {
 
     private static QaRetrievalTrace trace() {
         return new QaRetrievalTrace(
-                1L,
+                6201L,
                 6201L,
                 6001L,
                 "黄帝是谁",

@@ -167,7 +167,7 @@ class DiscoveryQaAdminControllerTest {
                 new DiscoveryQaAdminRequests.QaSessionGetRequest();
         sessionRequest.setSessionId("5001");
         var sessionResponse = controller.getSession(sessionRequest);
-        assertEquals("5001", sessionResponse.getSessionId());
+        assertEquals("5001", sessionResponse.getId());
         assertEquals(1_718_000_200_000L, sessionResponse.getRemovedAt());
 
         DiscoveryQaAdminRequests.QaSessionPageRequest sessionPageRequest =
@@ -180,7 +180,7 @@ class DiscoveryQaAdminControllerTest {
         var sessionPageResponse = controller.pageSessions(sessionPageRequest);
         assertNotNull(sessionPageResponse);
         assertEquals(1, sessionPageResponse.getPageNo());
-        assertEquals("5001", sessionPageResponse.getRecords().get(0).getSessionId());
+        assertEquals("5001", sessionPageResponse.getRecords().get(0).getId());
         assertEquals("黄帝问答", sessionPageResponse.getRecords().get(0).getTitle());
 
         DiscoveryQaAdminRequests.QaSessionDeleteRequest deleteRequest =
@@ -194,7 +194,7 @@ class DiscoveryQaAdminControllerTest {
         exportRequest.setRequesterUserId(1001L);
         exportRequest.setFormat("CSV");
         var exportResponse = controller.exportSession(exportRequest);
-        assertEquals("7001", exportResponse.getExportId());
+        assertEquals("7001", exportResponse.getId());
         assertEquals("8001", exportResponse.getStorageObjectId());
         assertEquals("SUCCEEDED", exportResponse.getExportStatus());
         assertEquals(1_718_000_000_000L, exportResponse.getRequestedAt());

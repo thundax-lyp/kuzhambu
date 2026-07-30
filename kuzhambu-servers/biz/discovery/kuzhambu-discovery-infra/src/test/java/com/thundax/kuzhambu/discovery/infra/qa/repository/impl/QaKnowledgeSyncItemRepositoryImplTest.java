@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,10 +36,16 @@ class QaKnowledgeSyncItemRepositoryImplTest {
                 null,
                 new Date(),
                 new Date());
+        doAnswer(invocation -> {
+                    invocation.getArgument(0, QaKnowledgeSyncItemDO.class).setId(1L);
+                    return 1;
+                })
+                .when(mapper)
+                .insert(any(QaKnowledgeSyncItemDO.class));
 
         Long savedId = repository.save(entity);
 
-        assertNotNull(savedId);
+        assertEquals(1L, savedId);
         verify(mapper).insert(any(QaKnowledgeSyncItemDO.class));
     }
 
