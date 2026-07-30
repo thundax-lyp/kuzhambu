@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.discovery.application.search.query;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,8 +16,8 @@ public class SearchEventPageQuery {
     private List<String> intentTypes;
     private List<String> searchStatuses;
     private String operatorId;
-    private Date dateFrom;
-    private Date dateTo;
+    private Instant dateFrom;
+    private Instant dateTo;
     private int pageNo;
     private int pageSize;
 }

@@ -20,8 +20,8 @@ import com.thundax.kuzhambu.discovery.domain.search.model.entity.QueryUnderstand
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
 import com.thundax.kuzhambu.discovery.domain.search.repository.QueryUnderstandingRepository;
 import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
+import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -171,7 +171,7 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 null,
                 RequestIdCodec.toValue(query.getRequestId()),
                 TraceIdCodec.toValue(query.getTraceId()),
-                new Date());
+                Instant.now());
     }
 
     private QueryUnderstanding toFailedEntity(
@@ -196,7 +196,7 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 exception.getMessage(),
                 RequestIdCodec.toValue(query.getRequestId()),
                 TraceIdCodec.toValue(query.getTraceId()),
-                new Date());
+                Instant.now());
     }
 
     private List<QueryUnderstandingResult.RecognizedEntityResult> parseRecognizedEntities(JsonNode node)
