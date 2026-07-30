@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.util.Date;
 import java.util.List;
 import lombok.Getter;
@@ -97,6 +98,10 @@ public class ClassicsContentRequest extends PageRequest {
 
         @JsonProperty("changeSummary")
         private String changeSummary;
+
+        @Pattern(regexp = "APPEND|COVER", message = "tagApplyMode仅支持APPEND或COVER")
+        @JsonProperty("tagApplyMode")
+        private String tagApplyMode;
     }
 
     @Getter

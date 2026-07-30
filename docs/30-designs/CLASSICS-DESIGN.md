@@ -220,6 +220,8 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 - 手工标签新增、更新、删除必须先经过 Knowledge 统一标签协作语义，再写入 Classics 主事实。
 - AI 标签确认不再直接按本地标签名重建，而是先解析或创建 Knowledge 统一标签，再写回 Classics。
 - `tag_name_snapshot` 只由 Classics 保存，用于内容展示、历史快照和导出，不回写 Knowledge 引用投影。
+- 内容侧标签名称编辑只改变当前内容的绑定和当前快照：先解除旧标签引用，再解析或创建新 Knowledge 标签并绑定到当前内容。该操作不得修改 `knowledge_tag` 主数据名称，也不得影响其他内容的标签绑定。
+- Knowledge taxonomy 发起全局改名、合并、复制、分拆或废弃时，必须通过 Classics 协作接口更新当前内容标签绑定和当前 `tag_name_snapshot`；历史版本 `snapshot_json` 保持创建时快照，不随全局治理回写。
 
 ### classics_content_qa_pair
 

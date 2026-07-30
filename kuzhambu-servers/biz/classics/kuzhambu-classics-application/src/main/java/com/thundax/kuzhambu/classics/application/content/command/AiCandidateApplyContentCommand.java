@@ -20,4 +20,5 @@ public class AiCandidateApplyContentCommand {
     private String resultFormat;
     private String resultPayload;
     private String changeSummary;
+    private String tagApplyMode;
 }

@@ -593,6 +593,95 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     }
 
     @Test
+    void applyAiCandidateTagsShouldAppendMissingTagsWithoutDeletingExistingAiTags() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
+        repository.sancaiEntryForAiApply = entry;
+        repository.tags.add(manualTag(1L, 11L, "manual-tag"));
+        repository.tags.add(aiTag(2L, 11L, "old-ai-tag"));
+
+        AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> candidateApplied());
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"old-ai-tag\",\"new-ai-tag\"]}");
+        command.setTagApplyMode("APPEND");
+
+        service.applyAiCandidate(command);
+
+        assertEquals(0, repository.deleteAiTagsCount);
+        assertEquals(1, repository.insertTagCount);
+        assertEquals(3, repository.tags.size());
+        assertEquals(
+                1,
+                repository.tags.stream()
+                        .filter(tag -> "new-ai-tag".equals(tag.getTagNameSnapshot()))
+                        .count());
+        assertEquals(
+                1,
+                repository.tags.stream()
+                        .filter(tag -> "old-ai-tag".equals(tag.getTagNameSnapshot()))
+                        .count());
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+    }
+
+    @Test
+    void applyAiCandidateTagsShouldIgnoreRemovedTagsWhenAppending() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
+        repository.sancaiEntryForAiApply = entry;
+        repository.tags.add(removedAiTag(2L, 11L, "old-ai-tag"));
+
+        AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> candidateApplied());
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
+        AiCandidateApplyContentCommand command =
+                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"old-ai-tag\"]}");
+        command.setTagApplyMode("APPEND");
+
+        service.applyAiCandidate(command);
+
+        assertEquals(0, repository.deleteAiTagsCount);
+        assertEquals(1, repository.insertTagCount);
+        assertEquals(2, repository.tags.size());
+        assertEquals(
+                1,
+                repository.tags.stream()
+                        .filter(tag -> "old-ai-tag".equals(tag.getTagNameSnapshot()))
+                        .filter(tag -> tag.getStatus() == ClassicsContentTagStatus.ACTIVE)
+                        .count());
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+    }
+
+    @Test
+    void applyAiCandidateTagsShouldCoverAllCurrentTagsInSingleApply() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
+        repository.sancaiEntryForAiApply = entry;
+        repository.tags.add(manualTag(1L, 11L, "manual-tag"));
+        repository.tags.add(aiTag(2L, 11L, "old-ai-tag"));
+
+        AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> candidateApplied());
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"new-one\",\"new-two\"]}");
+        command.setTagApplyMode("COVER");
+
+        service.applyAiCandidate(command);
+
+        assertEquals(0, repository.deleteAiTagsCount);
+        assertEquals(2, repository.deleteTagByIdCount);
+        assertEquals(2, repository.insertTagCount);
+        assertEquals(
+                List.of("new-one", "new-two"),
+                repository.tags.stream()
+                        .map(ClassicsContentTag::getTagNameSnapshot)
+                        .toList());
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+    }
+
+    @Test
     void applyAiCandidateTagsShouldSyncKnowledgeRefsWhenBindingSupportPresent() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
@@ -1052,6 +1141,12 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         return tag;
     }
 
+    private static ClassicsContentTag removedAiTag(Long id, Long contentId, String tagName) {
+        ClassicsContentTag tag = aiTag(id, contentId, tagName);
+        tag.setStatus(ClassicsContentTagStatus.REMOVED);
+        return tag;
+    }
+
     private static ClassicsContentQaPair manualQaPair(Long id, Long contentId, String question, String answer) {
         ClassicsContentQaPair qaPair = new ClassicsContentQaPair();
         qaPair.setId(ClassicsContentQaPairIdCodec.toDomain(id));
@@ -1080,6 +1175,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         private int updateMingCustomsEntryAiCount;
         private int deleteAiTagsCount;
         private int deleteAiQaPairsCount;
+        private int deleteTagByIdCount;
         private int insertTagCount;
         private int insertQaPairCount;
         private SancaiEntry sancaiEntryForAiApply;
@@ -1144,6 +1240,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         @Override
         public int deleteTagById(String contentType, ClassicsContentId contentId, ClassicsContentTagId id) {
+            deleteTagByIdCount++;
+            tags.removeIf(tag -> tag.getId() != null && tag.getId().equals(id));
             return 1;
         }
 

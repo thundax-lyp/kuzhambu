@@ -13,6 +13,31 @@ if [[ ! -f "${ROOT_DIR}/db/data/classics.sql" ]]; then
     exit 1
 fi
 
+if [[ ! -f "${ROOT_DIR}/db/data/knowledge.sql" ]]; then
+    echo "Missing db/data/knowledge.sql" >&2
+    exit 1
+fi
+
+if [[ ! -f "${ROOT_DIR}/db/data-source/sancai-tags.json" ]]; then
+    echo "Missing db/data-source/sancai-tags.json" >&2
+    exit 1
+fi
+
+if [[ ! -f "${ROOT_DIR}/db/data-source/sancai-manuscripts.json" ]]; then
+    echo "Missing db/data-source/sancai-manuscripts.json" >&2
+    exit 1
+fi
+
+if ! jq -e '.schema == "classics_sancai_tag_seed"' "${ROOT_DIR}/db/data-source/sancai-tags.json" >/dev/null; then
+    echo "Invalid sancai tag seed schema" >&2
+    exit 1
+fi
+
+if ! jq -e 'type == "array"' "${ROOT_DIR}/db/data-source/sancai-manuscripts.json" >/dev/null; then
+    echo "Invalid sancai manuscript source schema" >&2
+    exit 1
+fi
+
 required_tables=(
     classics_sancai_category
     classics_sancai_volume
@@ -37,6 +62,26 @@ fi
 
 if ! grep -q "INSERT INTO \`classics_sancai_entry\`" "${ROOT_DIR}/db/data/classics.sql"; then
     echo "Missing sancai entry data" >&2
+    exit 1
+fi
+
+if ! grep -q "三才图会条目问答" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing sancai QA generation marker" >&2
+    exit 1
+fi
+
+if ! grep -q "INSERT INTO \`classics_content_tag\` (\`content_type\`, \`content_id\`, \`tag_id\`" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing sancai content tag ids" >&2
+    exit 1
+fi
+
+if ! grep -q "三才图会标签库种子" "${ROOT_DIR}/db/data/knowledge.sql"; then
+    echo "Missing sancai knowledge tag seed data" >&2
+    exit 1
+fi
+
+if ! grep -q "三才图会内容标签引用投影" "${ROOT_DIR}/db/data/knowledge.sql"; then
+    echo "Missing sancai knowledge tag content refs" >&2
     exit 1
 fi
 

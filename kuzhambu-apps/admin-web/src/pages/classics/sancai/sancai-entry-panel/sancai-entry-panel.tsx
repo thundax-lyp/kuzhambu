@@ -12,6 +12,7 @@ import * as exportService from "@/pages/classics/common/classics-export-service"
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/classics-content-tag-panel";
+import { ClassicsContentTagAiPanel } from "@/pages/classics/common/classics-content-tag-ai-panel";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/ai-candidate-batch-drawer";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import { SancaiEntryList } from "./sancai-entry-list";
@@ -35,6 +36,10 @@ const TASK_POLL_INTERVAL_MS = 3000;
 
 const readEntryTitle = (entry: SancaiEntryRecord) => {
     return entry.title?.trim() || `条目 ${entry.id}`;
+};
+
+const readEntrySummary = (entry: SancaiEntryRecord) => {
+    return entry.summary?.trim() || entry.originalText?.trim() || "暂无简介/摘要";
 };
 
 interface SancaiEntryLifecycleAction {
@@ -128,6 +133,16 @@ export const SancaiEntryPanel = ({
     });
     const selectedEntry = isCreating ? undefined : (detailQuery.data ?? editingEntry ?? undefined);
     const selectedEntryId = selectedEntry?.id ?? null;
+    const selectedEntryVolume = useMemo(
+        () => volumes.find((volume) => isSameId(volume.id, selectedEntry?.volumeId)) ?? null,
+        [selectedEntry?.volumeId, volumes]
+    );
+    const selectedEntryCategory = useMemo(
+        () =>
+            categories.find((category) => isSameId(category.id, selectedEntryVolume?.categoryId)) ??
+            null,
+        [categories, selectedEntryVolume?.categoryId]
+    );
     const versionsQuery = useQuery({
         queryKey: ["classics", "sancai", "entries", "versions", selectedEntry?.id],
         queryFn: () => entryService.listVersions(selectedEntry?.id ?? ""),
@@ -162,6 +177,10 @@ export const SancaiEntryPanel = ({
         "export",
         hasPermission
     );
+    const canCreateAiRefinementTask = hasPermission("ai:refinement:edit");
+    const canViewAiCandidates = hasPermission("ai:invocation:view");
+    const canRejectAiCandidates = hasPermission("ai:invocation:edit");
+    const canApplyAiCandidateTags = hasPermission("classics:content:edit");
     const refinementTasksQuery = useQuery({
         queryKey: ["classics", "sancai", "refinement", "tasks", selectedEntry?.id],
         queryFn: () =>
@@ -247,11 +266,11 @@ export const SancaiEntryPanel = ({
             selectedVersionId
         ]
     );
-    const invalidateRefinementTasks = async () => {
+    const invalidateRefinementTasks = useCallback(async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "refinement", "tasks", selectedEntry?.id]
         });
-    };
+    }, [queryClient, selectedEntry?.id]);
     const {
         creatingRefinementCapability,
         invalidateSancaiContentGovernance,
@@ -671,12 +690,56 @@ export const SancaiEntryPanel = ({
                             className="sancai-candidate-panel-anchor"
                             tabIndex={-1}
                         >
-                            <ClassicsContentTagPanel
-                                contentId={selectedEntry.id}
-                                contentType="SANCAI_ENTRY"
-                                panelTitle="三才图会标签治理"
-                                onChanged={invalidateSancaiContentGovernance}
-                            />
+                            <div className="sancai-tag-section">
+                                <section className="sancai-detail-card sancai-tag-section-basic">
+                                    <div className="sancai-tag-section-meta-item">
+                                        <span>门类</span>
+                                        <strong>
+                                            {selectedEntryCategory?.title?.trim() || "未归类"}
+                                        </strong>
+                                    </div>
+                                    <div className="sancai-tag-section-meta-item">
+                                        <span>卷目</span>
+                                        <strong>
+                                            {selectedEntryVolume?.title?.trim() || "未选择卷目"}
+                                        </strong>
+                                    </div>
+                                    <div className="sancai-tag-section-meta-item">
+                                        <span>标题</span>
+                                        <strong>{readEntryTitle(selectedEntry)}</strong>
+                                    </div>
+                                </section>
+                                <section className="sancai-detail-card sancai-tag-section-summary">
+                                    <span>简介/摘要</span>
+                                    <p>{readEntrySummary(selectedEntry)}</p>
+                                </section>
+                                <ClassicsContentTagPanel
+                                    contentId={selectedEntry.id}
+                                    contentType="SANCAI_ENTRY"
+                                    panelTitle="标签"
+                                    toolbarExtra={
+                                        <ClassicsContentTagAiPanel
+                                            canApplyCandidate={canApplyAiCandidateTags}
+                                            canCreateTask={canCreateAiRefinementTask}
+                                            canRejectCandidate={canRejectAiCandidates}
+                                            canViewCandidate={canViewAiCandidates}
+                                            contentId={selectedEntry.id}
+                                            contentType="SANCAI_ENTRY"
+                                            creatingTask={creatingRefinementCapability === "tags"}
+                                            tagTasks={refinementTasks.filter(
+                                                (task) =>
+                                                    aiRefinementTaskService.getNormalizedTaskCapability(
+                                                        task.capability
+                                                    ) === "tags"
+                                            )}
+                                            onChanged={invalidateSancaiContentGovernance}
+                                            onCreateTask={() => createRefinementTask("tags", null)}
+                                            onTaskChange={invalidateRefinementTasks}
+                                        />
+                                    }
+                                    onChanged={invalidateSancaiContentGovernance}
+                                />
+                            </div>
                         </div>
                     ) : null
                 }

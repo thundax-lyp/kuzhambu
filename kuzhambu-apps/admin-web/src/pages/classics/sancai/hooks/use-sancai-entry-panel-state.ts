@@ -11,7 +11,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import type { SancaiVisualAssetRefinementCapability } from "../sancai-entry-service";
 import type { SancaiEntryRecord, SancaiVisualAssetRecord } from "../sancai-types";
 
-type RefinementCapability = "translate" | "summary" | SancaiVisualAssetRefinementCapability;
+type RefinementCapability =
+    "translate" | "summary" | "tags" | SancaiVisualAssetRefinementCapability;
 type TextRefinementEntryDraft = Pick<
     SancaiEntryRecord,
     "originalText" | "summary" | "title" | "translationText"
@@ -43,6 +44,24 @@ const buildPromptMessagesJson = (
             {
                 role: "user",
                 content: entry.originalText?.trim() || ""
+            }
+        ]);
+    }
+    if (capability === "tags") {
+        return JSON.stringify([
+            {
+                role: "system",
+                content:
+                    '你是三才图会标签提取助手。请基于输入条目提取稳定、短小、适合统一标签库复用的中文标签。只返回 JSON，格式为 {"tags":["标签"]}。'
+            },
+            {
+                role: "user",
+                content: JSON.stringify({
+                    title: entry.title,
+                    originalText: entry.originalText,
+                    summary: entry.summary,
+                    translationText: entry.translationText
+                })
             }
         ]);
     }
@@ -325,6 +344,7 @@ export const useSancaiEntryPanelState = ({
             if (
                 command.capability === "translate" ||
                 command.capability === "summary" ||
+                command.capability === "tags" ||
                 command.capability === "image_analysis" ||
                 command.capability === "visual" ||
                 command.capability === "fusion"
@@ -377,6 +397,8 @@ export const useSancaiEntryPanelState = ({
                 messageApi.success("译文任务已创建");
             } else if (command.capability === "summary") {
                 messageApi.success("摘要任务已创建");
+            } else if (command.capability === "tags") {
+                messageApi.success("标签任务已创建");
             } else if (command.capability === "visual") {
                 messageApi.success("视觉描述任务已创建");
             } else if (command.capability === "fusion") {
@@ -612,6 +634,7 @@ export const useSancaiEntryPanelState = ({
         if (
             capability !== "translate" &&
             capability !== "summary" &&
+            capability !== "tags" &&
             capability !== "image_analysis" &&
             capability !== "fusion" &&
             capability !== "visual" &&

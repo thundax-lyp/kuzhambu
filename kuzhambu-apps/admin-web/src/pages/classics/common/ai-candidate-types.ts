@@ -37,6 +37,7 @@ export interface AiCandidateApplyPayload {
     resultFormat: string;
     resultPayload: string;
     changeSummary?: string | null;
+    tagApplyMode?: "APPEND" | "COVER" | string | null;
 }
 
 export interface AiCandidateRejectPayload {
