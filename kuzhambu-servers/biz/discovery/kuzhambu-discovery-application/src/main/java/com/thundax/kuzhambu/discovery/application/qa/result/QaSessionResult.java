@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QaSessionResult {
-    private Long sessionId;
+    private Long id;
     private Long ownerUserId;
     private String title;
     private String scope;
@@ -21,4 +21,12 @@ public class QaSessionResult {
     private Long openedAt;
     private Long lastMessageAt;
     private Long removedAt;
+
+    public Long getSessionId() {
+        return id;
+    }
+
+    public void setSessionId(Long sessionId) {
+        this.id = sessionId;
+    }
 }

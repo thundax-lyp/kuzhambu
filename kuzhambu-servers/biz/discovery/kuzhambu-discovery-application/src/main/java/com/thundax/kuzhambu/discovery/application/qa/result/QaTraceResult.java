@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QaTraceResult {
-    private Long traceId;
+    private Long id;
     private Long messageId;
     private String rawQuestion;
     private String provider;
@@ -27,4 +27,12 @@ public class QaTraceResult {
     private String aiErrorType;
     private String aiErrorMessage;
     private Date retrievedAt;
+
+    public Long getTraceId() {
+        return id;
+    }
+
+    public void setTraceId(Long traceId) {
+        this.id = traceId;
+    }
 }
