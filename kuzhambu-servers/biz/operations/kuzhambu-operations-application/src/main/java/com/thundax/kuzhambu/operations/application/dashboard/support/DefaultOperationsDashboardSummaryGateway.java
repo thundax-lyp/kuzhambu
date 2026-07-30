@@ -95,8 +95,8 @@ public class DefaultOperationsDashboardSummaryGateway implements OperationsDashb
         }
         return requireSummary(
                 knowledgeFacade.summary(KnowledgeSummaryFacadeRequest.builder()
-                        .periodStart(periodStart)
-                        .periodEnd(periodEnd)
+                        .periodStart(periodStart == null ? null : periodStart.toInstant())
+                        .periodEnd(periodEnd == null ? null : periodEnd.toInstant())
                         .bucketType(bucketType)
                         .build()),
                 "knowledge");
