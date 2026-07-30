@@ -44,6 +44,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceCo
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTraceIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
@@ -53,6 +54,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelatio
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
@@ -416,10 +418,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<KnowledgeEntity> entityPage = knowledgeEntityRepository.page(
-                versionId,
+                GraphVersionIdCodec.toDomain(versionId),
                 keyword,
                 entityType,
-                confirmationStatus,
+                KnowledgeConfirmationStatus.from(confirmationStatus),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -433,7 +435,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     public KnowledgeEntityResult getEntityDetail(Long entityId) {
-        KnowledgeEntity entity = knowledgeEntityRepository.getByEntityId(entityId);
+        KnowledgeEntity entity = knowledgeEntityRepository.getByEntityId(KnowledgeEntityIdCodec.toDomain(entityId));
         if (entity == null) {
             throw new BizException("Knowledge entity not found: " + entityId);
         }
@@ -1096,13 +1098,15 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             return null;
         }
         return new KnowledgeEntityResult(
-                entity.getId(),
+                KnowledgeEntityIdCodec.toValue(entity.getId()),
                 entity.getEntityKey(),
                 entity.getName(),
                 entity.getEntityType(),
                 entity.getDescription(),
-                entity.getConfirmationStatus(),
-                entity.getLatestVersionId(),
+                entity.getConfirmationStatus() == null
+                        ? null
+                        : entity.getConfirmationStatus().value(),
+                GraphVersionIdCodec.toValue(entity.getLatestVersionId()),
                 entity.getSourceRefsJson(),
                 timeValue(entity.getFirstExtractedAt()),
                 timeValue(entity.getLastExtractedAt()),

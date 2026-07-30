@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineage
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
@@ -23,7 +24,6 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationR
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -71,16 +71,15 @@ public class KnowledgeGraphCandidateApplySupport {
             throw new BizException("Knowledge graph candidate payload is empty");
         }
         Instant appliedAt = Instant.now();
-        Date factAppliedAt = Date.from(appliedAt);
         GraphVersion version = ensureVersion(task, candidate, appliedAt);
         JsonNode payload = parsePayload(candidate.getResultPayload());
         if (GraphExtractionTaskType.LINEAGE.equals(task.getTaskType())) {
-            applyLineageNodes(version, payload, factAppliedAt);
-            applyLineageRelations(version, payload, factAppliedAt);
+            applyLineageNodes(version, payload, java.util.Date.from(appliedAt));
+            applyLineageRelations(version, payload, java.util.Date.from(appliedAt));
         } else if (GraphExtractionTaskType.RELATION.equals(task.getTaskType())
                 || GraphExtractionTaskType.GRAPH.equals(task.getTaskType())) {
-            applyEntities(version, payload, factAppliedAt);
-            applyRelations(version, payload, factAppliedAt);
+            applyEntities(version, payload, appliedAt);
+            applyRelations(version, payload, java.util.Date.from(appliedAt));
         } else {
             throw new BizException("Unsupported graph extraction task type: " + taskTypeValue(task));
         }
@@ -116,7 +115,7 @@ public class KnowledgeGraphCandidateApplySupport {
                 : task.getTaskType().value();
     }
 
-    private void applyEntities(GraphVersion version, JsonNode payload, Date appliedAt) {
+    private void applyEntities(GraphVersion version, JsonNode payload, Instant appliedAt) {
         ArrayNode entityNodes = arrayOf(payload, "entities");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeEntity> incoming = new ArrayList<>();
@@ -131,8 +130,8 @@ public class KnowledgeGraphCandidateApplySupport {
             entity.setName(name);
             entity.setEntityType(entityType);
             entity.setDescription(optionalText(node, "description", "summary"));
-            entity.setConfirmationStatus(STATUS_AI_EXTRACTED);
-            entity.setLatestVersionId(GraphVersionIdCodec.toValue(version.getId()));
+            entity.setConfirmationStatus(KnowledgeConfirmationStatus.AI_EXTRACTED);
+            entity.setLatestVersionId(version.getId());
             entity.setSourceRefsJson(sourceRefsJson);
             entity.setFirstExtractedAt(appliedAt);
             entity.setLastExtractedAt(appliedAt);
@@ -141,7 +140,7 @@ public class KnowledgeGraphCandidateApplySupport {
         mergeEntities(incoming, appliedAt);
     }
 
-    private void applyRelations(GraphVersion version, JsonNode payload, Date appliedAt) {
+    private void applyRelations(GraphVersion version, JsonNode payload, java.util.Date appliedAt) {
         ArrayNode relationNodes = arrayOf(payload, "relations");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeRelation> incoming = new ArrayList<>();
@@ -171,7 +170,7 @@ public class KnowledgeGraphCandidateApplySupport {
         mergeRelations(incoming, appliedAt);
     }
 
-    private void applyLineageNodes(GraphVersion version, JsonNode payload, Date appliedAt) {
+    private void applyLineageNodes(GraphVersion version, JsonNode payload, java.util.Date appliedAt) {
         ArrayNode nodeArray = arrayOf(payload, "nodes");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeLineageNode> incoming = new ArrayList<>();
@@ -197,7 +196,7 @@ public class KnowledgeGraphCandidateApplySupport {
         mergeLineageNodes(incoming, appliedAt);
     }
 
-    private void applyLineageRelations(GraphVersion version, JsonNode payload, Date appliedAt) {
+    private void applyLineageRelations(GraphVersion version, JsonNode payload, java.util.Date appliedAt) {
         ArrayNode relationNodes = arrayOf(payload, "relations");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeLineageRelation> incoming = new ArrayList<>();
@@ -227,7 +226,7 @@ public class KnowledgeGraphCandidateApplySupport {
         mergeLineageRelations(incoming, appliedAt);
     }
 
-    private void mergeEntities(List<KnowledgeEntity> incoming, Date appliedAt) {
+    private void mergeEntities(List<KnowledgeEntity> incoming, Instant appliedAt) {
         Map<String, KnowledgeEntity> existingByKey = mapByKey(
                 knowledgeEntityRepository.listByEntityKeys(keys(incoming, KnowledgeEntity::getEntityKey)),
                 KnowledgeEntity::getEntityKey);
@@ -237,12 +236,11 @@ public class KnowledgeGraphCandidateApplySupport {
                 continue;
             }
             entity.setId(existing.getId());
-            entity.setId(existing.getId());
             entity.setFirstExtractedAt(
                     existing.getFirstExtractedAt() == null ? appliedAt : existing.getFirstExtractedAt());
             entity.setConfirmedAt(existing.getConfirmedAt());
             entity.setSourceRefsJson(mergeJsonArrays(existing.getSourceRefsJson(), entity.getSourceRefsJson()));
-            if (STATUS_MANUAL_CONFIRMED.equals(existing.getConfirmationStatus())) {
+            if (KnowledgeConfirmationStatus.MANUAL_CONFIRMED.equals(existing.getConfirmationStatus())) {
                 entity.setConfirmationStatus(existing.getConfirmationStatus());
                 entity.setDescription(StringUtils.defaultIfBlank(existing.getDescription(), entity.getDescription()));
             }
@@ -250,7 +248,7 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeEntityRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeRelations(List<KnowledgeRelation> incoming, Date appliedAt) {
+    private void mergeRelations(List<KnowledgeRelation> incoming, java.util.Date appliedAt) {
         Map<String, KnowledgeRelation> existingByKey = mapByKey(
                 knowledgeRelationRepository.listByRelationKeys(keys(incoming, KnowledgeRelation::getRelationKey)),
                 KnowledgeRelation::getRelationKey);
@@ -272,7 +270,7 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeRelationRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeLineageNodes(List<KnowledgeLineageNode> incoming, Date appliedAt) {
+    private void mergeLineageNodes(List<KnowledgeLineageNode> incoming, java.util.Date appliedAt) {
         Map<String, KnowledgeLineageNode> existingByKey = mapByKey(
                 knowledgeLineageNodeRepository.listByNodeKeys(keys(incoming, KnowledgeLineageNode::getNodeKey)),
                 KnowledgeLineageNode::getNodeKey);
@@ -293,7 +291,7 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeLineageNodeRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeLineageRelations(List<KnowledgeLineageRelation> incoming, Date appliedAt) {
+    private void mergeLineageRelations(List<KnowledgeLineageRelation> incoming, java.util.Date appliedAt) {
         Map<String, KnowledgeLineageRelation> existingByKey = mapByKey(
                 knowledgeLineageRelationRepository.listByRelationKeys(
                         keys(incoming, KnowledgeLineageRelation::getRelationKey)),

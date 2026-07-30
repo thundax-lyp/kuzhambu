@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityRepor
 import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
@@ -187,8 +188,9 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
         }
         GraphVersion latestVersion = versions.get(0);
         Long versionId = GraphVersionIdCodec.toValue(latestVersion.getId());
-        List<KnowledgeEntity> entities =
-                versionId == null ? List.of() : defaultList(knowledgeEntityRepository.listByVersionId(versionId));
+        List<KnowledgeEntity> entities = versionId == null
+                ? List.of()
+                : defaultList(knowledgeEntityRepository.listByVersionId(GraphVersionIdCodec.toDomain(versionId)));
         List<KnowledgeRelation> relations =
                 versionId == null ? List.of() : defaultList(knowledgeRelationRepository.listByVersionId(versionId));
         return new KnowledgePortalAtlasResult.OverviewCategoryCard(
@@ -214,7 +216,8 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
             return buildEmptyCategoryAtlas(categorySlot);
         }
         Long versionId = GraphVersionIdCodec.toValue(latestVersion.getId());
-        List<KnowledgeEntity> entities = defaultList(knowledgeEntityRepository.listByVersionId(versionId));
+        List<KnowledgeEntity> entities =
+                defaultList(knowledgeEntityRepository.listByVersionId(GraphVersionIdCodec.toDomain(versionId)));
         List<KnowledgeRelation> relations = defaultList(knowledgeRelationRepository.listByVersionId(versionId));
         return new KnowledgePortalAtlasResult(
                 "category",
@@ -252,7 +255,8 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
         if (entityId == null) {
             return buildOverviewAtlas();
         }
-        KnowledgeEntity focusEntity = knowledgeEntityRepository.getByEntityId(entityId);
+        KnowledgeEntity focusEntity =
+                knowledgeEntityRepository.getByEntityId(KnowledgeEntityIdCodec.toDomain(entityId));
         if (focusEntity == null) {
             return buildOverviewAtlas();
         }
@@ -422,12 +426,12 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
         List<KnowledgePortalAtlasResult.CanvasEdge> edges = new java.util.ArrayList<>();
         for (KnowledgeEntity entity : entities) {
             edges.add(new KnowledgePortalAtlasResult.CanvasEdge(
-                    categoryNodeId + "->entity:" + entity.getId(),
+                    categoryNodeId + "->entity:" + KnowledgeEntityIdCodec.toValue(entity.getId()),
                     categoryNodeId,
-                    "entity:" + entity.getId(),
+                    "entity:" + KnowledgeEntityIdCodec.toValue(entity.getId()),
                     "包含",
                     "CATEGORY_ENTITY",
-                    confidenceOf(entity.getConfirmationStatus()),
+                    confidenceOf(statusValue(entity)),
                     false));
         }
         for (KnowledgeRelation relation : relations) {
@@ -478,17 +482,17 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
 
     private KnowledgePortalAtlasResult.CanvasNode toEntityCanvasNode(KnowledgeEntity entity) {
         return new KnowledgePortalAtlasResult.CanvasNode(
-                "entity:" + entity.getId(),
+                "entity:" + KnowledgeEntityIdCodec.toValue(entity.getId()),
                 "entity",
                 entity.getName(),
                 entity.getEntityType(),
                 "置信",
-                Math.round(confidenceOf(entity.getConfirmationStatus()) * 100D),
-                entity.getConfirmationStatus(),
+                Math.round(confidenceOf(statusValue(entity)) * 100D),
+                statusValue(entity),
                 null,
-                entity.getId(),
-                "/knowledge/atlas?level=detail&entityId=" + entity.getId(),
-                confidenceOf(entity.getConfirmationStatus()),
+                KnowledgeEntityIdCodec.toValue(entity.getId()),
+                "/knowledge/atlas?level=detail&entityId=" + KnowledgeEntityIdCodec.toValue(entity.getId()),
+                confidenceOf(statusValue(entity)),
                 null,
                 null);
     }
@@ -546,11 +550,11 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
 
     private KnowledgePortalAtlasResult.CategoryEntityHighlight toCategoryEntityHighlight(KnowledgeEntity entity) {
         return new KnowledgePortalAtlasResult.CategoryEntityHighlight(
-                String.valueOf(entity.getId()),
+                String.valueOf(KnowledgeEntityIdCodec.toValue(entity.getId())),
                 entity.getName(),
                 entity.getEntityType(),
-                entity.getConfirmationStatus(),
-                "/knowledge/atlas?level=detail&entityId=" + entity.getId());
+                statusValue(entity),
+                "/knowledge/atlas?level=detail&entityId=" + KnowledgeEntityIdCodec.toValue(entity.getId()));
     }
 
     private KnowledgePortalAtlasQuery normalizeAtlasQuery(KnowledgePortalAtlasQuery query) {
@@ -722,12 +726,12 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
             return null;
         }
         return new KnowledgePortalAtlasResult.FocusNode(
-                String.valueOf(entity.getId()),
+                String.valueOf(KnowledgeEntityIdCodec.toValue(entity.getId())),
                 entity.getName(),
                 entity.getEntityType(),
                 entity.getDescription(),
-                entity.getConfirmationStatus(),
-                confidenceOf(entity.getConfirmationStatus()),
+                statusValue(entity),
+                confidenceOf(statusValue(entity)),
                 null);
     }
 
@@ -827,6 +831,12 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
         return "MANUAL_CONFIRMED".equals(confirmationStatus) || "CONFIRMED".equals(confirmationStatus) ? 0.95D : 0.70D;
     }
 
+    private String statusValue(KnowledgeEntity entity) {
+        return entity == null || entity.getConfirmationStatus() == null
+                ? null
+                : entity.getConfirmationStatus().value();
+    }
+
     private List<String> distinctValues(List<String> values) {
         if (values == null || values.isEmpty()) {
             return List.of();
@@ -919,8 +929,8 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
 
     private int confirmedEntities(List<KnowledgeEntity> entities) {
         return (int) entities.stream()
-                .filter(entity -> "CONFIRMED".equals(entity.getConfirmationStatus())
-                        || "MANUAL_CONFIRMED".equals(entity.getConfirmationStatus()))
+                .filter(entity ->
+                        "CONFIRMED".equals(statusValue(entity)) || "MANUAL_CONFIRMED".equals(statusValue(entity)))
                 .count();
     }
 
