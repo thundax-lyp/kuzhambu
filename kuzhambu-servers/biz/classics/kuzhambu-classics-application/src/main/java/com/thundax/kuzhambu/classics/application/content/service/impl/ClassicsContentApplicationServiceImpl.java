@@ -144,6 +144,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private static final String APPLIED_STATUS = "APPLIED";
     private static final String REJECTED_STATUS = "REJECTED";
     private static final String TAG_APPLY_MODE_APPEND = "APPEND";
+    private static final String TAG_APPLY_MODE_COVER = "COVER";
 
     @Autowired
     public ClassicsContentApplicationServiceImpl(
@@ -863,7 +864,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (tags == null || tags.isEmpty()) {
                 throw new BizException("AI候选标签为空");
             }
-            applyTags(contentType, content, tags, shouldAppendAiTags(command));
+            applyTags(contentType, content, tags, command);
         } else if ("qa".equals(capability)) {
             if (qaPairs == null || qaPairs.isEmpty()) {
                 throw new BizException("AI候选问答为空");
@@ -871,7 +872,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             applyQaPairs(contentType, content, qaPairs);
         } else {
             if (!tags.isEmpty()) {
-                applyTags(contentType, content, tags, shouldAppendAiTags(command));
+                applyTags(contentType, content, tags, command);
             }
             if (!qaPairs.isEmpty()) {
                 applyQaPairs(contentType, content, qaPairs);
@@ -890,6 +891,10 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private boolean shouldAppendAiTags(AiCandidateApplyContentCommand command) {
         return command != null && TAG_APPLY_MODE_APPEND.equalsIgnoreCase(command.getTagApplyMode());
+    }
+
+    private boolean shouldCoverContentTags(AiCandidateApplyContentCommand command) {
+        return command != null && TAG_APPLY_MODE_COVER.equalsIgnoreCase(command.getTagApplyMode());
     }
 
     private String resolveSummaryIfPresent(String resultPayload) {
@@ -933,7 +938,10 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private void applyTags(
-            ClassicsContentType contentType, Versionable content, List<String> tags, boolean appendMode) {
+            ClassicsContentType contentType,
+            Versionable content,
+            List<String> tags,
+            AiCandidateApplyContentCommand command) {
         ClassicsContentId contentId = content == null ? null : content.contentId();
         if (contentId == null) {
             throw new BizException("标签应用目标内容不存在");
@@ -941,8 +949,11 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (tags == null || tags.isEmpty()) {
             throw new BizException("AI候选标签为空");
         }
+        boolean appendMode = shouldAppendAiTags(command);
+        boolean coverMode = shouldCoverContentTags(command);
         Set<String> existingTagNames = new HashSet<>();
-        List<ClassicsContentTag> currentTags = repository.listTags(contentType.value(), contentId, SortDirection.ASC);
+        List<ClassicsContentTag> currentTags =
+                new ArrayList<>(repository.listTags(contentType.value(), contentId, SortDirection.ASC));
         if (appendMode) {
             currentTags.stream()
                     .filter(Objects::nonNull)
@@ -952,6 +963,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     .map(String::trim)
                     .map(String::toLowerCase)
                     .forEach(existingTagNames::add);
+        } else if (coverMode) {
+            for (ClassicsContentTag tag : currentTags) {
+                if (tagBindingSupport != null) {
+                    tagBindingSupport.removeTagRef(tag);
+                }
+                if (tag != null && tag.getId() != null) {
+                    repository.deleteTagById(contentType.value(), contentId, tag.getId());
+                }
+            }
         } else {
             if (tagBindingSupport != null) {
                 currentTags.stream()

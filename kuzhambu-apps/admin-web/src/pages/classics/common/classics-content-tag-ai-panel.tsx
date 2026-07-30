@@ -19,7 +19,7 @@ import * as contentService from "./classics-content-service";
 import * as aiRefinementTaskService from "./ai-refinement-task-service";
 import type { AiCandidateRecord } from "./ai-candidate-types";
 import type { AiRefinementTaskRecord } from "./ai-refinement-task-types";
-import type { ClassicsContentTagRecord, ClassicsContentType } from "./classics-content-types";
+import type { ClassicsContentType } from "./classics-content-types";
 
 interface ClassicsContentTagAiPanelProps {
     canApplyCandidate?: boolean;
@@ -329,16 +329,10 @@ export const ClassicsContentTagAiPanel = ({
         }
     };
 
-    const deleteTag = async (tag: ClassicsContentTagRecord) => {
-        if (tag.id) {
-            await contentService.deleteTag({ id: tag.id });
-        }
-    };
-
     const markCandidateApplied = async (
         candidate: AiCandidateRecord,
         appliedTags: string[],
-        tagApplyMode?: "APPEND"
+        tagApplyMode?: "APPEND" | "COVER"
     ) => {
         if (!appliedTags.length) {
             await aiCandidateService.reject({
@@ -386,24 +380,7 @@ export const ClassicsContentTagAiPanel = ({
         mutationFn: async (candidate: AiCandidateRecord) => {
             setHandlingCandidateId(getCandidateStableId(candidate));
             const candidateTags = readCandidateTagsOrThrow(candidate);
-            const desiredKeys = new Set(candidateTags.map(tagKey));
-            const beforeApplyTags = await contentService.listTags({ contentId, contentType });
-            await Promise.all(
-                beforeApplyTags
-                    .filter((tag) => (tag.status || "ACTIVE") !== "REMOVED")
-                    .filter((tag) => desiredKeys.has(tagKey(normalizeTagName(tag.tagNameSnapshot))))
-                    .map(deleteTag)
-            );
-            await markCandidateApplied(candidate, candidateTags);
-            const currentTags = await contentService.listTags({ contentId, contentType });
-            await Promise.all(
-                currentTags
-                    .filter((tag) => (tag.status || "ACTIVE") !== "REMOVED")
-                    .filter(
-                        (tag) => !desiredKeys.has(tagKey(normalizeTagName(tag.tagNameSnapshot)))
-                    )
-                    .map(deleteTag)
-            );
+            await markCandidateApplied(candidate, candidateTags, "COVER");
         },
         onSuccess: async () => {
             await refresh();

@@ -1175,6 +1175,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         private int updateMingCustomsEntryAiCount;
         private int deleteAiTagsCount;
         private int deleteAiQaPairsCount;
+        private int deleteTagByIdCount;
         private int insertTagCount;
         private int insertQaPairCount;
         private SancaiEntry sancaiEntryForAiApply;
@@ -1239,6 +1240,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         @Override
         public int deleteTagById(String contentType, ClassicsContentId contentId, ClassicsContentTagId id) {
+            deleteTagByIdCount++;
+            tags.removeIf(tag -> tag.getId() != null && tag.getId().equals(id));
             return 1;
         }
 
