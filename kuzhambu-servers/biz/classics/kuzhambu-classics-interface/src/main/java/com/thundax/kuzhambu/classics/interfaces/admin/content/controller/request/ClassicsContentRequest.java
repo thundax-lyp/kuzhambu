@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -59,7 +59,7 @@ public class ClassicsContentRequest extends PageRequest {
     private String scopeJson;
 
     @JsonProperty("expiresAt")
-    private Date expiresAt;
+    private Instant expiresAt;
 
     @JsonProperty("contentChanged")
     private Boolean contentChanged;

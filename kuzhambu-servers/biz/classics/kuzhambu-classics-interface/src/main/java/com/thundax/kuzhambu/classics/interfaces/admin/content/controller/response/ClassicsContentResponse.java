@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -53,10 +53,10 @@ public class ClassicsContentResponse implements Serializable {
     private String scopeJson;
 
     @JsonProperty("requestedAt")
-    private Date requestedAt;
+    private Instant requestedAt;
 
     @JsonProperty("expiresAt")
-    private Date expiresAt;
+    private Instant expiresAt;
 
     @JsonProperty("storageObjectId")
     private Long storageObjectId;
