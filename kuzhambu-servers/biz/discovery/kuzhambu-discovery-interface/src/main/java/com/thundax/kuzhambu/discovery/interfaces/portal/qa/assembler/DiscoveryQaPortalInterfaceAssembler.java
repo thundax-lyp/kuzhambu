@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCode
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.response.DiscoveryQaResponses;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -253,8 +253,8 @@ public final class DiscoveryQaPortalInterfaceAssembler {
         return response;
     }
 
-    private static Long toTimestamp(Date date) {
-        return date == null ? null : date.getTime();
+    private static Long toTimestamp(Instant date) {
+        return date == null ? null : date.toEpochMilli();
     }
 
     private static DiscoveryQaResponses.ChatCompletionChoice toChatCompletionChoice(
