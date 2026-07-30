@@ -1,30 +1,30 @@
 #!/usr/bin/env bash
 
-# Generate Classics seed SQL from a structured Sancai JSON snapshot.
+# Generate Classics seed SQL from structured Sancai source data.
 #
-# This script adapts the legacy classics_sancai_tree snapshot shape to the
+# This script adapts the classics_sancai_tree source shape to the
 # current Classics schema. It writes SQL only; it does not connect to MySQL.
 
 set -euo pipefail
 
-SNAPSHOT="./sancai_tree_snapshot.json"
+SOURCE="db/data-source/sancai-tree.json"
 OUTPUT="db/data/classics.sql"
 TAG_SEED="db/data-source/sancai-tags.json"
 
 usage() {
     cat <<'USAGE'
 Usage:
-  scripts/classics-json-to-sql.sh [snapshot_file] [output_sql] [tag_seed_json]
+  scripts/classics-json-to-sql.sh [source_json] [output_sql] [tag_seed_json]
 
 Defaults:
-  snapshot_file  ./sancai_tree_snapshot.json
+  source_json    db/data-source/sancai-tree.json
   output_sql     db/data/classics.sql
   tag_seed_json  db/data-source/sancai-tags.json
 
 Examples:
   scripts/classics-json-to-sql.sh
-  scripts/classics-json-to-sql.sh ./sancai_tree_snapshot.json db/data/classics.sql
-  scripts/classics-json-to-sql.sh ./sancai_tree_snapshot.json db/data/classics.sql db/data-source/sancai-tags.json
+  scripts/classics-json-to-sql.sh db/data-source/sancai-tree.json db/data/classics.sql
+  scripts/classics-json-to-sql.sh db/data-source/sancai-tree.json db/data/classics.sql db/data-source/sancai-tags.json
 USAGE
 }
 
@@ -34,7 +34,7 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 fi
 
 if [[ $# -gt 0 ]]; then
-    SNAPSHOT="$1"
+    SOURCE="$1"
 fi
 
 if [[ $# -gt 1 ]]; then
@@ -56,8 +56,8 @@ if ! command -v jq >/dev/null 2>&1; then
     exit 1
 fi
 
-if [[ ! -f "$SNAPSHOT" ]]; then
-    echo "error: snapshot not found: $SNAPSHOT" >&2
+if [[ ! -f "$SOURCE" ]]; then
+    echo "error: source data not found: $SOURCE" >&2
     exit 1
 fi
 
@@ -66,8 +66,8 @@ if [[ ! -f "$TAG_SEED" ]]; then
     exit 1
 fi
 
-if ! jq -e '.schema == "classics_sancai_tree"' "$SNAPSHOT" >/dev/null; then
-    echo "error: invalid snapshot format, expected schema=classics_sancai_tree" >&2
+if ! jq -e '.schema == "classics_sancai_tree"' "$SOURCE" >/dev/null; then
+    echo "error: invalid source data format, expected schema=classics_sancai_tree" >&2
     exit 1
 fi
 
@@ -88,8 +88,8 @@ fi
 cat > "$TMP_OUTPUT" <<'SQL'
 SET NAMES utf8mb4;
 
--- Seed data generated from sancai_tree_snapshot.json.
--- The source snapshot uses legacy field names; this file targets the current Classics schema.
+-- Seed data generated from db/data-source/sancai-tree.json.
+-- The source data uses Sancai tree field names; this file targets the current Classics schema.
 
 SQL
 
@@ -201,6 +201,36 @@ def generated_tag_id(tag_seed; tag):
     "`volume_id` = VALUES(`volume_id`), `title` = VALUES(`title`), `original_text` = VALUES(`original_text`), `translation_text` = VALUES(`translation_text`), `summary` = VALUES(`summary`), `lifecycle_status` = VALUES(`lifecycle_status`), `visibility` = VALUES(`visibility`), `translation_status` = VALUES(`translation_status`), `image_status` = VALUES(`image_status`), `visual_asset_status` = VALUES(`visual_asset_status`), `refinement_status` = VALUES(`refinement_status`), `priority` = VALUES(`priority`), `current_version_id` = VALUES(`current_version_id`), `current_version_no` = VALUES(`current_version_no`), `current_versioned_at` = VALUES(`current_versioned_at`), `content_updated_at` = VALUES(`content_updated_at`);"
 ),
 "",
+"-- 三才图会条目问答",
+"DELETE FROM `classics_content_qa_pair` WHERE `content_type` = \u0027SANCAI_ENTRY\u0027;",
+(
+  [
+    $root.categories[]
+    | (.volumes // [])[] as $volume
+    | ($volume.entries // [])[] as $entry
+    | ($entry.entry_qas // [])[] as $qa
+    | select(($qa.question // "") != "" and ($qa.answer // "") != "")
+    | {entry_id: ($entry.id // $entry.entry_id), qa: $qa}
+  ] as $qa_rows
+  | if ($qa_rows | length) > 0 then
+      $qa_rows
+      | to_entries[]
+      | .key as $qa_index
+      | .value as $row
+      | "INSERT INTO `classics_content_qa_pair` (`content_type`, `content_id`, `question`, `answer`, `source`, `priority`) VALUES (" +
+        sql_text("SANCAI_ENTRY") + ", " +
+        ($row.entry_id | tostring) + ", " +
+        sql_text($row.qa.question) + ", " +
+        sql_text($row.qa.answer) + ", " +
+        sql_text($row.qa.source // "MANUAL") + ", " +
+        (($qa_index + 3001) | tostring) +
+        ") ON DUPLICATE KEY UPDATE " +
+        "`question` = VALUES(`question`), `answer` = VALUES(`answer`), `source` = VALUES(`source`), `priority` = VALUES(`priority`);"
+    else
+      empty
+    end
+),
+"",
 "-- 三才图会条目标签",
 (
   [
@@ -223,7 +253,7 @@ def generated_tag_id(tag_seed; tag):
     ") ON DUPLICATE KEY UPDATE " +
     "`tag_id` = VALUES(`tag_id`), `source` = VALUES(`source`), `status` = VALUES(`status`), `priority` = VALUES(`priority`);"
 )
-' --slurpfile tag_seed "$TAG_SEED" "$SNAPSHOT" >> "$TMP_OUTPUT"
+' --slurpfile tag_seed "$TAG_SEED" "$SOURCE" >> "$TMP_OUTPUT"
 
 if [[ -s "$PRESERVED_TAIL" ]]; then
     printf '\n' >> "$TMP_OUTPUT"

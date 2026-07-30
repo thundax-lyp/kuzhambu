@@ -23,8 +23,18 @@ if [[ ! -f "${ROOT_DIR}/db/data-source/sancai-tags.json" ]]; then
     exit 1
 fi
 
-if ! grep -q '"schema": "classics_sancai_tag_seed"' "${ROOT_DIR}/db/data-source/sancai-tags.json"; then
+if [[ ! -f "${ROOT_DIR}/db/data-source/sancai-tree.json" ]]; then
+    echo "Missing db/data-source/sancai-tree.json" >&2
+    exit 1
+fi
+
+if ! jq -e '.schema == "classics_sancai_tag_seed"' "${ROOT_DIR}/db/data-source/sancai-tags.json" >/dev/null; then
     echo "Invalid sancai tag seed schema" >&2
+    exit 1
+fi
+
+if ! jq -e '.schema == "classics_sancai_tree"' "${ROOT_DIR}/db/data-source/sancai-tree.json" >/dev/null; then
+    echo "Invalid sancai tree source schema" >&2
     exit 1
 fi
 
@@ -52,6 +62,11 @@ fi
 
 if ! grep -q "INSERT INTO \`classics_sancai_entry\`" "${ROOT_DIR}/db/data/classics.sql"; then
     echo "Missing sancai entry data" >&2
+    exit 1
+fi
+
+if ! grep -q "三才图会条目问答" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing sancai QA generation marker" >&2
     exit 1
 fi
 

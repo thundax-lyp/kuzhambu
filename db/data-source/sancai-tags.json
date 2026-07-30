@@ -1,6 +1,6 @@
 {
   "schema": "classics_sancai_tag_seed",
-  "source_snapshot": "sancai_tree_snapshot.json",
+  "source_data": "db/data-source/sancai-tree.json",
   "generated_at": "2026-07-30 00:00:00.000",
   "tag_id_rule": "世系图 keeps 500001; other tags use 501000 + sorted tag index + 1.",
   "ref_id_rule": "SANCAI_ENTRY refs use 531000 + binding index + 1 in entry/tag order.",
