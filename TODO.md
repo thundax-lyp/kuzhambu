@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `09 qa-http-contract`：调整 QA HTTP 响应身份字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/controller/response/DiscoveryQaResponses.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/assembler/DiscoveryQaPortalInterfaceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/response/DiscoveryQaAdminResponses.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/assembler/DiscoveryQaAdminInterfaceAssembler.java`
-    - 处理动作：把 QA HTTP response 中本体身份字段统一改为 `id`，并同步 `@Schema` 和 `@JsonProperty`。
-    - 验收点：QA response 不再输出本体 `sessionId/messageId/exportId/batchId`，引用字段仍按语义保留。
-    - 重要度：10/10
-
 - [ ] `10 search-domain-persistence`：清理 Search 领域和 DO 本体 ID
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`

@@ -21,9 +21,9 @@ public final class DiscoveryQaAdminResponses {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class QaSessionDetailResponse implements Serializable {
 
-        @Schema(name = "sessionId", description = "会话号")
-        @JsonProperty(value = "sessionId")
-        private String sessionId;
+        @Schema(name = "id", description = "会话 ID")
+        @JsonProperty(value = "id")
+        private String id;
 
         @Schema(name = "ownerUserId", description = "拥有者用户号")
         @JsonProperty(value = "ownerUserId")
@@ -77,9 +77,9 @@ public final class DiscoveryQaAdminResponses {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class QaSessionResponse implements Serializable {
 
-        @Schema(name = "sessionId", description = "会话号")
-        @JsonProperty(value = "sessionId")
-        private String sessionId;
+        @Schema(name = "id", description = "会话 ID")
+        @JsonProperty(value = "id")
+        private String id;
 
         @Schema(name = "ownerUserId", description = "拥有者用户号")
         @JsonProperty(value = "ownerUserId")
@@ -129,9 +129,9 @@ public final class DiscoveryQaAdminResponses {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class QaSessionExportResponse implements Serializable {
 
-        @Schema(name = "exportId", description = "导出号")
-        @JsonProperty(value = "exportId")
-        private String exportId;
+        @Schema(name = "id", description = "导出 ID")
+        @JsonProperty(value = "id")
+        private String id;
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
@@ -177,9 +177,9 @@ public final class DiscoveryQaAdminResponses {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class QaMessageResponse implements Serializable {
 
-        @Schema(name = "messageId", description = "消息号")
-        @JsonProperty(value = "messageId")
-        private String messageId;
+        @Schema(name = "id", description = "消息 ID")
+        @JsonProperty(value = "id")
+        private String id;
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")

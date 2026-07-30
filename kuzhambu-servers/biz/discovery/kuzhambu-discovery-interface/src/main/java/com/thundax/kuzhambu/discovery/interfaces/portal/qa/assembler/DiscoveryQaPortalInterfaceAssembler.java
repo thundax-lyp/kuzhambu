@@ -122,7 +122,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
             return null;
         }
         DiscoveryQaResponses.OpenSessionResponse response = new DiscoveryQaResponses.OpenSessionResponse();
-        response.setSessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()));
+        response.setId(DiscoveryInterfaceIdCodec.toStringValue(result.getId()));
         response.setOwnerUserId(result.getOwnerUserId());
         response.setTitle(result.getTitle());
         response.setScope(result.getScope());
@@ -182,7 +182,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
             return null;
         }
         DiscoveryQaResponses.QaSessionExportResponse response = new DiscoveryQaResponses.QaSessionExportResponse();
-        response.setExportId(DiscoveryInterfaceIdCodec.toStringValue(result.getExportId()));
+        response.setId(DiscoveryInterfaceIdCodec.toStringValue(result.getId()));
         response.setSessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()));
         response.setFormat(result.getFormat());
         response.setStorageObjectId(DiscoveryInterfaceIdCodec.toStringValue(result.getStorageObjectId()));
@@ -227,7 +227,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
     }
 
     private static void fillSessionResponse(DiscoveryQaResponses.QaSessionResponse response, QaSessionResult result) {
-        response.setSessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()));
+        response.setId(DiscoveryInterfaceIdCodec.toStringValue(result.getId()));
         response.setOwnerUserId(result.getOwnerUserId());
         response.setTitle(result.getTitle());
         response.setScope(result.getScope());
@@ -241,7 +241,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
 
     private static DiscoveryQaResponses.QaMessageResponse toMessageResponse(QaMessageResult result) {
         DiscoveryQaResponses.QaMessageResponse response = new DiscoveryQaResponses.QaMessageResponse();
-        response.setMessageId(DiscoveryInterfaceIdCodec.toStringValue(result.getMessageId()));
+        response.setId(DiscoveryInterfaceIdCodec.toStringValue(result.getId()));
         response.setSessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()));
         response.setRole(result.getRole());
         response.setContent(result.getContent());
