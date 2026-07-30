@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,9 +34,9 @@ public class OperationsHealthPageRequest extends PageRequest {
 
     @Schema(name = "checkedAtStart", description = "检查时间起点")
     @JsonProperty(value = "checkedAtStart")
-    private Date checkedAtStart;
+    private Instant checkedAtStart;
 
     @Schema(name = "checkedAtEnd", description = "检查时间终点")
     @JsonProperty(value = "checkedAtEnd")
-    private Date checkedAtEnd;
+    private Instant checkedAtEnd;
 }

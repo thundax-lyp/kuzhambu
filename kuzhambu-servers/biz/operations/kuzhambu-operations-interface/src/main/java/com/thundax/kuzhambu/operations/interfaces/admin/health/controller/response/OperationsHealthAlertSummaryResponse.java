@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -67,7 +67,7 @@ public class OperationsHealthAlertSummaryResponse {
 
     @Schema(name = "lastTriggeredAt", description = "最近触发时间")
     @JsonProperty(value = "lastTriggeredAt")
-    private Date lastTriggeredAt;
+    private Instant lastTriggeredAt;
 
     @Schema(name = "failureReason", description = "失败原因")
     @JsonProperty(value = "failureReason")
