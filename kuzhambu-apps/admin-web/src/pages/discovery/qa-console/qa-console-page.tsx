@@ -121,7 +121,7 @@ export const QaConsolePage = () => {
             const deletedSessionId = parseString(variables.sessionId);
             setSessionDetail((current) => ({
                 ...(current ?? {}),
-                sessionId: current?.sessionId ?? deletedSessionId,
+                id: current?.id ?? deletedSessionId,
                 status: "REMOVED"
             }));
             setSessionDrawerOpen(false);
@@ -164,7 +164,8 @@ export const QaConsolePage = () => {
         mutationFn: service.createQaSessionExport,
         onSuccess: (record, variables) => {
             const exportName = record.filename ?? record.exportStatus ?? "-";
-            setSessionOperationText(`会话 ${variables.sessionId} 导出已创建：${exportName}`);
+            const exportedSessionId = parseString(variables.sessionId) ?? "-";
+            setSessionOperationText(`会话 ${exportedSessionId} 导出已创建：${exportName}`);
         },
         onError: (error) => {
             setSessionOperationText(error instanceof Error ? error.message : "会话导出失败");

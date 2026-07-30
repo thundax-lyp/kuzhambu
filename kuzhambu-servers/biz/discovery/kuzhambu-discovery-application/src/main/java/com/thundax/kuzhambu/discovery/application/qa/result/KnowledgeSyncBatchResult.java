@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class KnowledgeSyncBatchResult {
-    private Long batchId;
+    private Long id;
     private String triggerType;
     private String provider;
     private Integer totalCount;
@@ -18,4 +18,12 @@ public class KnowledgeSyncBatchResult {
     private Integer failureCount;
     private Long startedAt;
     private Long finishedAt;
+
+    public Long getBatchId() {
+        return id;
+    }
+
+    public void setBatchId(Long batchId) {
+        this.id = batchId;
+    }
 }

@@ -2,10 +2,10 @@ package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,10 +42,16 @@ class QaSessionRepositoryImplTest {
                 new Date(),
                 new Date(),
                 null);
+        doAnswer(invocation -> {
+                    invocation.getArgument(0, QaSessionDO.class).setId(4001L);
+                    return 1;
+                })
+                .when(mapper)
+                .insert(any(QaSessionDO.class));
 
         Long savedId = repository.save(entity);
 
-        assertNotNull(savedId);
+        assertEquals(4001L, savedId);
         verify(mapper).insert(any(QaSessionDO.class));
     }
 
@@ -54,7 +60,6 @@ class QaSessionRepositoryImplTest {
         QaSessionMapper mapper = mock(QaSessionMapper.class);
         QaSessionRepositoryImpl repository = new QaSessionRepositoryImpl(mapper);
         QaSessionDO dataObject = new QaSessionDO(
-                1L,
                 4001L,
                 "USER",
                 "1001",
@@ -73,7 +78,7 @@ class QaSessionRepositoryImplTest {
         List<QaSession> result = repository.listByOwnerUserId("USER", "1001", 10);
 
         assertEquals(1, result.size());
-        assertEquals(4001L, result.get(0).getSessionId());
+        assertEquals(4001L, result.get(0).getId());
         assertEquals("黄帝问答", result.get(0).getTitle());
         ArgumentCaptor<QueryWrapper<QaSessionDO>> wrapperCaptor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectList(wrapperCaptor.capture());
@@ -85,7 +90,6 @@ class QaSessionRepositoryImplTest {
         QaSessionMapper mapper = mock(QaSessionMapper.class);
         QaSessionRepositoryImpl repository = new QaSessionRepositoryImpl(mapper);
         QaSessionDO dataObject = new QaSessionDO(
-                1L,
                 4001L,
                 "USER",
                 "1001",
@@ -111,7 +115,7 @@ class QaSessionRepositoryImplTest {
         assertEquals(2, result.getPageNo());
         assertEquals(20, result.getPageSize());
         assertEquals(31, result.getTotalCount());
-        assertEquals(4001L, result.getRecords().get(0).getSessionId());
+        assertEquals(4001L, result.getRecords().get(0).getId());
         ArgumentCaptor<Page<QaSessionDO>> pageCaptor = ArgumentCaptor.forClass(Page.class);
         ArgumentCaptor<QueryWrapper<QaSessionDO>> wrapperCaptor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectPage(pageCaptor.capture(), wrapperCaptor.capture());
@@ -122,7 +126,7 @@ class QaSessionRepositoryImplTest {
         assertTrue(sqlSegment.contains("opened_at >="));
         assertTrue(sqlSegment.contains("opened_at <="));
         assertFalse(sqlSegment.contains("removed_at IS NULL"));
-        assertTrue(sqlSegment.contains("ORDER BY opened_at DESC,session_id DESC"));
+        assertTrue(sqlSegment.contains("ORDER BY opened_at DESC,id DESC"));
     }
 
     @Test

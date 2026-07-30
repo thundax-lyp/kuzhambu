@@ -15,8 +15,8 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DiscoverySearchEventGetRequest {
 
-    @Schema(name = "searchEventId", description = "检索统计事件号")
-    @JsonProperty(value = "searchEventId")
+    @Schema(name = "id", description = "检索统计事件 ID")
+    @JsonProperty(value = "id")
     @NotBlank(message = "\"检索统计事件号\"不能为空")
-    private String searchEventId;
+    private String id;
 }

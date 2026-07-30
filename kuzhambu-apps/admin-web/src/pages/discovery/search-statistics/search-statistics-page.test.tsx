@@ -26,7 +26,7 @@ const mocks = vi.hoisted(() => ({
         zeroResultSearchCount: 3
     })),
     getSearchEventDetail: vi.fn(async () => ({
-        searchEventId: "EVT-1001",
+        id: "EVT-1001",
         queryText: "礼器",
         normalizedQueryText: "礼器",
         displayQueryText: "礼器",
@@ -46,7 +46,7 @@ const mocks = vi.hoisted(() => ({
         totalPage: 1,
         records: [
             {
-                searchEventId: "EVT-1001",
+                id: "EVT-1001",
                 queryText: "礼器",
                 displayQueryText: "礼器",
                 intentType: "REWRITE",
@@ -196,7 +196,7 @@ describe("SearchStatisticsPage", () => {
         await user.click(screen.getByRole("button", { name: /展开行|Expand row/u }));
 
         expect(mocks.getSearchEventDetail).toHaveBeenCalledWith(
-            { searchEventId: "EVT-1001" },
+            { id: "EVT-1001" },
             expect.anything()
         );
         expect(await screen.findByText("REQ-1001")).toBeInTheDocument();

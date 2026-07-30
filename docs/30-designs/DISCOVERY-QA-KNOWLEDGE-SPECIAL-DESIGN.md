@@ -300,9 +300,9 @@ Admin 不提供本地来源列表或 provider trace 查询 API；来源、分段
 
 | Table | Required Fields |
 | --- | --- |
-| `discovery_qa_session` | `sessionId`, `ownerType`, `ownerId`, `title`, `status`, `createdAt`, `updatedAt` |
-| `discovery_qa_message` | `messageId`, `sessionId`, `role`, `content`, `answerStatus`, `createdAt` |
-| `discovery_qa_message_source` | `messageId`, `sourceId`, `contentType`, `contentId`, `knowledgeBase`, `titleSnapshot`, `snippet`, `sourcePath`, `score`, `sourceStatus` |
+| `discovery_qa_session` | `id`, `ownerType`, `ownerId`, `title`, `status`, `createdAt`, `updatedAt` |
+| `discovery_qa_message` | `id`, `sessionId`, `role`, `content`, `answerStatus`, `createdAt` |
+| `discovery_qa_message_source` | `id`, `messageId`, `sourceBusinessId`, `contentType`, `contentId`, `knowledgeBase`, `titleSnapshot`, `snippet`, `sourcePath`, `score`, `sourceStatus` |
 | `discovery_qa_retrieval_trace` | `messageId`, `provider`, `externalKnowledgeBaseId`, `externalKnowledgeItemIds`, `externalChatId`, `providerRequestId`, `latencyMs`, `failureReason`, `raw` |
 
 新增同步状态：
@@ -310,7 +310,7 @@ Admin 不提供本地来源列表或 provider trace 查询 API；来源、分段
 | Concept | Required Fields |
 | --- | --- |
 | Sync item | `sourceId`, `contentType`, `contentId`, `currentVersionNo`, `knowledgeRevision`, `provider`, `externalKnowledgeBaseId`, `externalKnowledgeItemId`, `syncStatus`, `failureReason`, `syncedAt` |
-| Sync batch | `batchId`, `triggerType`, `provider`, `totalCount`, `successCount`, `failureCount`, `startedAt`, `finishedAt` |
+| Sync batch | `id`, `triggerType`, `provider`, `totalCount`, `successCount`, `failureCount`, `startedAt`, `finishedAt` |
 
 ## Flows
 

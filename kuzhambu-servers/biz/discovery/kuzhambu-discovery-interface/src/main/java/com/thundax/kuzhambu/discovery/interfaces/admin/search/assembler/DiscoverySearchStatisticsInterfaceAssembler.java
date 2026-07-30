@@ -23,6 +23,7 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.respons
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchPreviewResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchStatisticsSummaryResponse;
+import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
@@ -117,7 +118,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
             return null;
         }
         return DiscoverySearchEventResponse.builder()
-                .searchEventId(result.getSearchEventId())
+                .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
                 .displayQueryText(result.getDisplayQueryText())
                 .intentType(result.getIntentType())
@@ -134,7 +135,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
             return null;
         }
         return DiscoverySearchEventDetailResponse.builder()
-                .searchEventId(result.getSearchEventId())
+                .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
                 .normalizedQueryText(result.getNormalizedQueryText())
                 .displayQueryText(result.getDisplayQueryText())
@@ -157,7 +158,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
             return null;
         }
         return DiscoverySearchResponse.builder()
-                .searchEventId(result.getSearchEventId())
+                .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
                 .displayQueryText(result.getDisplayQueryText())
                 .totalCount(result.getResultTotalCount())

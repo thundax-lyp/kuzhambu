@@ -1,7 +1,5 @@
 package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncBatch;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncBatchRepository;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaKnowledgeSyncBatchDO;
@@ -12,27 +10,22 @@ import org.springframework.stereotype.Repository;
 public class QaKnowledgeSyncBatchRepositoryImpl implements QaKnowledgeSyncBatchRepository {
 
     private final QaKnowledgeSyncBatchMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public QaKnowledgeSyncBatchRepositoryImpl(QaKnowledgeSyncBatchMapper mapper) {
         this.mapper = mapper;
     }
 
     @Override
-    public QaKnowledgeSyncBatch getByBatchId(Long batchId) {
-        if (batchId == null) {
+    public QaKnowledgeSyncBatch getById(Long id) {
+        if (id == null) {
             return null;
         }
-        return toDomain(mapper.selectOne(new QueryWrapper<QaKnowledgeSyncBatchDO>()
-                .eq("batch_id", batchId)
-                .last("limit 1")));
+        return toDomain(mapper.selectById(id));
     }
 
     @Override
     public Long save(QaKnowledgeSyncBatch entity) {
         QaKnowledgeSyncBatchDO dataObject = toObject(entity);
-        long nextId = idGenerator.nextId().value();
-        dataObject.setId(nextId);
         mapper.insert(dataObject);
         return dataObject.getId();
     }
@@ -48,7 +41,6 @@ public class QaKnowledgeSyncBatchRepositoryImpl implements QaKnowledgeSyncBatchR
         }
         QaKnowledgeSyncBatchDO dataObject = new QaKnowledgeSyncBatchDO();
         dataObject.setId(entity.getId());
-        dataObject.setBatchId(entity.getBatchId());
         dataObject.setTriggerType(entity.getTriggerType());
         dataObject.setProvider(entity.getProvider());
         dataObject.setTotalCount(entity.getTotalCount());
@@ -65,7 +57,6 @@ public class QaKnowledgeSyncBatchRepositoryImpl implements QaKnowledgeSyncBatchR
         }
         QaKnowledgeSyncBatch entity = new QaKnowledgeSyncBatch();
         entity.setId(dataObject.getId());
-        entity.setBatchId(dataObject.getBatchId());
         entity.setTriggerType(dataObject.getTriggerType());
         entity.setProvider(dataObject.getProvider());
         entity.setTotalCount(dataObject.getTotalCount());

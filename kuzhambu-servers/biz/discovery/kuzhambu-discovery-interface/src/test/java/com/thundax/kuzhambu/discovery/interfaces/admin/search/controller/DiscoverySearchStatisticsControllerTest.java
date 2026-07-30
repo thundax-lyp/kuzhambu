@@ -106,10 +106,10 @@ class DiscoverySearchStatisticsControllerTest {
 
         DiscoverySearchEventGetRequest getRequest = OBJECT_MAPPER.readValue(
                 """
-                {"searchEventId":"s-1"}
+                {"id":"1"}
                 """, DiscoverySearchEventGetRequest.class);
-        assertEquals("s-1", getRequest.getSearchEventId());
-        assertJsonFields(getRequest, "searchEventId");
+        assertEquals("1", getRequest.getId());
+        assertJsonFields(getRequest, "id");
 
         DiscoverySearchStatisticsSummaryRequest analysisRequest = OBJECT_MAPPER.readValue(
                 """
@@ -146,7 +146,7 @@ class DiscoverySearchStatisticsControllerTest {
                         20,
                         1,
                         List.of(new SearchEventResult(
-                                "s-1",
+                                1L,
                                 "黄帝",
                                 "黄帝",
                                 "黄帝",
@@ -167,7 +167,7 @@ class DiscoverySearchStatisticsControllerTest {
 
         verify(service).pageEvents(any());
         assertEquals(1, response.getRecords().size());
-        assertEquals("s-1", response.getRecords().get(0).getSearchEventId());
+        assertEquals("1", response.getRecords().get(0).getId());
     }
 
     @Test
@@ -180,7 +180,7 @@ class DiscoverySearchStatisticsControllerTest {
         request.setPageSize(20);
         when(service.search(any()))
                 .thenReturn(new SearchEventResult(
-                        "s-1",
+                        1L,
                         "辞官",
                         "辞官",
                         "辞官",
@@ -218,7 +218,7 @@ class DiscoverySearchStatisticsControllerTest {
         assertEquals("ADMIN", queryCaptor.getValue().getOperatorType());
         assertTrue(queryCaptor.getValue().getRequestId() != null);
         assertTrue(queryCaptor.getValue().getTraceId() != null);
-        assertEquals("s-1", response.getSearchEventId());
+        assertEquals("1", response.getId());
         assertEquals(1, response.getTotalCount());
         assertEquals("1001", response.getGroups().get(0).getItems().get(0).getContentId());
     }
@@ -288,10 +288,10 @@ class DiscoverySearchStatisticsControllerTest {
         DiscoverySearchStatisticsController controller =
                 new DiscoverySearchStatisticsController(service, searchIndexApplicationService);
         DiscoverySearchEventGetRequest request = new DiscoverySearchEventGetRequest();
-        request.setSearchEventId("s-1");
-        when(service.getEvent("s-1"))
+        request.setId("1");
+        when(service.getEvent(1L))
                 .thenReturn(new SearchEventResult(
-                        "s-1",
+                        1L,
                         "黄帝",
                         "黄帝",
                         "黄帝",
@@ -310,8 +310,8 @@ class DiscoverySearchStatisticsControllerTest {
 
         var response = controller.getEvent(request);
 
-        verify(service).getEvent("s-1");
-        assertEquals("s-1", response.getSearchEventId());
+        verify(service).getEvent(1L);
+        assertEquals("1", response.getId());
         assertEquals("ENTITY", response.getIntentType());
         assertTrue(response.getSearchScopesJson().contains("SANCAI_ENTRY"));
         assertEquals("req-1", response.getRequestId());
@@ -325,10 +325,10 @@ class DiscoverySearchStatisticsControllerTest {
         DiscoverySearchStatisticsController controller =
                 new DiscoverySearchStatisticsController(service, searchIndexApplicationService);
         DiscoverySearchEventGetRequest request = new DiscoverySearchEventGetRequest();
-        request.setSearchEventId("s-2");
-        when(service.getEvent("s-2"))
+        request.setId("2");
+        when(service.getEvent(2L))
                 .thenReturn(new SearchEventResult(
-                        "s-2",
+                        2L,
                         "黄帝",
                         "黄帝",
                         "黄帝",
@@ -347,7 +347,7 @@ class DiscoverySearchStatisticsControllerTest {
 
         var response = controller.getEvent(request);
 
-        verify(service).getEvent("s-2");
+        verify(service).getEvent(2L);
         assertEquals("FAILED", response.getSearchStatus());
         assertEquals("DISCOVERY-20001", response.getFailureCode());
         assertEquals("Search backend is not implemented", response.getFailureMessage());

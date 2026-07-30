@@ -82,7 +82,7 @@ export const QaSessionDetailDrawer = ({
                             sessionDetail.messages.map((message) => (
                                 <div
                                     className="qa-console-message"
-                                    key={message.messageId ?? message.content}
+                                    key={message.id ?? message.content}
                                 >
                                     <Text strong>
                                         {message.role ?? "-"} · {message.messageStatus ?? "-"}

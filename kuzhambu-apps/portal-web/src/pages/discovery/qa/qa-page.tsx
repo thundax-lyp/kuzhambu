@@ -50,7 +50,7 @@ export const DiscoveryQaPage = () => {
         isSubmittingLocked || openSessionMutation.isPending || chatCompletionMutation.isPending;
 
     const selectedSession = selectedSessionState.session;
-    const selectedSessionId = toSessionId(selectedSession?.sessionId);
+    const selectedSessionId = toSessionId(selectedSession?.id);
     const hasWangqiSingleDocumentContext =
         form.contextMode === SINGLE_DOCUMENT_MODE &&
         form.contextContentType === WANGQI_DOCUMENT_TYPE &&
@@ -119,7 +119,7 @@ export const DiscoveryQaPage = () => {
             if (reusableSession) {
                 writeStoredSession(form, reusableSession);
             }
-            const reusableSessionId = toSessionId(reusableSession?.sessionId) ?? selectedSessionId;
+            const reusableSessionId = toSessionId(reusableSession?.id) ?? selectedSessionId;
             return {
                 session: reusableSession,
                 sessionId: reusableSessionId,
@@ -132,7 +132,7 @@ export const DiscoveryQaPage = () => {
 
     const openSession = async () => {
         const openResponse = await openSessionMutation.mutateAsync(toOpenSessionRequest(form));
-        const openedSessionId = toSessionId(openResponse.sessionId);
+        const openedSessionId = toSessionId(openResponse.id);
         if (openedSessionId === null) {
             throw new Error("会话未返回会话号");
         }

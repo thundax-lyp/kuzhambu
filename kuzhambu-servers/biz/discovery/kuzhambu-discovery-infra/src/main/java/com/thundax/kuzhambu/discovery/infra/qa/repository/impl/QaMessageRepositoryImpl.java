@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.assembler.QaPersistenceAssembler;
@@ -14,19 +13,17 @@ import org.springframework.stereotype.Repository;
 public class QaMessageRepositoryImpl implements QaMessageRepository {
 
     private final QaMessageMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public QaMessageRepositoryImpl(QaMessageMapper mapper) {
         this.mapper = mapper;
     }
 
     @Override
-    public QaMessage getByMessageId(Long messageId) {
-        if (messageId == null) {
+    public QaMessage getById(Long id) {
+        if (id == null) {
             return null;
         }
-        return QaPersistenceAssembler.toMessageDomain(mapper.selectOne(
-                new QueryWrapper<QaMessageDO>().eq("message_id", messageId).last("limit 1")));
+        return QaPersistenceAssembler.toMessageDomain(mapper.selectById(id));
     }
 
     @Override
@@ -41,11 +38,6 @@ public class QaMessageRepositoryImpl implements QaMessageRepository {
     @Override
     public Long save(QaMessage entity) {
         QaMessageDO dataObject = QaPersistenceAssembler.toObject(entity);
-        long nextId = idGenerator.nextId().value();
-        dataObject.setId(nextId);
-        if (dataObject.getMessageId() == null) {
-            dataObject.setMessageId(nextId);
-        }
         mapper.insert(dataObject);
         return dataObject.getId();
     }

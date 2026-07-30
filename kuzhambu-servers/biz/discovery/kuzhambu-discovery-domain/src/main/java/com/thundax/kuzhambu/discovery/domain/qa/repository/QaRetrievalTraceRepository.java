@@ -4,7 +4,11 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 
 public interface QaRetrievalTraceRepository {
 
-    QaRetrievalTrace getByTraceId(Long traceId);
+    QaRetrievalTrace getById(Long id);
+
+    default QaRetrievalTrace getByTraceId(Long traceId) {
+        return getById(traceId);
+    }
 
     QaRetrievalTrace getByMessageId(Long messageId);
 

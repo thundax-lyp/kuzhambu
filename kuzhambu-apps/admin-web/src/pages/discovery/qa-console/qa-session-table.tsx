@@ -119,7 +119,7 @@ export const QaSessionTable = ({
                         loading={sessionLoading}
                         onClick={(event) => {
                             event.stopPropagation();
-                            onOpen(String(record.sessionId ?? ""));
+                            onOpen(String(record.id ?? ""));
                         }}
                         size="small"
                     >
@@ -130,7 +130,7 @@ export const QaSessionTable = ({
                         loading={exportLoading}
                         onClick={(event) => {
                             event.stopPropagation();
-                            onExport(String(record.sessionId ?? ""));
+                            onExport(String(record.id ?? ""));
                         }}
                         size="small"
                     >
@@ -143,7 +143,7 @@ export const QaSessionTable = ({
                         loading={deleteLoading}
                         onClick={(event) => {
                             event.stopPropagation();
-                            onDelete(String(record.sessionId ?? ""));
+                            onDelete(String(record.id ?? ""));
                         }}
                         size="small"
                     >
@@ -202,7 +202,7 @@ export const QaSessionTable = ({
                             showSizeChanger: false,
                             total: pageData?.totalCount ?? pageData?.count ?? 0
                         }}
-                        rowKey={(record) => record.sessionId ?? "-"}
+                        rowKey={(record) => record.id ?? "-"}
                         scroll={{ x: 780 }}
                         size="small"
                     />

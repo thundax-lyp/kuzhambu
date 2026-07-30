@@ -9,12 +9,13 @@ import { QaPage } from "./qa-page";
 const mocks = vi.hoisted(() => ({
     createQaSession: vi.fn(async () => ({
         contextMode: "GENERAL",
+        id: "7001",
         openedAt: 1700000000000,
-        sessionId: "7001",
         title: "知识中心问答"
     })),
     createQaSessionExport: vi.fn(async () => ({
         exportStatus: "SUCCEEDED",
+        id: "7001",
         filename: "discovery-qa-session-7001.csv",
         sessionId: "7001"
     })),
@@ -30,6 +31,7 @@ const mocks = vi.hoisted(() => ({
                     }
                 }
             ],
+            id: "chat-7001",
             sessionId: "7001",
             sources: [
                 {
@@ -45,18 +47,18 @@ const mocks = vi.hoisted(() => ({
     getQaSession: vi.fn(async () => ({
         messages: [] as Array<{
             content: string;
-            messageId: string;
+            id: string;
             messageStatus: string;
             role: string;
             sessionId: string;
         }>,
+        id: "7001",
         openedAt: 1700000000000,
-        sessionId: "7001",
         title: "知识中心问答"
     })),
     deleteQaSession: vi.fn(async () => undefined),
     pageQaSessions: vi.fn(async () => ({
-        items: [] as Array<{ openedAt: number; sessionId: string; title: string }>,
+        items: [] as Array<{ id: string; openedAt: number; title: string }>,
         pageNo: 1,
         pageSize: 20,
         total: 0
@@ -85,8 +87,8 @@ describe("QaPage", () => {
         Object.values(mocks).forEach((mock) => mock.mockClear());
         mocks.createQaSession.mockImplementation(async () => ({
             contextMode: "GENERAL",
+            id: "7001",
             openedAt: 1700000000000,
-            sessionId: "7001",
             title: "知识中心问答"
         }));
     });
@@ -198,8 +200,8 @@ describe("QaPage", () => {
         mocks.pageQaSessions.mockResolvedValueOnce({
             items: [
                 {
+                    id: "7001",
                     openedAt: 1700000000000,
-                    sessionId: "7001",
                     title: "既有对话"
                 }
             ],
@@ -211,21 +213,21 @@ describe("QaPage", () => {
             messages: [
                 {
                     content: "礼学是什么？",
-                    messageId: "8001",
+                    id: "8001",
                     messageStatus: "SENT",
                     role: "USER",
                     sessionId: "7001"
                 },
                 {
                     content: "礼学是礼制相关的学问。",
-                    messageId: "8002",
+                    id: "8002",
                     messageStatus: "SUCCEEDED",
                     role: "ASSISTANT",
                     sessionId: "7001"
                 }
             ],
+            id: "7001",
             openedAt: 1700000000000,
-            sessionId: "7001",
             title: "既有对话"
         });
         const user = userEvent.setup();
@@ -265,8 +267,8 @@ describe("QaPage", () => {
         mocks.pageQaSessions.mockResolvedValueOnce({
             items: [
                 {
+                    id: "7001",
                     openedAt: 1700000000000,
-                    sessionId: "7001",
                     title: "礼学和礼制有什么关系？"
                 }
             ],

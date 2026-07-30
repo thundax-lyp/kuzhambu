@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchEventResul
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
+import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickEventRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
@@ -89,7 +90,7 @@ public final class DiscoverySearchPortalInterfaceAssembler {
             return null;
         }
         return DiscoverySearchResponse.builder()
-                .searchEventId(result.getSearchEventId())
+                .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
                 .displayQueryText(result.getDisplayQueryText())
                 .totalCount(result.getResultTotalCount())

@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QaMessageResult {
-    private Long messageId;
+    private Long id;
     private Long sessionId;
     private String role;
     private String content;
@@ -20,4 +20,12 @@ public class QaMessageResult {
     private String failureReason;
     private Date sentAt;
     private Date answeredAt;
+
+    public Long getMessageId() {
+        return id;
+    }
+
+    public void setMessageId(Long messageId) {
+        this.id = messageId;
+    }
 }

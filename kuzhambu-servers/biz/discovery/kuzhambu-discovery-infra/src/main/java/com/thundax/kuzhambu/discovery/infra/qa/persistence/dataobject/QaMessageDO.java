@@ -14,10 +14,9 @@ import lombok.NoArgsConstructor;
 @TableName("discovery_qa_message")
 public class QaMessageDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    private Long messageId;
     private Long sessionId;
     private String role;
     private String content;

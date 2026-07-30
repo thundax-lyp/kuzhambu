@@ -92,8 +92,8 @@ describe("DiscoverySearchPage", () => {
                         ]
                     }
                 ],
+                id: "EVT-PAGE-1",
                 queryText: "",
-                searchEventId: "EVT-PAGE-1",
                 totalCount: 21
             })
             .mockResolvedValueOnce({
@@ -117,8 +117,8 @@ describe("DiscoverySearchPage", () => {
                         ]
                     }
                 ],
+                id: "EVT-PAGE-2",
                 queryText: "",
-                searchEventId: "EVT-PAGE-2",
                 totalCount: 21
             });
 
@@ -156,16 +156,16 @@ describe("DiscoverySearchPage", () => {
                 displayQueryText: "官制",
                 groupCount: 0,
                 groups: [],
+                id: "EVT-1006",
                 queryText: "官制",
-                searchEventId: "EVT-1006",
                 totalCount: 0
             })
             .mockResolvedValueOnce({
                 displayQueryText: "官制",
                 groupCount: 0,
                 groups: [],
+                id: "EVT-1007",
                 queryText: "官制",
-                searchEventId: "EVT-1007",
                 totalCount: 0
             });
 

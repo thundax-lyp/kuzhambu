@@ -14,10 +14,9 @@ import lombok.NoArgsConstructor;
 @TableName("discovery_qa_session")
 public class QaSessionDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    private Long sessionId;
     private String ownerType;
     private String ownerId;
     private String knowledgeBaseName;

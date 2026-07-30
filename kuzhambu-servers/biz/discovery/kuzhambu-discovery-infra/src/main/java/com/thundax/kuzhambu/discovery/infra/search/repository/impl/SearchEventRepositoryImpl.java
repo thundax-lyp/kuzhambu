@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.discovery.infra.search.repository.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
@@ -19,27 +18,19 @@ import org.springframework.stereotype.Repository;
 public class SearchEventRepositoryImpl implements SearchEventRepository {
 
     private final SearchEventMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public SearchEventRepositoryImpl(SearchEventMapper mapper) {
         this.mapper = mapper;
     }
 
     @Override
-    public SearchEvent getBySearchEventId(String searchEventId) {
-        return SearchEventPersistenceAssembler.toDomain(mapper.selectOne(new QueryWrapper<SearchEventDO>()
-                .eq("search_event_id", searchEventId)
-                .last("limit 1")));
+    public SearchEvent getById(Long id) {
+        return SearchEventPersistenceAssembler.toDomain(mapper.selectById(id));
     }
 
     @Override
     public Long save(SearchEvent entity) {
         SearchEventDO dataObject = SearchEventPersistenceAssembler.toObject(entity);
-        long nextId = idGenerator.nextId().value();
-        dataObject.setId(nextId);
-        if (StringUtils.isBlank(dataObject.getSearchEventId())) {
-            dataObject.setSearchEventId(String.valueOf(nextId));
-        }
         mapper.insert(dataObject);
         return dataObject.getId();
     }

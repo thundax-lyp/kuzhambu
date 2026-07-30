@@ -38,7 +38,7 @@ const sessionTitle = (session?: DiscoveryQaSessionRecord) => {
     if (session?.title) {
         return session.title;
     }
-    return session?.sessionId ? `会话 ${session.sessionId}` : "未命名会话";
+    return session?.id ? `会话 ${session.id}` : "未命名会话";
 };
 
 const toSourceKey = (source: DiscoveryQaSourceRecord, index: number) => {

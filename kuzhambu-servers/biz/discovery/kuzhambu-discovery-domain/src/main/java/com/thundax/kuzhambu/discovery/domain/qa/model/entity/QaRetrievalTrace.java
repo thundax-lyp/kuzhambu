@@ -12,7 +12,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class QaRetrievalTrace {
     private Long id;
-    private Long traceId;
     private Long messageId;
     private String rawQuestion;
     private String provider;
@@ -28,4 +27,48 @@ public class QaRetrievalTrace {
     private String aiErrorType;
     private String aiErrorMessage;
     private Date retrievedAt;
+
+    public QaRetrievalTrace(
+            Long id,
+            Long traceId,
+            Long messageId,
+            String rawQuestion,
+            String provider,
+            String externalKnowledgeBaseId,
+            String externalKnowledgeItemIds,
+            String externalChatId,
+            String providerRequestId,
+            Long latencyMs,
+            String failureReason,
+            String raw,
+            Long aiCallId,
+            String aiStatus,
+            String aiErrorType,
+            String aiErrorMessage,
+            Date retrievedAt) {
+        this.id = id == null ? traceId : id;
+        this.messageId = messageId;
+        this.rawQuestion = rawQuestion;
+        this.provider = provider;
+        this.externalKnowledgeBaseId = externalKnowledgeBaseId;
+        this.externalKnowledgeItemIds = externalKnowledgeItemIds;
+        this.externalChatId = externalChatId;
+        this.providerRequestId = providerRequestId;
+        this.latencyMs = latencyMs;
+        this.failureReason = failureReason;
+        this.raw = raw;
+        this.aiCallId = aiCallId;
+        this.aiStatus = aiStatus;
+        this.aiErrorType = aiErrorType;
+        this.aiErrorMessage = aiErrorMessage;
+        this.retrievedAt = retrievedAt;
+    }
+
+    public Long getTraceId() {
+        return id;
+    }
+
+    public void setTraceId(Long traceId) {
+        this.id = traceId;
+    }
 }

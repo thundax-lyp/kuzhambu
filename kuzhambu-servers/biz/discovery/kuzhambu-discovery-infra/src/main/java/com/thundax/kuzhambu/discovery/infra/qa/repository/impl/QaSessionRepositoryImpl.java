@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
@@ -21,19 +20,17 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     private static final String REMOVED_AT_COLUMN = "removed_at";
 
     private final QaSessionMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public QaSessionRepositoryImpl(QaSessionMapper mapper) {
         this.mapper = mapper;
     }
 
     @Override
-    public QaSession getBySessionId(Long sessionId) {
-        if (sessionId == null) {
+    public QaSession getById(Long id) {
+        if (id == null) {
             return null;
         }
-        return QaPersistenceAssembler.toSessionDomain(mapper.selectOne(
-                new QueryWrapper<QaSessionDO>().eq("session_id", sessionId).last("limit 1")));
+        return QaPersistenceAssembler.toSessionDomain(mapper.selectById(id));
     }
 
     @Override
@@ -80,18 +77,13 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
         if (openedAtEnd != null) {
             wrapper.le("opened_at", openedAtEnd);
         }
-        wrapper.orderByDesc("opened_at").orderByDesc("session_id");
+        wrapper.orderByDesc("opened_at").orderByDesc("id");
         return wrapper;
     }
 
     @Override
     public Long save(QaSession entity) {
         QaSessionDO dataObject = QaPersistenceAssembler.toObject(entity);
-        long nextId = idGenerator.nextId().value();
-        dataObject.setId(nextId);
-        if (dataObject.getSessionId() == null) {
-            dataObject.setSessionId(nextId);
-        }
         mapper.insert(dataObject);
         return dataObject.getId();
     }
@@ -102,10 +94,10 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     }
 
     @Override
-    public int markRemoved(Long sessionId, Date removedAt) {
-        if (sessionId == null || removedAt == null) {
+    public int markRemoved(Long id, Date removedAt) {
+        if (id == null || removedAt == null) {
             return 0;
         }
-        return mapper.markRemoved(sessionId, removedAt);
+        return mapper.markRemoved(id, removedAt);
     }
 }

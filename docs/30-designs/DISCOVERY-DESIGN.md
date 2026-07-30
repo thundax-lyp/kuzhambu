@@ -91,7 +91,6 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 `discovery_search_event`
 
 - 主键：`id bigint`
-- 业务号：`search_event_id varchar(64)`
 - 核心字段：`query_text`、`normalized_query_text`、`display_query_text`、`intent_type`
 - 检索范围：`search_scopes_json`
 - 结果摘要：`result_total_count`、`group_total_count`
@@ -102,8 +101,7 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 `discovery_search_click_event`
 
 - 主键：`id bigint`
-- 业务号：`search_click_event_id varchar(64)`
-- 关联字段：`search_event_id`
+- 关联字段：`search_event_id bigint`
 - 内容字段：`content_domain`、`content_type`、`content_id`、`content_title`
 - 命中位置：`result_group_key`、`result_rank`、`group_rank`
 - 跳转字段：`target_path`
@@ -113,8 +111,7 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 `discovery_query_understanding`
 
 - 主键：`id bigint`
-- 业务号：`query_understanding_id varchar(64)`
-- 关联字段：`search_event_id`
+- 关联字段：`search_event_id bigint`
 - 查询字段：`query_text`、`normalized_query_text`、`rewritten_query_text`
 - 理解字段：`intent_type`、`recognized_entities_json`、`expanded_synonyms_json`
 - 状态字段：`understanding_status`、`failure_code`、`failure_message`
@@ -123,7 +120,7 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 
 当前规则：
 
-- Search 相关表固定采用“数据库主键 + 业务号”双轨。
+- Search 相关表固定使用 `id` 作为本体身份；引用其他 Discovery 实体时使用 `{domain}_id`。
 - `search_scopes_json`、`recognized_entities_json`、`expanded_synonyms_json` 当前只做 JSON 原样存取，不拆分二级列。
 - 搜索索引是派生读模型，不替代 `discovery_search_event` 等业务表。
 
@@ -143,7 +140,7 @@ Application 层负责权限过滤、查询理解、同义词扩展、实体增�
   - `search(SearchQuery)`
   - `recordClick(SearchClickEventCreateCommand)`
   - `pageEvents(SearchEventPageQuery)`
-  - `getEvent(String searchEventId)`
+  - `getEvent(Long id)`
 - `SearchIndexApplicationService`
   - `rebuildIndex()`
   - `syncDocument(SearchIndexSyncCommand)`
@@ -190,7 +187,7 @@ Admin：
 当前协议要求：
 
 - Portal 搜索接口允许 `queryText` 为空字符串或 `null`；空搜索词用于默认打开搜索页时按筛选和分页返回默认结果，非法筛选条件应被忽略或归一化，不应导致检索失败。
-- Portal 搜索接口返回 `searchEventId`、`queryText`、`displayQueryText`、`totalCount`、`groupCount` 和分组结果。
+- Portal 搜索接口返回 `id`、`queryText`、`displayQueryText`、`totalCount`、`groupCount` 和分组结果。
 - 分组结果包含 `groupKey`、`groupTitle`、`count` 和 `items`。
 - 结果项固定保留 `highlightText` 字段，即使当前阶段不实现高亮。
 - Portal/Admin 搜索预览接口只展示 Search 索引派生读模型中的有限字段；能从搜索结果命中的内容即可按 `contentType`、`contentId` 和 `deleted=false` 读取预览，不再二次执行可见性权限判断。
@@ -226,7 +223,7 @@ Admin：
 - Portal QA 请求中的 `model` 是逻辑知识库名，不是 provider app id。
 - Portal QA 只暴露 Discovery API，不接收 provider app、dataset、collection 或 file 路由配置。
 - Portal QA 会话删除是软删除，只允许删除 owner 匹配的未删除会话；删除后 Portal 列表、详情、追问和导出均不可再访问该会话。
-- Portal QA 会话导出固定生成 CSV，写入 `discovery_qa_session_export`，上传到 Storage，返回 `exportId`、`storageObjectId`、`filename`、`contentType` 和导出状态。
+- Portal QA 会话导出固定生成 CSV，写入 `discovery_qa_session_export`，上传到 Storage，返回 `id`、`storageObjectId`、`filename`、`contentType` 和导出状态。
 - 来源列表从回答顶层 `sources` 返回；返回前必须按当前 Kuzhambu 可见性重新校验，不可见来源标记为 `UNAVAILABLE`。
 - Admin QA 暴露知识库健康、重建、同步状态、会话详情、会话删除和会话 CSV 导出，不暴露本地来源列表、provider trace 或 provider 路由配置。
 - 问答来源、分段召回、provider 请求和 trace 诊断归 FastGPT 产品查看；admin-web 只提供 FastGPT 控制台跳转，不复刻 provider 诊断界面。
@@ -324,6 +321,6 @@ Search 索引同步消息由 Classics 写路径发出，但 Elasticsearch 文档
 ### Search 当前阶段验收
 
 - Search 子域的 domain / application / infra / interface 包结构完整可落代码。
-- `discovery_search_event`、`discovery_search_click_event`、`discovery_query_understanding` 的字段定义已稳定。
+- `discovery_search_event`、`discovery_search_click_event`、`discovery_query_understanding` 的字段定义已稳定，实体自身身份统一为 `id`。
 - Portal 搜索、点击接口与 Admin 检索统计事件分页、详情接口的路径和字段已稳定。
 - Elasticsearch 入口、真实检索抽象、增量同步规则和删除态清理规则已稳定。

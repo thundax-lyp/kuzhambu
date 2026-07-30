@@ -44,7 +44,7 @@ const mocks = vi.hoisted(() => ({
             }
         ],
         queryText: "礼器",
-        searchEventId: "EVT-1001",
+        id: "EVT-1001",
         totalCount: 1
     }))
 }));

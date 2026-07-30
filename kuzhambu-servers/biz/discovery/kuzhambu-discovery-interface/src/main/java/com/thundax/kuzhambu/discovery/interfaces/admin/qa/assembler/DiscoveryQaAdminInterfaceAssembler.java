@@ -21,7 +21,7 @@ public final class DiscoveryQaAdminInterfaceAssembler {
             return null;
         }
         return DiscoveryQaAdminResponses.QaSessionResponse.builder()
-                .sessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()))
+                .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .ownerUserId(result.getOwnerUserId())
                 .title(result.getTitle())
                 .scope(result.getScope())
@@ -41,7 +41,7 @@ public final class DiscoveryQaAdminInterfaceAssembler {
             return null;
         }
         return DiscoveryQaAdminResponses.QaSessionDetailResponse.builder()
-                .sessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()))
+                .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .ownerUserId(result.getOwnerUserId())
                 .title(result.getTitle())
                 .scope(result.getScope())
@@ -62,7 +62,7 @@ public final class DiscoveryQaAdminInterfaceAssembler {
             return null;
         }
         return DiscoveryQaAdminResponses.QaSessionExportResponse.builder()
-                .exportId(DiscoveryInterfaceIdCodec.toStringValue(result.getExportId()))
+                .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .sessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()))
                 .format(result.getFormat())
                 .storageObjectId(DiscoveryInterfaceIdCodec.toStringValue(result.getStorageObjectId()))
@@ -118,7 +118,7 @@ public final class DiscoveryQaAdminInterfaceAssembler {
         }
         return results.stream()
                 .map(result -> DiscoveryQaAdminResponses.QaMessageResponse.builder()
-                        .messageId(DiscoveryInterfaceIdCodec.toStringValue(result.getMessageId()))
+                        .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                         .sessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()))
                         .role(result.getRole())
                         .content(result.getContent())

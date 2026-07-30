@@ -103,7 +103,7 @@ class DiscoveryQaConversationControllerTest {
                         && Long.valueOf(1001L).equals(command.getOwnerUserId())
                         && "知识助手".equals(command.getTitle())
                         && "GLOBAL".equals(command.getScope())));
-        assertEquals("9001", response.getSessionId());
+        assertEquals("9001", response.getId());
         assertEquals("知识助手", response.getTitle());
     }
 

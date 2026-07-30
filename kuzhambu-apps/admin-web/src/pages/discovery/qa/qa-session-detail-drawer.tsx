@@ -18,7 +18,7 @@ const sessionTitle = (session?: DiscoveryQaSessionRecord) => {
     if (session?.title) {
         return session.title;
     }
-    return session?.sessionId ? `会话 ${session.sessionId}` : "未命名会话";
+    return session?.id ? `会话 ${session.id}` : "未命名会话";
 };
 
 interface QaSessionDetailDrawerProps {
@@ -44,9 +44,9 @@ export const QaSessionDetailDrawer = ({ onClose, open, session }: QaSessionDetai
                         column={2}
                         items={[
                             {
-                                key: "sessionId",
+                                key: "id",
                                 label: "会话 ID",
-                                children: session.sessionId ?? "-"
+                                children: session.id ?? "-"
                             },
                             { key: "scope", label: "作用域", children: session.scope ?? "-" },
                             {

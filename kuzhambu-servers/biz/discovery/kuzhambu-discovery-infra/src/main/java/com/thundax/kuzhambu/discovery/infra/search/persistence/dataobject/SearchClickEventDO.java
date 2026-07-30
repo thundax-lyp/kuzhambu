@@ -14,11 +14,10 @@ import lombok.NoArgsConstructor;
 @TableName("discovery_search_click_event")
 public class SearchClickEventDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String searchClickEventId;
-    private String searchEventId;
+    private Long searchEventId;
     private String contentDomain;
     private String contentType;
     private String contentId;
@@ -32,4 +31,24 @@ public class SearchClickEventDO {
     private String requestId;
     private String traceId;
     private Date createdAt;
+
+    public String getSearchClickEventId() {
+        return id == null ? null : String.valueOf(id);
+    }
+
+    public void setSearchClickEventId(String searchClickEventId) {
+        this.id = parseId(searchClickEventId);
+    }
+
+    public void setSearchEventId(String searchEventId) {
+        this.searchEventId = parseId(searchEventId);
+    }
+
+    public void setSearchEventId(Long searchEventId) {
+        this.searchEventId = searchEventId;
+    }
+
+    private Long parseId(String value) {
+        return value == null ? null : Long.valueOf(value);
+    }
 }

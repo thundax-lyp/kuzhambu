@@ -6,7 +6,6 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacad
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
 import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseEnsureRequest;
@@ -70,7 +69,6 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     private final KnowledgeDocumentAssembler knowledgeDocumentAssembler;
     private final KnowledgeItemTextRenderer knowledgeItemTextRenderer;
     private final KnowledgeRevisionCalculator knowledgeRevisionCalculator;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public KnowledgeSyncApplicationServiceImpl(
             KnowledgeBaseClient knowledgeBaseClient,
@@ -110,12 +108,12 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
 
         Date startedAt = new Date();
         String provider = resolveProvider();
-        Long batchId = idGenerator.nextId().value();
         List<ClassicsQaKnowledgeFacadeRequest> syncSources = listSyncSources();
 
         QaKnowledgeSyncBatch batch =
-                new QaKnowledgeSyncBatch(null, batchId, TRIGGER_FULL_REBUILD, provider, 0, 0, 0, startedAt, null);
-        Long batchPk = qaKnowledgeSyncBatchRepository.save(batch);
+                new QaKnowledgeSyncBatch(null, TRIGGER_FULL_REBUILD, provider, 0, 0, 0, startedAt, null);
+        Long batchId = qaKnowledgeSyncBatchRepository.save(batch);
+        batch.setId(batchId);
 
         int successCount = 0;
         int failureCount = 0;
@@ -132,7 +130,6 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
         }
 
         qaKnowledgeSyncBatchRepository.update(new QaKnowledgeSyncBatch(
-                batchPk,
                 batchId,
                 TRIGGER_FULL_REBUILD,
                 provider,

@@ -5,7 +5,11 @@ import java.util.Date;
 
 public interface SearchClickEventRepository {
 
-    SearchClickEvent getBySearchClickEventId(String searchClickEventId);
+    SearchClickEvent getById(Long id);
+
+    default SearchClickEvent getBySearchClickEventId(String searchClickEventId) {
+        return getById(searchClickEventId == null ? null : Long.valueOf(searchClickEventId));
+    }
 
     Long save(SearchClickEvent entity);
 

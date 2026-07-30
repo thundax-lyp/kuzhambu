@@ -443,7 +443,7 @@ class KnowledgeQaApplicationServiceImplTest {
 
     private static QaSession openSession() {
         return new QaSession(
-                1L,
+                5001L,
                 5001L,
                 "USER",
                 "1001",
@@ -461,7 +461,7 @@ class KnowledgeQaApplicationServiceImplTest {
 
     private static QaSession wangqiSingleDocumentSession() {
         return new QaSession(
-                1L,
+                5001L,
                 5001L,
                 "USER",
                 "1001",

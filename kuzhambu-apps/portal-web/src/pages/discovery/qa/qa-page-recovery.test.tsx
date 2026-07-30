@@ -122,8 +122,8 @@ describe("DiscoveryQaPage", () => {
                     contextContentId: null,
                     contextContentType: null,
                     contextMode: "GENERAL",
+                    id: "removed-2001",
                     scope: "PORTAL",
-                    sessionId: "removed-2001",
                     status: "OPEN",
                     title: "知识中心问答"
                 }
@@ -134,8 +134,8 @@ describe("DiscoveryQaPage", () => {
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
+            id: "recovered-2001",
             scope: "PORTAL",
-            sessionId: "recovered-2001",
             status: "OPEN",
             title: "知识中心问答"
         });
@@ -188,8 +188,8 @@ describe("DiscoveryQaPage", () => {
                 expiresAt: Date.now() - 1,
                 session: {
                     contextMode: "GENERAL",
+                    id: "expired-2001",
                     scope: "PORTAL",
-                    sessionId: "expired-2001",
                     status: "OPEN",
                     title: "知识中心问答"
                 }
@@ -199,8 +199,8 @@ describe("DiscoveryQaPage", () => {
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
+            id: "new-2001",
             scope: "PORTAL",
-            sessionId: "new-2001",
             status: "OPEN",
             title: "知识中心问答"
         });
@@ -246,7 +246,7 @@ describe("DiscoveryQaPage", () => {
             lastMessageAt: null,
             openedAt: 1699999999000,
             scope: "PORTAL",
-            sessionId: "2002",
+            id: "2002",
             status: "OPEN",
             title: "知识中心问答"
         });

@@ -11,7 +11,7 @@ const sessionTitle = (session?: DiscoveryQaSessionRecord) => {
     if (session?.title) {
         return session.title;
     }
-    return session?.sessionId ? `会话 ${session.sessionId}` : "未命名会话";
+    return session?.id ? `会话 ${session.id}` : "未命名会话";
 };
 
 interface QaSessionTableProps {
@@ -55,7 +55,7 @@ export const QaSessionTable = ({
             <div className="discovery-qa-page__session-list" aria-label="问答会话">
                 {sessions.length ? (
                     sessions.map((session) => {
-                        const sessionId = toSessionId(session.sessionId);
+                        const sessionId = toSessionId(session.id);
                         if (sessionId === null) {
                             return null;
                         }

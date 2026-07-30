@@ -1,7 +1,5 @@
 package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSessionExport;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionExportRepository;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.assembler.QaPersistenceAssembler;
@@ -13,7 +11,6 @@ import org.springframework.stereotype.Repository;
 public class QaSessionExportRepositoryImpl implements QaSessionExportRepository {
 
     private final QaSessionExportMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public QaSessionExportRepositoryImpl(QaSessionExportMapper mapper) {
         this.mapper = mapper;
@@ -22,11 +19,6 @@ public class QaSessionExportRepositoryImpl implements QaSessionExportRepository 
     @Override
     public Long save(QaSessionExport entity) {
         QaSessionExportDO dataObject = QaPersistenceAssembler.toObject(entity);
-        long nextId = idGenerator.nextId().value();
-        dataObject.setId(nextId);
-        if (dataObject.getExportId() == null) {
-            dataObject.setExportId(nextId);
-        }
         mapper.insert(dataObject);
         return dataObject.getId();
     }
@@ -37,11 +29,10 @@ public class QaSessionExportRepositoryImpl implements QaSessionExportRepository 
     }
 
     @Override
-    public QaSessionExport getByExportId(Long exportId) {
-        if (exportId == null) {
+    public QaSessionExport getById(Long id) {
+        if (id == null) {
             return null;
         }
-        return QaPersistenceAssembler.toSessionExportDomain(mapper.selectOne(
-                new QueryWrapper<QaSessionExportDO>().eq("export_id", exportId).last("limit 1")));
+        return QaPersistenceAssembler.toSessionExportDomain(mapper.selectById(id));
     }
 }

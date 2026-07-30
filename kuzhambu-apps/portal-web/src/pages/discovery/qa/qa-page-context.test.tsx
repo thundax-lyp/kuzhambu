@@ -116,7 +116,7 @@ describe("DiscoveryQaPage", () => {
             lastMessageAt: null,
             openedAt: 1699999999000,
             scope: "PORTAL",
-            sessionId: "3002",
+            id: "3002",
             status: "OPEN",
             title: "王圻官制"
         });

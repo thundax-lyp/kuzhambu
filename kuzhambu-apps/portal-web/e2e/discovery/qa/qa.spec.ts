@@ -27,10 +27,10 @@ const createQaMockHandlers = async (page: Page) => {
             contextContentId: openSessionPayload.contextContentId ?? null,
             contextContentType: openSessionPayload.contextContentType ?? null,
             contextMode: openSessionPayload.contextMode ?? "GENERAL",
+            id: "7001",
             lastMessageAt: 1700001000000,
             openedAt: 1700000000000,
             scope: "PORTAL",
-            sessionId: "7001",
             status: "OPEN",
             title: openSessionPayload.title ?? "知识中心问答"
         });

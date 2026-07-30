@@ -110,7 +110,6 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         Date now = new Date();
         QaSession session = new QaSession(
                 null,
-                null,
                 DEFAULT_OWNER_TYPE,
                 String.valueOf(command.getOwnerUserId()),
                 DEFAULT_KNOWLEDGE_BASE_NAME,
@@ -125,7 +124,6 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 null);
         Long sessionPk = qaSessionRepository.save(session);
         session.setId(sessionPk);
-        session.setSessionId(sessionPk);
         return toSessionResult(session);
     }
 
@@ -167,7 +165,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         QaSessionExport export = new QaSessionExport(
                 null,
                 null,
-                session.getSessionId(),
+                session.getId(),
                 EXPORT_FORMAT_CSV,
                 null,
                 EXPORT_STATUS_PROCESSING,
@@ -177,8 +175,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 null);
         Long exportId = qaSessionExportRepository.save(export);
         export.setId(exportId);
-        export.setExportId(exportId);
-        String filename = exportFilename(session.getSessionId(), exportId);
+        String filename = exportFilename(session.getId(), exportId);
         try {
             byte[] content = buildCsvContent(session);
             UploadStorageFacadeResponse uploadResponse = storageFacade.upload(UploadStorageFacadeRequest.builder()
@@ -188,7 +185,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                     .sizeBytes((long) content.length)
                     .allowedSuffixes(List.of("csv"))
                     .ownerType(EXPORT_OWNER_TYPE)
-                    .ownerId(exportOwnerId(session.getSessionId(), exportId))
+                    .ownerId(exportOwnerId(session.getId(), exportId))
                     .build());
             if (uploadResponse == null || uploadResponse.getStorageObjectId() == null) {
                 throw new IllegalStateException("Storage upload response is empty");
@@ -254,7 +251,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
 
     private QaSessionDetailResult toSessionDetailResult(QaSession session) {
         QaSessionDetailResult result = new QaSessionDetailResult();
-        result.setSessionId(session.getSessionId());
+        result.setId(session.getId());
         result.setOwnerUserId(parseOwnerUserId(session.getOwnerId()));
         result.setTitle(session.getTitle());
         result.setScope(session.getScope());
@@ -270,24 +267,24 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                         : session.getLastMessageAt().getTime());
         result.setRemovedAt(
                 session.getRemovedAt() == null ? null : session.getRemovedAt().getTime());
-        List<QaMessage> messages = qaMessageRepository.listBySessionId(session.getSessionId());
+        List<QaMessage> messages = qaMessageRepository.listBySessionId(session.getId());
         result.setMessages((messages == null ? List.<QaMessage>of() : messages)
                 .stream().map(this::toMessageResult).toList());
         return result;
     }
 
     private byte[] buildCsvContent(QaSession session) {
-        List<QaMessage> messages = qaMessageRepository.listBySessionId(session.getSessionId());
+        List<QaMessage> messages = qaMessageRepository.listBySessionId(session.getId());
         List<QaMessage> safeMessages = messages == null ? List.of() : messages;
         Map<Long, List<QaSource>> sourcesByMessageId = safeMessages.stream()
-                .filter(message -> message.getMessageId() != null)
-                .collect(Collectors.toMap(QaMessage::getMessageId, message -> {
-                    List<QaSource> sources = qaSourceRepository.listByMessageId(message.getMessageId());
+                .filter(message -> message.getId() != null)
+                .collect(Collectors.toMap(QaMessage::getId, message -> {
+                    List<QaSource> sources = qaSourceRepository.listByMessageId(message.getId());
                     return sources == null ? List.of() : sources;
                 }));
         Map<Long, QaRetrievalTrace> tracesByMessageId = safeMessages.stream()
-                .filter(message -> message.getMessageId() != null)
-                .map(message -> qaRetrievalTraceRepository.getByMessageId(message.getMessageId()))
+                .filter(message -> message.getId() != null)
+                .map(message -> qaRetrievalTraceRepository.getByMessageId(message.getId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(QaRetrievalTrace::getMessageId, trace -> trace));
         return qaSessionCsvExporter
@@ -313,7 +310,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
 
     private QaSessionResult toSessionResult(QaSession session) {
         return new QaSessionResult(
-                session.getSessionId(),
+                session.getId(),
                 parseOwnerUserId(session.getOwnerId()),
                 session.getTitle(),
                 session.getScope(),
@@ -449,7 +446,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             return null;
         }
         return new QaMessageResult(
-                message.getMessageId(),
+                message.getId(),
                 message.getSessionId(),
                 message.getRole(),
                 message.getContent(),
@@ -462,7 +459,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
 
     private QaSessionExportResult toExportResult(QaSessionExport export, String filename) {
         return new QaSessionExportResult(
-                export.getExportId(),
+                export.getId(),
                 export.getSessionId(),
                 export.getFormat(),
                 export.getStorageObjectId(),

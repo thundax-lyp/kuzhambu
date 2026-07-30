@@ -13,10 +13,10 @@ export interface DiscoveryQaOpenSessionResponse {
     contextContentId?: number | null;
     contextContentType?: string | null;
     contextMode?: string | null;
+    id?: string | null;
     lastMessageAt?: number | null;
     openedAt?: number | null;
     scope?: string | null;
-    sessionId?: string | null;
     status?: string | null;
     title?: string | null;
 }
@@ -54,7 +54,7 @@ export interface DiscoveryQaExportSessionRequest {
 export interface DiscoveryQaExportSessionResponse {
     completedAt?: number | null;
     contentType?: string | null;
-    exportId?: number | null;
+    id?: string | null;
     exportStatus?: string | null;
     failureReason?: string | null;
     filename?: string | null;

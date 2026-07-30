@@ -72,7 +72,7 @@ const rangeToQuery = (range: SearchStatisticsDateRangeValue) => ({
 });
 
 const readRecordKey = (record: DiscoverySearchEventRecord): string =>
-    record.searchEventId || `${record.queryText || "query"}-${record.createdAt || "unknown"}`;
+    record.id || `${record.queryText || "query"}-${record.createdAt || "unknown"}`;
 
 export const SearchStatisticsPage = () => {
     const [queryText, setQueryText] = useState("礼器");
@@ -137,7 +137,7 @@ export const SearchStatisticsPage = () => {
         onSuccess: (nextDetail, variables) => {
             setDetailResults((currentDetails) => ({
                 ...currentDetails,
-                [variables.searchEventId]: nextDetail
+                [variables.id]: nextDetail
             }));
         }
     });
@@ -167,7 +167,7 @@ export const SearchStatisticsPage = () => {
         rebuildMutation.isPending || rebuildMutation.isError || rebuildResult !== null;
 
     const pageColumns: ColumnsType<DiscoverySearchEventRecord> = [
-        { title: "检索编号", dataIndex: "searchEventId", key: "searchEventId", width: 160 },
+        { title: "检索编号", dataIndex: "id", key: "id", width: 160 },
         { title: "搜索词", dataIndex: "queryText", key: "queryText", width: 180 },
         { title: "回显词", dataIndex: "displayQueryText", key: "displayQueryText", width: 180 },
         { title: "状态", dataIndex: "searchStatus", key: "searchStatus", width: 120 },
@@ -243,20 +243,18 @@ export const SearchStatisticsPage = () => {
                 : currentKeys.filter((key) => key !== recordKey)
         );
 
-        if (expanded && record.searchEventId && !(record.searchEventId in detailSearchRecords)) {
+        if (expanded && record.id && !(record.id in detailSearchRecords)) {
             searchRecordDetailMutation.mutate({
-                searchEventId: record.searchEventId
+                id: record.id
             });
         }
     };
 
     const renderRecordDetail = (record: DiscoverySearchEventRecord) => {
         const detail =
-            record.searchEventId && record.searchEventId in detailSearchRecords
-                ? detailSearchRecords[record.searchEventId]
-                : null;
+            record.id && record.id in detailSearchRecords ? detailSearchRecords[record.id] : null;
 
-        if (record.searchEventId && searchRecordDetailMutation.isPending) {
+        if (record.id && searchRecordDetailMutation.isPending) {
             return <Text type="secondary">详情加载中...</Text>;
         }
 
@@ -267,9 +265,9 @@ export const SearchStatisticsPage = () => {
                     column={2}
                     items={[
                         {
-                            key: "searchEventId",
+                            key: "id",
                             label: "检索编号",
-                            children: detail?.searchEventId ?? record.searchEventId ?? "-"
+                            children: detail?.id ?? record.id ?? "-"
                         },
                         {
                             key: "queryText",

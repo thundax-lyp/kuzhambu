@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,10 +37,16 @@ class QaRetrievalTraceRepositoryImplTest {
                 null,
                 null,
                 new Date());
+        doAnswer(invocation -> {
+                    invocation.getArgument(0, QaRetrievalTraceDO.class).setId(5001L);
+                    return 1;
+                })
+                .when(mapper)
+                .insert(any(QaRetrievalTraceDO.class));
 
         Long savedId = repository.save(entity);
 
-        assertNotNull(savedId);
+        assertEquals(5001L, savedId);
         verify(mapper).insert(any(QaRetrievalTraceDO.class));
     }
 
@@ -49,7 +55,6 @@ class QaRetrievalTraceRepositoryImplTest {
         QaRetrievalTraceMapper mapper = mock(QaRetrievalTraceMapper.class);
         QaRetrievalTraceRepositoryImpl repository = new QaRetrievalTraceRepositoryImpl(mapper);
         QaRetrievalTraceDO dataObject = new QaRetrievalTraceDO(
-                1L,
                 5001L,
                 2001L,
                 "黄帝是谁",
@@ -70,7 +75,7 @@ class QaRetrievalTraceRepositoryImplTest {
 
         QaRetrievalTrace result = repository.getByMessageId(2001L);
 
-        assertEquals(5001L, result.getTraceId());
+        assertEquals(5001L, result.getId());
         assertEquals("fastgpt", result.getProvider());
         assertEquals(9001L, result.getAiCallId());
         assertEquals("SUCCEEDED", result.getAiStatus());
