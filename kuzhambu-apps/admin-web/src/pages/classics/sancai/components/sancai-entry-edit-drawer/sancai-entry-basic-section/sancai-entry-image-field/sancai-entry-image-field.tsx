@@ -88,7 +88,7 @@ export const SancaiEntryImageField = ({
                     }}
                 >
                     <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-action-button"
+                        testId="classics-sancai-sancai-entry-image-upload-button"
                         icon={<UploadOutlined />}
                         loading={isUploadingImage}
                         type="primary"

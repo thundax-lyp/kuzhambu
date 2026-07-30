@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { App, Empty, Skeleton, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -16,7 +16,6 @@ import {
     hasClassicsContentPermission,
     type ClassicsBatchOperationRecord
 } from "@/pages/classics/common/classics-content-types";
-import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import type {
     SancaiEntryLifecycleStatus,
     SancaiEntryRecord,
@@ -166,7 +165,6 @@ export const SancaiEntryList = ({
         keys: string[];
         scopeKey: string;
     }>({ keys: [], scopeKey: "" });
-    const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
     const [batchVisibilityResult, setBatchVisibilityResult] =
         useState<ClassicsBatchOperationRecord | null>(null);
     const canExportEntries = hasClassicsContentPermission("SANCAI_ENTRY", "export", hasPermission);
@@ -179,40 +177,6 @@ export const SancaiEntryList = ({
         canChangeEntryVisibility &&
         hasPermission("ai:refinement:edit") &&
         hasPermission("classics:content:edit");
-
-    const activeBatchQuery = useQuery({
-        queryKey: ["classics", "sancai", "refinement", "batch", activeBatchId],
-        queryFn: () => entryService.getRefinementBatch(activeBatchId ?? ""),
-        enabled: activeBatchId !== null,
-        retry: false,
-        refetchInterval: (query) => {
-            const status = query.state.data?.status;
-            return status === "PENDING" || status === "RUNNING" ? 3000 : false;
-        }
-    });
-
-    const createBatchMutation = useMutation({
-        mutationFn: entryService.createRefinementBatch,
-        onSuccess: (batch) => {
-            setActiveBatchId(batch.batchId);
-            messageApi.success(`批量任务已创建：${batch.batchId}`);
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "批量任务创建失败");
-        }
-    });
-
-    const cancelBatchMutation = useMutation({
-        mutationFn: entryService.cancelRefinementBatch,
-        onSuccess: (batch) => {
-            setActiveBatchId(batch.batchId);
-            void activeBatchQuery.refetch();
-            messageApi.success("批量任务已取消");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "批量任务取消失败");
-        }
-    });
 
     const changeVisibilityBatchMutation = useMutation({
         mutationFn: contentService.changeVisibilityBatch,
@@ -246,28 +210,6 @@ export const SancaiEntryList = ({
             ),
         [entries, selectedRowKeys]
     );
-    const activeBatch = activeBatchQuery.data;
-    const canCancelBatch =
-        activeBatch?.batchId != null &&
-        (activeBatch.status === "PENDING" || activeBatch.status === "RUNNING");
-
-    const startBatch = (capability: "image_analysis" | "visual") => {
-        if (!canRunVisualProcessing) {
-            messageApi.warning("当前账号缺少视觉处理权限");
-            return;
-        }
-        if (!selectedEntries.length) {
-            messageApi.warning("请先选择当前页要批量处理的条目");
-            return;
-        }
-        createBatchMutation.mutate({
-            scope: "classics",
-            capability,
-            contentType: "SANCAI_ENTRY",
-            totalCount: selectedEntries.length
-        });
-    };
-
     const changeBatchVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
         if (!canChangeEntryVisibility) {
             messageApi.warning("当前账号缺少三才图会编辑权限");
@@ -333,6 +275,7 @@ export const SancaiEntryList = ({
         {
             title: "摘要",
             key: "summary",
+            width: 320,
             render: (_, entry) => <Text type="secondary">{readEntrySummary(entry)}</Text>
         },
         {
@@ -427,36 +370,9 @@ export const SancaiEntryList = ({
                     leading: (
                         <KuzhambuSpace wrap>
                             <Text type="secondary">当前页已选 {selectedEntries.length} 条</Text>
-                            {activeBatch ? (
-                                <>
-                                    <Text type="secondary">
-                                        批量任务 #{activeBatch.batchId} / {activeBatch.capability} /{" "}
-                                        {activeBatch.status || "UNKNOWN"}
-                                    </Text>
-                                    <Text type="secondary">
-                                        成功 {activeBatch.successCount ?? 0} / 失败{" "}
-                                        {activeBatch.failedCount ?? 0} / 取消{" "}
-                                        {activeBatch.cancelledCount ?? 0}
-                                    </Text>
-                                </>
-                            ) : null}
                         </KuzhambuSpace>
                     ),
                     actions: [
-                        {
-                            testId: "classics-sancai-sancai-entry-action-button",
-                            title: "图片理解",
-                            disabled: !selectedEntries.length || !canRunVisualProcessing,
-                            loading: createBatchMutation.isPending,
-                            action: () => startBatch("image_analysis")
-                        },
-                        {
-                            testId: "classics-sancai-sancai-entry-action-button-2",
-                            title: "视觉处理",
-                            disabled: !selectedEntries.length || !canRunVisualProcessing,
-                            loading: createBatchMutation.isPending,
-                            action: () => startBatch("visual")
-                        },
                         {
                             testId: "classics-sancai-sancai-entry-action-button-3",
                             title: "公开",
@@ -481,22 +397,7 @@ export const SancaiEntryList = ({
                             testId: "classics-sancai-sancai-entry-refresh-button",
                             title: "刷新",
                             action: onRefresh
-                        },
-                        ...(activeBatch
-                            ? [
-                                  {
-                                      testId: "classics-sancai-sancai-entry-action-button-6",
-                                      title: "取消批量任务",
-                                      disabled: !canCancelBatch,
-                                      loading: cancelBatchMutation.isPending,
-                                      action: () => {
-                                          if (activeBatch.batchId) {
-                                              cancelBatchMutation.mutate(activeBatch.batchId);
-                                          }
-                                      }
-                                  }
-                              ]
-                            : [])
+                        }
                     ]
                 }}
                 pagination={{

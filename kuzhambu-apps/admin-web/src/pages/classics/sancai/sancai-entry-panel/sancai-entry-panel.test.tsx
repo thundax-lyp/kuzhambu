@@ -686,8 +686,6 @@ describe("SancaiEntryPanel batch operations", () => {
         expect(readButtonByText("公开")).toBeDisabled();
         expect(readButtonByText("私有")).toBeDisabled();
         expect(readButtonByText("候选治理")).toBeDisabled();
-        expect(readButtonByText("图片理解")).toBeDisabled();
-        expect(readButtonByText("视觉处理")).toBeDisabled();
     });
 
     it("opens batch candidate governance drawer from selected entries", async () => {
@@ -842,54 +840,6 @@ describe("SancaiEntryPanel batch operations", () => {
             )
         ).toBeTruthy();
         expect(await screen.findByText("三才图会条目已下线")).toBeInTheDocument();
-    }, 30000);
-
-    it("creates batch image analysis task and shows aggregated batch status", async () => {
-        const user = userEvent.setup();
-        vi.mocked(entryService.createRefinementBatch).mockResolvedValueOnce({
-            batchId: "8801",
-            scope: "classics",
-            capability: "image_analysis",
-            contentType: "SANCAI_ENTRY",
-            status: "PENDING",
-            totalCount: 1,
-            successCount: 0,
-            failedCount: 0,
-            cancelledCount: 0
-        });
-        vi.mocked(entryService.getRefinementBatch).mockResolvedValue({
-            batchId: "8801",
-            scope: "classics",
-            capability: "image_analysis",
-            contentType: "SANCAI_ENTRY",
-            status: "FAILED",
-            totalCount: 1,
-            successCount: 0,
-            failedCount: 1,
-            cancelledCount: 0,
-            failureSummaryJson: '[{"contentId":3001,"errorType":"MODEL_TIMEOUT"}]'
-        });
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
-        await user.click(rowCheckbox);
-        await user.click(screen.getByTestId("classics-sancai-sancai-entry-action-button"));
-
-        await waitFor(() => {
-            expect(entryService.createRefinementBatch).toHaveBeenCalled();
-        });
-        expect(vi.mocked(entryService.createRefinementBatch).mock.calls[0]?.[0]).toEqual({
-            scope: "classics",
-            capability: "image_analysis",
-            contentType: "SANCAI_ENTRY",
-            totalCount: 1
-        });
-        expect(
-            await screen.findByText(/批量任务 #8801 \/ image_analysis \/ FAILED/)
-        ).toBeInTheDocument();
-        expect(screen.getByText("成功 0 / 失败 1 / 取消 0")).toBeInTheDocument();
     }, 30000);
 
     it("loads version detail, restores it and refreshes the open drawer", async () => {
@@ -1335,7 +1285,7 @@ describe("SancaiEntryPanel batch operations", () => {
         const imagePanel = await screen.findByLabelText("三才图会图片管理");
 
         const uploadButton = within(imagePanel).getByTestId(
-            "classics-sancai-sancai-entry-action-button"
+            "classics-sancai-sancai-entry-image-upload-button"
         );
         const uploadInput = uploadButton
             .closest(".ant-upload")

@@ -4,7 +4,7 @@ import type {
     MouseEvent as ReactMouseEvent,
     ReactNode
 } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HolderOutlined, MoreOutlined } from "@ant-design/icons";
 import { Button, Dropdown, Table } from "antd";
 import type { MenuProps, TableProps } from "antd";
@@ -27,7 +27,8 @@ const ACTION_INLINE_LIMIT = 4;
 const ACTION_TEXT_CHAR_WIDTH = 16;
 const ACTION_TITLE_MIN_WIDTH = 54;
 const DEFAULT_MIN_COLUMN_WIDTH = 96;
-const MOBILE_MEDIA_QUERY = "(max-width: 760px)";
+const COMPACT_TABLE_WIDTH = 760;
+const MOBILE_MEDIA_QUERY = `(max-width: ${COMPACT_TABLE_WIDTH}px)`;
 
 export type KuzhambuTableSortPosition = "before" | "after";
 export type KuzhambuTableRowActionType = "text" | "warning" | "danger";
@@ -289,6 +290,7 @@ export const KuzhambuTable = <RecordType extends object = object>({
     toolbar,
     ...tableProps
 }: KuzhambuTableProps<RecordType>) => {
+    const shellRef = useRef<HTMLDivElement | null>(null);
     const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
     const [isMobile, setIsMobile] = useState(false);
     const [draggingRecord, setDraggingRecord] = useState<RecordType | null>(null);
@@ -345,11 +347,25 @@ export const KuzhambuTable = <RecordType extends object = object>({
         }
 
         const mediaQueryList = window.matchMedia(MOBILE_MEDIA_QUERY);
-        const updateMobile = () => setIsMobile(mediaQueryList.matches);
+        const updateMobile = () => {
+            const shellWidth = shellRef.current?.getBoundingClientRect().width ?? Infinity;
+            const isCompactContainer = shellWidth > 0 && shellWidth <= COMPACT_TABLE_WIDTH;
+            setIsMobile(mediaQueryList.matches || isCompactContainer);
+        };
 
         updateMobile();
         mediaQueryList.addEventListener("change", updateMobile);
-        return () => mediaQueryList.removeEventListener("change", updateMobile);
+
+        const resizeObserver =
+            typeof ResizeObserver === "function" ? new ResizeObserver(updateMobile) : null;
+        if (resizeObserver && shellRef.current) {
+            resizeObserver.observe(shellRef.current);
+        }
+
+        return () => {
+            mediaQueryList.removeEventListener("change", updateMobile);
+            resizeObserver?.disconnect();
+        };
     }, [responsive]);
 
     const startResizeColumn = useCallback(
@@ -531,7 +547,10 @@ export const KuzhambuTable = <RecordType extends object = object>({
                     ? actionColumnMobileWidth
                     : (readNumericWidth(column.width) ??
                       calculateColumnActionWidth(actionOptions, column.inlineLimit));
-                const baseWidth = isActionColumn ? actionWidth : readNumericWidth(column.width);
+                const configuredWidth = readNumericWidth(column.width);
+                const baseWidth = isActionColumn
+                    ? actionWidth
+                    : (configuredWidth ?? minColumnWidth);
                 const currentWidth =
                     widthKey && columnWidths[widthKey] !== undefined
                         ? columnWidths[widthKey]
@@ -616,6 +635,7 @@ export const KuzhambuTable = <RecordType extends object = object>({
         columnWidths,
         columns,
         isMobile,
+        minColumnWidth,
         readSortableRowLabel,
         renderRowActions,
         resizableColumns,
@@ -750,6 +770,7 @@ export const KuzhambuTable = <RecordType extends object = object>({
 
     return (
         <div
+            ref={shellRef}
             className={[
                 "kuzhambu-table-shell",
                 sortable ? "kuzhambu-table-sortable" : "kuzhambu-table-static",
