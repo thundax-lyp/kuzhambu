@@ -6,8 +6,8 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.id.Identifier;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -187,8 +187,8 @@ public record WangqiDocumentVersionSnapshot(
         return id == null ? null : id.value();
     }
 
-    private static String date(Date date) {
-        return date == null ? null : date.toInstant().toString();
+    private static String date(Instant date) {
+        return date == null ? null : date.toString();
     }
 
     private static String value(Enum<?> value) {

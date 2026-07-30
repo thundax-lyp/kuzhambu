@@ -39,7 +39,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -346,7 +346,7 @@ class SancaiApplicationServiceImplTest {
                     SancaiEntry entry = invocation.getArgument(0);
                     entry.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain((long) versionNo));
                     entry.setCurrentVersionNo(versionNo);
-                    entry.setCurrentVersionedAt(new Date(2_000L + versionNo));
+                    entry.setCurrentVersionedAt(Instant.ofEpochMilli(2_000L + versionNo));
                     return null;
                 })
                 .when(contentApplicationService)

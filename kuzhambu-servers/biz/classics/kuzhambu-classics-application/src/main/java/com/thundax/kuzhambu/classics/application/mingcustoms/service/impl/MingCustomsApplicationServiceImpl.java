@@ -28,8 +28,8 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import org.springframework.stereotype.Service;
@@ -87,7 +87,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
             return null;
         }
         entry.setId(null);
-        entry.setContentUpdatedAt(new Date());
+        entry.setContentUpdatedAt(Instant.now());
         MingCustomsEntryId id = repository.insert(entry);
         entry.setId(id);
         markManualSaveVersion(entry);
@@ -102,7 +102,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (entry == null) {
             return null;
         }
-        entry.setContentUpdatedAt(new Date());
+        entry.setContentUpdatedAt(Instant.now());
         repository.update(entry);
         markManualSaveVersion(entry);
         publishSearchSyncAfterCommit(entry);
@@ -179,7 +179,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (entry == null) {
             return;
         }
-        entry.setContentUpdatedAt(new Date());
+        entry.setContentUpdatedAt(Instant.now());
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
         if (sharingApplicationService != null) {
             sharingApplicationService.syncContentDeleted(ClassicsContentType.MING_CUSTOMS, id.value());
@@ -304,7 +304,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     private void changeExistingVisibility(MingCustomsEntry entry, String visibility) {
         entry.setVisibility(MingCustomsVisibility.from(visibility));
-        entry.setContentUpdatedAt(new Date());
+        entry.setContentUpdatedAt(Instant.now());
         markManualSaveVersion(entry);
         publishSearchSyncAfterCommit(entry);
     }

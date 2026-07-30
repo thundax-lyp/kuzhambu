@@ -9,8 +9,8 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsC
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.MingCustomsEntryDO;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.MingCustomsKeywordDO;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public final class MingCustomsPersistenceAssembler {
@@ -112,7 +112,7 @@ public final class MingCustomsPersistenceAssembler {
         return entities;
     }
 
-    private static Date contentUpdatedAt(Date contentUpdatedAt) {
-        return contentUpdatedAt == null ? new Date() : contentUpdatedAt;
+    private static Instant contentUpdatedAt(Instant contentUpdatedAt) {
+        return contentUpdatedAt == null ? Instant.now() : contentUpdatedAt;
     }
 }

@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,6 +30,6 @@ public class SancaiEntryDO {
     private Integer priority;
     private Long currentVersionId;
     private Integer currentVersionNo;
-    private Date currentVersionedAt;
-    private Date contentUpdatedAt;
+    private Instant currentVersionedAt;
+    private Instant contentUpdatedAt;
 }

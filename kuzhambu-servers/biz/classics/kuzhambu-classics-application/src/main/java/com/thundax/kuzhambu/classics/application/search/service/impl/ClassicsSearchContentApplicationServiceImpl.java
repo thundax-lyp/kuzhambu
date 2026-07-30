@@ -31,6 +31,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -230,8 +231,8 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 entry.getLifecycleStatus().value(),
                 entry.getVisibility().value(),
                 entry.getCurrentVersionNo(),
-                entry.getContentUpdatedAt(),
-                entry.getContentUpdatedAt());
+                Date.from(entry.getContentUpdatedAt()),
+                Date.from(entry.getContentUpdatedAt()));
     }
 
     private ClassicsSearchSourceContent toPublicWangqiDocument(WangqiDocument document) {
@@ -257,8 +258,11 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 "PUBLISHED",
                 document.getVisibility().value(),
                 document.getCurrentVersionNo(),
-                document.getDocumentTime() == null ? document.getContentUpdatedAt() : document.getDocumentTime(),
-                document.getContentUpdatedAt());
+                Date.from(
+                        document.getDocumentTime() == null
+                                ? document.getContentUpdatedAt()
+                                : document.getDocumentTime()),
+                Date.from(document.getContentUpdatedAt()));
     }
 
     private ClassicsSearchSourceContent toPublicMingCustomsEntry(MingCustomsEntry entry) {
@@ -284,8 +288,8 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 "PUBLISHED",
                 entry.getVisibility().value(),
                 entry.getCurrentVersionNo(),
-                entry.getContentUpdatedAt(),
-                entry.getContentUpdatedAt());
+                Date.from(entry.getContentUpdatedAt()),
+                Date.from(entry.getContentUpdatedAt()));
     }
 
     private List<String> tagNames(String contentType, String contentId) {

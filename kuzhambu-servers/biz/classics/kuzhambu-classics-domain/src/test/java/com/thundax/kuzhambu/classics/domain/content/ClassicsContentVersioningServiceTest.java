@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersion
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersioningService;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
-import java.util.Date;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class ClassicsContentVersioningServiceTest {
@@ -18,7 +18,7 @@ class ClassicsContentVersioningServiceTest {
     @Test
     void needsVersionShouldBeTrueWhenContentHasNoCurrentVersion() {
         SancaiEntry entry = new SancaiEntry();
-        entry.setContentUpdatedAt(new Date());
+        entry.setContentUpdatedAt(Instant.now());
 
         assertTrue(service.needsVersion(entry));
     }
@@ -27,12 +27,12 @@ class ClassicsContentVersioningServiceTest {
     void needsVersionShouldUseContentUpdatedAtAgainstCurrentVersionedAt() {
         SancaiEntry entry = new SancaiEntry();
         entry.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain(1L));
-        entry.setCurrentVersionedAt(new Date(2_000L));
-        entry.setContentUpdatedAt(new Date(1_000L));
+        entry.setCurrentVersionedAt(Instant.ofEpochMilli(2_000L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
 
         assertFalse(service.needsVersion(entry));
 
-        entry.setContentUpdatedAt(new Date(3_000L));
+        entry.setContentUpdatedAt(Instant.ofEpochMilli(3_000L));
         assertTrue(service.needsVersion(entry));
     }
 
@@ -42,7 +42,7 @@ class ClassicsContentVersioningServiceTest {
         ClassicsContentVersion version = new ClassicsContentVersion();
         version.setId(ClassicsContentVersionIdCodec.toDomain(9L));
         version.setVersionNo(3);
-        version.setVersionedAt(new Date(4_000L));
+        version.setVersionedAt(Instant.ofEpochMilli(4_000L));
 
         service.markVersioned(entry, version);
 

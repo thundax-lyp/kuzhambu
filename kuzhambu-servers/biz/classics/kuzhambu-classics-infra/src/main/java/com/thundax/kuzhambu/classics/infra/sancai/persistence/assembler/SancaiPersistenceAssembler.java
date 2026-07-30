@@ -18,8 +18,8 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject.SancaiCategoryDO;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject.SancaiEntryDO;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject.SancaiVolumeDO;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public final class SancaiPersistenceAssembler {
@@ -192,7 +192,7 @@ public final class SancaiPersistenceAssembler {
         return priority == null ? 0 : priority;
     }
 
-    private static Date contentUpdatedAt(Date contentUpdatedAt) {
-        return contentUpdatedAt == null ? new Date() : contentUpdatedAt;
+    private static Instant contentUpdatedAt(Instant contentUpdatedAt) {
+        return contentUpdatedAt == null ? Instant.now() : contentUpdatedAt;
     }
 }

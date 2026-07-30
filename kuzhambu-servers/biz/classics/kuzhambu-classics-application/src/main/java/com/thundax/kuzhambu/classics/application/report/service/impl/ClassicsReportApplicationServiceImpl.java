@@ -89,10 +89,17 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
                         .sum();
 
         List<Date> growthDates = new ArrayList<>();
-        publicSancaiEntries.stream().map(SancaiEntry::getContentUpdatedAt).forEach(growthDates::add);
-        publicWangqiDocuments.stream().map(WangqiDocument::getContentUpdatedAt).forEach(growthDates::add);
+        publicSancaiEntries.stream()
+                .map(SancaiEntry::getContentUpdatedAt)
+                .map(Date::from)
+                .forEach(growthDates::add);
+        publicWangqiDocuments.stream()
+                .map(WangqiDocument::getContentUpdatedAt)
+                .map(Date::from)
+                .forEach(growthDates::add);
         publicMingCustomsEntries.stream()
                 .map(MingCustomsEntry::getContentUpdatedAt)
+                .map(Date::from)
                 .forEach(growthDates::add);
 
         return new ClassicsReportSummaryResult(

@@ -29,6 +29,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVis
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -61,18 +62,18 @@ class ClassicsReportApplicationServiceImplTest {
                                 SancaiEntryTranslationStatus.READY,
                                 SancaiEntryImageStatus.READY,
                                 SancaiEntryVisualAssetStatus.READY,
-                                date(1_718_000_000_000L)),
+                                instant(1_718_000_000_000L)),
                         sancaiEntry(
                                 "孔雀蓝釉",
                                 SancaiEntryTranslationStatus.MISSING,
                                 SancaiEntryImageStatus.MISSING,
                                 SancaiEntryVisualAssetStatus.MISSING,
-                                date(1_718_086_400_000L))));
+                                instant(1_718_086_400_000L))));
         when(wangqiDocumentRepository.listTimeline(null, WangqiDocumentVisibility.PUBLIC.value(), SortDirection.ASC))
-                .thenReturn(List.of(wangqiDocument("王圻图谱", date(1_718_086_400_000L))));
+                .thenReturn(List.of(wangqiDocument("王圻图谱", instant(1_718_086_400_000L))));
         when(mingCustomsRepository.list(
                         null, null, null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC))
-                .thenReturn(List.of(mingCustomsEntry("明礼汇编", date(1_718_172_800_000L))));
+                .thenReturn(List.of(mingCustomsEntry("明礼汇编", instant(1_718_172_800_000L))));
 
         PageResult<ClassicsShareLink> sharePage = new PageResult<>();
         sharePage.setRecords(List.of(shareLink(10L), shareLink(20L)));
@@ -101,7 +102,7 @@ class ClassicsReportApplicationServiceImplTest {
             SancaiEntryTranslationStatus translationStatus,
             SancaiEntryImageStatus imageStatus,
             SancaiEntryVisualAssetStatus visualAssetStatus,
-            Date contentUpdatedAt) {
+            Instant contentUpdatedAt) {
         SancaiEntry entry = new SancaiEntry();
         entry.setTitle(title);
         entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
@@ -114,7 +115,7 @@ class ClassicsReportApplicationServiceImplTest {
         return entry;
     }
 
-    private static WangqiDocument wangqiDocument(String title, Date contentUpdatedAt) {
+    private static WangqiDocument wangqiDocument(String title, Instant contentUpdatedAt) {
         WangqiDocument document = new WangqiDocument();
         document.setTitle(title);
         document.setContentFormat(WangqiContentFormat.MARKDOWN);
@@ -123,7 +124,7 @@ class ClassicsReportApplicationServiceImplTest {
         return document;
     }
 
-    private static MingCustomsEntry mingCustomsEntry(String title, Date contentUpdatedAt) {
+    private static MingCustomsEntry mingCustomsEntry(String title, Instant contentUpdatedAt) {
         MingCustomsEntry entry = new MingCustomsEntry();
         entry.setTitle(title);
         entry.setVisibility(MingCustomsVisibility.PUBLIC);
@@ -149,5 +150,9 @@ class ClassicsReportApplicationServiceImplTest {
 
     private static Date date(long epochMillis) {
         return new Date(epochMillis);
+    }
+
+    private static Instant instant(long epochMillis) {
+        return Instant.ofEpochMilli(epochMillis);
     }
 }
