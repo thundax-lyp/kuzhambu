@@ -76,8 +76,8 @@ class DefaultOperationsDashboardSummaryGatewayTest {
         verify(knowledgeFacade).summary(knowledgeCaptor.capture());
         assertSame(periodStart, classicsCaptor.getValue().getPeriodStart());
         assertSame(periodEnd, classicsCaptor.getValue().getPeriodEnd());
-        assertSame(periodStart, aiCaptor.getValue().getPeriodStart());
-        assertSame(periodEnd, aiCaptor.getValue().getPeriodEnd());
+        assertEquals(periodStart.toInstant(), aiCaptor.getValue().getPeriodStart());
+        assertEquals(periodEnd.toInstant(), aiCaptor.getValue().getPeriodEnd());
         assertSame(periodStart, discoveryCaptor.getValue().getPeriodStart());
         assertSame(periodEnd, discoveryCaptor.getValue().getPeriodEnd());
         assertSame(periodStart, knowledgeCaptor.getValue().getPeriodStart());
