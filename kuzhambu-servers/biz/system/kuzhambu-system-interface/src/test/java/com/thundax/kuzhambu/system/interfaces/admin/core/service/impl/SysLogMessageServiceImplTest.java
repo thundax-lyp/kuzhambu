@@ -22,14 +22,14 @@ import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
 import java.nio.file.Path;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class SysLogMessageServiceImplTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     @TempDir
     private Path tempDir;
@@ -40,7 +40,7 @@ class SysLogMessageServiceImplTest {
         CapturingSystemLogApplicationService logService = new CapturingSystemLogApplicationService();
         SysLogMessageServiceImpl service =
                 new SysLogMessageServiceImpl(mqSender, properties(), logService, OBJECT_MAPPER);
-        Date logDate = new Date(1778513052000L);
+        Instant logDate = Instant.ofEpochMilli(1778513052000L);
         Log log = new Log();
         log.setUserId(UserIdCodec.toDomain(1L));
         log.setType(LogType.ACCESS);
