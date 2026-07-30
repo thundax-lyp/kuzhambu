@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `D-12 discovery-portal-qa-frontend`：验收并按需适配 portal QA 页控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/qa/qa-page.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/qa/components/qa-composer.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/qa/components/qa-timeline.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/qa/qa-service.ts`、`kuzhambu-apps/portal-web/src/pages/discovery/qa/qa-types.ts`、`kuzhambu-apps/portal-web/src/pages/discovery/qa/qa-page.test.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/qa/qa-page-session.test.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/qa/qa-page-context.test.tsx`
-    - 处理动作：验收新建会话按钮、会话列表项、提问输入框、流式回答区域和来源列表对基础类型字段的兼容性并按需修正。
-    - 验收点：新建会话、选择会话、发送问题、查看来源四个操作字段名不变，来源展示仍为 `SANCAI_ENTRY:1001`。
-    - 重要度：8/10
-
 - [ ] `D-13 discovery-validation`：运行 Discovery 与 portal-web 相关验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`

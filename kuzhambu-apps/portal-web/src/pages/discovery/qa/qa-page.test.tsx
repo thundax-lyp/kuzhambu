@@ -111,7 +111,7 @@ describe("DiscoveryQaPage", () => {
             lastMessageAt: null,
             openedAt: 1699999999000,
             scope: "PORTAL",
-            id: "2001",
+            id: 2001,
             status: "OPEN",
             title: "知识中心问答"
         });
@@ -140,7 +140,7 @@ describe("DiscoveryQaPage", () => {
                     sourceStatus: "AVAILABLE",
                     sourcePath: "/shares/1001",
                     snippet: "礼器在章节中常用于秩序相关记载。",
-                    titleSnapshot: "礼器条目"
+                    titleSnapshot: null
                 }
             ],
             sessionId: "2001"
@@ -186,7 +186,7 @@ describe("DiscoveryQaPage", () => {
             }
         });
         expect(container.textContent).toContain("礼器常见于典章与礼仪条目。");
-        expect(container.textContent).toContain("礼器条目");
+        expect(container.textContent).toContain("SANCAI_ENTRY:1001");
         expect(container.querySelectorAll(".portal-qa-avatar")).toHaveLength(2);
         expect(container.querySelector('a[href="/shares/1001"]')).not.toBeNull();
 

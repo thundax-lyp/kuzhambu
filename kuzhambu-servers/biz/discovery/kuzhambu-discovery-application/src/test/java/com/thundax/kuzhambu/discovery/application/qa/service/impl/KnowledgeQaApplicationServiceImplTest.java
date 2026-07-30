@@ -38,6 +38,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaKnowledgeSyncStatus;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaMessageId;
+import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaMessageRole;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncItemRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
@@ -137,8 +138,8 @@ class KnowledgeQaApplicationServiceImplTest {
 
         ArgumentCaptor<QaMessage> messageCaptor = ArgumentCaptor.forClass(QaMessage.class);
         verify(messageRepository, org.mockito.Mockito.times(2)).save(messageCaptor.capture());
-        assertEquals("user", messageCaptor.getAllValues().get(0).getRole());
-        assertEquals("assistant", messageCaptor.getAllValues().get(1).getRole());
+        assertEquals(role("user"), messageCaptor.getAllValues().get(0).getRole());
+        assertEquals(role("assistant"), messageCaptor.getAllValues().get(1).getRole());
         assertEquals("王圻文档答案", messageCaptor.getAllValues().get(1).getContent());
         ArgumentCaptor<QaSource> sourceCaptor = ArgumentCaptor.forClass(QaSource.class);
         verify(sourceRepository).save(sourceCaptor.capture());
@@ -276,8 +277,8 @@ class KnowledgeQaApplicationServiceImplTest {
 
         ArgumentCaptor<QaMessage> messageCaptor = ArgumentCaptor.forClass(QaMessage.class);
         verify(messageRepository, org.mockito.Mockito.times(2)).save(messageCaptor.capture());
-        assertEquals("user", messageCaptor.getAllValues().get(0).getRole());
-        assertEquals("assistant", messageCaptor.getAllValues().get(1).getRole());
+        assertEquals(role("user"), messageCaptor.getAllValues().get(0).getRole());
+        assertEquals(role("assistant"), messageCaptor.getAllValues().get(1).getRole());
         assertEquals("FAILED", messageCaptor.getAllValues().get(1).getAnswerStatus());
         assertEquals("stream interrupted", messageCaptor.getAllValues().get(1).getFailureReason());
         ArgumentCaptor<QaRetrievalTrace> traceCaptor = ArgumentCaptor.forClass(QaRetrievalTrace.class);
@@ -332,7 +333,7 @@ class KnowledgeQaApplicationServiceImplTest {
         verify(messageRepository, org.mockito.Mockito.times(2)).save(messageCaptor.capture());
         assertEquals("什么是三才？", messageCaptor.getAllValues().get(0).getContent());
         QaMessage answerMessage = messageCaptor.getAllValues().get(1);
-        assertEquals("assistant", answerMessage.getRole());
+        assertEquals(role("assistant"), answerMessage.getRole());
         assertTrue(answerMessage.getContent().contains("三才指天地人"));
         assertEquals("SUCCEEDED", answerMessage.getAnswerStatus());
         verify(sourceRepository).save(any(QaSource.class));
@@ -556,5 +557,9 @@ class KnowledgeQaApplicationServiceImplTest {
 
     private static QaKnowledgeSyncStatus syncStatus(String value) {
         return QaStringValueCodec.toKnowledgeSyncStatus(value);
+    }
+
+    private static QaMessageRole role(String value) {
+        return QaStringValueCodec.toMessageRole(value);
     }
 }

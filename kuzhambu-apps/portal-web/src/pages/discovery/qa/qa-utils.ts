@@ -107,8 +107,12 @@ export const toOpenSessionRequest = (form: QaFormState): DiscoveryQaOpenSessionR
     };
 };
 
-export const toSessionId = (value?: string | null): string | null => {
-    return typeof value === "string" && value.trim().length ? value : null;
+export const toSessionId = (value?: string | number | null): string | null => {
+    if (typeof value === "number") {
+        return Number.isSafeInteger(value) && value > 0 ? String(value) : null;
+    }
+
+    return typeof value === "string" && value.trim().length ? value.trim() : null;
 };
 
 export const extractCompletionMessage = (response?: DiscoveryQaChatCompletionResponse | null) => {
@@ -131,7 +135,11 @@ export const toChatCompletionSourceKey = (
     source: DiscoveryQaChatCompletionSource,
     index: number
 ) => {
-    return source.sourceId ?? `${source.contentType}-${source.contentId}-${index}`;
+    return toDisplayText(source.sourceId) ?? `${source.contentType}-${source.contentId}-${index}`;
+};
+
+export const toChatCompletionSourceLabel = (source: DiscoveryQaChatCompletionSource) => {
+    return toDisplayText(source.titleSnapshot) ?? toDisplayText(source.sourceId) ?? "-";
 };
 
 export const readStoredSession = (form: QaFormState): DiscoveryQaOpenSessionResponse | null => {
@@ -202,4 +210,18 @@ const getSessionContextKey = (form: QaFormState) => {
         form.contextContentType,
         form.contextContentId
     ].join("|");
+};
+
+const toDisplayText = (value: string | number | null | undefined) => {
+    if (typeof value === "number") {
+        return Number.isFinite(value) ? String(value) : null;
+    }
+
+    if (typeof value !== "string") {
+        return null;
+    }
+
+    const trimmedValue = value.trim();
+
+    return trimmedValue.length ? trimmedValue : null;
 };

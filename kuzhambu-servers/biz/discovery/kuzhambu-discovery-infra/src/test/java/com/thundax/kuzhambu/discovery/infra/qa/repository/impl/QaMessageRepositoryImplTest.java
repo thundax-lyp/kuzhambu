@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.discovery.domain.qa.codec.QaMessageIdCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.codec.QaSessionIdCodec;
+import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaMessageId;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaMessageDO;
@@ -61,6 +62,6 @@ class QaMessageRepositoryImplTest {
 
         assertEquals(1, result.size());
         assertEquals(2001L, QaMessageIdCodec.toValue(result.get(0).getId()));
-        assertEquals("ASSISTANT", result.get(0).getRole());
+        assertEquals("ASSISTANT", QaStringValueCodec.toValue(result.get(0).getRole()));
     }
 }
