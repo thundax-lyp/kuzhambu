@@ -53,11 +53,11 @@ public class QueryUnderstandingPayloadBuilder {
     public String buildOutputSchemaJson() {
         Map<String, Object> schema = new LinkedHashMap<>();
         schema.put("type", "object");
-        schema.put("required", List.of("intent", "rewrittenQueryText", "recognizedEntities"));
+        schema.put("required", List.of("intentType", "rewrittenQueryText", "recognizedEntities"));
         schema.put(
                 "properties",
                 Map.of(
-                        "intent", Map.of("type", "string"),
+                        "intentType", Map.of("type", "string"),
                         "rewrittenQueryText", Map.of("type", "string"),
                         "recognizedEntities", Map.of("type", "array")));
         return writeJson(schema);

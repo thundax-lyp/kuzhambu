@@ -90,7 +90,7 @@ class QueryUnderstandingApplicationServiceImplTest {
                         .status("SUCCEEDED")
                         .capability("query_understanding")
                         .resultFormat("STRUCTURED")
-                        .resultPayload("{\"intent\":\"NATURAL_LANGUAGE_SEARCH\",\"rewrittenQueryText\":\"礼制 礼学\"}")
+                        .resultPayload("{\"intentType\":\"NATURAL_LANGUAGE_SEARCH\",\"rewrittenQueryText\":\"礼制 礼学\"}")
                         .build());
         when(repository.save(any())).thenReturn(QueryUnderstandingIdCodec.toDomain(1L));
 

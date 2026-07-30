@@ -133,7 +133,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
             JsonNode root = OBJECT_MAPPER.readTree(aiResult.getResultPayload());
             String rewrittenQueryText =
                     textOrDefault(root, List.of("rewrittenQueryText", "rewrittenQuery"), normalizedQueryText);
-            String intent = textOrDefault(root, List.of("intent"), SearchIntentType.KEYWORD_SEARCH.value());
+            String intent =
+                    textOrDefault(root, List.of("intentType", "intent"), SearchIntentType.KEYWORD_SEARCH.value());
             List<QueryUnderstandingResult.RecognizedEntityResult> recognizedEntities =
                     parseRecognizedEntities(root.get("recognizedEntities"));
             if (recognizedEntities.isEmpty()) {
