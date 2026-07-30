@@ -9,19 +9,22 @@ set -euo pipefail
 
 SNAPSHOT="./sancai_tree_snapshot.json"
 OUTPUT="db/data/classics.sql"
+TAG_SEED="db/data-source/sancai-tags.json"
 
 usage() {
     cat <<'USAGE'
 Usage:
-  scripts/classics-json-to-sql.sh [snapshot_file] [output_sql]
+  scripts/classics-json-to-sql.sh [snapshot_file] [output_sql] [tag_seed_json]
 
 Defaults:
   snapshot_file  ./sancai_tree_snapshot.json
   output_sql     db/data/classics.sql
+  tag_seed_json  db/data-source/sancai-tags.json
 
 Examples:
   scripts/classics-json-to-sql.sh
   scripts/classics-json-to-sql.sh ./sancai_tree_snapshot.json db/data/classics.sql
+  scripts/classics-json-to-sql.sh ./sancai_tree_snapshot.json db/data/classics.sql db/data-source/sancai-tags.json
 USAGE
 }
 
@@ -39,7 +42,11 @@ if [[ $# -gt 1 ]]; then
 fi
 
 if [[ $# -gt 2 ]]; then
-    echo "error: unexpected argument '$3'" >&2
+    TAG_SEED="$3"
+fi
+
+if [[ $# -gt 3 ]]; then
+    echo "error: unexpected argument '$4'" >&2
     usage
     exit 1
 fi
@@ -54,8 +61,18 @@ if [[ ! -f "$SNAPSHOT" ]]; then
     exit 1
 fi
 
+if [[ ! -f "$TAG_SEED" ]]; then
+    echo "error: tag seed not found: $TAG_SEED" >&2
+    exit 1
+fi
+
 if ! jq -e '.schema == "classics_sancai_tree"' "$SNAPSHOT" >/dev/null; then
     echo "error: invalid snapshot format, expected schema=classics_sancai_tree" >&2
+    exit 1
+fi
+
+if ! jq -e '.schema == "classics_sancai_tag_seed"' "$TAG_SEED" >/dev/null; then
+    echo "error: invalid tag seed format, expected schema=classics_sancai_tag_seed" >&2
     exit 1
 fi
 
@@ -112,31 +129,11 @@ def volume_type(v):
     "MAIN"
   end;
 
-def entry_tags(e):
-  reduce (((e.tags_snapshot // null)
-    | if . == null then []
-      elif type == "string" then (try fromjson catch [])
-      elif type == "array" then .
-      else []
-      end)
-    [] | tostring | gsub("^\\s+|\\s+$"; "") | select(. != "")) as $tag
-    ([]; if index($tag) == null then . + [$tag] else . end);
-
-def generated_tag_id(tags; tag):
-  if tag == "世系图" then
-    500001
-  else
-    501000 + ((tags | index(tag)) + 1)
-  end;
+def generated_tag_id(tag_seed; tag):
+  first(tag_seed.tags[] | select(.name == tag) | .tag_id);
 
 . as $root
-| [
-    $root.categories[]
-    | (.volumes // [])[]
-    | (.entries // [])[]
-    | entry_tags(.)[]
-  ]
-| unique as $tags
+| $tag_seed[0] as $tag_seed_doc
 |
 "-- 三才图会门类",
 (
@@ -207,11 +204,10 @@ def generated_tag_id(tags; tag):
 "-- 三才图会条目标签",
 (
   [
-    $root.categories[]
-    | (.volumes // [])[]
-    | (.entries // [])[] as $entry
-    | entry_tags($entry)[] as $tag
-    | {entry_id: ($entry.id // $entry.entry_id), tag: $tag}
+    $tag_seed_doc.entries[]
+    | . as $entry
+    | ($entry.tags // [])[] as $tag
+    | {entry_id: $entry.content_id, tag: $tag}
   ]
   | to_entries[]
   | .key as $tag_index
@@ -219,7 +215,7 @@ def generated_tag_id(tags; tag):
   | "INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_id`, `tag_name_snapshot`, `source`, `status`, `priority`) VALUES (" +
     sql_text("SANCAI_ENTRY") + ", " +
     ($row.entry_id | tostring) + ", " +
-    (generated_tag_id($tags; $row.tag) | tostring) + ", " +
+    (generated_tag_id($tag_seed_doc; $row.tag) | tostring) + ", " +
     sql_text($row.tag) + ", " +
     sql_text("MANUAL") + ", " +
     sql_text("ACTIVE") + ", " +
@@ -227,14 +223,14 @@ def generated_tag_id(tags; tag):
     ") ON DUPLICATE KEY UPDATE " +
     "`tag_id` = VALUES(`tag_id`), `source` = VALUES(`source`), `status` = VALUES(`status`), `priority` = VALUES(`priority`);"
 )
-' "$SNAPSHOT" >> "$TMP_OUTPUT"
+' --slurpfile tag_seed "$TAG_SEED" "$SNAPSHOT" >> "$TMP_OUTPUT"
 
 if [[ -s "$PRESERVED_TAIL" ]]; then
     printf '\n' >> "$TMP_OUTPUT"
     cat "$PRESERVED_TAIL" >> "$TMP_OUTPUT"
 fi
 
-mv "$TMP_OUTPUT" "$OUTPUT"
+cp "$TMP_OUTPUT" "$OUTPUT"
 trap - EXIT
 
 echo "generated: $OUTPUT"

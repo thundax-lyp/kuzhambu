@@ -6,23 +6,16 @@ import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
-const sourcePath = resolve(repoRoot, "sancai_tree_snapshot.json");
+const sourcePath = resolve(repoRoot, "db/data-source/sancai-tags.json");
 const outputPath = resolve(repoRoot, "db/data/knowledge.sql");
-const GENERATED_TAG_BASE = 501000;
 const GENERATED_REF_BASE = 531000;
 const THEME_CATEGORY_ID = 1004;
-const SEED_AT = "2026-07-30 00:00:00.000";
-const LEGACY_TAG_IDS = new Map([["世系图", 500001]]);
 
 const main = () => {
-  const snapshot = readSnapshot(sourcePath);
-  const entries = readEntries(snapshot);
-  const tagNames = uniqueSorted(
-    entries.flatMap((entry) => entry.tags.map((tag) => tag.name)),
-  );
-  const tagIds = assignTagIds(tagNames);
-  const refs = buildRefs(entries, tagIds);
-  const sql = generateSql(tagNames, tagIds, refs);
+  const seed = readSeed(sourcePath);
+  const tagIds = indexTags(seed.tags);
+  const refs = buildRefs(seed.entries, tagIds);
+  const sql = generateSql(seed.tags, seed.aliases, refs);
 
   if (process.argv.includes("--check")) {
     const current = readFileSync(outputPath, "utf8");
@@ -38,54 +31,71 @@ const main = () => {
   writeFileSync(outputPath, sql);
 };
 
-const readSnapshot = (path) => {
-  const snapshot = JSON.parse(readFileSync(path, "utf8"));
-  if (snapshot.schema !== "classics_sancai_tree") {
-    throw new Error("Invalid snapshot format, expected schema=classics_sancai_tree");
+const readSeedFile = (path) => {
+  const seed = JSON.parse(readFileSync(path, "utf8"));
+  if (seed.schema !== "classics_sancai_tag_seed") {
+    throw new Error(
+      "Invalid seed format, expected schema=classics_sancai_tag_seed",
+    );
   }
-  return snapshot;
+  return seed;
 };
 
-const readEntries = (snapshot) => {
-  const entries = [];
-  for (const category of snapshot.categories ?? []) {
-    for (const volume of category.volumes ?? []) {
-      for (const entry of volume.entries ?? []) {
-        const entryId = entry.id ?? entry.entry_id;
-        if (!Number.isInteger(entryId)) {
-          throw new Error(`Invalid entry id for title: ${entry.title ?? ""}`);
-        }
-        const tags = parseTags(entry.tags_snapshot).map((name) => ({ name }));
-        entries.push({
-          id: entryId,
-          title: requireNonBlank(entry.title, `entry ${entryId} title`),
-          tags,
-        });
+const readSeed = (path) => {
+  const seed = readSeedFile(path);
+  validateSeed(seed);
+  return seed;
+};
+
+const validateSeed = (seed) => {
+  if (!Array.isArray(seed.tags)) {
+    throw new Error("sancai tag seed must contain tags array");
+  }
+  if (!Array.isArray(seed.entries)) {
+    throw new Error("sancai tag seed must contain entries array");
+  }
+  if (!Array.isArray(seed.aliases)) {
+    throw new Error("sancai tag seed must contain aliases array");
+  }
+
+  assertUnique(
+    seed.tags.map((tag) => tag.tag_id),
+    "tag_id",
+  );
+  assertUnique(
+    seed.tags.map((tag) => tag.name),
+    "tag name",
+  );
+  assertUnique(
+    seed.aliases.map((alias) => alias.alias_id),
+    "alias_id",
+  );
+
+  const tagNames = new Set(seed.tags.map((tag) => tag.name));
+  for (const entry of seed.entries) {
+    if (!Number.isInteger(entry.content_id)) {
+      throw new Error(`Invalid content_id: ${entry.content_id}`);
+    }
+    requireNonBlank(entry.content_title, `entry ${entry.content_id} title`);
+    if (!Array.isArray(entry.tags)) {
+      throw new Error(`Invalid tags for entry ${entry.content_id}`);
+    }
+    for (const tagName of entry.tags) {
+      if (!tagNames.has(tagName)) {
+        throw new Error(`Unknown tag "${tagName}" on entry ${entry.content_id}`);
       }
     }
   }
-  return entries;
 };
 
-const parseTags = (value) => {
-  if (value == null) {
-    return [];
-  }
-  const rawTags = typeof value === "string" ? JSON.parse(value) : value;
-  if (!Array.isArray(rawTags)) {
-    throw new Error("tags_snapshot must be a JSON array or a stringified JSON array");
-  }
-  return uniquePreserved(rawTags.map((tag) => String(tag).trim()).filter(Boolean));
-};
-
-const assignTagIds = (tagNames) => {
+const indexTags = (tags) => {
   const tagIds = new Map();
-  for (const [index, name] of tagNames.entries()) {
-    const tagId = LEGACY_TAG_IDS.get(name) ?? GENERATED_TAG_BASE + index + 1;
+  for (const tag of tags) {
+    const tagId = tag.tag_id;
     if ([...tagIds.values()].includes(tagId)) {
       throw new Error(`Duplicate tag id: ${tagId}`);
     }
-    tagIds.set(name, tagId);
+    tagIds.set(tag.name, tagId);
   }
   return tagIds;
 };
@@ -97,21 +107,21 @@ const buildRefs = (entries, tagIds) => {
     for (const tag of entry.tags) {
       refs.push({
         refId: GENERATED_REF_BASE + refIndex++,
-        tagId: requireLookup(tagIds, tag.name, "tag"),
+        tagId: requireLookup(tagIds, tag, "tag"),
         contentType: "SANCAI_ENTRY",
-        contentId: entry.id,
-        contentTitle: entry.title,
+        contentId: entry.content_id,
+        contentTitle: entry.content_title,
       });
     }
   }
   return refs;
 };
 
-const generateSql = (tagNames, tagIds, refs) => {
+const generateSql = (tags, aliases, refs) => {
   const lines = ["SET NAMES utf8mb4;", ""];
   appendTagCategorySql(lines);
-  appendTagSql(lines, tagNames, tagIds);
-  appendTagAliasSql(lines);
+  appendTagSql(lines, tags);
+  appendTagAliasSql(lines, aliases);
   appendTagContentRefSql(lines, refs);
   while (lines.at(-1) === "") {
     lines.pop();
@@ -139,30 +149,30 @@ const appendTagCategorySql = (lines) => {
   lines.push("");
 };
 
-const appendTagSql = (lines, tagNames, tagIds) => {
-  if (tagNames.length === 0) {
+const appendTagSql = (lines, tags) => {
+  if (tags.length === 0) {
     return;
   }
-  lines.push("-- 三才图会标签库种子，来源：sancai_tree_snapshot.json tags_snapshot。");
+  lines.push("-- 三才图会标签库种子，来源：db/data-source/sancai-tags.json。");
   lines.push("INSERT INTO `knowledge_tag` (");
   lines.push("    `tag_id`, `name`, `category_id`, `description`, `status`, `source`,");
   lines.push("    `review_status`, `review_note`, `created_at`, `reviewed_at`, `merged_to_tag_id`,");
   lines.push("    `deprecated_at`, `deprecated_by`");
   lines.push(") VALUES");
   lines.push(
-    tagNames
-      .map((name) =>
+    tags
+      .map((tag) =>
         row([
-          requireLookup(tagIds, name, "tag"),
-          name,
-          THEME_CATEGORY_ID,
-          descriptionFor(name),
-          "ENABLED",
-          sourceFor(name),
-          "APPROVED",
-          reviewNoteFor(name),
-          createdAtFor(name),
-          reviewedAtFor(name),
+          tag.tag_id,
+          tag.name,
+          tag.category_id ?? THEME_CATEGORY_ID,
+          tag.description,
+          tag.status,
+          tag.source,
+          tag.review_status,
+          tag.review_note,
+          tag.created_at,
+          tag.reviewed_at,
           null,
           null,
           null,
@@ -186,11 +196,20 @@ const appendTagSql = (lines, tagNames, tagIds) => {
   lines.push("");
 };
 
-const appendTagAliasSql = (lines) => {
+const appendTagAliasSql = (lines, aliases) => {
+  if (aliases.length === 0) {
+    return;
+  }
   lines.push("INSERT INTO `knowledge_tag_alias` (");
   lines.push("    `alias_id`, `tag_id`, `name`, `source`");
   lines.push(") VALUES");
-  lines.push(row([510001, 500001, "世系图谱", "MANUAL"]));
+  lines.push(
+    aliases
+      .map((alias) =>
+        row([alias.alias_id, alias.tag_id, alias.name, alias.source]),
+      )
+      .join(",\n"),
+  );
   lines.push("ON DUPLICATE KEY UPDATE");
   lines.push("    `tag_id` = VALUES(`tag_id`),");
   lines.push("    `name` = VALUES(`name`),");
@@ -202,7 +221,7 @@ const appendTagContentRefSql = (lines, refs) => {
   if (refs.length === 0) {
     return;
   }
-  lines.push("-- 三才图会内容标签引用投影，来源：sancai_tree_snapshot.json tags_snapshot。");
+  lines.push("-- 三才图会内容标签引用投影，来源：db/data-source/sancai-tags.json。");
   lines.push("INSERT INTO `knowledge_tag_content_ref` (");
   lines.push("    `ref_id`, `tag_id`, `content_type`, `content_id`, `content_title`, `source`");
   lines.push(") VALUES");
@@ -228,21 +247,6 @@ const appendTagContentRefSql = (lines, refs) => {
   lines.push("    `source` = VALUES(`source`);");
   lines.push("");
 };
-
-const descriptionFor = (name) =>
-  name === "世系图"
-    ? "用于知识问答和跨库检索的世系图主题标签"
-    : "从三才图会稿件标签快照导入的主题标签";
-
-const sourceFor = (name) => (name === "世系图" ? "MANUAL" : "SEED");
-
-const reviewNoteFor = (name) =>
-  name === "世系图" ? "联通 Discovery 查询理解与来源引用" : "三才图会快照导入";
-
-const createdAtFor = (name) =>
-  name === "世系图" ? "2026-02-27 04:00:00.000" : SEED_AT;
-
-const reviewedAtFor = createdAtFor;
 
 const row = (values) => `    (${values.map(sqlValue).join(", ")})`;
 
@@ -272,10 +276,14 @@ const requireNonBlank = (value, field) => {
   return text;
 };
 
-const uniqueSorted = (values) => [...new Set(values)].sort(compareText);
-
-const uniquePreserved = (values) => [...new Set(values)];
-
-const compareText = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+const assertUnique = (values, field) => {
+  const seen = new Set();
+  for (const value of values) {
+    if (seen.has(value)) {
+      throw new Error(`Duplicate ${field}: ${value}`);
+    }
+    seen.add(value);
+  }
+};
 
 main();

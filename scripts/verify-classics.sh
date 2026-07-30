@@ -18,6 +18,16 @@ if [[ ! -f "${ROOT_DIR}/db/data/knowledge.sql" ]]; then
     exit 1
 fi
 
+if [[ ! -f "${ROOT_DIR}/db/data-source/sancai-tags.json" ]]; then
+    echo "Missing db/data-source/sancai-tags.json" >&2
+    exit 1
+fi
+
+if ! grep -q '"schema": "classics_sancai_tag_seed"' "${ROOT_DIR}/db/data-source/sancai-tags.json"; then
+    echo "Invalid sancai tag seed schema" >&2
+    exit 1
+fi
+
 required_tables=(
     classics_sancai_category
     classics_sancai_volume
