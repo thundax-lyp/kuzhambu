@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `13 admin-qa-frontend`：调整 Admin QA 页面控件 ID 口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/discovery/qa/qa-types.ts`、`kuzhambu-apps/admin-web/src/pages/discovery/qa/qa-service.ts`、`kuzhambu-apps/admin-web/src/pages/discovery/qa/qa-page.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/qa/qa-session-table.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/qa/qa-session-detail-drawer.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/qa/qa-message-panel.tsx`
-    - 处理动作：把 QA 会话列表、选择会话、删除会话、导出会话和消息面板的本体身份读取从旧字段改为 `id`。
-    - 验收点：会话列表 row key、选择按钮、删除按钮、导出按钮、详情标题和消息 key 均使用本体 `id`。
-    - 重要度：9/10
-
 - [ ] `14 admin-qa-console-frontend`：调整 Admin QA Console 表格操作 ID 口径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`

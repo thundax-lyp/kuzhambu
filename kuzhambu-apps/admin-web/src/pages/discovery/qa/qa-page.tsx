@@ -82,10 +82,10 @@ const toTimelineStatus = (
 };
 
 const toTimelineMessages = (session?: DiscoveryQaSessionRecord | null): QaTimelineMessage[] => {
-    const sessionId = toSessionId(session?.sessionId) ?? "session";
+    const sessionId = toSessionId(session?.id) ?? "session";
     return (session?.messages ?? []).map((message, index) => ({
         content: message.content ?? message.failureReason ?? "",
-        id: message.messageId ?? `${sessionId}-history-${index}`,
+        id: message.id ?? `${sessionId}-history-${index}`,
         role: toTimelineRole(message.role),
         status: toTimelineStatus(message)
     }));
@@ -193,7 +193,7 @@ export const QaPage = () => {
         const session = await openSessionMutation.mutateAsync(
             toOpenSessionRequest(ownerUserId, toConversationTitle(question))
         );
-        const nextSessionId = toSessionId(session.sessionId);
+        const nextSessionId = toSessionId(session.id);
         if (nextSessionId === null) {
             throw new Error("会话未返回会话号");
         }
