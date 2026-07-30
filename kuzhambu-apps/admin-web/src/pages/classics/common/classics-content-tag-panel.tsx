@@ -1,15 +1,15 @@
 import { PlusOutlined } from "@ant-design/icons";
-import { App, Empty, Form } from "antd";
+import { App, Empty, Input, Pagination, Typography } from "antd";
 import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     KuzhambuButton,
     KuzhambuCard,
-    KuzhambuForm,
-    KuzhambuFormItem,
+    KuzhambuList,
+    KuzhambuListItem,
     KuzhambuModal,
-    KuzhambuSelect,
     KuzhambuSpace,
+    KuzhambuSpaceCompact,
     KuzhambuTag
 } from "@/components";
 
@@ -17,6 +17,7 @@ import * as contentService from "./classics-content-service";
 import * as taxonomyService from "@/pages/knowledge/taxonomy/taxonomy-service";
 import type { ClassicsContentTagRecord, ClassicsContentType } from "./classics-content-types";
 import { type ClassicsContentTagCommand } from "./classics-content-service";
+import "./classics-content-tag-panel.css";
 
 interface ClassicsContentTagPanelProps {
     contentId: string;
@@ -27,29 +28,13 @@ interface ClassicsContentTagPanelProps {
     toolbarExtra?: ReactNode;
 }
 
-interface TagEditorValues {
-    tagNames?: string[];
-}
+const TAG_PICKER_PAGE_SIZE = 20;
+const TAG_PICKER_COLUMN_SIZE = 10;
 
 const getActiveTags = (tags: ClassicsContentTagRecord[] | unknown) =>
     (Array.isArray(tags) ? tags : []).filter((tag) => (tag.status || "ACTIVE") !== "REMOVED");
 
 const normalizeTagName = (value?: string | null) => value?.trim() || "";
-
-const uniqueTagNames = (values: Array<string | null | undefined>) => {
-    const seen = new Set<string>();
-    return values.map(normalizeTagName).filter((value) => {
-        if (!value) {
-            return false;
-        }
-        const key = value.toLocaleLowerCase();
-        if (seen.has(key)) {
-            return false;
-        }
-        seen.add(key);
-        return true;
-    });
-};
 
 const readSourceType = (source?: string | null) => {
     switch (source) {
@@ -85,9 +70,10 @@ export const ClassicsContentTagPanel = ({
 }: ClassicsContentTagPanelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
-    const [form] = Form.useForm<TagEditorValues>();
     const [addModalOpen, setAddModalOpen] = useState(false);
-    const [tagSearchText, setTagSearchText] = useState("");
+    const [tagKeywordInput, setTagKeywordInput] = useState("");
+    const [tagSearchKeyword, setTagSearchKeyword] = useState("");
+    const [tagPickerPageNo, setTagPickerPageNo] = useState(1);
 
     const queryKey = ["classics", "content", "tags", contentType, contentId] as const;
 
@@ -104,16 +90,23 @@ export const ClassicsContentTagPanel = ({
 
     const tags = useMemo(() => getActiveTags(tagsQuery.data), [tagsQuery.data]);
     const taxonomyTagsQuery = useQuery({
-        queryKey: ["knowledge", "taxonomy", "tags", "content-picker", tagSearchText],
+        queryKey: [
+            "knowledge",
+            "taxonomy",
+            "tags",
+            "content-picker",
+            tagSearchKeyword,
+            tagPickerPageNo
+        ],
         queryFn: () =>
             taxonomyService.pageTags({
-                pageNo: 1,
-                pageSize: 20,
-                name: tagSearchText,
+                pageNo: tagPickerPageNo,
+                pageSize: TAG_PICKER_PAGE_SIZE,
+                name: tagSearchKeyword,
                 status: "ENABLED",
                 sortDirection: "ASC"
             }),
-        enabled: Boolean(contentId),
+        enabled: addModalOpen && Boolean(contentId),
         retry: false
     });
     const existingTagNameKeys = useMemo(
@@ -125,13 +118,10 @@ export const ClassicsContentTagPanel = ({
             ),
         [tags]
     );
-    const tagOptions = useMemo(() => {
-        const optionNames = uniqueTagNames([
-            ...(taxonomyTagsQuery.data?.records || []).map((tag) => tag.name),
-            ...tags.map((tag) => tag.tagNameSnapshot)
-        ]);
-        return optionNames.map((tagName) => ({ label: tagName, value: tagName }));
-    }, [tags, taxonomyTagsQuery.data?.records]);
+    const tagPickerRecords = taxonomyTagsQuery.data?.records || [];
+    const tagPickerLeftRecords = tagPickerRecords.slice(0, TAG_PICKER_COLUMN_SIZE);
+    const tagPickerRightRecords = tagPickerRecords.slice(TAG_PICKER_COLUMN_SIZE);
+    const tagPickerTotal = taxonomyTagsQuery.data?.totalCount ?? taxonomyTagsQuery.data?.count ?? 0;
 
     const refreshTags = async () => {
         await queryClient.invalidateQueries({ queryKey });
@@ -170,32 +160,37 @@ export const ClassicsContentTagPanel = ({
         }
     });
 
-    const submitTags = async () => {
-        const formValues = await form.validateFields();
-        const tagNames = uniqueTagNames(formValues.tagNames || []).filter(
-            (tagName) => !existingTagNameKeys.has(tagName.toLocaleLowerCase())
-        );
-        if (!tagNames.length) {
-            messageApi.info("没有需要添加的新标签");
-            form.resetFields();
+    const resetTagPicker = () => {
+        setTagKeywordInput("");
+        setTagSearchKeyword("");
+        setTagPickerPageNo(1);
+    };
+
+    const searchTags = () => {
+        setTagSearchKeyword(normalizeTagName(tagKeywordInput));
+        setTagPickerPageNo(1);
+    };
+
+    const addTagByName = async (tagName: string) => {
+        const normalizedTagName = normalizeTagName(tagName);
+        if (!normalizedTagName) {
+            messageApi.warning("请先输入标签名");
             return;
         }
-
-        await Promise.all(
-            tagNames.map((tagName) =>
-                addMutation.mutateAsync({
-                    contentId,
-                    contentType,
-                    tagNameSnapshot: tagName,
-                    source: "MANUAL",
-                    status: "ACTIVE"
-                })
-            )
-        );
-        form.resetFields();
-        setTagSearchText("");
+        if (existingTagNameKeys.has(normalizedTagName.toLocaleLowerCase())) {
+            messageApi.info("该标签已选择");
+            return;
+        }
+        await addMutation.mutateAsync({
+            contentId,
+            contentType,
+            tagNameSnapshot: normalizedTagName,
+            source: "MANUAL",
+            status: "ACTIVE"
+        });
         setAddModalOpen(false);
-        messageApi.success(`已添加 ${tagNames.length} 个标签`);
+        resetTagPicker();
+        messageApi.success(`已添加标签：${normalizedTagName}`);
     };
 
     const markRemoved = async (tag: ClassicsContentTagRecord) => {
@@ -203,6 +198,31 @@ export const ClassicsContentTagPanel = ({
             return;
         }
         await deleteMutation.mutateAsync({ id: tag.id });
+    };
+
+    const renderTagPickerItem = (tag: { id?: string | null; name?: string | null }) => {
+        const tagName = normalizeTagName(tag.name);
+        const selected = existingTagNameKeys.has(tagName.toLocaleLowerCase());
+        return (
+            <KuzhambuListItem
+                className="classics-content-tag-picker-item"
+                extra={
+                    selected ? (
+                        <KuzhambuTag type="success">已选择</KuzhambuTag>
+                    ) : (
+                        <Typography.Link
+                            onClick={() => {
+                                void addTagByName(tagName);
+                            }}
+                        >
+                            选择
+                        </Typography.Link>
+                    )
+                }
+            >
+                <span className="classics-content-tag-picker-name">{tagName || "-"}</span>
+            </KuzhambuListItem>
+        );
     };
 
     if (tagsQuery.isError) {
@@ -217,7 +237,10 @@ export const ClassicsContentTagPanel = ({
                 testId="classics-common-classics-content-tag-open-add-button"
                 icon={<PlusOutlined />}
                 type="primary"
-                onClick={() => setAddModalOpen(true)}
+                onClick={() => {
+                    resetTagPicker();
+                    setAddModalOpen(true);
+                }}
             >
                 添加
             </KuzhambuButton>
@@ -262,35 +285,103 @@ export const ClassicsContentTagPanel = ({
             <KuzhambuModal
                 testId="classics-content-tag-add-modal"
                 destroyOnHidden
+                footer={
+                    <KuzhambuSpace className="classics-content-tag-picker-footer">
+                        <KuzhambuButton
+                            testId="classics-content-tag-close-button"
+                            onClick={() => {
+                                setAddModalOpen(false);
+                                resetTagPicker();
+                            }}
+                        >
+                            关闭
+                        </KuzhambuButton>
+                    </KuzhambuSpace>
+                }
                 open={addModalOpen}
                 title="添加标签"
-                okText="添加"
-                confirmLoading={addMutation.isPending}
+                width={760}
                 onCancel={() => {
                     setAddModalOpen(false);
-                    form.resetFields();
-                    setTagSearchText("");
+                    resetTagPicker();
                 }}
-                onOk={submitTags}
             >
-                <KuzhambuForm form={form} labelWrap>
-                    <KuzhambuFormItem
-                        label="标签"
-                        name="tagNames"
-                        layoutSize="large"
-                        extra="输入已有标签名会绑定已有标签；输入新标签名会创建并绑定到当前内容。"
-                    >
-                        <KuzhambuSelect<string[]>
+                <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
+                    <KuzhambuSpaceCompact className="classics-content-tag-picker-search">
+                        <Input
                             aria-label="添加标签"
-                            mode="tags"
-                            options={tagOptions}
-                            placeholder="输入标签后回车，或从列表选择"
-                            style={{ width: "100%" }}
-                            tokenSeparators={[",", "，", "\n"]}
-                            onSearch={setTagSearchText}
+                            placeholder="输入标签名或搜索关键词"
+                            value={tagKeywordInput}
+                            onChange={(event) => setTagKeywordInput(event.target.value)}
+                            onPressEnter={searchTags}
                         />
-                    </KuzhambuFormItem>
-                </KuzhambuForm>
+                        <KuzhambuButton
+                            testId="classics-content-tag-search-button"
+                            onClick={searchTags}
+                        >
+                            搜索
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            testId="classics-content-tag-add-input-button"
+                            icon={<PlusOutlined />}
+                            loading={addMutation.isPending}
+                            type="primary"
+                            onClick={() => {
+                                void addTagByName(tagKeywordInput);
+                            }}
+                        >
+                            添加
+                        </KuzhambuButton>
+                    </KuzhambuSpaceCompact>
+                    <div className="classics-content-tag-picker">
+                        <Typography.Text strong>标签库候选</Typography.Text>
+                        {taxonomyTagsQuery.isError ? (
+                            <Empty
+                                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                description="标签库候选加载失败"
+                            />
+                        ) : (
+                            <div className="classics-content-tag-picker-columns">
+                                <KuzhambuList
+                                    ariaLabel="标签库候选左列"
+                                    bordered
+                                    className="classics-content-tag-picker-list"
+                                    dataSource={tagPickerLeftRecords}
+                                    empty={
+                                        <Empty
+                                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                            description="暂无候选标签"
+                                        />
+                                    }
+                                    itemKey={(tag) => tag.id ?? tag.name ?? ""}
+                                    loading={taxonomyTagsQuery.isFetching}
+                                    renderItem={renderTagPickerItem}
+                                    size="small"
+                                />
+                                <KuzhambuList
+                                    ariaLabel="标签库候选右列"
+                                    bordered
+                                    className="classics-content-tag-picker-list"
+                                    dataSource={tagPickerRightRecords}
+                                    empty={null}
+                                    itemKey={(tag) => tag.id ?? tag.name ?? ""}
+                                    loading={taxonomyTagsQuery.isFetching}
+                                    renderItem={renderTagPickerItem}
+                                    size="small"
+                                />
+                            </div>
+                        )}
+                        <Pagination
+                            align="end"
+                            current={tagPickerPageNo}
+                            pageSize={TAG_PICKER_PAGE_SIZE}
+                            showSizeChanger={false}
+                            size="small"
+                            total={tagPickerTotal}
+                            onChange={(pageNo) => setTagPickerPageNo(pageNo)}
+                        />
+                    </div>
+                </KuzhambuSpace>
             </KuzhambuModal>
         </KuzhambuCard>
     );

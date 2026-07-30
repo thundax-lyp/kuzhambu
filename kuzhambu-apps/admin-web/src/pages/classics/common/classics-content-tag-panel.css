@@ -1,0 +1,44 @@
+.classics-content-tag-picker-search {
+    width: 100%;
+}
+
+.classics-content-tag-picker-search .ant-input {
+    min-width: 0;
+}
+
+.classics-content-tag-picker {
+    display: grid;
+    min-width: 0;
+    gap: 10px;
+}
+
+.classics-content-tag-picker-columns {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.classics-content-tag-picker-list {
+    min-height: 344px;
+}
+
+.classics-content-tag-picker-name {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classics-content-tag-picker-footer {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+@media (max-width: 760px) {
+    .classics-content-tag-picker-columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
