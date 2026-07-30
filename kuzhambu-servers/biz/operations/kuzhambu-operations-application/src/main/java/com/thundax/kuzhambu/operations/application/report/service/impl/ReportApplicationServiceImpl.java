@@ -20,7 +20,7 @@ import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -54,7 +54,7 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
     @Override
     public OperationsReportGenerateResult generate(OperationsReportGenerateCommand command) {
         validateGenerateCommand(command);
-        Date now = new Date();
+        Instant now = Instant.now();
         ReportRecord record = new ReportRecord(
                 null,
                 command.getReportType(),
@@ -181,7 +181,7 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
         if (command.getPeriodStart() == null || command.getPeriodEnd() == null) {
             throw new IllegalArgumentException("Operations report period must not be null.");
         }
-        if (command.getPeriodStart().after(command.getPeriodEnd())) {
+        if (command.getPeriodStart().isAfter(command.getPeriodEnd())) {
             throw new IllegalArgumentException("Operations report periodStart must not be after periodEnd.");
         }
     }

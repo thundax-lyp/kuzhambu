@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.application.report.support;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -23,11 +23,11 @@ public final class OperationsReportSupportModels {
         private String traceId;
         private String reportType;
         private String format;
-        private Date periodStart;
-        private Date periodEnd;
+        private Instant periodStart;
+        private Instant periodEnd;
         private String templateVersion;
         private Long requesterUserId;
-        private Date generatedAt;
+        private Instant generatedAt;
         private List<OperationsReportSection> sections;
     }
 
