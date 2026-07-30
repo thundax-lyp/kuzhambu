@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDa
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopQueryResult;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopTagResult;
 import com.thundax.kuzhambu.operations.application.dashboard.service.OperationsDashboardApplicationService;
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardLegacyTimeAdapter;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionResolver;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionSnapshot;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
@@ -39,7 +40,6 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -181,13 +181,13 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
     private PeriodRange resolvePeriodRange(OperationsDashboardOverviewQuery query) {
         String periodType = normalizePeriodType(query == null ? null : query.getPeriodType());
         if (PERIOD_TYPE_CUSTOM.equals(periodType)) {
-            Date periodStart = query == null ? null : query.getPeriodStart();
-            Date periodEnd = query == null ? null : query.getPeriodEnd();
+            Instant periodStart = query == null ? null : query.getPeriodStart();
+            Instant periodEnd = query == null ? null : query.getPeriodEnd();
             if (periodStart == null || periodEnd == null) {
                 throw new IllegalArgumentException(
                         "Operations dashboard CUSTOM period requires periodStart and periodEnd.");
             }
-            if (periodStart.after(periodEnd)) {
+            if (periodStart.isAfter(periodEnd)) {
                 throw new IllegalArgumentException("Operations dashboard periodStart must not be after periodEnd.");
             }
             return new PeriodRange(periodStart, periodEnd);
@@ -201,7 +201,7 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
                         throw new IllegalArgumentException(
                                 "Unsupported operations dashboard periodType: " + periodType);
                 };
-        return new PeriodRange(Date.from(periodStart), Date.from(periodEnd));
+        return new PeriodRange(periodStart, periodEnd);
     }
 
     private String resolveBucketType(OperationsDashboardOverviewQuery query, PeriodRange periodRange) {
@@ -210,9 +210,7 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
             return "WEEK";
         }
         if (PERIOD_TYPE_CUSTOM.equals(periodType)) {
-            long days = Duration.between(
-                            periodRange.periodStart().toInstant(),
-                            periodRange.periodEnd().toInstant())
+            long days = Duration.between(periodRange.periodStart(), periodRange.periodEnd())
                     .toDays();
             return days <= 31 ? "DAY" : "WEEK";
         }
@@ -283,7 +281,7 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
                 alert.getSuggestion(),
                 alert.getRecoveryAction(),
                 alert.getRecoveryTarget(),
-                alert.getLastTriggeredAt(),
+                OperationsDashboardLegacyTimeAdapter.toInstant(alert.getLastTriggeredAt()),
                 alert.getFailureReason());
     }
 
@@ -351,5 +349,5 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
         return values == null ? List.of() : values;
     }
 
-    private record PeriodRange(Date periodStart, Date periodEnd) {}
+    private record PeriodRange(Instant periodStart, Instant periodEnd) {}
 }

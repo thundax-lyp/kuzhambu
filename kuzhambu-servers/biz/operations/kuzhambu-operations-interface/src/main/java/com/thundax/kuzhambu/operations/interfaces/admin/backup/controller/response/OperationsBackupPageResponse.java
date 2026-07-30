@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.response;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +21,7 @@ public class OperationsBackupPageResponse {
     private String checksum;
     private String failureReason;
     private Long requesterUserId;
-    private Date startedAt;
-    private Date completedAt;
-    private Date expiresAt;
+    private Instant startedAt;
+    private Instant completedAt;
+    private Instant expiresAt;
 }

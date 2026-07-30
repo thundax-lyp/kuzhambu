@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Date;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,9 +21,9 @@ public class OperationsDashboardOverviewRequest {
 
     @Schema(name = "periodStart", description = "自定义统计起始时间")
     @JsonProperty(value = "periodStart")
-    private Date periodStart;
+    private Instant periodStart;
 
     @Schema(name = "periodEnd", description = "自定义统计结束时间")
     @JsonProperty(value = "periodEnd")
-    private Date periodEnd;
+    private Instant periodEnd;
 }

@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository
 import com.thundax.kuzhambu.operations.infra.backup.persistence.assembler.BackupPersistenceAssembler;
 import com.thundax.kuzhambu.operations.infra.backup.persistence.dataobject.BackupDO;
 import com.thundax.kuzhambu.operations.infra.backup.persistence.mapper.BackupMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
@@ -89,7 +89,7 @@ public class BackupRepositoryImpl implements BackupRepository {
     }
 
     @Override
-    public List<BackupId> listExpiredBackupIds(Date now, int limit) {
+    public List<BackupId> listExpiredBackupIds(Instant now, int limit) {
         return mapper
                 .selectList(new LambdaQueryWrapper<BackupDO>()
                         .select(BackupDO::getBackupId)

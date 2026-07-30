@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.operations.domain.backup.repository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public interface BackupRepository {
@@ -21,7 +21,7 @@ public interface BackupRepository {
 
     int deleteById(BackupId id);
 
-    default List<BackupId> listExpiredBackupIds(Date now, int limit) {
+    default List<BackupId> listExpiredBackupIds(Instant now, int limit) {
         return List.of();
     }
 }

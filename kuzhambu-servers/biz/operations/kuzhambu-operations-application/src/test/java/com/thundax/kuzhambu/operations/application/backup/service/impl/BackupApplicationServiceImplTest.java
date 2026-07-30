@@ -25,7 +25,7 @@ import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupType;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
 import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository;
 import java.nio.file.Path;
-import java.util.Date;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,9 +124,9 @@ class BackupApplicationServiceImplTest {
                 "sha256-backup",
                 null,
                 1001L,
-                new Date(1_719_630_400_000L),
-                new Date(1_719_630_500_000L),
-                new Date(1_722_222_400_000L));
+                Instant.ofEpochMilli(1_719_630_400_000L),
+                Instant.ofEpochMilli(1_719_630_500_000L),
+                Instant.ofEpochMilli(1_722_222_400_000L));
         repository.records.put(9001L, record);
         BackupApplicationServiceImpl service = new BackupApplicationServiceImpl(
                 repository, new SuccessfulBackupScriptExecutor(), new OperationsBackupExecutionGuard());

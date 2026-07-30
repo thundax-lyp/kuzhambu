@@ -49,6 +49,7 @@ import com.thundax.kuzhambu.operations.domain.task.codec.LongTaskSnapshotIdCodec
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -124,13 +125,13 @@ class CleanupApplicationServiceImplTest {
         CleanupApplicationServiceImpl service =
                 new CleanupApplicationServiceImpl(repository, backupRepository, new FakeClassicsFacade());
 
-        OperationsCleanupDetailResult result = service.executeScheduled(
-                new OperationsCleanupExecuteCommand("EXPIRED_BACKUP", null, new Date(1_719_630_400_000L), 30, 1));
+        OperationsCleanupDetailResult result = service.executeScheduled(new OperationsCleanupExecuteCommand(
+                "EXPIRED_BACKUP", null, Instant.ofEpochMilli(1_719_630_400_000L), 30, 1));
 
         assertEquals(null, result.getRequesterUserId());
         assertEquals(1, result.getTotalCount());
         assertEquals(1, backupRepository.lastLimit);
-        assertEquals(new Date(1_717_038_400_000L), backupRepository.lastRequestedAt);
+        assertEquals(Instant.ofEpochMilli(1_717_038_400_000L), backupRepository.lastRequestedAt);
     }
 
     @Test
@@ -149,8 +150,8 @@ class CleanupApplicationServiceImplTest {
         CleanupApplicationServiceImpl service =
                 new CleanupApplicationServiceImpl(repository, new InMemoryBackupRepository(), classicsFacade);
 
-        service.executeScheduled(
-                new OperationsCleanupExecuteCommand("EXPIRED_SHARE", null, new Date(1_719_630_400_000L), 90, 5));
+        service.executeScheduled(new OperationsCleanupExecuteCommand(
+                "EXPIRED_SHARE", null, Instant.ofEpochMilli(1_719_630_400_000L), 90, 5));
 
         assertEquals(90, classicsFacade.lastListRequest.getRetentionDays());
         assertEquals(5, classicsFacade.lastListRequest.getLimit());
@@ -223,8 +224,8 @@ class CleanupApplicationServiceImplTest {
                 new FakeClassicsFacade(),
                 null);
 
-        OperationsCleanupDetailResult result = service.executeScheduled(
-                new OperationsCleanupExecuteCommand("EXPIRED_HEALTH_CHECK", null, new Date(1_719_630_400_000L), 30, 1));
+        OperationsCleanupDetailResult result = service.executeScheduled(new OperationsCleanupExecuteCommand(
+                "EXPIRED_HEALTH_CHECK", null, Instant.ofEpochMilli(1_719_630_400_000L), 30, 1));
 
         assertEquals("SUCCEEDED", result.getCleanupStatus());
         assertEquals(1, result.getTotalCount());
@@ -258,8 +259,8 @@ class CleanupApplicationServiceImplTest {
                 1,
                 null,
                 1001L,
-                new Date(1_719_630_400_000L),
-                new Date(1_719_630_500_000L),
+                Instant.ofEpochMilli(1_719_630_400_000L),
+                Instant.ofEpochMilli(1_719_630_500_000L),
                 List.of());
         repository.jobs.put(9001L, cleanupJob);
 
@@ -296,7 +297,7 @@ class CleanupApplicationServiceImplTest {
         public CleanupJobId insert(CleanupJob job) {
             CleanupJobId cleanupJobId = CleanupJobIdCodec.toDomain(nextCleanupId++);
             job.setId(cleanupJobId);
-            job.setStartedAt(new Date(1_719_000_000_000L));
+            job.setStartedAt(Instant.ofEpochMilli(1_719_000_000_000L));
             jobs.put(cleanupJobId.value(), job);
             return cleanupJobId;
         }
@@ -365,7 +366,7 @@ class CleanupApplicationServiceImplTest {
     private static final class InMemoryBackupRepository implements BackupRepository {
         private final Map<Long, BackupRecord> records = new LinkedHashMap<>();
         private List<BackupId> expiredBackupIds = List.of();
-        private Date lastRequestedAt;
+        private Instant lastRequestedAt;
         private int lastLimit;
 
         @Override
@@ -402,7 +403,7 @@ class CleanupApplicationServiceImplTest {
         }
 
         @Override
-        public List<BackupId> listExpiredBackupIds(Date now, int limit) {
+        public List<BackupId> listExpiredBackupIds(Instant now, int limit) {
             lastRequestedAt = now;
             lastLimit = limit;
             return expiredBackupIds.stream().limit(limit).toList();
