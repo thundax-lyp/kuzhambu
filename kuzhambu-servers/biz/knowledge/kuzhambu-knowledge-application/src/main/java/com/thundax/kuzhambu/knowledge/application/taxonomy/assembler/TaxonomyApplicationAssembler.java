@@ -47,8 +47,8 @@ public final class TaxonomyApplicationAssembler {
                 tag.getSource() == null ? null : tag.getSource().value(),
                 tag.getReviewStatus() == null ? null : tag.getReviewStatus().value(),
                 contentRefCount,
-                tag.getCreatedAt() == null ? null : tag.getCreatedAt().getTime(),
-                tag.getReviewedAt() == null ? null : tag.getReviewedAt().getTime());
+                tag.getCreatedAt() == null ? null : tag.getCreatedAt().toEpochMilli(),
+                tag.getReviewedAt() == null ? null : tag.getReviewedAt().toEpochMilli());
     }
 
     public static TagResult toResult(Tag tag, String categoryName, int contentRefCount, Long categoryId) {

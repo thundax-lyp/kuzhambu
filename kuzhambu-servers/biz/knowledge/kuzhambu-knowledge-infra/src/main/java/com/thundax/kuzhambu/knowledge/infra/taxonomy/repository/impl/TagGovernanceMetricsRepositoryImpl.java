@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagMappe
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.YearMonth;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -175,10 +175,10 @@ public class TagGovernanceMetricsRepositoryImpl implements TagGovernanceMetricsR
 
     private YearMonth resolveUsableMonth(Tag tag) {
         if (tag.getReviewedAt() != null) {
-            return YearMonth.from(tag.getReviewedAt().toInstant().atZone(ZoneId.systemDefault()));
+            return YearMonth.from(tag.getReviewedAt().atZone(ZoneOffset.UTC));
         }
         if (tag.getCreatedAt() != null) {
-            return YearMonth.from(tag.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()));
+            return YearMonth.from(tag.getCreatedAt().atZone(ZoneOffset.UTC));
         }
         return null;
     }
