@@ -32,13 +32,25 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageR
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionAiCallIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionAiCandidateIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionBatchJobIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionModelIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionModelNameCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionPromptVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionRequestIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionRequesterIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTraceIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
@@ -237,11 +249,11 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         effectivePage.normalize();
         PageResult<GraphExtractionTask> taskPage = repository.page(
                 taskType,
-                batchJobId,
+                GraphExtractionBatchJobIdCodec.toDomain(batchJobId),
                 triggerSource,
                 status,
                 sourceContentType,
-                sourceContentId,
+                GraphExtractionSourceContentIdCodec.toDomain(sourceContentId),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<GraphExtractionTaskResult> records =
@@ -286,8 +298,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         String commandSelectionScopeJson = command == null ? null : command.getSelectionScopeJson();
         Boolean commandReplaceUnconfirmedOnly = command == null ? null : command.getReplaceUnconfirmedOnly();
         Long commandRequestedBy = command == null ? null : command.getRequestedBy();
-        String resolvedTaskType = StringUtils.defaultIfBlank(commandTaskType, sourceTask.getTaskType());
-        if (!StringUtils.equals(resolvedTaskType, sourceTask.getTaskType())) {
+        String sourceTaskType = taskTypeValue(sourceTask);
+        String resolvedTaskType = StringUtils.defaultIfBlank(commandTaskType, sourceTaskType);
+        if (!StringUtils.equals(resolvedTaskType, sourceTaskType)) {
             throw new BizException("Knowledge graph regenerate task type does not match source task");
         }
         Boolean replaceUnconfirmedOnly =
@@ -303,13 +316,15 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 replaceUnconfirmedOnly,
                 sourceTaskId == null ? null : sourceTaskId.value(),
                 sourceTask.getSourceContentType(),
-                sourceTask.getSourceContentId(),
-                commandRequestedBy == null ? sourceTask.getRequestedBy() : commandRequestedBy,
+                GraphExtractionSourceContentIdCodec.toValue(sourceTask.getSourceContentId()),
+                commandRequestedBy == null
+                        ? GraphExtractionRequesterIdCodec.toValue(sourceTask.getRequestedBy())
+                        : commandRequestedBy,
                 null,
                 null,
-                sourceTask.getModelId(),
-                sourceTask.getModelName(),
-                sourceTask.getPromptVersionId(),
+                GraphExtractionModelIdCodec.toValue(sourceTask.getModelId()),
+                GraphExtractionModelNameCodec.toValue(sourceTask.getModelName()),
+                GraphExtractionPromptVersionIdCodec.toValue(sourceTask.getPromptVersionId()),
                 requestId,
                 traceId,
                 sourceTask.getPromptMessagesJson(),
@@ -331,17 +346,21 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         if (aiFacade == null) {
             throw new BizException("AI batch job service is not ready");
         }
-        List<GraphExtractionTask> tasks = repository.listByBatchJobId(batchJobId);
+        List<GraphExtractionTask> tasks =
+                repository.listByBatchJobId(GraphExtractionBatchJobIdCodec.toDomain(batchJobId));
         if (tasks.isEmpty()) {
             throw new BizException("Knowledge graph batch task not found: " + batchJobId);
         }
-        Date cancelledAt = new Date();
+        Instant cancelledAt = Instant.now();
         for (GraphExtractionTask task : tasks) {
-            if (!isBatchChildTask(task) || !STATUS_REQUESTED.equals(task.getStatus())) {
+            if (!isBatchChildTask(task) || !GraphExtractionTaskStatus.REQUESTED.equals(task.getStatus())) {
                 continue;
             }
-            task.setStatus(STATUS_CANCELLED);
-            task.setRequestedBy(requestedBy == null ? task.getRequestedBy() : requestedBy);
+            task.setStatus(GraphExtractionTaskStatus.CANCELLED);
+            task.setRequestedBy(
+                    requestedBy == null
+                            ? task.getRequestedBy()
+                            : GraphExtractionRequesterIdCodec.toDomain(requestedBy));
             task.setCompletedAt(cancelledAt);
             repository.update(task);
         }
@@ -350,7 +369,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             if (!isBatchParentTask(task)) {
                 continue;
             }
-            task.setStatus(batchResult == null ? STATUS_CANCELLED : batchResult.getStatus());
+            task.setStatus(
+                    GraphExtractionTaskStatus.from(batchResult == null ? STATUS_CANCELLED : batchResult.getStatus()));
             task.setCompletedAt(resolveBatchCompletedAt(batchResult, cancelledAt));
             repository.update(task);
             break;
@@ -523,10 +543,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         }
         AiCandidateFacadeDto candidate =
                 aiFacade.requirePendingCandidate(RequirePendingAiCandidateFacadeRequest.builder()
-                        .candidateId(task.getAiCandidateId())
+                        .candidateId(GraphExtractionAiCandidateIdCodec.toValue(task.getAiCandidateId()))
                         .contentType(task.getSourceContentType())
-                        .contentId(task.getSourceContentId())
-                        .capability(resolveCapability(task.getTaskType()))
+                        .contentId(GraphExtractionSourceContentIdCodec.toValue(task.getSourceContentId()))
+                        .capability(resolveCapability(taskTypeValue(task)))
                         .build());
         candidateApplySupport.apply(task, candidate);
         aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
@@ -535,8 +555,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 .resultPayload(candidate.getResultPayload())
                 .appliedAt(Instant.now())
                 .build());
-        task.setStatus(STATUS_APPLIED);
-        task.setAppliedAt(new Date());
+        task.setStatus(GraphExtractionTaskStatus.APPLIED);
+        task.setAppliedAt(Instant.now());
         repository.update(task);
         return syncTaskResult(task);
     }
@@ -620,8 +640,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 .build());
         Long batchJobId = batchAction == null ? null : batchAction.getBatchId();
         GraphExtractionTask parentTask = new GraphExtractionTask();
-        parentTask.setBatchJobId(batchJobId);
-        parentTask.setTaskType(taskType);
+        parentTask.setBatchJobId(GraphExtractionBatchJobIdCodec.toDomain(batchJobId));
+        parentTask.setTaskType(GraphExtractionTaskType.from(taskType));
         parentTask.setScopeType(scopeType);
         parentTask.setScopeJson(scopeJson);
         parentTask.setTriggerSource(triggerSource);
@@ -629,10 +649,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         parentTask.setReplaceUnconfirmedOnly(replaceUnconfirmedOnly);
         parentTask.setParentTaskId(GraphExtractionTaskIdCodec.toDomain(parentTaskId));
         parentTask.setSourceContentType(sourceContentType);
-        parentTask.setSourceContentId(sourceContentId);
-        parentTask.setRequestedBy(requestedBy);
-        parentTask.setStatus(STATUS_REQUESTED);
-        parentTask.setRequestedAt(new Date());
+        parentTask.setSourceContentId(GraphExtractionSourceContentIdCodec.toDomain(sourceContentId));
+        parentTask.setRequestedBy(GraphExtractionRequesterIdCodec.toDomain(requestedBy));
+        parentTask.setStatus(GraphExtractionTaskStatus.REQUESTED);
+        parentTask.setRequestedAt(Instant.now());
         fillRequestSnapshot(
                 parentTask,
                 modelId,
@@ -666,8 +686,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             GraphExtractionTaskId childId = repository.save(childTask);
             childTask.setId(childId);
             if (!aiFacade.canDispatchNextBatchUnit(batchJobId)) {
-                childTask.setStatus(STATUS_CANCELLED);
-                childTask.setCompletedAt(new Date());
+                childTask.setStatus(GraphExtractionTaskStatus.CANCELLED);
+                childTask.setCompletedAt(Instant.now());
                 repository.update(childTask);
                 continue;
             }
@@ -710,11 +730,12 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                     childTask);
         }
         AiBatchJobFacadeResponse batchResult = aiFacade.getBatchJob(batchJobId);
-        parentTask.setStatus(batchResult == null ? STATUS_REQUESTED : batchResult.getStatus());
+        parentTask.setStatus(
+                GraphExtractionTaskStatus.from(batchResult == null ? STATUS_REQUESTED : batchResult.getStatus()));
         if (batchResult != null && batchResult.getCompletedAt() != null) {
-            parentTask.setCompletedAt(Date.from(batchResult.getCompletedAt()));
-        } else if (STATUS_CANCELLED.equals(parentTask.getStatus())) {
-            parentTask.setCompletedAt(new Date());
+            parentTask.setCompletedAt(batchResult.getCompletedAt());
+        } else if (GraphExtractionTaskStatus.CANCELLED.equals(parentTask.getStatus())) {
+            parentTask.setCompletedAt(Instant.now());
         }
         repository.update(parentTask);
         return syncTaskResult(parentTask);
@@ -795,22 +816,25 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         }
         try {
             KnowledgeAiExtractionFacadeResponse result = operation.invoke(aiRequest);
-            task.setAiCallId(result == null ? null : result.getCallId());
-            task.setAiCandidateId(result == null ? null : result.getCandidateId());
+            task.setAiCallId(GraphExtractionAiCallIdCodec.toDomain(result == null ? null : result.getCallId()));
+            task.setAiCandidateId(
+                    GraphExtractionAiCandidateIdCodec.toDomain(result == null ? null : result.getCandidateId()));
             task.setStatus(
-                    result != null && STATUS_SUCCEEDED.equals(result.getStatus()) ? STATUS_SUCCEEDED : STATUS_FAILED);
+                    result != null && STATUS_SUCCEEDED.equals(result.getStatus())
+                            ? GraphExtractionTaskStatus.SUCCEEDED
+                            : GraphExtractionTaskStatus.FAILED);
             task.setErrorType(result == null ? "KNOWLEDGE_AI_EMPTY_RESULT" : result.getErrorType());
             task.setErrorMessage(
                     result == null ? "Knowledge AI extraction returned empty result" : result.getErrorMessage());
-            task.setCompletedAt(new Date());
+            task.setCompletedAt(Instant.now());
             repository.update(task);
             updateBatchOnTaskFinished(batchJobId, task);
             return toResult(task);
         } catch (RuntimeException ex) {
-            task.setStatus(STATUS_FAILED);
+            task.setStatus(GraphExtractionTaskStatus.FAILED);
             task.setErrorType("KNOWLEDGE_AI_EXTRACTION_FAILED");
             task.setErrorMessage(ex.getMessage());
-            task.setCompletedAt(new Date());
+            task.setCompletedAt(Instant.now());
             repository.update(task);
             updateBatchOnTaskFinished(batchJobId, task);
             if (rethrowOnFailure) {
@@ -833,8 +857,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             Long sourceContentId,
             Long requestedBy) {
         GraphExtractionTask task = new GraphExtractionTask();
-        task.setBatchJobId(batchJobId);
-        task.setTaskType(taskType);
+        task.setBatchJobId(GraphExtractionBatchJobIdCodec.toDomain(batchJobId));
+        task.setTaskType(GraphExtractionTaskType.from(taskType));
         task.setScopeType(scopeType);
         task.setScopeJson(scopeJson);
         task.setTriggerSource(triggerSource);
@@ -842,10 +866,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         task.setReplaceUnconfirmedOnly(replaceUnconfirmedOnly);
         task.setParentTaskId(parentTaskId);
         task.setSourceContentType(sourceContentType);
-        task.setSourceContentId(sourceContentId);
-        task.setRequestedBy(requestedBy);
-        task.setStatus(STATUS_REQUESTED);
-        task.setRequestedAt(new Date());
+        task.setSourceContentId(GraphExtractionSourceContentIdCodec.toDomain(sourceContentId));
+        task.setRequestedBy(GraphExtractionRequesterIdCodec.toDomain(requestedBy));
+        task.setStatus(GraphExtractionTaskStatus.REQUESTED);
+        task.setRequestedAt(Instant.now());
         return task;
     }
 
@@ -886,11 +910,11 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         if (task == null) {
             return;
         }
-        task.setModelId(modelId);
-        task.setModelName(modelName);
-        task.setPromptVersionId(promptVersionId);
-        task.setRequestId(requestId);
-        task.setTraceId(traceId);
+        task.setModelId(GraphExtractionModelIdCodec.toDomain(modelId));
+        task.setModelName(GraphExtractionModelNameCodec.toDomain(modelName));
+        task.setPromptVersionId(GraphExtractionPromptVersionIdCodec.toDomain(promptVersionId));
+        task.setRequestId(GraphExtractionRequestIdCodec.toDomain(requestId));
+        task.setTraceId(GraphExtractionTraceIdCodec.toDomain(traceId));
         task.setPromptMessagesJson(promptMessagesJson);
         task.setPromptVariablesJson(promptVariablesJson);
         task.setPromptHash(promptHash);
@@ -951,8 +975,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         }
         return new GraphExtractionTaskResult(
                 task.getId() == null ? null : String.valueOf(task.getId().value()),
-                task.getBatchJobId(),
-                task.getTaskType(),
+                GraphExtractionBatchJobIdCodec.toValue(task.getBatchJobId()),
+                taskTypeValue(task),
                 task.getScopeType(),
                 task.getScopeJson(),
                 task.getTriggerSource(),
@@ -960,13 +984,13 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 task.getReplaceUnconfirmedOnly(),
                 task.getParentTaskId() == null ? null : task.getParentTaskId().value(),
                 task.getSourceContentType(),
-                task.getSourceContentId(),
-                task.getAiCallId(),
-                task.getAiCandidateId(),
-                task.getStatus(),
+                GraphExtractionSourceContentIdCodec.toValue(task.getSourceContentId()),
+                GraphExtractionAiCallIdCodec.toValue(task.getAiCallId()),
+                GraphExtractionAiCandidateIdCodec.toValue(task.getAiCandidateId()),
+                statusValue(task),
                 task.getErrorType(),
                 task.getErrorMessage(),
-                task.getRequestedBy(),
+                GraphExtractionRequesterIdCodec.toValue(task.getRequestedBy()),
                 timeValue(task.getRequestedAt()),
                 timeValue(task.getCompletedAt()),
                 timeValue(task.getAppliedAt()));
@@ -993,12 +1017,12 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         AiInvocationLogFacadeDto invocationLog = task == null || task.getAiCallId() == null
                 ? null
                 : aiFacade.getInvocationLog(GetAiInvocationLogFacadeRequest.builder()
-                        .callId(task.getAiCallId())
+                        .callId(GraphExtractionAiCallIdCodec.toValue(task.getAiCallId()))
                         .build());
         AiCandidateFacadeDto candidate = task == null || task.getAiCandidateId() == null
                 ? null
                 : aiFacade.getCandidate(GetAiCandidateFacadeRequest.builder()
-                        .candidateId(task.getAiCandidateId())
+                        .candidateId(GraphExtractionAiCandidateIdCodec.toValue(task.getAiCandidateId()))
                         .build());
         if (invocationLog != null) {
             result.setAiCallId(invocationLog.getCallId());
@@ -1143,6 +1167,22 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         return value == null ? null : value.getTime();
     }
 
+    private Long timeValue(Instant value) {
+        return value == null ? null : value.toEpochMilli();
+    }
+
+    private String taskTypeValue(GraphExtractionTask task) {
+        return task == null || task.getTaskType() == null
+                ? null
+                : task.getTaskType().value();
+    }
+
+    private String statusValue(GraphExtractionTask task) {
+        return task == null || task.getStatus() == null
+                ? null
+                : task.getStatus().value();
+    }
+
     private String resolveCapability(String taskType) {
         return switch (taskType) {
             case TASK_TYPE_RELATION -> "relation_extraction";
@@ -1167,10 +1207,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         }
         validateCommandBase(
                 sourceTask.getSourceContentType(),
-                sourceTask.getModelId(),
-                sourceTask.getModelName(),
-                sourceTask.getRequestId(),
-                sourceTask.getTraceId(),
+                GraphExtractionModelIdCodec.toValue(sourceTask.getModelId()),
+                GraphExtractionModelNameCodec.toValue(sourceTask.getModelName()),
+                GraphExtractionRequestIdCodec.toValue(sourceTask.getRequestId()),
+                GraphExtractionTraceIdCodec.toValue(sourceTask.getTraceId()),
                 sourceTask.getPromptMessagesJson(),
                 sourceTask.getInputPayloadJson());
     }
@@ -1279,11 +1319,11 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         if (batchJobId == null || aiFacade == null || task == null) {
             return;
         }
-        if (STATUS_SUCCEEDED.equals(task.getStatus())) {
+        if (GraphExtractionTaskStatus.SUCCEEDED.equals(task.getStatus())) {
             aiFacade.recordBatchSuccess(batchJobId);
             return;
         }
-        if (STATUS_FAILED.equals(task.getStatus())) {
+        if (GraphExtractionTaskStatus.FAILED.equals(task.getStatus())) {
             aiFacade.recordBatchFailure(AiBatchJobFailureFacadeRequest.builder()
                     .batchId(batchJobId)
                     .failureSummaryJson(summarizeFailure(task))
@@ -1308,15 +1348,15 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         return task != null && task.getBatchJobId() != null && task.getParentTaskId() != null;
     }
 
-    private Date resolveBatchCompletedAt(AiBatchJobFacadeResponse batchResult, Date fallback) {
+    private Instant resolveBatchCompletedAt(AiBatchJobFacadeResponse batchResult, Instant fallback) {
         if (batchResult == null) {
             return fallback;
         }
         if (batchResult.getCompletedAt() != null) {
-            return Date.from(batchResult.getCompletedAt());
+            return batchResult.getCompletedAt();
         }
         if (batchResult.getCancelledAt() != null) {
-            return Date.from(batchResult.getCancelledAt());
+            return batchResult.getCancelledAt();
         }
         return fallback;
     }

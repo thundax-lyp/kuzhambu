@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
@@ -34,9 +36,6 @@ public class KnowledgeGraphCandidateApplySupport {
     private static final String STATUS_AI_EXTRACTED = "AI_EXTRACTED";
     private static final String STATUS_MANUAL_CONFIRMED = "MANUAL_CONFIRMED";
     private static final String STATUS_APPLIED = "APPLIED";
-    private static final String TASK_TYPE_RELATION = "RELATION";
-    private static final String TASK_TYPE_GRAPH = "GRAPH";
-    private static final String TASK_TYPE_LINEAGE = "LINEAGE";
 
     private final GraphVersionRepository graphVersionRepository;
     private final KnowledgeEntityRepository knowledgeEntityRepository;
@@ -72,14 +71,15 @@ public class KnowledgeGraphCandidateApplySupport {
         Date appliedAt = Date.from(Instant.now());
         GraphVersion version = ensureVersion(task, candidate, appliedAt);
         JsonNode payload = parsePayload(candidate.getResultPayload());
-        if (TASK_TYPE_LINEAGE.equals(task.getTaskType())) {
+        if (GraphExtractionTaskType.LINEAGE.equals(task.getTaskType())) {
             applyLineageNodes(version, payload, appliedAt);
             applyLineageRelations(version, payload, appliedAt);
-        } else if (TASK_TYPE_RELATION.equals(task.getTaskType()) || TASK_TYPE_GRAPH.equals(task.getTaskType())) {
+        } else if (GraphExtractionTaskType.RELATION.equals(task.getTaskType())
+                || GraphExtractionTaskType.GRAPH.equals(task.getTaskType())) {
             applyEntities(version, payload, appliedAt);
             applyRelations(version, payload, appliedAt);
         } else {
-            throw new BizException("Unsupported graph extraction task type: " + task.getTaskType());
+            throw new BizException("Unsupported graph extraction task type: " + taskTypeValue(task));
         }
         return version;
     }
@@ -90,20 +90,28 @@ public class KnowledgeGraphCandidateApplySupport {
             return existing;
         }
         GraphVersion latest = graphVersionRepository.findLatest(
-                task.getTaskType(), task.getSourceContentType(), task.getSourceContentId());
+                taskTypeValue(task),
+                task.getSourceContentType(),
+                GraphExtractionSourceContentIdCodec.toValue(task.getSourceContentId()));
         GraphVersion version = new GraphVersion();
         version.setTaskId(task.getId());
         version.setCandidateId(candidate.getCandidateId());
-        version.setTaskType(task.getTaskType());
+        version.setTaskType(taskTypeValue(task));
         version.setScopeType(task.getScopeType());
         version.setScopeJson(task.getScopeJson());
         version.setSourceContentType(task.getSourceContentType());
-        version.setSourceContentId(task.getSourceContentId());
+        version.setSourceContentId(GraphExtractionSourceContentIdCodec.toValue(task.getSourceContentId()));
         version.setVersionNo(latest == null || latest.getVersionNo() == null ? 1 : latest.getVersionNo() + 1);
         version.setStatus(STATUS_APPLIED);
         version.setAppliedAt(appliedAt);
         version.setId(graphVersionRepository.save(version));
         return version;
+    }
+
+    private String taskTypeValue(GraphExtractionTask task) {
+        return task == null || task.getTaskType() == null
+                ? null
+                : task.getTaskType().value();
     }
 
     private void applyEntities(GraphVersion version, JsonNode payload, Date appliedAt) {

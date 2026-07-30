@@ -6,11 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
@@ -39,11 +41,11 @@ class KnowledgeGraphCandidateApplySupportTest {
                 new FakeKnowledgeLineageRelationRepository());
         GraphExtractionTask task = new GraphExtractionTask();
         task.setId(GraphExtractionTaskIdCodec.toDomain(11L));
-        task.setTaskType("GRAPH");
+        task.setTaskType(GraphExtractionTaskType.GRAPH);
         task.setScopeType("ENTRY");
         task.setScopeJson("{\"entryIds\":[1]}");
         task.setSourceContentType("SANCAI_ENTRY");
-        task.setSourceContentId(1L);
+        task.setSourceContentId(GraphExtractionSourceContentIdCodec.toDomain(1L));
         AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
                 .candidateId(22L)
                 .resultFormat("STRUCTURED")

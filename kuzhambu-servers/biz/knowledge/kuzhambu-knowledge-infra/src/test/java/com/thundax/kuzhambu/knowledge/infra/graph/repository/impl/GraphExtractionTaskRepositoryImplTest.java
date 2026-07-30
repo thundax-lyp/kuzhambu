@@ -8,7 +8,13 @@ import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionBatchJobIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionModelIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionModelNameCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionRequestIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTraceIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphExtractionTaskMapper;
@@ -28,10 +34,10 @@ class GraphExtractionTaskRepositoryImplTest {
 
         assertNotNull(result);
         assertEquals(9001L, result.getId().value());
-        assertEquals(5001L, result.getModelId());
-        assertEquals("gpt-5.5", result.getModelName());
-        assertEquals("req-1", result.getRequestId());
-        assertEquals("trace-1", result.getTraceId());
+        assertEquals(5001L, GraphExtractionModelIdCodec.toValue(result.getModelId()));
+        assertEquals("gpt-5.5", GraphExtractionModelNameCodec.toValue(result.getModelName()));
+        assertEquals("req-1", GraphExtractionRequestIdCodec.toValue(result.getRequestId()));
+        assertEquals("trace-1", GraphExtractionTraceIdCodec.toValue(result.getTraceId()));
         assertEquals("[{\"role\":\"system\",\"content\":\"extract\"}]", result.getPromptMessagesJson());
         assertEquals("{\"content\":\"天地玄黄\"}", result.getInputPayloadJson());
         assertEquals(Boolean.TRUE, result.getForceJson());
@@ -46,11 +52,21 @@ class GraphExtractionTaskRepositoryImplTest {
         dataObjectPage.setRecords(List.of(dataObject(9001L)));
         when(mapper.selectPage(any(Page.class), any())).thenReturn(dataObjectPage);
 
-        PageResult<GraphExtractionTask> result =
-                repository.page("GRAPH", 1001L, "QUALITY_REPORT", "SUCCEEDED", "SANCAI_ENTRY", 1001L, 1, 10);
+        PageResult<GraphExtractionTask> result = repository.page(
+                "GRAPH",
+                GraphExtractionBatchJobIdCodec.toDomain(1001L),
+                "QUALITY_REPORT",
+                "SUCCEEDED",
+                "SANCAI_ENTRY",
+                GraphExtractionSourceContentIdCodec.toDomain(1001L),
+                1,
+                10);
 
         assertEquals(1, result.getRecords().size());
-        assertEquals(Long.valueOf(1001L), result.getRecords().get(0).getBatchJobId());
+        assertEquals(
+                Long.valueOf(1001L),
+                GraphExtractionBatchJobIdCodec.toValue(
+                        result.getRecords().get(0).getBatchJobId()));
         assertEquals("QUALITY_REPORT", result.getRecords().get(0).getTriggerSource());
     }
 

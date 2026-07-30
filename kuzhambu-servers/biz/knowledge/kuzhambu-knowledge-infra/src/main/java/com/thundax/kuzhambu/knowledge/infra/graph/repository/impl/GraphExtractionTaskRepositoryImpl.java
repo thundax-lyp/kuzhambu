@@ -6,8 +6,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionBatchJobIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionBatchJobId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionSourceContentId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.KnowledgeGraphPersistenceAssembler;
@@ -85,9 +89,10 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     }
 
     @Override
-    public List<GraphExtractionTask> listByBatchJobId(Long batchJobId) {
+    public List<GraphExtractionTask> listByBatchJobId(GraphExtractionBatchJobId batchJobId) {
+        Long batchJobIdValue = GraphExtractionBatchJobIdCodec.toValue(batchJobId);
         QueryWrapper<GraphExtractionTaskDO> wrapper = new QueryWrapper<>();
-        wrapper.eq(batchJobId != null, "batch_job_id", batchJobId)
+        wrapper.eq(batchJobIdValue != null, "batch_job_id", batchJobIdValue)
                 .orderByAsc("requested_at")
                 .orderByAsc("id");
         return KnowledgeGraphPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
@@ -96,20 +101,22 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     @Override
     public PageResult<GraphExtractionTask> page(
             String taskType,
-            Long batchJobId,
+            GraphExtractionBatchJobId batchJobId,
             String triggerSource,
             String status,
             String sourceContentType,
-            Long sourceContentId,
+            GraphExtractionSourceContentId sourceContentId,
             int pageNo,
             int pageSize) {
+        Long batchJobIdValue = GraphExtractionBatchJobIdCodec.toValue(batchJobId);
+        Long sourceContentIdValue = GraphExtractionSourceContentIdCodec.toValue(sourceContentId);
         QueryWrapper<GraphExtractionTaskDO> wrapper = new QueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(taskType), "task_type", taskType)
-                .eq(batchJobId != null, "batch_job_id", batchJobId)
+                .eq(batchJobIdValue != null, "batch_job_id", batchJobIdValue)
                 .eq(StringUtils.isNotBlank(triggerSource), "trigger_source", triggerSource)
                 .eq(StringUtils.isNotBlank(status), "status", status)
                 .eq(StringUtils.isNotBlank(sourceContentType), "source_content_type", sourceContentType)
-                .eq(sourceContentId != null, "source_content_id", sourceContentId)
+                .eq(sourceContentIdValue != null, "source_content_id", sourceContentIdValue)
                 .orderByDesc("requested_at")
                 .orderByDesc("id");
         IPage<GraphExtractionTaskDO> dataObjectPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);

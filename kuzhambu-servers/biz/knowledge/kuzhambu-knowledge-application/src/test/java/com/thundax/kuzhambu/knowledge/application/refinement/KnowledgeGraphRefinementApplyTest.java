@@ -16,6 +16,8 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionBatchJobId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionSourceContentId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
@@ -261,18 +263,18 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public List<GraphExtractionTask> listByBatchJobId(Long batchJobId) {
+        public List<GraphExtractionTask> listByBatchJobId(GraphExtractionBatchJobId batchJobId) {
             return List.of();
         }
 
         @Override
         public PageResult<GraphExtractionTask> page(
                 String taskType,
-                Long batchJobId,
+                GraphExtractionBatchJobId batchJobId,
                 String triggerSource,
                 String status,
                 String sourceContentType,
-                Long sourceContentId,
+                GraphExtractionSourceContentId sourceContentId,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, 0, List.of());
