@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.discovery.infra.search.persistence.assembler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.discovery.application.search.support.SearchTimeObjectMapperFactory;
 import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
@@ -12,7 +13,7 @@ import java.util.List;
 
 public final class SearchEventPersistenceAssembler {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = SearchTimeObjectMapperFactory.create();
 
     private SearchEventPersistenceAssembler() {}
 
