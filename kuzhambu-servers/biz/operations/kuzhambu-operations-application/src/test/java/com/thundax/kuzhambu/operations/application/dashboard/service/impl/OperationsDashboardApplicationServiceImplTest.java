@@ -39,6 +39,7 @@ import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -279,10 +280,10 @@ class OperationsDashboardApplicationServiceImplTest {
                 permissionResolverWithAllPrivileges());
 
         OperationsDashboardOverviewResult result = service.overview(new OperationsDashboardOverviewQuery(
-                "CUSTOM", new Date(1_719_630_400_000L), new Date(1_719_716_800_000L)));
+                "CUSTOM", Instant.ofEpochMilli(1_719_630_400_000L), Instant.ofEpochMilli(1_719_716_800_000L)));
 
-        assertEquals(new Date(1_719_630_400_000L), result.getPeriodStart());
-        assertEquals(new Date(1_719_716_800_000L), result.getPeriodEnd());
+        assertEquals(Instant.ofEpochMilli(1_719_630_400_000L), result.getPeriodStart());
+        assertEquals(Instant.ofEpochMilli(1_719_716_800_000L), result.getPeriodEnd());
         assertEquals("DAY", summaryGateway.bucketType);
         assertEquals(2, result.getUnhealthyComponentCount());
     }
@@ -300,7 +301,7 @@ class OperationsDashboardApplicationServiceImplTest {
         assertEquals("WEEK", summaryGateway.bucketType);
 
         service.overview(new OperationsDashboardOverviewQuery(
-                "CUSTOM", new Date(1_717_286_400_000L), new Date(1_720_483_200_000L)));
+                "CUSTOM", Instant.ofEpochMilli(1_717_286_400_000L), Instant.ofEpochMilli(1_720_483_200_000L)));
         assertEquals("WEEK", summaryGateway.bucketType);
     }
 
@@ -315,7 +316,7 @@ class OperationsDashboardApplicationServiceImplTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> service.overview(new OperationsDashboardOverviewQuery(
-                        "CUSTOM", new Date(1_719_716_800_000L), new Date(1_719_630_400_000L))));
+                        "CUSTOM", Instant.ofEpochMilli(1_719_716_800_000L), Instant.ofEpochMilli(1_719_630_400_000L))));
     }
 
     private static OperationsCrossDomainSummary summary() {
@@ -571,8 +572,8 @@ class OperationsDashboardApplicationServiceImplTest {
 
         @Override
         public OperationsCrossDomainSummary loadSummary(
-                Date periodStart,
-                Date periodEnd,
+                Instant periodStart,
+                Instant periodEnd,
                 String bucketType,
                 OperationsDashboardPermissionSnapshot permissions) {
             this.bucketType = bucketType;

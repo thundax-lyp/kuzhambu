@@ -51,8 +51,8 @@ class DefaultOperationsDashboardSummaryGatewayTest {
         when(knowledgeFacade.summary(any())).thenReturn(knowledgeSummary);
         DefaultOperationsDashboardSummaryGateway gateway = new DefaultOperationsDashboardSummaryGateway(
                 classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
-        Date periodStart = Date.from(Instant.parse("2026-06-01T00:00:00Z"));
-        Date periodEnd = Date.from(Instant.parse("2026-06-30T23:59:59Z"));
+        Instant periodStart = Instant.parse("2026-06-01T00:00:00Z");
+        Instant periodEnd = Instant.parse("2026-06-30T23:59:59Z");
         OperationsDashboardPermissionSnapshot permissions =
                 new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true);
 
@@ -74,14 +74,14 @@ class DefaultOperationsDashboardSummaryGatewayTest {
         verify(aiFacade).summary(aiCaptor.capture());
         verify(discoveryFacade).summary(discoveryCaptor.capture());
         verify(knowledgeFacade).summary(knowledgeCaptor.capture());
-        assertSame(periodStart, classicsCaptor.getValue().getPeriodStart());
-        assertSame(periodEnd, classicsCaptor.getValue().getPeriodEnd());
-        assertEquals(periodStart.toInstant(), aiCaptor.getValue().getPeriodStart());
-        assertEquals(periodEnd.toInstant(), aiCaptor.getValue().getPeriodEnd());
-        assertEquals(periodStart.toInstant(), discoveryCaptor.getValue().getPeriodStart());
-        assertEquals(periodEnd.toInstant(), discoveryCaptor.getValue().getPeriodEnd());
-        assertSame(periodStart, knowledgeCaptor.getValue().getPeriodStart());
-        assertSame(periodEnd, knowledgeCaptor.getValue().getPeriodEnd());
+        assertEquals(Date.from(periodStart), classicsCaptor.getValue().getPeriodStart());
+        assertEquals(Date.from(periodEnd), classicsCaptor.getValue().getPeriodEnd());
+        assertEquals(periodStart, aiCaptor.getValue().getPeriodStart());
+        assertEquals(periodEnd, aiCaptor.getValue().getPeriodEnd());
+        assertEquals(periodStart, discoveryCaptor.getValue().getPeriodStart());
+        assertEquals(periodEnd, discoveryCaptor.getValue().getPeriodEnd());
+        assertEquals(Date.from(periodStart), knowledgeCaptor.getValue().getPeriodStart());
+        assertEquals(Date.from(periodEnd), knowledgeCaptor.getValue().getPeriodEnd());
         assertEquals("WEEK", classicsCaptor.getValue().getBucketType());
         assertEquals("WEEK", aiCaptor.getValue().getBucketType());
         assertEquals("WEEK", discoveryCaptor.getValue().getBucketType());
@@ -100,10 +100,7 @@ class DefaultOperationsDashboardSummaryGatewayTest {
                 new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false, false);
 
         OperationsCrossDomainSummary result = gateway.loadSummary(
-                Date.from(Instant.parse("2026-06-01T00:00:00Z")),
-                Date.from(Instant.parse("2026-06-30T23:59:59Z")),
-                "DAY",
-                permissions);
+                Instant.parse("2026-06-01T00:00:00Z"), Instant.parse("2026-06-30T23:59:59Z"), "DAY", permissions);
 
         assertSame(null, result.classicsSummary());
         assertSame(null, result.aiSummary());
@@ -127,10 +124,7 @@ class DefaultOperationsDashboardSummaryGatewayTest {
                 new OperationsDashboardPermissionSnapshot(false, false, true, false, false, false, false, false);
 
         OperationsCrossDomainSummary result = gateway.loadSummary(
-                Date.from(Instant.parse("2026-06-01T00:00:00Z")),
-                Date.from(Instant.parse("2026-06-30T23:59:59Z")),
-                "DAY",
-                permissions);
+                Instant.parse("2026-06-01T00:00:00Z"), Instant.parse("2026-06-30T23:59:59Z"), "DAY", permissions);
 
         assertSame(6L, result.discoverySummary().getSearchCount());
         assertSame(null, result.classicsSummary());
@@ -154,10 +148,7 @@ class DefaultOperationsDashboardSummaryGatewayTest {
                 new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false, true);
 
         OperationsCrossDomainSummary result = gateway.loadSummary(
-                Date.from(Instant.parse("2026-06-01T00:00:00Z")),
-                Date.from(Instant.parse("2026-06-30T23:59:59Z")),
-                "DAY",
-                permissions);
+                Instant.parse("2026-06-01T00:00:00Z"), Instant.parse("2026-06-30T23:59:59Z"), "DAY", permissions);
 
         assertSame(null, result.classicsSummary());
         assertSame(null, result.aiSummary());
@@ -178,8 +169,8 @@ class DefaultOperationsDashboardSummaryGatewayTest {
         assertThrows(
                 NullPointerException.class,
                 () -> gateway.loadSummary(
-                        Date.from(Instant.parse("2026-06-01T00:00:00Z")),
-                        Date.from(Instant.parse("2026-06-30T23:59:59Z")),
+                        Instant.parse("2026-06-01T00:00:00Z"),
+                        Instant.parse("2026-06-30T23:59:59Z"),
                         "DAY",
                         permissions));
     }
