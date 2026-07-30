@@ -274,9 +274,9 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 null,
                 null,
                 requesterUserId,
-                startedAt,
+                startedAt.toInstant(),
                 null,
-                new Date(startedAt.getTime() + RETENTION_MILLIS));
+                startedAt.toInstant().plusMillis(RETENTION_MILLIS));
     }
 
     private void updatePreRestoreSuccess(BackupRecord preRestoreRecord, String preRestoreTimestamp) {
@@ -286,7 +286,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         preRestoreRecord.setFileSizeBytes(artifact.getFileSizeBytes());
         preRestoreRecord.setChecksum(artifact.getChecksum());
         preRestoreRecord.setBackupStatus(BackupStatus.SUCCEEDED.value());
-        preRestoreRecord.setCompletedAt(new Date());
+        preRestoreRecord.setCompletedAt(java.time.Instant.now());
         backupRepository.update(preRestoreRecord);
     }
 
@@ -298,12 +298,12 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
             preRestoreRecord.setFileSizeBytes(artifact.getFileSizeBytes());
             preRestoreRecord.setChecksum(artifact.getChecksum());
             preRestoreRecord.setBackupStatus(BackupStatus.SUCCEEDED.value());
-            preRestoreRecord.setCompletedAt(new Date());
+            preRestoreRecord.setCompletedAt(java.time.Instant.now());
             backupRepository.update(preRestoreRecord);
         } catch (RuntimeException preRestoreException) {
             preRestoreRecord.setBackupStatus(BackupStatus.FAILED.value());
             preRestoreRecord.setFailureReason(truncateFailureReason(restoreException.getMessage()));
-            preRestoreRecord.setCompletedAt(new Date());
+            preRestoreRecord.setCompletedAt(java.time.Instant.now());
             backupRepository.update(preRestoreRecord);
         }
     }
@@ -311,7 +311,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
     private void markPreRestoreFailed(BackupRecord preRestoreRecord, RuntimeException exception) {
         preRestoreRecord.setBackupStatus(BackupStatus.FAILED.value());
         preRestoreRecord.setFailureReason(truncateFailureReason(exception.getMessage()));
-        preRestoreRecord.setCompletedAt(new Date());
+        preRestoreRecord.setCompletedAt(java.time.Instant.now());
         backupRepository.update(preRestoreRecord);
     }
 

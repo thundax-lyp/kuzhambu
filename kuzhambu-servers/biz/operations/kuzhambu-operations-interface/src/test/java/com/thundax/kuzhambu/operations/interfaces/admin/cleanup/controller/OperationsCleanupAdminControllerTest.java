@@ -19,7 +19,7 @@ import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.reque
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.request.OperationsCleanupExecuteRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.request.OperationsCleanupPageRequest;
 import java.lang.reflect.Method;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -64,8 +64,8 @@ class OperationsCleanupAdminControllerTest {
                         0,
                         null,
                         1001L,
-                        new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L),
+                        Instant.ofEpochMilli(1_719_630_400_000L),
+                        Instant.ofEpochMilli(1_719_630_500_000L),
                         List.of()));
         when(service.page(any(), any()))
                 .thenReturn(PageResult.of(
@@ -81,8 +81,8 @@ class OperationsCleanupAdminControllerTest {
                                 0,
                                 null,
                                 1001L,
-                                new Date(1_719_630_400_000L),
-                                new Date(1_719_630_500_000L)))));
+                                Instant.ofEpochMilli(1_719_630_400_000L),
+                                Instant.ofEpochMilli(1_719_630_500_000L)))));
         when(service.detail(any()))
                 .thenReturn(new OperationsCleanupDetailResult(
                         CleanupJobIdCodec.toDomain(9101L),
@@ -93,15 +93,15 @@ class OperationsCleanupAdminControllerTest {
                         0,
                         null,
                         1001L,
-                        new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L),
+                        Instant.ofEpochMilli(1_719_630_400_000L),
+                        Instant.ofEpochMilli(1_719_630_500_000L),
                         List.of(new OperationsCleanupDetailResult.Item(
                                 CleanupItemIdCodec.toDomain(9201L),
                                 "share",
                                 201L,
                                 "FAILED",
                                 "TARGET_NOT_FOUND",
-                                new Date(1_719_630_450_000L)))));
+                                Instant.ofEpochMilli(1_719_630_450_000L)))));
 
         OperationsCleanupExecuteRequest executeRequest = new OperationsCleanupExecuteRequest();
         executeRequest.setCleanupType("LONG_TASK");

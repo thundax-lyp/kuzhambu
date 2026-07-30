@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.operations.application.dashboard.result;
 
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,8 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OperationsDashboardOverviewResult {
-    private Date periodStart;
-    private Date periodEnd;
+    private Instant periodStart;
+    private Instant periodEnd;
     private Long contentCount;
     private Long translatedContentCount;
     private Long imageReadyContentCount;
@@ -74,7 +74,7 @@ public class OperationsDashboardOverviewResult {
         private String suggestion;
         private String recoveryAction;
         private String recoveryTarget;
-        private Date lastTriggeredAt;
+        private Instant lastTriggeredAt;
         private String failureReason;
     }
 

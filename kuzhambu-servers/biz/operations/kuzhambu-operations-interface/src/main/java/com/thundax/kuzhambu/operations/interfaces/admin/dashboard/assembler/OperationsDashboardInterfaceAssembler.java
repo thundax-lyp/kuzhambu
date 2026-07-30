@@ -130,7 +130,8 @@ public final class OperationsDashboardInterfaceAssembler {
                 .suggestion(result.getSuggestion())
                 .recoveryAction(result.getRecoveryAction())
                 .recoveryTarget(result.getRecoveryTarget())
-                .lastTriggeredAt(result.getLastTriggeredAt())
+                .lastTriggeredAt(
+                        result.getLastTriggeredAt() == null ? null : java.util.Date.from(result.getLastTriggeredAt()))
                 .failureReason(result.getFailureReason())
                 .build();
     }

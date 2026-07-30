@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.application.cleanup.command;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import lombok.Setter;
 public class OperationsCleanupExecuteCommand {
     private String cleanupType;
     private Long requesterUserId;
-    private Date requestedAt;
+    private Instant requestedAt;
     private Integer retentionDays;
     private Integer limit;
 

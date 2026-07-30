@@ -19,7 +19,7 @@ import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.request.OperationsBackupExecuteRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.request.OperationsBackupPageRequest;
 import java.lang.reflect.Method;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,9 +63,9 @@ class OperationsBackupAdminControllerTest {
                         4096L,
                         "sha256-backup",
                         null,
-                        new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L),
-                        new Date(1_722_222_400_000L)));
+                        Instant.ofEpochMilli(1_719_630_400_000L),
+                        Instant.ofEpochMilli(1_719_630_500_000L),
+                        Instant.ofEpochMilli(1_722_222_400_000L)));
         when(service.page(any(), any()))
                 .thenReturn(PageResult.of(
                         1,
@@ -80,9 +80,9 @@ class OperationsBackupAdminControllerTest {
                                 "sha256-backup",
                                 null,
                                 1001L,
-                                new Date(1_719_630_400_000L),
-                                new Date(1_719_630_500_000L),
-                                new Date(1_722_222_400_000L)))));
+                                Instant.ofEpochMilli(1_719_630_400_000L),
+                                Instant.ofEpochMilli(1_719_630_500_000L),
+                                Instant.ofEpochMilli(1_722_222_400_000L)))));
         when(service.detail(any()))
                 .thenReturn(new OperationsBackupDetailResult(
                         BackupIdCodec.toDomain(9001L),
@@ -94,9 +94,9 @@ class OperationsBackupAdminControllerTest {
                         "sha256-backup",
                         null,
                         1001L,
-                        new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L),
-                        new Date(1_722_222_400_000L)));
+                        Instant.ofEpochMilli(1_719_630_400_000L),
+                        Instant.ofEpochMilli(1_719_630_500_000L),
+                        Instant.ofEpochMilli(1_722_222_400_000L)));
 
         var executeResponse = controller.execute(new OperationsBackupExecuteRequest());
         assertEquals(9001L, executeResponse.getBackupId());
