@@ -15,9 +15,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionT
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTaskType;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public final class KnowledgeGraphPersistenceAssembler {
@@ -60,9 +58,9 @@ public final class KnowledgeGraphPersistenceAssembler {
         dataObject.setErrorType(entity.getErrorType());
         dataObject.setErrorMessage(entity.getErrorMessage());
         dataObject.setRequestedBy(GraphExtractionRequesterIdCodec.toValue(entity.getRequestedBy()));
-        dataObject.setRequestedAt(toDate(entity.getRequestedAt()));
-        dataObject.setCompletedAt(toDate(entity.getCompletedAt()));
-        dataObject.setAppliedAt(toDate(entity.getAppliedAt()));
+        dataObject.setRequestedAt(entity.getRequestedAt());
+        dataObject.setCompletedAt(entity.getCompletedAt());
+        dataObject.setAppliedAt(entity.getAppliedAt());
         return dataObject;
     }
 
@@ -100,9 +98,9 @@ public final class KnowledgeGraphPersistenceAssembler {
         entity.setErrorType(dataObject.getErrorType());
         entity.setErrorMessage(dataObject.getErrorMessage());
         entity.setRequestedBy(GraphExtractionRequesterIdCodec.toDomain(dataObject.getRequestedBy()));
-        entity.setRequestedAt(toInstant(dataObject.getRequestedAt()));
-        entity.setCompletedAt(toInstant(dataObject.getCompletedAt()));
-        entity.setAppliedAt(toInstant(dataObject.getAppliedAt()));
+        entity.setRequestedAt(dataObject.getRequestedAt());
+        entity.setCompletedAt(dataObject.getCompletedAt());
+        entity.setAppliedAt(dataObject.getAppliedAt());
         return entity;
     }
 
@@ -115,13 +113,5 @@ public final class KnowledgeGraphPersistenceAssembler {
             entities.add(toDomain(dataObject));
         }
         return entities;
-    }
-
-    private static Date toDate(Instant value) {
-        return value == null ? null : Date.from(value);
-    }
-
-    private static Instant toInstant(Date value) {
-        return value == null ? null : value.toInstant();
     }
 }

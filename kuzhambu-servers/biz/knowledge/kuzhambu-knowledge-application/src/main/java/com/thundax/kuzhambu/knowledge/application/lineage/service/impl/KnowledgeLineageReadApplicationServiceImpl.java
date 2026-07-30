@@ -28,7 +28,6 @@ import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -428,10 +427,6 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
         if (StringUtils.isNotBlank(value) && !values.contains(value)) {
             values.add(value);
         }
-    }
-
-    private Long toEpochMillis(Date date) {
-        return date == null ? null : date.getTime();
     }
 
     private Long toEpochMillis(Instant instant) {

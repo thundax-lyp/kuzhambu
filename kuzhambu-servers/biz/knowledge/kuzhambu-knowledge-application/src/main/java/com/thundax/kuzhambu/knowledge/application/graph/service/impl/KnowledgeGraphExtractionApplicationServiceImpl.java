@@ -66,7 +66,6 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementT
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
@@ -1168,10 +1167,6 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 timeValue(relation.getFirstExtractedAt()),
                 timeValue(relation.getLastExtractedAt()),
                 timeValue(relation.getConfirmedAt()));
-    }
-
-    private Long timeValue(Date value) {
-        return value == null ? null : value.getTime();
     }
 
     private Long timeValue(Instant value) {
