@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `05 qa-source-trace-persistence`：同步 QA 来源和检索追踪持久化及装配
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/dataobject/QaSourceDO.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/dataobject/QaRetrievalTraceDO.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/assembler/QaPersistenceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaSourceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaTraceAssembler.java`
-    - 处理动作：删除来源和 trace DO 的本体重复 ID 映射，并把来源号、trace result、CSV 装配改到新字段口径。
-    - 验收点：`QaSourceDO.sourceId`、`QaRetrievalTraceDO.traceId` 不存在，来源展示使用 `sourceBusinessId`，trace 自身输出字段为 `id`。
-    - 重要度：9/10
-
 - [ ] `06 qa-export-sync-domain`：清理 QA 导出和同步批次本体 ID
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-ID-FIELD-CLEANUP.md`

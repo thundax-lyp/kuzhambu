@@ -14,10 +14,9 @@ import lombok.NoArgsConstructor;
 @TableName("discovery_qa_retrieval_trace")
 public class QaRetrievalTraceDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    private Long traceId;
     private Long messageId;
     private String rawQuestion;
     private String provider;

@@ -141,7 +141,6 @@ public final class QaPersistenceAssembler {
         }
         QaSourceDO dataObject = new QaSourceDO();
         dataObject.setId(entity.getId());
-        dataObject.setSourceId(entity.getSourceId());
         dataObject.setSourceBusinessId(entity.getSourceBusinessId());
         dataObject.setMessageId(entity.getMessageId());
         dataObject.setContentType(entity.getContentType());
@@ -164,7 +163,6 @@ public final class QaPersistenceAssembler {
         }
         QaSource entity = new QaSource();
         entity.setId(dataObject.getId());
-        entity.setSourceId(dataObject.getSourceId());
         entity.setSourceBusinessId(dataObject.getSourceBusinessId());
         entity.setMessageId(dataObject.getMessageId());
         entity.setContentType(dataObject.getContentType());
@@ -187,7 +185,6 @@ public final class QaPersistenceAssembler {
         }
         QaRetrievalTraceDO dataObject = new QaRetrievalTraceDO();
         dataObject.setId(entity.getId());
-        dataObject.setTraceId(entity.getTraceId());
         dataObject.setMessageId(entity.getMessageId());
         dataObject.setRawQuestion(entity.getRawQuestion());
         dataObject.setProvider(entity.getProvider());
@@ -212,7 +209,6 @@ public final class QaPersistenceAssembler {
         }
         QaRetrievalTrace entity = new QaRetrievalTrace();
         entity.setId(dataObject.getId());
-        entity.setTraceId(dataObject.getTraceId());
         entity.setMessageId(dataObject.getMessageId());
         entity.setRawQuestion(dataObject.getRawQuestion());
         entity.setProvider(dataObject.getProvider());
