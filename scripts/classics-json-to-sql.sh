@@ -60,8 +60,13 @@ if ! jq -e '.schema == "classics_sancai_tree"' "$SNAPSHOT" >/dev/null; then
 fi
 
 mkdir -p "$(dirname "$OUTPUT")"
-TMP_OUTPUT=$(mktemp /tmp/classics-data-XXXXXX.sql)
-trap 'rm -f "$TMP_OUTPUT"' EXIT
+TMP_OUTPUT=$(mktemp /tmp/classics-data-XXXXXX)
+PRESERVED_TAIL=$(mktemp /tmp/classics-data-tail-XXXXXX)
+trap 'rm -f "$TMP_OUTPUT" "$PRESERVED_TAIL"' EXIT
+
+if [[ -f "$OUTPUT" ]]; then
+    awk '/^-- Generated from db\/data-source\/wangqi-documents-full\.json/ {found=1} found {print}' "$OUTPUT" > "$PRESERVED_TAIL"
+fi
 
 cat > "$TMP_OUTPUT" <<'SQL'
 SET NAMES utf8mb4;
@@ -86,6 +91,13 @@ def sql_json(v):
     "CAST(" + sql_text(v) + " AS JSON)"
   end;
 
+def sql_datetime(v):
+  if v == null then
+    "NULL"
+  else
+    "\u0027" + (v | tostring) + "\u0027"
+  end;
+
 def category_type(c):
   if ((c.formal // 1) | tostring) == "0" or ((c.formal // 1) == false) then
     "AUXILIARY"
@@ -100,9 +112,35 @@ def volume_type(v):
     "MAIN"
   end;
 
+def entry_tags(e):
+  reduce (((e.tags_snapshot // null)
+    | if . == null then []
+      elif type == "string" then (try fromjson catch [])
+      elif type == "array" then .
+      else []
+      end)
+    [] | tostring | gsub("^\\s+|\\s+$"; "") | select(. != "")) as $tag
+    ([]; if index($tag) == null then . + [$tag] else . end);
+
+def generated_tag_id(tags; tag):
+  if tag == "世系图" then
+    500001
+  else
+    501000 + ((tags | index(tag)) + 1)
+  end;
+
+. as $root
+| [
+    $root.categories[]
+    | (.volumes // [])[]
+    | (.entries // [])[]
+    | entry_tags(.)[]
+  ]
+| unique as $tags
+|
 "-- 三才图会门类",
 (
-  .categories
+  $root.categories
   | to_entries[]
   | .key as $category_index
   | .value as $category
@@ -117,7 +155,7 @@ def volume_type(v):
 "",
 "-- 三才图会卷",
 (
-  .categories
+  $root.categories
   | to_entries[]
   | .key as $category_index
   | .value as $category
@@ -135,7 +173,7 @@ def volume_type(v):
 "-- 三才图会条目",
 (
   [
-    .categories[]
+    $root.categories[]
     | (.volumes // [])[] as $volume
     | ($volume.entries // [])[]
     | {volume_id: ($volume.id // $volume.volume_id), entry: .}
@@ -144,7 +182,7 @@ def volume_type(v):
   | .key as $entry_index
   | .value as $row
   | $row.entry as $entry
-  | "INSERT INTO `classics_sancai_entry` (`id`, `volume_id`, `title`, `original_text`, `translation_text`, `summary`, `lifecycle_status`, `visibility`, `translation_status`, `image_status`, `visual_asset_status`, `refinement_status`, `priority`) VALUES (" +
+  | "INSERT INTO `classics_sancai_entry` (`id`, `volume_id`, `title`, `original_text`, `translation_text`, `summary`, `lifecycle_status`, `visibility`, `translation_status`, `image_status`, `visual_asset_status`, `refinement_status`, `priority`, `current_version_id`, `current_version_no`, `current_versioned_at`, `content_updated_at`) VALUES (" +
     (($entry.id // $entry.entry_id) | tostring) + ", " +
     ($row.volume_id | tostring) + ", " +
     sql_text($entry.title) + ", " +
@@ -157,34 +195,44 @@ def volume_type(v):
     sql_text($entry.image_status // "MISSING") + ", " +
     sql_text($entry.visual_asset_status // "MISSING") + ", " +
     sql_text($entry.refinement_status // "RAW") + ", " +
-    (($entry_index + 1) | tostring) +
+    (($entry_index + 1) | tostring) + ", " +
+    (($entry.current_version_id // "NULL") | tostring) + ", " +
+    (if (($entry.current_version // 0) | tonumber) > 0 then (($entry.current_version // $entry.current_version_no) | tostring) else "NULL" end) + ", " +
+    sql_datetime($entry.current_versioned_at) + ", " +
+    sql_datetime($entry.content_updated_at // "2026-01-01 00:00:00.000") +
     ") ON DUPLICATE KEY UPDATE " +
-    "`volume_id` = VALUES(`volume_id`), `title` = VALUES(`title`), `original_text` = VALUES(`original_text`), `translation_text` = VALUES(`translation_text`), `summary` = VALUES(`summary`), `lifecycle_status` = VALUES(`lifecycle_status`), `visibility` = VALUES(`visibility`), `translation_status` = VALUES(`translation_status`), `image_status` = VALUES(`image_status`), `visual_asset_status` = VALUES(`visual_asset_status`), `refinement_status` = VALUES(`refinement_status`), `priority` = VALUES(`priority`);"
+    "`volume_id` = VALUES(`volume_id`), `title` = VALUES(`title`), `original_text` = VALUES(`original_text`), `translation_text` = VALUES(`translation_text`), `summary` = VALUES(`summary`), `lifecycle_status` = VALUES(`lifecycle_status`), `visibility` = VALUES(`visibility`), `translation_status` = VALUES(`translation_status`), `image_status` = VALUES(`image_status`), `visual_asset_status` = VALUES(`visual_asset_status`), `refinement_status` = VALUES(`refinement_status`), `priority` = VALUES(`priority`), `current_version_id` = VALUES(`current_version_id`), `current_version_no` = VALUES(`current_version_no`), `current_versioned_at` = VALUES(`current_versioned_at`), `content_updated_at` = VALUES(`content_updated_at`);"
 ),
 "",
 "-- 三才图会条目标签",
 (
   [
-    .categories[]
+    $root.categories[]
     | (.volumes // [])[]
     | (.entries // [])[] as $entry
-    | (($entry.tags_snapshot // null) | if . == null then [] elif type == "string" then (try fromjson catch []) elif type == "array" then . else [] end)[] as $tag
+    | entry_tags($entry)[] as $tag
     | {entry_id: ($entry.id // $entry.entry_id), tag: $tag}
   ]
   | to_entries[]
   | .key as $tag_index
   | .value as $row
-  | "INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_name_snapshot`, `source`, `status`, `priority`) VALUES (" +
+  | "INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_id`, `tag_name_snapshot`, `source`, `status`, `priority`) VALUES (" +
     sql_text("SANCAI_ENTRY") + ", " +
     ($row.entry_id | tostring) + ", " +
+    (generated_tag_id($tags; $row.tag) | tostring) + ", " +
     sql_text($row.tag) + ", " +
     sql_text("MANUAL") + ", " +
     sql_text("ACTIVE") + ", " +
     (($tag_index + 1) | tostring) +
     ") ON DUPLICATE KEY UPDATE " +
-    "`source` = VALUES(`source`), `status` = VALUES(`status`), `priority` = VALUES(`priority`);"
+    "`tag_id` = VALUES(`tag_id`), `source` = VALUES(`source`), `status` = VALUES(`status`), `priority` = VALUES(`priority`);"
 )
 ' "$SNAPSHOT" >> "$TMP_OUTPUT"
+
+if [[ -s "$PRESERVED_TAIL" ]]; then
+    printf '\n' >> "$TMP_OUTPUT"
+    cat "$PRESERVED_TAIL" >> "$TMP_OUTPUT"
+fi
 
 mv "$TMP_OUTPUT" "$OUTPUT"
 trap - EXIT
