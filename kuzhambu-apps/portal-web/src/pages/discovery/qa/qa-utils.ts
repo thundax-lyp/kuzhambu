@@ -112,7 +112,12 @@ export const toSessionId = (value?: string | number | null): string | null => {
         return Number.isSafeInteger(value) && value > 0 ? String(value) : null;
     }
 
-    return typeof value === "string" && value.trim().length ? value.trim() : null;
+    if (typeof value !== "string") {
+        return null;
+    }
+
+    const trimmedValue = value.trim();
+    return /^[1-9]\d*$/.test(trimmedValue) ? trimmedValue : null;
 };
 
 export const extractCompletionMessage = (response?: DiscoveryQaChatCompletionResponse | null) => {
