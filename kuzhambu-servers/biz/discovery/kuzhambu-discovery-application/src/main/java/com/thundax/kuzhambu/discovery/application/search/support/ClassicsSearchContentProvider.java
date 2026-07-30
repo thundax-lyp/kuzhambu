@@ -56,7 +56,11 @@ public class ClassicsSearchContentProvider implements SearchContentProvider {
                 sourceContent.getStatus(),
                 sourceContent.getVisibility(),
                 sourceContent.getCurrentVersionNo(),
-                sourceContent.getPublishedAt(),
-                sourceContent.getUpdatedAt());
+                sourceContent.getPublishedAt() == null
+                        ? null
+                        : sourceContent.getPublishedAt().toInstant(),
+                sourceContent.getUpdatedAt() == null
+                        ? null
+                        : sourceContent.getUpdatedAt().toInstant());
     }
 }
