@@ -254,7 +254,9 @@ export const ClassicsContentTagPanel = ({
                         })}
                     </KuzhambuSpace>
                 ) : (
-                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
+                    <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
+                    </div>
                 )}
             </KuzhambuSpace>
             <KuzhambuModal

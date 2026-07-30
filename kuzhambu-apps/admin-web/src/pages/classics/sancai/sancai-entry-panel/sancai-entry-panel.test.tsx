@@ -644,6 +644,38 @@ const openVersionSection = async (user: ReturnType<typeof userEvent.setup>) => {
     await switchEntryDrawerSection(user, "版本");
 };
 
+const mockTagCandidateTask = () => {
+    vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValueOnce({
+        items: [
+            {
+                taskId: "tag-task-1",
+                status: "SUCCEEDED",
+                capability: "tags",
+                contentType: "SANCAI_ENTRY",
+                contentId: "3001",
+                candidateId: "tag-candidate-1",
+                requestedAt: "2026-06-20T02:00:00.000+08:00"
+            }
+        ],
+        total: 1,
+        pageNo: 1,
+        pageSize: 20
+    });
+    vi.mocked(aiCandidateService.list).mockResolvedValueOnce([
+        {
+            candidateId: "tag-candidate-1",
+            capability: "tags",
+            contentType: "SANCAI_ENTRY",
+            contentId: "3001",
+            objectId: "3001",
+            resultFormat: "STRUCTURED",
+            resultPayload: JSON.stringify({ tags: ["天文", "三才"] }),
+            status: "PENDING",
+            requestedAt: "2026-06-20T02:00:00.000+08:00"
+        }
+    ]);
+};
+
 describe("SancaiEntryPanel batch operations", () => {
     beforeEach(() => {
         replacePermissions([
@@ -652,6 +684,8 @@ describe("SancaiEntryPanel batch operations", () => {
             "classics:sharing:edit",
             "classics:content:export",
             "classics:content:edit",
+            "ai:invocation:edit",
+            "ai:invocation:view",
             "ai:refinement:edit"
         ]);
     });
@@ -1282,8 +1316,19 @@ describe("SancaiEntryPanel batch operations", () => {
 
         await openTagSection(user);
         expect((await screen.findAllByText("标签")).length).toBeGreaterThan(0);
+        expect(await screen.findByText("门类")).toBeInTheDocument();
+        expect(await screen.findByText("天文")).toBeInTheDocument();
+        expect(await screen.findByText("卷目")).toBeInTheDocument();
+        expect((await screen.findAllByText("天文卷一")).length).toBeGreaterThan(0);
+        expect(await screen.findByText("简介/摘要")).toBeInTheDocument();
+        expect((await screen.findAllByText("天地摘要")).length).toBeGreaterThan(0);
         expect(await screen.findByLabelText("标签列表")).toBeInTheDocument();
         expect(await screen.findByText("AI 生成")).toBeInTheDocument();
+        await user.click(await screen.findByTestId("classics-common-content-tag-ai-button"));
+        expect(await screen.findByTestId("classics-content-tag-ai-modal")).toBeInTheDocument();
+        expect(
+            await screen.findByTestId("classics-content-tag-ai-create-task-button")
+        ).toHaveTextContent("生成标签");
         expect(screen.queryByLabelText("添加标签")).not.toBeInTheDocument();
         await user.click(
             await screen.findByTestId("classics-common-classics-content-tag-open-add-button")
@@ -1294,6 +1339,110 @@ describe("SancaiEntryPanel batch operations", () => {
         expect(await screen.findByText("三才图会问答对治理")).toBeInTheDocument();
         expect(screen.queryByLabelText("三才图会内容上下文")).not.toBeInTheDocument();
         expect(await screen.findByText("天地为何不变？")).toBeInTheDocument();
+    });
+
+    it("gates tag AI create and candidate actions by permissions", async () => {
+        clearPermissions();
+        replacePermissions(["classics:sancai:view", "ai:invocation:view"]);
+        mockTagCandidateTask();
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+
+        await openTagSection(user);
+        await user.click(await screen.findByTestId("classics-common-content-tag-ai-button"));
+
+        expect(
+            await screen.findByTestId("classics-content-tag-ai-create-task-button")
+        ).toBeDisabled();
+        expect(await screen.findByText("新增：天文")).toBeInTheDocument();
+        expect(await screen.findByTestId("classics-content-tag-ai-discard-button")).toBeDisabled();
+        expect(await screen.findByTestId("classics-content-tag-ai-append-button")).toBeDisabled();
+        expect(await screen.findByTestId("classics-content-tag-ai-cover-button")).toBeDisabled();
+    });
+
+    it("does not load tag AI candidates without invocation view permission", async () => {
+        clearPermissions();
+        replacePermissions(["classics:sancai:view", "classics:content:edit", "ai:refinement:edit"]);
+        mockTagCandidateTask();
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+
+        await openTagSection(user);
+        await user.click(await screen.findByTestId("classics-common-content-tag-ai-button"));
+
+        expect(
+            await screen.findByTestId("classics-content-tag-ai-create-task-button")
+        ).toBeDisabled();
+        expect(screen.queryByText("新增：天文")).not.toBeInTheDocument();
+        expect(aiCandidateService.list).not.toHaveBeenCalled();
+    });
+
+    it("gates tag AI discard by invocation edit permission", async () => {
+        clearPermissions();
+        replacePermissions([
+            "classics:sancai:view",
+            "classics:content:edit",
+            "ai:invocation:view",
+            "ai:refinement:edit"
+        ]);
+        mockTagCandidateTask();
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+
+        await openTagSection(user);
+        await user.click(await screen.findByTestId("classics-common-content-tag-ai-button"));
+
+        expect(await screen.findByText("新增：天文")).toBeInTheDocument();
+        expect(await screen.findByTestId("classics-content-tag-ai-discard-button")).toBeDisabled();
+        expect(await screen.findByTestId("classics-content-tag-ai-append-button")).toBeEnabled();
+        expect(await screen.findByTestId("classics-content-tag-ai-cover-button")).toBeEnabled();
+    });
+
+    it("locks every tag AI candidate action while one mutation is pending", async () => {
+        mockTagCandidateTask();
+        let resolveApply: (() => void) | undefined;
+        vi.mocked(aiCandidateService.apply).mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveApply = () =>
+                        resolve({
+                            contentType: "SANCAI_ENTRY",
+                            contentId: "3001",
+                            versionId: "5002",
+                            versionNo: 2
+                        });
+                })
+        );
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+
+        await openTagSection(user);
+        await user.click(await screen.findByTestId("classics-common-content-tag-ai-button"));
+        const appendButton = await screen.findByTestId("classics-content-tag-ai-append-button");
+        const coverButton = await screen.findByTestId("classics-content-tag-ai-cover-button");
+        const discardButton = await screen.findByTestId("classics-content-tag-ai-discard-button");
+        await user.click(appendButton);
+
+        await waitFor(() => expect(aiCandidateService.apply).toHaveBeenCalled());
+        await waitFor(() => {
+            expect(appendButton).toBeDisabled();
+            expect(coverButton).toBeDisabled();
+            expect(discardButton).toBeDisabled();
+        });
+
+        resolveApply?.();
     });
 
     it("renders empty image management state", async () => {
