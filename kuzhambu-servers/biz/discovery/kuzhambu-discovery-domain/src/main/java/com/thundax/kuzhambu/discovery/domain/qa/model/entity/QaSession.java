@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaContextConte
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaOwnerRef;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionId;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaSessionStatus;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,9 +27,9 @@ public class QaSession {
     private String contextMode;
     private QaContextContentRef contextContent;
     private QaSessionStatus status;
-    private Date openedAt;
-    private Date lastMessageAt;
-    private Date removedAt;
+    private Instant openedAt;
+    private Instant lastMessageAt;
+    private Instant removedAt;
 
     public QaSession(
             Long id,
@@ -43,9 +43,9 @@ public class QaSession {
             String contextContentType,
             Long contextContentId,
             String status,
-            Date openedAt,
-            Date lastMessageAt,
-            Date removedAt) {
+            Instant openedAt,
+            Instant lastMessageAt,
+            Instant removedAt) {
         this.id = QaSessionIdCodec.toDomain(id == null ? sessionId : id);
         this.owner = QaStringValueCodec.toOwnerRef(ownerType, ownerId);
         this.knowledgeBaseName = knowledgeBaseName;
@@ -59,7 +59,7 @@ public class QaSession {
         this.removedAt = removedAt;
     }
 
-    public void markRemoved(Date removedAt) {
+    public void markRemoved(Instant removedAt) {
         this.status = new QaSessionStatus(REMOVED_STATUS);
         this.removedAt = removedAt;
     }

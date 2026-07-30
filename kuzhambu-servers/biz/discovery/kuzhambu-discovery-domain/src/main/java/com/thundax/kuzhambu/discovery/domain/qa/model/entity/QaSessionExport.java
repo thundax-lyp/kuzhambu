@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.discovery.domain.qa.model.entity;
 
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,8 +19,8 @@ public class QaSessionExport {
     private String exportStatus;
     private String failureReason;
     private Long requesterUserId;
-    private Date requestedAt;
-    private Date completedAt;
+    private Instant requestedAt;
+    private Instant completedAt;
 
     public QaSessionExport(
             Long id,
@@ -31,8 +31,8 @@ public class QaSessionExport {
             String exportStatus,
             String failureReason,
             Long requesterUserId,
-            Date requestedAt,
-            Date completedAt) {
+            Instant requestedAt,
+            Instant completedAt) {
         this.id = id == null ? exportId : id;
         this.sessionId = sessionId;
         this.format = format;
