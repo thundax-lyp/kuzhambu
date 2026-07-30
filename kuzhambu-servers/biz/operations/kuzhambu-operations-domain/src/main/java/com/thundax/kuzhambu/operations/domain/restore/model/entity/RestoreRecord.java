@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.operations.domain.restore.model.entity;
 
 import com.thundax.kuzhambu.operations.domain.restore.model.valueobject.RestoreId;
-import java.util.Date;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,10 +19,10 @@ public class RestoreRecord {
     private String restoreMode;
     private String restoreStatus;
     private Boolean writeBlockEnabled;
-    private Date writeBlockStartedAt;
-    private Date writeBlockReleasedAt;
+    private Instant writeBlockStartedAt;
+    private Instant writeBlockReleasedAt;
     private String failureReason;
     private Long requesterUserId;
-    private Date startedAt;
-    private Date completedAt;
+    private Instant startedAt;
+    private Instant completedAt;
 }

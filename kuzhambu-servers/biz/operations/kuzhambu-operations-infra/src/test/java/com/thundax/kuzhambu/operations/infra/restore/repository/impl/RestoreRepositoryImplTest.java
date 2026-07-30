@@ -21,7 +21,7 @@ import com.thundax.kuzhambu.operations.domain.restore.model.enums.RestoreMode;
 import com.thundax.kuzhambu.operations.domain.restore.model.enums.RestoreStatus;
 import com.thundax.kuzhambu.operations.infra.restore.persistence.dataobject.RestoreDO;
 import com.thundax.kuzhambu.operations.infra.restore.persistence.mapper.RestoreMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.junit.jupiter.api.BeforeAll;
@@ -46,8 +46,8 @@ class RestoreRepositoryImplTest {
         assertNotNull(result);
         assertEquals(9101L, result.getId().value());
         assertEquals(RestoreMode.DRILL.value(), result.getRestoreMode());
-        assertEquals(new Date(1_719_630_410_000L), result.getWriteBlockStartedAt());
-        assertEquals(new Date(1_719_630_490_000L), result.getWriteBlockReleasedAt());
+        assertEquals(Instant.ofEpochMilli(1_719_630_410_000L), result.getWriteBlockStartedAt());
+        assertEquals(Instant.ofEpochMilli(1_719_630_490_000L), result.getWriteBlockReleasedAt());
     }
 
     @Test
@@ -112,12 +112,12 @@ class RestoreRepositoryImplTest {
                 restoreMode,
                 RestoreStatus.SUCCEEDED.value(),
                 true,
-                new Date(1_719_630_410_000L),
-                new Date(1_719_630_490_000L),
+                Instant.ofEpochMilli(1_719_630_410_000L),
+                Instant.ofEpochMilli(1_719_630_490_000L),
                 null,
                 1001L,
-                new Date(1_719_630_400_000L),
-                new Date(1_719_630_500_000L));
+                Instant.ofEpochMilli(1_719_630_400_000L),
+                Instant.ofEpochMilli(1_719_630_500_000L));
     }
 
     private static RestoreDO dataObject(long restoreId, String restoreMode) {
@@ -129,11 +129,11 @@ class RestoreRepositoryImplTest {
                 restoreMode,
                 RestoreStatus.SUCCEEDED.value(),
                 true,
-                new Date(1_719_630_410_000L),
-                new Date(1_719_630_490_000L),
+                Instant.ofEpochMilli(1_719_630_410_000L),
+                Instant.ofEpochMilli(1_719_630_490_000L),
                 null,
                 1001L,
-                new Date(1_719_630_400_000L),
-                new Date(1_719_630_500_000L));
+                Instant.ofEpochMilli(1_719_630_400_000L),
+                Instant.ofEpochMilli(1_719_630_500_000L));
     }
 }
