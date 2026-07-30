@@ -17,7 +17,6 @@ public final class KnowledgeGraphPersistenceAssembler {
         }
         GraphExtractionTaskDO dataObject = new GraphExtractionTaskDO();
         dataObject.setId(valueOf(entity.getId()));
-        dataObject.setTaskId(valueOf(entity.getTaskId()));
         dataObject.setBatchJobId(entity.getBatchJobId());
         dataObject.setTaskType(entity.getTaskType());
         dataObject.setScopeType(entity.getScopeType());
@@ -58,7 +57,6 @@ public final class KnowledgeGraphPersistenceAssembler {
         }
         GraphExtractionTask entity = new GraphExtractionTask();
         entity.setId(GraphExtractionTaskIdCodec.toDomain(dataObject.getId()));
-        entity.setTaskId(GraphExtractionTaskIdCodec.toDomain(dataObject.getTaskId()));
         entity.setBatchJobId(dataObject.getBatchJobId());
         entity.setTaskType(dataObject.getTaskType());
         entity.setScopeType(dataObject.getScopeType());

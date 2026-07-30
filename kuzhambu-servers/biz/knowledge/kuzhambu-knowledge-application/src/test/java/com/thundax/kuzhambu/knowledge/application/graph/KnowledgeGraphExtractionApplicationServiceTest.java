@@ -188,8 +188,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         assertEquals("SUCCEEDED", parentTask.getStatus());
         GraphExtractionTask firstChild = repository.tasks.get(1);
         GraphExtractionTask secondChild = repository.tasks.get(2);
-        assertEquals(parentTask.getTaskId(), firstChild.getParentTaskId());
-        assertEquals(parentTask.getTaskId(), secondChild.getParentTaskId());
+        assertEquals(parentTask.getId(), firstChild.getParentTaskId());
+        assertEquals(parentTask.getId(), secondChild.getParentTaskId());
         assertEquals(Long.valueOf(11L), firstChild.getSourceContentId());
         assertEquals(Long.valueOf(12L), secondChild.getSourceContentId());
         assertEquals(2, batchService.recordSuccessCalls);
@@ -255,20 +255,20 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void cancelBatchShouldMarkPendingChildrenCancelled() {
         FakeRepository repository = new FakeRepository();
         GraphExtractionTask parentTask = new GraphExtractionTask();
-        parentTask.setTaskId(GraphExtractionTaskIdCodec.toDomain(1L));
+        parentTask.setId(GraphExtractionTaskIdCodec.toDomain(1L));
         parentTask.setBatchJobId(1001L);
         parentTask.setTaskType("RELATION");
         parentTask.setStatus("RUNNING");
         repository.tasks.add(parentTask);
         GraphExtractionTask pendingChild = new GraphExtractionTask();
-        pendingChild.setTaskId(GraphExtractionTaskIdCodec.toDomain(2L));
+        pendingChild.setId(GraphExtractionTaskIdCodec.toDomain(2L));
         pendingChild.setBatchJobId(1001L);
         pendingChild.setParentTaskId(GraphExtractionTaskIdCodec.toDomain(1L));
         pendingChild.setTaskType("RELATION");
         pendingChild.setStatus("REQUESTED");
         repository.tasks.add(pendingChild);
         GraphExtractionTask finishedChild = new GraphExtractionTask();
-        finishedChild.setTaskId(GraphExtractionTaskIdCodec.toDomain(3L));
+        finishedChild.setId(GraphExtractionTaskIdCodec.toDomain(3L));
         finishedChild.setBatchJobId(1001L);
         finishedChild.setParentTaskId(GraphExtractionTaskIdCodec.toDomain(1L));
         finishedChild.setTaskType("RELATION");
@@ -305,7 +305,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void regenerateTaskShouldReuseStoredRequestSnapshot() {
         FakeRepository repository = new FakeRepository();
         GraphExtractionTask sourceTask = new GraphExtractionTask();
-        sourceTask.setTaskId(GraphExtractionTaskIdCodec.toDomain(88L));
+        sourceTask.setId(GraphExtractionTaskIdCodec.toDomain(88L));
         sourceTask.setTaskType("RELATION");
         sourceTask.setScopeType("CLASSICS_ENTRY");
         sourceTask.setScopeJson("{\"entryId\":88}");
@@ -367,7 +367,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void regenerateTaskShouldKeepRefinementAppliedSourceAndDefaultReplaceUnconfirmedOnly() {
         FakeRepository repository = new FakeRepository();
         GraphExtractionTask sourceTask = new GraphExtractionTask();
-        sourceTask.setTaskId(GraphExtractionTaskIdCodec.toDomain(88L));
+        sourceTask.setId(GraphExtractionTaskIdCodec.toDomain(88L));
         sourceTask.setTaskType("GRAPH");
         sourceTask.setScopeType("CLASSICS_ENTRY");
         sourceTask.setScopeJson("{\"entryId\":88}");
@@ -416,7 +416,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void pageTasksShouldMapPersistedTasks() {
         FakeRepository repository = new FakeRepository();
         GraphExtractionTask task = new GraphExtractionTask();
-        task.setTaskId(GraphExtractionTaskIdCodec.toDomain(11L));
+        task.setId(GraphExtractionTaskIdCodec.toDomain(11L));
         task.setBatchJobId(1001L);
         task.setTaskType("GRAPH");
         task.setTriggerSource("QUALITY_REPORT");
@@ -449,7 +449,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void getTaskDetailShouldOverlayAiCandidateAndCallState() {
         FakeRepository repository = new FakeRepository();
         GraphExtractionTask task = new GraphExtractionTask();
-        task.setTaskId(GraphExtractionTaskIdCodec.toDomain(21L));
+        task.setId(GraphExtractionTaskIdCodec.toDomain(21L));
         task.setTaskType("LINEAGE");
         task.setStatus("REQUESTED");
         task.setAiCallId(901L);
@@ -886,7 +886,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void applyTaskCandidateShouldMarkTaskApplied() {
         FakeRepository repository = new FakeRepository();
         GraphExtractionTask task = new GraphExtractionTask();
-        task.setTaskId(GraphExtractionTaskIdCodec.toDomain(31L));
+        task.setId(GraphExtractionTaskIdCodec.toDomain(31L));
         task.setTaskType("GRAPH");
         task.setStatus("SUCCEEDED");
         task.setSourceContentType("SANCAI_ENTRY");
@@ -1624,7 +1624,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         @Override
         public GraphExtractionTask getByTaskId(GraphExtractionTaskId taskId) {
             return tasks.stream()
-                    .filter(task -> task.getTaskId() != null && task.getTaskId().equals(taskId))
+                    .filter(task -> task.getId() != null && task.getId().equals(taskId))
                     .findFirst()
                     .orElse(null);
         }
@@ -1632,7 +1632,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         @Override
         public GraphExtractionTaskId save(GraphExtractionTask entity) {
             GraphExtractionTaskId taskId = GraphExtractionTaskIdCodec.toDomain((long) (tasks.size() + 1));
-            entity.setTaskId(taskId);
+            entity.setId(taskId);
             tasks.add(entity);
             return taskId;
         }

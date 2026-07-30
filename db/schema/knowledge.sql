@@ -68,7 +68,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_tag_content_ref` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `task_id` bigint NOT NULL,
     `task_type` varchar(32) NOT NULL,
     `scope_type` varchar(32) DEFAULT NULL,
     `scope_json` json DEFAULT NULL,
@@ -84,7 +83,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `completed_at` datetime(3) DEFAULT NULL,
     `applied_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_extraction_task_task_id` (`task_id`),
     KEY `idx_knowledge_graph_extraction_task_status_requested` (`status`, `requested_at`),
     KEY `idx_knowledge_graph_extraction_task_source` (`source_content_type`, `source_content_id`),
     KEY `idx_knowledge_graph_extraction_task_call_candidate` (`ai_call_id`, `ai_candidate_id`)

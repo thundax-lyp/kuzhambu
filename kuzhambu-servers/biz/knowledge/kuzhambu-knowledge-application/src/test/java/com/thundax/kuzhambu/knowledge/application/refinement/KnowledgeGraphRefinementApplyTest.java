@@ -246,14 +246,14 @@ class KnowledgeGraphRefinementApplyTest {
         @Override
         public GraphExtractionTask getByTaskId(GraphExtractionTaskId taskId) {
             GraphExtractionTask task = new GraphExtractionTask();
-            task.setTaskId(taskId);
+            task.setId(taskId);
             task.setSelectionScopeJson("{\"sourceContentIds\":[1001]}");
             return task;
         }
 
         @Override
         public GraphExtractionTaskId save(GraphExtractionTask entity) {
-            return entity == null ? null : entity.getTaskId();
+            return entity == null ? null : entity.getId();
         }
 
         @Override

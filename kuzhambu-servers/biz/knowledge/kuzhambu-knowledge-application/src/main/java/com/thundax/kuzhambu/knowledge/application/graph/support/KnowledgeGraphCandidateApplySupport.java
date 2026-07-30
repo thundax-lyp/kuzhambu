@@ -60,7 +60,7 @@ public class KnowledgeGraphCandidateApplySupport {
     }
 
     public GraphVersion apply(GraphExtractionTask task, AiCandidateFacadeDto candidate) {
-        if (task == null || task.getTaskId() == null || candidate == null || candidate.getCandidateId() == null) {
+        if (task == null || task.getId() == null || candidate == null || candidate.getCandidateId() == null) {
             throw new BizException("Knowledge graph apply target is incomplete");
         }
         if ("REJECTED".equals(candidate.getStatus())) {
@@ -85,14 +85,14 @@ public class KnowledgeGraphCandidateApplySupport {
     }
 
     private GraphVersion ensureVersion(GraphExtractionTask task, AiCandidateFacadeDto candidate, Date appliedAt) {
-        GraphVersion existing = graphVersionRepository.getByTaskCandidate(task.getTaskId(), candidate.getCandidateId());
+        GraphVersion existing = graphVersionRepository.getByTaskCandidate(task.getId(), candidate.getCandidateId());
         if (existing != null) {
             return existing;
         }
         GraphVersion latest = graphVersionRepository.findLatest(
                 task.getTaskType(), task.getSourceContentType(), task.getSourceContentId());
         GraphVersion version = new GraphVersion();
-        version.setTaskId(task.getTaskId());
+        version.setTaskId(task.getId());
         version.setCandidateId(candidate.getCandidateId());
         version.setTaskType(task.getTaskType());
         version.setScopeType(task.getScopeType());

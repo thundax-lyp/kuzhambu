@@ -38,7 +38,7 @@ class KnowledgeGraphCandidateApplySupportTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository());
         GraphExtractionTask task = new GraphExtractionTask();
-        task.setTaskId(GraphExtractionTaskIdCodec.toDomain(11L));
+        task.setId(GraphExtractionTaskIdCodec.toDomain(11L));
         task.setTaskType("GRAPH");
         task.setScopeType("ENTRY");
         task.setScopeJson("{\"entryIds\":[1]}");

@@ -648,7 +648,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 forceJson,
                 locale);
         GraphExtractionTaskId parentId = repository.save(parentTask);
-        parentTask.setTaskId(parentId);
+        parentTask.setId(parentId);
         for (ExtractionTarget target : targets) {
             validateTarget(sourceContentType, target.sourceContentId());
             GraphExtractionTask childTask = buildTask(
@@ -664,7 +664,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                     target.sourceContentId(),
                     requestedBy);
             GraphExtractionTaskId childId = repository.save(childTask);
-            childTask.setTaskId(childId);
+            childTask.setId(childId);
             if (!aiFacade.canDispatchNextBatchUnit(batchJobId)) {
                 childTask.setStatus(STATUS_CANCELLED);
                 childTask.setCompletedAt(new Date());
@@ -789,9 +789,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                         requestedBy)
                 : preparedTask;
         fillRequestSnapshot(task, aiRequest);
-        if (task.getTaskId() == null) {
+        if (task.getId() == null) {
             GraphExtractionTaskId taskId = repository.save(task);
-            task.setTaskId(taskId);
+            task.setId(taskId);
         }
         try {
             KnowledgeAiExtractionFacadeResponse result = operation.invoke(aiRequest);
@@ -950,9 +950,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             return null;
         }
         return new GraphExtractionTaskResult(
-                task.getTaskId() == null
-                        ? null
-                        : String.valueOf(task.getTaskId().value()),
+                task.getId() == null ? null : String.valueOf(task.getId().value()),
                 task.getBatchJobId(),
                 task.getTaskType(),
                 task.getScopeType(),
