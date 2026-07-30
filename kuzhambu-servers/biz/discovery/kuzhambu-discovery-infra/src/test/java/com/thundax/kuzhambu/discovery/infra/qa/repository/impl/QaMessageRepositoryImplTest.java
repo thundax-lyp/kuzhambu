@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaMessageId;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaMessageDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaMessageMapper;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +25,7 @@ class QaMessageRepositoryImplTest {
         QaMessageMapper mapper = mock(QaMessageMapper.class);
         QaMessageRepositoryImpl repository = new QaMessageRepositoryImpl(mapper);
         QaMessage entity = new QaMessage(
-                null, null, 3001L, "USER", "黄帝是谁", "SENT", "kuzhambu-qa", 0, null, null, null, new Date(), null);
+                null, null, 3001L, "USER", "黄帝是谁", "SENT", "kuzhambu-qa", 0, null, null, null, Instant.now(), null);
         doAnswer(invocation -> {
                     invocation.getArgument(0, QaMessageDO.class).setId(2001L);
                     return 1;
@@ -54,8 +54,8 @@ class QaMessageRepositoryImplTest {
                 null,
                 null,
                 null,
-                new Date(),
-                new Date());
+                Instant.now(),
+                Instant.now());
         when(mapper.selectList(any())).thenReturn(List.of(dataObject));
 
         List<QaMessage> result = repository.listBySessionId(QaSessionIdCodec.toDomain(3001L));

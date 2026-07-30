@@ -11,7 +11,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSourceDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaSourceMapper;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +36,7 @@ class QaSourceRepositoryImplTest {
                 1,
                 new BigDecimal("0.98"),
                 "CITED",
-                new Date());
+                Instant.now());
         doAnswer(invocation -> {
                     invocation.getArgument(0, QaSourceDO.class).setId(6001L);
                     return 1;
@@ -68,7 +68,7 @@ class QaSourceRepositoryImplTest {
                 1,
                 new BigDecimal("0.98"),
                 "CITED",
-                new Date());
+                Instant.now());
         when(mapper.selectList(any())).thenReturn(List.of(dataObject));
 
         List<QaSource> result = repository.listByMessageId(2001L);

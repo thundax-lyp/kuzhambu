@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaRetrievalTraceDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaRetrievalTraceMapper;
-import java.util.Date;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class QaRetrievalTraceRepositoryImplTest {
@@ -36,7 +36,7 @@ class QaRetrievalTraceRepositoryImplTest {
                 "SUCCEEDED",
                 null,
                 null,
-                new Date());
+                Instant.now());
         doAnswer(invocation -> {
                     invocation.getArgument(0, QaRetrievalTraceDO.class).setId(5001L);
                     return 1;
@@ -70,7 +70,7 @@ class QaRetrievalTraceRepositoryImplTest {
                 "SUCCEEDED",
                 null,
                 null,
-                new Date());
+                Instant.now());
         when(mapper.selectOne(any())).thenReturn(dataObject);
 
         QaRetrievalTrace result = repository.getByMessageId(2001L);
