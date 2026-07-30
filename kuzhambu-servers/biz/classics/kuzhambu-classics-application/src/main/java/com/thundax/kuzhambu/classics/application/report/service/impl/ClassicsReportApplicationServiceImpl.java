@@ -21,13 +21,13 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVis
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 public class ClassicsReportApplicationServiceImpl implements ClassicsReportApplicationService {
 
     private static final int SHARE_LINK_SCAN_SIZE = 10_000;
+    private static final ZoneId REPORT_ZONE = ZoneId.of("Asia/Shanghai");
 
     private final SancaiRepository sancaiRepository;
     private final WangqiDocumentRepository wangqiDocumentRepository;
@@ -54,7 +55,7 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
     }
 
     @Override
-    public ClassicsReportSummaryResult summary(Date periodStart, Date periodEnd, String bucketType) {
+    public ClassicsReportSummaryResult summary(Instant periodStart, Instant periodEnd, String bucketType) {
         List<SancaiEntry> publicSancaiEntries = sancaiRepository.listEntries(
                 null,
                 null,
@@ -88,18 +89,11 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
                         .mapToLong(ClassicsShareLink::getAccessCount)
                         .sum();
 
-        List<Date> growthDates = new ArrayList<>();
-        publicSancaiEntries.stream()
-                .map(SancaiEntry::getContentUpdatedAt)
-                .map(Date::from)
-                .forEach(growthDates::add);
-        publicWangqiDocuments.stream()
-                .map(WangqiDocument::getContentUpdatedAt)
-                .map(Date::from)
-                .forEach(growthDates::add);
+        List<Instant> growthDates = new ArrayList<>();
+        publicSancaiEntries.stream().map(SancaiEntry::getContentUpdatedAt).forEach(growthDates::add);
+        publicWangqiDocuments.stream().map(WangqiDocument::getContentUpdatedAt).forEach(growthDates::add);
         publicMingCustomsEntries.stream()
                 .map(MingCustomsEntry::getContentUpdatedAt)
-                .map(Date::from)
                 .forEach(growthDates::add);
 
         return new ClassicsReportSummaryResult(
@@ -125,13 +119,15 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
     }
 
     private List<ContentGrowthPointResult> buildGrowthSeries(
-            Date periodStart, Date periodEnd, String bucketType, List<Date> contentUpdatedDates) {
+            Instant periodStart, Instant periodEnd, String bucketType, List<Instant> contentUpdatedDates) {
         if (periodStart == null || periodEnd == null || StringUtils.isBlank(bucketType)) {
             return List.of();
         }
         Map<String, Long> bucketCounts = new LinkedHashMap<>();
-        for (Date contentUpdatedAt : contentUpdatedDates) {
-            if (contentUpdatedAt == null || contentUpdatedAt.before(periodStart) || contentUpdatedAt.after(periodEnd)) {
+        for (Instant contentUpdatedAt : contentUpdatedDates) {
+            if (contentUpdatedAt == null
+                    || contentUpdatedAt.isBefore(periodStart)
+                    || contentUpdatedAt.isAfter(periodEnd)) {
                 continue;
             }
             String bucket = toBucket(contentUpdatedAt, bucketType);
@@ -144,10 +140,10 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
         return points;
     }
 
-    private String toBucket(Date value, String bucketType) {
-        SimpleDateFormat formatter =
-                new SimpleDateFormat(StringUtils.equalsIgnoreCase(bucketType, "WEEK") ? "yyyy-'W'ww" : "yyyy-MM-dd");
-        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+    private String toBucket(Instant value, String bucketType) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+                        StringUtils.equalsIgnoreCase(bucketType, "WEEK") ? "yyyy-'W'ww" : "yyyy-MM-dd")
+                .withZone(REPORT_ZONE);
         return formatter.format(value);
     }
 }
