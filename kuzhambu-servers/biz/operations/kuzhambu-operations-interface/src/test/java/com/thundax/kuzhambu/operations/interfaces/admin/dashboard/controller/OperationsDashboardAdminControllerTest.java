@@ -80,7 +80,7 @@ class OperationsDashboardAdminControllerTest {
                                 "ok",
                                 "LOCAL",
                                 "admin-server",
-                                java.util.Date.from(periodEnd))),
+                                periodEnd)),
                         List.of(new TaskStatusSummaryResult("RUNNING", 2L)),
                         List.of(),
                         List.of(),
