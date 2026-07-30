@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.discovery.infra.search.persistence.assembler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
@@ -20,7 +21,7 @@ public final class SearchEventPersistenceAssembler {
             return null;
         }
         SearchEventDO dataObject = new SearchEventDO();
-        dataObject.setId(entity.getId());
+        dataObject.setId(SearchEventIdCodec.toValue(entity.getId()));
         dataObject.setSearchEventId(entity.getSearchEventId());
         dataObject.setQueryText(entity.getQueryText());
         dataObject.setNormalizedQueryText(entity.getNormalizedQueryText());
@@ -46,8 +47,7 @@ public final class SearchEventPersistenceAssembler {
             return null;
         }
         SearchEvent entity = new SearchEvent();
-        entity.setId(dataObject.getId());
-        entity.setSearchEventId(dataObject.getSearchEventId());
+        entity.setId(SearchEventIdCodec.toDomain(dataObject.getId()));
         entity.setQueryText(dataObject.getQueryText());
         entity.setNormalizedQueryText(dataObject.getNormalizedQueryText());
         entity.setDisplayQueryText(dataObject.getDisplayQueryText());

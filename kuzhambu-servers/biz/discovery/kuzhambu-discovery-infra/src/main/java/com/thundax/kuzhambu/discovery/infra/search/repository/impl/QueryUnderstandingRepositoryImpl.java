@@ -1,7 +1,11 @@
 package com.thundax.kuzhambu.discovery.infra.search.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.thundax.kuzhambu.discovery.domain.search.codec.QueryUnderstandingIdCodec;
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.QueryUnderstanding;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.QueryUnderstandingId;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
 import com.thundax.kuzhambu.discovery.domain.search.repository.QueryUnderstandingRepository;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.assembler.QueryUnderstandingPersistenceAssembler;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject.QueryUnderstandingDO;
@@ -18,17 +22,17 @@ public class QueryUnderstandingRepositoryImpl implements QueryUnderstandingRepos
     }
 
     @Override
-    public QueryUnderstanding getBySearchEventId(Long searchEventId) {
+    public QueryUnderstanding getBySearchEventId(SearchEventId searchEventId) {
         return QueryUnderstandingPersistenceAssembler.toDomain(mapper.selectOne(new QueryWrapper<QueryUnderstandingDO>()
-                .eq("search_event_id", searchEventId)
+                .eq("search_event_id", SearchEventIdCodec.toValue(searchEventId))
                 .last("limit 1")));
     }
 
     @Override
-    public Long save(QueryUnderstanding entity) {
+    public QueryUnderstandingId save(QueryUnderstanding entity) {
         QueryUnderstandingDO dataObject = QueryUnderstandingPersistenceAssembler.toObject(entity);
         mapper.insert(dataObject);
-        return dataObject.getId();
+        return QueryUnderstandingIdCodec.toDomain(dataObject.getId());
     }
 
     @Override

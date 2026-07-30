@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.discovery.domain.search.model.entity;
 
+import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEventId;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
 import java.util.Date;
 import lombok.AllArgsConstructor;
@@ -13,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SearchEvent {
-    private Long id;
+    private SearchEventId id;
     private String queryText;
     private String normalizedQueryText;
     private String displayQueryText;
@@ -50,7 +52,7 @@ public class SearchEvent {
             String requestId,
             String traceId,
             Date createdAt) {
-        this.id = id == null ? parseId(searchEventId) : id;
+        this.id = id == null ? SearchEventIdCodec.toDomain(searchEventId) : SearchEventIdCodec.toDomain(id);
         this.queryText = queryText;
         this.normalizedQueryText = normalizedQueryText;
         this.displayQueryText = displayQueryText;
@@ -70,14 +72,18 @@ public class SearchEvent {
     }
 
     public String getSearchEventId() {
-        return id == null ? null : String.valueOf(id);
+        return SearchEventIdCodec.toStringValue(id);
     }
 
     public void setSearchEventId(String searchEventId) {
-        this.id = parseId(searchEventId);
+        this.id = SearchEventIdCodec.toDomain(searchEventId);
     }
 
-    private Long parseId(String value) {
-        return value == null ? null : Long.valueOf(value);
+    public void setId(SearchEventId id) {
+        this.id = id;
+    }
+
+    public void setId(Long id) {
+        this.id = SearchEventIdCodec.toDomain(id);
     }
 }

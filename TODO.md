@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `D-07 discovery-search-entity-repository-infra`：强类型化 Search 实体、仓储和 infra 边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/model/entity/SearchEvent.java`、`SearchClickEvent.java`、`QueryUnderstanding.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/repository/SearchEventRepository.java`、`SearchClickEventRepository.java`、`QueryUnderstandingRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/assembler/SearchEventPersistenceAssembler.java`、`SearchClickEventPersistenceAssembler.java`
-    - 处理动作：把 Search domain 字段、repository 签名和 persistence assembler 改为 Long-backed 强类型。
-    - 验收点：entity 内不再直接 `Long.valueOf(String)`，Search DO 保持基础类型，repository save 返回强类型 ID。
-    - 重要度：10/10
-
 - [ ] `D-08 discovery-search-application-interface`：适配 Search application 和 HTTP assembler
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-DOMAIN-STRONG-TYPING.md`
