@@ -50,7 +50,6 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTas
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -70,7 +69,7 @@ class KnowledgeGraphRefinementApplyTest {
                 71L,
                 "DRAFT",
                 9L,
-                new Date(),
+                Instant.now(),
                 null,
                 null,
                 null,
