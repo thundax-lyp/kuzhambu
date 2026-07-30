@@ -31,10 +31,10 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.KnowledgeSourc
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.QaKnowledgeSyncStatus;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncBatchRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncItemRepository;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -109,7 +109,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     public Long rebuild() {
         ensureKnowledgeBase();
 
-        Date startedAt = new Date();
+        Instant startedAt = Instant.now();
         String provider = resolveProvider();
         List<ClassicsQaKnowledgeFacadeRequest> syncSources = listSyncSources();
 
@@ -140,7 +140,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
                 successCount,
                 failureCount,
                 startedAt,
-                new Date()));
+                Instant.now()));
         return batchId;
     }
 
@@ -174,7 +174,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
                     null));
         }
 
-        Date now = new Date();
+        Instant now = Instant.now();
         syncItem.setUpdatedAt(now);
         if (StringUtils.isBlank(syncItem.getExternalKnowledgeItemId())) {
             syncItem.setSyncStatus(SYNC_STATUS_FAILED);
@@ -228,7 +228,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     private KnowledgeSyncItemResult syncContent(
             SyncKnowledgeContentCommand command, QaKnowledgeSyncItem existingItem, String triggerType) {
         KnowledgeSourceId sourceId = sourceId(command);
-        Date now = new Date();
+        Instant now = Instant.now();
         String externalKnowledgeBaseId = existingItem == null ? null : existingItem.getExternalKnowledgeBaseId();
         try {
             ClassicsQaKnowledgeFacadeResponse sourceResponse =
@@ -325,7 +325,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             SyncKnowledgeContentCommand command,
             QaKnowledgeSyncItem existingItem,
             KnowledgeSourceId sourceId,
-            Date now) {
+            Instant now) {
         if (!isWangqiOrMingCustoms(command.getContentType())) {
             throw new BizException(
                     "DISCOVERY-30011", "discovery.qa.sync.source-missing", "QA knowledge source is not available");
@@ -503,7 +503,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     private KnowledgeSyncItemResult syncDeletedContent(
             SyncKnowledgeContentCommand command,
             KnowledgeSourceId sourceId,
-            Date now,
+            Instant now,
             String failureReasonIfMissing,
             QaKnowledgeSyncItem existingItem) {
         QaKnowledgeSyncItem failedItem = existingItem == null ? new QaKnowledgeSyncItem() : existingItem;
@@ -530,7 +530,11 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     }
 
     private KnowledgeSyncItemResult deleteSyncItem(
-            QaKnowledgeSyncItem existingItem, KnowledgeSourceId sourceId, Date now, String requestId, String traceId) {
+            QaKnowledgeSyncItem existingItem,
+            KnowledgeSourceId sourceId,
+            Instant now,
+            String requestId,
+            String traceId) {
         if (StringUtils.isBlank(existingItem.getExternalKnowledgeItemId())) {
             return syncDeletedContent(
                     new SyncKnowledgeContentCommand(
@@ -631,13 +635,13 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
                 item == null ? null : item.getFailureReason(),
                 item == null || item.getSyncedAt() == null
                         ? null
-                        : item.getSyncedAt().getTime(),
+                        : item.getSyncedAt().toEpochMilli(),
                 item == null || item.getCreatedAt() == null
                         ? null
-                        : item.getCreatedAt().getTime(),
+                        : item.getCreatedAt().toEpochMilli(),
                 item == null || item.getUpdatedAt() == null
                         ? null
-                        : item.getUpdatedAt().getTime());
+                        : item.getUpdatedAt().toEpochMilli());
     }
 
     private KnowledgeSourceId sourceId(SyncKnowledgeContentCommand command) {
