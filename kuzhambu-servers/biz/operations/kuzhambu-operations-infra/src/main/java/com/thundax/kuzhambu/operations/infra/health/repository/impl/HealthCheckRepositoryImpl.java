@@ -190,9 +190,11 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
 
     private static String resolveBucketExpression(String bucketType) {
         String normalized = StringUtils.defaultIfBlank(bucketType, "DAY").trim().toUpperCase(Locale.ROOT);
+        String checkedAtDisplayTime =
+                "DATE_ADD('1970-01-01 00:00:00', INTERVAL ((checked_at DIV 1000) + 28800) SECOND)";
         return switch (normalized) {
-            case "HOUR" -> "DATE_FORMAT(checked_at, '%Y-%m-%d %H:00:00')";
-            case "DAY" -> "DATE_FORMAT(checked_at, '%Y-%m-%d')";
+            case "HOUR" -> "DATE_FORMAT(" + checkedAtDisplayTime + ", '%Y-%m-%d %H:00:00')";
+            case "DAY" -> "DATE_FORMAT(" + checkedAtDisplayTime + ", '%Y-%m-%d')";
             default -> throw new IllegalArgumentException("Unsupported health trend bucketType: " + bucketType);
         };
     }
