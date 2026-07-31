@@ -11,7 +11,7 @@ import org.apache.ibatis.type.MappedJdbcTypes;
 import org.apache.ibatis.type.MappedTypes;
 
 @MappedTypes(Instant.class)
-@MappedJdbcTypes(JdbcType.BIGINT)
+@MappedJdbcTypes(value = JdbcType.BIGINT, includeNullJdbcType = true)
 public class InstantEpochMillisTypeHandler extends BaseTypeHandler<Instant> {
 
     @Override

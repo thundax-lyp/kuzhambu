@@ -12,6 +12,9 @@ import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInt
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.thundax.kuzhambu.common.core.id.EntityId;
 import com.thundax.kuzhambu.common.mybatis.typehandler.EntityIdTypeHandler;
+import com.thundax.kuzhambu.common.mybatis.typehandler.InstantEpochMillisTypeHandler;
+import java.time.Instant;
+import org.apache.ibatis.type.JdbcType;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -97,6 +100,15 @@ public class MybatisPlusConfigurationTest {
             assertTrue(
                     configuration.getTypeHandlerRegistry().getTypeHandler(EntityId.class)
                             instanceof EntityIdTypeHandler);
+            assertTrue(
+                    configuration.getTypeHandlerRegistry().getTypeHandler(Instant.class)
+                            instanceof InstantEpochMillisTypeHandler);
+            assertTrue(
+                    configuration.getTypeHandlerRegistry().getTypeHandler(Instant.class, JdbcType.BIGINT)
+                            instanceof InstantEpochMillisTypeHandler);
+            assertTrue(
+                    configuration.getTypeHandlerRegistry().getTypeHandler(Instant.class, null)
+                            instanceof InstantEpochMillisTypeHandler);
         });
     }
 
