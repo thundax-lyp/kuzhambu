@@ -46,7 +46,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationContentState;
+import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationContent;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
@@ -1183,14 +1183,14 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         private MingCustomsEntry mingCustomsEntryForAiApply;
 
         @Override
-        public ClassicsPublicationContentState lockPublicationContent(
+        public ClassicsPublicationContent lockPublicationContent(
                 ClassicsContentType contentType, ClassicsContentId contentId) {
             return null;
         }
 
         @Override
         public int updatePublicationContentState(
-                ClassicsPublicationContentState expectedState, ClassicsPublicationContentState targetState) {
+                ClassicsPublicationContent expectedState, ClassicsPublicationContent targetState) {
             return 0;
         }
 

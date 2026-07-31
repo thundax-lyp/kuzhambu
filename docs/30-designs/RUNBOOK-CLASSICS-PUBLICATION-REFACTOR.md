@@ -816,7 +816,7 @@ flowchart TD
 | Stage | Status | Expected files | Gate |
 | --- | --- | ---: | --- |
 | 1. Foundation | `COMPLETE` | 100-170 | contracts/static checks and full Java checks |
-| 2. External systems and job core | `PENDING` | 80-150 | full Java checks |
+| 2. External systems and job core | `COMPLETE` | 80-150 | full Java checks |
 | 3. Runtime and Admin | `PENDING` | 100-180 | full Java and admin-web checks |
 | 4. Portal cutover and sharing frontend removal | `PENDING` | 50-100 | full Java/frontend checks and sharing residue scans |
 | 5. Publication visibility and legacy MQ removal | `PENDING` | 90-170 | full Java/frontend checks and legacy residue scans |
@@ -1001,121 +1001,35 @@ Status: COMPLETE
 
 ### Stage 2: External systems and job core
 
-Status: PENDING
+Status: COMPLETE
 
-该 stage 建立 ES/FastGPT 同步端口，并实现 job 创建和全部 milestone step；不启用 Schedule 或 Admin UI。
-
-#### Work Package 2A: Build ES and FastGPT adapters
-
-Discovery:
-
-- [ ] ES document 增加 `publicationStatus`。
-- [ ] 保持 `_id = contentType:contentId`。
-- [ ] 实现 PREPARE full overwrite、READY、OFFLINE、physical delete 和 probe。
-- [ ] 增加 `DiscoverySearchPublicationFacade`。
-- [ ] 增加 missing document、version mismatch 和 idempotent repeat tests。
-- [ ] 本 stage 不启用 Portal/public READY 强制过滤，避免在发布引擎可用前切断公开查询。
-
-FastGPT:
-
-- [ ] 增加 collection/data request/result model。
-- [ ] 同步扩展 `KnowledgeBaseClient`、`FastGptKnowledgeBaseClient` 和 `DisabledKnowledgeBaseClient`。
-- [ ] 按 tag `v4.15.1` 实现 `GET collection/detail` 和 `POST collection/update` 的 `forbid` read/update。
-- [ ] 按 `pageSize=30` 实现 `POST data/v2/list`，按 data ID 调用 `DELETE data/delete`。
-- [ ] 按每批最多 200 条实现 `POST data/pushData`，不得误用单条 `insertData`。
-- [ ] 使用 `POST collection/create` 创建 `type=virtual` 的空 collection，创建后立即 disable。
-- [ ] 使用 `DELETE collection/delete?id=...` 删除 collection；already missing 为成功。
-- [ ] 配置有限 connect/read/request timeout。
-- [ ] 增加 endpoint、payload、pagination、forbid 和 error tests。
-- [ ] 增加 Classics full-replace gateway：disable、删除全部旧 data、写入完整新 fragments、保持 disabled。
-
-不得：
-
-- 使用 metadata 表达发布状态；
-- 轮询 training/vectorization；
-- 依赖旧 job 的 data IDs 清理；
-- enable 单个 fragment。
-
-Exit:
-
-- adapters 可被 application service 同步调用。
-- PREPARE/READY/OFFLINE/delete 重复调用符合 Stage 1 契约。
-- full replace 从 collection 全量删除旧 data。
-- 本 stage 没有改变 Portal 可见性。
-- 完整 Java formatter/static/test 门禁通过。
-
-Commit split:
-
-1. Discovery document model。
-2. Discovery facade and ES adapter。
-3. Discovery tests。
-4. Common FastGPT contract。
-5. FastGPT HTTP adapter。
-6. FastGPT tests。
-7. Classics full-replace gateway。
-
-#### Work Package 2B: Build job creation and step executor
-
-Job creation:
-
-- [ ] publish 只接受 `DRAFT/OFFLINE/ERROR + NONE`。
-- [ ] offline 只接受 `PUBLISHED/ERROR + NONE`。
-- [ ] 同一事务锁稿件和旧 job。
-- [ ] 拒绝 RUNNING job 和 RUNNING cleanup。
-- [ ] 只继承 ES document ID 和 FastGPT collection ID。
-- [ ] 删除旧 job，插入 `QUEUED + RUNNING` 新 job。
-- [ ] 更新稿件 transition 和 current job。
-- [ ] batch 逐条复用单稿件事务，返回逐条结果。
-- [ ] 增加 read-only job page/detail 和 computed failure step。
-
-Step executor:
-
-- [ ] 实现纯函数 `nextStep(jobType, jobStatus)`。
-- [ ] 发布顺序固定为 `SNAPSHOT_READY -> ES_PREPARED -> FASTGPT_PREPARED -> ES_READY -> FASTGPT_READY -> CONTENT_COMMITTED`。
-- [ ] 下线顺序固定为 `ES_DISABLED -> FASTGPT_DISABLED -> CONTENT_COMMITTED`。
-- [ ] 复用正式版本和 `ClassicsContentSnapshotAssembler`。
-- [ ] 增加 `ClassicsPublicationPayloadAssembler`，严格实现固定 ES 字段和 fragment 顺序。
-- [ ] ES/FastGPT payload 只来自 job 绑定的正式版本。
-- [ ] 一次 executor 调用最多执行一个切片。
-- [ ] step 失败不改变 `job_status`。
-- [ ] step 成功只推进一个 milestone。
-- [ ] `CONTENT_COMMITTED` 才回填目标 lifecycle。
-
-Tests:
-
-- [ ] two publish race。
-- [ ] publish/offline race。
-- [ ] new job/cleanup row-lock race。
-- [ ] old FAILED/SUCCEEDED replacement。
-- [ ] exhaustive nextStep table。
-- [ ] external timeout and stale token after return。
-- [ ] snapshot/version mismatch。
-- [ ] deterministic payload、blank validation、tag dedupe 和 200-item batch boundary。
-- [ ] FastGPT prepare always-full-replace retry。
-
-Exit:
-
-- application-level job creation和全部 step 可独立测试。
-- executor 不循环整个 job，不 sleep 等重试。
-- 完整 Java formatter/static/test 门禁通过。
-
-Commit split:
-
-1. Job creation transaction。
-2. Job creation race tests。
-3. Batch/query。
-4. nextStep。
-5. Snapshot and ES steps。
-6. FastGPT steps。
-7. Content commit。
-
-Stage 2 exit:
-
-- ES/FastGPT adapters 和全部 job step 均有聚焦测试。
-- Portal/public query 尚未切换 READY 过滤。
-- Schedule、Admin API 和 Admin UI 尚未激活。
-- 完整 Java formatter/static/test 门禁通过。
-- 工作区干净，Stage 2 已拆为多个小 commit。
+- Branch: `feature/classics-publication-stage-2-job-core`
+- Base: `origin/main` at `d6af806b0`
+- Functional commits: `d862d7a1f^..05c7e8a52`
+- Delivery PR: `#194`
+- Result:
+  - Discovery 提供 `PREPARING/READY/OFFLINE` 全量覆盖、物理删除和探测能力，
+    `_id` 固定为 `contentType:contentId`。
+  - FastGPT client 支持 virtual collection、`forbid` enable/disable、分页清空、
+    200 条分批写入、探测和删除；Classics gateway 始终执行 collection 全量替换。
+  - `ClassicsPublicationContent` 是发布领域使用的稿件实体视图；job 创建事务完成
+    稿件优先行锁、状态校验、旧 job 替换、外部引用继承和 transition 回填。
+    batch 逐稿件使用独立事务，page/detail 可按结果状态和当前步骤定位失败点。
+  - snapshot bind 在同一本地事务内完成正式版本、稿件 version marker、payload
+    校验和 milestone；payload 的 `searchDocument` 是 ES 写入对象。
+  - FastGPT 新 collection ID 在清空和写入前写回 job，切片失败后重试复用该引用；
+    ES 字段、标签去重和 FastGPT fragment 顺序确定。
+  - 纯状态机和单切片 executor 已覆盖发布、下线及最终稿件状态回填；远端调用
+    不持有本地事务，milestone 使用 execution token 条件推进。
+- Verification:
+  - `mvn spotless:check`
+  - `mvn checkstyle:check`
+  - `mvn test`
+  - 58-module Java reactor passed；ES、FastGPT、job creation、payload、state
+    machine、step executor 和 persistence focused tests passed。
+- Deferred: Portal/public READY filter, runtime lease and 5 Schedules, write guard,
+  Admin API/UI (Stage 3-4); legacy MQ and visibility removal (Stage 5); runtime smoke
+  and RUNBOOK deletion (Stage 6).
 
 ### Stage 3: Runtime and Admin
 

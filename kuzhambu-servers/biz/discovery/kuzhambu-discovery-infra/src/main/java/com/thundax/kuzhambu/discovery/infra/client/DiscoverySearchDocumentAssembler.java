@@ -12,26 +12,28 @@ public class DiscoverySearchDocumentAssembler {
         if (sourceContent == null) {
             return null;
         }
-        return new DiscoverySearchDocument(
-                buildDocumentId(sourceContent),
-                sourceContent.getContentDomain(),
-                sourceContent.getContentType(),
-                sourceContent.getContentId(),
-                sourceContent.getKnowledgeBase(),
-                sourceContent.getCategoryCode(),
-                sourceContent.getCategoryName(),
-                sourceContent.getTitle(),
-                sourceContent.getSummary(),
-                joinBodyText(sourceContent.getTextSegments()),
-                sourceContent.getTagNames() == null ? Collections.emptyList() : sourceContent.getTagNames(),
-                sourceContent.getStatus(),
-                sourceContent.getVisibility(),
-                sourceContent.getCurrentVersionNo(),
-                sourceContent.getPublishedAt(),
-                sourceContent.getUpdatedAt(),
-                Boolean.FALSE,
-                null,
-                buildSourcePath(sourceContent));
+        DiscoverySearchDocument document = new DiscoverySearchDocument();
+        document.setDocumentId(buildDocumentId(sourceContent));
+        document.setContentDomain(sourceContent.getContentDomain());
+        document.setContentType(sourceContent.getContentType());
+        document.setContentId(sourceContent.getContentId());
+        document.setKnowledgeBase(sourceContent.getKnowledgeBase());
+        document.setCategoryCode(sourceContent.getCategoryCode());
+        document.setCategoryName(sourceContent.getCategoryName());
+        document.setTitle(sourceContent.getTitle());
+        document.setSummary(sourceContent.getSummary());
+        document.setBodyText(joinBodyText(sourceContent.getTextSegments()));
+        document.setTextSegments(sourceContent.getTextSegments());
+        document.setTagNames(
+                sourceContent.getTagNames() == null ? Collections.emptyList() : sourceContent.getTagNames());
+        document.setStatus(sourceContent.getStatus());
+        document.setVisibility(sourceContent.getVisibility());
+        document.setSourceVersionNo(sourceContent.getCurrentVersionNo());
+        document.setPublishedAt(sourceContent.getPublishedAt());
+        document.setUpdatedAt(sourceContent.getUpdatedAt());
+        document.setDeleted(Boolean.FALSE);
+        document.setSourcePath(buildSourcePath(sourceContent));
+        return document;
     }
 
     private String buildDocumentId(SearchSourceContent sourceContent) {

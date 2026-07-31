@@ -2,15 +2,27 @@ package com.thundax.kuzhambu.classics.domain.publication.repository;
 
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobResultStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobType;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
 
 public interface ClassicsPublicationJobRepository {
     ClassicsPublicationJobId insert(ClassicsPublicationJob job);
 
     ClassicsPublicationJob getById(ClassicsPublicationJobId id);
+
+    PageResult<ClassicsPublicationJob> page(
+            ClassicsPublicationJobType jobType,
+            ClassicsPublicationJobResultStatus jobResultStatus,
+            ClassicsPublicationJobStatus jobStatus,
+            ClassicsContentType contentType,
+            String keyword,
+            int pageNo,
+            int pageSize);
 
     ClassicsPublicationJob lockByContent(ClassicsContentType contentType, Long contentId);
 
@@ -33,10 +45,18 @@ public interface ClassicsPublicationJobRepository {
             ClassicsPublicationExecutionToken token,
             ClassicsPublicationJobStatus expectedStatus,
             ClassicsPublicationJobStatus nextStatus,
+            Long contentVersionId,
+            Integer contentVersionNo,
             String esDocumentId,
             String fastGptCollectionId,
             String fastGptDataIdsJson,
             String detailJson);
+
+    int bindFastGptCollection(
+            ClassicsPublicationJobId id,
+            ClassicsPublicationExecutionToken token,
+            ClassicsPublicationJobStatus expectedStatus,
+            String fastGptCollectionId);
 
     int releaseForRetry(
             ClassicsPublicationJobId id,

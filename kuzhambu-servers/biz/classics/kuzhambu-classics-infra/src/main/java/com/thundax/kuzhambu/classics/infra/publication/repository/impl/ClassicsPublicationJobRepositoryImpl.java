@@ -1,17 +1,24 @@
 package com.thundax.kuzhambu.classics.infra.publication.repository.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationExecutionTokenCodec;
 import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobResultStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobType;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.classics.infra.publication.persistence.assembler.ClassicsPublicationPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.publication.persistence.dataobject.ClassicsPublicationJobDO;
 import com.thundax.kuzhambu.classics.infra.publication.persistence.mapper.ClassicsPublicationJobMapper;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -33,6 +40,41 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
     public ClassicsPublicationJob getById(ClassicsPublicationJobId id) {
         return ClassicsPublicationPersistenceAssembler.toDomain(
                 mapper.selectById(ClassicsPublicationJobIdCodec.toValue(id)));
+    }
+
+    @Override
+    public PageResult<ClassicsPublicationJob> page(
+            ClassicsPublicationJobType jobType,
+            ClassicsPublicationJobResultStatus jobResultStatus,
+            ClassicsPublicationJobStatus jobStatus,
+            ClassicsContentType contentType,
+            String keyword,
+            int pageNo,
+            int pageSize) {
+        LambdaQueryWrapper<ClassicsPublicationJobDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(jobType != null, ClassicsPublicationJobDO::getJobType, jobType == null ? null : jobType.name())
+                .eq(
+                        jobResultStatus != null,
+                        ClassicsPublicationJobDO::getJobResultStatus,
+                        jobResultStatus == null ? null : jobResultStatus.name())
+                .eq(
+                        jobStatus != null,
+                        ClassicsPublicationJobDO::getJobStatus,
+                        jobStatus == null ? null : jobStatus.name())
+                .eq(
+                        contentType != null,
+                        ClassicsPublicationJobDO::getContentType,
+                        contentType == null ? null : contentType.name())
+                .and(StringUtils.isNotBlank(keyword), query -> query.like(
+                                ClassicsPublicationJobDO::getContentTitleSnapshot, keyword.trim())
+                        .or()
+                        .like(ClassicsPublicationJobDO::getContentId, keyword.trim()));
+        wrapper.orderByDesc(ClassicsPublicationJobDO::getRequestedAt).orderByDesc(ClassicsPublicationJobDO::getId);
+        Page<ClassicsPublicationJobDO> dataPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
+        List<ClassicsPublicationJob> records = dataPage.getRecords().stream()
+                .map(ClassicsPublicationPersistenceAssembler::toDomain)
+                .toList();
+        return PageResult.of((int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), records);
     }
 
     @Override
@@ -78,6 +120,8 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
             ClassicsPublicationExecutionToken token,
             ClassicsPublicationJobStatus expectedStatus,
             ClassicsPublicationJobStatus nextStatus,
+            Long contentVersionId,
+            Integer contentVersionNo,
             String esDocumentId,
             String fastGptCollectionId,
             String fastGptDataIdsJson,
@@ -87,10 +131,25 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
                 ClassicsPublicationExecutionTokenCodec.toValue(token),
                 expectedStatus.name(),
                 nextStatus.name(),
+                contentVersionId,
+                contentVersionNo,
                 esDocumentId,
                 fastGptCollectionId,
                 fastGptDataIdsJson,
                 detailJson);
+    }
+
+    @Override
+    public int bindFastGptCollection(
+            ClassicsPublicationJobId id,
+            ClassicsPublicationExecutionToken token,
+            ClassicsPublicationJobStatus expectedStatus,
+            String fastGptCollectionId) {
+        return mapper.bindFastGptCollection(
+                ClassicsPublicationJobIdCodec.toValue(id),
+                ClassicsPublicationExecutionTokenCodec.toValue(token),
+                expectedStatus.name(),
+                fastGptCollectionId);
     }
 
     @Override

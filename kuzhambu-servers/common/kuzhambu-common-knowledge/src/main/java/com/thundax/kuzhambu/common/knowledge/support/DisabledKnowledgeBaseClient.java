@@ -8,6 +8,15 @@ import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseResult;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatStreamHandler;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionCreateRequest;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionReferenceRequest;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionResult;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionUpdateRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataListRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPageResult;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPushRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPushResult;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataReferenceRequest;
 import com.thundax.kuzhambu.common.knowledge.model.health.KnowledgeHealthResult;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemDeleteRequest;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemListRequest;
@@ -55,6 +64,41 @@ public class DisabledKnowledgeBaseClient implements KnowledgeBaseClient {
 
     @Override
     public KnowledgeSyncResult deleteKnowledgeItem(KnowledgeItemDeleteRequest request) {
+        throw disabled();
+    }
+
+    @Override
+    public KnowledgeCollectionResult createCollection(KnowledgeCollectionCreateRequest request) {
+        throw disabled();
+    }
+
+    @Override
+    public KnowledgeCollectionResult getCollection(KnowledgeCollectionReferenceRequest request) {
+        throw disabled();
+    }
+
+    @Override
+    public void updateCollection(KnowledgeCollectionUpdateRequest request) {
+        throw disabled();
+    }
+
+    @Override
+    public void deleteCollection(KnowledgeCollectionReferenceRequest request) {
+        throw disabled();
+    }
+
+    @Override
+    public KnowledgeCollectionDataPageResult listCollectionData(KnowledgeCollectionDataListRequest request) {
+        throw disabled();
+    }
+
+    @Override
+    public void deleteCollectionData(KnowledgeCollectionDataReferenceRequest request) {
+        throw disabled();
+    }
+
+    @Override
+    public KnowledgeCollectionDataPushResult pushCollectionData(KnowledgeCollectionDataPushRequest request) {
         throw disabled();
     }
 

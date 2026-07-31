@@ -55,6 +55,8 @@ public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublica
             update classics_publication_job
             set job_status = #{nextStatus}, execution_token = null, expires_at = null,
                 next_retry_at = null, attempt_count = 0, failure_reason = null,
+                content_version_id = coalesce(#{contentVersionId}, content_version_id),
+                content_version_no = coalesce(#{contentVersionNo}, content_version_no),
                 es_document_id = coalesce(#{esDocumentId}, es_document_id),
                 fastgpt_collection_id = coalesce(#{fastGptCollectionId}, fastgpt_collection_id),
                 fastgpt_data_ids_json = coalesce(#{fastGptDataIdsJson}, fastgpt_data_ids_json),
@@ -67,10 +69,26 @@ public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublica
             @Param("token") String token,
             @Param("expectedStatus") String expectedStatus,
             @Param("nextStatus") String nextStatus,
+            @Param("contentVersionId") Long contentVersionId,
+            @Param("contentVersionNo") Integer contentVersionNo,
             @Param("esDocumentId") String esDocumentId,
             @Param("fastGptCollectionId") String fastGptCollectionId,
             @Param("fastGptDataIdsJson") String fastGptDataIdsJson,
             @Param("detailJson") String detailJson);
+
+    @Update(
+            """
+            update classics_publication_job
+            set fastgpt_collection_id = #{fastGptCollectionId}
+            where id = #{id} and execution_token = #{token}
+              and job_result_status = 'RUNNING' and job_status = #{expectedStatus}
+              and fastgpt_collection_id is null
+            """)
+    int bindFastGptCollection(
+            @Param("id") Long id,
+            @Param("token") String token,
+            @Param("expectedStatus") String expectedStatus,
+            @Param("fastGptCollectionId") String fastGptCollectionId);
 
     @Update(
             """

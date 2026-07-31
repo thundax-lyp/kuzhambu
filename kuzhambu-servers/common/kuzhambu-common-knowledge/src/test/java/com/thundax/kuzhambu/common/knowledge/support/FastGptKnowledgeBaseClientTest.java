@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -15,6 +16,13 @@ import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseListRequest
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatMessage;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionCreateRequest;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionReferenceRequest;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionUpdateRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataListRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPushItem;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPushRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataReferenceRequest;
 import com.thundax.kuzhambu.common.knowledge.model.sync.KnowledgeSyncRequest;
 import java.time.Duration;
 import java.util.List;
@@ -22,6 +30,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -434,6 +443,142 @@ public class FastGptKnowledgeBaseClientTest {
                 "SUCCEEDED",
                 client.syncKnowledgeItem(new KnowledgeSyncRequest("kuzhambu-qa", "item-1", Map.of("trigger", "FULL")))
                         .status());
+        server.verify();
+    }
+
+    @Test
+    public void shouldManageVirtualCollectionAndCollectionDataWithFixedEndpoints() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/collection/create"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(
+                        content()
+                                .json(
+                                        """
+                                {
+                                  "datasetId": "6a4f51e5ef72393d430a8e31",
+                                  "name": "SANCAI_ENTRY:101:天文",
+                                  "type": "virtual"
+                                }
+                                """))
+                .andRespond(withSuccess("{\"code\":200,\"data\":\"collection-1\"}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/collection/detail?id=collection-1"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(
+                        "{\"code\":200,\"data\":{\"_id\":\"collection-1\",\"forbid\":true}}",
+                        MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/collection/update"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(content().json("{\"id\":\"collection-1\",\"forbid\":false}"))
+                .andRespond(withSuccess("{\"code\":200}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/data/v2/list"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(
+                        content()
+                                .json(
+                                        """
+                                {"collectionId":"collection-1","offset":0,"pageSize":30}
+                                """))
+                .andRespond(withSuccess(
+                        "{\"code\":200,\"data\":{\"total\":1,\"list\":[{\"_id\":\"data-1\"}]}}",
+                        MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/data/delete?id=data-1"))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withSuccess("{\"code\":200}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/data/pushData"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(
+                        content()
+                                .json(
+                                        """
+                                {
+                                  "collectionId":"collection-1",
+                                  "data":[{"q":"天文","a":"正文","chunkIndex":0}]
+                                }
+                                """))
+                .andRespond(withSuccess("{\"code\":200,\"data\":{\"insertLen\":1}}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/collection/delete?id=collection-1"))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withSuccess("{\"code\":200}", MediaType.APPLICATION_JSON));
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+
+        var created =
+                client.createCollection(new KnowledgeCollectionCreateRequest(null, "SANCAI_ENTRY:101:天文", "virtual"));
+        var detail = client.getCollection(new KnowledgeCollectionReferenceRequest(created.collectionId()));
+        client.updateCollection(new KnowledgeCollectionUpdateRequest(created.collectionId(), false));
+        var page = client.listCollectionData(new KnowledgeCollectionDataListRequest(created.collectionId(), 0, 30));
+        client.deleteCollectionData(
+                new KnowledgeCollectionDataReferenceRequest(page.items().get(0).dataId()));
+        var pushed = client.pushCollectionData(new KnowledgeCollectionDataPushRequest(
+                created.collectionId(), List.of(new KnowledgeCollectionDataPushItem("天文", "正文", 0))));
+        client.deleteCollection(new KnowledgeCollectionReferenceRequest(created.collectionId()));
+
+        assertEquals("collection-1", created.collectionId());
+        assertEquals(true, detail.forbid());
+        assertEquals(1, page.total());
+        assertEquals(1, pushed.insertLen());
+        server.verify();
+    }
+
+    @Test
+    public void shouldTreatMissingCollectionForbidAsEnabled() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/collection/detail?id=collection-1"))
+                .andRespond(
+                        withSuccess("{\"code\":200,\"data\":{\"_id\":\"collection-1\"}}", MediaType.APPLICATION_JSON));
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+
+        assertEquals(
+                false,
+                client.getCollection(new KnowledgeCollectionReferenceRequest("collection-1"))
+                        .forbid());
+        server.verify();
+    }
+
+    @Test
+    public void shouldNormalizeOnlyExplicitNotFoundForDetailAndDeletes() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/collection/detail?id=missing"))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/data/delete?id=missing"))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/collection/delete?id=missing"))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+
+        assertEquals(null, client.getCollection(new KnowledgeCollectionReferenceRequest("missing")));
+        client.deleteCollectionData(new KnowledgeCollectionDataReferenceRequest("missing"));
+        client.deleteCollection(new KnowledgeCollectionReferenceRequest("missing"));
+        server.verify();
+    }
+
+    @Test
+    public void shouldRejectProviderFailureForCollectionMutation() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/collection/update"))
+                .andRespond(
+                        withSuccess("{\"code\":500001,\"message\":\"quota exceeded\"}", MediaType.APPLICATION_JSON));
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> client.updateCollection(new KnowledgeCollectionUpdateRequest("collection-1", true)));
         server.verify();
     }
 

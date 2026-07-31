@@ -17,6 +17,17 @@ import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatSource;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatStreamHandler;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatUsage;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionCreateRequest;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionReferenceRequest;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionResult;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionUpdateRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataListRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPageResult;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPushItem;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPushRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPushResult;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataReferenceRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataResult;
 import com.thundax.kuzhambu.common.knowledge.model.health.KnowledgeHealthResult;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemDeleteRequest;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemListRequest;
@@ -212,18 +223,128 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
     @Override
     public KnowledgeSyncResult deleteKnowledgeItem(KnowledgeItemDeleteRequest request) {
         Assert.notNull(request, "Knowledge item delete request must not be null");
-        String knowledgeBaseId = configuredKnowledgeBaseId();
+        deleteCollection(new KnowledgeCollectionReferenceRequest(request.knowledgeItemId()));
+        return new KnowledgeSyncResult(request.knowledgeItemId(), "DELETED", Map.of("provider", PROVIDER));
+    }
+
+    @Override
+    public KnowledgeCollectionResult createCollection(KnowledgeCollectionCreateRequest request) {
+        Assert.notNull(request, "Knowledge collection create request must not be null");
         Map<String, Object> payload = new LinkedHashMap<>();
-        putIfHasText(payload, "datasetId", knowledgeBaseId);
-        putIfHasText(payload, "collectionId", request.knowledgeItemId());
-        putIfHasText(payload, "sourceId", request.itemKey());
-        mergeOptions(payload, request.options());
-        JsonNode body = post("/api/core/dataset/collection/delete", payload);
+        putIfHasText(
+                payload,
+                "datasetId",
+                StringUtils.hasText(request.datasetId()) ? request.datasetId() : configuredKnowledgeBaseId());
+        putIfHasText(payload, "name", request.name());
+        putIfHasText(payload, "type", request.type());
+        JsonNode body = requireSuccess(post("/api/core/dataset/collection/create", payload));
         JsonNode data = dataNode(body);
-        return new KnowledgeSyncResult(
-                textValue(data, "syncId", textValue(data, "id", null)),
-                textValue(data, "status", "DELETED"),
-                rawMap(body));
+        String collectionId = data.isTextual()
+                ? data.asText()
+                : textValue(data, "_id", textValue(data, "collectionId", textValue(data, "id", null)));
+        return new KnowledgeCollectionResult(collectionId, booleanValue(data, "forbid"), rawMap(body));
+    }
+
+    @Override
+    public KnowledgeCollectionResult getCollection(KnowledgeCollectionReferenceRequest request) {
+        Assert.notNull(request, "Knowledge collection reference request must not be null");
+        try {
+            JsonNode body = get("/api/core/dataset/collection/detail?id={id}", Map.of("id", request.collectionId()));
+            if (isProviderNotFound(body)) {
+                return null;
+            }
+            body = requireSuccess(body);
+            JsonNode data = dataNode(body);
+            return new KnowledgeCollectionResult(
+                    textValue(data, "_id", textValue(data, "collectionId", textValue(data, "id", null))),
+                    booleanValue(data, "forbid"),
+                    rawMap(body));
+        } catch (RestClientResponseException ex) {
+            if (isNotFound(ex)) {
+                return null;
+            }
+            throw ex;
+        }
+    }
+
+    @Override
+    public void updateCollection(KnowledgeCollectionUpdateRequest request) {
+        Assert.notNull(request, "Knowledge collection update request must not be null");
+        Map<String, Object> payload = new LinkedHashMap<>();
+        putIfHasText(payload, "id", request.collectionId());
+        payload.put("forbid", request.forbid());
+        requireSuccess(post("/api/core/dataset/collection/update", payload));
+    }
+
+    @Override
+    public void deleteCollection(KnowledgeCollectionReferenceRequest request) {
+        Assert.notNull(request, "Knowledge collection reference request must not be null");
+        try {
+            JsonNode body = delete("/api/core/dataset/collection/delete?id={id}", Map.of("id", request.collectionId()));
+            if (!isProviderNotFound(body)) {
+                requireSuccess(body);
+            }
+        } catch (RestClientResponseException ex) {
+            if (!isNotFound(ex)) {
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public KnowledgeCollectionDataPageResult listCollectionData(KnowledgeCollectionDataListRequest request) {
+        Assert.notNull(request, "Knowledge collection data list request must not be null");
+        Map<String, Object> payload = new LinkedHashMap<>();
+        putIfHasText(payload, "collectionId", request.collectionId());
+        putIfNotNull(payload, "offset", request.offset());
+        putIfNotNull(payload, "pageSize", request.pageSize());
+        JsonNode body = requireSuccess(post("/api/core/dataset/data/v2/list", payload));
+        JsonNode data = dataNode(body);
+        List<KnowledgeCollectionDataResult> items = new ArrayList<>();
+        JsonNode list = listNode(data);
+        if (list.isArray()) {
+            for (JsonNode item : list) {
+                items.add(new KnowledgeCollectionDataResult(textValue(item, "_id", textValue(item, "id", null))));
+            }
+        }
+        return new KnowledgeCollectionDataPageResult(intValue(data, "total", items.size()), items, rawMap(body));
+    }
+
+    @Override
+    public void deleteCollectionData(KnowledgeCollectionDataReferenceRequest request) {
+        Assert.notNull(request, "Knowledge collection data reference request must not be null");
+        try {
+            JsonNode body = delete("/api/core/dataset/data/delete?id={id}", Map.of("id", request.dataId()));
+            if (!isProviderNotFound(body)) {
+                requireSuccess(body);
+            }
+        } catch (RestClientResponseException ex) {
+            if (!isNotFound(ex)) {
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public KnowledgeCollectionDataPushResult pushCollectionData(KnowledgeCollectionDataPushRequest request) {
+        Assert.notNull(request, "Knowledge collection data push request must not be null");
+        Map<String, Object> payload = new LinkedHashMap<>();
+        putIfHasText(payload, "collectionId", request.collectionId());
+        List<Map<String, Object>> data = new ArrayList<>();
+        if (request.data() != null) {
+            for (KnowledgeCollectionDataPushItem item : request.data()) {
+                Map<String, Object> value = new LinkedHashMap<>();
+                putIfHasText(value, "q", item.q());
+                putIfHasText(value, "a", item.a());
+                value.put("chunkIndex", item.chunkIndex());
+                data.add(value);
+            }
+        }
+        payload.put("data", data);
+        JsonNode body = requireSuccess(post("/api/core/dataset/data/pushData", payload));
+        JsonNode result = dataNode(body);
+        return new KnowledgeCollectionDataPushResult(
+                intValue(result, "insertLen", intValue(body, "insertLen", 0)), rawMap(body));
     }
 
     @Override
@@ -479,6 +600,44 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         return readJson(response);
     }
 
+    private JsonNode get(String path, Map<String, ?> uriVariables) {
+        String response = restOperations
+                .exchange(path, HttpMethod.GET, new HttpEntity<>(headers()), String.class, uriVariables)
+                .getBody();
+        return readJson(response);
+    }
+
+    private JsonNode delete(String path, Map<String, ?> uriVariables) {
+        String response = restOperations
+                .exchange(path, HttpMethod.DELETE, new HttpEntity<>(headers()), String.class, uriVariables)
+                .getBody();
+        return readJson(response);
+    }
+
+    private JsonNode requireSuccess(JsonNode body) {
+        Integer code = intValue(body, "code", null);
+        if (code == null || code == 0 || code == 200) {
+            return body;
+        }
+        throw new IllegalStateException("FastGPT request failed with provider code " + code);
+    }
+
+    private boolean isProviderNotFound(JsonNode body) {
+        if (body == null) {
+            return false;
+        }
+        Integer code = intValue(body, "code", null);
+        String message = textValue(body, "message", textValue(body, "statusText", ""));
+        return (code != null && code == 404)
+                || (StringUtils.hasText(message)
+                        && (message.toLowerCase(java.util.Locale.ROOT).contains("not found")
+                                || message.toLowerCase(java.util.Locale.ROOT).contains("notfound")));
+    }
+
+    private boolean isNotFound(RestClientResponseException exception) {
+        return exception.getStatusCode().value() == 404;
+    }
+
     private String writeJson(Object payload) {
         try {
             return objectMapper.writeValueAsString(payload);
@@ -579,6 +738,10 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         JsonNode records = data.path("records");
         if (!records.isMissingNode()) {
             return records;
+        }
+        JsonNode nestedData = data.path("data");
+        if (nestedData.isArray()) {
+            return nestedData;
         }
         return data.isArray() ? data : objectMapper.createArrayNode();
     }

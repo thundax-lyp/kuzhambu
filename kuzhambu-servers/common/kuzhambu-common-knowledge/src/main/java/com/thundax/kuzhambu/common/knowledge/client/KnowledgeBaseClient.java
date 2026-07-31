@@ -7,6 +7,15 @@ import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseResult;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatStreamHandler;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionCreateRequest;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionReferenceRequest;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionResult;
+import com.thundax.kuzhambu.common.knowledge.model.collection.KnowledgeCollectionUpdateRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataListRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPageResult;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPushRequest;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataPushResult;
+import com.thundax.kuzhambu.common.knowledge.model.data.KnowledgeCollectionDataReferenceRequest;
 import com.thundax.kuzhambu.common.knowledge.model.health.KnowledgeHealthResult;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemDeleteRequest;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemListRequest;
@@ -31,6 +40,20 @@ public interface KnowledgeBaseClient {
     KnowledgeSyncResult syncKnowledgeItem(KnowledgeSyncRequest request);
 
     KnowledgeSyncResult deleteKnowledgeItem(KnowledgeItemDeleteRequest request);
+
+    KnowledgeCollectionResult createCollection(KnowledgeCollectionCreateRequest request);
+
+    KnowledgeCollectionResult getCollection(KnowledgeCollectionReferenceRequest request);
+
+    void updateCollection(KnowledgeCollectionUpdateRequest request);
+
+    void deleteCollection(KnowledgeCollectionReferenceRequest request);
+
+    KnowledgeCollectionDataPageResult listCollectionData(KnowledgeCollectionDataListRequest request);
+
+    void deleteCollectionData(KnowledgeCollectionDataReferenceRequest request);
+
+    KnowledgeCollectionDataPushResult pushCollectionData(KnowledgeCollectionDataPushRequest request);
 
     KnowledgeChatResult chat(KnowledgeChatRequest request);
 

@@ -80,10 +80,34 @@ class ClassicsPublicationJobPersistenceTest {
                 String.class,
                 String.class,
                 String.class,
+                Long.class,
+                Integer.class,
                 String.class,
                 String.class,
                 String.class,
                 String.class);
+        Method advance = ClassicsPublicationJobMapper.class.getMethod(
+                "advanceMilestone",
+                Long.class,
+                String.class,
+                String.class,
+                String.class,
+                Long.class,
+                Integer.class,
+                String.class,
+                String.class,
+                String.class,
+                String.class);
+        String advanceSql = String.join(" ", advance.getAnnotation(Update.class).value());
+        assertTrue(advanceSql.contains("content_version_id = coalesce(#{contentVersionId}, content_version_id)"));
+        assertTrue(advanceSql.contains("content_version_no = coalesce(#{contentVersionNo}, content_version_no)"));
+        assertTokenPredicate("bindFastGptCollection", Long.class, String.class, String.class, String.class);
+        Method bindCollection = ClassicsPublicationJobMapper.class.getMethod(
+                "bindFastGptCollection", Long.class, String.class, String.class, String.class);
+        String bindCollectionSql =
+                String.join(" ", bindCollection.getAnnotation(Update.class).value());
+        assertTrue(bindCollectionSql.contains("job_status = #{expectedStatus}"));
+        assertTrue(bindCollectionSql.contains("fastgpt_collection_id is null"));
         assertTokenPredicate("releaseForRetry", Long.class, String.class, Instant.class, String.class, String.class);
         assertTokenPredicate(
                 "markTerminalFailure", Long.class, String.class, Instant.class, String.class, String.class);

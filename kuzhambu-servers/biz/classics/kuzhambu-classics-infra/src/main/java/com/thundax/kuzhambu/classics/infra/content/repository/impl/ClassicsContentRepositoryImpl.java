@@ -26,9 +26,9 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationJobIdCodec;
+import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationContent;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationContentState;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.infra.content.persistence.assembler.ClassicsContentPersistenceAssembler;
@@ -361,7 +361,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public ClassicsPublicationContentState lockPublicationContent(
+    public ClassicsPublicationContent lockPublicationContent(
             ClassicsContentType contentType, ClassicsContentId contentId) {
         Long id = ClassicsContentIdCodec.toValue(contentId);
         if (contentType == null || id == null) {
@@ -379,71 +379,76 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
 
     @Override
     public int updatePublicationContentState(
-            ClassicsPublicationContentState expectedState, ClassicsPublicationContentState targetState) {
-        if (expectedState.contentType() != targetState.contentType()
-                || !Objects.equals(expectedState.contentId(), targetState.contentId())) {
+            ClassicsPublicationContent expectedState, ClassicsPublicationContent targetState) {
+        if (expectedState.getContentType() != targetState.getContentType()
+                || !Objects.equals(expectedState.getContentId(), targetState.getContentId())) {
             throw new IllegalArgumentException("Publication state update must target the same content");
         }
-        Long id = ClassicsContentIdCodec.toValue(expectedState.contentId());
-        Long expectedJobId = ClassicsPublicationJobIdCodec.toValue(expectedState.currentJobId());
-        Long targetJobId = ClassicsPublicationJobIdCodec.toValue(targetState.currentJobId());
-        return switch (expectedState.contentType()) {
+        Long id = ClassicsContentIdCodec.toValue(expectedState.getContentId());
+        Long expectedJobId = ClassicsPublicationJobIdCodec.toValue(expectedState.getCurrentJobId());
+        Long targetJobId = ClassicsPublicationJobIdCodec.toValue(targetState.getCurrentJobId());
+        return switch (expectedState.getContentType()) {
             case SANCAI_ENTRY ->
                 sancaiMapper.updatePublicationState(
                         id,
-                        expectedState.lifecycleStatus().name(),
-                        expectedState.transitionStatus().name(),
+                        expectedState.getLifecycleStatus().name(),
+                        expectedState.getTransitionStatus().name(),
                         expectedJobId,
-                        targetState.lifecycleStatus().name(),
-                        targetState.transitionStatus().name(),
+                        targetState.getLifecycleStatus().name(),
+                        targetState.getTransitionStatus().name(),
                         targetJobId);
             case WANGQI_DOCUMENT ->
                 wangqiDocumentMapper.updatePublicationState(
                         id,
-                        expectedState.lifecycleStatus().name(),
-                        expectedState.transitionStatus().name(),
+                        expectedState.getLifecycleStatus().name(),
+                        expectedState.getTransitionStatus().name(),
                         expectedJobId,
-                        targetState.lifecycleStatus().name(),
-                        targetState.transitionStatus().name(),
+                        targetState.getLifecycleStatus().name(),
+                        targetState.getTransitionStatus().name(),
                         targetJobId);
             case MING_CUSTOMS ->
                 mingCustomsEntryMapper.updatePublicationState(
                         id,
-                        expectedState.lifecycleStatus().name(),
-                        expectedState.transitionStatus().name(),
+                        expectedState.getLifecycleStatus().name(),
+                        expectedState.getTransitionStatus().name(),
                         expectedJobId,
-                        targetState.lifecycleStatus().name(),
-                        targetState.transitionStatus().name(),
+                        targetState.getLifecycleStatus().name(),
+                        targetState.getTransitionStatus().name(),
                         targetJobId);
         };
     }
 
-    private static ClassicsPublicationContentState toPublicationState(
+    private static ClassicsPublicationContent toPublicationState(
             ClassicsContentType contentType, ClassicsContentId contentId, Object dataObject) {
         if (dataObject == null) {
             return null;
         }
         String lifecycleStatus;
         String transitionStatus;
+        String contentTitle;
         Long currentJobId;
         if (dataObject instanceof SancaiEntryDO entry) {
+            contentTitle = entry.getTitle();
             lifecycleStatus = entry.getLifecycleStatus();
             transitionStatus = entry.getTransitionStatus();
             currentJobId = entry.getCurrentPublicationJobId();
         } else if (dataObject instanceof WangqiDocumentDO document) {
+            contentTitle = document.getTitle();
             lifecycleStatus = document.getLifecycleStatus();
             transitionStatus = document.getTransitionStatus();
             currentJobId = document.getCurrentPublicationJobId();
         } else if (dataObject instanceof MingCustomsEntryDO entry) {
+            contentTitle = entry.getTitle();
             lifecycleStatus = entry.getLifecycleStatus();
             transitionStatus = entry.getTransitionStatus();
             currentJobId = entry.getCurrentPublicationJobId();
         } else {
             throw new IllegalArgumentException("Unsupported publication content data object");
         }
-        return new ClassicsPublicationContentState(
+        return new ClassicsPublicationContent(
                 contentType,
                 contentId,
+                contentTitle,
                 ClassicsPublicationLifecycleStatus.valueOf(lifecycleStatus),
                 ClassicsPublicationTransitionStatus.valueOf(transitionStatus),
                 ClassicsPublicationJobIdCodec.toDomain(currentJobId));
