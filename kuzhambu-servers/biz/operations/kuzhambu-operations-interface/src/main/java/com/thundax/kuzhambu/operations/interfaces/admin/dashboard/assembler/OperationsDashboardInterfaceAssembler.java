@@ -44,7 +44,6 @@ public final class OperationsDashboardInterfaceAssembler {
                 .translatedContentCount(result.getTranslatedContentCount())
                 .imageReadyContentCount(result.getImageReadyContentCount())
                 .visualAssetReadyContentCount(result.getVisualAssetReadyContentCount())
-                .shareVisitCount(result.getShareVisitCount())
                 .aiInvocationCount(result.getAiInvocationCount())
                 .aiSucceededInvocationCount(result.getAiSucceededInvocationCount())
                 .aiFailedInvocationCount(result.getAiFailedInvocationCount())

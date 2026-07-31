@@ -33,7 +33,6 @@ public class ClassicsFacadeAssembler {
                 .translatedContentCount(result.getTranslatedContentCount())
                 .imageReadyContentCount(result.getImageReadyContentCount())
                 .visualAssetReadyContentCount(result.getVisualAssetReadyContentCount())
-                .shareVisitCount(result.getShareVisitCount())
                 .topContents(toTopContentFacadeDtos(result.getTopContents()))
                 .contentGrowthSeries(toContentGrowthPointFacadeDtos(result.getContentGrowthSeries()))
                 .build();

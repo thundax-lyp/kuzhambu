@@ -53,7 +53,7 @@ class DefaultOperationsDashboardSummaryGatewayTest {
         Instant periodStart = Instant.parse("2026-06-01T00:00:00Z");
         Instant periodEnd = Instant.parse("2026-06-30T23:59:59Z");
         OperationsDashboardPermissionSnapshot permissions =
-                new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true);
+                new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true);
 
         OperationsCrossDomainSummary result = gateway.loadSummary(periodStart, periodEnd, "WEEK", permissions);
 
@@ -96,7 +96,7 @@ class DefaultOperationsDashboardSummaryGatewayTest {
         DefaultOperationsDashboardSummaryGateway gateway = new DefaultOperationsDashboardSummaryGateway(
                 classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
         OperationsDashboardPermissionSnapshot permissions =
-                new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false, false);
+                new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false);
 
         OperationsCrossDomainSummary result = gateway.loadSummary(
                 Instant.parse("2026-06-01T00:00:00Z"), Instant.parse("2026-06-30T23:59:59Z"), "DAY", permissions);
@@ -120,7 +120,7 @@ class DefaultOperationsDashboardSummaryGatewayTest {
         DefaultOperationsDashboardSummaryGateway gateway = new DefaultOperationsDashboardSummaryGateway(
                 classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
         OperationsDashboardPermissionSnapshot permissions =
-                new OperationsDashboardPermissionSnapshot(false, false, true, false, false, false, false, false);
+                new OperationsDashboardPermissionSnapshot(false, true, false, false, false, false, false);
 
         OperationsCrossDomainSummary result = gateway.loadSummary(
                 Instant.parse("2026-06-01T00:00:00Z"), Instant.parse("2026-06-30T23:59:59Z"), "DAY", permissions);
@@ -144,7 +144,7 @@ class DefaultOperationsDashboardSummaryGatewayTest {
         DefaultOperationsDashboardSummaryGateway gateway = new DefaultOperationsDashboardSummaryGateway(
                 classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
         OperationsDashboardPermissionSnapshot permissions =
-                new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false, true);
+                new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, true);
 
         OperationsCrossDomainSummary result = gateway.loadSummary(
                 Instant.parse("2026-06-01T00:00:00Z"), Instant.parse("2026-06-30T23:59:59Z"), "DAY", permissions);
@@ -161,7 +161,7 @@ class DefaultOperationsDashboardSummaryGatewayTest {
         ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
         when(classicsFacade.summary(any())).thenReturn(null);
         OperationsDashboardPermissionSnapshot permissions =
-                new OperationsDashboardPermissionSnapshot(true, false, false, false, false, false, false, false);
+                new OperationsDashboardPermissionSnapshot(true, false, false, false, false, false, false);
         DefaultOperationsDashboardSummaryGateway gateway = new DefaultOperationsDashboardSummaryGateway(
                 classicsFacade, mock(AiFacade.class), mock(DiscoveryFacade.class), mock(KnowledgeFacade.class));
 

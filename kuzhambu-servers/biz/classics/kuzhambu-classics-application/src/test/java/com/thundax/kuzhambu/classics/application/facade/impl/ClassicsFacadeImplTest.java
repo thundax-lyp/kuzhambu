@@ -50,7 +50,6 @@ class ClassicsFacadeImplTest {
                         5L,
                         4L,
                         3L,
-                        21L,
                         List.of(new ClassicsReportSummaryResult.TopContentResult(1001L, "SANCAI_ENTRY", "青花龙纹", 12L)),
                         List.of(new ClassicsReportSummaryResult.ContentGrowthPointResult("2025-W01", 2L))));
         ClassicsFacadeImpl facade =
@@ -68,7 +67,6 @@ class ClassicsFacadeImplTest {
         assertEquals(5L, response.getTranslatedContentCount());
         assertEquals(4L, response.getImageReadyContentCount());
         assertEquals(3L, response.getVisualAssetReadyContentCount());
-        assertEquals(21L, response.getShareVisitCount());
         assertEquals("青花龙纹", response.getTopContents().get(0).getTitle());
         assertEquals("2025-W01", response.getContentGrowthSeries().get(0).getBucket());
     }

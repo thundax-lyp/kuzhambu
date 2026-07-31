@@ -50,7 +50,6 @@ class OperationsDashboardAdminControllerTest {
                         0L,
                         0L,
                         0L,
-                        0L,
                         3L,
                         2L,
                         1L,
@@ -118,7 +117,6 @@ class OperationsDashboardAdminControllerTest {
                 .thenReturn(new OperationsDashboardOverviewResult(
                         periodStart,
                         periodEnd,
-                        null,
                         null,
                         null,
                         null,

@@ -5,7 +5,6 @@ import java.util.Set;
 
 public final class ClassicsContentPermissionSupport {
     public static final String CONTENT_EXPORT_PERMISSION = "classics:content:export";
-    public static final String SHARING_EDIT_PERMISSION = "classics:sharing:edit";
 
     private ClassicsContentPermissionSupport() {}
 
@@ -39,10 +38,6 @@ public final class ClassicsContentPermissionSupport {
 
     public static boolean canExport(ClassicsContentType contentType, Set<String> permissions) {
         return canView(contentType, permissions) && hasPermission(permissions, CONTENT_EXPORT_PERMISSION);
-    }
-
-    public static boolean canShare(ClassicsContentType contentType, Set<String> permissions) {
-        return canView(contentType, permissions) && hasPermission(permissions, SHARING_EDIT_PERMISSION);
     }
 
     private static boolean hasPermission(Set<String> permissions, String permission) {

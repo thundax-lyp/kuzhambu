@@ -20,7 +20,6 @@ public class ClassicsSummaryFacadeResponse {
     private final Long translatedContentCount;
     private final Long imageReadyContentCount;
     private final Long visualAssetReadyContentCount;
-    private final Long shareVisitCount;
     private final List<ClassicsTopContentFacadeDto> topContents;
     private final List<ClassicsContentGrowthPointFacadeDto> contentGrowthSeries;
 }
