@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.classics.application.content.support;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -13,6 +16,7 @@ import java.util.Map;
 
 public class ClassicsContentSnapshotAssembler {
     private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
     public String toSnapshotJson(Versionable content) {
         return toJson(toSnapshot(content, List.of(), List.of()));
@@ -44,6 +48,21 @@ public class ClassicsContentSnapshotAssembler {
         return toJson(SancaiEntryVersionSnapshot.fromImageResources(
                         entry, volumeTitle, categoryId, categoryTitle, images, tags, qaPairs)
                 .toMap());
+    }
+
+    public JsonNode fromSnapshotJson(String snapshotJson) {
+        if (snapshotJson == null || snapshotJson.isBlank()) {
+            throw new IllegalArgumentException("Snapshot JSON must not be blank");
+        }
+        try {
+            JsonNode snapshot = OBJECT_MAPPER.readTree(snapshotJson);
+            if (snapshot == null || !snapshot.isObject()) {
+                throw new IllegalArgumentException("Snapshot JSON must be an object");
+            }
+            return snapshot;
+        } catch (JsonProcessingException exception) {
+            throw new IllegalArgumentException("Snapshot JSON is invalid", exception);
+        }
     }
 
     private Map<String, Object> toSnapshot(
