@@ -524,11 +524,16 @@ ES 和 FastGPT Cleanup 使用相同业务资格判断：
 content exists:
   lifecycle_status in (ERROR, OFFLINE)
   and transition_status = NONE
-  and job is current unique job
+  and claimed job remains the unique row for content_type + content_id
 
 content missing:
   job.content_deleted_at is not null
 ```
+
+唯一 job 行由 `uk_classics_publication_job_content` 保证，不要求已经被 Success/Failure
+Reconcile 清空的 `content.current_publication_job_id` 仍指向该 job。Cleanup 在远端调用前
+先锁定稿件行、再锁定 job 行复核资格；新发布/下线创建与 Cleanup 使用相同锁顺序，且不得覆盖
+`RUNNING` cleanup。
 
 Cleanup 通过各自 token 和过期时间独立抢占。清理失败只更新本端 cleanup status，不修改稿件生命周期，也不修改另一端 cleanup status。
 
