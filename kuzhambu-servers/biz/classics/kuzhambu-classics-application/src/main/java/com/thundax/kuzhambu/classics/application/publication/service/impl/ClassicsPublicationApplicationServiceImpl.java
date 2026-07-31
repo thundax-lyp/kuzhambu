@@ -6,7 +6,6 @@ import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPubl
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationJobView;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobFilter;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -19,11 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ClassicsPublicationApplicationServiceImpl implements ClassicsPublicationApplicationService {
-    private final ClassicsPublicationCreationApplicationService creationService;
+    private final ClassicsPublicationCreationApplicationServiceImpl creationService;
     private final ClassicsPublicationJobRepository jobRepository;
 
     public ClassicsPublicationApplicationServiceImpl(
-            ClassicsPublicationCreationApplicationService creationService,
+            ClassicsPublicationCreationApplicationServiceImpl creationService,
             ClassicsPublicationJobRepository jobRepository) {
         this.creationService = creationService;
         this.jobRepository = jobRepository;
@@ -64,12 +63,14 @@ public class ClassicsPublicationApplicationServiceImpl implements ClassicsPublic
     public PageResult<ClassicsPublicationJobView> page(ClassicsPublicationJobPageQuery query, PageQuery page) {
         PageQuery normalized = page == null ? new PageQuery() : page;
         normalized.normalize();
-        ClassicsPublicationJobFilter filter = query == null
-                ? null
-                : new ClassicsPublicationJobFilter(
-                        query.jobType(), query.resultStatus(), query.contentType(), query.keyword());
-        PageResult<ClassicsPublicationJob> jobs =
-                jobRepository.page(filter, normalized.getPageNo(), normalized.getPageSize());
+        PageResult<ClassicsPublicationJob> jobs = jobRepository.page(
+                query == null ? null : query.jobType(),
+                query == null ? null : query.jobResultStatus(),
+                query == null ? null : query.jobStatus(),
+                query == null ? null : query.contentType(),
+                query == null ? null : query.keyword(),
+                normalized.getPageNo(),
+                normalized.getPageSize());
         return PageResult.of(
                 jobs.getPageNo(),
                 jobs.getPageSize(),

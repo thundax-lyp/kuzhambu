@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.application.publication.service.impl;
 import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationCreateCommand;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationCreateResult;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
+import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationContent;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationCleanupStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobResultStatus;
@@ -10,7 +11,6 @@ import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPubl
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobType;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationContentState;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -21,13 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ClassicsPublicationCreationApplicationService {
+public class ClassicsPublicationCreationApplicationServiceImpl {
     private static final int MAX_ATTEMPTS = 4;
 
     private final ClassicsContentRepository contentRepository;
     private final ClassicsPublicationJobRepository jobRepository;
 
-    public ClassicsPublicationCreationApplicationService(
+    public ClassicsPublicationCreationApplicationServiceImpl(
             ClassicsContentRepository contentRepository, ClassicsPublicationJobRepository jobRepository) {
         this.contentRepository = contentRepository;
         this.jobRepository = jobRepository;
@@ -36,19 +36,19 @@ public class ClassicsPublicationCreationApplicationService {
     @Transactional(rollbackFor = Exception.class)
     public ClassicsPublicationCreateResult create(ClassicsPublicationCreateCommand command) {
         requireCommand(command);
-        ClassicsPublicationContentState content =
+        ClassicsPublicationContent content =
                 contentRepository.lockPublicationContent(command.contentType(), command.contentId());
         if (content == null) {
             throw conflict("CONTENT_NOT_FOUND");
         }
-        if (content.transitionStatus() != ClassicsPublicationTransitionStatus.NONE) {
+        if (content.getTransitionStatus() != ClassicsPublicationTransitionStatus.NONE) {
             throw conflict("TRANSITION_ACTIVE");
         }
 
         ClassicsPublicationJob oldJob = jobRepository.lockByContent(
                 command.contentType(), command.contentId().value());
         validateReplaceable(oldJob);
-        validateLifecycle(command.jobType(), content.lifecycleStatus());
+        validateLifecycle(command.jobType(), content.getLifecycleStatus());
 
         ClassicsPublicationJob job = newJob(command, content, oldJob);
         if (oldJob != null) {
@@ -57,11 +57,11 @@ public class ClassicsPublicationCreationApplicationService {
         ClassicsPublicationJobId jobId = jobRepository.insert(job);
         job.setId(jobId);
 
-        ClassicsPublicationContentState target = new ClassicsPublicationContentState(
-                content.contentType(),
-                content.contentId(),
-                content.contentTitle(),
-                content.lifecycleStatus(),
+        ClassicsPublicationContent target = new ClassicsPublicationContent(
+                content.getContentType(),
+                content.getContentId(),
+                content.getContentTitle(),
+                content.getLifecycleStatus(),
                 command.jobType() == ClassicsPublicationJobType.PUBLISH
                         ? ClassicsPublicationTransitionStatus.PUBLISHING
                         : ClassicsPublicationTransitionStatus.OFFLINING,
@@ -109,14 +109,14 @@ public class ClassicsPublicationCreationApplicationService {
 
     private static ClassicsPublicationJob newJob(
             ClassicsPublicationCreateCommand command,
-            ClassicsPublicationContentState content,
+            ClassicsPublicationContent content,
             ClassicsPublicationJob oldJob) {
         ClassicsPublicationJob job = new ClassicsPublicationJob();
         job.setJobType(command.jobType());
         job.setContentType(command.contentType());
         job.setContentId(command.contentId().value());
-        job.setContentTitleSnapshot(StringUtils.defaultString(content.contentTitle()));
-        job.setSourceLifecycleStatus(content.lifecycleStatus());
+        job.setContentTitleSnapshot(StringUtils.defaultString(content.getContentTitle()));
+        job.setSourceLifecycleStatus(content.getLifecycleStatus());
         job.setTargetLifecycleStatus(
                 command.jobType() == ClassicsPublicationJobType.PUBLISH
                         ? ClassicsPublicationLifecycleStatus.PUBLISHED

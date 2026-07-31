@@ -45,9 +45,7 @@ class ClassicsPublicationFastGptGatewayTest {
                         new KnowledgeCollectionDataPushResult(1, Map.of()));
         List<ClassicsPublicationFragment> fragments = fragments(201);
 
-        String collectionId = gateway.fullReplace("collection-1", "ignored", fragments);
-
-        assertEquals("collection-1", collectionId);
+        gateway.fullReplace("collection-1", fragments);
         var ordered = inOrder(client);
         ordered.verify(client).updateCollection(any());
         ordered.verify(client).listCollectionData(any());
@@ -68,8 +66,10 @@ class ClassicsPublicationFastGptGatewayTest {
         when(client.listCollectionData(any()))
                 .thenReturn(new KnowledgeCollectionDataPageResult(0, List.of(), Map.of()));
 
-        assertEquals("collection-new", gateway.fullReplace(null, "SANCAI_ENTRY:101:天文", List.of()));
+        String collectionId = gateway.createCollection("SANCAI_ENTRY:101:天文");
+        gateway.fullReplace(collectionId, List.of());
 
+        assertEquals("collection-new", collectionId);
         var ordered = inOrder(client);
         ordered.verify(client).createCollection(any());
         ordered.verify(client).updateCollection(any());
@@ -82,7 +82,7 @@ class ClassicsPublicationFastGptGatewayTest {
                 .thenReturn(new KnowledgeCollectionDataPageResult(0, List.of(), Map.of()));
         when(client.pushCollectionData(any())).thenReturn(new KnowledgeCollectionDataPushResult(199, Map.of()));
 
-        assertThrows(IllegalStateException.class, () -> gateway.fullReplace("collection-1", "ignored", fragments(200)));
+        assertThrows(IllegalStateException.class, () -> gateway.fullReplace("collection-1", fragments(200)));
     }
 
     private List<ClassicsPublicationFragment> fragments(int count) {

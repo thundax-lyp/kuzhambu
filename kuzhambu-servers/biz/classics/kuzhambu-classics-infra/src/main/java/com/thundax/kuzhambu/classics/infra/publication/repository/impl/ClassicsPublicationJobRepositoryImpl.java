@@ -6,9 +6,10 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationExecutionTokenCodec;
 import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobResultStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobType;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobFilter;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.classics.infra.publication.persistence.assembler.ClassicsPublicationPersistenceAssembler;
@@ -42,33 +43,32 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
     }
 
     @Override
-    public PageResult<ClassicsPublicationJob> page(ClassicsPublicationJobFilter filter, int pageNo, int pageSize) {
+    public PageResult<ClassicsPublicationJob> page(
+            ClassicsPublicationJobType jobType,
+            ClassicsPublicationJobResultStatus jobResultStatus,
+            ClassicsPublicationJobStatus jobStatus,
+            ClassicsContentType contentType,
+            String keyword,
+            int pageNo,
+            int pageSize) {
         LambdaQueryWrapper<ClassicsPublicationJobDO> wrapper = new LambdaQueryWrapper<>();
-        if (filter != null) {
-            wrapper.eq(
-                            filter.jobType() != null,
-                            ClassicsPublicationJobDO::getJobType,
-                            filter.jobType() == null ? null : filter.jobType().name())
-                    .eq(
-                            filter.resultStatus() != null,
-                            ClassicsPublicationJobDO::getJobResultStatus,
-                            filter.resultStatus() == null
-                                    ? null
-                                    : filter.resultStatus().name())
-                    .eq(
-                            filter.contentType() != null,
-                            ClassicsPublicationJobDO::getContentType,
-                            filter.contentType() == null
-                                    ? null
-                                    : filter.contentType().name())
-                    .and(StringUtils.isNotBlank(filter.keyword()), query -> query.like(
-                                    ClassicsPublicationJobDO::getContentTitleSnapshot,
-                                    filter.keyword().trim())
-                            .or()
-                            .like(
-                                    ClassicsPublicationJobDO::getContentId,
-                                    filter.keyword().trim()));
-        }
+        wrapper.eq(jobType != null, ClassicsPublicationJobDO::getJobType, jobType == null ? null : jobType.name())
+                .eq(
+                        jobResultStatus != null,
+                        ClassicsPublicationJobDO::getJobResultStatus,
+                        jobResultStatus == null ? null : jobResultStatus.name())
+                .eq(
+                        jobStatus != null,
+                        ClassicsPublicationJobDO::getJobStatus,
+                        jobStatus == null ? null : jobStatus.name())
+                .eq(
+                        contentType != null,
+                        ClassicsPublicationJobDO::getContentType,
+                        contentType == null ? null : contentType.name())
+                .and(StringUtils.isNotBlank(keyword), query -> query.like(
+                                ClassicsPublicationJobDO::getContentTitleSnapshot, keyword.trim())
+                        .or()
+                        .like(ClassicsPublicationJobDO::getContentId, keyword.trim()));
         wrapper.orderByDesc(ClassicsPublicationJobDO::getRequestedAt).orderByDesc(ClassicsPublicationJobDO::getId);
         Page<ClassicsPublicationJobDO> dataPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
         List<ClassicsPublicationJob> records = dataPage.getRecords().stream()
@@ -120,6 +120,8 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
             ClassicsPublicationExecutionToken token,
             ClassicsPublicationJobStatus expectedStatus,
             ClassicsPublicationJobStatus nextStatus,
+            Long contentVersionId,
+            Integer contentVersionNo,
             String esDocumentId,
             String fastGptCollectionId,
             String fastGptDataIdsJson,
@@ -129,10 +131,25 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
                 ClassicsPublicationExecutionTokenCodec.toValue(token),
                 expectedStatus.name(),
                 nextStatus.name(),
+                contentVersionId,
+                contentVersionNo,
                 esDocumentId,
                 fastGptCollectionId,
                 fastGptDataIdsJson,
                 detailJson);
+    }
+
+    @Override
+    public int bindFastGptCollection(
+            ClassicsPublicationJobId id,
+            ClassicsPublicationExecutionToken token,
+            ClassicsPublicationJobStatus expectedStatus,
+            String fastGptCollectionId) {
+        return mapper.bindFastGptCollection(
+                ClassicsPublicationJobIdCodec.toValue(id),
+                ClassicsPublicationExecutionTokenCodec.toValue(token),
+                expectedStatus.name(),
+                fastGptCollectionId);
     }
 
     @Override

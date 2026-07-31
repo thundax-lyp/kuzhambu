@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -12,10 +13,11 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationCreateCommand;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationCreateResult;
-import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationCreationApplicationService;
+import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationCreationApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
+import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationContent;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationCleanupStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobResultStatus;
@@ -23,12 +25,13 @@ import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPubl
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobType;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationContentState;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 
 class ClassicsPublicationCreationApplicationServiceTest {
@@ -37,20 +40,24 @@ class ClassicsPublicationCreationApplicationServiceTest {
 
     private ClassicsContentRepository contentRepository;
     private ClassicsPublicationJobRepository jobRepository;
-    private ClassicsPublicationCreationApplicationService service;
+    private ClassicsPublicationCreationApplicationServiceImpl service;
 
     @BeforeEach
     void setUp() {
         contentRepository = mock(ClassicsContentRepository.class);
         jobRepository = mock(ClassicsPublicationJobRepository.class);
-        service = new ClassicsPublicationCreationApplicationService(contentRepository, jobRepository);
+        service = new ClassicsPublicationCreationApplicationServiceImpl(contentRepository, jobRepository);
     }
 
-    @Test
-    void shouldReplaceFailedJobAndInheritOnlyStableExternalReferences() {
-        ClassicsPublicationContentState content =
+    @ParameterizedTest
+    @EnumSource(
+            value = ClassicsPublicationJobResultStatus.class,
+            names = {"FAILED", "SUCCEEDED"})
+    void shouldReplaceTerminalJobAndInheritOnlyStableExternalReferences(
+            ClassicsPublicationJobResultStatus resultStatus) {
+        ClassicsPublicationContent content =
                 content(ClassicsPublicationLifecycleStatus.ERROR, ClassicsPublicationTransitionStatus.NONE);
-        ClassicsPublicationJob oldJob = oldJob(ClassicsPublicationJobResultStatus.FAILED);
+        ClassicsPublicationJob oldJob = oldJob(resultStatus);
         oldJob.setContentVersionId(91L);
         oldJob.setContentVersionNo(7);
         oldJob.setFastGptDataIdsJson("[\"stale\"]");
@@ -79,13 +86,17 @@ class ClassicsPublicationCreationApplicationServiceTest {
         assertNull(inserted.getFastGptDataIdsJson());
         assertEquals(4, inserted.getMaxAttempts());
 
-        ArgumentCaptor<ClassicsPublicationContentState> targetCaptor =
-                ArgumentCaptor.forClass(ClassicsPublicationContentState.class);
+        ArgumentCaptor<ClassicsPublicationContent> targetCaptor =
+                ArgumentCaptor.forClass(ClassicsPublicationContent.class);
         verify(contentRepository).updatePublicationContentState(any(), targetCaptor.capture());
         assertEquals(
                 ClassicsPublicationTransitionStatus.PUBLISHING,
-                targetCaptor.getValue().transitionStatus());
-        assertEquals(new ClassicsPublicationJobId(22L), targetCaptor.getValue().currentJobId());
+                targetCaptor.getValue().getTransitionStatus());
+        assertEquals(new ClassicsPublicationJobId(22L), targetCaptor.getValue().getCurrentJobId());
+
+        var ordered = inOrder(contentRepository, jobRepository);
+        ordered.verify(contentRepository).lockPublicationContent(CONTENT_TYPE, CONTENT_ID);
+        ordered.verify(jobRepository).lockByContent(CONTENT_TYPE, 12L);
     }
 
     @Test
@@ -123,9 +134,9 @@ class ClassicsPublicationCreationApplicationServiceTest {
         verify(jobRepository, never()).insert(any());
     }
 
-    private static ClassicsPublicationContentState content(
+    private static ClassicsPublicationContent content(
             ClassicsPublicationLifecycleStatus lifecycle, ClassicsPublicationTransitionStatus transition) {
-        return new ClassicsPublicationContentState(CONTENT_TYPE, CONTENT_ID, "王圻文稿", lifecycle, transition, null);
+        return new ClassicsPublicationContent(CONTENT_TYPE, CONTENT_ID, "王圻文稿", lifecycle, transition, null);
     }
 
     private static ClassicsPublicationJob oldJob(ClassicsPublicationJobResultStatus resultStatus) {

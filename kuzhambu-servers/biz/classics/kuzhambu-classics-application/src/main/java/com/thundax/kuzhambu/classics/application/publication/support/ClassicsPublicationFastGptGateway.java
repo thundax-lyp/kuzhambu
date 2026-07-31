@@ -28,11 +28,24 @@ public class ClassicsPublicationFastGptGateway {
         this.knowledgeBaseClient = knowledgeBaseClient;
     }
 
-    public String fullReplace(String collectionId, String collectionName, List<ClassicsPublicationFragment> fragments) {
-        String effectiveCollectionId = ensureDisabledCollection(collectionId, collectionName);
-        deleteAllData(effectiveCollectionId);
-        pushAllData(effectiveCollectionId, fragments == null ? Collections.emptyList() : fragments);
-        return effectiveCollectionId;
+    public String createCollection(String collectionName) {
+        KnowledgeCollectionResult created = knowledgeBaseClient.createCollection(
+                new KnowledgeCollectionCreateRequest(null, collectionName, "virtual"));
+        if (created == null
+                || created.collectionId() == null
+                || created.collectionId().isBlank()) {
+            throw new IllegalStateException("FastGPT did not return a collection ID");
+        }
+        return created.collectionId();
+    }
+
+    public void fullReplace(String collectionId, List<ClassicsPublicationFragment> fragments) {
+        if (collectionId == null || collectionId.isBlank()) {
+            throw new IllegalArgumentException("FastGPT collection ID must not be blank");
+        }
+        disable(collectionId);
+        deleteAllData(collectionId);
+        pushAllData(collectionId, fragments == null ? Collections.emptyList() : fragments);
     }
 
     public void enable(String collectionId) {
@@ -60,17 +73,6 @@ public class ClassicsPublicationFastGptGateway {
         return result == null
                 ? ClassicsPublicationFastGptProbeResult.missing()
                 : new ClassicsPublicationFastGptProbeResult(true, result.forbid());
-    }
-
-    private String ensureDisabledCollection(String collectionId, String collectionName) {
-        String effectiveCollectionId = collectionId;
-        if (effectiveCollectionId == null) {
-            KnowledgeCollectionResult created = knowledgeBaseClient.createCollection(
-                    new KnowledgeCollectionCreateRequest(null, collectionName, "virtual"));
-            effectiveCollectionId = created.collectionId();
-        }
-        knowledgeBaseClient.updateCollection(new KnowledgeCollectionUpdateRequest(effectiveCollectionId, true));
-        return effectiveCollectionId;
     }
 
     private void deleteAllData(String collectionId) {
