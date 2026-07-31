@@ -13,7 +13,7 @@ spring:
     password: ${KUZHAMBU_REDIS_PASSWORD:}
   datasource:
     driver-class-name: ${KUZHAMBU_DB_DRIVER:com.mysql.cj.jdbc.Driver}
-    url: ${KUZHAMBU_DB_URL:jdbc:mysql://127.0.0.1:3306/kuzhambu?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false}
+    url: ${KUZHAMBU_DB_URL:jdbc:mysql://127.0.0.1:3306/kuzhambu?useUnicode=true&characterEncoding=utf8&useSSL=false}
     username: ${KUZHAMBU_DB_USERNAME:kuzhambu}
     password: ${KUZHAMBU_DB_PASSWORD:}
   data:

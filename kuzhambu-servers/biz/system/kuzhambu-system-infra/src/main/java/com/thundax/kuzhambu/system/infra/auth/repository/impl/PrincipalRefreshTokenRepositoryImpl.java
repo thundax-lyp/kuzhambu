@@ -27,7 +27,6 @@ import jakarta.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +40,7 @@ import org.springframework.util.Assert;
 @Profile("!test")
 public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshTokenRepository {
 
-    private static final String CACHE_SECTION = KuzhambuCacheNames.PREFIX + "PRINCIPAL_REFRESH_TOKEN_";
+    private static final String CACHE_SECTION = KuzhambuCacheNames.PREFIX + "PRINCIPAL_REFRESH_TOKEN_V2_";
     private static final String TOKEN_HASH_PREFIX = CACHE_SECTION + "HASH_";
     private static final String TOKEN_CODE_PREFIX = CACHE_SECTION + "TOKEN_CODE_";
     private static final String PRINCIPAL_INDEX_PREFIX = CACHE_SECTION + "PRINCIPAL_";
@@ -245,8 +244,8 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
         refreshToken.setClientId(PrincipalClientIdCodec.toDomain(cacheDTO.clientId));
         refreshToken.setSessionId(PrincipalAuthSessionIdCodec.toDomain(cacheDTO.sessionId));
         refreshToken.setPrincipalKey(PrincipalKey.of(PrincipalType.from(cacheDTO.principalType), cacheDTO.principalId));
-        refreshToken.setIssuedAt(toInstant(cacheDTO.issuedAt));
-        refreshToken.setExpireAt(toInstant(cacheDTO.expireAt));
+        refreshToken.setIssuedAt(cacheDTO.issuedAt);
+        refreshToken.setExpireAt(cacheDTO.expireAt);
         refreshToken.setStatus(PrincipalTokenStatus.from(cacheDTO.status));
         return refreshToken;
     }
@@ -261,8 +260,8 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
         cacheDTO.principalType =
                 refreshToken.getPrincipalKey().getPrincipalType().value();
         cacheDTO.principalId = refreshToken.getPrincipalKey().getPrincipalId();
-        cacheDTO.issuedAt = toDate(refreshToken.getIssuedAt());
-        cacheDTO.expireAt = toDate(refreshToken.getExpireAt());
+        cacheDTO.issuedAt = refreshToken.getIssuedAt();
+        cacheDTO.expireAt = refreshToken.getExpireAt();
         cacheDTO.status = refreshToken.getStatus().value();
         return cacheDTO;
     }
@@ -275,16 +274,8 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
         private String sessionId;
         private String principalType;
         private Long principalId;
-        private Date issuedAt;
-        private Date expireAt;
+        private Instant issuedAt;
+        private Instant expireAt;
         private String status;
-    }
-
-    private static Instant toInstant(Date value) {
-        return value == null ? null : value.toInstant();
-    }
-
-    private static Date toDate(Instant value) {
-        return value == null ? null : Date.from(value);
     }
 }

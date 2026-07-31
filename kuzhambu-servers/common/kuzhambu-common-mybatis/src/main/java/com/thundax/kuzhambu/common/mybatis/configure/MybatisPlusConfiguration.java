@@ -9,7 +9,9 @@ import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInt
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.thundax.kuzhambu.common.core.id.EntityId;
 import com.thundax.kuzhambu.common.mybatis.typehandler.EntityIdTypeHandler;
+import com.thundax.kuzhambu.common.mybatis.typehandler.InstantEpochMillisTypeHandler;
 import com.thundax.kuzhambu.common.mybatis.typehandler.StringListJsonTypeHandler;
+import java.time.Instant;
 import java.util.List;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -52,6 +54,7 @@ public class MybatisPlusConfiguration {
 
     private void registerDefaultTypeHandlers(TypeHandlerRegistry registry) {
         registry.register(EntityId.class, EntityIdTypeHandler.class);
+        registry.register(Instant.class, InstantEpochMillisTypeHandler.class);
         registry.register(List.class, StringListJsonTypeHandler.class);
     }
 

@@ -18,6 +18,7 @@ const STABLE_ID_MODULO = 900000000;
 const ENTRY_DUPLICATE_SLOT_SIZE = 100;
 const THEME_CATEGORY_ID = 1004;
 const SPECIAL_TAG_IDS = new Map([["世系图", 500001]]);
+const MYSQL_EPOCH_SHANGHAI = "1970-01-01 08:00:00.000000";
 
 const main = () => {
   const seed = readSeed(tagSourcePath);
@@ -213,8 +214,8 @@ const appendTagSql = (lines, tags, tagIds) => {
           tag.source,
           tag.reviewStatus,
           tag.reviewNote,
-          tag.createdAt,
-          tag.reviewedAt,
+          epochMillis(tag.createdAt),
+          epochMillis(tag.reviewedAt),
           null,
           null,
           null,
@@ -308,8 +309,31 @@ const sqlValue = (value) => {
   if (typeof value === "number") {
     return String(value);
   }
+  if (isRawSql(value)) {
+    return value.rawSql;
+  }
   return `'${String(value).replace(/'/g, "''")}'`;
 };
+
+const epochMillis = (displayTime) => ({
+  rawSql: `TIMESTAMPDIFF(MICROSECOND, '${MYSQL_EPOCH_SHANGHAI}', '${normalizeDisplayTime(displayTime)}') DIV 1000`,
+});
+
+const normalizeDisplayTime = (displayTime) => {
+  const text = String(displayTime ?? "").trim().replace("T", " ");
+  const match = text.match(
+    /^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(?:\.(\d{1,6}))?$/,
+  );
+  if (!match) {
+    throw new Error(`Invalid Asia/Shanghai display datetime: ${displayTime}`);
+  }
+  return `${match[1]}.${(match[2] ?? "").padEnd(6, "0")}`;
+};
+
+const isRawSql = (value) =>
+  typeof value === "object" &&
+  value !== null &&
+  typeof value.rawSql === "string";
 
 const requireLookup = (map, key, type) => {
   const value = map.get(key);
