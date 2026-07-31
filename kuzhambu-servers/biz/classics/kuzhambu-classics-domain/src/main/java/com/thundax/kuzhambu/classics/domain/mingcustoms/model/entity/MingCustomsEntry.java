@@ -9,6 +9,9 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +32,9 @@ public class MingCustomsEntry implements Versionable {
     private MingCustomsContentFormat contentFormat;
     private String content;
     private String originalExcerpts;
+    private ClassicsPublicationLifecycleStatus lifecycleStatus;
+    private ClassicsPublicationTransitionStatus transitionStatus;
+    private ClassicsPublicationJobId currentPublicationJobId;
     private MingCustomsVisibility visibility;
     private ClassicsContentVersionId currentVersionId;
     private Integer currentVersionNo;

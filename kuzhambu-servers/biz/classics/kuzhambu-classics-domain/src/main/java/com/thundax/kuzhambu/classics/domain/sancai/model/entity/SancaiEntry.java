@@ -6,6 +6,8 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
@@ -33,6 +35,8 @@ public class SancaiEntry implements Sortable, Versionable {
     private String translationText;
     private String summary;
     private SancaiEntryLifecycleStatus lifecycleStatus;
+    private ClassicsPublicationTransitionStatus transitionStatus;
+    private ClassicsPublicationJobId currentPublicationJobId;
     private SancaiEntryVisibility visibility;
     private SancaiEntryTranslationStatus translationStatus;
     private SancaiEntryImageStatus imageStatus;

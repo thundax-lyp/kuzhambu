@@ -209,12 +209,12 @@ class SancaiAdminControllerTest {
                 """
                 {
                   "id": 3001,
-                  "lifecycleStatus": "ARCHIVED"
+                  "lifecycleStatus": "OFFLINE"
                 }
                 """,
                 SancaiEntryRequest.class);
         assertEquals(3001L, lifecycleRequest.getId());
-        assertEquals("ARCHIVED", lifecycleRequest.getLifecycleStatus());
+        assertEquals("OFFLINE", lifecycleRequest.getLifecycleStatus());
         assertJsonFields(lifecycleRequest, "id", "lifecycleStatus");
 
         SancaiEntryVersionRequest versionRequest = OBJECT_MAPPER.readValue(
@@ -386,7 +386,7 @@ class SancaiAdminControllerTest {
 
         SancaiEntryRequest lifecycleRequest = new SancaiEntryRequest();
         lifecycleRequest.setId(3001L);
-        lifecycleRequest.setLifecycleStatus("ARCHIVED");
+        lifecycleRequest.setLifecycleStatus("OFFLINE");
         assertEquals(true, controller.changeEntryLifecycle(lifecycleRequest));
 
         controller.deleteEntry(entryRequest);
@@ -558,7 +558,7 @@ class SancaiAdminControllerTest {
                     if ("changeEntryStatus".equals(method.getName())) {
                         SancaiEntryStatusCommand command = (SancaiEntryStatusCommand) args[0];
                         assertEquals(3001L, command.getId());
-                        assertEquals(SancaiEntryLifecycleStatus.ARCHIVED, command.getLifecycleStatus());
+                        assertEquals(SancaiEntryLifecycleStatus.OFFLINE, command.getLifecycleStatus());
                         assertEquals(true, command.getOperatorPermissions() != null);
                         return null;
                     }

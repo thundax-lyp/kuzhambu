@@ -2,6 +2,9 @@ package com.thundax.kuzhambu.classics.infra.wangqi.persistence.assembler;
 
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
+import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationJobIdCodec;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
@@ -19,21 +22,27 @@ public final class WangqiDocumentPersistenceAssembler {
         if (entity == null) {
             return null;
         }
-        return new WangqiDocumentDO(
-                WangqiDocumentIdCodec.toValue(entity.getId()),
-                entity.getTitle(),
-                entity.getSummary(),
+        WangqiDocumentDO dataObject = new WangqiDocumentDO();
+        dataObject.setId(WangqiDocumentIdCodec.toValue(entity.getId()));
+        dataObject.setTitle(entity.getTitle());
+        dataObject.setSummary(entity.getSummary());
+        dataObject.setContentFormat(
                 entity.getContentFormat() == null
                         ? null
-                        : entity.getContentFormat().value(),
-                entity.getContent(),
-                entity.getDocumentTime(),
-                StorageObjectIdCodec.toValue(entity.getStorageObjectId()),
-                entity.getVisibility() == null ? null : entity.getVisibility().value(),
-                ClassicsContentVersionIdCodec.toValue(entity.getCurrentVersionId()),
-                entity.getCurrentVersionNo(),
-                entity.getCurrentVersionedAt(),
-                contentUpdatedAt(entity.getContentUpdatedAt()));
+                        : entity.getContentFormat().value());
+        dataObject.setContent(entity.getContent());
+        dataObject.setDocumentTime(entity.getDocumentTime());
+        dataObject.setStorageObjectId(StorageObjectIdCodec.toValue(entity.getStorageObjectId()));
+        dataObject.setLifecycleStatus(value(entity.getLifecycleStatus()));
+        dataObject.setTransitionStatus(value(entity.getTransitionStatus()));
+        dataObject.setCurrentPublicationJobId(
+                ClassicsPublicationJobIdCodec.toValue(entity.getCurrentPublicationJobId()));
+        dataObject.setVisibility(value(entity.getVisibility()));
+        dataObject.setCurrentVersionId(ClassicsContentVersionIdCodec.toValue(entity.getCurrentVersionId()));
+        dataObject.setCurrentVersionNo(entity.getCurrentVersionNo());
+        dataObject.setCurrentVersionedAt(entity.getCurrentVersionedAt());
+        dataObject.setContentUpdatedAt(contentUpdatedAt(entity.getContentUpdatedAt()));
+        return dataObject;
     }
 
     public static WangqiDocument toDomain(WangqiDocumentDO dataObject) {
@@ -49,6 +58,10 @@ public final class WangqiDocumentPersistenceAssembler {
                 dataObject.getDocumentTime(),
                 StorageObjectIdCodec.toDomain(dataObject.getStorageObjectId()),
                 dataObject.getVisibility() == null ? null : WangqiDocumentVisibility.from(dataObject.getVisibility()));
+        document.setLifecycleStatus(parseLifecycle(dataObject.getLifecycleStatus()));
+        document.setTransitionStatus(parseTransition(dataObject.getTransitionStatus()));
+        document.setCurrentPublicationJobId(
+                ClassicsPublicationJobIdCodec.toDomain(dataObject.getCurrentPublicationJobId()));
         document.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain(dataObject.getCurrentVersionId()));
         document.setCurrentVersionNo(dataObject.getCurrentVersionNo());
         document.setCurrentVersionedAt(dataObject.getCurrentVersionedAt());
@@ -68,5 +81,17 @@ public final class WangqiDocumentPersistenceAssembler {
 
     private static Instant contentUpdatedAt(Instant contentUpdatedAt) {
         return contentUpdatedAt == null ? Instant.now() : contentUpdatedAt;
+    }
+
+    private static String value(Enum<?> value) {
+        return value == null ? null : value.name();
+    }
+
+    private static ClassicsPublicationLifecycleStatus parseLifecycle(String value) {
+        return value == null ? null : ClassicsPublicationLifecycleStatus.valueOf(value);
+    }
+
+    private static ClassicsPublicationTransitionStatus parseTransition(String value) {
+        return value == null ? null : ClassicsPublicationTransitionStatus.valueOf(value);
     }
 }

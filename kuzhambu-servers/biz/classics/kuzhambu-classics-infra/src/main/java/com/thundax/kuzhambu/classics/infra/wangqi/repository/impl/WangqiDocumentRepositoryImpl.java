@@ -110,7 +110,6 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
                         .set(WangqiDocumentDO::getContent, dataObject.getContent())
                         .set(WangqiDocumentDO::getDocumentTime, dataObject.getDocumentTime())
                         .set(WangqiDocumentDO::getStorageObjectId, dataObject.getStorageObjectId())
-                        .set(WangqiDocumentDO::getVisibility, dataObject.getVisibility())
                         .set(WangqiDocumentDO::getCurrentVersionId, dataObject.getCurrentVersionId())
                         .set(WangqiDocumentDO::getCurrentVersionNo, dataObject.getCurrentVersionNo())
                         .set(WangqiDocumentDO::getCurrentVersionedAt, dataObject.getCurrentVersionedAt())

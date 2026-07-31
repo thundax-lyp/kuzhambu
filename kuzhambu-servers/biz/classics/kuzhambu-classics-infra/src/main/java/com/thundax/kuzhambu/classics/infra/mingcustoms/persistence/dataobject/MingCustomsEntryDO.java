@@ -24,6 +24,9 @@ public class MingCustomsEntryDO {
     private String contentFormat;
     private String content;
     private String originalExcerpts;
+    private String lifecycleStatus;
+    private String transitionStatus;
+    private Long currentPublicationJobId;
     private String visibility;
     private Long currentVersionId;
     private Integer currentVersionNo;
