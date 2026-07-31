@@ -145,7 +145,7 @@ Operations 是 `operations_*` 表的唯一写入方。
 
 归属约束：
 
-- Classics 持有内容、翻译、配图、导出、分享和草稿事实。
+- Classics 持有内容、翻译、配图、导出、发布任务、Portal 访问和草稿事实。
 - AI 持有 AI 调用事实。
 - Discovery 持有搜索和问答事实。
 - Knowledge 持有标签和图谱质量事实。

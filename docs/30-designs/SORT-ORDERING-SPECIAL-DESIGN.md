@@ -24,7 +24,6 @@
     - `MingCustomsKeyword`
     - `ClassicsContentTag`
     - `ClassicsContentQaPair`
-    - `ClassicsShareTarget`
 
 ## 3. 模型约束
 - `priority` 只表示排序权重，不承载业务语义。
