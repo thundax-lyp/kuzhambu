@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationContentState;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -67,6 +68,12 @@ public interface ClassicsContentRepository {
     }
 
     default void lockContentForVersion(ClassicsContentType contentType, ClassicsContentId contentId) {}
+
+    ClassicsPublicationContentState lockPublicationContent(
+            ClassicsContentType contentType, ClassicsContentId contentId);
+
+    int updatePublicationContentState(
+            ClassicsPublicationContentState expectedState, ClassicsPublicationContentState targetState);
 
     ClassicsContentVersionId insertVersion(ClassicsContentVersion version);
 

@@ -58,6 +58,7 @@ import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRe
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
+import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationContentState;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
@@ -919,6 +920,18 @@ class ClassicsContentApplicationServiceImplTest {
         private ClassicsContentQaPairId insertedQaPairId;
         private int nextTagPriority;
         private ClassicsContentQaPair qaPairById;
+
+        @Override
+        public ClassicsPublicationContentState lockPublicationContent(
+                ClassicsContentType contentType, ClassicsContentId contentId) {
+            return null;
+        }
+
+        @Override
+        public int updatePublicationContentState(
+                ClassicsPublicationContentState expectedState, ClassicsPublicationContentState targetState) {
+            return 0;
+        }
 
         @Override
         public List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId) {

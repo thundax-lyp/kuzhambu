@@ -10,6 +10,8 @@ import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface MingCustomsEntryMapper extends BaseMapper<MingCustomsEntryDO> {
+    @Select("select * from classics_ming_customs_entry where id = #{id} for update")
+    MingCustomsEntryDO selectPublicationStateForUpdate(@Param("id") Long id);
 
     @Select(
             """
@@ -46,4 +48,27 @@ public interface MingCustomsEntryMapper extends BaseMapper<MingCustomsEntryDO> {
             @Param("category") String category,
             @Param("keyword") String keyword,
             @Param("visibility") String visibility);
+
+    @org.apache.ibatis.annotations.Update(
+            """
+            update classics_ming_customs_entry
+            set lifecycle_status = #{targetLifecycleStatus},
+                transition_status = #{targetTransitionStatus},
+                current_publication_job_id = #{targetJobId}
+            where id = #{id}
+              and lifecycle_status = #{expectedLifecycleStatus}
+              and transition_status = #{expectedTransitionStatus}
+              and (
+                (#{expectedJobId} is null and current_publication_job_id is null)
+                or current_publication_job_id = #{expectedJobId}
+              )
+            """)
+    int updatePublicationState(
+            @Param("id") Long id,
+            @Param("expectedLifecycleStatus") String expectedLifecycleStatus,
+            @Param("expectedTransitionStatus") String expectedTransitionStatus,
+            @Param("expectedJobId") Long expectedJobId,
+            @Param("targetLifecycleStatus") String targetLifecycleStatus,
+            @Param("targetTransitionStatus") String targetTransitionStatus,
+            @Param("targetJobId") Long targetJobId);
 }
