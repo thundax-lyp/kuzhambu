@@ -108,11 +108,19 @@ def sql_json(v):
     "CAST(" + sql_text(v) + " AS JSON)"
   end;
 
-def sql_datetime(v):
+def sql_epoch_ms(v):
   if v == null then
     "NULL"
   else
-    "\u0027" + (v | tostring) + "\u0027"
+    (v | tostring | gsub("T"; " ")) as $raw
+    | if ($raw | test("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(\\.[0-9]{1,6})?$")) then
+        ($raw | capture("^(?<base>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})(\\.(?<frac>[0-9]{1,6}))?$")) as $parts
+        | "TIMESTAMPDIFF(MICROSECOND, \u00271970-01-01 08:00:00.000000\u0027, \u0027" +
+          $parts.base + "." + (($parts.frac // "") + "000000")[0:6] +
+          "\u0027) DIV 1000"
+      else
+        error("Invalid Asia/Shanghai display datetime: " + $raw)
+      end
   end;
 
 def stable_hash(v):
@@ -272,7 +280,7 @@ def volume_number_from_title(title):
     "NULL, " +
     "NULL, " +
     "NULL, " +
-    sql_datetime("2026-01-01 00:00:00.000") +
+    sql_epoch_ms("2026-01-01 00:00:00.000") +
     ") ON DUPLICATE KEY UPDATE " +
     "`volume_id` = VALUES(`volume_id`), `title` = VALUES(`title`), `original_text` = VALUES(`original_text`), `translation_text` = VALUES(`translation_text`), `summary` = VALUES(`summary`), `lifecycle_status` = VALUES(`lifecycle_status`), `visibility` = VALUES(`visibility`), `translation_status` = VALUES(`translation_status`), `image_status` = VALUES(`image_status`), `visual_asset_status` = VALUES(`visual_asset_status`), `refinement_status` = VALUES(`refinement_status`), `priority` = VALUES(`priority`), `current_version_id` = VALUES(`current_version_id`), `current_version_no` = VALUES(`current_version_no`), `current_versioned_at` = VALUES(`current_versioned_at`), `content_updated_at` = VALUES(`content_updated_at`);"
 ),

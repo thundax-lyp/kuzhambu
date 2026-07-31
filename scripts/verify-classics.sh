@@ -95,12 +95,12 @@ if ! grep -q "Local document IDs are deterministic 1..14" "${ROOT_DIR}/db/data/c
     exit 1
 fi
 
-if ! grep -q "(1, .*'MARKDOWN'.*'PUBLIC'.*'1570-01-01 00:00:00.000')" "${ROOT_DIR}/db/data/classics.sql"; then
+if ! grep -q "(1, .*'MARKDOWN'.*'PUBLIC'.*TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '1570-01-01 00:00:00.000000') DIV 1000)" "${ROOT_DIR}/db/data/classics.sql"; then
     echo "Missing first imported public markdown wangqi document data" >&2
     exit 1
 fi
 
-if ! grep -q "(14, .*'MARKDOWN'.*'PUBLIC'.*'1570-09-01 00:00:00.000')" "${ROOT_DIR}/db/data/classics.sql"; then
+if ! grep -q "(14, .*'MARKDOWN'.*'PUBLIC'.*TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '1570-09-01 00:00:00.000000') DIV 1000)" "${ROOT_DIR}/db/data/classics.sql"; then
     echo "Missing last imported public markdown wangqi document data" >&2
     exit 1
 fi
