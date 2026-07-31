@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
@@ -30,7 +31,6 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.lang.reflect.Method;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 class DiscoveryQaAdminControllerTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Test
     void routesShouldKeepAdminQaApiPaths() throws Exception {
@@ -193,8 +193,8 @@ class DiscoveryQaAdminControllerTest {
         DiscoveryQaAdminRequests.QaSessionPageRequest sessionPageRequest =
                 new DiscoveryQaAdminRequests.QaSessionPageRequest();
         sessionPageRequest.setTitle("黄帝");
-        sessionPageRequest.setOpenedAtStart(new Date(1_718_000_000_000L));
-        sessionPageRequest.setOpenedAtEnd(new Date(1_718_086_400_000L));
+        sessionPageRequest.setOpenedAtStart(Instant.ofEpochMilli(1_718_000_000_000L));
+        sessionPageRequest.setOpenedAtEnd(Instant.ofEpochMilli(1_718_086_400_000L));
         sessionPageRequest.setPageNo(1);
         sessionPageRequest.setPageSize(10);
         var sessionPageResponse = controller.pageSessions(sessionPageRequest);
