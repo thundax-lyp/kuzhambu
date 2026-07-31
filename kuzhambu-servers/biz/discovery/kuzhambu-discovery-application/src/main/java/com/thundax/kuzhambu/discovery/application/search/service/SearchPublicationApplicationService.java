@@ -1,0 +1,18 @@
+package com.thundax.kuzhambu.discovery.application.search.service;
+
+import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
+
+public interface SearchPublicationApplicationService {
+
+    void prepare(SearchPublicationPrepareCommand command);
+
+    void markReady(SearchPublicationReferenceCommand command);
+
+    void markOffline(SearchPublicationReferenceCommand command);
+
+    void delete(SearchPublicationReferenceCommand command);
+
+    SearchPublicationProbeResult probe(SearchPublicationReferenceCommand command);
+}

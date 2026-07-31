@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.discovery.application.search.support;
 
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationDocument;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
@@ -23,4 +25,14 @@ public interface SearchIndexGateway {
     void markDocumentDeleted(String contentType, String contentId, Integer currentVersionNo, Instant occurredAt);
 
     Integer cleanupDeletedDocumentsOlderThan(Instant threshold);
+
+    void preparePublication(SearchPublicationDocument document);
+
+    SearchPublicationProbeResult probePublication(String documentId);
+
+    boolean markPublicationReady(String documentId, String contentVersionId, Integer contentVersionNo);
+
+    boolean markPublicationOffline(String documentId, Instant occurredAt);
+
+    void deletePublication(String documentId);
 }

@@ -4,6 +4,8 @@ import com.thundax.kuzhambu.common.elasticsearch.support.ElasticsearchOperations
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationDocument;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
@@ -31,6 +33,9 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     private static final int HIGHLIGHT_CONTEXT_LENGTH = 60;
     private static final int FALLBACK_LENGTH = 160;
     private static final String PUBLIC_VISIBILITY = "PUBLIC";
+    private static final String PUBLICATION_PREPARING = "PREPARING";
+    private static final String PUBLICATION_READY = "READY";
+    private static final String PUBLICATION_OFFLINE = "OFFLINE";
 
     private final DiscoverySearchIndexProperties properties;
     private final ElasticsearchOperations elasticsearchOperations;
@@ -156,9 +161,121 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         return deletedCount;
     }
 
+    @Override
+    public void preparePublication(SearchPublicationDocument document) {
+        ElasticsearchOperations operations = requireOperations("publication-prepare");
+        DiscoverySearchDocument target = new DiscoverySearchDocument();
+        target.setDocumentId(document.getSourceId());
+        target.setContentDomain("CLASSICS");
+        target.setContentType(document.getContentType());
+        target.setContentId(document.getContentId());
+        target.setContentVersionId(document.getContentVersionId());
+        target.setContentVersionNo(document.getContentVersionNo());
+        target.setSourceVersionNo(document.getContentVersionNo());
+        target.setKnowledgeBase(document.getContentType());
+        target.setCategoryCode(document.getCategoryId());
+        target.setCategoryName(document.getCategoryName());
+        target.setVolumeId(document.getVolumeId());
+        target.setVolumeTitle(document.getVolumeTitle());
+        target.setTitle(document.getTitle());
+        target.setSummary(document.getSummary());
+        target.setTextSegments(document.getTextSegments());
+        target.setBodyText(joinTextSegments(document.getTextSegments()));
+        target.setTagNames(document.getTagNames());
+        target.setStatus("PUBLISHED");
+        target.setVisibility(null);
+        target.setPublicationStatus(PUBLICATION_PREPARING);
+        target.setDeleted(Boolean.FALSE);
+        target.setDeletedAt(null);
+        target.setUpdatedAt(document.getContentUpdatedAt());
+        target.setSourcePath(buildSourcePath(document.getContentType(), document.getContentId()));
+        operations.save(target, indexCoordinates());
+    }
+
+    @Override
+    public SearchPublicationProbeResult probePublication(String documentId) {
+        ElasticsearchOperations operations = requireOperations("publication-probe");
+        DiscoverySearchDocument document =
+                operations.get(documentId, DiscoverySearchDocument.class, indexCoordinates());
+        if (document == null) {
+            return SearchPublicationProbeResult.missing();
+        }
+        return new SearchPublicationProbeResult(
+                true,
+                document.getPublicationStatus(),
+                document.getDeleted(),
+                document.getContentVersionId(),
+                document.getContentVersionNo());
+    }
+
+    @Override
+    public boolean markPublicationReady(String documentId, String contentVersionId, Integer contentVersionNo) {
+        ElasticsearchOperations operations = requireOperations("publication-ready");
+        DiscoverySearchDocument document =
+                operations.get(documentId, DiscoverySearchDocument.class, indexCoordinates());
+        if (!matchesVersion(document, contentVersionId, contentVersionNo)) {
+            return false;
+        }
+        document.setPublicationStatus(PUBLICATION_READY);
+        document.setVisibility(PUBLIC_VISIBILITY);
+        document.setDeleted(Boolean.FALSE);
+        document.setDeletedAt(null);
+        operations.save(document, indexCoordinates());
+        return true;
+    }
+
+    @Override
+    public boolean markPublicationOffline(String documentId, Instant occurredAt) {
+        ElasticsearchOperations operations = requireOperations("publication-offline");
+        DiscoverySearchDocument document =
+                operations.get(documentId, DiscoverySearchDocument.class, indexCoordinates());
+        if (document == null) {
+            return true;
+        }
+        document.setPublicationStatus(PUBLICATION_OFFLINE);
+        document.setVisibility(null);
+        document.setDeleted(Boolean.TRUE);
+        document.setDeletedAt(occurredAt);
+        operations.save(document, indexCoordinates());
+        return true;
+    }
+
+    @Override
+    public void deletePublication(String documentId) {
+        requireOperations("publication-delete").delete(documentId, indexCoordinates());
+    }
+
     private ElasticsearchOperations requireOperations(String operation) {
         return ElasticsearchOperationsSupport.requireOperations(
                 elasticsearchOperations, "Discovery search", operation, properties.getIndexName());
+    }
+
+    private boolean matchesVersion(
+            DiscoverySearchDocument document, String contentVersionId, Integer contentVersionNo) {
+        return document != null
+                && java.util.Objects.equals(document.getContentVersionId(), contentVersionId)
+                && java.util.Objects.equals(document.getContentVersionNo(), contentVersionNo);
+    }
+
+    private String joinTextSegments(List<String> textSegments) {
+        if (textSegments == null || textSegments.isEmpty()) {
+            return null;
+        }
+        return textSegments.stream()
+                .filter(value -> value != null && !value.isBlank())
+                .map(String::trim)
+                .reduce((left, right) -> left + "\n" + right)
+                .orElse(null);
+    }
+
+    private String buildSourcePath(String contentType, String contentId) {
+        return switch (contentType) {
+            case "SANCAI_ENTRY" -> "/classics/sancai/" + contentId;
+            case "WANGQI_DOCUMENT" -> "/classics/wangqi/" + contentId;
+            case "MING_CUSTOMS" -> "/classics/ming-customs/" + contentId;
+            default ->
+                throw new UnsupportedOperationException("Unknown discovery search source content type: " + contentType);
+        };
     }
 
     private List<DiscoverySearchDocument> toDocuments(List<SearchSourceContent> sourceContents) {

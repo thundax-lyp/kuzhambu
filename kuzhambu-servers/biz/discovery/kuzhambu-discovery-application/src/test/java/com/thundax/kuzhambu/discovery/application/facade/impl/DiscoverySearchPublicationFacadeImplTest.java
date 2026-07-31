@@ -1,0 +1,73 @@
+package com.thundax.kuzhambu.discovery.application.facade.impl;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoverySearchPublicationFacadeAssembler;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
+import com.thundax.kuzhambu.discovery.application.search.service.SearchPublicationApplicationService;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationPrepareFacadeRequest;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationReferenceFacadeRequest;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
+class DiscoverySearchPublicationFacadeImplTest {
+
+    private final SearchPublicationApplicationService service = mock(SearchPublicationApplicationService.class);
+    private final DiscoverySearchPublicationFacadeImpl facade =
+            new DiscoverySearchPublicationFacadeImpl(service, new DiscoverySearchPublicationFacadeAssembler());
+
+    @Test
+    void prepareShouldPreservePublicationIdentityAndOrderedPayload() {
+        DiscoverySearchPublicationPrepareFacadeRequest request =
+                DiscoverySearchPublicationPrepareFacadeRequest.builder()
+                        .sourceId("SANCAI_ENTRY:101")
+                        .contentType("SANCAI_ENTRY")
+                        .contentId("101")
+                        .contentVersionId("9001")
+                        .contentVersionNo(7)
+                        .title("天文")
+                        .textSegments(List.of("标题", "正文"))
+                        .tagNames(List.of("星象"))
+                        .build();
+        ArgumentCaptor<SearchPublicationPrepareCommand> captor =
+                ArgumentCaptor.forClass(SearchPublicationPrepareCommand.class);
+
+        facade.prepare(request);
+
+        verify(service).prepare(captor.capture());
+        assertEquals("SANCAI_ENTRY:101", captor.getValue().getSourceId());
+        assertEquals("9001", captor.getValue().getContentVersionId());
+        assertEquals(List.of("标题", "正文"), captor.getValue().getTextSegments());
+    }
+
+    @Test
+    void operationsShouldUseSingleReferenceContractAndMapProbe() {
+        DiscoverySearchPublicationReferenceFacadeRequest request =
+                DiscoverySearchPublicationReferenceFacadeRequest.builder()
+                        .documentId("SANCAI_ENTRY:101")
+                        .contentVersionId("9001")
+                        .contentVersionNo(7)
+                        .build();
+        when(service.probe(any(SearchPublicationReferenceCommand.class)))
+                .thenReturn(new SearchPublicationProbeResult(true, "READY", false, "9001", 7));
+
+        facade.markReady(request);
+        facade.markOffline(request);
+        facade.delete(request);
+        var result = facade.probe(request);
+
+        verify(service).markReady(any(SearchPublicationReferenceCommand.class));
+        verify(service).markOffline(any(SearchPublicationReferenceCommand.class));
+        verify(service).delete(any(SearchPublicationReferenceCommand.class));
+        assertTrue(result.isPresent());
+        assertEquals("READY", result.getPublicationStatus());
+    }
+}

@@ -32,6 +32,12 @@ public class DiscoverySearchDocument {
     private String contentId;
 
     @Field(type = FieldType.Keyword)
+    private String contentVersionId;
+
+    @Field(type = FieldType.Integer)
+    private Integer contentVersionNo;
+
+    @Field(type = FieldType.Keyword)
     private String knowledgeBase;
 
     @Field(type = FieldType.Keyword)
@@ -39,6 +45,12 @@ public class DiscoverySearchDocument {
 
     @Field(type = FieldType.Text)
     private String categoryName;
+
+    @Field(type = FieldType.Keyword)
+    private String volumeId;
+
+    @Field(type = FieldType.Text)
+    private String volumeTitle;
 
     @Field(type = FieldType.Text)
     private String title;
@@ -49,6 +61,9 @@ public class DiscoverySearchDocument {
     @Field(type = FieldType.Text)
     private String bodyText;
 
+    @Field(type = FieldType.Text)
+    private List<String> textSegments;
+
     @Field(type = FieldType.Keyword)
     private List<String> tagNames;
 
@@ -57,6 +72,9 @@ public class DiscoverySearchDocument {
 
     @Field(type = FieldType.Keyword)
     private String visibility;
+
+    @Field(type = FieldType.Keyword)
+    private String publicationStatus;
 
     @Field(type = FieldType.Integer)
     private Integer sourceVersionNo;
@@ -75,4 +93,45 @@ public class DiscoverySearchDocument {
 
     @Field(type = FieldType.Keyword)
     private String sourcePath;
+
+    public DiscoverySearchDocument(
+            String documentId,
+            String contentDomain,
+            String contentType,
+            String contentId,
+            String knowledgeBase,
+            String categoryCode,
+            String categoryName,
+            String title,
+            String summary,
+            String bodyText,
+            List<String> tagNames,
+            String status,
+            String visibility,
+            Integer sourceVersionNo,
+            Instant publishedAt,
+            Instant updatedAt,
+            Boolean deleted,
+            Instant deletedAt,
+            String sourcePath) {
+        this.documentId = documentId;
+        this.contentDomain = contentDomain;
+        this.contentType = contentType;
+        this.contentId = contentId;
+        this.knowledgeBase = knowledgeBase;
+        this.categoryCode = categoryCode;
+        this.categoryName = categoryName;
+        this.title = title;
+        this.summary = summary;
+        this.bodyText = bodyText;
+        this.tagNames = tagNames;
+        this.status = status;
+        this.visibility = visibility;
+        this.sourceVersionNo = sourceVersionNo;
+        this.publishedAt = publishedAt;
+        this.updatedAt = updatedAt;
+        this.deleted = deleted;
+        this.deletedAt = deletedAt;
+        this.sourcePath = sourcePath;
+    }
 }
