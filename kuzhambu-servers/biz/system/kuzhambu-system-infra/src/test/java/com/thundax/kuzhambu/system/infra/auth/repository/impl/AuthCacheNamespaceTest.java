@@ -4,26 +4,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.common.cache.KuzhambuCacheNames;
 import java.lang.reflect.Field;
-import java.util.Date;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class AuthCacheNamespaceTest {
 
     @Test
-    void javaTimeRepositoriesShouldPreserveLegacyCacheContracts() throws Exception {
-        assertLegacyContract(
+    void javaTimeRepositoriesShouldUseInstantCacheContracts() throws Exception {
+        assertCacheContract(
                 PrincipalAccessTokenRepositoryImpl.class, "PRINCIPAL_ACCESS_TOKEN_", "issuedAt", "expireAt");
-        assertLegacyContract(
+        assertCacheContract(
                 PrincipalAuthSessionRepositoryImpl.class,
                 "PRINCIPAL_AUTH_SESSION_",
                 "issuedAt",
                 "lastAccessTime",
                 "expireAt");
-        assertLegacyContract(
+        assertCacheContract(
                 PrincipalRefreshTokenRepositoryImpl.class, "PRINCIPAL_REFRESH_TOKEN_", "issuedAt", "expireAt");
     }
 
-    private void assertLegacyContract(Class<?> repositoryType, String cacheSuffix, String... timeFields)
+    private void assertCacheContract(Class<?> repositoryType, String cacheSuffix, String... timeFields)
             throws Exception {
         Field cacheSection = repositoryType.getDeclaredField("CACHE_SECTION");
         cacheSection.setAccessible(true);
@@ -32,7 +32,7 @@ class AuthCacheNamespaceTest {
         Class<?> cacheDtoType = Class.forName(
                 repositoryType.getName() + "$" + repositoryType.getSimpleName().replace("RepositoryImpl", "CacheDTO"));
         for (String timeField : timeFields) {
-            assertEquals(Date.class, cacheDtoType.getDeclaredField(timeField).getType());
+            assertEquals(Instant.class, cacheDtoType.getDeclaredField(timeField).getType());
         }
     }
 }

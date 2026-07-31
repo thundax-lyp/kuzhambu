@@ -25,7 +25,6 @@ import jakarta.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -242,8 +241,8 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
         accessToken.setSessionId(PrincipalAuthSessionIdCodec.toDomain(cacheDTO.sessionId));
         accessToken.setPrincipalKey(PrincipalKey.of(PrincipalType.from(cacheDTO.principalType), cacheDTO.principalId));
         accessToken.setScopes(new LinkedHashSet<>(cacheDTO.scopes));
-        accessToken.setIssuedAt(toInstant(cacheDTO.issuedAt));
-        accessToken.setExpireAt(toInstant(cacheDTO.expireAt));
+        accessToken.setIssuedAt(cacheDTO.issuedAt);
+        accessToken.setExpireAt(cacheDTO.expireAt);
         accessToken.setStatus(PrincipalTokenStatus.from(cacheDTO.status));
         return accessToken;
     }
@@ -261,8 +260,8 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
         cacheDTO.principalId = accessToken.getPrincipalKey().getPrincipalId();
         cacheDTO.scopes =
                 accessToken.getScopes() == null ? new ArrayList<>() : new ArrayList<>(accessToken.getScopes());
-        cacheDTO.issuedAt = toDate(accessToken.getIssuedAt());
-        cacheDTO.expireAt = toDate(accessToken.getExpireAt());
+        cacheDTO.issuedAt = accessToken.getIssuedAt();
+        cacheDTO.expireAt = accessToken.getExpireAt();
         cacheDTO.status = accessToken.getStatus().value();
         return cacheDTO;
     }
@@ -275,16 +274,8 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
         private String principalType;
         private Long principalId;
         private List<String> scopes = new ArrayList<>();
-        private Date issuedAt;
-        private Date expireAt;
+        private Instant issuedAt;
+        private Instant expireAt;
         private String status;
-    }
-
-    private static Instant toInstant(Date value) {
-        return value == null ? null : value.toInstant();
-    }
-
-    private static Date toDate(Instant value) {
-        return value == null ? null : Date.from(value);
     }
 }
