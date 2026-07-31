@@ -9,7 +9,7 @@
 - 数据库固定使用 MySQL 8.x。
 - 存储引擎固定使用 InnoDB。
 - 字符集固定使用 `utf8mb4`。
-- 绝对时间点字段统一使用 `datetime(3)`。
+- 绝对时间点字段统一使用 `BIGINT` 存储 Unix epoch milliseconds。
 - 数据库内部主键默认使用 `bigint`。
 - 布尔字段统一使用 `tinyint(1)`。
 - 金额字段统一使用 `decimal(18,2)`。
@@ -35,6 +35,8 @@
 - 业务域 schema 文件固定放在 `db/schema/`。
 - 业务域初始化数据文件固定放在 `db/data/`。
 - 复杂初始化数据允许在 `db/data-source/` 维护结构化源文件，再由仓库级脚本生成 `db/data/` 下的 SQL 产物。
+- 初始化数据中的人类可读时间字面量按 `Asia/Shanghai` 展示时间解释；写入绝对时间点字段时必须由生成脚本或统一 SQL 表达式转换为 Unix epoch milliseconds。
+- 有 JSON 源文件的初始化数据必须先改 `db/data-source/` 下源文件和对应 JSON-to-SQL 生成脚本，再重新生成并提交 `db/data/` 下 SQL 产物；不得只手工修改生成后的 SQL。
 - 当前 system 初始化数据源为 `db/data-source/system.json`，生成脚本为 `scripts/generate-system-data-sql.ts`。
 - 修改 system 初始化数据时必须先改 JSON 源，再重新生成并提交 `db/data/system.sql`。
 - system 初始化数据的自增主键由生成脚本按表从 1 顺序分配；SQL 产物必须在显式插入后追加 `ALTER TABLE ... AUTO_INCREMENT = max(id) + 1`。
@@ -74,7 +76,7 @@
 
 - 是否增加时间字段取决于对象是否有独立生命周期。
 - Java 中绝对时间点统一使用 `Instant`。
-- `infra` 负责 `Instant` 与数据库 `datetime(3)` 的 UTC 转换。
+- `infra` 通过公共 MyBatis TypeHandler 负责 `Instant` 与数据库 `BIGINT` epoch milliseconds 的转换。
 - `LocalDateTime` 不作为跨模块和持久化真相时间。
 - 业务表不得设置通用审计字段 `created_at`、`updated_at`、`deleted_at`、`created_by`、`updated_by`、`deleted_by`。
 - 业务确实需要表达非审计型用户关系时，必须使用业务语义字段名；操作者、创建者、更新者、删除者、发起人等审计型用户关系不得进入业务表。
