@@ -25,6 +25,8 @@ jobs:
             workers_changed: ${{ steps.changes.outputs.workers_changed }}
             apps_changed: ${{ steps.changes.outputs.apps_changed }}
             apps_admin_changed: ${{ steps.changes.outputs.apps_admin_changed }}
+            apps_admin_tests_full: ${{ steps.changes.outputs.apps_admin_tests_full }}
+            apps_admin_test_paths: ${{ steps.changes.outputs.apps_admin_test_paths }}
             apps_portal_changed: ${{ steps.changes.outputs.apps_portal_changed }}
             db_changed: ${{ steps.changes.outputs.db_changed }}
             workflow_changed: ${{ steps.changes.outputs.verify_workflow_changed }}
@@ -40,7 +42,7 @@ jobs:
               shell: bash
               run: |
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
-                    changed_files="$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD)"
+                    changed_files="$(git diff --name-only --no-renames "origin/${{ github.base_ref }}"...HEAD)"
                   else
                     changed_files="$(git ls-files)"
                   fi
@@ -118,6 +120,8 @@ jobs:
 
                   apps_changed=false
                   apps_admin_changed=false
+                  apps_admin_tests_full=false
+                  apps_admin_test_paths=
                   apps_portal_changed=false
                   apps_root_changed=false
 
@@ -146,8 +150,36 @@ jobs:
                     fi
                   fi
 
+                  if [ "$apps_admin_changed" = "true" ]; then
+                    admin_changed_files="$(echo "$changed_files" | grep -E '^kuzhambu-apps/admin-web/' || true)"
+
+                    if [ "$verify_workflow_changed" = "true" ] || [ "$apps_root_changed" = "true" ] || echo "$admin_changed_files" | grep -Evq '^kuzhambu-apps/admin-web/src/pages/[^/]+/'; then
+                      apps_admin_tests_full=true
+                    else
+                      admin_page_modules="$(echo "$admin_changed_files" | awk -F/ '{print $5}' | sort -u)"
+
+                      while IFS= read -r admin_page_module; do
+                        if [ -z "$admin_page_module" ]; then
+                          continue
+                        fi
+
+                        if [ ! -d "kuzhambu-apps/admin-web/src/pages/$admin_page_module" ]; then
+                          apps_admin_tests_full=true
+                          apps_admin_test_paths=
+                          break
+                        fi
+
+                        apps_admin_test_paths="${apps_admin_test_paths:+$apps_admin_test_paths }src/pages/$admin_page_module"
+                      done <<EOF
+                  $admin_page_modules
+                  EOF
+                    fi
+                  fi
+
                   echo "apps_changed=$apps_changed" >> "$GITHUB_OUTPUT"
                   echo "apps_admin_changed=$apps_admin_changed" >> "$GITHUB_OUTPUT"
+                  echo "apps_admin_tests_full=$apps_admin_tests_full" >> "$GITHUB_OUTPUT"
+                  echo "apps_admin_test_paths=$apps_admin_test_paths" >> "$GITHUB_OUTPUT"
                   echo "apps_portal_changed=$apps_portal_changed" >> "$GITHUB_OUTPUT"
 
                   if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^db/'; then
@@ -332,10 +364,20 @@ jobs:
               working-directory: kuzhambu-apps
               run: pnpm --filter ./admin-web run lint
 
-            - name: Verify admin frontend tests
-              if: needs.detect-changes.outputs.apps_admin_changed == 'true'
+            - name: Verify all admin frontend tests
+              if: needs.detect-changes.outputs.apps_admin_changed == 'true' && needs.detect-changes.outputs.apps_admin_tests_full == 'true'
               working-directory: kuzhambu-apps
               run: pnpm --filter ./admin-web run test
+
+            - name: Verify affected admin page tests
+              if: needs.detect-changes.outputs.apps_admin_changed == 'true' && needs.detect-changes.outputs.apps_admin_tests_full != 'true'
+              working-directory: kuzhambu-apps
+              run: |
+                  pnpm --filter ./admin-web exec vitest run src/app.test.tsx $ADMIN_TEST_PATHS
+                  pnpm --filter ./admin-web exec vitest run --changed "$ADMIN_TEST_BASE" --passWithNoTests
+              env:
+                  ADMIN_TEST_BASE: origin/${{ github.base_ref }}
+                  ADMIN_TEST_PATHS: ${{ needs.detect-changes.outputs.apps_admin_test_paths }}
 
             - name: Verify portal frontend formatting
               if: needs.detect-changes.outputs.apps_portal_changed == 'true'

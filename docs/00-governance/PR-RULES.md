@@ -56,8 +56,8 @@ PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显�
 - Java servers 目录发生变更时，PR 验证必须显式执行 `mvn -q spotless:check`、`mvn -q checkstyle:check` 和 `mvn -q test`；CI runner 使用干净 checkout，不要求单独执行 `mvn -q clean`。
 - Java servers PR workflow、根级构建配置、`common` 模块组或 Maven 聚合 POM 发生变更时，PR 验证必须执行全量 Maven 验证；其他 leaf module 变更可以使用 Maven reactor `-pl ... -am -amd` 裁剪到受影响模块、其依赖和依赖它的模块。
 - Java servers 验证必须检查 `common`、`biz`、`starter` 三段式布局，并拒绝继续保留旧 `kuzhambu-servers/interfaces` 入口。
-- Apps 目录发生变更时，PR 验证必须使用 Node 20，并显式执行锁文件安装、`pnpm run format:check`、`pnpm run lint` 和 `pnpm test`；GitHub Actions 中使用 `pnpm install --frozen-lockfile` 和 pnpm 缓存。
-- Apps 子 workspace 目录发生变更时，PR 验证按 workspace 裁剪执行对应 `format:check`、`lint` 和 `test`；`kuzhambu-apps/` 根级文件或 PR workflow 发生变更时必须验证全部 frontend workspace。
+- Apps 目录发生变更时，PR 验证必须使用 Node 20，并显式执行锁文件安装、`pnpm run format:check`、`pnpm run lint` 和全量或受影响范围的 Vitest；GitHub Actions 中使用 `pnpm install --frozen-lockfile` 和 pnpm 缓存。
+- Apps 子 workspace 目录发生变更时，PR 验证按 workspace 裁剪执行对应 `format:check`、`lint` 和 `test`。`admin-web` 仅变更 `src/pages/<module>/` 时，Vitest 可以裁剪为 `src/app.test.tsx`、全部受影响 page module 和依赖变更文件的模块外测试；`admin-web` 共享代码、配置或 page module 之外的文件发生变更时必须执行该 workspace 全量测试。`kuzhambu-apps/` 根级文件或 PR workflow 发生变更时必须验证全部 frontend workspace。
 - Python workers 目录发生变更时，PR 验证必须使用 Python 3.10，并显式执行 `ruff format --check .`、`ruff check .` 和 `python -m pytest -p no:capture`。
 - PR workflow、PR 规则文档或 PR 模板发生变更时，PR 验证必须触发 servers、workers、apps 和 db 的显式检查，以验证验证规则本身。
 - PR 合并默认使用普通 merge commit，保留分支中的小步 commit 历史；不得默认 squash。
@@ -79,6 +79,6 @@ PR 描述固定包含：
 
 1. 开发者打开或更新 Pull Request。
 2. GitHub 触发 `PR Verify` workflow。
-3. workflow 显式执行治理文件检查，并按变更目录执行后端布局检查、Classics SQL seed 检查、servers 全量或受影响 Maven reactor 模块的 `mvn -q spotless:check`、`mvn -q checkstyle:check`、`mvn -q test`、前端 package manifest 校验、apps 锁文件安装、按受影响 workspace 执行 `format:check`、`lint`、`test`、worker manifest 校验、workers `ruff format --check .`、`ruff check .` 和 `python -m pytest -p no:capture`。
+3. workflow 显式执行治理文件检查，并按变更目录执行后端布局检查、Classics SQL seed 检查、servers 全量或受影响 Maven reactor 模块的 `mvn -q spotless:check`、`mvn -q checkstyle:check`、`mvn -q test`、前端 package manifest 校验、apps 锁文件安装、按受影响 workspace 执行 `format:check`、`lint`、全量或受影响 admin page module 及其模块外依赖测试的 `test`、worker manifest 校验、workers `ruff format --check .`、`ruff check .` 和 `python -m pytest -p no:capture`。
 4. 所有当前自动化验证通过后，PR 才允许进入合并判断。
 5. PR 审核通过后，才允许合并到 `main`；合并时默认执行普通 merge，例如 `gh pr merge <number> --merge --delete-branch`。

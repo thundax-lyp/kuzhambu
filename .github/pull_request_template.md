@@ -19,7 +19,7 @@
 - [ ] PR workflow: apps changed -> `pnpm install --frozen-lockfile`
 - [ ] PR workflow: apps changed -> `pnpm run format:check`
 - [ ] PR workflow: apps changed -> `pnpm run lint`
-- [ ] PR workflow: apps changed -> `pnpm test`
+- [ ] PR workflow: apps changed -> full or affected-scope Vitest
 - [ ] PR workflow: db changed -> SQL seed checks
 - [ ] Manual/runtime smoke:
 
