@@ -37,6 +37,16 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-discovery-facade</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-knowledge</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-core</artifactId>
       <version>${project.version}</version>
     </dependency>
