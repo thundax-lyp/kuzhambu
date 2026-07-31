@@ -372,8 +372,11 @@ jobs:
             - name: Verify affected admin page tests
               if: needs.detect-changes.outputs.apps_admin_changed == 'true' && needs.detect-changes.outputs.apps_admin_tests_full != 'true'
               working-directory: kuzhambu-apps
-              run: pnpm --filter ./admin-web exec vitest run src/app.test.tsx $ADMIN_TEST_PATHS
+              run: |
+                  pnpm --filter ./admin-web exec vitest run src/app.test.tsx $ADMIN_TEST_PATHS
+                  pnpm --filter ./admin-web exec vitest run --changed "$ADMIN_TEST_BASE" --passWithNoTests
               env:
+                  ADMIN_TEST_BASE: origin/${{ github.base_ref }}
                   ADMIN_TEST_PATHS: ${{ needs.detect-changes.outputs.apps_admin_test_paths }}
 
             - name: Verify portal frontend formatting
