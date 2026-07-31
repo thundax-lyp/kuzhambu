@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -103,11 +104,11 @@ public final class DiscoveryQaAdminRequests {
 
         @Schema(name = "openedAtStart", description = "创建开始时间")
         @JsonProperty(value = "openedAtStart")
-        private java.util.Date openedAtStart;
+        private Instant openedAtStart;
 
         @Schema(name = "openedAtEnd", description = "创建结束时间")
         @JsonProperty(value = "openedAtEnd")
-        private java.util.Date openedAtEnd;
+        private Instant openedAtEnd;
     }
 
     @Getter

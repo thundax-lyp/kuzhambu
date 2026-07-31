@@ -15,7 +15,7 @@ INSERT INTO `discovery_search_query_event` (
     '["世系","世系图谱"]',
     '["上古帝王","世系图"]',
     1,
-    '2026-02-27 04:10:00.000'
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:10:00.000000') DIV 1000
 ) ON DUPLICATE KEY UPDATE
     `user_id` = VALUES(`user_id`),
     `raw_query` = VALUES(`raw_query`),
@@ -49,7 +49,7 @@ INSERT INTO `discovery_search_event` (
     '2',
     'seed-request-1001',
     'seed-trace-1001',
-    '2026-02-27 04:10:00.000'
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:10:00.000000') DIV 1000
 ) ON DUPLICATE KEY UPDATE
     `query_text` = VALUES(`query_text`),
     `normalized_query_text` = VALUES(`normalized_query_text`),
@@ -87,7 +87,7 @@ INSERT INTO `discovery_search_click_event` (
     '2',
     'seed-request-1101',
     'seed-trace-1101',
-    '2026-02-27 04:10:30.000'
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:10:30.000000') DIV 1000
 ) ON DUPLICATE KEY UPDATE
     `search_event_id` = VALUES(`search_event_id`),
     `content_domain` = VALUES(`content_domain`),
@@ -119,8 +119,8 @@ INSERT INTO `discovery_qa_session` (
     300000000604,
     'OPEN',
     'kuzhambu-qa',
-    '2026-02-27 04:11:00.000',
-    '2026-02-27 04:12:00.000',
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:11:00.000000') DIV 1000,
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:12:00.000000') DIV 1000,
     NULL
 ) ON DUPLICATE KEY UPDATE
     `owner_type` = VALUES(`owner_type`),
@@ -151,7 +151,7 @@ INSERT INTO `discovery_qa_message` (
         NULL,
         NULL,
         NULL,
-        '2026-02-27 04:11:00.000',
+        TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:11:00.000000') DIV 1000,
         NULL
     ),
     (
@@ -165,8 +165,8 @@ INSERT INTO `discovery_qa_message` (
         NULL,
         'chat_qa_4002',
         'stop',
-        '2026-02-27 04:11:30.000',
-        '2026-02-27 04:11:30.000'
+        TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:11:30.000000') DIV 1000,
+        TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:11:30.000000') DIV 1000
     )
 ON DUPLICATE KEY UPDATE
     `session_id` = VALUES(`session_id`),
@@ -199,7 +199,7 @@ INSERT INTO `discovery_qa_message_source` (
     1,
     0.912345,
     'ACTIVE',
-    '2026-02-27 04:11:30.000'
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:11:30.000000') DIV 1000
 ) ON DUPLICATE KEY UPDATE
     `message_id` = VALUES(`message_id`),
     `source_business_id` = VALUES(`source_business_id`),
@@ -231,7 +231,7 @@ INSERT INTO `discovery_qa_retrieval_trace` (
     320,
     NULL,
     '{"message_id":4002}',
-    '2026-02-27 04:11:30.000'
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:11:30.000000') DIV 1000
 ) ON DUPLICATE KEY UPDATE
     `message_id` = VALUES(`message_id`),
     `raw_question` = VALUES(`raw_question`),
@@ -254,8 +254,8 @@ INSERT INTO `discovery_qa_knowledge_sync_batch` (
     1,
     1,
     0,
-    '2026-02-27 04:13:00.000',
-    '2026-02-27 04:13:00.000'
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:13:00.000000') DIV 1000,
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:13:00.000000') DIV 1000
 ) ON DUPLICATE KEY UPDATE
     `trigger_type` = VALUES(`trigger_type`),
     `provider` = VALUES(`provider`),
@@ -281,9 +281,9 @@ INSERT INTO `discovery_qa_knowledge_sync_item` (
     'item_4002_1',
     'SUCCEEDED',
     NULL,
-    '2026-02-27 04:13:00.000',
-    '2026-02-27 04:13:00.000',
-    '2026-02-27 04:13:00.000'
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:13:00.000000') DIV 1000,
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:13:00.000000') DIV 1000,
+    TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-02-27 04:13:00.000000') DIV 1000
 ) ON DUPLICATE KEY UPDATE
     `content_type` = VALUES(`content_type`),
     `content_id` = VALUES(`content_id`),

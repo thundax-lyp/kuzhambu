@@ -24,7 +24,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 - `priority` 只作为单表内全局排序值，不参与普通 KEY 或组合 KEY。
 - 状态、类型、格式、可见性等业务枚举统一使用 `varchar`。
 - 只有纯 yes/no 技术标志使用 `tinyint(1)`；业务状态、业务类型、业务快照统一使用 `varchar`。
-- 绝对时间点使用 `datetime(3)`。
+- 绝对时间点使用 `BIGINT epoch_ms`。
 - 默认不设置数据库外键。
 - 操作者、创建者、更新者、删除者、发起人等审计归属不进入业务表，由 System 审计系统记录。
 
@@ -78,8 +78,8 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `priority` | `int` | UK | 条目列表稳定排序；跨卷迁移时写入当前全局最大 `priority + 1` |
 | `current_version_id` | `bigint` | KEY | 当前正式内容版本标定 |
 | `current_version_no` | `int` |  | 当前正式内容版本号展示和差异判断 |
-| `current_versioned_at` | `datetime(3)` |  | 当前正式内容版本生成时间 |
-| `content_updated_at` | `datetime(3)` |  | 内容语义更新时间，用于判断未版本化变更 |
+| `current_versioned_at` | `BIGINT epoch_ms` |  | 当前正式内容版本生成时间 |
+| `content_updated_at` | `BIGINT epoch_ms` |  | 内容语义更新时间，用于判断未版本化变更 |
 
 约束：`id` 主键；`priority` 唯一。索引：`current_version_id`、`volume_id`、`(lifecycle_status, visibility)`、`(translation_status, image_status, visual_asset_status, refinement_status)`。同卷编辑保留原 `priority`；跨卷迁移使用当前全局最大 `priority + 1`，使条目进入目标卷列表末尾。
 
@@ -91,7 +91,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | --- | --- | --- | --- |
 | `id` | `bigint` | PK, AUTO_INCREMENT | 草稿实体身份 |
 | `entry_id` | `bigint` | KEY(entry_id, autosaved_at) | 草稿归属条目 |
-| `autosaved_at` | `datetime(3)` | KEY(entry_id, autosaved_at) | 草稿恢复提示需要自动保存时间 |
+| `autosaved_at` | `BIGINT epoch_ms` | KEY(entry_id, autosaved_at) | 草稿恢复提示需要自动保存时间 |
 | `draft_json` | `json` |  | 自动保存内容快照 |
 
 约束：`id` 主键。索引：`(entry_id, autosaved_at)`。
@@ -151,13 +151,13 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `summary` | `text` |  | 摘要展示和内联编辑 |
 | `content_format` | `varchar(16)` |  | 内容安全展示需要正文格式 |
 | `content` | `longtext` |  | 全文阅读和编辑 |
-| `document_time` | `datetime(3)` | KEY | 时间线浏览 |
+| `document_time` | `BIGINT epoch_ms` | KEY | 时间线浏览 |
 | `storage_object_id` | `bigint` | KEY | 原始文档 Storage 对象关联和替换 |
 | `visibility` | `varchar(16)` | KEY | 公开和私有可见性 |
 | `current_version_id` | `bigint` | KEY | 当前正式内容版本标定 |
 | `current_version_no` | `int` |  | 当前正式内容版本号展示和差异判断 |
-| `current_versioned_at` | `datetime(3)` |  | 当前正式内容版本生成时间 |
-| `content_updated_at` | `datetime(3)` |  | 内容语义更新时间，用于判断未版本化变更 |
+| `current_versioned_at` | `BIGINT epoch_ms` |  | 当前正式内容版本生成时间 |
+| `content_updated_at` | `BIGINT epoch_ms` |  | 内容语义更新时间，用于判断未版本化变更 |
 
 约束：`id` 主键。索引：`current_version_id`、`document_time`、`visibility`、`storage_object_id`。
 
@@ -179,8 +179,8 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `visibility` | `varchar(16)` | KEY(category, visibility), KEY | 公开和私有可见性 |
 | `current_version_id` | `bigint` | KEY | 当前正式内容版本标定 |
 | `current_version_no` | `int` |  | 当前正式内容版本号展示和差异判断 |
-| `current_versioned_at` | `datetime(3)` |  | 当前正式内容版本生成时间 |
-| `content_updated_at` | `datetime(3)` |  | 内容语义更新时间，用于判断未版本化变更 |
+| `current_versioned_at` | `BIGINT epoch_ms` |  | 当前正式内容版本生成时间 |
+| `content_updated_at` | `BIGINT epoch_ms` |  | 内容语义更新时间，用于判断未版本化变更 |
 
 约束：`id` 主键。索引：`current_version_id`、`(category, visibility)`、`visibility`。
 
@@ -249,7 +249,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `content_type` | `varchar(32)` | UK(content_type, content_id, version_no), KEY | 三类内容通用版本 |
 | `content_id` | `bigint` | UK(content_type, content_id, version_no), KEY | 内容身份 |
 | `version_no` | `int` | UK(content_type, content_id, version_no) | 版本号和对比定位 |
-| `versioned_at` | `datetime(3)` | KEY(content_type, content_id, versioned_at) | 版本时间 |
+| `versioned_at` | `BIGINT epoch_ms` | KEY(content_type, content_id, versioned_at) | 版本时间 |
 | `snapshot_json` | `json` |  | 版本快照和恢复 |
 | `change_type` | `varchar(32)` |  | 手动保存、AI 应用、历史恢复等变更类型 |
 | `change_summary` | `varchar(512)` |  | 版本摘要展示 |
@@ -270,8 +270,8 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `export_format` | `varchar(16)` |  | CSV、JSON、HTML |
 | `scope_type` | `varchar(32)` |  | 门类、卷、筛选结果、选中内容等范围类型 |
 | `scope_json` | `json` |  | 范围快照 |
-| `requested_at` | `datetime(3)` |  | 生成时间 |
-| `expires_at` | `datetime(3)` | KEY(status, expires_at) | 过期控制 |
+| `requested_at` | `BIGINT epoch_ms` |  | 生成时间 |
+| `expires_at` | `BIGINT epoch_ms` | KEY(status, expires_at) | 过期控制 |
 | `status` | `varchar(16)` | KEY(status, expires_at) | 导出状态 |
 | `storage_object_id` | `bigint` |  | 导出产物 Storage 对象 |
 | `item_count` | `int` |  | 内容数量展示 |
@@ -294,8 +294,8 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `status` | `varchar(16)` | KEY(status, expires_at) | 活跃、撤销等状态 |
 | `visibility_risk_status` | `varchar(16)` |  | 可见性风险状态，例如 `PUBLIC_ONLY`、`CONTAINS_PRIVATE` |
 | `created_by_user_id` | `bigint` | KEY(created_by_user_id, visibility) | 私有分享访问校验所需创建者 |
-| `issued_at` | `datetime(3)` |  | 分享创建时间 |
-| `expires_at` | `datetime(3)` | KEY(status, expires_at) | 分享过期时间 |
+| `issued_at` | `BIGINT epoch_ms` |  | 分享创建时间 |
+| `expires_at` | `BIGINT epoch_ms` | KEY(status, expires_at) | 分享过期时间 |
 | `access_count` | `bigint` |  | 访问统计 |
 
 约束：`id` 主键；`token_hash` 唯一。索引：`(status, expires_at)`、`(created_by_user_id, visibility)`。
@@ -327,7 +327,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `id` | `bigint` | PK, AUTO_INCREMENT | 访问记录身份 |
 | `share_link_id` | `bigint` | KEY(share_link_id, accessed_at) | 归属分享链接 |
 | `share_target_id` | `bigint` | KEY(share_target_id, accessed_at) | 访问目标 |
-| `accessed_at` | `datetime(3)` | KEY | 访问时间 |
+| `accessed_at` | `BIGINT epoch_ms` | KEY | 访问时间 |
 | `access_result` | `varchar(16)` |  | 允许、过期、撤销、无权限等结果 |
 | `client_snapshot` | `json` |  | 访问统计和异常追溯摘要 |
 

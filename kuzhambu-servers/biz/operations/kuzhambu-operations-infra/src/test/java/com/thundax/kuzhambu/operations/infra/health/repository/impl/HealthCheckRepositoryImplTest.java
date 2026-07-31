@@ -140,6 +140,11 @@ class HealthCheckRepositoryImplTest {
         assertTrue(sqlSegment.contains("component"));
         assertTrue(sqlSegment.contains("probe_source"));
         assertTrue(sqlSegment.contains("checked_at"));
+        assertTrue(sqlSegment.contains("DATE_ADD('1970-01-01 00:00:00'"));
+        assertTrue(sqlSegment.contains("checked_at DIV 1000"));
+        assertTrue(sqlSegment.contains("+ 28800"));
+        assertTrue(sqlSegment.contains("DATE_FORMAT("));
+        assertTrue(sqlSegment.contains("%Y-%m-%d %H:00:00"));
     }
 
     @Test
@@ -167,6 +172,14 @@ class HealthCheckRepositoryImplTest {
         assertEquals(0L, result.get(0).getDegradedCount());
         assertEquals(1L, result.get(0).getDownCount());
         assertEquals(8L, result.get(0).getAvgLatencyMs());
+
+        ArgumentCaptor<QueryWrapper<HealthCheckDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectMaps(captor.capture());
+        String sqlSegment = captor.getValue().getCustomSqlSegment();
+        assertTrue(sqlSegment.contains("DATE_ADD('1970-01-01 00:00:00'"));
+        assertTrue(sqlSegment.contains("checked_at DIV 1000"));
+        assertTrue(sqlSegment.contains("+ 28800"));
+        assertTrue(sqlSegment.contains("%Y-%m-%d"));
     }
 
     @Test

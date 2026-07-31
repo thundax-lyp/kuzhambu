@@ -3,6 +3,9 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 type JsonObject = Record<string, unknown>;
+type RawSql = {
+  rawSql: string;
+};
 
 type AiPromptMeta = {
   templateId: number;
@@ -36,6 +39,7 @@ const repoRoot = resolve(scriptDir, "..");
 const sourceRoot = resolve(repoRoot, "db/data-source/ai-prompts");
 const outputPath = resolve(repoRoot, "db/data/ai.sql");
 const REGISTERED_AT = "2026-02-27 04:00:00.000";
+const MYSQL_EPOCH_SHANGHAI = "1970-01-01 08:00:00.000000";
 
 const main = () => {
   const prompts = readPromptSeeds(sourceRoot);
@@ -154,7 +158,7 @@ const appendModelSql = (lines: string[]) => {
         JSON.stringify({ temperature: 0.2, max_tokens: 4096 }),
         "Default OpenAI-compatible vision-capable model for classics AI.",
         1,
-        REGISTERED_AT,
+        epochMillis(REGISTERED_AT),
       ],
       [
         900102,
@@ -167,7 +171,7 @@ const appendModelSql = (lines: string[]) => {
         JSON.stringify({ temperature: 0.2, max_tokens: 4096 }),
         "Default OpenAI-compatible LLM from local server configuration.",
         1,
-        REGISTERED_AT,
+        epochMillis(REGISTERED_AT),
       ],
       [
         900201,
@@ -185,7 +189,7 @@ const appendModelSql = (lines: string[]) => {
         }),
         "Default ByteDance text-to-image model.",
         1,
-        REGISTERED_AT,
+        epochMillis(REGISTERED_AT),
       ],
     ]
       .map((values) => row(values))
@@ -221,7 +225,7 @@ const appendPromptTemplateSql = (lines: string[], prompts: PromptSeed[]) => {
           prompt.description,
           prompt.enabled ?? true,
           prompt.current ? prompt.versionNo : null,
-          prompt.registeredAt,
+          epochMillis(prompt.registeredAt),
         ]),
       )
       .join(",\n"),
@@ -253,7 +257,7 @@ const appendBusinessConfigSql = (lines: string[], prompts: PromptSeed[]) => {
           null,
           1,
           index + 1,
-          prompt.registeredAt,
+          epochMillis(prompt.registeredAt),
         ]),
       )
       .join(",\n"),
@@ -308,7 +312,7 @@ const appendPromptVersionSql = (lines: string[], prompts: PromptSeed[]) => {
           ),
           JSON.stringify(prompt.outputSchema),
           prompt.changeSummary,
-          prompt.registeredAt,
+          epochMillis(prompt.registeredAt),
         ]),
       )
       .join(",\n"),
@@ -368,8 +372,32 @@ const sqlValue = (value: unknown): string => {
   if (typeof value === "boolean") {
     return value ? "1" : "0";
   }
+  if (isRawSql(value)) {
+    return value.rawSql;
+  }
   return `'${String(value).replaceAll("\\", "\\\\").replaceAll("'", "''")}'`;
 };
+
+const epochMillis = (displayTime: string): RawSql => ({
+  rawSql: `TIMESTAMPDIFF(MICROSECOND, '${MYSQL_EPOCH_SHANGHAI}', '${normalizeDisplayTime(displayTime)}') DIV 1000`,
+});
+
+const normalizeDisplayTime = (displayTime: string) => {
+  const text = displayTime.trim().replace("T", " ");
+  const match = text.match(
+    /^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(?:\.(\d{1,6}))?$/,
+  );
+  if (!match) {
+    throw new Error(`Invalid Asia/Shanghai display datetime: ${displayTime}`);
+  }
+  return `${match[1]}.${(match[2] ?? "").padEnd(6, "0")}`;
+};
+
+const isRawSql = (value: unknown): value is RawSql =>
+  typeof value === "object" &&
+  value !== null &&
+  "rawSql" in value &&
+  typeof value.rawSql === "string";
 
 const assertUnique = (values: unknown[], name: string) => {
   const seen = new Set<unknown>();

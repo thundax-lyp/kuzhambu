@@ -56,7 +56,7 @@ services:
       KUZHAMBU_ADMIN_SERVER_CONTEXT_PATH: ${ADMIN_CONTEXT_PATH:-/kuzhambu-admin-api}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
       KUZHAMBU_DB_DRIVER: com.mysql.cj.jdbc.Driver
-      KUZHAMBU_DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-kuzhambu}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      KUZHAMBU_DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-kuzhambu}?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
       KUZHAMBU_DB_USERNAME: ${MYSQL_USERNAME:-kuzhambu}
       KUZHAMBU_DB_PASSWORD: ${MYSQL_PASSWORD:-kuzhambu}
       KUZHAMBU_REDIS_URI: redis://redis:6379/0
@@ -127,7 +127,7 @@ services:
       KUZHAMBU_PORTAL_SERVER_CONTEXT_PATH: ${PORTAL_CONTEXT_PATH:-/kuzhambu-api}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
       KUZHAMBU_DB_DRIVER: com.mysql.cj.jdbc.Driver
-      KUZHAMBU_DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-kuzhambu}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      KUZHAMBU_DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-kuzhambu}?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
       KUZHAMBU_DB_USERNAME: ${MYSQL_USERNAME:-kuzhambu}
       KUZHAMBU_DB_PASSWORD: ${MYSQL_PASSWORD:-kuzhambu}
       KUZHAMBU_REDIS_URI: redis://redis:6379/0

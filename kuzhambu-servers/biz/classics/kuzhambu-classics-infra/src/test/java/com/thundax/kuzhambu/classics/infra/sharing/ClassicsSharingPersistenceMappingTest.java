@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.infra.sharing;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
@@ -14,6 +16,9 @@ import com.thundax.kuzhambu.classics.infra.sharing.persistence.assembler.Classic
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareLinkDO;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareTargetDO;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.junit.jupiter.api.Test;
 
 class ClassicsSharingPersistenceMappingTest {
@@ -58,5 +63,37 @@ class ClassicsSharingPersistenceMappingTest {
         assertEquals(ClassicsContentType.SANCAI_ENTRY, target.getContentType());
         assertEquals(ClassicsShareTargetStatus.CONTENT_DELETED, target.getTargetStatus());
         assertEquals("CONTENT_DELETED", mappedDataObject.getTargetStatus());
+    }
+
+    @Test
+    void portalShareSqlShouldCompareExpiryWithBoundInstant() throws Exception {
+        Class<?> mapperClass = Class.forName(
+                "com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsShareTargetMapper");
+        Method pageMethod = mapperClass.getMethod(
+                "pagePortalShares",
+                com.baomidou.mybatisplus.extension.plugins.pagination.Page.class,
+                String.class,
+                String.class,
+                String.class,
+                String.class,
+                String.class,
+                String.class,
+                java.time.Instant.class,
+                java.time.Instant.class,
+                java.time.Instant.class);
+        Method topMethod =
+                mapperClass.getMethod("listTopPortalShares", String.class, int.class, java.time.Instant.class);
+        String pageSql =
+                String.join("\n", pageMethod.getAnnotation(Select.class).value());
+        String topSql = String.join("\n", topMethod.getAnnotation(Select.class).value());
+
+        assertFalse(pageSql.contains("expires_at &gt; now()"));
+        assertFalse(topSql.contains("expires_at &gt; now()"));
+        assertTrue(pageSql.contains("l.expires_at &gt; #{now}"));
+        assertTrue(topSql.contains("l.expires_at &gt; #{now}"));
+        assertEquals(
+                "now", pageMethod.getParameters()[9].getAnnotation(Param.class).value());
+        assertEquals(
+                "now", topMethod.getParameters()[2].getAnnotation(Param.class).value());
     }
 }
