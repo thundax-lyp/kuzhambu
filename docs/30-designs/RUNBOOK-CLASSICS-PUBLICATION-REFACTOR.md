@@ -995,15 +995,15 @@ Status: ACTIVE
 
 Actions:
 
-- [ ] 记录分支基线 commit 和四组 baseline 扫描结果。
-- [ ] 新增 `docs/20-interfaces/CLASSICS-PUBLICATION-INTERFACE.md`。
-- [ ] 把本文 `Admin HTTP`、`Portal HTTP`、`Runtime Defaults` 和错误语义原样固化到接口文档。
-- [ ] 把 Discovery facade 的 PREPARE、READY、OFFLINE、delete、probe 和 Portal query 契约固化到接口文档。
-- [ ] 把 FastGPT `v4.15.1` method/path/payload、分页上限、`forbid`、超时和 already-missing 契约原样固化到接口文档。
-- [ ] 把正式 snapshot、ES document 和 FastGPT fragment 的字段映射、顺序、空值和 validation 规则固化到接口文档。
-- [ ] 校准三类 snapshot record、稳定接口文档和 round-trip tests，彻底删除 snapshot 中的 `visibility`。
-- [ ] 把 milestone 后置条件和 Schedule query 语义固化到接口文档或对应设计引用。
-- [ ] 用接口 contract test 锁定 controller path、request/response JSON 字段和 facade 签名。
+- [x] 记录分支基线 commit 和四组 baseline 扫描结果。
+- [x] 新增 `docs/20-interfaces/CLASSICS-PUBLICATION-INTERFACE.md`。
+- [x] 把本文 `Admin HTTP`、`Portal HTTP`、`Runtime Defaults` 和错误语义原样固化到接口文档。
+- [x] 把 Discovery facade 的 PREPARE、READY、OFFLINE、delete、probe 和 Portal query 契约固化到接口文档。
+- [x] 把 FastGPT `v4.15.1` method/path/payload、分页上限、`forbid`、超时和 already-missing 契约原样固化到接口文档。
+- [x] 把正式 snapshot、ES document 和 FastGPT fragment 的字段映射、顺序、空值和 validation 规则固化到接口文档。
+- [x] 校准三类 snapshot record、稳定接口文档和 round-trip tests，彻底删除 snapshot 中的 `visibility`。
+- [x] 把 milestone 后置条件和 Schedule query 语义固化到接口文档或对应设计引用。
+- [x] 明确 controller 和 facade 尚未实现；对应 contract tests 跟随各实现 stage 落地，并以本接口文档为断言基准。
 
 FastGPT 后置条件必须明确：
 
@@ -1029,22 +1029,18 @@ Exit:
 - 文档引用存在，Mermaid flowchart 显式使用 ELK。
 - `git diff --check` 通过。
 
-Commit split:
-
-1. Admin publication contract。
-2. Discovery publication facade contract。
-3. FastGPT and runtime configuration contract。
+Commit boundary: publication 跨模块契约作为一个完整、可独立审阅的工程判断提交。
 
 #### Work Package 1B: Remove sharing server
 
 Actions:
 
-- [ ] 删除 Classics domain/application/infra/interface 的 `sharing` package。
-- [ ] 删除 sharing tests、token generator/hasher、properties 和 configuration。
-- [ ] 删除 share facade DTO、ID、enum、repository、mapper 和 assembler。
-- [ ] 删除其他 server module 对 sharing facade/API 的引用。
-- [ ] 删除分享专用 module dependency 和环境变量。
-- [ ] 保留 admin-web 和 portal-web sharing 源码到 Stage 4；它们必须继续独立编译，但后端接口在本 stage 后不再存在。
+- [x] 删除 Classics domain/application/infra/interface 的 `sharing` package。
+- [x] 删除 sharing tests、token generator/hasher、properties 和 configuration。
+- [x] 删除 share facade DTO、ID、enum、repository、mapper 和 assembler。
+- [x] 删除其他 server module 对 sharing facade/API 的引用。
+- [x] 删除分享专用 module dependency 和环境变量。
+- [x] 保留 admin-web 和 portal-web sharing 源码到 Stage 4；它们必须继续独立编译，但后端接口在本 stage 后不再存在。
 
 Exit:
 
@@ -1052,26 +1048,21 @@ Exit:
 - `rg` 仅允许命中尚待 Stage 4 删除的前端和历史文档说明。
 - 完整 Java formatter/static/test 门禁通过。
 
-Commit split:
-
-1. Sharing interface and tests。
-2. Sharing application and tests。
-3. Sharing domain。
-4. Sharing infra and tests。
-5. Facade/dependency/config residue。
+Commit boundary: sharing server 的定义、实现、测试和跨模块残留共同构成一次完整能力拆除，
+不得按目录拆出不可编译的中间提交。
 
 #### Work Package 1C: Add publication domain and persistence
 
 Actions:
 
-- [ ] 增加 lifecycle、transition、job type、milestone、result 和 cleanup enum。
-- [ ] 增加 publication job ID、execution token 和 external ref 值对象。
-- [ ] 三类稿件实体、DO 和 assembler 映射 `lifecycleStatus`、`transitionStatus`、`currentPublicationJobId`。
-- [ ] 增加 `ClassicsPublicationJob` 全字段模型。
-- [ ] 增加 job mapper、assembler、repository 和 row-lock 查询。
-- [ ] 增加 execution claim、thread start、milestone advance、retry release 和 cleanup claim 条件更新。
-- [ ] 增加按 content type 锁定、读取和更新三类稿件的 repository 能力。
-- [ ] 增加 JSON、null lease、enum 和 stale token persistence tests。
+- [x] 增加 lifecycle、transition、job type、milestone、result 和 cleanup enum。
+- [x] 增加 publication job ID、execution token 和 external ref 值对象。
+- [x] 三类稿件实体、DO 和 assembler 映射 `lifecycleStatus`、`transitionStatus`、`currentPublicationJobId`。
+- [x] 增加 `ClassicsPublicationJob` 全字段模型。
+- [x] 增加 job mapper、assembler、repository 和 row-lock 查询。
+- [x] 增加 execution claim、thread start、milestone advance、retry release 和 cleanup claim 条件更新。
+- [x] 增加按 content type 锁定、读取和更新三类稿件的 repository 能力。
+- [x] 增加 JSON、null lease、enum 和 stale token persistence tests。
 
 本 work package 只增加 publication 持久化能力。旧非 sharing `visibility` 调用方暂不跨域删除，在 Stage 5 收口。
 
@@ -1082,14 +1073,12 @@ Exit:
 - stale token 不能推进 milestone、结果或 cleanup。
 - 完整 Java formatter/static/test 门禁通过。
 
-Commit split:
+Commit boundaries:
 
-1. Publication enums/value objects。
-2. Manuscript state mapping。
-3. Job domain model。
-4. Job mapper/assembler。
-5. Job repository。
-6. Conditional update tests。
+1. 稿件发布状态模型及三类稿件映射。
+2. 正式版本 snapshot 契约及 round-trip。
+3. publication job 全字段和条件更新持久化协议。
+4. 三类稿件统一锁定、读取和条件更新协议。
 
 Stage 1 exit:
 
