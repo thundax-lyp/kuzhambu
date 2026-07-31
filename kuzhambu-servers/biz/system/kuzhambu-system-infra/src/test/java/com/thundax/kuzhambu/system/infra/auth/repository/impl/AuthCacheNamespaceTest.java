@@ -12,15 +12,15 @@ class AuthCacheNamespaceTest {
     @Test
     void javaTimeRepositoriesShouldUseInstantCacheContracts() throws Exception {
         assertCacheContract(
-                PrincipalAccessTokenRepositoryImpl.class, "PRINCIPAL_ACCESS_TOKEN_", "issuedAt", "expireAt");
+                PrincipalAccessTokenRepositoryImpl.class, "PRINCIPAL_ACCESS_TOKEN_V2_", "issuedAt", "expireAt");
         assertCacheContract(
                 PrincipalAuthSessionRepositoryImpl.class,
-                "PRINCIPAL_AUTH_SESSION_",
+                "PRINCIPAL_AUTH_SESSION_V2_",
                 "issuedAt",
                 "lastAccessTime",
                 "expireAt");
         assertCacheContract(
-                PrincipalRefreshTokenRepositoryImpl.class, "PRINCIPAL_REFRESH_TOKEN_", "issuedAt", "expireAt");
+                PrincipalRefreshTokenRepositoryImpl.class, "PRINCIPAL_REFRESH_TOKEN_V2_", "issuedAt", "expireAt");
     }
 
     private void assertCacheContract(Class<?> repositoryType, String cacheSuffix, String... timeFields)

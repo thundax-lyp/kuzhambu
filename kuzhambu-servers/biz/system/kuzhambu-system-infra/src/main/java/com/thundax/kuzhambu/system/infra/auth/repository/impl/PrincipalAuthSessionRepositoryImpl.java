@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
 @Profile("!test")
 public class PrincipalAuthSessionRepositoryImpl implements PrincipalAuthSessionRepository {
 
-    private static final String CACHE_SECTION = KuzhambuCacheNames.PREFIX + "PRINCIPAL_AUTH_SESSION_";
+    private static final String CACHE_SECTION = KuzhambuCacheNames.PREFIX + "PRINCIPAL_AUTH_SESSION_V2_";
     private static final String SESSION_PREFIX = CACHE_SECTION + "SESSION_";
 
     @CreateCache(name = CACHE_SECTION, cacheType = CacheType.BOTH)
