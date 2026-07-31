@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPubl
 public record ClassicsPublicationContentState(
         ClassicsContentType contentType,
         ClassicsContentId contentId,
+        String contentTitle,
         ClassicsPublicationLifecycleStatus lifecycleStatus,
         ClassicsPublicationTransitionStatus transitionStatus,
         ClassicsPublicationJobId currentJobId) {}

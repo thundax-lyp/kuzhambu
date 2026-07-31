@@ -425,16 +425,20 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
         }
         String lifecycleStatus;
         String transitionStatus;
+        String contentTitle;
         Long currentJobId;
         if (dataObject instanceof SancaiEntryDO entry) {
+            contentTitle = entry.getTitle();
             lifecycleStatus = entry.getLifecycleStatus();
             transitionStatus = entry.getTransitionStatus();
             currentJobId = entry.getCurrentPublicationJobId();
         } else if (dataObject instanceof WangqiDocumentDO document) {
+            contentTitle = document.getTitle();
             lifecycleStatus = document.getLifecycleStatus();
             transitionStatus = document.getTransitionStatus();
             currentJobId = document.getCurrentPublicationJobId();
         } else if (dataObject instanceof MingCustomsEntryDO entry) {
+            contentTitle = entry.getTitle();
             lifecycleStatus = entry.getLifecycleStatus();
             transitionStatus = entry.getTransitionStatus();
             currentJobId = entry.getCurrentPublicationJobId();
@@ -444,6 +448,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
         return new ClassicsPublicationContentState(
                 contentType,
                 contentId,
+                contentTitle,
                 ClassicsPublicationLifecycleStatus.valueOf(lifecycleStatus),
                 ClassicsPublicationTransitionStatus.valueOf(transitionStatus),
                 ClassicsPublicationJobIdCodec.toDomain(currentJobId));

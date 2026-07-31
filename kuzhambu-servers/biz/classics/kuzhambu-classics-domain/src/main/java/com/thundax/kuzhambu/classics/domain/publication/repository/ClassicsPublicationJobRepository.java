@@ -4,13 +4,17 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
+import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobFilter;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
 
 public interface ClassicsPublicationJobRepository {
     ClassicsPublicationJobId insert(ClassicsPublicationJob job);
 
     ClassicsPublicationJob getById(ClassicsPublicationJobId id);
+
+    PageResult<ClassicsPublicationJob> page(ClassicsPublicationJobFilter filter, int pageNo, int pageSize);
 
     ClassicsPublicationJob lockByContent(ClassicsContentType contentType, Long contentId);
 

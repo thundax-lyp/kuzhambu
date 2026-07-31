@@ -1,17 +1,23 @@
 package com.thundax.kuzhambu.classics.infra.publication.repository.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationExecutionTokenCodec;
 import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
+import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobFilter;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.classics.infra.publication.persistence.assembler.ClassicsPublicationPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.publication.persistence.dataobject.ClassicsPublicationJobDO;
 import com.thundax.kuzhambu.classics.infra.publication.persistence.mapper.ClassicsPublicationJobMapper;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -33,6 +39,42 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
     public ClassicsPublicationJob getById(ClassicsPublicationJobId id) {
         return ClassicsPublicationPersistenceAssembler.toDomain(
                 mapper.selectById(ClassicsPublicationJobIdCodec.toValue(id)));
+    }
+
+    @Override
+    public PageResult<ClassicsPublicationJob> page(ClassicsPublicationJobFilter filter, int pageNo, int pageSize) {
+        LambdaQueryWrapper<ClassicsPublicationJobDO> wrapper = new LambdaQueryWrapper<>();
+        if (filter != null) {
+            wrapper.eq(
+                            filter.jobType() != null,
+                            ClassicsPublicationJobDO::getJobType,
+                            filter.jobType() == null ? null : filter.jobType().name())
+                    .eq(
+                            filter.resultStatus() != null,
+                            ClassicsPublicationJobDO::getJobResultStatus,
+                            filter.resultStatus() == null
+                                    ? null
+                                    : filter.resultStatus().name())
+                    .eq(
+                            filter.contentType() != null,
+                            ClassicsPublicationJobDO::getContentType,
+                            filter.contentType() == null
+                                    ? null
+                                    : filter.contentType().name())
+                    .and(StringUtils.isNotBlank(filter.keyword()), query -> query.like(
+                                    ClassicsPublicationJobDO::getContentTitleSnapshot,
+                                    filter.keyword().trim())
+                            .or()
+                            .like(
+                                    ClassicsPublicationJobDO::getContentId,
+                                    filter.keyword().trim()));
+        }
+        wrapper.orderByDesc(ClassicsPublicationJobDO::getRequestedAt).orderByDesc(ClassicsPublicationJobDO::getId);
+        Page<ClassicsPublicationJobDO> dataPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
+        List<ClassicsPublicationJob> records = dataPage.getRecords().stream()
+                .map(ClassicsPublicationPersistenceAssembler::toDomain)
+                .toList();
+        return PageResult.of((int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), records);
     }
 
     @Override
