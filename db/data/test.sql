@@ -34,7 +34,8 @@ WHERE `id` BETWEEN 990000000001 AND 990000000099;
 
 INSERT INTO `classics_wangqi_document` (
     `id`, `title`, `summary`, `content_format`, `content`, `document_time`, `storage_object_id`,
-    `visibility`, `current_version_id`, `current_version_no`, `current_versioned_at`, `content_updated_at`
+    `lifecycle_status`, `transition_status`, `current_publication_job_id`,
+    `current_version_id`, `current_version_no`, `current_versioned_at`, `content_updated_at`
 ) VALUES
     (
         990000000001,
@@ -44,7 +45,9 @@ INSERT INTO `classics_wangqi_document` (
         '## 王圻 AI 精修样例\n\n王圻归里后继续整理文献，关注地方水利、乡里治理与文献编纂。梅花源引水绕村，既关乎农田灌溉，也成为其晚年生活与著述的空间线索。',
         -12117888343000,
         NULL,
-        'PUBLIC',
+        'DRAFT',
+        'NONE',
+        NULL,
         990000000001,
         1,
         TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:00:00.000000') DIV 1000,
@@ -57,7 +60,9 @@ ON DUPLICATE KEY UPDATE
     `content` = VALUES(`content`),
     `document_time` = VALUES(`document_time`),
     `storage_object_id` = VALUES(`storage_object_id`),
-    `visibility` = VALUES(`visibility`),
+    `lifecycle_status` = VALUES(`lifecycle_status`),
+    `transition_status` = VALUES(`transition_status`),
+    `current_publication_job_id` = VALUES(`current_publication_job_id`),
     `current_version_id` = VALUES(`current_version_id`),
     `current_version_no` = VALUES(`current_version_no`),
     `current_versioned_at` = VALUES(`current_versioned_at`),
@@ -93,7 +98,7 @@ INSERT INTO `classics_content_version` (
         990000000001,
         1,
         TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:00:00.000000') DIV 1000,
-        '{"title":"测试：王圻 AI 精修样例","summary":"王圻归里后整理文献，并以梅花源为地方水利与文献整理的观察对象。","contentFormat":"MARKDOWN","visibility":"PUBLIC"}',
+        '{"title":"测试：王圻 AI 精修样例","summary":"王圻归里后整理文献，并以梅花源为地方水利与文献整理的观察对象。","contentFormat":"MARKDOWN","lifecycleStatus":"DRAFT"}',
         'TEST_SEED',
         '测试数据：王圻 AI 精修样例初始版本'
     )

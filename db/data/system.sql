@@ -107,7 +107,7 @@ INSERT INTO `system_menu` (
     (3, 2, 4, 5, '三才图会', 'classics:sancai:view,classics:sancai:edit,classics:sancai:delete', 95, 'VISIBLE', '{"icon":"dictionaries"}', '/classics/sancai', '_self', '三才图会知识库'),
     (4, 2, 6, 7, '王圻文档', 'classics:wangqi:view,classics:wangqi:edit,classics:wangqi:delete', 90, 'VISIBLE', '{"icon":"dictionaries"}', '/classics/wangqi', '_self', '王圻文档知识库'),
     (5, 2, 8, 9, '明代习俗', 'classics:mingcustoms:view,classics:mingcustoms:edit,classics:mingcustoms:delete', 85, 'VISIBLE', '{"icon":"dictionaries"}', '/classics/ming-customs', '_self', '明代习俗知识库'),
-    (7, 2, 10, 11, '分享管理', 'classics:sharing:view,classics:sharing:edit', 75, 'VISIBLE', '{"icon":"open-api"}', '/classics/shares', '_self', '古籍内容分享管理'),
+    (7, 2, 10, 11, '发布任务', 'classics:publication:view', 75, 'VISIBLE', '{"icon":"submissions"}', '/classics/publication-jobs', '_self', '发布和下线任务只读进度与失败诊断'),
     (8, NULL, 13, 24, 'AI 管理', 'ai', 90, 'VISIBLE', '{"icon":"system"}', '/ai', '_self', 'AI 配置和调用治理根菜单'),
     (9, 8, 14, 15, '模型配置', 'ai:config:view,ai:config:edit', 85, 'VISIBLE', '{"icon":"ai-model"}', '/ai/models', '_self', 'AI 模型注册、启停和检测'),
     (10, 8, 16, 17, '提示词', 'ai:prompt:view,ai:prompt:edit', 75, 'VISIBLE', '{"icon":"ai-prompt"}', '/ai/prompts', '_self', 'AI 提示词模板和版本'),

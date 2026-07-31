@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.infra.content.persistence.dataobject;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.Instant;
@@ -27,6 +28,9 @@ public class ClassicsContentExportJobDO {
     private Long storageObjectId;
     private Integer itemCount;
     private Integer assetCount;
+
+    @TableField("lifecycle_risk_status")
     private String visibilityRiskStatus;
+
     private Boolean contentChanged;
 }
