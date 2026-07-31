@@ -816,7 +816,7 @@ flowchart TD
 | Stage | Status | Expected files | Gate |
 | --- | --- | ---: | --- |
 | 1. Foundation | `COMPLETE` | 100-170 | contracts/static checks and full Java checks |
-| 2. External systems and job core | `PENDING` | 80-150 | full Java checks |
+| 2. External systems and job core | `ACTIVE` | 80-150 | full Java checks |
 | 3. Runtime and Admin | `PENDING` | 100-180 | full Java and admin-web checks |
 | 4. Portal cutover and sharing frontend removal | `PENDING` | 50-100 | full Java/frontend checks and sharing residue scans |
 | 5. Publication visibility and legacy MQ removal | `PENDING` | 90-170 | full Java/frontend checks and legacy residue scans |
@@ -1001,7 +1001,16 @@ Status: COMPLETE
 
 ### Stage 2: External systems and job core
 
-Status: PENDING
+Status: ACTIVE
+
+Start baseline:
+
+- Branch: `feature/classics-publication-stage-2-job-core`
+- Base: `origin/main` at `d6af806b0`
+- Scan: sharing server `0`, sharing apps `23`, legacy Classics search MQ `18`,
+  publication/visibility references `183`
+- File budget: `80-150`; Stage 2 spans Discovery, common FastGPT client and Classics
+  publication application code, so the existing cross-module budget remains applicable.
 
 该 stage 建立 ES/FastGPT 同步端口，并实现 job 创建和全部 milestone step；不启用 Schedule 或 Admin UI。
 
