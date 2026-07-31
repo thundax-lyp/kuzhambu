@@ -19,7 +19,6 @@ public class ClassicsReportSummaryResult {
     private Long translatedContentCount;
     private Long imageReadyContentCount;
     private Long visualAssetReadyContentCount;
-    private Long shareVisitCount;
     private List<TopContentResult> topContents;
     private List<ContentGrowthPointResult> contentGrowthSeries;
 

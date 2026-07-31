@@ -4,7 +4,7 @@
 
 本文档定义 Java 业务域与 Python workers 之间的内部文件渲染接口。
 
-Render 接口只表达“业务域请求 workers 基于已授权内容快照生成一次临时文件产物”。权限、业务状态、私有内容风险确认、导出记录、文件对象创建、文件引用、业务审计和任务状态仍归 Java servers。
+Render 接口只表达“业务域请求 workers 基于已授权内容快照生成一次临时文件产物”。权限、业务状态、非发布内容风险确认、导出记录、文件对象创建、文件引用、业务审计和任务状态仍归 Java servers。
 
 ## Transport
 
@@ -254,8 +254,8 @@ data: {"eventId":"evt_0100","requestId":"req_20260601_000101","traceId":"trace_2
 
 - 用户权限校验。
 - 导出范围确认。
-- 内容可见性过滤。
-- 私有内容风险二次确认。
+- 内容生命周期过滤。
+- 草稿和下线内容风险二次确认。
 - 导出记录创建或任务状态准备。
 - 内容快照组装。
 
@@ -364,13 +364,13 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000101","traceId":"trace_2
 - workers 不根据用户身份改变输出。
 - workers 不回调业务域写入导出记录、报表记录或文件对象。
 - workers 不保存 `input.payload`、生成文件或临时文件。
-- workers 不得把完整业务输入、私有内容全文、签名、临时文件路径写入日志、错误或响应。
-- Java servers 必须在调用 workers 前完成用户认证、权限、业务状态和内容可见性校验。
+- workers 不得把完整业务输入、非发布内容全文、签名、临时文件路径写入日志、错误或响应。
+- Java servers 必须在调用 workers 前完成用户认证、权限、业务状态和内容生命周期校验。
 - workers 的内部服务认证只证明调用方服务可信，不证明最终用户有业务权限。
 
 ## Related Documents
 
 - [WORKERS-REQUIREMENTS.md](../10-requirements/WORKERS-REQUIREMENTS.md)：workers 无状态执行、render 能力和跨域边界。
 - [WORKERS-DESIGN.md](../30-designs/WORKERS-DESIGN.md)：workers 工程结构和 render 模块设计。
-- [CLASSICS-REQUIREMENTS.md](../10-requirements/CLASSICS-REQUIREMENTS.md)：Classics 导出、portal 展示和分享边界。
+- [CLASSICS-REQUIREMENTS.md](../10-requirements/CLASSICS-REQUIREMENTS.md)：Classics 导出和 portal 展示边界。
 - [OPERATIONS-REQUIREMENTS.md](../10-requirements/OPERATIONS-REQUIREMENTS.md)：Operations 报表和运维统计边界。

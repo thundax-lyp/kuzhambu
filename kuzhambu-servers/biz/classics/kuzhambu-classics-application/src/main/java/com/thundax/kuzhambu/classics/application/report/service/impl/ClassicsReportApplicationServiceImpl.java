@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.classics.application.report.service.impl;
 
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult;
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult.ContentGrowthPointResult;
-import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult.TopContentResult;
 import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
@@ -13,9 +12,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTransl
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
-import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
-import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
-import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
@@ -35,23 +31,19 @@ import org.springframework.stereotype.Service;
 @BizExceptionBoundary
 public class ClassicsReportApplicationServiceImpl implements ClassicsReportApplicationService {
 
-    private static final int SHARE_LINK_SCAN_SIZE = 10_000;
     private static final ZoneId REPORT_ZONE = ZoneId.of("Asia/Shanghai");
 
     private final SancaiRepository sancaiRepository;
     private final WangqiDocumentRepository wangqiDocumentRepository;
     private final MingCustomsRepository mingCustomsRepository;
-    private final ClassicsSharingRepository classicsSharingRepository;
 
     public ClassicsReportApplicationServiceImpl(
             SancaiRepository sancaiRepository,
             WangqiDocumentRepository wangqiDocumentRepository,
-            MingCustomsRepository mingCustomsRepository,
-            ClassicsSharingRepository classicsSharingRepository) {
+            MingCustomsRepository mingCustomsRepository) {
         this.sancaiRepository = sancaiRepository;
         this.wangqiDocumentRepository = wangqiDocumentRepository;
         this.mingCustomsRepository = mingCustomsRepository;
-        this.classicsSharingRepository = classicsSharingRepository;
     }
 
     @Override
@@ -81,14 +73,6 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
         long visualAssetReadyContentCount = publicSancaiEntries.stream()
                 .filter(entry -> entry != null && entry.getVisualAssetStatus() == SancaiEntryVisualAssetStatus.READY)
                 .count();
-        long shareVisitCount =
-                classicsSharingRepository
-                        .pageLinks(null, ClassicsShareVisibility.PUBLIC.value(), 1, SHARE_LINK_SCAN_SIZE)
-                        .getRecords()
-                        .stream()
-                        .mapToLong(ClassicsShareLink::getAccessCount)
-                        .sum();
-
         List<Instant> growthDates = new ArrayList<>();
         publicSancaiEntries.stream().map(SancaiEntry::getContentUpdatedAt).forEach(growthDates::add);
         publicWangqiDocuments.stream().map(WangqiDocument::getContentUpdatedAt).forEach(growthDates::add);
@@ -103,18 +87,7 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
                 translatedContentCount,
                 imageReadyContentCount,
                 visualAssetReadyContentCount,
-                shareVisitCount,
-                classicsSharingRepository.listTopPortalShares(ClassicsShareVisibility.PUBLIC.value(), 10).stream()
-                        .map(item -> new TopContentResult(
-                                item.getContentId() == null
-                                        ? null
-                                        : item.getContentId().value(),
-                                item.getContentType() == null
-                                        ? null
-                                        : item.getContentType().value(),
-                                item.getTitleSnapshot(),
-                                item.getAccessCount()))
-                        .toList(),
+                List.of(),
                 buildGrowthSeries(periodStart, periodEnd, bucketType, growthDates));
     }
 

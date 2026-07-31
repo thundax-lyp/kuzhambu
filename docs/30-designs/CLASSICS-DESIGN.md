@@ -2,9 +2,9 @@
 
 ## Purpose
 
-本文档定义 Classics 古籍域数据设计，覆盖三才图会、王圻文档、明代习俗、内容标签、问答对、版本、导出、portal 在线展示和分享。
+本文档定义 Classics 古籍域数据设计，覆盖三才图会、王圻文档、明代习俗、内容标签、问答对、版本、导出和 portal 在线展示。
 
-设计约束：每个持久化字段必须能追溯到原始需求中的内容展示、筛选、状态、版本、导出、分享或访问统计需求；不从既有错误 SQL 或初始化数据反推字段。
+设计约束：每个持久化字段必须能追溯到原始需求中的内容展示、筛选、状态、版本、导出或访问统计需求；不从既有错误 SQL 或初始化数据反推字段。
 
 ## Business Boundary
 
@@ -22,7 +22,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 
 - 排序字段统一为 `priority int`，并建立单列唯一约束。
 - `priority` 只作为单表内全局排序值，不参与普通 KEY 或组合 KEY。
-- 状态、类型、格式、可见性等业务枚举统一使用 `varchar`。
+- 状态、类型、格式等业务枚举统一使用 `varchar`。
 - 只有纯 yes/no 技术标志使用 `tinyint(1)`；业务状态、业务类型、业务快照统一使用 `varchar`。
 - 绝对时间点使用 `BIGINT epoch_ms`。
 - 默认不设置数据库外键。
@@ -59,7 +59,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 
 ### classics_sancai_entry
 
-需求来源：三才图会条目 CRUD、编辑标题/门类/卷/原文/译文/标签、状态展示、筛选、搜索、生命周期、公开私有可见性。
+需求来源：三才图会条目 CRUD、编辑标题/门类/卷/原文/译文/标签、状态展示、筛选、搜索、草稿/发布/下线生命周期。
 
 | Column | Type | Key | Requirement Source |
 | --- | --- | --- | --- |
@@ -69,8 +69,9 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `original_text` | `longtext` |  | 原文展示和编辑 |
 | `translation_text` | `longtext` |  | 译文展示和编辑 |
 | `summary` | `text` |  | 摘要内联查看、编辑和保存 |
-| `lifecycle_status` | `varchar(16)` | KEY(lifecycle_status, visibility) | 草稿、发布、下线生命周期 |
-| `visibility` | `varchar(16)` | KEY(lifecycle_status, visibility) | 公开和私有可见性 |
+| `lifecycle_status` | `varchar(16)` | KEY | 草稿、发布、下线、错误最终生命周期 |
+| `transition_status` | `varchar(24)` | KEY | 发布或下线过程状态，例如 `NONE`、`PUBLISHING`、`OFFLINING` |
+| `current_publication_job_id` | `bigint` | KEY | 当前发布或下线任务归属和进度跳转，不作为独立稿件锁 |
 | `translation_status` | `varchar(16)` | KEY(translation_status, image_status, visual_asset_status, refinement_status) | 按翻译状态筛选 |
 | `image_status` | `varchar(16)` | KEY(translation_status, image_status, visual_asset_status, refinement_status) | 按配图状态筛选 |
 | `visual_asset_status` | `varchar(16)` | KEY(translation_status, image_status, visual_asset_status, refinement_status) | 按视觉资产状态筛选 |
@@ -81,7 +82,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `current_versioned_at` | `BIGINT epoch_ms` |  | 当前正式内容版本生成时间 |
 | `content_updated_at` | `BIGINT epoch_ms` |  | 内容语义更新时间，用于判断未版本化变更 |
 
-约束：`id` 主键；`priority` 唯一。索引：`current_version_id`、`volume_id`、`(lifecycle_status, visibility)`、`(translation_status, image_status, visual_asset_status, refinement_status)`。同卷编辑保留原 `priority`；跨卷迁移使用当前全局最大 `priority + 1`，使条目进入目标卷列表末尾。
+约束：`id` 主键；`priority` 唯一。索引：`current_version_id`、`volume_id`、`lifecycle_status`、`transition_status`、`current_publication_job_id`、`(translation_status, image_status, visual_asset_status, refinement_status)`。同卷编辑保留原 `priority`；跨卷迁移使用当前全局最大 `priority + 1`，使条目进入目标卷列表末尾。
 
 ### classics_sancai_entry_draft
 
@@ -136,13 +137,13 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 
 ### classics_sancai_portal_view
 
-需求来源：三才图会 portal 在线展示。portal 直接读取公开且已发布的三才图会门类、卷和条目，不生成静态展示包，不维护展示包任务记录。
+本节定义三才图会 Portal 逻辑读模型，不对应数据库表或数据库 view。Portal 在线展示不生成静态展示包，也不维护展示包任务记录。
 
-约束：portal 展示数据来自 `classics_sancai_category`、`classics_sancai_volume`、`classics_sancai_entry`、`classics_sancai_entry_image` 和视觉资产表；展示查询必须过滤 `lifecycle_status = PUBLISHED` 且 `visibility = PUBLIC`。
+约束：Portal 条目列表和检索入口必须查询 ES 中 `publicationStatus = READY` 且 `deleted = false` 的文档；命中后通过 Classics application 只读能力组装门类、卷、条目、图片和视觉资产详情，不允许 portal-web 直接读取 Classics 数据表，也不再按主库 `lifecycle_status` 二次决定列表可见性。Portal 详情接口必须先通过 Discovery 校验同一内容仍满足 ES READY 查询条件，禁止仅凭 `contentType + contentId` 绕过 ES 可见性读取详情。
 
 ### classics_wangqi_document
 
-需求来源：王圻文档 CRUD、原始文档 Storage 对象关联替换、全文阅读、安全展示、摘要标签问答展示、文档搜索、时间线、公开私有可见性、版本。
+需求来源：王圻文档 CRUD、原始文档 Storage 对象关联替换、全文阅读、安全展示、摘要标签问答展示、文档搜索、时间线、草稿/发布/下线生命周期、版本。
 
 | Column | Type | Key | Requirement Source |
 | --- | --- | --- | --- |
@@ -153,36 +154,40 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `content` | `longtext` |  | 全文阅读和编辑 |
 | `document_time` | `BIGINT epoch_ms` | KEY | 时间线浏览 |
 | `storage_object_id` | `bigint` | KEY | 原始文档 Storage 对象关联和替换 |
-| `visibility` | `varchar(16)` | KEY | 公开和私有可见性 |
+| `lifecycle_status` | `varchar(16)` | KEY | 草稿、发布、下线、错误最终生命周期 |
+| `transition_status` | `varchar(24)` | KEY | 发布或下线过程状态，例如 `NONE`、`PUBLISHING`、`OFFLINING` |
+| `current_publication_job_id` | `bigint` | KEY | 当前发布或下线任务归属和进度跳转，不作为独立稿件锁 |
 | `current_version_id` | `bigint` | KEY | 当前正式内容版本标定 |
 | `current_version_no` | `int` |  | 当前正式内容版本号展示和差异判断 |
 | `current_versioned_at` | `BIGINT epoch_ms` |  | 当前正式内容版本生成时间 |
 | `content_updated_at` | `BIGINT epoch_ms` |  | 内容语义更新时间，用于判断未版本化变更 |
 
-约束：`id` 主键。索引：`current_version_id`、`document_time`、`visibility`、`storage_object_id`。
+约束：`id` 主键。索引：`current_version_id`、`document_time`、`lifecycle_status`、`transition_status`、`current_publication_job_id`、`storage_object_id`。
 
 ### classics_ming_customs_entry
 
-需求来源：明代习俗 CRUD、概述、正文、分类、关键词、标签、原文摘录展示、Markdown 安全渲染、列表、搜索、详情弹窗、公开私有可见性、版本。
+需求来源：明代习俗 CRUD、概述、正文、分类、关键词、标签、原文摘录展示、Markdown 安全渲染、列表、搜索、详情弹窗、草稿/发布/下线生命周期、版本。
 
 | Column | Type | Key | Requirement Source |
 | --- | --- | --- | --- |
 | `id` | `bigint` | PK, AUTO_INCREMENT | 习俗条目实体身份 |
 | `title` | `varchar(255)` |  | 标题展示和搜索 |
-| `category` | `varchar(128)` | KEY(category, visibility) | 分类展示和导出范围 |
+| `category` | `varchar(128)` | KEY(category, lifecycle_status) | 分类展示和导出范围 |
 | `chapter` | `varchar(128)` |  | 章节展示 |
 | `section` | `varchar(128)` |  | 节展示 |
 | `summary` | `text` |  | 概述和摘要展示 |
 | `content_format` | `varchar(16)` |  | Markdown 安全渲染 |
 | `content` | `longtext` |  | 正文展示和编辑 |
 | `original_excerpts` | `longtext` |  | 原文摘录展示 |
-| `visibility` | `varchar(16)` | KEY(category, visibility), KEY | 公开和私有可见性 |
+| `lifecycle_status` | `varchar(16)` | KEY(category, lifecycle_status), KEY | 草稿、发布、下线、错误最终生命周期 |
+| `transition_status` | `varchar(24)` | KEY | 发布或下线过程状态，例如 `NONE`、`PUBLISHING`、`OFFLINING` |
+| `current_publication_job_id` | `bigint` | KEY | 当前发布或下线任务归属和进度跳转，不作为独立稿件锁 |
 | `current_version_id` | `bigint` | KEY | 当前正式内容版本标定 |
 | `current_version_no` | `int` |  | 当前正式内容版本号展示和差异判断 |
 | `current_versioned_at` | `BIGINT epoch_ms` |  | 当前正式内容版本生成时间 |
 | `content_updated_at` | `BIGINT epoch_ms` |  | 内容语义更新时间，用于判断未版本化变更 |
 
-约束：`id` 主键。索引：`current_version_id`、`(category, visibility)`、`visibility`。
+约束：`id` 主键。索引：`current_version_id`、`(category, lifecycle_status)`、`lifecycle_status`、`transition_status`、`current_publication_job_id`。
 
 ### classics_ming_customs_keyword
 
@@ -258,9 +263,51 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 
 主内容版本标定规则：`classics_sancai_entry`、`classics_wangqi_document`、`classics_ming_customs_entry` 统一使用 `current_version_id/current_version_no/current_versioned_at/content_updated_at` 表达当前正式版本和内容语义更新时间。正式版本只由用户确认动作产生，例如手动保存、AI 应用和历史恢复；自动保存草稿、排序、状态刷新、访问统计等非内容确认动作不得生成 `classics_content_version`。
 
+### classics_publication_job
+
+需求来源：发布和下线是跨 ES 和 FastGPT 的异步状态机操作，需要专门只读菜单入口查看状态、端侧引用和失败诊断。一个发布或下线任务只处理一个稿件；批量操作创建多个独立任务；每个稿件只保留最新一条任务。失败任务不在任务菜单重试，用户只能从稿件页面重新发起新任务。
+
+| Column | Type | Key | Requirement Source |
+| --- | --- | --- | --- |
+| `id` | `bigint` | PK, AUTO_INCREMENT | 发布任务身份 |
+| `job_type` | `varchar(16)` | KEY(job_type, job_result_status) | 任务类型，例如 `PUBLISH`、`OFFLINE` |
+| `content_type` | `varchar(32)` | UK(content_type, content_id) | 内容类型 |
+| `content_id` | `bigint` | UK(content_type, content_id) | 内容身份 |
+| `content_title_snapshot` | `varchar(255)` |  | 发起任务时的稿件标题快照，稿件删除后继续用于任务展示 |
+| `content_deleted_at` | `BIGINT epoch_ms` | KEY | 稿件被业务正常删除的时间；非空时作为已删除稿件端侧清理墓碑 |
+| `source_lifecycle_status` | `varchar(16)` |  | 发起任务时的生命周期 |
+| `target_lifecycle_status` | `varchar(16)` |  | 目标生命周期，发布为 `PUBLISHED`，下线为 `OFFLINE` |
+| `content_version_id` | `bigint` |  | 发布绑定的正式版本快照 |
+| `content_version_no` | `int` |  | 发布绑定的正式版本号 |
+| `job_status` | `varchar(32)` | KEY(job_result_status, job_status, expires_at), KEY(job_result_status, job_status, next_retry_at) | 最后一个成功完成的状态机里程碑，不承载 `FAILED` 或 `SUCCEEDED` |
+| `job_result_status` | `varchar(16)` | KEY(job_type, job_result_status), KEY(job_result_status, job_status, expires_at), KEY(job_result_status, job_status, next_retry_at) | 整体任务结果，例如 `RUNNING`、`FAILED`、`SUCCEEDED` |
+| `execution_token` | `varchar(64)` |  | 当前切片执行令牌；每次抢占生成新值，使过期线程不能推进任务 |
+| `expires_at` | `BIGINT epoch_ms` | KEY(job_status, expires_at) | 当前切片执行过期时间 |
+| `next_retry_at` | `BIGINT epoch_ms` | KEY(job_status, next_retry_at) | `nextStep(job_status)` 失败后的下次重试时间 |
+| `attempt_count` | `int` |  | `nextStep(job_status)` 已尝试次数，包含初次执行 |
+| `max_attempts` | `int` |  | `nextStep(job_status)` 最大尝试次数，默认 `4`，即初次执行后最多重试 3 次 |
+| `es_document_id` | `varchar(256)` |  | ES 文档 ID |
+| `fastgpt_collection_id` | `varchar(256)` |  | FastGPT 稿件 collection ID |
+| `fastgpt_data_ids_json` | `json` |  | 可选诊断字段；仅保存当前 job 能取得的 FastGPT data ID，不作为进度完成条件或历史碎片清理清单 |
+| `es_cleanup_status` | `varchar(16)` | KEY(es_cleanup_status, es_cleanup_expires_at) | ES 残留清理状态，例如 `NONE`、`PENDING`、`RUNNING`、`FAILED`、`SUCCEEDED` |
+| `es_cleanup_token` | `varchar(64)` |  | ES 清理执行令牌 |
+| `es_cleanup_expires_at` | `BIGINT epoch_ms` | KEY(es_cleanup_status, es_cleanup_expires_at) | ES 清理租约过期时间 |
+| `fastgpt_cleanup_status` | `varchar(16)` | KEY(fastgpt_cleanup_status, fastgpt_cleanup_expires_at) | FastGPT 残留清理状态，例如 `NONE`、`PENDING`、`RUNNING`、`FAILED`、`SUCCEEDED` |
+| `fastgpt_cleanup_token` | `varchar(64)` |  | FastGPT 清理执行令牌 |
+| `fastgpt_cleanup_expires_at` | `BIGINT epoch_ms` | KEY(fastgpt_cleanup_status, fastgpt_cleanup_expires_at) | FastGPT 清理租约过期时间 |
+| `detail_json` | `json` |  | 端侧响应摘要、探测结果和清理信息 |
+| `requested_at` | `BIGINT epoch_ms` | KEY | 发起时间 |
+| `started_at` | `BIGINT epoch_ms` |  | 开始时间 |
+| `finished_at` | `BIGINT epoch_ms` |  | 结束时间 |
+| `failure_reason` | `varchar(1024)` |  | 目标失败原因 |
+
+约束：`id` 主键；`(content_type, content_id)` 唯一，每个稿件最多保留一条最新发布或下线任务。发起新任务时必须在同一事务内对旧 job 执行 `SELECT ... FOR UPDATE`，只继承 `es_document_id` 和 `fastgpt_collection_id`、确认两个清理状态均不为 `RUNNING`、删除旧任务并插入新任务；新任务的碎片 ID 为空，清理状态初始化为 `NONE`。稿件删除不得级联删除本表记录；删除 `ERROR/OFFLINE` 稿件时写入 `content_deleted_at` 并保留端侧引用，供清理 Schedule 在稿件不存在后继续处理。发起人属于审计关系，由 System 审计记录任务创建动作，不在本业务表重复保存。索引：`(job_result_status, job_status, expires_at)`、`(job_result_status, job_status, next_retry_at)`、`(job_type, job_result_status)`、`(es_cleanup_status, es_cleanup_expires_at)`、`(fastgpt_cleanup_status, fastgpt_cleanup_expires_at)`、`content_deleted_at`、`requested_at`。
+
+发布任务状态规则详见 [CLASSICS-PUBLICATION-SPECIAL-DESIGN.md](./CLASSICS-PUBLICATION-SPECIAL-DESIGN.md)。本表只定义任务持久化结构；状态机切片、线程执行、定时扫描接管、失败回填为 `ERROR`、FastGPT enable/disable 和垃圾同步均以专项设计为准。
+
 ### classics_content_export_job
 
-需求来源：三类内容和视觉资产设定集导出、范围、格式、生成时间、数量、过期、私有内容风险提示、内容变更提示、后台按权限查看下载删除导出记录。
+需求来源：三类内容和视觉资产设定集导出、范围、格式、生成时间、数量、过期、非发布内容风险提示、内容变更提示、后台按权限查看下载删除导出记录。
 
 | Column | Type | Key | Requirement Source |
 | --- | --- | --- | --- |
@@ -276,59 +323,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `storage_object_id` | `bigint` |  | 导出产物 Storage 对象 |
 | `item_count` | `int` |  | 内容数量展示 |
 | `asset_count` | `int` |  | 视觉资产数量展示 |
-| `visibility_risk_status` | `varchar(16)` |  | 可见性风险状态，例如 `PUBLIC_ONLY`、`CONTAINS_PRIVATE` |
+| `lifecycle_risk_status` | `varchar(16)` |  | 生命周期风险状态，例如 `PUBLISHED_ONLY`、`CONTAINS_NON_PUBLISHED` |
 | `content_changed` | `tinyint(1)` |  | 内容可能已变更提示，纯 yes/no 标志 |
 
 约束：`id` 主键。索引：`(status, expires_at)`、`(content_type, export_kind)`。
-
-### classics_share_link
-
-需求来源：分享链接、公开分享、私有分享、撤销、恢复、过期、访问统计、私有内容风险提示。
-
-| Column | Type | Key | Requirement Source |
-| --- | --- | --- | --- |
-| `id` | `bigint` | PK, AUTO_INCREMENT | 分享链接身份 |
-| `token_hash` | `varchar(128)` | UK | 分享访问令牌哈希，明文不落库 |
-| `title` | `varchar(256)` |  | 集中查看分享链接 |
-| `visibility` | `varchar(16)` |  | 公开或私有分享 |
-| `status` | `varchar(16)` | KEY(status, expires_at) | 活跃、撤销等状态 |
-| `visibility_risk_status` | `varchar(16)` |  | 可见性风险状态，例如 `PUBLIC_ONLY`、`CONTAINS_PRIVATE` |
-| `created_by_user_id` | `bigint` | KEY(created_by_user_id, visibility) | 私有分享访问校验所需创建者 |
-| `issued_at` | `BIGINT epoch_ms` |  | 分享创建时间 |
-| `expires_at` | `BIGINT epoch_ms` | KEY(status, expires_at) | 分享过期时间 |
-| `access_count` | `bigint` |  | 访问统计 |
-
-约束：`id` 主键；`token_hash` 唯一。索引：`(status, expires_at)`、`(created_by_user_id, visibility)`。
-
-### classics_share_target
-
-需求来源：单链接多内容、跨库分享、目标删除后占位、只读访问页排序。
-
-| Column | Type | Key | Requirement Source |
-| --- | --- | --- | --- |
-| `id` | `bigint` | PK, AUTO_INCREMENT | 分享目标身份 |
-| `share_link_id` | `bigint` | UK(share_link_id, content_type, content_id) | 归属分享链接 |
-| `content_type` | `varchar(32)` | UK(share_link_id, content_type, content_id), KEY | 跨库内容类型 |
-| `content_id` | `bigint` | UK(share_link_id, content_type, content_id), KEY | 内容身份 |
-| `title_snapshot` | `varchar(512)` |  | 内容删除后占位展示 |
-| `content_snapshot_json` | `json` |  | 分享访问第一版返回完整内容快照 |
-| `content_visibility_snapshot` | `varchar(16)` |  | 创建分享时内容可见性快照 |
-| `target_status` | `varchar(16)` |  | 目标可用或内容已删除占位 |
-| `priority` | `int` | UK | 分享页展示排序 |
-
-约束：`id` 主键；`(share_link_id, content_type, content_id)` 唯一；`priority` 唯一。索引：`(content_type, content_id)`。
-
-### classics_share_access_record
-
-需求来源：分享访问统计和异常追溯。
-
-| Column | Type | Key | Requirement Source |
-| --- | --- | --- | --- |
-| `id` | `bigint` | PK, AUTO_INCREMENT | 访问记录身份 |
-| `share_link_id` | `bigint` | KEY(share_link_id, accessed_at) | 归属分享链接 |
-| `share_target_id` | `bigint` | KEY(share_target_id, accessed_at) | 访问目标 |
-| `accessed_at` | `BIGINT epoch_ms` | KEY | 访问时间 |
-| `access_result` | `varchar(16)` |  | 允许、过期、撤销、无权限等结果 |
-| `client_snapshot` | `json` |  | 访问统计和异常追溯摘要 |
-
-约束：`id` 主键。索引：`(share_link_id, accessed_at)`、`(share_target_id, accessed_at)`。

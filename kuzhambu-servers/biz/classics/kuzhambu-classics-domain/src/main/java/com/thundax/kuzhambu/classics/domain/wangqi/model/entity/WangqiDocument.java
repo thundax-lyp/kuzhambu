@@ -7,6 +7,9 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
@@ -29,6 +32,9 @@ public class WangqiDocument implements Versionable {
     private String content;
     private Instant documentTime;
     private StorageObjectId storageObjectId;
+    private ClassicsPublicationLifecycleStatus lifecycleStatus;
+    private ClassicsPublicationTransitionStatus transitionStatus;
+    private ClassicsPublicationJobId currentPublicationJobId;
     private WangqiDocumentVisibility visibility;
     private ClassicsContentVersionId currentVersionId;
     private Integer currentVersionNo;

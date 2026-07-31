@@ -23,7 +23,6 @@ public class OperationsDashboardOverviewResponse {
     private Long translatedContentCount;
     private Long imageReadyContentCount;
     private Long visualAssetReadyContentCount;
-    private Long shareVisitCount;
     private Long aiInvocationCount;
     private Long aiSucceededInvocationCount;
     private Long aiFailedInvocationCount;

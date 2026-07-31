@@ -7,6 +7,9 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustoms
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
+import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationJobIdCodec;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.MingCustomsEntryDO;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.MingCustomsKeywordDO;
 import java.time.Instant;
@@ -29,23 +32,29 @@ public final class MingCustomsPersistenceAssembler {
         if (entity == null) {
             return null;
         }
-        return new MingCustomsEntryDO(
-                MingCustomsEntryIdCodec.toValue(entity.getId()),
-                entity.getTitle(),
-                entity.getCategory(),
-                entity.getChapter(),
-                entity.getSection(),
-                entity.getSummary(),
+        MingCustomsEntryDO dataObject = new MingCustomsEntryDO();
+        dataObject.setId(MingCustomsEntryIdCodec.toValue(entity.getId()));
+        dataObject.setTitle(entity.getTitle());
+        dataObject.setCategory(entity.getCategory());
+        dataObject.setChapter(entity.getChapter());
+        dataObject.setSection(entity.getSection());
+        dataObject.setSummary(entity.getSummary());
+        dataObject.setContentFormat(
                 entity.getContentFormat() == null
                         ? null
-                        : entity.getContentFormat().value(),
-                entity.getContent(),
-                entity.getOriginalExcerpts(),
-                entity.getVisibility() == null ? null : entity.getVisibility().value(),
-                ClassicsContentVersionIdCodec.toValue(entity.getCurrentVersionId()),
-                entity.getCurrentVersionNo(),
-                entity.getCurrentVersionedAt(),
-                contentUpdatedAt(entity.getContentUpdatedAt()));
+                        : entity.getContentFormat().value());
+        dataObject.setContent(entity.getContent());
+        dataObject.setOriginalExcerpts(entity.getOriginalExcerpts());
+        dataObject.setLifecycleStatus(value(entity.getLifecycleStatus()));
+        dataObject.setTransitionStatus(value(entity.getTransitionStatus()));
+        dataObject.setCurrentPublicationJobId(
+                ClassicsPublicationJobIdCodec.toValue(entity.getCurrentPublicationJobId()));
+        dataObject.setVisibility(value(entity.getVisibility()));
+        dataObject.setCurrentVersionId(ClassicsContentVersionIdCodec.toValue(entity.getCurrentVersionId()));
+        dataObject.setCurrentVersionNo(entity.getCurrentVersionNo());
+        dataObject.setCurrentVersionedAt(entity.getCurrentVersionedAt());
+        dataObject.setContentUpdatedAt(contentUpdatedAt(entity.getContentUpdatedAt()));
+        return dataObject;
     }
 
     public static MingCustomsEntry toEntryDomain(MingCustomsEntryDO dataObject) {
@@ -65,6 +74,10 @@ public final class MingCustomsPersistenceAssembler {
                 dataObject.getContent(),
                 dataObject.getOriginalExcerpts(),
                 dataObject.getVisibility() == null ? null : MingCustomsVisibility.from(dataObject.getVisibility()));
+        entry.setLifecycleStatus(parseLifecycle(dataObject.getLifecycleStatus()));
+        entry.setTransitionStatus(parseTransition(dataObject.getTransitionStatus()));
+        entry.setCurrentPublicationJobId(
+                ClassicsPublicationJobIdCodec.toDomain(dataObject.getCurrentPublicationJobId()));
         entry.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain(dataObject.getCurrentVersionId()));
         entry.setCurrentVersionNo(dataObject.getCurrentVersionNo());
         entry.setCurrentVersionedAt(dataObject.getCurrentVersionedAt());
@@ -114,5 +127,17 @@ public final class MingCustomsPersistenceAssembler {
 
     private static Instant contentUpdatedAt(Instant contentUpdatedAt) {
         return contentUpdatedAt == null ? Instant.now() : contentUpdatedAt;
+    }
+
+    private static String value(Enum<?> value) {
+        return value == null ? null : value.name();
+    }
+
+    private static ClassicsPublicationLifecycleStatus parseLifecycle(String value) {
+        return value == null ? null : ClassicsPublicationLifecycleStatus.valueOf(value);
+    }
+
+    private static ClassicsPublicationTransitionStatus parseTransition(String value) {
+        return value == null ? null : ClassicsPublicationTransitionStatus.valueOf(value);
     }
 }

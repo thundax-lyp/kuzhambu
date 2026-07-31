@@ -43,9 +43,9 @@ portal-web/admin-web -> Discovery Server -> kuzhambu-common-knowledge -> FastGPT
 
 | Source | `contentType` | Condition |
 | --- | --- | --- |
-| 三才图会条目 | `SANCAI_ENTRY` | `lifecycle_status = PUBLISHED` and `visibility = PUBLIC` |
-| 王圻文档 | `WANGQI_DOCUMENT` | `visibility = PUBLIC` |
-| 明代习俗条目 | `MING_CUSTOMS` | `visibility = PUBLIC` |
+| 三才图会条目 | `SANCAI_ENTRY` | `lifecycle_status = PUBLISHED` |
+| 王圻文档 | `WANGQI_DOCUMENT` | `lifecycle_status = PUBLISHED` |
+| 明代习俗条目 | `MING_CUSTOMS` | `lifecycle_status = PUBLISHED` |
 
 进入问答的补充知识：
 
@@ -56,7 +56,7 @@ portal-web/admin-web -> Discovery Server -> kuzhambu-common-knowledge -> FastGPT
 
 不进入问答：
 
-- 私有、未发布、已下线内容。
+- 草稿和已下线内容。
 - 草稿、历史版本、导出任务、展示生成记录。
 - 图片、Storage 对象、排序、内部状态、主键、类型码等技术字段。
 - 未确认 AI 候选问答对。
@@ -74,8 +74,7 @@ portal-web/admin-web -> Discovery Server -> kuzhambu-common-knowledge -> FastGPT
     "knowledgeBase": "SANCAI_ENTRY",
     "currentVersionNo": 3,
     "knowledgeRevision": "sha256:...",
-    "visibility": "PUBLIC",
-    "status": "PUBLISHED",
+    "lifecycleStatus": "PUBLISHED",
     "sourcePath": "/classics/sancai/entries/1001",
     "updatedAt": "2026-07-04T12:00:00+08:00"
   },
@@ -115,8 +114,7 @@ portal-web/admin-web -> Discovery Server -> kuzhambu-common-knowledge -> FastGPT
 | `knowledgeBase` | yes | 业务知识范围 |
 | `currentVersionNo` | yes | Classics 内容版本 |
 | `knowledgeRevision` | yes | 由 knowledge fields、确认标签、确认问答对计算的内容指纹 |
-| `visibility` | yes | 当前可见性 |
-| `status` | yes | 当前业务状态 |
+| `lifecycleStatus` | yes | 当前生命周期状态 |
 | `sourcePath` | yes | Portal 来源跳转路径 |
 | `updatedAt` | yes | 来源内容更新时间 |
 
@@ -182,7 +180,7 @@ Provider adapter 负责映射：
 | Common Concept | Meaning | Provider Mapping |
 | --- | --- | --- |
 | knowledge base | 逻辑知识库 | dataset, index, namespace, space |
-| knowledge item | 一条业务知识 | collection, document, file, record |
+| knowledge item | 一条业务稿件知识 | collection, document, file, record |
 | OpenAI `model` | 逻辑 knowledge base name，例如 `kuzhambu-qa` | provider app, bot, workflow |
 | source | 回答来源 | provider retrieval hit |
 
@@ -201,6 +199,7 @@ Chat 中传入的 `model` 是逻辑知识库名。`appId` 由 adapter 根据 `mo
 | `KnowledgeSyncResult` | `syncId`, `status`, `raw` |
 
 Request 中的 `knowledgeBaseName` 是业务定义；result 中的 `knowledgeBaseId` 和 `knowledgeItemId` 是 provider opaque references，仅用于后续同步和 trace。
+FastGPT provider 中，一个 `knowledge item` 对应一个稿件 collection；该稿件拆分出的多个知识碎片对应 collection 下的数据片段，不作为业务层独立 `knowledge item`。
 
 ### OpenAI-compatible Chat
 
@@ -324,9 +323,19 @@ Full rebuild:
 6. Discovery deletes provider knowledge items that no longer satisfy sync conditions.
 7. Discovery records sync batch and item results.
 
-Incremental sync:
+Publication sync:
 
-1. Triggered by publish/version apply, visibility change, confirmed tag change, confirmed QA pair change.
+1. Triggered by Classics publish/offline job with `publicationJobId`, `jobStatus`, `contentType`, `contentId`, `operation`, and `currentVersionNo`.
+2. Discovery reads the Classics content snapshot bound to the publication task.
+3. Publish operation upserts the eligible source.
+4. Offline operation disables the provider knowledge item collection first.
+5. Sync item records result and failure reason.
+6. Discovery returns or exposes the sync result so Classics can advance or fail the current publication `jobStatus`.
+7. Physical collection/data deletion is handled by a later cleanup step and must not be required before the content lifecycle becomes `OFFLINE`.
+
+Published content maintenance sync:
+
+1. Triggered by confirmed tag change or confirmed QA pair change for existing `PUBLISHED` content.
 2. Discovery reads current Classics source.
 3. Eligible source is upserted.
 4. Ineligible source is deleted.
@@ -339,7 +348,7 @@ Portal chat:
 3. Discovery validates session owner, question, `knowledgeBases`, and optional `contextItemKey`.
 4. Discovery calls `KnowledgeBaseClient.chat()`.
 5. Discovery stores user message, assistant message, source snapshots and trace.
-6. Discovery re-checks source visibility before returning source links.
+6. Discovery re-checks source lifecycle before returning source links.
 
 ## Acceptance
 

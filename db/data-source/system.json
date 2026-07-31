@@ -189,7 +189,7 @@
         "古籍管理/三才图会",
         "古籍管理/王圻文档",
         "古籍管理/明代习俗",
-        "古籍管理/分享管理",
+        "古籍管理/发布任务",
         "知识治理",
         "知识治理/知识图谱",
         "知识治理/知识图谱/知识抽取",
@@ -231,7 +231,7 @@
         "古籍管理/三才图会",
         "古籍管理/王圻文档",
         "古籍管理/明代习俗",
-        "古籍管理/分享管理",
+        "古籍管理/发布任务",
         "知识库",
         "知识库/检索",
         "知识库/检索/检索",
@@ -663,12 +663,12 @@
         },
         {
           "id": 7,
-          "name": "分享管理",
-          "perms": ["classics:sharing:view", "classics:sharing:edit"],
+          "name": "发布任务",
+          "perms": ["classics:publication:view"],
           "priority": 75,
-          "icon": "open-api",
-          "url": "/classics/shares",
-          "remarks": "古籍内容分享管理"
+          "icon": "submissions",
+          "url": "/classics/publication-jobs",
+          "remarks": "发布和下线任务只读进度与失败诊断"
         }
       ]
     },

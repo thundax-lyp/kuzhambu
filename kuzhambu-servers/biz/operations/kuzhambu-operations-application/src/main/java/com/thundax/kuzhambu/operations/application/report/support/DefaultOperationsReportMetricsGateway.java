@@ -31,7 +31,7 @@ public class DefaultOperationsReportMetricsGateway implements OperationsReportMe
                 record.getPeriodStart(),
                 record.getPeriodEnd(),
                 bucketType,
-                new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true));
+                new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true));
         List<OperationsReportSection> sections = new ArrayList<>();
         sections.add(section("classicsSummary", "Classics 统计摘要", summary.classicsSummary()));
         sections.add(section("aiSummary", "AI 调用摘要", summary.aiSummary()));

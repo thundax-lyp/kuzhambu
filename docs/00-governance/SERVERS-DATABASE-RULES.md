@@ -43,7 +43,9 @@
 - 当前 AI 默认提示词数据源为 `db/data-source/ai-prompts/`，生成脚本为 `scripts/generate-ai-data-sql.ts`。
 - 修改 AI 默认提示词时必须先改对应提示词目录下的 `meta.json`、`system-template.txt` 或 `user-template.txt`，再重新生成并提交 `db/data/ai.sql`。
 - AI 默认提示词目录允许维护 `sample.md` 作为人工运行样例；`sample.md` 不进入 SQL 产物。
-- 当前三才图会稿件初始化数据源为 `db/data-source/sancai-manuscripts.json`，生成脚本为 `scripts/classics-json-to-sql.sh`；该源文件只保存分类、卷、标题、正文、译文、摘要、发布态、标签名和问答，不保存数据库 ID、排序值或导入快照字段，不得从运行库反向导出 JSON 作为新真相源。
+- 当前三才图会稿件初始化数据源为 `db/data-source/sancai-manuscripts.json`，生成脚本为 `scripts/classics-json-to-sql.sh`；该源文件只保存分类、卷、标题、正文、译文、摘要、`lifecycleStatus`、标签名和问答，不保存数据库 ID、排序值、过程状态、当前发布任务引用或导入快照字段，不得从运行库反向导出 JSON 作为新真相源。
+- 王圻文档和明代习俗初始化数据源分别为 `db/data-source/wangqi-documents-full.json`、`db/data-source/ming-customs.json`，同样由 `scripts/classics-json-to-sql.sh` 生成 `db/data/classics.sql`；明代习俗源由 `scripts/collect-ming-customs.mjs` 从 `https://ptrmt-beta.aisn.tech/sancai/ming/customs` 采集和规范化。生命周期字段统一命名为 `lifecycleStatus`，过程状态和当前发布任务引用由生成器初始化，不写入 JSON 源。
+- Classics 初始化 JSON 中的稿件生命周期必须为 `DRAFT`。`PUBLISHED` 同时要求 ES 和 FastGPT 端侧对象就绪，只能由运行时发布任务产生，不得由种子 SQL 直接写入。
 - 当前三才图会标签初始化数据源为 `db/data-source/sancai-tags.json`，生成脚本为 `scripts/generate-sancai-knowledge-data-sql.mjs`；该源文件只保存标签名、别名、分类和审核语义，不保存 `tag_id`、`alias_id`、`content_id` 或内容引用 ID。
 - 修改三才图会稿件、标签库、标签别名或稿件标签绑定时必须先改 `db/data-source/` 下对应 JSON 源，再重新生成并提交 `db/data/classics.sql` 和/或 `db/data/knowledge.sql`；`scripts/classics-json-to-sql.sh` 必须从 `db/data-source/sancai-tags.json` 解析 `classics_content_tag.tag_id`。
 - 当前 schema 文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
@@ -103,7 +105,7 @@
 - 审计摘要可以使用 `json`。
 - 不保存明文密码、明文 token、明文密钥、明文验证码。
 - 哈希类字段只保存哈希结果。
-- access token、refresh token、分享 token、下载 token 等明文只允许返回一次，不得持久化明文。
+- access token、refresh token、下载 token 等明文只允许返回一次，不得持久化明文。
 
 ## Storage Reference Constraint Truth Source
 

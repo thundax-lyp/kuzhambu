@@ -14,7 +14,6 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSort
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
-import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
@@ -42,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,17 +53,15 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     private final SancaiRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
-    private final ClassicsSharingApplicationService sharingApplicationService;
 
+    @Autowired
     public SancaiApplicationServiceImpl(
             SancaiRepository repository,
             ClassicsContentApplicationService contentApplicationService,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
-            ClassicsSharingApplicationService sharingApplicationService) {
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
-        this.sharingApplicationService = sharingApplicationService;
     }
 
     @Override
@@ -420,9 +418,6 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         }
         entry.setContentUpdatedAt(Instant.now());
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
-        if (sharingApplicationService != null) {
-            sharingApplicationService.syncContentDeleted(ClassicsContentType.SANCAI_ENTRY, id.value());
-        }
         publishDeleteAfterCommit(entry);
         repository.deleteEntryById(id);
     }
@@ -599,11 +594,11 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     private static String lifecycleChangeSummary(
             SancaiEntryLifecycleStatus currentStatus, SancaiEntryLifecycleStatus targetStatus) {
-        if (currentStatus == SancaiEntryLifecycleStatus.ARCHIVED
+        if (currentStatus == SancaiEntryLifecycleStatus.OFFLINE
                 && targetStatus == SancaiEntryLifecycleStatus.PUBLISHED) {
             return "恢复发布条目";
         }
-        if (targetStatus == SancaiEntryLifecycleStatus.ARCHIVED) {
+        if (targetStatus == SancaiEntryLifecycleStatus.OFFLINE) {
             return "下线条目";
         }
         return "发布条目";

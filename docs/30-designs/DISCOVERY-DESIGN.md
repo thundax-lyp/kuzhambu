@@ -74,7 +74,7 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 - 身份字段：`contentType`、`contentId`
 - 展示字段：`title`、`summary`、`bodyText`
 - 分组字段：`groupKey`、`groupTitle`
-- 过滤字段：`visibility`、`lifecycleStatus`、`tags`
+- 过滤字段：`publicationStatus`、`tags`
 - 深链字段：`targetPath`
 - 幂等字段：`sourceVersionNo`
 - 删除态字段：`deleted`、`deletedAt`
@@ -82,7 +82,8 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 当前规则：
 
 - 索引文档是派生读模型，不承载业务真相。
-- 搜索索引只承载 `visibility = PUBLIC` 的内容；非 `PUBLIC` 内容不得写入索引，增量同步遇到非 `PUBLIC` 内容时必须移除既有索引文档。
+- ES 搜索文档不保存 Classics 主库的 `lifecycleStatus`，避免主库生命周期与索引消费状态形成双状态。
+- 搜索索引只允许对外返回 `publicationStatus = READY` 且 `deleted = false` 的内容；Classics 发布和下线任务必须分别通过 `PREPARE / READY / OFFLINE` 控制内容是否进入可查询范围。
 - `sourceVersionNo` 固定使用 Classics 内容表上的 `currentVersionNo`。
 - `DELETE` 不做物理删除，而是先写入删除态；物理清理由计划任务按保留期清理。
 
@@ -255,7 +256,7 @@ Admin：
 当前阶段固定采用：
 
 - Discovery 通过 `kuzhambu-common-knowledge` 的 OpenAI-compatible adapter 访问外部知识库能力。
-- Discovery 负责将 Classics 可消费内容同步为知识条目，并记录 `sourceId`、`contentType`、`contentId`、`knowledgeBaseName`、`currentVersionNo`、`knowledgeRevision`、`syncStatus`、`failureReason`、`syncedAt` 和 `updatedAt`。
+- Discovery 负责将 Classics 发布任务提交的可消费内容同步为知识条目，并记录 `sourceId`、`contentType`、`contentId`、`knowledgeBaseName`、`currentVersionNo`、`knowledgeRevision`、`syncStatus`、`failureReason`、`syncedAt` 和 `updatedAt`。
 - FastGPT 知识库必须由 FastGPT 管理面预先创建，并通过 `KUZHAMBU_KNOWLEDGE_FASTGPT_KNOWLEDGE_BASE_ID` 配置给 admin-server；该值必须是既有 FastGPT dataset 的 24 位 ObjectId，不能是本地别名。admin-server 只使用既有知识库写入 collection 和执行同步，不具备创建 FastGPT 知识库的能力。
 - Discovery 问答请求只接收会话、消息、上下文内容和逻辑模型，不接收 provider 路由参数。
 - provider 请求、外部知识库、外部条目、外部会话、耗时、失败原因和 raw 响应写入 provider trace。
@@ -270,20 +271,25 @@ Admin：
 
 当前阶段固定采用：
 
-- Classics 写路径事务提交后调用 `ClassicsSearchIndexSyncPublishSupport`
-- 通过 RocketMQ 发送 `UPSERT / DELETE` 消息
-- 消息体固定包含 `contentType`、`contentId`、`operation`、`currentVersionNo`
-- Discovery 消费端按 `contentType + contentId` 回查当前最新公开内容
-- `UPSERT` 以 `currentVersionNo` 和 ES 文档 `sourceVersionNo` 做幂等判定
-- `DELETE` 只把文档写成删除态，不做即时物理删除
-- 定时任务按 `deletedAt + retention` 清理过期删除态文档
+- Classics 发布和下线任务调用 `ClassicsSearchIndexSyncPublishSupport`
+- 发布和下线主链路通过同步 application port 发送 `PREPARE / READY / OFFLINE` 请求，发布线程根据同步返回结果推进或失败
+- `DELETE_PHYSICAL` 只允许由垃圾同步或保留期清理触发，不属于发布和下线主链路
+- 请求体固定包含 `publicationJobId`、`contentType`、`contentId`、`operation`、`currentVersionNo`
+- Discovery 消费端按 `contentType + contentId + currentVersionNo` 回查发布任务绑定的内容快照
+- `PREPARE` 写入或更新 ES 文档，设置 `publicationStatus = PREPARING`、`deleted = false`
+- `READY` 以 `currentVersionNo` 和 ES 文档 `sourceVersionNo` 做幂等判定，把 ES 文档切为 `publicationStatus = READY`、`deleted = false`
+- `OFFLINE` 先把文档写成下线删除态，设置 `publicationStatus = OFFLINE`、`deleted = true`、`deletedAt = now`
+- `DELETE_PHYSICAL` 只由垃圾同步或保留期清理触发，用于物理删除已下线删除态文档
+- `DiscoverySearchRetentionScheduler` 只按 `deletedAt + retention` 清理过期删除态文档，不承担索引同步、发布推进或其他清理目标
+- `DiscoverySearchRetentionScheduler` 在实际物理删除时必须再次确认文档仍为 `publicationStatus = OFFLINE` 且 `deleted = true`；文档已经重新进入 `PREPARING/READY` 时必须跳过
 - Admin `rebuild` 继续作为全量修复兜底
+- Discovery 必须把 `PREPARE / READY / OFFLINE` 的 ES 同步结果同步返回给 Classics 发布线程；失败原因必须能回填到 Classics 发布任务。
 
 当前阶段不采用：
 
-- Outbox
 - 分布式事务
 - MQ exactly-once
+- 发布和下线主链路通过 MQ 异步确认 ES 状态
 
 ## Data Ownership
 

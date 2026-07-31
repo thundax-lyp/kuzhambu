@@ -6,7 +6,8 @@ import java.util.Arrays;
 public enum SancaiEntryLifecycleStatus {
     DRAFT,
     PUBLISHED,
-    ARCHIVED;
+    OFFLINE,
+    ERROR;
 
     public String value() {
         return name();
@@ -14,8 +15,9 @@ public enum SancaiEntryLifecycleStatus {
 
     public boolean canChangeTo(SancaiEntryLifecycleStatus targetStatus) {
         return (this == DRAFT && targetStatus == PUBLISHED)
-                || (this == PUBLISHED && targetStatus == ARCHIVED)
-                || (this == ARCHIVED && targetStatus == PUBLISHED);
+                || (this == PUBLISHED && targetStatus == OFFLINE)
+                || (this == OFFLINE && targetStatus == PUBLISHED)
+                || (this == ERROR && (targetStatus == PUBLISHED || targetStatus == OFFLINE));
     }
 
     public static SancaiEntryLifecycleStatus from(String value) {

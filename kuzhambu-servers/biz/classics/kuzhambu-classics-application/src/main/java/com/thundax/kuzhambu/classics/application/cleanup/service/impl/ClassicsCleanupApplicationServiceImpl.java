@@ -6,8 +6,6 @@ import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJ
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryDraftIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiAssetRepository;
-import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
-import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.time.Duration;
 import java.time.Instant;
@@ -19,10 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @BizExceptionBoundary
 public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApplicationService {
-    private static final String CLEANUP_TYPE_EXPIRED_SHARE = "EXPIRED_SHARE";
     private static final String CLEANUP_TYPE_EXPIRED_DRAFT = "EXPIRED_DRAFT";
     private static final String CLEANUP_TYPE_EXPIRED_EXPORT = "EXPIRED_EXPORT";
-    private static final String TARGET_TYPE_SHARE = "share";
     private static final String TARGET_TYPE_DRAFT = "draft";
     private static final String TARGET_TYPE_EXPORT = "export";
     private static final String UNSUPPORTED_CLEANUP_TYPE = "UNSUPPORTED_CLEANUP_TYPE";
@@ -30,15 +26,11 @@ public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApp
     private static final int DEFAULT_RETENTION_DAYS = 30;
     private static final int DEFAULT_LIMIT = 200;
 
-    private final ClassicsSharingRepository sharingRepository;
     private final SancaiAssetRepository sancaiAssetRepository;
     private final ClassicsContentRepository contentRepository;
 
     public ClassicsCleanupApplicationServiceImpl(
-            ClassicsSharingRepository sharingRepository,
-            SancaiAssetRepository sancaiAssetRepository,
-            ClassicsContentRepository contentRepository) {
-        this.sharingRepository = sharingRepository;
+            SancaiAssetRepository sancaiAssetRepository, ClassicsContentRepository contentRepository) {
         this.sancaiAssetRepository = sancaiAssetRepository;
         this.contentRepository = contentRepository;
     }
@@ -54,10 +46,6 @@ public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApp
             return List.of();
         }
         return switch (normalizedType) {
-            case CLEANUP_TYPE_EXPIRED_SHARE ->
-                sharingRepository.listExpiredShareLinkIds(effectiveNow, effectiveLimit).stream()
-                        .map(id -> target(TARGET_TYPE_SHARE, id == null ? null : id.value()))
-                        .toList();
             case CLEANUP_TYPE_EXPIRED_DRAFT ->
                 sancaiAssetRepository
                         .listExpiredDraftIds(retentionCutoff(effectiveNow, retentionDays), effectiveLimit)
@@ -83,8 +71,6 @@ public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApp
         try {
             int affectedRows =
                     switch (normalizedType) {
-                        case CLEANUP_TYPE_EXPIRED_SHARE ->
-                            sharingRepository.markShareLinkExpired(ClassicsShareLinkIdCodec.toDomain(targetId));
                         case CLEANUP_TYPE_EXPIRED_DRAFT ->
                             sancaiAssetRepository.deleteDraftById(SancaiEntryDraftIdCodec.toDomain(targetId));
                         case CLEANUP_TYPE_EXPIRED_EXPORT ->
@@ -122,7 +108,6 @@ public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApp
             return null;
         }
         return switch (cleanupType) {
-            case CLEANUP_TYPE_EXPIRED_SHARE -> TARGET_TYPE_SHARE;
             case CLEANUP_TYPE_EXPIRED_DRAFT -> TARGET_TYPE_DRAFT;
             case CLEANUP_TYPE_EXPIRED_EXPORT -> TARGET_TYPE_EXPORT;
             default -> null;

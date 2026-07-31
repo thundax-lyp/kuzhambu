@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.operations.application.dashboard.support;
 
 public record OperationsDashboardPermissionSnapshot(
         boolean canViewClassicsContentSummary,
-        boolean canViewClassicsSharingSummary,
         boolean canViewDiscoverySearchSummary,
         boolean canViewDiscoveryQaSummary,
         boolean canViewAiInvocationSummary,
@@ -11,7 +10,7 @@ public record OperationsDashboardPermissionSnapshot(
         boolean canViewTaskSummary) {
 
     public boolean canLoadClassicsSummary() {
-        return canViewClassicsContentSummary || canViewClassicsSharingSummary;
+        return canViewClassicsContentSummary;
     }
 
     public boolean canLoadDiscoverySummary() {
@@ -28,7 +27,6 @@ public record OperationsDashboardPermissionSnapshot(
 
     public boolean hasAnyChartPermission() {
         return canViewClassicsContentSummary
-                || canViewClassicsSharingSummary
                 || canViewDiscoverySearchSummary
                 || canViewDiscoveryQaSummary
                 || canViewAiInvocationSummary

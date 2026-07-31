@@ -25,6 +25,10 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationJobIdCodec;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationContentState;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.infra.content.persistence.assembler.ClassicsContentPersistenceAssembler;
@@ -354,6 +358,95 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
                         .eq("id", id)
                         .last("for update"));
         }
+    }
+
+    @Override
+    public ClassicsPublicationContentState lockPublicationContent(
+            ClassicsContentType contentType, ClassicsContentId contentId) {
+        Long id = ClassicsContentIdCodec.toValue(contentId);
+        if (contentType == null || id == null) {
+            return null;
+        }
+        return switch (contentType) {
+            case SANCAI_ENTRY ->
+                toPublicationState(contentType, contentId, sancaiMapper.selectPublicationStateForUpdate(id));
+            case WANGQI_DOCUMENT ->
+                toPublicationState(contentType, contentId, wangqiDocumentMapper.selectPublicationStateForUpdate(id));
+            case MING_CUSTOMS ->
+                toPublicationState(contentType, contentId, mingCustomsEntryMapper.selectPublicationStateForUpdate(id));
+        };
+    }
+
+    @Override
+    public int updatePublicationContentState(
+            ClassicsPublicationContentState expectedState, ClassicsPublicationContentState targetState) {
+        if (expectedState.contentType() != targetState.contentType()
+                || !Objects.equals(expectedState.contentId(), targetState.contentId())) {
+            throw new IllegalArgumentException("Publication state update must target the same content");
+        }
+        Long id = ClassicsContentIdCodec.toValue(expectedState.contentId());
+        Long expectedJobId = ClassicsPublicationJobIdCodec.toValue(expectedState.currentJobId());
+        Long targetJobId = ClassicsPublicationJobIdCodec.toValue(targetState.currentJobId());
+        return switch (expectedState.contentType()) {
+            case SANCAI_ENTRY ->
+                sancaiMapper.updatePublicationState(
+                        id,
+                        expectedState.lifecycleStatus().name(),
+                        expectedState.transitionStatus().name(),
+                        expectedJobId,
+                        targetState.lifecycleStatus().name(),
+                        targetState.transitionStatus().name(),
+                        targetJobId);
+            case WANGQI_DOCUMENT ->
+                wangqiDocumentMapper.updatePublicationState(
+                        id,
+                        expectedState.lifecycleStatus().name(),
+                        expectedState.transitionStatus().name(),
+                        expectedJobId,
+                        targetState.lifecycleStatus().name(),
+                        targetState.transitionStatus().name(),
+                        targetJobId);
+            case MING_CUSTOMS ->
+                mingCustomsEntryMapper.updatePublicationState(
+                        id,
+                        expectedState.lifecycleStatus().name(),
+                        expectedState.transitionStatus().name(),
+                        expectedJobId,
+                        targetState.lifecycleStatus().name(),
+                        targetState.transitionStatus().name(),
+                        targetJobId);
+        };
+    }
+
+    private static ClassicsPublicationContentState toPublicationState(
+            ClassicsContentType contentType, ClassicsContentId contentId, Object dataObject) {
+        if (dataObject == null) {
+            return null;
+        }
+        String lifecycleStatus;
+        String transitionStatus;
+        Long currentJobId;
+        if (dataObject instanceof SancaiEntryDO entry) {
+            lifecycleStatus = entry.getLifecycleStatus();
+            transitionStatus = entry.getTransitionStatus();
+            currentJobId = entry.getCurrentPublicationJobId();
+        } else if (dataObject instanceof WangqiDocumentDO document) {
+            lifecycleStatus = document.getLifecycleStatus();
+            transitionStatus = document.getTransitionStatus();
+            currentJobId = document.getCurrentPublicationJobId();
+        } else if (dataObject instanceof MingCustomsEntryDO entry) {
+            lifecycleStatus = entry.getLifecycleStatus();
+            transitionStatus = entry.getTransitionStatus();
+            currentJobId = entry.getCurrentPublicationJobId();
+        } else {
+            throw new IllegalArgumentException("Unsupported publication content data object");
+        }
+        return new ClassicsPublicationContentState(
+                contentType,
+                contentId,
+                ClassicsPublicationLifecycleStatus.valueOf(lifecycleStatus),
+                ClassicsPublicationTransitionStatus.valueOf(transitionStatus),
+                ClassicsPublicationJobIdCodec.toDomain(currentJobId));
     }
 
     public List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId) {

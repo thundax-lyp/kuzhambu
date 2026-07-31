@@ -208,7 +208,7 @@ Classics 消费 AI 域和 Workers 生成能力，但拥有正式古籍内容。
 
 - 翻译、摘要、标签、问答对、图片理解、视觉资产和条目拆分结果必须先进入 AI 候选区。
 - Classics 负责用户确认、拒绝、编辑后应用、正式内容写入、版本记录和业务审计。
-- Classics 负责导出范围、权限过滤、私有内容确认和导出记录。
+- Classics 负责导出范围、权限过滤、非发布内容确认和导出记录。
 - Workers 只生成导出文件、视觉描述、图片理解 Markdown 或其他产物内容。
 
 ### Knowledge
@@ -225,7 +225,7 @@ Discovery 消费 AI 回答生成和查询理解能力，但拥有搜索和问答
 
 - Discovery 负责权限过滤、检索、上下文组装、来源引用、会话、消息和调试信息。
 - Workers 只返回查询理解结果、改写建议、回答文本或流式回答片段。
-- Workers 不保存会话历史，不做权限过滤，不判断来源可见性。
+- Workers 不保存会话历史，不做权限过滤，不判断来源生命周期。
 - Discovery 不得直接绕过 AI 域调用 Workers 的 AI 接口。
 
 ### Operations
@@ -288,7 +288,7 @@ System 拥有认证、权限和业务审计。
 - Workers 失败不得导致 Java servers 丢失用户已输入内容。
 - Workers 的流式片段只是展示过程，不是业务提交事实。
 - Workers 生成的文件在进入 Storage 前只是临时产物。
-- Java servers 调用 Workers 前必须完成用户认证、权限、业务状态和内容可见性校验。
+- Java servers 调用 Workers 前必须完成用户认证、权限、业务状态和内容生命周期校验。
 
 ## Acceptance Criteria
 
@@ -308,7 +308,7 @@ System 拥有认证、权限和业务审计。
 
 - [ARCHITECTURE.md](../00-governance/ARCHITECTURE.md)：定义 `kuzhambu-workers/` 工程组和 Python 3.10 基线。
 - [AI-REQUIREMENTS.md](./AI-REQUIREMENTS.md)：AI 配置、提示词、候选结果和调用统计归 AI 域。
-- [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：古籍正式内容、导出、portal 展示和分享归 Classics 域。
+- [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：古籍正式内容、导出和 portal 展示归 Classics 域。
 - [KNOWLEDGE-REQUIREMENTS.md](./KNOWLEDGE-REQUIREMENTS.md)：标签、实体关系和图谱正式结果归 Knowledge 域。
 - [DISCOVERY-REQUIREMENTS.md](./DISCOVERY-REQUIREMENTS.md)：搜索、问答会话、来源和调试信息归 Discovery 域。
 - [OPERATIONS-REQUIREMENTS.md](./OPERATIONS-REQUIREMENTS.md)：报表、长任务和维护记录归 Operations 域。

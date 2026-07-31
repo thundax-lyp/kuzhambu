@@ -189,7 +189,7 @@ AI 域 `ai_capability` seed、workers `graph_registry.py`、`/internal/capabilit
 - `sha256`
 - `expiresAt`
 
-`temporary artifact reference` 只表示 Workers 短期可读的临时产物引用，不表示最终业务下载地址、分享地址或 Storage URL。默认 TTL 固定为 `12` 小时。
+`temporary artifact reference` 只表示 Workers 短期可读的临时产物引用，不表示最终业务下载地址或 Storage URL。默认 TTL 固定为 `12` 小时。
 
 AI 执行流程：
 
@@ -227,7 +227,7 @@ Artifact store 由 AI 和 render 共享，负责保存文件类结果的临时�
 
 Render 执行流程：
 
-1. Java servers 完成权限校验、内容可见性过滤、私有内容风险确认和内容快照准备。
+1. Java servers 完成权限校验、内容生命周期过滤、非发布内容风险确认和内容快照准备。
 2. Workers 校验内部服务身份和请求模型。
 3. renderer 在请求级临时目录中生成文件。
 4. Workers 返回文件类结果对应的 `temporary artifact reference`，以及文件名建议、内容类型、文件大小和生成摘要。

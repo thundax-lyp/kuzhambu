@@ -64,7 +64,7 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
     private final OperationsDashboardSummaryGateway summaryGateway;
     private final OperationsDashboardPermissionResolver permissionResolver;
     private static final OperationsDashboardPermissionSnapshot FULL_PERMISSION_SNAPSHOT =
-            new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true);
+            new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true);
 
     public OperationsDashboardApplicationServiceImpl(
             HealthCheckRepository healthCheckRepository,
@@ -128,7 +128,6 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
                 permissions.canViewClassicsContentSummary() ? classicsSummary.getTranslatedContentCount() : null,
                 permissions.canViewClassicsContentSummary() ? classicsSummary.getImageReadyContentCount() : null,
                 permissions.canViewClassicsContentSummary() ? classicsSummary.getVisualAssetReadyContentCount() : null,
-                permissions.canViewClassicsSharingSummary() ? classicsSummary.getShareVisitCount() : null,
                 permissions.canLoadAiSummary() ? aiSummary.getInvocationCount() : null,
                 permissions.canLoadAiSummary() ? aiSummary.getSucceededInvocationCount() : null,
                 permissions.canLoadAiSummary() ? aiSummary.getFailedInvocationCount() : null,

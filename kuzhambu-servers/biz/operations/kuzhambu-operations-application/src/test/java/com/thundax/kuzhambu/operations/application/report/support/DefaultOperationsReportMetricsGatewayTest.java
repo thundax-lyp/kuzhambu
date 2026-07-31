@@ -85,7 +85,7 @@ class DefaultOperationsReportMetricsGatewayTest {
     }
 
     private static OperationsDashboardPermissionSnapshot permissionSnapshotWithAllPrivileges() {
-        return new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true);
+        return new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true);
     }
 
     private static ReportRecord monthlyRecord() {

@@ -10,7 +10,6 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustoms
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
-import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
@@ -32,6 +31,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,17 +43,15 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     private final MingCustomsRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
-    private final ClassicsSharingApplicationService sharingApplicationService;
 
+    @Autowired
     public MingCustomsApplicationServiceImpl(
             MingCustomsRepository repository,
             ClassicsContentApplicationService contentApplicationService,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
-            ClassicsSharingApplicationService sharingApplicationService) {
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
-        this.sharingApplicationService = sharingApplicationService;
     }
 
     @Override
@@ -181,9 +179,6 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         }
         entry.setContentUpdatedAt(Instant.now());
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
-        if (sharingApplicationService != null) {
-            sharingApplicationService.syncContentDeleted(ClassicsContentType.MING_CUSTOMS, id.value());
-        }
         publishDeleteAfterCommit(entry);
         repository.deleteById(id);
     }

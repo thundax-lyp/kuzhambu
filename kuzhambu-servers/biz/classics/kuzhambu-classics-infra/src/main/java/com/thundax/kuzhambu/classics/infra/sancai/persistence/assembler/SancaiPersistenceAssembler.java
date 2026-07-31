@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.infra.sancai.persistence.assembler;
 
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
+import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationJobIdCodec;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
@@ -122,6 +124,9 @@ public final class SancaiPersistenceAssembler {
         dataObject.setTranslationText(entity.getTranslationText());
         dataObject.setSummary(entity.getSummary());
         dataObject.setLifecycleStatus(value(entity.getLifecycleStatus()));
+        dataObject.setTransitionStatus(value(entity.getTransitionStatus()));
+        dataObject.setCurrentPublicationJobId(
+                ClassicsPublicationJobIdCodec.toValue(entity.getCurrentPublicationJobId()));
         dataObject.setVisibility(value(entity.getVisibility()));
         dataObject.setTranslationStatus(value(entity.getTranslationStatus()));
         dataObject.setImageStatus(value(entity.getImageStatus()));
@@ -150,6 +155,12 @@ public final class SancaiPersistenceAssembler {
                 dataObject.getLifecycleStatus() == null
                         ? null
                         : SancaiEntryLifecycleStatus.from(dataObject.getLifecycleStatus()));
+        entry.setTransitionStatus(
+                dataObject.getTransitionStatus() == null
+                        ? null
+                        : ClassicsPublicationTransitionStatus.valueOf(dataObject.getTransitionStatus()));
+        entry.setCurrentPublicationJobId(
+                ClassicsPublicationJobIdCodec.toDomain(dataObject.getCurrentPublicationJobId()));
         entry.setVisibility(
                 dataObject.getVisibility() == null ? null : SancaiEntryVisibility.from(dataObject.getVisibility()));
         entry.setTranslationStatus(

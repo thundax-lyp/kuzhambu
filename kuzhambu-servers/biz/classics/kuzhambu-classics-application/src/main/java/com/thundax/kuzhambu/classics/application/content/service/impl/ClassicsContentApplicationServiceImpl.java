@@ -61,13 +61,15 @@ import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRe
 import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersioningService;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -122,6 +124,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer;
     private final SancaiEntryVersionRestorer sancaiEntryVersionRestorer;
     private final SancaiAssetApplicationService sancaiAssetApplicationService;
+    private final SancaiRepository sancaiRepository;
     private final WorkerRenderClient workerRenderClient;
     private final StorageFacade storageFacade;
     private final ObjectMapper objectMapper;
@@ -156,11 +159,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             StorageFacade storageFacade,
             AiFacade aiFacade,
             ClassicsTagBindingSupport tagBindingSupport,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
+            SancaiRepository sancaiRepository) {
         this.repository = repository;
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
         this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
         this.sancaiAssetApplicationService = sancaiAssetApplicationService;
+        this.sancaiRepository = sancaiRepository;
         this.workerRenderClient = workerRenderClient;
         this.storageFacade = storageFacade;
         this.aiFacade = aiFacade;
@@ -1212,7 +1217,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         entry.setContentFormat(resolveMingCustomsContentFormat(snapshot.contentFormat()));
         entry.setContent(snapshot.content());
         entry.setOriginalExcerpts(snapshot.originalExcerpts());
-        entry.setVisibility(resolveMingCustomsVisibility(snapshot.visibility()));
         touchContentUpdatedAt(ClassicsContentType.MING_CUSTOMS, entry);
         restoreMingCustomsTags(entry, snapshot);
         restoreMingCustomsQaPairs(entry, snapshot);
@@ -1230,10 +1234,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private MingCustomsContentFormat resolveMingCustomsContentFormat(String value) {
         return StringUtils.isBlank(value) ? null : MingCustomsContentFormat.from(value);
-    }
-
-    private MingCustomsVisibility resolveMingCustomsVisibility(String value) {
-        return StringUtils.isBlank(value) ? null : MingCustomsVisibility.from(value);
     }
 
     private void restoreMingCustomsTags(MingCustomsEntry entry, MingCustomsVersionSnapshot snapshot) {
@@ -1532,13 +1532,32 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         }
         if (content instanceof SancaiEntry entry && sancaiAssetApplicationService != null) {
             List<SancaiEntryImage> images = sancaiAssetApplicationService.listImages(entry.getId());
-            if (storageFacade == null) {
-                return snapshotAssembler.toSnapshotJson(entry, images);
-            }
-            return snapshotAssembler.toSnapshotJsonWithImageResources(
-                    entry, images.stream().map(this::toImageResource).toList());
+            return sancaiSnapshotJson(entry, images);
         }
         return snapshotAssembler.toSnapshotJson(content);
+    }
+
+    private String sancaiSnapshotJson(SancaiEntry entry, List<SancaiEntryImage> images) {
+        SancaiVolume volume = sancaiRepository == null || entry.getVolumeId() == null
+                ? null
+                : sancaiRepository.getVolumeById(entry.getVolumeId());
+        SancaiCategory category = sancaiRepository == null || volume == null || volume.getCategoryId() == null
+                ? null
+                : sancaiRepository.getCategoryById(volume.getCategoryId());
+        List<ClassicsContentTag> tags =
+                repository.listTags(ClassicsContentType.SANCAI_ENTRY.value(), entry.contentId(), SortDirection.ASC);
+        List<ClassicsContentQaPair> qaPairs =
+                repository.listQaPairs(ClassicsContentType.SANCAI_ENTRY.value(), entry.contentId(), SortDirection.ASC);
+        return snapshotAssembler.toSancaiSnapshotJson(
+                entry,
+                volume == null ? null : volume.getTitle(),
+                category == null || category.getId() == null
+                        ? null
+                        : category.getId().value(),
+                category == null ? null : category.getTitle(),
+                images.stream().map(this::toImageResource).toList(),
+                tags,
+                qaPairs);
     }
 
     private void removeTagRefIfExists(ClassicsContentTag tag) {

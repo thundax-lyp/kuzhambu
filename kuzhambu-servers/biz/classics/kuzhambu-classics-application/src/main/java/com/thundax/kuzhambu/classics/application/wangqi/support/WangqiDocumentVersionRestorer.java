@@ -19,7 +19,6 @@ import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRe
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
@@ -61,6 +60,10 @@ public class WangqiDocumentVersionRestorer {
         WangqiDocumentVersionSnapshot parsedSnapshot = WangqiDocumentVersionSnapshot.from(snapshot);
         WangqiDocument restored = toDocument(parsedSnapshot);
         restored.setId(current.getId());
+        restored.setLifecycleStatus(current.getLifecycleStatus());
+        restored.setTransitionStatus(current.getTransitionStatus());
+        restored.setCurrentPublicationJobId(current.getCurrentPublicationJobId());
+        restored.setVisibility(current.getVisibility());
         restored.setContentUpdatedAt(Instant.now());
         restoreTags(restored, parsedSnapshot);
         restoreQaPairs(restored, parsedSnapshot);
@@ -106,10 +109,6 @@ public class WangqiDocumentVersionRestorer {
         document.setDocumentTime(date(snapshot == null ? null : snapshot.documentTime()));
         document.setStorageObjectId(
                 StorageObjectIdCodec.toDomain(snapshot == null ? null : snapshot.storageObjectId()));
-        document.setVisibility(
-                snapshot == null || snapshot.visibility() == null
-                        ? null
-                        : enumValue(WangqiDocumentVisibility.class, snapshot.visibility()));
         return document;
     }
 

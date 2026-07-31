@@ -81,7 +81,6 @@ class OperationsDashboardApplicationServiceImplTest {
         assertEquals(5L, result.getTranslatedContentCount());
         assertEquals(4L, result.getImageReadyContentCount());
         assertEquals(3L, result.getVisualAssetReadyContentCount());
-        assertEquals(88L, result.getShareVisitCount());
         assertEquals(20L, result.getAiInvocationCount());
         assertEquals(18L, result.getAiSucceededInvocationCount());
         assertEquals(2L, result.getAiFailedInvocationCount());
@@ -127,7 +126,6 @@ class OperationsDashboardApplicationServiceImplTest {
         assertNull(result.getTranslatedContentCount());
         assertNull(result.getImageReadyContentCount());
         assertNull(result.getVisualAssetReadyContentCount());
-        assertNull(result.getShareVisitCount());
         assertNull(result.getAiInvocationCount());
         assertNull(result.getAiSucceededInvocationCount());
         assertNull(result.getAiFailedInvocationCount());
@@ -174,7 +172,6 @@ class OperationsDashboardApplicationServiceImplTest {
         assertNotNull(summaryGateway.permissions);
         assertEquals(permissionSnapshotWithSearchOnly(), summaryGateway.permissions);
         assertNull(result.getContentCount());
-        assertNull(result.getShareVisitCount());
         assertEquals(30L, result.getSearchCount());
         assertNull(result.getQaCount());
         assertEquals(new BigDecimal("150"), result.getAvgSearchLatencyMs());
@@ -325,7 +322,6 @@ class OperationsDashboardApplicationServiceImplTest {
                         .translatedContentCount(5L)
                         .imageReadyContentCount(4L)
                         .visualAssetReadyContentCount(3L)
-                        .shareVisitCount(88L)
                         .contentGrowthSeries(List.of(ClassicsContentGrowthPointFacadeDto.builder()
                                 .bucket("2026-06-01")
                                 .createdCount(2L)
@@ -396,23 +392,23 @@ class OperationsDashboardApplicationServiceImplTest {
     }
 
     private static OperationsDashboardPermissionSnapshot permissionSnapshotWithAllPrivileges() {
-        return new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true);
+        return new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true);
     }
 
     private static OperationsDashboardPermissionSnapshot permissionSnapshotWithNoPrivileges() {
-        return new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false, false);
+        return new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false);
     }
 
     private static OperationsDashboardPermissionSnapshot permissionSnapshotWithSearchOnly() {
-        return new OperationsDashboardPermissionSnapshot(false, false, true, false, false, false, false, false);
+        return new OperationsDashboardPermissionSnapshot(false, true, false, false, false, false, false);
     }
 
     private static OperationsDashboardPermissionSnapshot permissionSnapshotWithTaskOnly() {
-        return new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false, true);
+        return new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, true);
     }
 
     private static OperationsDashboardPermissionSnapshot permissionSnapshotWithHealthOnly() {
-        return new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, true, false);
+        return new OperationsDashboardPermissionSnapshot(false, false, false, false, false, true, false);
     }
 
     private static final class InMemoryHealthAlertRepository implements HealthAlertRepository {

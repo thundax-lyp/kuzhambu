@@ -17,7 +17,7 @@ Operations 是独立业务域，不属于 System 基础域，也不承载其他�
 - 备份、恢复和恢复前快照记录。
 - 健康检查摘要和运行指标查看。
 - 系统日志和业务审计的聚合访问入口。
-- 过期备份、过期分享、过期草稿和过期导出产物清理入口。
+- 过期备份、过期草稿和过期导出产物清理入口。
 - 长任务和批量任务运行状态查看。
 - Operations 自有报表记录、备份记录、恢复记录、清理任务记录、健康检查记录和运行状态快照。
 - 按权限聚合后的报表快照调用 render workers 生成 HTML 或 PDF 产物。
@@ -57,7 +57,7 @@ Operations 是独立业务域，不属于 System 基础域，也不承载其他�
   - `translatedContentCount`
   - `imageReadyContentCount`
   - `visualAssetReadyContentCount`
-  - `shareVisitCount`
+  - `portalVisitCount`
   - `topContents`：`contentId`、`contentType`、`title`、`visitCount`
   - `contentGrowthSeries`：`bucket`、`createdCount`
 - AI 必须提供以下 summary 字段：
@@ -100,7 +100,6 @@ Operations 是独立业务域，不属于 System 基础域，也不承载其他�
 ### 清理任务
 
 - 必须支持过期备份清理入口。
-- 必须支持过期分享清理入口。
 - 必须支持过期草稿清理入口。
 - 必须支持过期导出产物清理入口。
 - 必须记录每次清理任务的类型、发起人、开始时间、完成时间、总数、成功数、失败数和失败原因。
@@ -111,6 +110,7 @@ Operations 是独立业务域，不属于 System 基础域，也不承载其他�
 - 必须支持健康检查摘要查看。
 - 必须支持运行指标查看。
 - 必须支持查看长任务和批量任务的运行状态、成功数、失败数和失败原因。
+- 长任务运行状态必须包含 Classics 发布和下线任务的只读快照；Classics 专门菜单同样只读，不提供任务重试、人工状态推进或其他管理操作。
 - 必须支持记录关键组件健康检查结果、检查时间、耗时和说明信息。
 
 ### 运维入口
@@ -132,7 +132,7 @@ Operations 是独立业务域，不属于 System 基础域，也不承载其他�
 
 - Operations 可以聚合展示其他业务域统计，但不拥有其他业务域的业务事实。
 - Operations 不得复制其他业务域主表结构或改写其他业务域主事实。
-- 内容、翻译、配图、导出、分享和草稿相关事实归 Classics。
+- 内容、翻译、配图、导出、发布任务、Portal 访问和草稿相关事实归 Classics。
 - AI 调用统计来源归 AI 域。
 - 搜索和问答统计来源归 Discovery 域。
 - 标签覆盖率和图谱质量统计来源归 Knowledge 域。
@@ -154,14 +154,14 @@ Operations 是独立业务域，不属于 System 基础域，也不承载其他�
 
 ## Acceptance Criteria
 
-- 管理员能查看内容、访问、AI 调用、搜索、问答、分享和热门内容等聚合统计。
+- 管理员能查看内容、Portal 访问、AI 调用、搜索、问答和热门内容等聚合统计。
 - 管理员能查看图表化的运营运维仪表盘。
 - 管理员能生成并导出周报或月报。
 - 管理员能查看报表生成记录和导出结果。
 - 管理员能触发手动备份并看到结果。
 - 管理员能查看备份列表并发起恢复。
 - 恢复失败时保留恢复前快照记录。
-- 管理员能发起过期备份、过期分享、过期草稿和过期导出产物清理。
+- 管理员能发起过期备份、过期草稿和过期导出产物清理。
 - 管理员能查看清理任务结果和单项失败原因。
 - 管理员能查看健康检查摘要、关键组件状态和运行指标。
 - 管理员能查看长任务和批量任务的运行状态。
@@ -171,7 +171,7 @@ Operations 是独立业务域，不属于 System 基础域，也不承载其他�
 ## Related Documents
 
 - [SYSTEM-REQUIREMENTS.md](./SYSTEM-REQUIREMENTS.md)：提供 admin 权限、当前认证上下文、系统日志和业务审计能力。
-- [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：提供内容、导出、分享和草稿相关统计及清理对象。
+- [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：提供内容、导出、Portal 访问和草稿相关统计及清理对象。
 - [AI-REQUIREMENTS.md](./AI-REQUIREMENTS.md)：提供 AI 调用统计来源。
 - [WORKERS-REQUIREMENTS.md](./WORKERS-REQUIREMENTS.md)：提供 render workers 报表生成边界；AI workers 调用必须经由 AI 域。
 - [KNOWLEDGE-REQUIREMENTS.md](./KNOWLEDGE-REQUIREMENTS.md)：提供标签覆盖率和图谱质量统计来源。

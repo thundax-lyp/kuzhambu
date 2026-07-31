@@ -10,7 +10,6 @@ public class OperationsDashboardPermissionResolver {
     private static final String CLASSICS_SANC_AI_PERMISSION = "classics:sancai:view";
     private static final String CLASSICS_WANGQI_PERMISSION = "classics:wangqi:view";
     private static final String CLASSICS_MINGCUSTOMS_PERMISSION = "classics:mingcustoms:view";
-    private static final String CLASSICS_SHARING_PERMISSION = "classics:sharing:view";
     private static final String DISCOVERY_SEARCH_PERMISSION = "discovery:search:view";
     private static final String DISCOVERY_QA_PERMISSION = "discovery:qa:view";
     private static final String AI_INVOCATION_PERMISSION = "ai:invocation:view";
@@ -31,7 +30,6 @@ public class OperationsDashboardPermissionResolver {
                         CLASSICS_SANC_AI_PERMISSION,
                         CLASSICS_WANGQI_PERMISSION,
                         CLASSICS_MINGCUSTOMS_PERMISSION),
-                permissionAuthorizationService.isPermittedAny(CLASSICS_SHARING_PERMISSION),
                 permissionAuthorizationService.isPermittedAny(DISCOVERY_SEARCH_PERMISSION),
                 permissionAuthorizationService.isPermittedAny(DISCOVERY_QA_PERMISSION),
                 permissionAuthorizationService.isPermittedAny(AI_INVOCATION_PERMISSION),

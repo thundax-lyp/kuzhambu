@@ -27,14 +27,12 @@ class ClassicsContentPermissionSupportTest {
     }
 
     @Test
-    void shouldCheckViewEditExportAndSharePermissions() {
-        Set<String> permissions = Set.of(
-                "classics:sancai:view", "classics:sancai:edit", "classics:content:export", "classics:sharing:edit");
+    void shouldCheckViewEditAndExportPermissions() {
+        Set<String> permissions = Set.of("classics:sancai:view", "classics:sancai:edit", "classics:content:export");
 
         assertTrue(ClassicsContentPermissionSupport.canView(ClassicsContentType.SANCAI_ENTRY, permissions));
         assertTrue(ClassicsContentPermissionSupport.canEdit(ClassicsContentType.SANCAI_ENTRY, permissions));
         assertTrue(ClassicsContentPermissionSupport.canExport(ClassicsContentType.SANCAI_ENTRY, permissions));
-        assertTrue(ClassicsContentPermissionSupport.canShare(ClassicsContentType.SANCAI_ENTRY, permissions));
         assertFalse(ClassicsContentPermissionSupport.canView(ClassicsContentType.WANGQI_DOCUMENT, permissions));
     }
 
@@ -43,6 +41,5 @@ class ClassicsContentPermissionSupportTest {
         assertFalse(ClassicsContentPermissionSupport.canView(ClassicsContentType.SANCAI_ENTRY, null));
         assertFalse(ClassicsContentPermissionSupport.canEdit(ClassicsContentType.SANCAI_ENTRY, null));
         assertFalse(ClassicsContentPermissionSupport.canExport(ClassicsContentType.SANCAI_ENTRY, null));
-        assertFalse(ClassicsContentPermissionSupport.canShare(ClassicsContentType.SANCAI_ENTRY, null));
     }
 }

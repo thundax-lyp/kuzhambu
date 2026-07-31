@@ -33,6 +33,19 @@ public class ClassicsContentSnapshotAssembler {
                 SancaiEntryVersionSnapshot.fromImageResources(entry, images).toMap());
     }
 
+    public String toSancaiSnapshotJson(
+            SancaiEntry entry,
+            String volumeTitle,
+            Long categoryId,
+            String categoryTitle,
+            List<SancaiEntryVersionSnapshot.ImageResource> images,
+            List<ClassicsContentTag> tags,
+            List<ClassicsContentQaPair> qaPairs) {
+        return toJson(SancaiEntryVersionSnapshot.fromImageResources(
+                        entry, volumeTitle, categoryId, categoryTitle, images, tags, qaPairs)
+                .toMap());
+    }
+
     private Map<String, Object> toSnapshot(
             Versionable content, List<ClassicsContentTag> tags, List<ClassicsContentQaPair> qaPairs) {
         if (content.contentType() == ClassicsContentType.SANCAI_ENTRY) {
