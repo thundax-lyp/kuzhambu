@@ -85,7 +85,7 @@ hex(hmac_sha256(internalWorkerSecret, signingInput))
 - workers 不根据用户身份改变输出。
 - workers 不回调 AI 域业务接口。
 - AI 域不暴露给 workers 读取模型配置、提示词、候选结果或任务状态的接口。
-- Java servers 必须在调用 workers 前完成用户认证、权限、业务状态和内容可见性校验。
+- Java servers 必须在调用 workers 前完成用户认证、权限、业务状态和内容生命周期校验。
 - workers 的内部服务认证只证明调用方服务可信，不证明最终用户有业务权限。
 - 包含 `modelConfig.apiKey` 的请求必须在受保护的内部网络或 TLS 通道上传输。
 

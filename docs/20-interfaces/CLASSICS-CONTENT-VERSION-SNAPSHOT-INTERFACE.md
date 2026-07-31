@@ -4,7 +4,7 @@
 
 本文档固定古籍正式内容版本 `classics_content_version.snapshot_json` 的稳定 JSON 契约。
 
-该快照用于版本历史、历史恢复和公开分享展示。分享创建时，`classics_share_target.content_snapshot_json` 必须复制绑定的正式版本 `snapshot_json`，不得由 Admin Web 请求体或分享专用序列化逻辑重新生成。
+该快照用于版本历史、历史恢复和 Portal 已发布稿件展示。Portal 读取当前已发布稿件，不维护脱离内容生命周期的外发快照。
 
 ## Common Rules
 
@@ -31,7 +31,6 @@
   "translationText": "译文",
   "summary": "摘要",
   "lifecycleStatus": "PUBLISHED",
-  "visibility": "PUBLIC",
   "translationStatus": "PENDING",
   "imageStatus": "PENDING",
   "visualAssetStatus": "PENDING",
@@ -77,7 +76,6 @@
 | `translationText` | string/null | 译文 |
 | `summary` | string/null | 摘要 |
 | `lifecycleStatus` | string/null | 生命周期状态 |
-| `visibility` | string/null | 可见性 |
 | `translationStatus` | string/null | 翻译状态 |
 | `imageStatus` | string/null | 图片状态 |
 | `visualAssetStatus` | string/null | 视觉资产状态 |
@@ -99,7 +97,7 @@
 | `currentUsed` | boolean | 是否当前使用图。`true` 标识当前展示主图，`false` 标识同条目其他备选图 |
 | `priority` | number | 图片展示排序值 |
 
-`SANCAI_ENTRY.images` 不包含 `previewUrl` 或 `downloadUrl`，不承诺新增数据库字段。Portal 分享响应层会根据 `storageObjectId` 动态装配资源对象和读取 URL。已创建分享的 `classics_share_target.content_snapshot_json` 不回写；当前图变化只影响后续版本、分享、导出和展示 payload。
+`SANCAI_ENTRY.images` 不包含 `previewUrl` 或 `downloadUrl`，不承诺新增数据库字段。Portal 响应层会根据 `storageObjectId` 动态装配资源对象和读取 URL。当前图变化只影响后续版本、导出和展示 payload。
 
 ## WANGQI_DOCUMENT
 
@@ -116,7 +114,7 @@
   "content": "正文",
   "documentTime": "2026-06-20T10:00:00Z",
   "storageObjectId": 2001,
-  "visibility": "PUBLIC"
+  "lifecycleStatus": "PUBLISHED"
 }
 ```
 
@@ -133,7 +131,7 @@
 | `content` | string/null | 正文内容 |
 | `documentTime` | string/null | 文档时间 |
 | `storageObjectId` | number/null | 原始文件对象 ID |
-| `visibility` | string/null | 可见性 |
+| `lifecycleStatus` | string/null | 生命周期状态 |
 
 ## MING_CUSTOMS
 
@@ -152,7 +150,7 @@
   "contentFormat": "MARKDOWN",
   "content": "正文",
   "originalExcerpts": "原文摘录",
-  "visibility": "PUBLIC"
+  "lifecycleStatus": "PUBLISHED"
 }
 ```
 
@@ -171,7 +169,7 @@
 | `contentFormat` | string/null | 正文格式 |
 | `content` | string/null | 正文内容 |
 | `originalExcerpts` | string/null | 原文摘录 |
-| `visibility` | string/null | 可见性 |
+| `lifecycleStatus` | string/null | 生命周期状态 |
 
 ## Mapping Ownership
 
@@ -181,6 +179,6 @@
 - `WangqiDocumentVersionSnapshot`
 - `MingCustomsVersionSnapshot`
 
-Portal 分享详情只展示 `classics_share_target.content_snapshot_json` 中已经固化的快照；Portal API 不回查主内容重新组装展示数据。
+Portal 详情只展示当前已发布稿件对应的正式版本快照；Portal API 不从前端请求体重新组装展示数据。
 
 对外响应可以在快照稳定 ID 的基础上动态补资源对象，例如 `WANGQI_DOCUMENT.storageObjectId` 可装配为 `target.storageObject`，`SANCAI_ENTRY.images[].storageObjectId` 可装配为 `target.images[].storageObject`。该装配结果不回写 `snapshot_json`。
