@@ -815,7 +815,7 @@ flowchart TD
 
 | Stage | Status | Expected files | Gate |
 | --- | --- | ---: | --- |
-| 1. Foundation | `ACTIVE` | 100-170 | contracts/static checks and full Java checks |
+| 1. Foundation | `COMPLETE` | 100-170 | contracts/static checks and full Java checks |
 | 2. External systems and job core | `PENDING` | 80-150 | full Java checks |
 | 3. Runtime and Admin | `PENDING` | 100-180 | full Java and admin-web checks |
 | 4. Portal cutover and sharing frontend removal | `PENDING` | 50-100 | full Java/frontend checks and sharing residue scans |
@@ -987,106 +987,17 @@ Stage 6 不新增生产故障开关，不提交 `dev.env`、数据库 dump、完
 
 ### Stage 1: Foundation
 
-Status: ACTIVE
+Status: COMPLETE
 
-该 stage 固定接口、拆除 sharing server，并建立与目标 schema 对齐的 publication domain/persistence。
-
-#### Work Package 1A: Freeze contracts
-
-Actions:
-
-- [x] 记录分支基线 commit 和四组 baseline 扫描结果。
-- [x] 新增 `docs/20-interfaces/CLASSICS-PUBLICATION-INTERFACE.md`。
-- [x] 把本文 `Admin HTTP`、`Portal HTTP`、`Runtime Defaults` 和错误语义原样固化到接口文档。
-- [x] 把 Discovery facade 的 PREPARE、READY、OFFLINE、delete、probe 和 Portal query 契约固化到接口文档。
-- [x] 把 FastGPT `v4.15.1` method/path/payload、分页上限、`forbid`、超时和 already-missing 契约原样固化到接口文档。
-- [x] 把正式 snapshot、ES document 和 FastGPT fragment 的字段映射、顺序、空值和 validation 规则固化到接口文档。
-- [x] 校准三类 snapshot record、稳定接口文档和 round-trip tests，彻底删除 snapshot 中的 `visibility`。
-- [x] 把 milestone 后置条件和 Schedule query 语义固化到接口文档或对应设计引用。
-- [x] 明确 controller 和 facade 尚未实现；对应 contract tests 跟随各实现 stage 落地，并以本接口文档为断言基准。
-
-FastGPT 后置条件必须明确：
-
-- `FASTGPT_PREPARED` 不能根据 training status、data count 或 `forbid` 单独推断。
-- milestone 尚未持久化时，重试重新执行完整 full replace。
-- collection create 超时且 ID 未回填时，允许再次创建产生极端孤儿 collection；当前阶段不增加复杂去重或 fencing。
-- `FASTGPT_READY` 只通过已记录 collection ID 的 `forbid = false` 判断。
-- `FASTGPT_DISABLED` 只通过已记录 collection ID 的 `forbid = true` 判断。
-- cleanup 的 collection 已不存在视为成功。
-
-Admin 契约不得提供：
-
-- cancel；
-- retry；
-- milestone advance；
-- job edit；
-- manual cleanup。
-
-Exit:
-
-- 所有接口字段和状态值无歧义。
-- 后置条件和超时语义与专项设计一致。
-- 文档引用存在，Mermaid flowchart 显式使用 ELK。
-- `git diff --check` 通过。
-
-Commit boundary: publication 跨模块契约作为一个完整、可独立审阅的工程判断提交。
-
-#### Work Package 1B: Remove sharing server
-
-Actions:
-
-- [x] 删除 Classics domain/application/infra/interface 的 `sharing` package。
-- [x] 删除 sharing tests、token generator/hasher、properties 和 configuration。
-- [x] 删除 share facade DTO、ID、enum、repository、mapper 和 assembler。
-- [x] 删除其他 server module 对 sharing facade/API 的引用。
-- [x] 删除分享专用 module dependency 和环境变量。
-- [x] 保留 admin-web 和 portal-web sharing 源码到 Stage 4；它们必须继续独立编译，但后端接口在本 stage 后不再存在。
-
-Exit:
-
-- server 中没有 live sharing bean、route、repository 或 token configuration。
-- `rg` 仅允许命中尚待 Stage 4 删除的前端和历史文档说明。
-- 完整 Java formatter/static/test 门禁通过。
-
-Commit boundary: sharing server 的定义、实现、测试和跨模块残留共同构成一次完整能力拆除，
-不得按目录拆出不可编译的中间提交。
-
-#### Work Package 1C: Add publication domain and persistence
-
-Actions:
-
-- [x] 增加 lifecycle、transition、job type、milestone、result 和 cleanup enum。
-- [x] 增加 publication job ID、execution token 和 external ref 值对象。
-- [x] 三类稿件实体、DO 和 assembler 映射 `lifecycleStatus`、`transitionStatus`、`currentPublicationJobId`。
-- [x] 增加 `ClassicsPublicationJob` 全字段模型。
-- [x] 增加 job mapper、assembler、repository 和 row-lock 查询。
-- [x] 增加 execution claim、thread start、milestone advance、retry release 和 cleanup claim 条件更新。
-- [x] 增加按 content type 锁定、读取和更新三类稿件的 repository 能力。
-- [x] 增加 JSON、null lease、enum 和 stale token persistence tests。
-
-本 work package 只增加 publication 持久化能力。旧非 sharing `visibility` 调用方暂不跨域删除，在 Stage 5 收口。
-
-Exit:
-
-- job 所有 schema 字段可 round-trip。
-- 条件更新 affected-row count 能证明 token 所有权。
-- stale token 不能推进 milestone、结果或 cleanup。
-- 完整 Java formatter/static/test 门禁通过。
-
-Commit boundaries:
-
-1. 稿件发布状态模型及三类稿件映射。
-2. 正式版本 snapshot 契约及 round-trip。
-3. publication job 全字段和条件更新持久化协议。
-4. 三类稿件统一锁定、读取和条件更新协议。
-
-Stage 1 exit:
-
-- Contracts、sharing server removal 和 publication persistence 全部完成。
-- server 中没有 live sharing route/bean。
-- publication job 条件更新测试通过。
-- 完整 Java formatter/static/test 门禁通过。
-- 工作区干净，Stage 1 已拆为多个小 commit。
+- Functional commits: `722855678^..a885a4fbb`
+- Delivery PR: `#193` (`merge`)
+- Files: 138
+- Verification: full 58-module Java gate; publication persistence focused tests; sharing,
+  MQ and visibility residue scans; PR-wide frontend, workers, governance and database checks
+- Result: 发布契约、正式 snapshot、服务端 sharing 拆除、publication domain/job persistence
+  和三类稿件状态持久化已经形成可独立验证的 Stage 1 基础。
+- Deferred: frontend sharing removal (Stage 4), Portal publication cutover (Stage 4),
+  legacy MQ and remaining visibility cleanup (Stage 5), database reset and runtime smoke (Stage 6).
 
 ### Stage 2: External systems and job core
 
