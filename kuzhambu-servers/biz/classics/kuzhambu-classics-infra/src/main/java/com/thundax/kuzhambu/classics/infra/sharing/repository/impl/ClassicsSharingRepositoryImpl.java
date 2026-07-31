@@ -86,7 +86,8 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
                 contentType,
                 title,
                 issuedAfter,
-                issuedBefore);
+                issuedBefore,
+                Instant.now());
         return PageResult.of(
                 (int) dataPage.getCurrent(),
                 (int) dataPage.getSize(),
@@ -97,7 +98,7 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
     @Override
     public List<ClassicsSharePortalListItem> listTopPortalShares(String visibility, int limit) {
         return ClassicsSharingPersistenceAssembler.toPortalListItemDomainList(
-                targetMapper.listTopPortalShares(visibility, limit));
+                targetMapper.listTopPortalShares(visibility, limit, Instant.now()));
     }
 
     public ClassicsShareLinkId insertLink(ClassicsShareLink link) {

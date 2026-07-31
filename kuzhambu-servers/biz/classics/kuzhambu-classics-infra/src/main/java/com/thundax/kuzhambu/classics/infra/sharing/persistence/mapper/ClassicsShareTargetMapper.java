@@ -32,7 +32,7 @@ public interface ClassicsShareTargetMapper extends BaseMapper<ClassicsShareTarge
         "where l.visibility = #{visibility}",
         "  and l.status = #{linkStatus}",
         "  and t.target_status in (#{targetStatus}, #{legacyTargetStatus})",
-        "  and (l.expires_at is null or l.expires_at &gt; now())",
+        "  and (l.expires_at is null or l.expires_at &gt; #{now})",
         "<if test='contentType != null and contentType != \"\"'>",
         "  and t.content_type = #{contentType}",
         "</if>",
@@ -57,7 +57,8 @@ public interface ClassicsShareTargetMapper extends BaseMapper<ClassicsShareTarge
             @Param("contentType") String contentType,
             @Param("title") String title,
             @Param("issuedAfter") Instant issuedAfter,
-            @Param("issuedBefore") Instant issuedBefore);
+            @Param("issuedBefore") Instant issuedBefore,
+            @Param("now") Instant now);
 
     @Select({
         "<script>",
@@ -81,11 +82,11 @@ public interface ClassicsShareTargetMapper extends BaseMapper<ClassicsShareTarge
         "where l.visibility = #{visibility}",
         "  and l.status = 'ACTIVE'",
         "  and t.target_status in ('AVAILABLE', 'ACTIVE')",
-        "  and (l.expires_at is null or l.expires_at &gt; now())",
+        "  and (l.expires_at is null or l.expires_at &gt; #{now})",
         "order by l.access_count desc, l.issued_at desc, t.priority asc",
         "limit #{limit}",
         "</script>"
     })
     java.util.List<ClassicsSharePortalListItemDO> listTopPortalShares(
-            @Param("visibility") String visibility, @Param("limit") int limit);
+            @Param("visibility") String visibility, @Param("limit") int limit, @Param("now") Instant now);
 }
