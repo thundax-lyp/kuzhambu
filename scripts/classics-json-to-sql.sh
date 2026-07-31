@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
-# Generate Classics seed SQL from structured Sancai source data.
+# Generate Classics seed SQL from structured source data.
 #
-# This script adapts the classics_sancai_tree source shape to the
-# current Classics schema. It writes SQL only; it does not connect to MySQL.
+# It writes SQL only; it does not connect to MySQL.
 
 set -euo pipefail
 
 SOURCE="db/data-source/sancai-manuscripts.json"
 OUTPUT="db/data/classics.sql"
 TAG_SEED="db/data-source/sancai-tags.json"
+WANGQI_SOURCE="db/data-source/wangqi-documents-full.json"
+MING_SOURCE="db/data-source/ming-customs.json"
 
 usage() {
     cat <<'USAGE'
@@ -66,8 +67,28 @@ if [[ ! -f "$TAG_SEED" ]]; then
     exit 1
 fi
 
+if [[ ! -f "$WANGQI_SOURCE" || ! -f "$MING_SOURCE" ]]; then
+    echo "error: Classics source data is incomplete" >&2
+    exit 1
+fi
+
 if ! jq -e 'type == "array"' "$SOURCE" >/dev/null; then
     echo "error: invalid source data format, expected manuscript array" >&2
+    exit 1
+fi
+
+if ! jq -e 'type == "array" and all(.[]; .lifecycleStatus == "DRAFT")' "$SOURCE" >/dev/null; then
+    echo "error: invalid Sancai lifecycleStatus" >&2
+    exit 1
+fi
+
+if ! jq -e 'type == "array" and all(.[]; .lifecycleStatus == "DRAFT" and (.documentTime | type == "number"))' "$WANGQI_SOURCE" >/dev/null; then
+    echo "error: invalid Wangqi source data" >&2
+    exit 1
+fi
+
+if ! jq -e '.schema == "classics_ming_customs_seed" and (.items | type == "array" and length > 0) and all(.items[]; .lifecycleStatus == "DRAFT" and (.sourceRecordId | type == "number") and (.contentUpdatedAt | type == "number"))' "$MING_SOURCE" >/dev/null; then
+    echo "error: invalid Ming customs source data" >&2
     exit 1
 fi
 
@@ -78,24 +99,16 @@ fi
 
 mkdir -p "$(dirname "$OUTPUT")"
 TMP_OUTPUT=$(mktemp /tmp/classics-data-XXXXXX)
-PRESERVED_TAIL=$(mktemp /tmp/classics-data-tail-XXXXXX)
-EPOCH_NORMALIZER_DIR=$(mktemp -d /tmp/classics-epoch-normalizer-XXXXXX)
-EPOCH_NORMALIZER="$EPOCH_NORMALIZER_DIR/ClassicsEpochNormalizer.java"
 cleanup() {
-    rm -f "$TMP_OUTPUT" "$PRESERVED_TAIL"
-    rm -rf "$EPOCH_NORMALIZER_DIR"
+    rm -f "$TMP_OUTPUT"
 }
 trap cleanup EXIT
-
-if [[ -f "$OUTPUT" ]]; then
-    awk '/^-- Generated from db\/data-source\/wangqi-documents-full\.json/ {found=1} found {print}' "$OUTPUT" > "$PRESERVED_TAIL"
-fi
 
 cat > "$TMP_OUTPUT" <<'SQL'
 SET NAMES utf8mb4;
 
--- Seed data generated from db/data-source/sancai-manuscripts.json.
--- Database ids and priorities are derived by generation script, not stored in source data.
+-- Seed data generated from structured JSON sources under db/data-source/.
+-- Sancai ids and priorities and Wangqi local ids are derived by this script.
 
 SQL
 
@@ -269,15 +282,16 @@ def volume_number_from_title(title):
   | to_entries[]
   | .key as $entry_index
   | .value as $entry
-  | "INSERT INTO `classics_sancai_entry` (`id`, `volume_id`, `title`, `original_text`, `translation_text`, `summary`, `lifecycle_status`, `visibility`, `translation_status`, `image_status`, `visual_asset_status`, `refinement_status`, `priority`, `current_version_id`, `current_version_no`, `current_versioned_at`, `content_updated_at`) VALUES (" +
+  | "INSERT INTO `classics_sancai_entry` (`id`, `volume_id`, `title`, `original_text`, `translation_text`, `summary`, `lifecycle_status`, `transition_status`, `current_publication_job_id`, `translation_status`, `image_status`, `visual_asset_status`, `refinement_status`, `priority`, `current_version_id`, `current_version_no`, `current_versioned_at`, `content_updated_at`) VALUES (" +
     (generated_entry_id($entries; $entry_index; $entry) | tostring) + ", " +
     (generated_volume_id($volumes; $entry.category; $entry.volume) | tostring) + ", " +
     sql_text($entry.title) + ", " +
     sql_text($entry.content) + ", " +
     sql_text($entry.translation) + ", " +
     sql_text($entry.summary) + ", " +
-    sql_text($entry.status // "PUBLISHED") + ", " +
-    sql_text("PUBLIC") + ", " +
+    sql_text($entry.lifecycleStatus // "DRAFT") + ", " +
+    sql_text("NONE") + ", " +
+    "NULL, " +
     sql_text(if (($entry.translation // "") == "") then "MISSING" else "READY" end) + ", " +
     sql_text("MISSING") + ", " +
     sql_text("MISSING") + ", " +
@@ -288,7 +302,7 @@ def volume_number_from_title(title):
     "NULL, " +
     sql_epoch_ms("2026-01-01 00:00:00.000") +
     ") ON DUPLICATE KEY UPDATE " +
-    "`volume_id` = VALUES(`volume_id`), `title` = VALUES(`title`), `original_text` = VALUES(`original_text`), `translation_text` = VALUES(`translation_text`), `summary` = VALUES(`summary`), `lifecycle_status` = VALUES(`lifecycle_status`), `visibility` = VALUES(`visibility`), `translation_status` = VALUES(`translation_status`), `image_status` = VALUES(`image_status`), `visual_asset_status` = VALUES(`visual_asset_status`), `refinement_status` = VALUES(`refinement_status`), `priority` = VALUES(`priority`), `current_version_id` = VALUES(`current_version_id`), `current_version_no` = VALUES(`current_version_no`), `current_versioned_at` = VALUES(`current_versioned_at`), `content_updated_at` = VALUES(`content_updated_at`);"
+    "`volume_id` = VALUES(`volume_id`), `title` = VALUES(`title`), `original_text` = VALUES(`original_text`), `translation_text` = VALUES(`translation_text`), `summary` = VALUES(`summary`), `lifecycle_status` = VALUES(`lifecycle_status`), `transition_status` = VALUES(`transition_status`), `current_publication_job_id` = VALUES(`current_publication_job_id`), `translation_status` = VALUES(`translation_status`), `image_status` = VALUES(`image_status`), `visual_asset_status` = VALUES(`visual_asset_status`), `refinement_status` = VALUES(`refinement_status`), `priority` = VALUES(`priority`), `current_version_id` = VALUES(`current_version_id`), `current_version_no` = VALUES(`current_version_no`), `current_versioned_at` = VALUES(`current_versioned_at`), `content_updated_at` = VALUES(`content_updated_at`);"
 ),
 "",
 "-- 三才图会条目问答",
@@ -348,59 +362,182 @@ def volume_number_from_title(title):
 )
 ' --slurpfile tag_seed "$TAG_SEED" "$SOURCE" >> "$TMP_OUTPUT"
 
-if [[ -s "$PRESERVED_TAIL" ]]; then
-    printf '\n' >> "$TMP_OUTPUT"
-    cat "$PRESERVED_TAIL" >> "$TMP_OUTPUT"
-fi
+cat >> "$TMP_OUTPUT" <<'SQL'
 
-cat > "$EPOCH_NORMALIZER" <<'JAVA'
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+-- 王圻文档
+-- Generated from db/data-source/wangqi-documents-full.json. Local document IDs are deterministic 1..14.
+DELETE FROM `classics_content_tag` WHERE `content_type` = 'WANGQI_DOCUMENT' AND (`content_id` BETWEEN 1 AND 14 OR `content_id` IN (400000000001, 400000000002));
+DELETE FROM `classics_content_qa_pair` WHERE `content_type` = 'WANGQI_DOCUMENT' AND (`content_id` BETWEEN 1 AND 14 OR `content_id` IN (400000000001, 400000000002));
+DELETE FROM `classics_content_version` WHERE `content_type` = 'WANGQI_DOCUMENT' AND (`content_id` BETWEEN 1 AND 14 OR `content_id` IN (400000000001, 400000000002));
+DELETE FROM `classics_wangqi_document_event` WHERE `document_id` BETWEEN 1 AND 14 OR `document_id` IN (400000000001, 400000000002);
+DELETE FROM `classics_wangqi_document` WHERE `id` BETWEEN 1 AND 14 OR `id` IN (400000000001, 400000000002);
 
-class ClassicsEpochNormalizer {
+SQL
 
-    private static final Pattern EPOCH_EXPRESSION = Pattern.compile(
-            "TIMESTAMPDIFF\\(MICROSECOND, '1970-01-01 08:00:00\\.000000', "
-                    + "'(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?)'\\) DIV 1000");
-    private static final ZoneId DISPLAY_ZONE = ZoneId.of("Asia/Shanghai");
-    private static final DateTimeFormatter DISPLAY_FORMAT =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+jq -r '
+def sql_text(v):
+  if v == null then "NULL"
+  else "CAST(FROM_BASE64(\"" + (v | tostring | @base64) + "\") AS CHAR CHARACTER SET utf8mb4)"
+  end;
 
-    public static void main(String[] args) throws IOException {
-        Path path = Path.of(args[0]);
-        String sql = Files.readString(path);
-        Matcher matcher = EPOCH_EXPRESSION.matcher(sql);
-        StringBuffer normalized = new StringBuffer();
-        while (matcher.find()) {
-            matcher.appendReplacement(normalized, Long.toString(toEpochMillis(matcher.group(1))));
-        }
-        matcher.appendTail(normalized);
-        Files.writeString(path, normalized.toString());
-    }
+sort_by(.id) as $documents
+| (
+    $documents
+    | to_entries[]
+    | (.key + 1) as $local_id
+    | .value as $document
+    | "INSERT INTO `classics_wangqi_document` (`id`, `title`, `summary`, `content_format`, `content`, `document_time`, `storage_object_id`, `lifecycle_status`, `transition_status`, `current_publication_job_id`, `current_version_id`, `current_version_no`, `current_versioned_at`, `content_updated_at`) VALUES (" +
+      ($local_id | tostring) + ", " +
+      sql_text($document.title) + ", " +
+      sql_text($document.summary) + ", " +
+      "\u0027MARKDOWN\u0027, " +
+      sql_text($document.content) + ", " +
+      ($document.documentTime | tostring) + ", NULL, " +
+      "\u0027" + $document.lifecycleStatus + "\u0027, \u0027NONE\u0027, NULL, NULL, NULL, NULL, " +
+      ($document.documentTime | tostring) + ");"
+  ),
+  "",
+  (
+    $documents
+    | to_entries[]
+    | (.key + 1) as $local_id
+    | .value as $document
+    | "INSERT INTO `classics_wangqi_document_event` (`id`, `document_id`, `title`, `occurred_at`, `occurred_label`, `summary`, `priority`) VALUES (" +
+      ($local_id | tostring) + ", " +
+      ($local_id | tostring) + ", " +
+      sql_text($document.title) + ", " +
+      ($document.documentTime | tostring) + ", " +
+      sql_text($document.eventOccurredLabel) + ", " +
+      sql_text($document.summary) + ", " +
+      ($local_id | tostring) + ");"
+  ),
+  "",
+  (
+    [
+      $documents
+      | to_entries[]
+      | (.key + 1) as $local_id
+      | .value as $document
+      | ($document.tags // [])[]
+      | {content_id: $local_id, tag: .}
+    ]
+    | to_entries[]
+    | "INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_name_snapshot`, `source`, `status`, `priority`) VALUES (" +
+      sql_text("WANGQI_DOCUMENT") + ", " +
+      (.value.content_id | tostring) + ", " +
+      sql_text(.value.tag) + ", " +
+      sql_text("MANUAL") + ", " +
+      sql_text("ACTIVE") + ", " +
+      ((.key + 4001) | tostring) + ");"
+  ),
+  "",
+  (
+    [
+      $documents
+      | to_entries[]
+      | (.key + 1) as $local_id
+      | .value as $document
+      | ($document.qa_pairs // [])[]
+      | {content_id: $local_id, qa: .}
+    ]
+    | to_entries[]
+    | "INSERT INTO `classics_content_qa_pair` (`content_type`, `content_id`, `question`, `answer`, `source`, `priority`) VALUES (" +
+      sql_text("WANGQI_DOCUMENT") + ", " +
+      (.value.content_id | tostring) + ", " +
+      sql_text(.value.qa.question) + ", " +
+      sql_text(.value.qa.answer) + ", " +
+      sql_text("MANUAL") + ", " +
+      ((.key + 5001) | tostring) + ");"
+  ),
+  "",
+  "ALTER TABLE `classics_wangqi_document` AUTO_INCREMENT = 15;",
+  "ALTER TABLE `classics_wangqi_document_event` AUTO_INCREMENT = 15;"
+' "$WANGQI_SOURCE" >> "$TMP_OUTPUT"
 
-    private static long toEpochMillis(String displayTime) {
-        String text = displayTime.replace('T', ' ');
-        if (!text.contains(".")) {
-            text = text + ".000000";
-        } else {
-            int fractionLength = text.length() - text.indexOf('.') - 1;
-            text = text + "000000".substring(fractionLength);
-        }
-        return LocalDateTime.parse(text, DISPLAY_FORMAT)
-                .atZone(DISPLAY_ZONE)
-                .toInstant()
-                .toEpochMilli();
-    }
-}
-JAVA
+cat >> "$TMP_OUTPUT" <<'SQL'
 
-java "$EPOCH_NORMALIZER" "$TMP_OUTPUT"
+-- 明代习俗
+DELETE FROM `classics_content_tag` WHERE `content_type` = 'MING_CUSTOMS';
+DELETE FROM `classics_content_qa_pair` WHERE `content_type` = 'MING_CUSTOMS';
+DELETE FROM `classics_ming_customs_keyword`;
+DELETE FROM `classics_ming_customs_entry`;
+SQL
+
+jq -r '
+def sql_text(v):
+  if v == null then "NULL"
+  else "CAST(FROM_BASE64(\"" + (v | tostring | @base64) + "\") AS CHAR CHARACTER SET utf8mb4)"
+  end;
+
+.items as $entries
+| (
+    $entries[]
+    | "INSERT INTO `classics_ming_customs_entry` (`id`, `title`, `category`, `chapter`, `section`, `summary`, `content_format`, `content`, `original_excerpts`, `lifecycle_status`, `transition_status`, `current_publication_job_id`, `current_version_id`, `current_version_no`, `current_versioned_at`, `content_updated_at`) VALUES (" +
+      ((.sourceRecordId + 500000000000) | tostring) + ", " +
+      sql_text(.title) + ", " +
+      sql_text(.category) + ", " +
+      sql_text(.chapter) + ", " +
+      sql_text(.section) + ", " +
+      sql_text(.summary) + ", " +
+      sql_text(.contentFormat) + ", " +
+      sql_text(.content) + ", " +
+      sql_text(.originalExcerpts) + ", " +
+      sql_text(.lifecycleStatus) + ", " +
+      sql_text("NONE") + ", NULL, NULL, NULL, NULL, " +
+      (.contentUpdatedAt | tostring) +
+      ") ON DUPLICATE KEY UPDATE `title` = VALUES(`title`), `category` = VALUES(`category`), `chapter` = VALUES(`chapter`), `section` = VALUES(`section`), `summary` = VALUES(`summary`), `content_format` = VALUES(`content_format`), `content` = VALUES(`content`), `original_excerpts` = VALUES(`original_excerpts`), `lifecycle_status` = VALUES(`lifecycle_status`), `transition_status` = VALUES(`transition_status`), `current_publication_job_id` = VALUES(`current_publication_job_id`), `current_version_id` = VALUES(`current_version_id`), `current_version_no` = VALUES(`current_version_no`), `current_versioned_at` = VALUES(`current_versioned_at`), `content_updated_at` = VALUES(`content_updated_at`);"
+  ),
+  "",
+  (
+    [
+      $entries[]
+      | (.sourceRecordId + 500000000000) as $content_id
+      | (.keywords // [])[]
+      | {content_id: $content_id, keyword: .}
+    ]
+    | to_entries[]
+    | "INSERT INTO `classics_ming_customs_keyword` (`id`, `custom_id`, `keyword`, `priority`) VALUES (" +
+      ((.key + 510000000001) | tostring) + ", " +
+      (.value.content_id | tostring) + ", " +
+      sql_text(.value.keyword) + ", " +
+      ((.key + 900001) | tostring) +
+      ") ON DUPLICATE KEY UPDATE `custom_id` = VALUES(`custom_id`), `keyword` = VALUES(`keyword`), `priority` = VALUES(`priority`);"
+  ),
+  "",
+  (
+    [
+      $entries[]
+      | (.sourceRecordId + 500000000000) as $content_id
+      | (.tags // [])[]
+      | {content_id: $content_id, tag: .}
+    ]
+    | to_entries[]
+    | "INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_name_snapshot`, `source`, `status`, `priority`) VALUES (" +
+      sql_text("MING_CUSTOMS") + ", " +
+      (.value.content_id | tostring) + ", " +
+      sql_text(.value.tag) + ", " +
+      sql_text("MANUAL") + ", " +
+      sql_text("ACTIVE") + ", " +
+      ((.key + 6001) | tostring) + ");"
+  ),
+  "",
+  (
+    [
+      $entries[]
+      | (.sourceRecordId + 500000000000) as $content_id
+      | (.qa // [])[]
+      | {content_id: $content_id, qa: .}
+    ]
+    | to_entries[]
+    | "INSERT INTO `classics_content_qa_pair` (`content_type`, `content_id`, `question`, `answer`, `source`, `priority`) VALUES (" +
+      sql_text("MING_CUSTOMS") + ", " +
+      (.value.content_id | tostring) + ", " +
+      sql_text(.value.qa.question) + ", " +
+      sql_text(.value.qa.answer) + ", " +
+      sql_text("MANUAL") + ", " +
+      ((.key + 7001) | tostring) + ");"
+  )
+' "$MING_SOURCE" >> "$TMP_OUTPUT"
 
 cp "$TMP_OUTPUT" "$OUTPUT"
 cleanup
