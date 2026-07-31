@@ -79,7 +79,13 @@ fi
 mkdir -p "$(dirname "$OUTPUT")"
 TMP_OUTPUT=$(mktemp /tmp/classics-data-XXXXXX)
 PRESERVED_TAIL=$(mktemp /tmp/classics-data-tail-XXXXXX)
-trap 'rm -f "$TMP_OUTPUT" "$PRESERVED_TAIL"' EXIT
+EPOCH_NORMALIZER_DIR=$(mktemp -d /tmp/classics-epoch-normalizer-XXXXXX)
+EPOCH_NORMALIZER="$EPOCH_NORMALIZER_DIR/ClassicsEpochNormalizer.java"
+cleanup() {
+    rm -f "$TMP_OUTPUT" "$PRESERVED_TAIL"
+    rm -rf "$EPOCH_NORMALIZER_DIR"
+}
+trap cleanup EXIT
 
 if [[ -f "$OUTPUT" ]]; then
     awk '/^-- Generated from db\/data-source\/wangqi-documents-full\.json/ {found=1} found {print}' "$OUTPUT" > "$PRESERVED_TAIL"
@@ -347,7 +353,57 @@ if [[ -s "$PRESERVED_TAIL" ]]; then
     cat "$PRESERVED_TAIL" >> "$TMP_OUTPUT"
 fi
 
+cat > "$EPOCH_NORMALIZER" <<'JAVA'
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+class ClassicsEpochNormalizer {
+
+    private static final Pattern EPOCH_EXPRESSION = Pattern.compile(
+            "TIMESTAMPDIFF\\(MICROSECOND, '1970-01-01 08:00:00\\.000000', "
+                    + "'(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?)'\\) DIV 1000");
+    private static final ZoneId DISPLAY_ZONE = ZoneId.of("Asia/Shanghai");
+    private static final DateTimeFormatter DISPLAY_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+
+    public static void main(String[] args) throws IOException {
+        Path path = Path.of(args[0]);
+        String sql = Files.readString(path);
+        Matcher matcher = EPOCH_EXPRESSION.matcher(sql);
+        StringBuffer normalized = new StringBuffer();
+        while (matcher.find()) {
+            matcher.appendReplacement(normalized, Long.toString(toEpochMillis(matcher.group(1))));
+        }
+        matcher.appendTail(normalized);
+        Files.writeString(path, normalized.toString());
+    }
+
+    private static long toEpochMillis(String displayTime) {
+        String text = displayTime.replace('T', ' ');
+        if (!text.contains(".")) {
+            text = text + ".000000";
+        } else {
+            int fractionLength = text.length() - text.indexOf('.') - 1;
+            text = text + "000000".substring(fractionLength);
+        }
+        return LocalDateTime.parse(text, DISPLAY_FORMAT)
+                .atZone(DISPLAY_ZONE)
+                .toInstant()
+                .toEpochMilli();
+    }
+}
+JAVA
+
+java "$EPOCH_NORMALIZER" "$TMP_OUTPUT"
+
 cp "$TMP_OUTPUT" "$OUTPUT"
+cleanup
 trap - EXIT
 
 echo "generated: $OUTPUT"
