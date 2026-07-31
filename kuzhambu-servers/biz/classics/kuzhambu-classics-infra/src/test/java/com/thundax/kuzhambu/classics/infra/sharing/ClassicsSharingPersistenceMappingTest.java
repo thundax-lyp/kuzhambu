@@ -15,7 +15,6 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVis
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.assembler.ClassicsSharingPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareLinkDO;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareTargetDO;
-import com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsShareTargetMapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import org.apache.ibatis.annotations.Param;
@@ -68,7 +67,9 @@ class ClassicsSharingPersistenceMappingTest {
 
     @Test
     void portalShareSqlShouldCompareExpiryWithBoundInstant() throws Exception {
-        Method pageMethod = ClassicsShareTargetMapper.class.getMethod(
+        Class<?> mapperClass = Class.forName(
+                "com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsShareTargetMapper");
+        Method pageMethod = mapperClass.getMethod(
                 "pagePortalShares",
                 com.baomidou.mybatisplus.extension.plugins.pagination.Page.class,
                 String.class,
@@ -80,8 +81,8 @@ class ClassicsSharingPersistenceMappingTest {
                 java.time.Instant.class,
                 java.time.Instant.class,
                 java.time.Instant.class);
-        Method topMethod = ClassicsShareTargetMapper.class.getMethod(
-                "listTopPortalShares", String.class, int.class, java.time.Instant.class);
+        Method topMethod =
+                mapperClass.getMethod("listTopPortalShares", String.class, int.class, java.time.Instant.class);
         String pageSql =
                 String.join("\n", pageMethod.getAnnotation(Select.class).value());
         String topSql = String.join("\n", topMethod.getAnnotation(Select.class).value());
