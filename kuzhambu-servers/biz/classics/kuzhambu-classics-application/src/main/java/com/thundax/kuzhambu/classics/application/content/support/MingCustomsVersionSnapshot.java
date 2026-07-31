@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.application.content.support;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.common.core.id.Identifier;
@@ -24,7 +25,7 @@ public record MingCustomsVersionSnapshot(
         String contentFormat,
         String content,
         String originalExcerpts,
-        String visibility,
+        String lifecycleStatus,
         List<MingCustomsTagSnapshot> tags,
         List<MingCustomsQaPairSnapshot> qaPairs) {
 
@@ -46,13 +47,9 @@ public record MingCustomsVersionSnapshot(
                 value(entry.getContentFormat()),
                 entry.getContent(),
                 entry.getOriginalExcerpts(),
-                value(entry.getVisibility()),
-                tags == null
-                        ? List.of()
-                        : tags.stream().map(MingCustomsTagSnapshot::from).toList(),
-                qaPairs == null
-                        ? List.of()
-                        : qaPairs.stream().map(MingCustomsQaPairSnapshot::from).toList());
+                value(entry.getLifecycleStatus()),
+                tagSnapshots(tags),
+                qaPairSnapshots(qaPairs));
     }
 
     public Map<String, Object> toMap() {
@@ -68,7 +65,7 @@ public record MingCustomsVersionSnapshot(
         snapshot.put("contentFormat", contentFormat);
         snapshot.put("content", content);
         snapshot.put("originalExcerpts", originalExcerpts);
-        snapshot.put("visibility", visibility);
+        snapshot.put("lifecycleStatus", lifecycleStatus);
         snapshot.put(
                 "tags",
                 tags == null
@@ -95,9 +92,31 @@ public record MingCustomsVersionSnapshot(
                 text(snapshot, "contentFormat"),
                 text(snapshot, "content"),
                 text(snapshot, "originalExcerpts"),
-                text(snapshot, "visibility"),
+                text(snapshot, "lifecycleStatus"),
                 MingCustomsTagSnapshot.list(snapshot, "tags"),
                 MingCustomsQaPairSnapshot.list(snapshot, "qaPairs"));
+    }
+
+    private static List<MingCustomsTagSnapshot> tagSnapshots(List<ClassicsContentTag> tags) {
+        return tags == null
+                ? List.of()
+                : tags.stream()
+                        .filter(tag -> tag != null && tag.getStatus() == ClassicsContentTagStatus.ACTIVE)
+                        .map(MingCustomsTagSnapshot::from)
+                        .toList();
+    }
+
+    private static List<MingCustomsQaPairSnapshot> qaPairSnapshots(List<ClassicsContentQaPair> qaPairs) {
+        return qaPairs == null
+                ? List.of()
+                : qaPairs.stream()
+                        .filter(pair -> pair != null
+                                && pair.getQuestion() != null
+                                && !pair.getQuestion().isBlank()
+                                && pair.getAnswer() != null
+                                && !pair.getAnswer().isBlank())
+                        .map(MingCustomsQaPairSnapshot::from)
+                        .toList();
     }
 
     public record MingCustomsTagSnapshot(

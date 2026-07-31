@@ -15,6 +15,9 @@
 - ID 字段使用 number；缺失关联使用 `null`。
 - 允许字段值为 `null`，但不得省略本文档列出的字段。
 - 不包含 Java 类名、包名、内部对象结构或审计字段。
+- 三类快照均包含 `lifecycleStatus`、`tags` 和 `qaPairs`，且不包含 `visibility`。
+- `tags` 只包含 ACTIVE 标签，按 `priority ASC` 固定顺序。
+- `qaPairs` 只包含 question、answer 均非空白的有效问答，按 `priority ASC` 固定顺序。
 
 ## SANCAI_ENTRY
 
@@ -26,6 +29,9 @@
   "contentId": 300000003360,
   "contentUpdatedAt": "2026-06-20T10:00:00Z",
   "volumeId": 1,
+  "volumeTitle": "天部",
+  "categoryId": 10,
+  "categoryTitle": "天文",
   "title": "天地",
   "originalText": "原文",
   "translationText": "译文",
@@ -59,7 +65,9 @@
       "currentUsed": false,
       "priority": 2
     }
-  ]
+  ],
+  "tags": [],
+  "qaPairs": []
 }
 ```
 
@@ -71,6 +79,9 @@
 | `contentId` | number/null | 三才条目 ID |
 | `contentUpdatedAt` | string/null | 主内容业务更新时间 |
 | `volumeId` | number/null | 所属卷 ID |
+| `volumeTitle` | string/null | 创建快照时的所属卷标题 |
+| `categoryId` | number/null | 创建快照时的所属分类 ID |
+| `categoryTitle` | string/null | 创建快照时的所属分类标题 |
 | `title` | string/null | 标题 |
 | `originalText` | string/null | 原文 |
 | `translationText` | string/null | 译文 |
@@ -82,6 +93,8 @@
 | `refinementStatus` | string/null | 精修状态 |
 | `priority` | number | 卷内排序值 |
 | `images` | array | 三才条目图片资源快照，包含该条目的全部图片，按 `priority ASC` 排序 |
+| `tags` | array | ACTIVE 标签快照 |
+| `qaPairs` | array | 有效问答快照 |
 
 `images[]` 字段：
 
@@ -114,7 +127,9 @@
   "content": "正文",
   "documentTime": "2026-06-20T10:00:00Z",
   "storageObjectId": 2001,
-  "lifecycleStatus": "PUBLISHED"
+  "lifecycleStatus": "PUBLISHED",
+  "tags": [],
+  "qaPairs": []
 }
 ```
 
@@ -132,6 +147,8 @@
 | `documentTime` | string/null | 文档时间 |
 | `storageObjectId` | number/null | 原始文件对象 ID |
 | `lifecycleStatus` | string/null | 生命周期状态 |
+| `tags` | array | ACTIVE 标签快照 |
+| `qaPairs` | array | 有效问答快照 |
 
 ## MING_CUSTOMS
 
@@ -150,7 +167,9 @@
   "contentFormat": "MARKDOWN",
   "content": "正文",
   "originalExcerpts": "原文摘录",
-  "lifecycleStatus": "PUBLISHED"
+  "lifecycleStatus": "PUBLISHED",
+  "tags": [],
+  "qaPairs": []
 }
 ```
 
@@ -170,6 +189,31 @@
 | `content` | string/null | 正文内容 |
 | `originalExcerpts` | string/null | 原文摘录 |
 | `lifecycleStatus` | string/null | 生命周期状态 |
+| `tags` | array | ACTIVE 标签快照 |
+| `qaPairs` | array | 有效问答快照 |
+
+## Tag And QA Shapes
+
+三类快照的 `tags[]` 字段固定为：
+
+| 字段 | 类型 |
+| --- | --- |
+| `id` | number/null |
+| `tagId` | number/null |
+| `tagNameSnapshot` | string/null |
+| `source` | string/null |
+| `status` | string/null，固定为 `ACTIVE` |
+| `priority` | number/null |
+
+三类快照的 `qaPairs[]` 字段固定为：
+
+| 字段 | 类型 |
+| --- | --- |
+| `id` | number/null |
+| `question` | string |
+| `answer` | string |
+| `source` | string/null |
+| `priority` | number/null |
 
 ## Mapping Ownership
 

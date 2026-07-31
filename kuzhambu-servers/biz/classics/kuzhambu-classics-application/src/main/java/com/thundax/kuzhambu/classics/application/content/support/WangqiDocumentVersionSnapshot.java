@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.application.content.support;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.id.Identifier;
@@ -22,7 +23,7 @@ public record WangqiDocumentVersionSnapshot(
         String content,
         String documentTime,
         Long storageObjectId,
-        String visibility,
+        String lifecycleStatus,
         List<WangqiTagSnapshot> tags,
         List<WangqiQaPairSnapshot> qaPairs) {
 
@@ -42,13 +43,9 @@ public record WangqiDocumentVersionSnapshot(
                 document.getContent(),
                 date(document.getDocumentTime()),
                 identifier(document.getStorageObjectId()),
-                value(document.getVisibility()),
-                tags == null
-                        ? List.of()
-                        : tags.stream().map(WangqiTagSnapshot::from).toList(),
-                qaPairs == null
-                        ? List.of()
-                        : qaPairs.stream().map(WangqiQaPairSnapshot::from).toList());
+                value(document.getLifecycleStatus()),
+                tagSnapshots(tags),
+                qaPairSnapshots(qaPairs));
     }
 
     public static WangqiDocumentVersionSnapshot from(JsonNode snapshot) {
@@ -62,7 +59,7 @@ public record WangqiDocumentVersionSnapshot(
                 text(snapshot, "content"),
                 text(snapshot, "documentTime"),
                 longValue(snapshot, "storageObjectId"),
-                text(snapshot, "visibility"),
+                text(snapshot, "lifecycleStatus"),
                 WangqiTagSnapshot.list(snapshot, "tags"),
                 WangqiQaPairSnapshot.list(snapshot, "qaPairs"));
     }
@@ -78,7 +75,7 @@ public record WangqiDocumentVersionSnapshot(
         snapshot.put("content", content);
         snapshot.put("documentTime", documentTime);
         snapshot.put("storageObjectId", storageObjectId);
-        snapshot.put("visibility", visibility);
+        snapshot.put("lifecycleStatus", lifecycleStatus);
         snapshot.put(
                 "tags",
                 tags == null
@@ -90,6 +87,28 @@ public record WangqiDocumentVersionSnapshot(
                         ? List.of()
                         : qaPairs.stream().map(WangqiQaPairSnapshot::toMap).toList());
         return snapshot;
+    }
+
+    private static List<WangqiTagSnapshot> tagSnapshots(List<ClassicsContentTag> tags) {
+        return tags == null
+                ? List.of()
+                : tags.stream()
+                        .filter(tag -> tag != null && tag.getStatus() == ClassicsContentTagStatus.ACTIVE)
+                        .map(WangqiTagSnapshot::from)
+                        .toList();
+    }
+
+    private static List<WangqiQaPairSnapshot> qaPairSnapshots(List<ClassicsContentQaPair> qaPairs) {
+        return qaPairs == null
+                ? List.of()
+                : qaPairs.stream()
+                        .filter(pair -> pair != null
+                                && pair.getQuestion() != null
+                                && !pair.getQuestion().isBlank()
+                                && pair.getAnswer() != null
+                                && !pair.getAnswer().isBlank())
+                        .map(WangqiQaPairSnapshot::from)
+                        .toList();
     }
 
     public record WangqiTagSnapshot(

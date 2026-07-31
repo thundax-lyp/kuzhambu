@@ -698,7 +698,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         });
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiFacade, tagBindingSupport, null);
+                repository, null, null, null, null, null, aiFacade, tagBindingSupport, null, null);
 
         service.applyAiCandidate(
                 applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"ai-one\",\"ai-two\"]}"));
@@ -870,7 +870,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 request -> candidateApplied());
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiFacade, null, null);
+                repository, null, null, null, null, null, aiFacade, null, null, null);
 
         setPermissions(Set.of("classics:sancai:edit"));
         try {
@@ -919,7 +919,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 });
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                new FakeRepository(), null, null, null, null, null, aiFacade, null, null);
+                new FakeRepository(), null, null, null, null, null, aiFacade, null, null, null);
 
         setPermissions(Set.of("classics:sancai:edit"));
         try {
@@ -952,7 +952,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 .thenReturn(candidateRejected());
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiFacade, null, null);
+                repository, null, null, null, null, null, aiFacade, null, null, null);
 
         setPermissions(Set.of("classics:sancai:edit"));
         try {
@@ -987,7 +987,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 request -> candidateApplied());
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, assetService, null, null, aiFacade, null, null);
+                repository, null, null, assetService, null, null, aiFacade, null, null, null);
 
         setPermissions(Set.of("classics:sancai:edit"));
         try {
@@ -1014,7 +1014,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     private static ClassicsContentApplicationServiceImpl serviceWithAiFacade(
             ClassicsContentRepository repository, AiFacade aiFacade, SancaiAssetApplicationService assetService) {
         return new ClassicsContentApplicationServiceImpl(
-                repository, null, null, assetService, null, null, aiFacade, null, null);
+                repository, null, null, assetService, null, null, aiFacade, null, null, null);
     }
 
     private static AiCandidateBatchRejectContentCommand.Item rejectItem(
