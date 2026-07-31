@@ -38,6 +38,11 @@
 - 治理文档只沉淀稳定规则，不记录任务执行过程。
 - `50-prompts/` 只保存人工触发的提示词模板。
 
+## Diagram Rules
+
+- Mermaid 流程图必须使用 ELK 布局，并在 `mermaid` 代码块内显式声明 `config.layout = elk`。
+- 非流程图 Mermaid，例如 `stateDiagram-v2`，不强制使用 ELK 布局。
+
 ## RUNBOOK Boundary
 
 `RUNBOOK` 是复杂任务的临时执行手册，适用于跨模块清理、迁移、删除、重构、运行时验收或业务闭环收口。

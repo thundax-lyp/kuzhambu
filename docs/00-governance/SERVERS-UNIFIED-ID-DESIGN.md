@@ -16,7 +16,7 @@
 - `Database Primary Key`：数据库内部主键，默认 `bigint id`。
 - `Domain Identifier`：Java 里的强类型领域标识，例如 `UserId`、`RoleId`。
 - `Business No`：业务单号，例如后续可能出现的任务编号、导入批次号。
-- `Random Token`：独立随机访问凭证，例如分享链接、下载凭证、access token、refresh token。
+- `Random Token`：独立随机访问凭证，例如下载凭证、access token、refresh token。
 
 四者不得混用。
 

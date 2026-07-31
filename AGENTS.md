@@ -136,7 +136,12 @@ Put unverified concerns under validation gaps or residual risks, not findings. I
 
 ## Commit & Pull Request Guidelines
 
-Use the project convention `Type(scope): 中文说明`, for example `Docs(governance): 初始化文档治理入口`. Keep each commit focused on one concrete engineering judgment. Keep each commit to 1-8 files; split larger changes into separate commits.
+Use the project convention `Type(scope): 中文说明`, for example `Docs(governance): 初始化文档治理入口`.
+
+- **Boundary:** one commit records one engineering decision that reviewers can understand and verify independently. Include the code, tests, contracts, and mechanical cleanup required to complete that decision.
+- **Size heuristic:** 2-8 files is the expected review size, not a limit.
+- **When larger:** recheck that every file is required by the same decision and that the commit remains independently verifiable. Keep the commit intact when splitting would create incomplete states or separate mechanical parts from the behavior they support.
+- **Split when:** changes express independent decisions, can be verified separately, or include unrelated cleanup.
 
 Pull requests are stage delivery boundaries. Use `.github/pull_request_template.md`, rely on the explicit `.github/workflows/pr-verify.yml` checks, and complete documentation, TODO, and RUNBOOK cleanup before merge. Changes must go through `branch -> PR -> review -> merge`; do not push or merge work directly to `main`. Merge PRs with normal merge commits by default to preserve the small-step commit history; do not squash unless explicitly requested. Detailed rules live in `docs/00-governance/TODO-RULES.md` and `docs/00-governance/PR-RULES.md`.
 

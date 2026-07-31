@@ -45,7 +45,7 @@
 - `kuzhambu-servers/biz/`：业务域模块组，按业务域组织 `interface`、`application`、`domain`、`infra` 四层。
 - `kuzhambu-servers/biz/system/`：系统基础域，承载用户、角色、权限、认证和业务审计。
 - `kuzhambu-servers/biz/storage/`：文件存储域，承载文件对象、引用、读取和上传。
-- `kuzhambu-servers/biz/classics/`：古籍域，承载三才图会、王圻文档、明代习俗和分享。
+- `kuzhambu-servers/biz/classics/`：古籍域，承载三才图会、王圻文档、明代习俗和 Portal 已发布稿件展示。
 - `kuzhambu-servers/biz/ai/`：AI 生产域，承载 AI 配置、提示词和 AI 内容精修。
 - `kuzhambu-servers/biz/knowledge/`：知识组织域，承载标签、实体关系精修和知识图谱。
 - `kuzhambu-servers/biz/discovery/`：知识发现域，承载知识检索和知识问答。
