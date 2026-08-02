@@ -61,7 +61,6 @@ test.describe("classics ming customs page", () => {
                             "classics:mingcustoms:view",
                             "classics:mingcustoms:edit",
                             "classics:mingcustoms:delete",
-                            "classics:sharing:edit",
                             "classics:content:export"
                         ]
                     })
@@ -81,14 +80,13 @@ test.describe("classics ming customs page", () => {
                     "classics:mingcustoms:view",
                     "classics:mingcustoms:edit",
                     "classics:mingcustoms:delete",
-                    "classics:sharing:edit",
                     "classics:content:export"
                 ])
             );
         });
     });
 
-    test("links list filters, editor, rich content, sharing and deletion to APIs", async ({
+    test("links list filters, editor, rich content, publication and deletion to APIs", async ({
         page
     }) => {
         const pageRequests: Array<Record<string, unknown>> = [];
