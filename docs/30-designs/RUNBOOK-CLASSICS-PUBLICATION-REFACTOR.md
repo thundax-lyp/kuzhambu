@@ -1195,7 +1195,8 @@ Verification:
 - `pnpm run lint`
 - `pnpm run build`
 - `pnpm run test`（admin 90 files / 385 tests；portal 25 files / 79 tests）
-- Playwright E2E spec 可被 `playwright --list` 发现；本机缺少 Chromium binary，未执行浏览器用例。
+- `pnpm exec playwright test e2e/classics/publication-jobs/publication-jobs.spec.ts`
+  （Chromium；1 test passed）
 
 Deferred: Portal/public READY cutover (Stage 4); legacy MQ and remaining visibility
 cleanup (Stage 5); database reset, real ES/FastGPT runtime smoke and RUNBOOK deletion
