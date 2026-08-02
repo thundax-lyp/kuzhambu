@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
@@ -16,6 +18,7 @@ import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicatio
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
@@ -53,15 +56,18 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     private final SancaiRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
+    private final ClassicsPublicationWriteGuard publicationWriteGuard;
 
     @Autowired
     public SancaiApplicationServiceImpl(
             SancaiRepository repository,
             ClassicsContentApplicationService contentApplicationService,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
+            ClassicsPublicationWriteGuard publicationWriteGuard) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
+        this.publicationWriteGuard = publicationWriteGuard;
     }
 
     @Override
@@ -214,9 +220,11 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Transactional(rollbackFor = Exception.class)
     public void sortEntries(SancaiEntrySortCommand command) {
         List<SancaiEntryId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<SancaiEntry> entries = repository.listEntries(SortDirection.ASC);
+        entries.forEach(entry -> requireWritable(entry.getId(), ClassicsPublicationWriteOperation.EDIT));
         SortablePrioritySwapSupport.sort(
                 orderedIdList,
-                repository.listEntries(SortDirection.ASC),
+                entries,
                 SancaiEntry::getId,
                 SancaiEntryId::value,
                 SancaiEntry::getPriority,
@@ -314,7 +322,9 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (command == null || command.getId() == null) {
             return null;
         }
-        SancaiEntry currentEntry = repository.getEntryById(SancaiEntryIdCodec.toDomain(command.getId()));
+        SancaiEntryId currentEntryId = SancaiEntryIdCodec.toDomain(command.getId());
+        requireWritable(currentEntryId, ClassicsPublicationWriteOperation.EDIT);
+        SancaiEntry currentEntry = repository.getEntryById(currentEntryId);
         if (currentEntry == null) {
             throw new BizException("三才图会条目不存在");
         }
@@ -340,7 +350,9 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (hasPermissionContext(command.getOperatorPermissions()) && !canEdit(command.getOperatorPermissions())) {
             throw permissionDenied();
         }
-        SancaiEntry entry = repository.getEntryById(SancaiEntryIdCodec.toDomain(command.getId()));
+        SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command.getId());
+        requireWritable(entryId, ClassicsPublicationWriteOperation.EDIT);
+        SancaiEntry entry = repository.getEntryById(entryId);
         if (entry == null) {
             return;
         }
@@ -356,6 +368,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeEntryVisibility(SancaiEntryId id, String visibility) {
+        requireWritable(id, ClassicsPublicationWriteOperation.EDIT);
         SancaiEntry entry = repository.getEntryById(id);
         if (entry == null) {
             return;
@@ -386,6 +399,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
                 continue;
             }
             try {
+                requireWritable(id, ClassicsPublicationWriteOperation.EDIT);
                 SancaiEntry entry = id == null ? null : repository.getEntryById(id);
                 if (entry == null) {
                     failures.add(ClassicsBatchOperationItemResult.failure(
@@ -412,6 +426,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteEntry(SancaiEntryId id) {
+        requireWritable(id, ClassicsPublicationWriteOperation.DELETE);
         SancaiEntry entry = repository.getEntryById(id);
         if (entry == null) {
             return;
@@ -420,6 +435,11 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
         publishDeleteAfterCommit(entry);
         repository.deleteEntryById(id);
+    }
+
+    private void requireWritable(SancaiEntryId id, ClassicsPublicationWriteOperation operation) {
+        publicationWriteGuard.requireWritable(
+                ClassicsContentType.SANCAI_ENTRY, new ClassicsContentId(id == null ? null : id.value()), operation);
     }
 
     private void updateCategoryPriorityOrThrow(SancaiCategoryId id, int priority) {
