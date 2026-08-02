@@ -205,13 +205,13 @@ class ElasticsearchSearchIndexGatewayTest {
         assertTrue(fieldNames.contains("categoryCode"));
         assertTrue(fieldNames.contains("tagNames"));
         assertTrue(fieldNames.contains("status"));
-        assertTrue(fieldNames.contains("visibility"));
+        assertTrue(fieldNames.contains("publicationStatus"));
         assertTrue(fieldNames.contains("updatedAt"));
         assertTrue(fieldNames.contains("deleted"));
     }
 
     @Test
-    void searchShouldApplyExplicitVisibilityCriteriaWithoutPrivateKnowledgeBasePermissionCriteria() {
+    void searchShouldIgnoreVisibilityScopesAndApplyPublicationReadyCriteria() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
         @SuppressWarnings("unchecked")
@@ -245,12 +245,14 @@ class ElasticsearchSearchIndexGatewayTest {
                 .filter(field -> field != null && field.getName() != null)
                 .map(field -> field.getName())
                 .collect(Collectors.toSet());
-        assertTrue(fieldNames.contains("visibility"));
+        assertTrue(fieldNames.contains("publicationStatus"));
+        assertTrue(fieldNames.contains("deleted"));
+        assertFalse(fieldNames.contains("visibility"));
         assertFalse(fieldNames.contains("knowledgeBase"));
     }
 
     @Test
-    void previewShouldApplyPublicVisibilityCriteria() {
+    void previewShouldApplyPublicationReadyCriteria() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
         @SuppressWarnings("unchecked")
@@ -277,7 +279,8 @@ class ElasticsearchSearchIndexGatewayTest {
         assertEquals("正文", preview.getBodyText());
         assertTrue(fieldNames.contains("contentType"));
         assertTrue(fieldNames.contains("contentId"));
-        assertTrue(fieldNames.contains("visibility"));
+        assertTrue(fieldNames.contains("publicationStatus"));
+        assertFalse(fieldNames.contains("visibility"));
         assertFalse(fieldNames.contains("knowledgeBase"));
         assertTrue(fieldNames.contains("deleted"));
     }

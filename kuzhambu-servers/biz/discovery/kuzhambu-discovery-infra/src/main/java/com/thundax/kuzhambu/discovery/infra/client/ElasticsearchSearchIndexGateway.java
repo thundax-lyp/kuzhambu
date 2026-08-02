@@ -76,8 +76,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     public SearchPreviewResult getPreview(String contentType, String contentId) {
         ElasticsearchOperations operations = requireOperations("preview");
         Criteria criteria = new Criteria("contentType").is(contentType).and(new Criteria("contentId").is(contentId));
-        criteria = appendPublicVisibilityFilter(criteria);
-        criteria = criteria.and(new Criteria("deleted").is(false));
+        criteria = appendReadyPublicationFilter(criteria);
         CriteriaQuery query = new CriteriaQuery(criteria);
         query.setPageable(PageRequest.of(0, 1));
         List<SearchHit<DiscoverySearchDocument>> hits = operations
@@ -330,15 +329,13 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     private Criteria buildCriteria(String keyword, SearchScope searchScope) {
         Criteria criteria = baseKeywordCriteria(keyword);
         if (searchScope == null) {
-            criteria = appendPublicVisibilityFilter(criteria);
-            return criteria.and(new Criteria("deleted").is(false));
+            return appendReadyPublicationFilter(criteria);
         }
         criteria = appendInFilter(criteria, "knowledgeBase", searchScope.getKnowledgeBases());
         criteria = appendInFilter(criteria, "categoryCode", searchScope.getCategoryCodes());
         criteria = appendInFilter(criteria, "tagNames", searchScope.getTagNames());
         criteria = appendInFilter(criteria, "status", searchScope.getContentStatuses());
-        criteria = appendPublicVisibilityFilter(criteria);
-        criteria = criteria.and(new Criteria("deleted").is(false));
+        criteria = appendReadyPublicationFilter(criteria);
         if (searchScope.getDateFrom() != null) {
             criteria = criteria.and(new Criteria("updatedAt").greaterThanEqual(searchScope.getDateFrom()));
         }
@@ -371,6 +368,11 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
 
     private Criteria appendPublicVisibilityFilter(Criteria criteria) {
         return criteria.and(new Criteria("visibility").is(PUBLIC_VISIBILITY));
+    }
+
+    private Criteria appendReadyPublicationFilter(Criteria criteria) {
+        return criteria.and(new Criteria("publicationStatus").is(PUBLICATION_READY))
+                .and(new Criteria("deleted").is(false));
     }
 
     private List<SearchGroupResult> toGroupedResults(List<SearchHit<DiscoverySearchDocument>> hits, String keyword) {
