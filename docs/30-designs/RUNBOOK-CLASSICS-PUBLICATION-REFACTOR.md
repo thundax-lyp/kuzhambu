@@ -819,7 +819,7 @@ flowchart TD
 | 2. External systems and job core | `COMPLETE` | 80-150 | full Java checks |
 | 3. Runtime and Admin | `COMPLETE` | 100-180 | full Java and admin-web checks |
 | 4. Portal cutover and sharing frontend removal | `COMPLETE` | 50-100 | full Java/frontend checks and sharing residue scans |
-| 5. Publication visibility and legacy MQ removal | `PENDING` | 90-170 | full Java/frontend checks and legacy residue scans |
+| 5. Publication visibility and legacy MQ removal | `ACTIVE` | 90-170 | full Java/frontend checks and legacy residue scans |
 | 6. Database reset and smoke | `PENDING` | 20-60 | full checks plus runtime smoke |
 
 文件数是基于当前扫描的估计，不是硬上限。每个 stage 内按 work package 和可独立理解、
