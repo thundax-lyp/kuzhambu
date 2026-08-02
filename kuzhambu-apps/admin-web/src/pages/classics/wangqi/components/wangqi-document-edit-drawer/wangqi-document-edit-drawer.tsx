@@ -8,8 +8,8 @@ import {
 import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { App, DatePicker, Form, Input, Switch, Typography } from "antd";
-import type { DatePickerProps, SwitchProps } from "antd";
+import { App, DatePicker, Form, Input, Typography } from "antd";
+import type { DatePickerProps } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
@@ -313,17 +313,6 @@ const WangqiDocumentTimePicker = (props: DatePickerProps) => {
     );
 };
 
-const WangqiDocumentPublicSwitch = (props: SwitchProps) => {
-    return (
-        <Switch
-            {...props}
-            aria-label="王圻文档公开状态"
-            checkedChildren="公开"
-            unCheckedChildren="私有"
-        />
-    );
-};
-
 const renderSummaryTaskStatus = ({
     creating,
     resultError,
@@ -532,9 +521,6 @@ export const WangqiDocumentEditDrawer = ({
                     </KuzhambuFormItem>
                     <KuzhambuFormItem name="documentTime" label="文档时间">
                         <WangqiDocumentTimePicker />
-                    </KuzhambuFormItem>
-                    <KuzhambuFormItem name="isPublic" label="可见性" valuePropName="checked">
-                        <WangqiDocumentPublicSwitch />
                     </KuzhambuFormItem>
                     <KuzhambuFormItem name="summary" label="摘要" layoutSize="large">
                         <WangqiDocumentSummaryField

@@ -91,7 +91,6 @@ let mockDocumentRecord: WangqiDocumentRecord = {
     content: "## 王圻",
     documentTime: "2026-01-01T00:00:00.000+00:00",
     storageObjectId: "7001",
-    visibility: "PUBLIC",
     lifecycleStatus: "DRAFT",
     transitionStatus: "NONE"
 };
@@ -258,29 +257,6 @@ const installFetchMock = () => {
         ) {
             return apiResponse(mockQaRecords);
         }
-        if (path.endsWith("/classics/content/visibility/change")) {
-            return apiResponse({
-                failureCount: 1,
-                failures: [
-                    {
-                        contentId: "2",
-                        contentType: "WANGQI_DOCUMENT",
-                        failureCode: "BATCH_VISIBILITY_FAILED",
-                        failureReason: "文档不存在",
-                        status: "FAILED"
-                    }
-                ],
-                successCount: 1,
-                successes: [
-                    {
-                        contentId: "1",
-                        contentType: "WANGQI_DOCUMENT",
-                        resultId: "1",
-                        status: "PRIVATE"
-                    }
-                ]
-            });
-        }
         if (path.endsWith("/ai/invocation/candidate/list")) {
             if (body?.capability === "tags") {
                 return apiResponse(mockTagCandidates);
@@ -340,8 +316,7 @@ describe("WangqiPage", () => {
             contentFormat: "MARKDOWN",
             content: "## 王圻",
             documentTime: "2026-01-01T00:00:00.000+00:00",
-            storageObjectId: "7001",
-            visibility: "PUBLIC"
+            storageObjectId: "7001"
         };
         mockSummaryCandidates = [
             {
@@ -983,43 +958,6 @@ describe("WangqiPage", () => {
         expect(await screen.findByRole("button", { name: "单文档问答" })).toBeDisabled();
     }, 30000);
 
-    it("changes selected documents visibility and shows item failures", async () => {
-        const user = userEvent.setup();
-
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <WangqiPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
-
-        const table = await screen.findByLabelText("王圻文档表格");
-        await waitForSelectableRow(table);
-        const batchPrivateButton = screen.getByTestId(
-            "classics-wangqi-wangqi-batch-private-button"
-        );
-        selectFirstRow(table);
-        await waitFor(() => {
-            expect(batchPrivateButton).not.toBeDisabled();
-        });
-        await user.click(batchPrivateButton);
-
-        await waitFor(() => {
-            expect(screen.getByText("可见性结果：成功 1，失败 1")).toBeInTheDocument();
-        });
-        expect(capturedCalls).toContainEqual({
-            body: {
-                contentIds: ["1"],
-                contentType: "WANGQI_DOCUMENT",
-                visibility: "PRIVATE"
-            },
-            method: "POST",
-            path: "/classics/content/visibility/change"
-        });
-        expect(screen.getByText("WANGQI_DOCUMENT#2: 文档不存在")).toBeInTheDocument();
-    }, 30000);
-
     it("opens batch candidate governance drawer from selected documents", async () => {
         const user = userEvent.setup();
 
@@ -1186,7 +1124,6 @@ describe("WangqiPage", () => {
                 content: "快照正文",
                 documentTime: "明年正月初一",
                 storageObjectId: "7001",
-                visibility: "PUBLIC",
                 tags: [
                     {
                         id: "5001",
@@ -1223,8 +1160,7 @@ describe("WangqiPage", () => {
                     contentFormat: "MARKDOWN",
                     content: "正文正文",
                     documentTime: "2026-01-01",
-                    storageObjectId: "7001",
-                    visibility: "PUBLIC"
+                    storageObjectId: "7001"
                 }}
                 versions={[version]}
                 selectedVersion={version}

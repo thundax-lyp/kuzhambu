@@ -36,7 +36,6 @@ const records: WangqiDocumentRecord[] = [
         documentTime: "2026-01-01T00:00:00.000+00:00",
         contentFormat: "MARKDOWN",
         content: "天文内容",
-        visibility: "PUBLIC",
         events: [
             {
                 title: "天文事件",
@@ -51,8 +50,7 @@ const records: WangqiDocumentRecord[] = [
         summary: "山川与舆图条目。",
         documentTime: "2026-02-01T00:00:00.000+00:00",
         contentFormat: "MARKDOWN",
-        content: "地理内容",
-        visibility: "PRIVATE"
+        content: "地理内容"
     }
 ];
 
