@@ -32,7 +32,6 @@ export interface DiscoverySearchPreviewRecord {
     categoryName?: string | null;
     contentDomain?: string | null;
     contentId?: string | null;
-    contentStatus?: string | null;
     contentType?: string | null;
     knowledgeBase?: string | null;
     publishedAt?: number | null;
@@ -42,5 +41,4 @@ export interface DiscoverySearchPreviewRecord {
     targetPath?: string | null;
     title?: string | null;
     updatedAt?: number | null;
-    visibility?: string | null;
 }

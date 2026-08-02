@@ -275,28 +275,24 @@ describe("discovery admin service contracts", () => {
     it("maps search consumer endpoints and request bodies", async () => {
         await searchConsumerService.searchDiscovery({
             categoryCodes: ["SANCAI_ENTRY"],
-            contentStatuses: ["PUBLISHED"],
             dateFrom: "2026-01-01T00:00:00.000Z",
             dateTo: "2026-01-02T23:59:59.000Z",
             knowledgeBases: ["SANCAI_ENTRY"],
             pageNo: 1,
             pageSize: 10,
             queryText: "辞官",
-            tagNames: ["礼制"],
-            visibilityScopes: ["PUBLIC"]
+            tagNames: ["礼制"]
         });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/search/search", {
             body: {
                 categoryCodes: ["SANCAI_ENTRY"],
-                contentStatuses: ["PUBLISHED"],
                 dateFrom: "2026-01-01T00:00:00.000Z",
                 dateTo: "2026-01-02T23:59:59.000Z",
                 knowledgeBases: ["SANCAI_ENTRY"],
                 pageNo: 1,
                 pageSize: 10,
                 queryText: "辞官",
-                tagNames: ["礼制"],
-                visibilityScopes: ["PUBLIC"]
+                tagNames: ["礼制"]
             }
         });
 

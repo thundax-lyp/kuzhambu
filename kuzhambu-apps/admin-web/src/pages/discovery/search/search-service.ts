@@ -3,7 +3,6 @@ import type { DiscoverySearchPreviewRecord, DiscoverySearchResultRecord } from "
 
 export interface DiscoverySearchQuery {
     categoryCodes: string[];
-    contentStatuses: string[];
     dateFrom: string | null;
     dateTo: string | null;
     knowledgeBases: string[];
@@ -11,7 +10,6 @@ export interface DiscoverySearchQuery {
     pageSize: number;
     queryText: string;
     tagNames: string[];
-    visibilityScopes: string[];
 }
 
 export interface DiscoverySearchClickEventCommand {
