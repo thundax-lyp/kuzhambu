@@ -6,7 +6,7 @@ import { clearPermissions, replacePermissions } from "@/auth/permission-storage"
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import { WangqiPage } from "./wangqi-page";
 import { WangqiVersionPanel } from "./wangqi-version-panel";
-import type { WangqiContentVersionRecord } from "./wangqi-types";
+import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
 
 vi.mock("@/pages/classics/common/ai-candidate-panel", () => {
     const aiCandidatePanelMock = ({
@@ -83,7 +83,7 @@ interface CapturedCall {
 }
 
 const capturedCalls: CapturedCall[] = [];
-let mockDocumentRecord = {
+let mockDocumentRecord: WangqiDocumentRecord = {
     id: "1",
     title: "王圻文档",
     summary: "记录王圻古籍条目。",
