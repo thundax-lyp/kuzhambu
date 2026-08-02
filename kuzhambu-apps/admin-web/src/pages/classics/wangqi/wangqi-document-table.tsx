@@ -57,12 +57,15 @@ interface WangqiDocumentTableProps {
     dataSource: WangqiDocumentRecord[];
     isBatchSharing: boolean;
     isBatchVisibilityChanging: boolean;
+    isPublicationChanging: boolean;
     loading?: boolean;
     onChangeSelectedVisibility: (visibility: "PRIVATE" | "PUBLIC") => void;
     onDelete: (record: WangqiDocumentRecord) => void;
     onExport: (record: WangqiDocumentRecord) => void;
     onOpenEdit: (record: WangqiDocumentRecord) => void;
     onOpenBatchCandidateDrawer: () => void;
+    onPublicationAction: (record: WangqiDocumentRecord, action: "PUBLISH" | "OFFLINE") => void;
+    onPublicationBatch: (action: "PUBLISH" | "OFFLINE") => void;
     onShare: (record: WangqiDocumentRecord) => void;
     onShareSelectedDocuments: () => void;
     onSelectedDocumentIdsChange: (ids: string[]) => void;
@@ -79,12 +82,15 @@ export const WangqiDocumentTable = ({
     dataSource,
     isBatchSharing,
     isBatchVisibilityChanging,
+    isPublicationChanging,
     loading = false,
     onChangeSelectedVisibility,
     onDelete,
     onExport,
     onOpenEdit,
     onOpenBatchCandidateDrawer,
+    onPublicationAction,
+    onPublicationBatch,
     onShare,
     onShareSelectedDocuments,
     onSelectedDocumentIdsChange,
@@ -140,6 +146,29 @@ export const WangqiDocumentTable = ({
             render: (_value, record) => readPrimaryEventTime(record)
         },
         {
+            title: "发布状态",
+            key: "publicationStatus",
+            width: 130,
+            render: (_, record) => (
+                <span>
+                    <KuzhambuTag
+                        type={
+                            record.lifecycleStatus === "PUBLISHED"
+                                ? "success"
+                                : record.lifecycleStatus === "ERROR"
+                                  ? "danger"
+                                  : "neutral"
+                        }
+                    >
+                        {record.lifecycleStatus || "DRAFT"}
+                    </KuzhambuTag>
+                    {record.transitionStatus && record.transitionStatus !== "NONE" ? (
+                        <KuzhambuTag type="info">{record.transitionStatus}</KuzhambuTag>
+                    ) : null}
+                </span>
+            )
+        },
+        {
             title: "可见性",
             dataIndex: "visibility",
             key: "visibility",
@@ -152,36 +181,51 @@ export const WangqiDocumentTable = ({
         },
         {
             key: "actions",
-            options: (record) => [
-                {
-                    key: "edit",
-                    text: "编辑",
-                    ariaLabel: `编辑 ${record.title || "未命名文档"}`,
-                    onClick: () => onOpenEdit(record)
-                },
-                {
-                    key: "share",
-                    text: "分享",
-                    ariaLabel: `分享 ${record.title || "未命名文档"}`,
-                    disabled: !canShare,
-                    onClick: () => onShare(record)
-                },
-                {
-                    key: "export",
-                    text: "导出",
-                    ariaLabel: `导出 ${record.title || "未命名文档"}`,
-                    disabled: !canExport,
-                    onClick: () => onExport(record)
-                },
-                { type: "divider" },
-                {
-                    key: "delete",
-                    text: "删除",
-                    type: "danger",
-                    ariaLabel: `删除 ${record.title || "未命名文档"}`,
-                    onClick: () => onDelete(record)
-                }
-            ]
+            options: (record) => {
+                const isTransitionActive = Boolean(
+                    record.transitionStatus && record.transitionStatus !== "NONE"
+                );
+                const publicationAction =
+                    record.lifecycleStatus === "PUBLISHED" ? "OFFLINE" : "PUBLISH";
+                return [
+                    {
+                        key: "edit",
+                        text: "编辑",
+                        ariaLabel: `编辑 ${record.title || "未命名文档"}`,
+                        onClick: () => onOpenEdit(record)
+                    },
+                    {
+                        key: "publication",
+                        text: publicationAction === "PUBLISH" ? "发布" : "下线",
+                        ariaLabel: `${publicationAction === "PUBLISH" ? "发布" : "下线"} ${record.title || "未命名文档"}`,
+                        disabled: isTransitionActive,
+                        onClick: () => onPublicationAction(record, publicationAction)
+                    },
+                    {
+                        key: "share",
+                        text: "分享",
+                        ariaLabel: `分享 ${record.title || "未命名文档"}`,
+                        disabled: !canShare,
+                        onClick: () => onShare(record)
+                    },
+                    {
+                        key: "export",
+                        text: "导出",
+                        ariaLabel: `导出 ${record.title || "未命名文档"}`,
+                        disabled: !canExport,
+                        onClick: () => onExport(record)
+                    },
+                    { type: "divider" },
+                    {
+                        key: "delete",
+                        text: "删除",
+                        type: "danger",
+                        ariaLabel: `删除 ${record.title || "未命名文档"}`,
+                        disabled: isTransitionActive || record.lifecycleStatus === "PUBLISHED",
+                        onClick: () => onDelete(record)
+                    }
+                ];
+            }
         }
     ];
 
@@ -199,6 +243,20 @@ export const WangqiDocumentTable = ({
                     </Text>
                 ),
                 actions: [
+                    {
+                        testId: "classics-wangqi-batch-publish-button",
+                        title: "批量发布",
+                        disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                        loading: isPublicationChanging,
+                        action: () => onPublicationBatch("PUBLISH")
+                    },
+                    {
+                        testId: "classics-wangqi-batch-offline-button",
+                        title: "批量下线",
+                        disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                        loading: isPublicationChanging,
+                        action: () => onPublicationBatch("OFFLINE")
+                    },
                     {
                         testId: "classics-wangqi-wangqi-batch-share-button",
                         title: "分享文档",

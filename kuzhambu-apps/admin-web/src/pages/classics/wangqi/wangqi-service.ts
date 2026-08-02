@@ -3,6 +3,8 @@ import type { Page, PageQuery } from "@/types/page";
 import type {
     WangqiContentVersionRecord,
     WangqiDocumentRecord,
+    WangqiPublicationActionRecord,
+    WangqiPublicationBatchRecord,
     WangqiSourceFileContentMode,
     WangqiSourceFileRecord
 } from "./wangqi-types";
@@ -34,6 +36,14 @@ interface WangqiVersionCommand {
 export interface WangqiSourceFileContentUrlCommand {
     documentId: string;
     mode?: WangqiSourceFileContentMode;
+}
+
+export interface WangqiPublicationActionCommand {
+    id: string;
+}
+
+export interface WangqiPublicationBatchCommand {
+    ids: string[];
 }
 
 export const page = (request: WangqiDocumentQuery = {}) => {
@@ -73,6 +83,34 @@ export const deleteById = (id: string) => {
     return postJson<void, WangqiDocumentCommand>(`${DOCUMENTS_PATH}/delete`, {
         body: { id }
     });
+};
+
+export const publish = (command: WangqiPublicationActionCommand) => {
+    return postJson<WangqiPublicationActionRecord, WangqiPublicationActionCommand>(
+        `${DOCUMENTS_PATH}/publish`,
+        { body: command }
+    );
+};
+
+export const submitOffline = (command: WangqiPublicationActionCommand) => {
+    return postJson<WangqiPublicationActionRecord, WangqiPublicationActionCommand>(
+        `${DOCUMENTS_PATH}/offline`,
+        { body: command }
+    );
+};
+
+export const publishBatch = (command: WangqiPublicationBatchCommand) => {
+    return postJson<WangqiPublicationBatchRecord, WangqiPublicationBatchCommand>(
+        `${DOCUMENTS_PATH}/batch/publish`,
+        { body: command }
+    );
+};
+
+export const submitOfflineBatch = (command: WangqiPublicationBatchCommand) => {
+    return postJson<WangqiPublicationBatchRecord, WangqiPublicationBatchCommand>(
+        `${DOCUMENTS_PATH}/batch/offline`,
+        { body: command }
+    );
 };
 
 export const uploadSourceFile = (documentId: string, file: File) => {

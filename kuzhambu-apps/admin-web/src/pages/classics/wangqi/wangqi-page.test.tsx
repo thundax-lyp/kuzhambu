@@ -91,7 +91,9 @@ let mockDocumentRecord = {
     content: "## 王圻",
     documentTime: "2026-01-01T00:00:00.000+00:00",
     storageObjectId: "7001",
-    visibility: "PUBLIC"
+    visibility: "PUBLIC",
+    lifecycleStatus: "DRAFT",
+    transitionStatus: "NONE"
 };
 let mockSummaryCandidates = [
     {
@@ -226,6 +228,13 @@ const installFetchMock = () => {
         }
         if (path.endsWith("/classics/wangqi/documents/get")) {
             return apiResponse(mockDocumentRecord);
+        }
+        if (path.endsWith("/classics/wangqi/documents/batch/publish")) {
+            return apiResponse({
+                acceptedCount: 1,
+                rejectedCount: 0,
+                items: [{ contentId: "1", accepted: true, jobId: "9001" }]
+            });
         }
         if (path.endsWith("/classics/wangqi/documents/timeline/list")) {
             return apiResponse([]);
@@ -1264,5 +1273,34 @@ describe("WangqiPage", () => {
             screen.getByText("Q: 什么是经文注释？；A: 为文献加注释与解释。")
         ).toBeInTheDocument();
         expect(screen.getByText("Q: 应用来源有哪些？；A: 来自专家校对。")).toBeInTheDocument();
+    });
+
+    it("submits selected documents for batch publication", async () => {
+        const user = userEvent.setup();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const table = await screen.findByLabelText("王圻文档表格");
+        await waitForSelectableRow(table);
+        selectFirstRow(table);
+        const batchPublishButton = screen.getByTestId("classics-wangqi-batch-publish-button");
+        await waitFor(() => expect(batchPublishButton).not.toBeDisabled());
+        await user.click(batchPublishButton);
+
+        await waitFor(() => {
+            expect(
+                capturedCalls.some(
+                    (call) =>
+                        call.path === "/classics/wangqi/documents/batch/publish" &&
+                        JSON.stringify(call.body) === JSON.stringify({ ids: ["1"] })
+                )
+            ).toBeTruthy();
+        });
+        expect(await screen.findByText("批量发布操作：接受 1，拒绝 0")).toBeInTheDocument();
     });
 });

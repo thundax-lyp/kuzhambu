@@ -12,6 +12,7 @@ import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import {
     KuzhambuFilterPanel,
+    KuzhambuAlert,
     KuzhambuPage,
     KuzhambuSpace,
     KuzhambuButton,
@@ -48,7 +49,11 @@ import { WangqiTimeline } from "./wangqi-timeline";
 import { WangqiVersionPanel } from "./wangqi-version-panel";
 import * as wangqiService from "./wangqi-service";
 import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-service";
-import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
+import type {
+    WangqiContentVersionRecord,
+    WangqiDocumentRecord,
+    WangqiPublicationBatchRecord
+} from "./wangqi-types";
 
 import "./wangqi-page.css";
 
@@ -214,6 +219,8 @@ export const WangqiPage = () => {
     );
     const [batchVisibilityResult, setBatchVisibilityResult] =
         useState<ClassicsBatchOperationRecord | null>(null);
+    const [publicationBatchResult, setPublicationBatchResult] =
+        useState<WangqiPublicationBatchRecord | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [exportJobsDrawerOpen, setExportJobsDrawerOpen] = useState(false);
     const [creatingRefinementCapability, setCreatingRefinementCapability] =
@@ -471,6 +478,43 @@ export const WangqiPage = () => {
             messageApi.error(error instanceof Error ? error.message : "删除失败");
         }
     });
+    const publicationMutation = useMutation({
+        mutationFn: ({
+            document,
+            action
+        }: {
+            document: WangqiDocumentRecord;
+            action: "PUBLISH" | "OFFLINE";
+        }) =>
+            action === "PUBLISH"
+                ? wangqiService.publish({ id: document.id })
+                : wangqiService.submitOffline({ id: document.id }),
+        onSuccess: async () => {
+            await invalidateWangqi();
+            messageApi.success("发布状态变更请求已接受");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "发布状态变更失败");
+        }
+    });
+    const publicationBatchMutation = useMutation({
+        mutationFn: (action: "PUBLISH" | "OFFLINE") => {
+            const command = { ids: selectedDocumentIds };
+            return action === "PUBLISH"
+                ? wangqiService.publishBatch(command)
+                : wangqiService.submitOfflineBatch(command);
+        },
+        onSuccess: async (result) => {
+            setPublicationBatchResult(result);
+            await invalidateWangqi();
+            messageApi.success(
+                `批量请求完成：接受 ${result.acceptedCount}，拒绝 ${result.rejectedCount}`
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量发布状态变更失败");
+        }
+    });
     const uploadSourceFileMutation = useMutation({
         mutationFn: ({ documentId, file }: { documentId: string; file: File }) =>
             wangqiService.uploadSourceFile(documentId, file),
@@ -668,6 +712,31 @@ export const WangqiPage = () => {
             description: "删除后该文档、版本历史和关联引用会按后端流程清理。",
             okText: "删除",
             onConfirm: () => deleteMutation.mutateAsync(document.id)
+        });
+    };
+
+    const changePublicationStatus = (
+        document: WangqiDocumentRecord,
+        action: "PUBLISH" | "OFFLINE"
+    ) => {
+        const actionText = action === "PUBLISH" ? "发布" : "下线";
+        confirm.danger({
+            title: `${actionText}王圻文档`,
+            message: `确认${actionText} ${readDocumentTitle(document)}？`,
+            description: "请求提交后由后台任务异步同步搜索与知识库状态。",
+            okText: actionText,
+            onConfirm: () => publicationMutation.mutateAsync({ document, action })
+        });
+    };
+
+    const changePublicationStatusBatch = (action: "PUBLISH" | "OFFLINE") => {
+        const actionText = action === "PUBLISH" ? "发布" : "下线";
+        confirm.danger({
+            title: `批量${actionText}王圻文档`,
+            message: `确认${actionText}选中的 ${selectedDocumentIds.length} 篇文档？`,
+            description: "服务端将逐条受理，并返回每篇文档的接受或拒绝原因。",
+            okText: `批量${actionText}`,
+            onConfirm: () => publicationBatchMutation.mutateAsync(action)
         });
     };
 
@@ -951,12 +1020,26 @@ export const WangqiPage = () => {
                         batchShareResult={batchShareResult}
                         batchVisibilityResult={batchVisibilityResult}
                     />
+                    {publicationBatchResult ? (
+                        <KuzhambuAlert
+                            showIcon
+                            type={publicationBatchResult.rejectedCount > 0 ? "warning" : "success"}
+                            title={`批量发布操作：接受 ${publicationBatchResult.acceptedCount}，拒绝 ${publicationBatchResult.rejectedCount}`}
+                            description={publicationBatchResult.items
+                                .filter((item) => !item.accepted)
+                                .map((item) => `#${item.contentId}: ${item.reason || "请求被拒绝"}`)
+                                .join("；")}
+                        />
+                    ) : null}
                     <WangqiDocumentTable
                         canChangeDocumentVisibility={canChangeDocumentVisibility}
                         canExport={canExportDocuments}
                         canShare={canShareDocuments}
                         isBatchSharing={batchShareMutation.isPending}
                         isBatchVisibilityChanging={batchVisibilityMutation.isPending}
+                        isPublicationChanging={
+                            publicationMutation.isPending || publicationBatchMutation.isPending
+                        }
                         loading={wangqiDocumentPageQuery.isLoading}
                         dataSource={records}
                         onChangeSelectedVisibility={changeSelectedVisibility}
@@ -964,6 +1047,8 @@ export const WangqiPage = () => {
                         onExport={exportDocument}
                         onOpenEdit={openEditWangqiDocumentDrawer}
                         onOpenBatchCandidateDrawer={openBatchCandidateDrawer}
+                        onPublicationAction={changePublicationStatus}
+                        onPublicationBatch={changePublicationStatusBatch}
                         onShare={shareDocument}
                         onShareSelectedDocuments={shareSelectedDocuments}
                         onSelectedDocumentIdsChange={setSelectedDocumentIds}
