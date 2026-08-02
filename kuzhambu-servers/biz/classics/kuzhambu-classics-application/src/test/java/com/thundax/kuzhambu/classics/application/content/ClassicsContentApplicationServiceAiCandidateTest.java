@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -22,6 +23,8 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagComma
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
@@ -70,6 +73,27 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class ClassicsContentApplicationServiceAiCandidateTest {
+
+    @Test
+    void applyAiCandidateShouldCheckPublicationStateBeforeCallingAiFacade() {
+        FakeRepository repository = new FakeRepository();
+        AiFacade aiFacade = mock(AiFacade.class);
+        ClassicsPublicationWriteGuard writeGuard = mock(ClassicsPublicationWriteGuard.class);
+        when(writeGuard.requireWritable(
+                        ClassicsContentType.SANCAI_ENTRY,
+                        ClassicsContentIdCodec.toDomain(11L),
+                        ClassicsPublicationWriteOperation.EDIT))
+                .thenThrow(new BizException("TRANSITION_ACTIVE"));
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, aiFacade, null, null, null, writeGuard);
+
+        assertThrows(
+                BizException.class,
+                () -> service.applyAiCandidate(
+                        applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary", "摘要")));
+
+        verify(aiFacade, never()).requirePendingCandidate(any());
+    }
 
     @Test
     void applyAiCandidateTranslateShouldUpdateSancaiAndGenerateAiAppliedVersion() {
@@ -699,7 +723,17 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         });
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiFacade, tagBindingSupport, null, null);
+                repository,
+                null,
+                null,
+                null,
+                null,
+                null,
+                aiFacade,
+                tagBindingSupport,
+                null,
+                null,
+                mock(ClassicsPublicationWriteGuard.class));
 
         service.applyAiCandidate(
                 applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"ai-one\",\"ai-two\"]}"));
@@ -871,7 +905,17 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 request -> candidateApplied());
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiFacade, null, null, null);
+                repository,
+                null,
+                null,
+                null,
+                null,
+                null,
+                aiFacade,
+                null,
+                null,
+                null,
+                mock(ClassicsPublicationWriteGuard.class));
 
         setPermissions(Set.of("classics:sancai:edit"));
         try {
@@ -920,7 +964,17 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 });
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                new FakeRepository(), null, null, null, null, null, aiFacade, null, null, null);
+                new FakeRepository(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                aiFacade,
+                null,
+                null,
+                null,
+                mock(ClassicsPublicationWriteGuard.class));
 
         setPermissions(Set.of("classics:sancai:edit"));
         try {
@@ -953,7 +1007,17 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 .thenReturn(candidateRejected());
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiFacade, null, null, null);
+                repository,
+                null,
+                null,
+                null,
+                null,
+                null,
+                aiFacade,
+                null,
+                null,
+                null,
+                mock(ClassicsPublicationWriteGuard.class));
 
         setPermissions(Set.of("classics:sancai:edit"));
         try {
@@ -988,7 +1052,17 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 request -> candidateApplied());
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, assetService, null, null, aiFacade, null, null, null);
+                repository,
+                null,
+                null,
+                assetService,
+                null,
+                null,
+                aiFacade,
+                null,
+                null,
+                null,
+                mock(ClassicsPublicationWriteGuard.class));
 
         setPermissions(Set.of("classics:sancai:edit"));
         try {
@@ -1015,7 +1089,17 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     private static ClassicsContentApplicationServiceImpl serviceWithAiFacade(
             ClassicsContentRepository repository, AiFacade aiFacade, SancaiAssetApplicationService assetService) {
         return new ClassicsContentApplicationServiceImpl(
-                repository, null, null, assetService, null, null, aiFacade, null, null, null);
+                repository,
+                null,
+                null,
+                assetService,
+                null,
+                null,
+                aiFacade,
+                null,
+                null,
+                null,
+                mock(ClassicsPublicationWriteGuard.class));
     }
 
     private static AiCandidateBatchRejectContentCommand.Item rejectItem(
