@@ -69,7 +69,12 @@ public class ClassicsPublicationCreationApplicationServiceImpl {
         if (contentRepository.updatePublicationContentState(content, target) != 1) {
             throw conflict("TRANSITION_ACTIVE");
         }
-        return ClassicsPublicationCreateResult.success(command.contentType(), command.contentId(), jobId);
+        return ClassicsPublicationCreateResult.success(
+                command.contentType(),
+                command.contentId(),
+                jobId,
+                target.getLifecycleStatus(),
+                target.getTransitionStatus());
     }
 
     private static void requireCommand(ClassicsPublicationCreateCommand command) {
