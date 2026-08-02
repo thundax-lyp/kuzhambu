@@ -43,14 +43,14 @@ publication job 的状态、租约、条件更新和清理持久化协议。
 
 ## Stage 5: Visibility And Legacy MQ Removal
 
-Status: LOCAL_COMPLETE_PENDING_PR
+Status: DELIVERED_PENDING_MERGE
 
 ### Scope
 
 - Baseline commit: `d7dea5f6a`
-- Functional commit range (inclusive): `932453204^..a75f5c3d9`
-- Changed files: 169
-- Diff: 390 insertions, 3,189 deletions
+- Functional commit range (inclusive): `932453204^..e2b0c75f6`
+- Changed files: 170
+- Diff: 434 insertions, 3,190 deletions
 
 Stage 5 删除三类 Classics 稿件 publication visibility、Discovery public search 旧
 `visibilityScopes/contentStatuses` 契约，以及 Classics -> RocketMQ -> Discovery 旧搜索同步链路。
@@ -80,6 +80,6 @@ The admin-web full Vitest failure was not reproduced by focused rerun of the exa
 
 ### Delivery State
 
-- Delivery PR: pending.
-- RUNBOOK Stage 5 remains `ACTIVE` until PR is opened and assigned a number.
+- Delivery PR: `#197` (`draft`).
+- RUNBOOK Stage 5 has been compressed to `COMPLETE`.
 - Remaining Stage 6 work: database reset, runtime smoke, final RUNBOOK deletion.
