@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
@@ -21,6 +23,8 @@ import com.thundax.kuzhambu.classics.application.sancai.service.impl.SancaiAsset
 import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiShowcaseIdCodec;
@@ -51,12 +55,30 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class SancaiAssetApplicationServiceImplTest {
+
+    @Test
+    void updateVisualAssetShouldUsePublicationWriteGuard() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        ClassicsPublicationWriteGuard writeGuard = mock(ClassicsPublicationWriteGuard.class);
+        SancaiAssetApplicationServiceImpl service =
+                new SancaiAssetApplicationServiceImpl(repository, null, null, null, writeGuard);
+
+        service.updateVisualAsset(visualAsset(null, 3001L));
+
+        verify(writeGuard)
+                .requireWritable(
+                        ClassicsContentType.SANCAI_ENTRY,
+                        new ClassicsContentId(3001L),
+                        ClassicsPublicationWriteOperation.EDIT);
+    }
+
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Test
     void updateVisualAssetShouldInsertWithoutImplicitCurrentSwitch() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, null, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiVisualAsset visualAsset = visualAsset(null, 3001L);
         when(repository.insertVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetIdCodec.toDomain(5001L));
 
@@ -72,7 +94,8 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void updateVisualAssetShouldUpdateExistingRecordWithoutImplicitCurrentSwitch() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, null, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiVisualAsset visualAsset = visualAsset(5001L, 3001L);
 
         SancaiVisualAssetId result = service.updateVisualAsset(visualAsset);
@@ -87,7 +110,8 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void updateVisualAssetShouldRejectWhenTextWeightMissing() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, null, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiVisualAsset visualAsset = visualAsset(5001L, 3001L);
         visualAsset.setTextWeight(null);
 
@@ -99,7 +123,8 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void updateVisualAssetShouldRejectWhenImageWeightMissing() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, null, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiVisualAsset visualAsset = visualAsset(5001L, 3001L);
         visualAsset.setImageWeight(null);
 
@@ -111,7 +136,8 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void useVisualAssetShouldDelegateCurrentSwitchOnly() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, null, null, mock(ClassicsPublicationWriteGuard.class));
 
         service.useVisualAsset(SancaiEntryIdCodec.toDomain(3001L), SancaiVisualAssetIdCodec.toDomain(5001L));
 
@@ -124,7 +150,8 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void listVisualAssetsShouldDelegateRepositoryList() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, null, null, mock(ClassicsPublicationWriteGuard.class));
         List<SancaiVisualAsset> expected = List.of(visualAsset(5001L, 3001L));
         when(repository.listVisualAssetsByEntryId(SancaiEntryIdCodec.toDomain(3001L)))
                 .thenReturn(expected);
@@ -138,7 +165,8 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void createGeneratedVisualAssetVersionShouldInsertNewVersionWithoutImplicitCurrentSwitch() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, null, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiVisualAsset currentAsset = visualAsset(5001L, 3001L);
         currentAsset.setVersionNo(2);
         currentAsset.setStatus(SancaiVisualAssetStatus.PROCESSING);
@@ -185,8 +213,8 @@ class SancaiAssetApplicationServiceImplTest {
     void uploadImageShouldClearCurrentImagesAndBindStorageReference() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, storageFacade, null, mock(ClassicsPublicationWriteGuard.class));
         when(repository.maxPriority()).thenReturn(5);
         when(repository.insertImage(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(SancaiEntryImageIdCodec.toDomain(8002L));
@@ -240,8 +268,8 @@ class SancaiAssetApplicationServiceImplTest {
     void getImageContentShouldUseImageOwnerQuery() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, storageFacade, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiEntryImage image = image(8002L, 3001L, 7001L);
         when(repository.getImageById(SancaiEntryImageIdCodec.toDomain(8002L))).thenReturn(image);
         when(storageFacade.exists(org.mockito.ArgumentMatchers.any())).thenReturn(true);
@@ -271,8 +299,8 @@ class SancaiAssetApplicationServiceImplTest {
     void getVisualAssetSourceContentShouldReadStorageByVisualAssetRelation() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, storageFacade, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiVisualAsset asset = visualAsset(5002L, 3001L);
         asset.setSourceImageStorageObjectId(StorageObjectIdCodec.toDomain(7001L));
         when(repository.getVisualAssetById(SancaiVisualAssetIdCodec.toDomain(5002L)))
@@ -298,7 +326,8 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void getVisualAssetGeneratedContentShouldRejectWhenGeneratedStorageMissing() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, null, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiVisualAsset asset = visualAsset(5002L, 3001L);
         asset.setGeneratedImageStorageObjectId(null);
         when(repository.getVisualAssetById(SancaiVisualAssetIdCodec.toDomain(5002L)))
@@ -316,8 +345,8 @@ class SancaiAssetApplicationServiceImplTest {
     void getVisualAssetGeneratedContentShouldReadGeneratedStorageByVisualAssetRelation() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, storageFacade, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiVisualAsset asset = visualAsset(5002L, 3001L);
         asset.setGeneratedImageStorageObjectId(StorageObjectIdCodec.toDomain(7002L));
         when(repository.getVisualAssetById(SancaiVisualAssetIdCodec.toDomain(5002L)))
@@ -344,8 +373,8 @@ class SancaiAssetApplicationServiceImplTest {
     void deleteImageShouldMarkStorageUnused() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, storageFacade, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiEntryImage image = image(8002L, 3001L, 7001L);
         when(repository.getImageById(SancaiEntryImageIdCodec.toDomain(8002L))).thenReturn(image);
 
@@ -361,7 +390,8 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void useImageShouldClearCurrentImagesAndMarkTargetCurrent() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, null, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiEntryImage image = image(8002L, 3001L, 7001L);
         when(repository.getImageById(SancaiEntryImageIdCodec.toDomain(8002L))).thenReturn(image);
         when(repository.markImageCurrent(SancaiEntryIdCodec.toDomain(3001L), SancaiEntryImageIdCodec.toDomain(8002L)))
@@ -378,8 +408,8 @@ class SancaiAssetApplicationServiceImplTest {
     void deleteCurrentImageShouldUnbindStorageAndPromoteFirstRemainingImage() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, storageFacade, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiEntryImage deletedImage = image(8002L, 3001L, 7001L);
         SancaiEntryImage remainingImage = image(8003L, 3001L, 7002L);
         remainingImage.setCurrentUsed(false);
@@ -403,7 +433,8 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void sortImagesShouldUseGlobalImageList() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, null, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiEntryImage first = image(8001L, 3001L, 7001L);
         first.setPriority(1);
         SancaiEntryImage second = image(8002L, 3001L, 7002L);
@@ -438,8 +469,8 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, storageFacade, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, workerRenderClient, storageFacade, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiShowcaseId showcaseId = SancaiShowcaseIdCodec.toDomain(9001L);
         when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
         when(workerRenderClient.renderSancaiShowcase(org.mockito.ArgumentMatchers.any()))
@@ -522,8 +553,8 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, storageFacade, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, workerRenderClient, storageFacade, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiShowcaseId showcaseId = SancaiShowcaseIdCodec.toDomain(9002L);
         WorkerRenderDtos.WorkerRenderResponse response = successRenderResponse();
         response.getArtifact().setSizeBytes(50L * 1024L * 1024L + 1L);
@@ -544,8 +575,8 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, storageFacade, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, workerRenderClient, storageFacade, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiShowcaseId showcaseId = SancaiShowcaseIdCodec.toDomain(9001L);
         when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
         WorkerRenderDtos.WorkerRenderResponse response = new WorkerRenderDtos.WorkerRenderResponse();
@@ -564,7 +595,8 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void requestShowcaseShouldRejectPrivateScopeWithoutConfirmation() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, null, null, mock(ClassicsPublicationWriteGuard.class));
         SancaiShowcaseCommand command =
                 new SancaiShowcaseCommand(null, SancaiShowcaseStatus.REQUESTED, "{\"title\":\"demo\"}", null, 0, null);
         command.setVisibilityRiskStatus(SancaiVisibilityRiskStatus.CONTAINS_PRIVATE);
