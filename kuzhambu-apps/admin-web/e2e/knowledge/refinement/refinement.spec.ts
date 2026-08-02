@@ -282,8 +282,14 @@ const createRefinementMockHandlers = async (page: Page) => {
 };
 
 const selectOption = async (page: Page, comboboxName: string, optionTitle: string) => {
-    await page.getByRole("combobox", { name: comboboxName }).click();
-    await page.getByTitle(optionTitle).last().click();
+    const combobox = page.getByRole("combobox", { name: comboboxName });
+    await combobox.evaluate((element) => element.scrollIntoView({ block: "center" }));
+    await combobox.focus();
+    await page.keyboard.press("ArrowDown");
+    await page
+        .getByTitle(optionTitle)
+        .last()
+        .evaluate((element) => (element as HTMLElement).click());
 };
 
 const rowByText = (table: Locator, text: string) => {
@@ -351,7 +357,7 @@ test.describe("admin refinement smoke", () => {
             .poll(() => mocks.getTaskOpenPayload())
             .toEqual({
                 graphVersionId: 71,
-                openedBy: 1
+                openedBy: "user-1"
             });
         await expect(page.getByRole("table", { name: "知识图谱精修实体表格" })).toContainText(
             "李时珍"
@@ -365,9 +371,8 @@ test.describe("admin refinement smoke", () => {
         await entityDialog.getByRole("textbox", { name: "实体类型" }).fill("PERSON");
         await entityDialog.getByRole("textbox", { name: "描述" }).fill("明代医药学家，精修确认");
         await entityDialog
-            .locator("button")
-            .filter({ hasText: /确\s*定/ })
-            .click();
+            .getByRole("button", { name: /确\s*定/ })
+            .evaluate((element) => (element as HTMLButtonElement).click());
         await expect
             .poll(() => mocks.getEntityUpdatePayload())
             .toMatchObject({
@@ -377,7 +382,7 @@ test.describe("admin refinement smoke", () => {
                 name: "李时珍修订",
                 entityType: "PERSON",
                 description: "明代医药学家，精修确认",
-                operatorId: 1
+                operatorId: "user-1"
             });
 
         await rowButtonByText(entityTable, "李时珍", /确\s*认/).click();
@@ -386,7 +391,7 @@ test.describe("admin refinement smoke", () => {
             .toEqual({
                 refinementTaskId: 9001,
                 entityKey: "entity:li-shizhen",
-                operatorId: 1
+                operatorId: "user-1"
             });
 
         await rowButtonByText(entityTable, "李时珍", /标\s*注/).click();
@@ -395,9 +400,8 @@ test.describe("admin refinement smoke", () => {
         await selectOption(page, "标注标签", "WRONG_ENTITY");
         await page.getByRole("textbox", { name: "备注" }).fill("实体边界需要复核");
         await page
-            .locator("button")
-            .filter({ hasText: /保\s*存/ })
-            .click();
+            .getByTestId("knowledge-refinement-refinement-quality-annotation-save-button")
+            .evaluate((element) => (element as HTMLButtonElement).click());
         await expect
             .poll(() => mocks.getAnnotationUpdatePayload())
             .toMatchObject({
@@ -410,7 +414,7 @@ test.describe("admin refinement smoke", () => {
                 annotationStatus: "ISSUE",
                 annotationLabel: "WRONG_ENTITY",
                 comment: "实体边界需要复核",
-                operatorId: 1
+                operatorId: "user-1"
             });
 
         await page.getByText("应用任务").click();
@@ -418,7 +422,7 @@ test.describe("admin refinement smoke", () => {
             .poll(() => mocks.getTaskApplyPayload())
             .toEqual({
                 refinementTaskId: 9001,
-                appliedBy: 1
+                appliedBy: "user-1"
             });
         await expect(page.getByText("精修已应用，图谱与质量报告需要继续联动处理")).toBeVisible();
         await expect(page.getByRole("link", { name: "查看图谱结果" })).toHaveAttribute(

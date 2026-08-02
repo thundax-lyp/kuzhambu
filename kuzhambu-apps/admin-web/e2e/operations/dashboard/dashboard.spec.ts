@@ -24,6 +24,12 @@ const fulfillSuccess = async (route: Route, data: unknown) => {
 };
 
 const mockShellApis = async (page: Page, permissions: string[]) => {
+    await page.addInitScript((grantedPermissions) => {
+        window.localStorage.setItem(
+            "kuzhambu.admin.permissions",
+            JSON.stringify(grantedPermissions)
+        );
+    }, permissions);
     await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
         await route.fulfill({
             contentType: "application/json",
@@ -139,14 +145,13 @@ const mockShellApis = async (page: Page, permissions: string[]) => {
 test.describe("operations dashboard entries", () => {
     test.beforeEach(async ({ page }) => {
         await page.setViewportSize({ width: 1280, height: 800 });
-        await page.addInitScript((permissions) => {
+        await page.addInitScript(() => {
             window.localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
             window.localStorage.setItem(
                 "kuzhambu.admin.accessTokenExpireAt",
                 String(Date.now() + 3600 * 1000)
             );
-            window.localStorage.setItem("kuzhambu.admin.permissions", JSON.stringify(permissions));
-        }, DASHBOARD_USER_PERMISSIONS);
+        });
         await page.route("**/kuzhambu-admin-api/api/sys/log/page", (route) =>
             fulfillSuccess(route, {
                 pageNo: 1,

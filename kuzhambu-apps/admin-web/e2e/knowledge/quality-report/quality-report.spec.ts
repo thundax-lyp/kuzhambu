@@ -235,24 +235,24 @@ test.describe("admin quality report smoke", () => {
         await page.goto("/knowledge/quality-report?graphVersionId=71&regenerate=1");
 
         await expect(page.getByRole("heading", { name: "质量报告" })).toBeVisible();
-        await expect.poll(() => mocks.getLatestPayload()).toEqual({ graphVersionId: 71 });
+        await expect.poll(() => mocks.getLatestPayload()).toEqual({ graphVersionId: "71" });
         await expect
             .poll(() => mocks.getPagePayload())
             .toEqual({
                 pageNo: 1,
                 pageSize: 20,
-                graphVersionId: 71
+                graphVersionId: "71"
             });
         await expect(page.getByLabel("报告摘要").getByText("QR-20260709-001")).toBeVisible();
         await expect(page.getByText("实体覆盖率")).toBeVisible();
         await expect(page.getByText("该版本质量报告早于最新精修应用")).toBeVisible();
 
-        await page.getByRole("spinbutton").fill("72");
+        await page.getByRole("textbox", { name: "graphVersionId" }).fill("72");
         await page.getByRole("button", { name: "重新生成报告" }).first().click();
         await expect
             .poll(() => mocks.getGeneratePayload())
             .toEqual({
-                graphVersionId: 72,
+                graphVersionId: "72",
                 generatedBy: 1
             });
 
@@ -280,12 +280,12 @@ test.describe("admin quality report smoke", () => {
                 sourceCategoryCode: "medicine",
                 taskType: "GRAPH",
                 replaceUnconfirmedOnly: true,
-                modelId: 1,
+                modelId: "1",
                 modelName: "gpt-5.5",
                 promptMessagesJson:
                     '[{"role":"system","content":"extract knowledge graph from quality report low quality category"}]',
                 inputPayloadJson: '{"triggerSource":"QUALITY_REPORT"}',
-                requestedBy: 1
+                requestedBy: "1"
             });
         await expect(
             page.locator(".ant-alert").getByText("低质量门类重提取任务已创建")

@@ -316,7 +316,7 @@ test.describe("admin graph extraction smoke", () => {
                 taskType: "GRAPH"
             });
         await page.getByRole("button", { name: "应用候选" }).click();
-        await expect.poll(() => mocks.getWorkbenchApplyPayload()).toEqual({ taskId: 9001 });
+        await expect.poll(() => mocks.getWorkbenchApplyPayload()).toEqual({ taskId: "9001" });
 
         await page.getByRole("button", { name: "任务列表(1)" }).click();
         await expect(page.getByText("8008")).toBeVisible();
@@ -327,7 +327,7 @@ test.describe("admin graph extraction smoke", () => {
             .evaluate((element) => {
                 (element as HTMLButtonElement).click();
             });
-        await expect.poll(() => mocks.getDetailPayload()).toEqual({ taskId: 8008 });
+        await expect.poll(() => mocks.getDetailPayload()).toEqual({ taskId: "8008" });
         await expect(page.getByLabel("抽取任务详情")).toContainText(
             '{"sourceContentIds":[1001,1002]}'
         );
@@ -335,7 +335,7 @@ test.describe("admin graph extraction smoke", () => {
         await expect(page.getByLabel("抽取任务详情")).toContainText("7001");
 
         await page.getByRole("button", { name: "应用候选结果" }).click();
-        await expect.poll(() => mocks.getApplyPayload()).toEqual({ taskId: 8008 });
+        await expect.poll(() => mocks.getApplyPayload()).toEqual({ taskId: "8008" });
 
         await page.keyboard.press("Escape");
         await page
@@ -369,7 +369,7 @@ test.describe("admin graph extraction smoke", () => {
             .poll(() => mocks.getRegeneratePayload())
             .toEqual({
                 taskType: "GRAPH",
-                sourceTaskId: 88,
+                sourceTaskId: "88",
                 triggerSource: "REFINEMENT_APPLIED",
                 replaceUnconfirmedOnly: true,
                 selectionScopeJson: '{"sourceContentIds":[1001]}'
