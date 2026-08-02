@@ -66,6 +66,18 @@ public final class WangqiDocumentInterfaceAssembler {
                         .content(entity.getContent())
                         .documentTime(entity.getDocumentTime())
                         .storageObjectId(StorageObjectIdCodec.toValue(entity.getStorageObjectId()))
+                        .lifecycleStatus(
+                                entity.getLifecycleStatus() == null
+                                        ? null
+                                        : entity.getLifecycleStatus().name())
+                        .transitionStatus(
+                                entity.getTransitionStatus() == null
+                                        ? null
+                                        : entity.getTransitionStatus().name())
+                        .currentPublicationJobId(
+                                entity.getCurrentPublicationJobId() == null
+                                        ? null
+                                        : entity.getCurrentPublicationJobId().value())
                         .visibility(
                                 entity.getVisibility() == null
                                         ? null

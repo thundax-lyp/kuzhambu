@@ -75,6 +75,18 @@ public final class MingCustomsInterfaceAssembler {
                                         : entity.getContentFormat().value())
                         .content(entity.getContent())
                         .originalExcerpts(entity.getOriginalExcerpts())
+                        .lifecycleStatus(
+                                entity.getLifecycleStatus() == null
+                                        ? null
+                                        : entity.getLifecycleStatus().name())
+                        .transitionStatus(
+                                entity.getTransitionStatus() == null
+                                        ? null
+                                        : entity.getTransitionStatus().name())
+                        .currentPublicationJobId(
+                                entity.getCurrentPublicationJobId() == null
+                                        ? null
+                                        : entity.getCurrentPublicationJobId().value())
                         .visibility(
                                 entity.getVisibility() == null
                                         ? null
