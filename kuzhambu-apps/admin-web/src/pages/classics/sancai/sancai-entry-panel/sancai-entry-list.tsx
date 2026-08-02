@@ -206,7 +206,12 @@ export const SancaiEntryList = ({
                 return (
                     <div className="sancai-entry-title-cell">
                         {isPublicationTransitionActive(entry) ? (
-                            <KuzhambuButton type="link" aria-label={`打开条目 ${title}`} disabled>
+                            <KuzhambuButton
+                                type="link"
+                                aria-label={`打开条目 ${title}`}
+                                testId={`sancai-entry-${entry.id}-title-button`}
+                                disabled
+                            >
                                 {title}
                             </KuzhambuButton>
                         ) : (
