@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationStepExecutor {
+    private static final long REMOTE_CALL_SAFETY_SECONDS = 5;
     private final ClassicsPublicationJobRepository jobRepository;
     private final ClassicsContentRepository contentRepository;
     private final DiscoverySearchPublicationFacade searchFacade;
@@ -71,6 +72,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
     }
 
     private boolean prepareSearch(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
+        requireRemoteCallWindow(job);
         ClassicsPublicationPayload payload = payload(job);
         searchFacade.prepare(payload.searchDocument());
         return advance(
@@ -84,6 +86,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
     }
 
     private boolean prepareFastGpt(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
+        requireRemoteCallWindow(job);
         ClassicsPublicationPayload payload = payload(job);
         String collectionId = job.getFastGptCollectionId();
         if (collectionId == null) {
@@ -100,11 +103,13 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
     }
 
     private boolean readySearch(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
+        requireRemoteCallWindow(job);
         searchFacade.markReady(reference(job));
         return advance(job, executionToken, ClassicsPublicationJobStatus.ES_READY, null, null, null, null);
     }
 
     private boolean enableFastGpt(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
+        requireRemoteCallWindow(job);
         if (job.getFastGptCollectionId() == null) {
             throw new IllegalStateException("FastGPT collection reference is missing");
         }
@@ -113,6 +118,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
     }
 
     private boolean offlineSearch(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
+        requireRemoteCallWindow(job);
         String documentId = documentId(job);
         searchFacade.markOffline(DiscoverySearchPublicationReferenceFacadeRequest.builder()
                 .documentId(documentId)
@@ -122,6 +128,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
     }
 
     private boolean disableFastGpt(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
+        requireRemoteCallWindow(job);
         fastGptGateway.disable(job.getFastGptCollectionId());
         return advance(job, executionToken, ClassicsPublicationJobStatus.FASTGPT_DISABLED, null, null, null, null);
     }
@@ -177,5 +184,12 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
                 && executionToken != null
                 && job.getJobResultStatus() == ClassicsPublicationJobResultStatus.RUNNING
                 && Objects.equals(job.getExecutionToken(), executionToken);
+    }
+
+    private static void requireRemoteCallWindow(ClassicsPublicationJob job) {
+        if (job.getExpiresAt() != null
+                && !Instant.now().isBefore(job.getExpiresAt().minusSeconds(REMOTE_CALL_SAFETY_SECONDS))) {
+            throw new IllegalStateException("Publication slice lease has no remote-call safety window");
+        }
     }
 }
