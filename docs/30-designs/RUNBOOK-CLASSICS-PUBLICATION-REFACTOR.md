@@ -1197,6 +1197,7 @@ Verification:
 - `pnpm run test`（admin 90 files / 385 tests；portal 25 files / 79 tests）
 - `pnpm exec playwright test e2e/classics/publication-jobs/publication-jobs.spec.ts`
   （Chromium；1 test passed）
+- `pnpm exec playwright test`（Chromium；31 tests passed）
 
 Deferred: Portal/public READY cutover (Stage 4); legacy MQ and remaining visibility
 cleanup (Stage 5); database reset, real ES/FastGPT runtime smoke and RUNBOOK deletion
