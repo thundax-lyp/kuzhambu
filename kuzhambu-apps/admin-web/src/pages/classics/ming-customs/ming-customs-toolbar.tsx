@@ -13,13 +13,11 @@ import { MingCustomsTagCloud } from "./ming-customs-keyword-cloud";
 import type { MingCustomsQuery } from "./ming-customs-service";
 import type { MingCustomsRecord, MingCustomsTagCloudItem } from "./ming-customs-types";
 
-export type MingCustomsVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 export type MingCustomsSortDirectionFilter = "ASC" | "DESC";
 
 export interface MingCustomsFilters {
     category: string;
     sortDirection: MingCustomsSortDirectionFilter;
-    visibility: MingCustomsVisibilityFilter;
 }
 
 export interface MingCustomsSelectedTagFilter {
@@ -98,27 +96,6 @@ export const MingCustomsToolbar = ({
                     )
                 },
                 {
-                    name: "visibility",
-                    label: "可见性",
-                    render: () => (
-                        <KuzhambuSelect
-                            aria-label="明代习俗可见性"
-                            value={filters.visibility}
-                            options={[
-                                { value: "ALL", label: "全部" },
-                                { value: "PUBLIC", label: "公开" },
-                                { value: "PRIVATE", label: "私有" }
-                            ]}
-                            onChange={(value) =>
-                                onFiltersChange({
-                                    ...filters,
-                                    visibility: value
-                                })
-                            }
-                        />
-                    )
-                },
-                {
                     name: "sortDirection",
                     label: "排序",
                     render: () => (
@@ -147,7 +124,6 @@ export const MingCustomsToolbar = ({
                     <MingCustomsTagCloud
                         category={query.category}
                         keyword={query.keyword}
-                        visibility={query.visibility}
                         onSelect={onSelectTag}
                     />
                     <KuzhambuButton

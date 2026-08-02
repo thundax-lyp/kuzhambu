@@ -95,7 +95,6 @@ describe("ming customs service request contracts", () => {
             pageSize: 20,
             keyword: "元旦",
             category: "RITUAL",
-            visibility: "PUBLIC",
             tagName: "礼制",
             sortDirection: "DESC"
         });
@@ -104,7 +103,6 @@ describe("ming customs service request contracts", () => {
             pageSize: 20,
             keyword: "元旦",
             category: "RITUAL",
-            visibility: "PUBLIC",
             tagName: "礼制",
             sortDirection: "DESC"
         });
@@ -124,8 +122,7 @@ describe("ming customs service request contracts", () => {
             summary: "记录明代正旦朝贺与家族拜礼。",
             contentFormat: "MARKDOWN",
             content: "## 元旦朝贺",
-            originalExcerpts: "正旦，百官朝贺。",
-            visibility: "PUBLIC"
+            originalExcerpts: "正旦，百官朝贺。"
         };
 
         await service.add(command);
@@ -163,23 +160,16 @@ describe("ming customs service request contracts", () => {
     });
 
     it("sends ming customs option and keyword cloud requests", async () => {
-        await service.listKeywordCloud("PUBLIC");
-        expectLastCall("POST", "/classics/ming-customs/keyword-cloud/list", {
-            visibility: "PUBLIC"
-        });
-
         await service.listKeywordCloud();
         expectLastCall("POST", "/classics/ming-customs/keyword-cloud/list", {});
 
         await service.listTagCloud({
             category: "RITUAL",
-            keyword: "元旦",
-            visibility: "PUBLIC"
+            keyword: "元旦"
         });
         expectLastCall("POST", "/classics/ming-customs/tag-cloud/list", {
             category: "RITUAL",
-            keyword: "元旦",
-            visibility: "PUBLIC"
+            keyword: "元旦"
         });
 
         await service.listTagCloud();

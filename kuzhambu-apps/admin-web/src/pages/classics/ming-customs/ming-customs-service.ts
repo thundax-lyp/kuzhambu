@@ -15,7 +15,6 @@ const CATEGORY_DICT_TYPE = "CLASSICS_MING_CUSTOMS_CATEGORY";
 export type MingCustomsQuery = PageQuery<{
     keyword?: string | null;
     category?: string | null;
-    visibility?: string | null;
     tagName?: string | null;
     tagId?: string | null;
     tagNameSnapshot?: string | null;
@@ -32,13 +31,11 @@ export interface MingCustomsCommand {
     contentFormat?: string | null;
     content?: string | null;
     originalExcerpts?: string | null;
-    visibility?: string | null;
 }
 
 export interface MingCustomsTagCloudQuery {
     keyword?: string | null;
     category?: string | null;
-    visibility?: string | null;
 }
 
 interface MingCustomsVersionCommand {
@@ -112,11 +109,11 @@ export const submitOfflineBatch = (command: MingCustomsPublicationBatchCommand) 
     );
 };
 
-export const listKeywordCloud = (visibility?: string | null) => {
+export const listKeywordCloud = () => {
     return postJson<MingCustomsKeywordCloudRecord[], MingCustomsCommand>(
         "/classics/ming-customs/keyword-cloud/list",
         {
-            body: { visibility }
+            body: {}
         }
     );
 };

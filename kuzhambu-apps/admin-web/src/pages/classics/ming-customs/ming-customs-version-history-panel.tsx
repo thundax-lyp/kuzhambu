@@ -27,8 +27,7 @@ const compareFields: Array<{
     { key: "summary", label: "概述" },
     { key: "contentFormat", label: "正文格式" },
     { key: "content", label: "正文" },
-    { key: "originalExcerpts", label: "原文摘录" },
-    { key: "visibility", label: "可见性" }
+    { key: "originalExcerpts", label: "原文摘录" }
 ];
 
 const formatDateTime = (value?: string | null) => {

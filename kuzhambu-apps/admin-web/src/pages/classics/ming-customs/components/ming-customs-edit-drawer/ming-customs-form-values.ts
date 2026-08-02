@@ -6,7 +6,6 @@ export interface MingCustomsFormValues {
     chapter: string;
     content: string;
     contentFormat: string;
-    isPublic: boolean;
     originalExcerpts: string;
     section: string;
     summary: string;
@@ -26,7 +25,6 @@ export const toMingCustomsFormValues = (
         chapter: record?.chapter || "",
         content: record?.content || "",
         contentFormat: record?.contentFormat || "MARKDOWN",
-        isPublic: (record?.visibility || "PUBLIC") === "PUBLIC",
         originalExcerpts: record?.originalExcerpts || "",
         section: record?.section || "",
         summary: record?.summary || "",
@@ -47,7 +45,6 @@ export const toMingCustomsCommand = (
         summary: normalizeText(values.summary),
         contentFormat: normalizeText(values.contentFormat) || "MARKDOWN",
         content: normalizeText(values.content),
-        originalExcerpts: normalizeText(values.originalExcerpts),
-        visibility: values.isPublic ? "PUBLIC" : "PRIVATE"
+        originalExcerpts: normalizeText(values.originalExcerpts)
     };
 };

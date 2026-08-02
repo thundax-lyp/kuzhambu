@@ -6,13 +6,9 @@ import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/us
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/ai-candidate-batch-drawer";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskCapability } from "@/pages/classics/common/ai-refinement-task-types";
-import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import {
-    hasClassicsContentPermission,
-    type ClassicsBatchOperationRecord
-} from "@/pages/classics/common/classics-content-types";
+import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import type {
     ClassicsExportJobRecord,
     ClassicsExportScopePayload
@@ -24,8 +20,7 @@ import { MingCustomsTable } from "./ming-customs-table";
 import {
     MingCustomsToolbar,
     type MingCustomsFilters,
-    type MingCustomsSelectedTagFilter,
-    type MingCustomsVisibilityFilter
+    type MingCustomsSelectedTagFilter
 } from "./ming-customs-toolbar";
 import { MingCustomsVersionPanel } from "./ming-customs-version-panel";
 import * as service from "./ming-customs-service";
@@ -60,8 +55,7 @@ const MING_CUSTOMS_REFINEMENT_PROMPT: Record<AiRefinementTaskCapability, string>
 
 const DEFAULT_MING_CUSTOMS_FILTERS: MingCustomsFilters = {
     category: "",
-    sortDirection: "DESC",
-    visibility: "ALL"
+    sortDirection: "DESC"
 };
 
 const buildPromptMessagesJson = (
@@ -111,7 +105,6 @@ const buildExportScopeJson = (entry: MingCustomsRecord) => {
                 title,
                 text: entry.content || entry.originalExcerpts || "",
                 summary: entry.summary || null,
-                visibility: entry.visibility || null,
                 category: entry.category || null
             }
         ]
@@ -123,10 +116,6 @@ const buildExportScopeJson = (entry: MingCustomsRecord) => {
 const normalizeSearch = (value?: string | null) => {
     const normalizedValue = value?.trim();
     return normalizedValue || undefined;
-};
-
-const readVisibilityValue = (visibility: MingCustomsVisibilityFilter) => {
-    return visibility === "ALL" ? undefined : visibility;
 };
 
 export const MingCustomsPage = () => {
@@ -160,8 +149,6 @@ export const MingCustomsPage = () => {
         {}
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
-    const [batchVisibilityResult, setBatchVisibilityResult] =
-        useState<ClassicsBatchOperationRecord | null>(null);
     const [publicationBatchResult, setPublicationBatchResult] =
         useState<MingCustomsPublicationBatchRecord | null>(null);
     const [exportJobsDrawerOpen, setExportJobsDrawerOpen] = useState(false);
@@ -172,7 +159,6 @@ export const MingCustomsPage = () => {
     const hasActiveFilters = Boolean(
         filters.category ||
         selectedTagFilter ||
-        filters.visibility !== "ALL" ||
         filters.sortDirection !== DEFAULT_MING_CUSTOMS_FILTERS.sortDirection
     );
 
@@ -276,7 +262,7 @@ export const MingCustomsPage = () => {
         [records, selectedEntryIds]
     );
     const canExportEntries = hasClassicsContentPermission("MING_CUSTOMS", "export", hasPermission);
-    const canChangeEntryVisibility = hasClassicsContentPermission(
+    const canChangeEntryPublication = hasClassicsContentPermission(
         "MING_CUSTOMS",
         "edit",
         hasPermission
@@ -385,19 +371,6 @@ export const MingCustomsPage = () => {
             messageApi.error(error instanceof Error ? error.message : "批量发布状态变更失败");
         }
     });
-    const batchVisibilityMutation = useMutation({
-        mutationFn: contentService.changeVisibilityBatch,
-        onSuccess: async (result) => {
-            setBatchVisibilityResult(result);
-            await invalidateMingCustoms();
-            messageApi.success(
-                `批量可见性完成：成功 ${result.successCount}，失败 ${result.failureCount}`
-            );
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "批量可见性修改失败");
-        }
-    });
     const exportMutation = useMutation({
         mutationFn: (entry: MingCustomsRecord) =>
             exportService.create({
@@ -480,7 +453,6 @@ export const MingCustomsPage = () => {
         setQuery((currentQuery) => ({
             ...currentQuery,
             category: filters.category || undefined,
-            visibility: readVisibilityValue(filters.visibility),
             sortDirection: filters.sortDirection,
             tagId: selectedTagFilter?.tagId ?? undefined,
             tagNameSnapshot: selectedTagFilter?.tagNameSnapshot || undefined,
@@ -495,7 +467,6 @@ export const MingCustomsPage = () => {
             category: undefined,
             tagId: undefined,
             tagNameSnapshot: undefined,
-            visibility: undefined,
             sortDirection: DEFAULT_MING_CUSTOMS_FILTERS.sortDirection,
             pageNo: DEFAULT_PAGE_NO
         }));
@@ -603,22 +574,6 @@ export const MingCustomsPage = () => {
         });
     };
 
-    const changeSelectedVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
-        if (!canChangeEntryVisibility) {
-            messageApi.warning("当前账号缺少明代习俗编辑权限");
-            return;
-        }
-        if (!selectedEntries.length) {
-            messageApi.warning("请先选择当前页要批量修改可见性的明代习俗");
-            return;
-        }
-        batchVisibilityMutation.mutate({
-            contentIds: selectedEntries.map((entry) => entry.id),
-            contentType: "MING_CUSTOMS",
-            visibility
-        });
-    };
-
     const exportEntry = (entry: MingCustomsRecord) => {
         if (!canExportEntries) {
             messageApi.warning("当前账号缺少明代习俗导出权限");
@@ -686,7 +641,7 @@ export const MingCustomsPage = () => {
     };
 
     const openBatchCandidateDrawer = () => {
-        if (!canChangeEntryVisibility) {
+        if (!canChangeEntryPublication) {
             messageApi.warning("当前账号缺少明代习俗编辑权限");
             return;
         }
@@ -738,9 +693,8 @@ export const MingCustomsPage = () => {
                             openExportJobs={exportJobsDrawerOpen}
                         />
                         <MingCustomsTable
-                            batchVisibilityResult={batchVisibilityResult}
                             publicationBatchResult={publicationBatchResult}
-                            canChangeEntryVisibility={canChangeEntryVisibility}
+                            canChangeEntryPublication={canChangeEntryPublication}
                             canExport={canExportEntries}
                             categoryLabels={categoryLabels}
                             loading={mingCustomsQuery.isLoading}
@@ -748,7 +702,6 @@ export const MingCustomsPage = () => {
                             onBatchCandidate={openBatchCandidateDrawer}
                             onDelete={deleteEntry}
                             onExport={exportEntry}
-                            onChangeSelectedVisibility={changeSelectedVisibility}
                             onOpenEdit={openEditMingCustomsDrawer}
                             onPublicationAction={changePublicationStatus}
                             onPublicationBatch={changePublicationStatusBatch}
@@ -773,7 +726,6 @@ export const MingCustomsPage = () => {
                             publicationChanging={
                                 publicationMutation.isPending || publicationBatchMutation.isPending
                             }
-                            visibilityChanging={batchVisibilityMutation.isPending}
                         />
                         <AiCandidateBatchDrawer
                             open={batchCandidateDrawerOpen}
@@ -781,7 +733,7 @@ export const MingCustomsPage = () => {
                             contentIds={batchCandidateEntryIds}
                             capabilities={["summary", "tags", "qa"]}
                             contentTitleById={batchCandidateTitleById}
-                            canEdit={canChangeEntryVisibility}
+                            canEdit={canChangeEntryPublication}
                             onClose={() => setBatchCandidateDrawerOpen(false)}
                             onChanged={invalidateMingCustoms}
                         />

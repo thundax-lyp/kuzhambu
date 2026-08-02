@@ -1,7 +1,6 @@
 import type { AiCandidateApplyPayload } from "./ai-candidate-types";
 
 export type ClassicsContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS" | string;
-export type ClassicsContentVisibility = "PRIVATE" | "PUBLIC";
 export type ClassicsContentPermissionAction = "edit" | "export";
 
 export const CLASSICS_CONTENT_EXPORT_PERMISSION = "classics:content:export";
@@ -98,12 +97,6 @@ export interface ClassicsContentQaPairSortPayload {
 export interface ClassicsContentListPayload {
     contentType: ClassicsContentType;
     contentId: string;
-}
-
-export interface ClassicsBatchVisibilityPayload {
-    contentIds: string[];
-    contentType: ClassicsContentType;
-    visibility: ClassicsContentVisibility;
 }
 
 export interface ClassicsBatchOperationItemRecord {

@@ -1,4 +1,4 @@
-import { Form, Input, Switch, Typography } from "antd";
+import { Form, Input, Typography } from "antd";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
@@ -132,13 +132,6 @@ export const MingCustomsEditDrawer = ({
                             { label: "HTML", value: "HTML" },
                             { label: "纯文本", value: "TEXT" }
                         ]}
-                    />
-                </KuzhambuFormItem>
-                <KuzhambuFormItem name="isPublic" label="可见性" valuePropName="checked">
-                    <Switch
-                        aria-label="明代习俗公开状态"
-                        checkedChildren="公开"
-                        unCheckedChildren="私有"
                     />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem name="content" label="正文" layoutSize="large">

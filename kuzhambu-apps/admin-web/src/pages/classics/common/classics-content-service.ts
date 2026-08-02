@@ -2,7 +2,6 @@ import { postJson } from "@/api/http";
 import type { AiCandidateApplyPayload } from "./ai-candidate-types";
 import type {
     ClassicsBatchOperationRecord,
-    ClassicsBatchVisibilityPayload,
     ClassicsContentListPayload,
     ClassicsContentQaPairPayload,
     ClassicsContentQaPairDeletePayload,
@@ -24,7 +23,6 @@ export type ClassicsContentTagSortCommand = ClassicsContentTagSortPayload;
 export type ClassicsContentQaPairCommand = ClassicsContentQaPairPayload;
 export type ClassicsContentQaPairSortCommand = ClassicsContentQaPairSortPayload;
 export type ClassicsContentQaPairDeleteCommand = ClassicsContentQaPairDeletePayload;
-export type ClassicsBatchVisibilityCommand = ClassicsBatchVisibilityPayload;
 export type ClassicsAiCandidateBatchApplyCommand = {
     items: AiCandidateApplyPayload[];
 };
@@ -133,15 +131,6 @@ export const applyAiCandidatesBatch = (request: ClassicsAiCandidateBatchApplyCom
 export const rejectAiCandidatesBatch = (request: ClassicsAiCandidateBatchRejectCommand) => {
     return postJson<ClassicsBatchOperationRecord, ClassicsAiCandidateBatchRejectCommand>(
         `${CLASSICS_CONTENT_PATH}/ai-candidates/batch/reject`,
-        {
-            body: request
-        }
-    );
-};
-
-export const changeVisibilityBatch = (request: ClassicsBatchVisibilityCommand) => {
-    return postJson<ClassicsBatchOperationRecord, ClassicsBatchVisibilityCommand>(
-        `${CLASSICS_CONTENT_PATH}/visibility/change`,
         {
             body: request
         }

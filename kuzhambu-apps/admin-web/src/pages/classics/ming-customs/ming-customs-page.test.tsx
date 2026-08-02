@@ -93,7 +93,6 @@ let mockMingCustomsRecord: MingCustomsRecord = {
     contentFormat: "MARKDOWN",
     content: "## 正旦",
     originalExcerpts: "正旦朝贺。",
-    visibility: "PUBLIC",
     lifecycleStatus: "DRAFT",
     transitionStatus: "NONE"
 };
@@ -222,8 +221,7 @@ const installFetchMock = () => {
                         summary: "旧版摘要",
                         contentFormat: "MARKDOWN",
                         content: "## 旧版",
-                        originalExcerpts: "旧版摘录",
-                        visibility: "PUBLIC"
+                        originalExcerpts: "旧版摘录"
                     }),
                     changeType: "HISTORY_RESTORED",
                     changeSummary: "恢复历史版本 v1"
@@ -245,8 +243,7 @@ const installFetchMock = () => {
                     summary: "旧版摘要",
                     contentFormat: "MARKDOWN",
                     content: "## 旧版",
-                    originalExcerpts: "旧版摘录",
-                    visibility: "PUBLIC"
+                    originalExcerpts: "旧版摘录"
                 }),
                 changeType: "HISTORY_RESTORED",
                 changeSummary: "恢复历史版本 v1"
@@ -268,34 +265,10 @@ const installFetchMock = () => {
                     summary: "恢复后的摘要",
                     contentFormat: "MARKDOWN",
                     content: "## 恢复正文",
-                    originalExcerpts: "恢复后摘录",
-                    visibility: "PUBLIC"
+                    originalExcerpts: "恢复后摘录"
                 }),
                 changeType: "HISTORY_RESTORED",
                 changeSummary: "恢复历史版本 v1"
-            });
-        }
-        if (path.endsWith("/classics/content/visibility/change")) {
-            return apiResponse({
-                failureCount: 1,
-                failures: [
-                    {
-                        contentId: "500000000002",
-                        contentType: "MING_CUSTOMS",
-                        failureCode: "BATCH_VISIBILITY_FAILED",
-                        failureReason: "习俗条目不存在",
-                        status: "FAILED"
-                    }
-                ],
-                successCount: 1,
-                successes: [
-                    {
-                        contentId: "500000000001",
-                        contentType: "MING_CUSTOMS",
-                        resultId: "500000000001",
-                        status: "PUBLIC"
-                    }
-                ]
             });
         }
         if (path.endsWith("/ai/invocation/candidate/list")) {
@@ -361,8 +334,7 @@ describe("MingCustomsPage", () => {
             summary: "记录明代正旦朝贺与家族拜礼。",
             contentFormat: "MARKDOWN",
             content: "## 正旦",
-            originalExcerpts: "正旦朝贺。",
-            visibility: "PUBLIC"
+            originalExcerpts: "正旦朝贺。"
         };
         confirmDangerMock.mockClear();
         confirmDangerMock.mockImplementation((options: { onConfirm?: () => void }) =>
@@ -603,43 +575,6 @@ describe("MingCustomsPage", () => {
         expect(await screen.findByText("批量发布操作：接受 1，拒绝 0")).toBeInTheDocument();
     }, 30000);
 
-    it("changes selected entries visibility and shows item failures", async () => {
-        const user = userEvent.setup();
-
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <MingCustomsPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
-
-        const table = await screen.findByLabelText("明代习俗表格");
-        await waitForSelectableRow(table);
-        const batchPublicButton = screen.getByTestId(
-            "classics-ming-customs-ming-customs-batch-public-button"
-        );
-        selectFirstRow(table);
-        await waitFor(() => {
-            expect(batchPublicButton).not.toBeDisabled();
-        });
-        await user.click(batchPublicButton);
-
-        await waitFor(() => {
-            expect(screen.getByText("批量可见性结果：成功 1，失败 1")).toBeInTheDocument();
-        });
-        expect(capturedCalls).toContainEqual({
-            body: {
-                contentIds: ["500000000001"],
-                contentType: "MING_CUSTOMS",
-                visibility: "PUBLIC"
-            },
-            method: "POST",
-            path: "/classics/content/visibility/change"
-        });
-        expect(screen.getByText("MING_CUSTOMS#500000000002: 习俗条目不存在")).toBeInTheDocument();
-    }, 30000);
-
     it("opens batch candidate governance drawer from selected entries", async () => {
         const user = userEvent.setup();
 
@@ -806,7 +741,6 @@ describe("MingCustomsPage", () => {
                 contentFormat: "MARKDOWN",
                 content: "旧版正文",
                 originalExcerpts: "旧版摘录",
-                visibility: "PUBLIC",
                 tags: [
                     {
                         id: "9001",
@@ -845,8 +779,7 @@ describe("MingCustomsPage", () => {
                     summary: "新版摘要",
                     contentFormat: "MARKDOWN",
                     content: "新版正文",
-                    originalExcerpts: "新版摘录",
-                    visibility: "PRIVATE"
+                    originalExcerpts: "新版摘录"
                 }}
                 detailLoading={false}
                 listLoading={false}

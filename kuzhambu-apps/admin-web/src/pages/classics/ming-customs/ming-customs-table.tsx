@@ -7,7 +7,6 @@ import {
     type KuzhambuTableProps,
     KuzhambuTag
 } from "@/components";
-import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-content-types";
 import { ClassicsPublicationErrorAlert } from "@/pages/classics/common/classics-publication-error-alert";
 
 import type { MingCustomsPublicationBatchRecord, MingCustomsRecord } from "./ming-customs-types";
@@ -19,32 +18,20 @@ const DEFAULT_COLUMN_WIDTHS = {
     category: 140,
     chapter: 160,
     section: 140,
-    visibility: 120,
     summary: 320
-};
-
-const visibilityLabels: Record<string, string> = {
-    PUBLIC: "公开",
-    PRIVATE: "私有"
-};
-
-const visibilityTagType = (visibility?: string | null) => {
-    return visibility === "PUBLIC" ? "success" : "neutral";
 };
 
 const isPublicationTransitionActive = (record: MingCustomsRecord) =>
     Boolean(record.transitionStatus && record.transitionStatus !== "NONE");
 
 interface MingCustomsTableProps {
-    batchVisibilityResult: ClassicsBatchOperationRecord | null;
     publicationBatchResult: MingCustomsPublicationBatchRecord | null;
-    canChangeEntryVisibility?: boolean;
+    canChangeEntryPublication?: boolean;
     canExport?: boolean;
     categoryLabels: Record<string, string>;
     dataSource: MingCustomsRecord[];
     loading?: boolean;
     onBatchCandidate: () => void;
-    onChangeSelectedVisibility: (visibility: "PRIVATE" | "PUBLIC") => void;
     onDelete: (record: MingCustomsRecord) => void;
     onOpenEdit: (record: MingCustomsRecord) => void;
     onPublicationAction: (record: MingCustomsRecord, action: "PUBLISH" | "OFFLINE") => void;
@@ -54,32 +41,16 @@ interface MingCustomsTableProps {
     pagination: KuzhambuTableProps<MingCustomsRecord>["pagination"];
     selectedEntryIds: string[];
     publicationChanging?: boolean;
-    visibilityChanging?: boolean;
 }
 
-const renderBatchResultDescription = (result: ClassicsBatchOperationRecord) => {
-    if (!result.failures.length) {
-        return "全部选中明代习俗已处理完成。";
-    }
-
-    return result.failures
-        .map(
-            (item) =>
-                `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
-        )
-        .join("；");
-};
-
 export const MingCustomsTable = ({
-    batchVisibilityResult,
     publicationBatchResult,
-    canChangeEntryVisibility = true,
+    canChangeEntryPublication = true,
     canExport = true,
     categoryLabels,
     dataSource,
     loading = false,
     onBatchCandidate,
-    onChangeSelectedVisibility,
     onDelete,
     onOpenEdit,
     onPublicationAction,
@@ -88,8 +59,7 @@ export const MingCustomsTable = ({
     onSelectedEntryIdsChange,
     pagination,
     selectedEntryIds,
-    publicationChanging = false,
-    visibilityChanging = false
+    publicationChanging = false
 }: MingCustomsTableProps) => {
     const columns: KuzhambuTableProps<MingCustomsRecord>["columns"] = [
         {
@@ -159,17 +129,6 @@ export const MingCustomsTable = ({
             )
         },
         {
-            title: "可见性",
-            dataIndex: "visibility",
-            key: "visibility",
-            width: DEFAULT_COLUMN_WIDTHS.visibility,
-            render: (visibility?: string | null) => (
-                <KuzhambuTag type={visibilityTagType(visibility)}>
-                    {visibility ? (visibilityLabels[visibility] ?? visibility) : "未设置"}
-                </KuzhambuTag>
-            )
-        },
-        {
             title: "摘要",
             dataIndex: "summary",
             key: "summary",
@@ -222,19 +181,6 @@ export const MingCustomsTable = ({
     return (
         <>
             <ClassicsPublicationErrorAlert items={dataSource} />
-            {batchVisibilityResult ? (
-                <KuzhambuAlert
-                    showIcon
-                    type={batchVisibilityResult.failureCount > 0 ? "warning" : "success"}
-                    style={{ marginBottom: 12 }}
-                    title={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
-                    description={
-                        batchVisibilityResult.failures.length
-                            ? renderBatchResultDescription(batchVisibilityResult)
-                            : "全部选中明代习俗已更新可见性。"
-                    }
-                />
-            ) : null}
             {publicationBatchResult ? (
                 <KuzhambuAlert
                     showIcon
@@ -264,35 +210,21 @@ export const MingCustomsTable = ({
                         {
                             testId: "classics-ming-customs-batch-publish-button",
                             title: "批量发布",
-                            disabled: !selectedEntryIds.length || !canChangeEntryVisibility,
+                            disabled: !selectedEntryIds.length || !canChangeEntryPublication,
                             loading: publicationChanging,
                             action: () => onPublicationBatch("PUBLISH")
                         },
                         {
                             testId: "classics-ming-customs-batch-offline-button",
                             title: "批量下线",
-                            disabled: !selectedEntryIds.length || !canChangeEntryVisibility,
+                            disabled: !selectedEntryIds.length || !canChangeEntryPublication,
                             loading: publicationChanging,
                             action: () => onPublicationBatch("OFFLINE")
                         },
                         {
-                            testId: "classics-ming-customs-ming-customs-batch-public-button",
-                            title: "公开",
-                            disabled: !selectedEntryIds.length || !canChangeEntryVisibility,
-                            loading: visibilityChanging,
-                            action: () => onChangeSelectedVisibility("PUBLIC")
-                        },
-                        {
-                            testId: "classics-ming-customs-ming-customs-batch-private-button",
-                            title: "私有",
-                            disabled: !selectedEntryIds.length || !canChangeEntryVisibility,
-                            loading: visibilityChanging,
-                            action: () => onChangeSelectedVisibility("PRIVATE")
-                        },
-                        {
                             testId: "classics-ming-customs-ming-customs-action-button-2",
                             title: "候选治理",
-                            disabled: !selectedEntryIds.length || !canChangeEntryVisibility,
+                            disabled: !selectedEntryIds.length || !canChangeEntryPublication,
                             action: onBatchCandidate
                         }
                     ]

@@ -142,8 +142,7 @@ test.describe("classics ming customs page", () => {
                                 summary: "记录明代正旦朝贺与家族拜礼。",
                                 contentFormat: "MARKDOWN",
                                 content: "## 正旦\n\n士民相贺。",
-                                originalExcerpts: "正旦朝贺。",
-                                visibility: body.visibility ?? "PUBLIC"
+                                originalExcerpts: "正旦朝贺。"
                             }
                         ]
                     })
@@ -178,8 +177,7 @@ test.describe("classics ming customs page", () => {
                         contentFormat: "HTML",
                         content:
                             "<h2>正旦</h2><img src=x onerror=alert(1)><script>alert(1)</script>",
-                        originalExcerpts: "正旦朝贺。",
-                        visibility: "PUBLIC"
+                        originalExcerpts: "正旦朝贺。"
                     })
                 )
             });
@@ -206,8 +204,7 @@ test.describe("classics ming customs page", () => {
                                     summary: "旧版摘要",
                                     contentFormat: "MARKDOWN",
                                     content: "## 旧版",
-                                    originalExcerpts: "旧版摘录",
-                                    visibility: "PUBLIC"
+                                    originalExcerpts: "旧版摘录"
                                 }),
                                 changeType: "HISTORY_RESTORED",
                                 changeSummary: "恢复历史版本 v1"
@@ -239,8 +236,7 @@ test.describe("classics ming customs page", () => {
                                 summary: "旧版摘要",
                                 contentFormat: "MARKDOWN",
                                 content: "## 旧版",
-                                originalExcerpts: "旧版摘录",
-                                visibility: "PUBLIC"
+                                originalExcerpts: "旧版摘录"
                             }),
                             changeType: "HISTORY_RESTORED",
                             changeSummary: "恢复历史版本 v1"
@@ -271,8 +267,7 @@ test.describe("classics ming customs page", () => {
                                 summary: "恢复后摘要",
                                 contentFormat: "MARKDOWN",
                                 content: "## 恢复正文",
-                                originalExcerpts: "恢复后摘录",
-                                visibility: "PUBLIC"
+                                originalExcerpts: "恢复后摘录"
                             }),
                             changeType: "HISTORY_RESTORED",
                             changeSummary: "恢复历史版本 v1"
@@ -366,8 +361,7 @@ test.describe("classics ming customs page", () => {
                 title: "上元灯市",
                 category: "FESTIVAL",
                 contentFormat: "MARKDOWN",
-                content: "## 上元\n\n灯市连宵。",
-                visibility: "PUBLIC"
+                content: "## 上元\n\n灯市连宵。"
             });
 
         await page.getByRole("button", { name: "编辑 岁时礼仪：元旦朝贺" }).click();
@@ -382,8 +376,7 @@ test.describe("classics ming customs page", () => {
             .toMatchObject({
                 id: 500000000001,
                 content: "更新后的正文",
-                contentFormat: "HTML",
-                visibility: "PUBLIC"
+                contentFormat: "HTML"
             });
 
         await page.getByRole("button", { name: "展开行操作" }).click();
@@ -408,7 +401,6 @@ test.describe("classics ming customs page", () => {
             summary: "记录明代正旦朝贺与家族拜礼。",
             contentFormat: "MARKDOWN",
             content: "## 正旦\n\n士民相贺。",
-            visibility: "PUBLIC",
             lifecycleStatus: "DRAFT",
             transitionStatus: "NONE"
         };

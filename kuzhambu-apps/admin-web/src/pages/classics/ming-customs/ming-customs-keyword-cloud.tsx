@@ -10,7 +10,6 @@ interface MingCustomsTagCloudProps {
     category?: string | null;
     keyword?: string | null;
     onSelect: (item: MingCustomsTagCloudItem) => void;
-    visibility?: string | null;
 }
 
 const readWeight = (count: number, maxCount: number) => {
@@ -20,16 +19,11 @@ const readWeight = (count: number, maxCount: number) => {
     return 1 + Math.min(count / maxCount, 1) * 0.42;
 };
 
-export const MingCustomsTagCloud = ({
-    category,
-    keyword,
-    onSelect,
-    visibility
-}: MingCustomsTagCloudProps) => {
+export const MingCustomsTagCloud = ({ category, keyword, onSelect }: MingCustomsTagCloudProps) => {
     const [open, setOpen] = useState(false);
     const tagCloudQuery = useQuery({
-        queryKey: ["ming-customs", "tag-cloud", category, keyword, visibility],
-        queryFn: () => service.listTagCloud({ category, keyword, visibility }),
+        queryKey: ["ming-customs", "tag-cloud", category, keyword],
+        queryFn: () => service.listTagCloud({ category, keyword }),
         enabled: open,
         retry: false
     });
