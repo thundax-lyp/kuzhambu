@@ -22,8 +22,6 @@ public class SearchSourceContent {
     private String summary;
     private List<String> textSegments;
     private List<String> tagNames;
-    private String status;
-    private String visibility;
     private Integer currentVersionNo;
     private Instant publishedAt;
     private Instant updatedAt;
@@ -39,8 +37,6 @@ public class SearchSourceContent {
             String summary,
             List<String> textSegments,
             List<String> tagNames,
-            String status,
-            String visibility,
             Instant publishedAt,
             Instant updatedAt) {
         this(
@@ -54,8 +50,6 @@ public class SearchSourceContent {
                 summary,
                 textSegments,
                 tagNames,
-                status,
-                visibility,
                 null,
                 publishedAt,
                 updatedAt);

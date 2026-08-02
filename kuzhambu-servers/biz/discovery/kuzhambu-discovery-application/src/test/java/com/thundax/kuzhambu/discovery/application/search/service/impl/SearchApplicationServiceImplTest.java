@@ -65,20 +65,7 @@ class SearchApplicationServiceImplTest {
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
-                "黄帝",
-                List.of("SANCAI_ENTRY"),
-                List.of(),
-                List.of(),
-                List.of(),
-                List.of(),
-                null,
-                null,
-                1,
-                20,
-                "ANONYMOUS",
-                null,
-                null,
-                null);
+                "黄帝", List.of("SANCAI_ENTRY"), List.of(), List.of(), null, null, 1, 20, "ANONYMOUS", null, null, null);
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
@@ -131,8 +118,6 @@ class SearchApplicationServiceImplTest {
                 List.of("SANCAI_ENTRY"),
                 List.of("11"),
                 List.of("上古"),
-                List.of("PUBLISHED"),
-                List.of("PUBLIC"),
                 dateFrom,
                 dateTo,
                 1,
@@ -165,8 +150,6 @@ class SearchApplicationServiceImplTest {
         assertTrue(result.getSearchScopesJson().contains("SANCAI_ENTRY"));
         assertTrue(result.getSearchScopesJson().contains("\"categoryCodes\":[\"11\"]"));
         assertTrue(result.getSearchScopesJson().contains("\"tagNames\":[\"上古\"]"));
-        assertTrue(result.getSearchScopesJson().contains("\"contentStatuses\":[\"PUBLISHED\"]"));
-        assertTrue(result.getSearchScopesJson().contains("\"visibilityScopes\":[\"PUBLIC\"]"));
         assertTrue(result.getSearchScopesJson().contains("\"dateFrom\":1718000000000"));
         assertTrue(result.getSearchScopesJson().contains("\"dateTo\":1720419200000"));
         assertEquals(
@@ -192,8 +175,6 @@ class SearchApplicationServiceImplTest {
                 List.of(),
                 List.of(),
                 List.of(),
-                List.of("PUBLISHED"),
-                List.of("PUBLIC"),
                 null,
                 null,
                 1,
@@ -209,7 +190,7 @@ class SearchApplicationServiceImplTest {
                 .thenReturn(searchPageResult(
                         20,
                         new SearchGroupResult(
-                                "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1001", "PUBLIC")))));
+                                "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1001")))));
 
         var result = service.search(query);
         ArgumentCaptor<SearchKeyword> keywordCaptor = ArgumentCaptor.forClass(SearchKeyword.class);
@@ -239,8 +220,6 @@ class SearchApplicationServiceImplTest {
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
                 null,
-                List.of(),
-                List.of(),
                 List.of(),
                 List.of(),
                 List.of(),
@@ -289,8 +268,6 @@ class SearchApplicationServiceImplTest {
                 List.of("SANCAI_ENTRY"),
                 List.of("11"),
                 List.of("上古"),
-                List.of("PUBLISHED"),
-                List.of("PUBLIC", "PRIVATE"),
                 null,
                 null,
                 1,
@@ -305,7 +282,7 @@ class SearchApplicationServiceImplTest {
                 .thenReturn(searchPageResult(
                         1,
                         new SearchGroupResult(
-                                "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1001", "PUBLIC")))));
+                                "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1001")))));
 
         var result = service.search(query);
 
@@ -315,7 +292,6 @@ class SearchApplicationServiceImplTest {
         assertEquals("1001", result.getGroups().get(0).getItems().get(0).getContentId());
         ArgumentCaptor<SearchScope> scopeCaptor = ArgumentCaptor.forClass(SearchScope.class);
         verify(searchIndexGateway).search(any(), scopeCaptor.capture(), any(Integer.class), any(Integer.class));
-        assertEquals(List.of("PUBLIC"), scopeCaptor.getValue().getVisibilityScopes());
         assertTrue(scopeCaptor.getValue().getPrivateKnowledgeBases().isEmpty());
     }
 
@@ -339,8 +315,6 @@ class SearchApplicationServiceImplTest {
                 List.of(),
                 List.of(),
                 List.of(),
-                List.of(),
-                List.of("PUBLIC", "PRIVATE"),
                 null,
                 null,
                 1,
@@ -358,9 +332,7 @@ class SearchApplicationServiceImplTest {
                                 "SANCAI_ENTRY",
                                 "三才图会",
                                 2,
-                                List.of(
-                                        searchResult("SANCAI_ENTRY", "1001", "PUBLIC"),
-                                        searchResult("SANCAI_ENTRY", "1002", "PRIVATE")))));
+                                List.of(searchResult("SANCAI_ENTRY", "1001"), searchResult("SANCAI_ENTRY", "1002")))));
 
         var result = service.search(query);
         ArgumentCaptor<SearchScope> scopeCaptor = ArgumentCaptor.forClass(SearchScope.class);
@@ -393,8 +365,6 @@ class SearchApplicationServiceImplTest {
                 List.of("SANCAI_ENTRY"),
                 List.of(),
                 List.of(),
-                List.of(),
-                List.of("PRIVATE"),
                 null,
                 null,
                 1,
@@ -409,7 +379,7 @@ class SearchApplicationServiceImplTest {
                 .thenReturn(searchPageResult(
                         1,
                         new SearchGroupResult(
-                                "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1002", "PRIVATE")))));
+                                "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1002")))));
 
         var result = service.search(query);
 
@@ -437,8 +407,6 @@ class SearchApplicationServiceImplTest {
                 List.of("UNKNOWN_CONTENT"),
                 List.of(),
                 List.of(),
-                List.of(),
-                List.of("PRIVATE"),
                 null,
                 null,
                 1,
@@ -733,8 +701,6 @@ class SearchApplicationServiceImplTest {
                 List.of("SANCAI_ENTRY"),
                 List.of(),
                 List.of(),
-                List.of(),
-                List.of(),
                 null,
                 null,
                 1,
@@ -775,8 +741,6 @@ class SearchApplicationServiceImplTest {
         SearchQuery query = new SearchQuery(
                 "辞官",
                 List.of("SANCAI_ENTRY"),
-                List.of(),
-                List.of(),
                 List.of(),
                 List.of(),
                 null,
@@ -834,7 +798,7 @@ class SearchApplicationServiceImplTest {
                 Instant.now());
     }
 
-    private SearchResult searchResult(String contentType, String contentId, String visibility) {
+    private SearchResult searchResult(String contentType, String contentId) {
         return new SearchResult(
                 "CLASSICS",
                 contentType,
@@ -845,8 +809,6 @@ class SearchApplicationServiceImplTest {
                 "上古帝王",
                 "<mark>黄帝</mark>上古帝王",
                 List.of("上古"),
-                "PUBLISHED",
-                visibility,
                 1_718_000_000_000L,
                 1,
                 1,

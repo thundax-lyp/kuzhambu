@@ -30,8 +30,6 @@ class SearchIndexApplicationServiceImplTest {
                 "摘要",
                 List.of("原文"),
                 List.of(),
-                "PUBLISHED",
-                "PUBLIC",
                 null,
                 null));
         when(searchContentProvider.listPublicContents()).thenReturn(sourceContents);

@@ -52,7 +52,6 @@ class ElasticsearchSearchPublicationGatewayTest {
         assertEquals("9001", saved.getContentVersionId());
         assertEquals(7, saved.getContentVersionNo());
         assertEquals("PREPARING", saved.getPublicationStatus());
-        assertEquals(null, saved.getVisibility());
         assertEquals(Boolean.FALSE, saved.getDeleted());
         assertEquals(List.of("标题", "正文"), saved.getTextSegments());
         assertEquals("标题\n正文", saved.getBodyText());
@@ -66,7 +65,6 @@ class ElasticsearchSearchPublicationGatewayTest {
 
         assertTrue(gateway.markPublicationReady("SANCAI_ENTRY:101", "9001", 7));
         assertEquals("READY", existing.getPublicationStatus());
-        assertEquals("PUBLIC", existing.getVisibility());
         assertTrue(gateway.markPublicationReady("SANCAI_ENTRY:101", "9001", 7));
         verify(operations, org.mockito.Mockito.times(2)).save(eq(existing), any(IndexCoordinates.class));
     }

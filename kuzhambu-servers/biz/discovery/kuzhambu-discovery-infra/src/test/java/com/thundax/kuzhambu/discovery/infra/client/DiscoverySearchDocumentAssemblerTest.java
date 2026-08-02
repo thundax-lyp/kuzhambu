@@ -25,8 +25,6 @@ class DiscoverySearchDocumentAssemblerTest {
                 "摘要",
                 List.of("原文", "<p>译文</p>", " "),
                 List.of(),
-                "PUBLISHED",
-                "PUBLIC",
                 3,
                 Instant.ofEpochMilli(1_718_000_000_000L),
                 Instant.ofEpochMilli(1_718_100_000_000L));
@@ -54,8 +52,6 @@ class DiscoverySearchDocumentAssemblerTest {
                 "摘要",
                 List.of("正文"),
                 List.of(),
-                "PUBLISHED",
-                "PUBLIC",
                 2,
                 null,
                 null));
@@ -70,8 +66,6 @@ class DiscoverySearchDocumentAssemblerTest {
                 "摘要",
                 List.of("正文"),
                 List.of(),
-                "PUBLISHED",
-                "PUBLIC",
                 4,
                 null,
                 null));

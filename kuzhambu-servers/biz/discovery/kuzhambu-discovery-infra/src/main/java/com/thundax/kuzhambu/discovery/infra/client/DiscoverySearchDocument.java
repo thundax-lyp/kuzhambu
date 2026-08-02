@@ -68,12 +68,6 @@ public class DiscoverySearchDocument {
     private List<String> tagNames;
 
     @Field(type = FieldType.Keyword)
-    private String status;
-
-    @Field(type = FieldType.Keyword)
-    private String visibility;
-
-    @Field(type = FieldType.Keyword)
     private String publicationStatus;
 
     @Field(type = FieldType.Integer)
@@ -106,8 +100,6 @@ public class DiscoverySearchDocument {
             String summary,
             String bodyText,
             List<String> tagNames,
-            String status,
-            String visibility,
             Integer sourceVersionNo,
             Instant publishedAt,
             Instant updatedAt,
@@ -125,8 +117,6 @@ public class DiscoverySearchDocument {
         this.summary = summary;
         this.bodyText = bodyText;
         this.tagNames = tagNames;
-        this.status = status;
-        this.visibility = visibility;
         this.sourceVersionNo = sourceVersionNo;
         this.publishedAt = publishedAt;
         this.updatedAt = updatedAt;

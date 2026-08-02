@@ -20,8 +20,6 @@ public class SearchResult {
     private String summary;
     private String highlightText;
     private List<String> tagNames;
-    private String contentStatus;
-    private String visibility;
     private Long updatedAt;
     private int resultRank;
     private int groupRank;
@@ -46,8 +44,6 @@ public class SearchResult {
                 title,
                 summary,
                 highlightText,
-                null,
-                null,
                 null,
                 null,
                 resultRank,

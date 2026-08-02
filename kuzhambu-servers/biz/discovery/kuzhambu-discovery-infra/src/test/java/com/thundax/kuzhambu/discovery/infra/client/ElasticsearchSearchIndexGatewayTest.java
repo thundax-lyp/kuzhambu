@@ -82,8 +82,6 @@ class ElasticsearchSearchIndexGatewayTest {
                 "摘要",
                 "正文",
                 List.of("上古"),
-                "PUBLISHED",
-                "PUBLIC",
                 3,
                 null,
                 Instant.parse("2026-01-02T00:00:00Z"),
@@ -112,8 +110,6 @@ class ElasticsearchSearchIndexGatewayTest {
         assertEquals("SANCAI_ENTRY", page.getGroups().get(0).getItems().get(0).getKnowledgeBase());
         assertEquals("11", page.getGroups().get(0).getItems().get(0).getCategoryCode());
         assertEquals(List.of("上古"), page.getGroups().get(0).getItems().get(0).getTagNames());
-        assertEquals("PUBLISHED", page.getGroups().get(0).getItems().get(0).getContentStatus());
-        assertEquals("PUBLIC", page.getGroups().get(0).getItems().get(0).getVisibility());
         assertEquals(
                 1_767_312_000_000L, page.getGroups().get(0).getItems().get(0).getUpdatedAt());
     }
@@ -190,8 +186,6 @@ class ElasticsearchSearchIndexGatewayTest {
                         List.of("SANCAI_ENTRY"),
                         List.of("11"),
                         List.of("上古"),
-                        List.of("PUBLISHED"),
-                        List.of("PUBLIC"),
                         List.of(),
                         Instant.ofEpochMilli(1_718_000_000_000L),
                         Instant.ofEpochMilli(1_720_419_200_000L)),
@@ -206,7 +200,6 @@ class ElasticsearchSearchIndexGatewayTest {
         assertTrue(fieldNames.contains("knowledgeBase"));
         assertTrue(fieldNames.contains("categoryCode"));
         assertTrue(fieldNames.contains("tagNames"));
-        assertTrue(fieldNames.contains("status"));
         assertTrue(fieldNames.contains("publicationStatus"));
         assertTrue(fieldNames.contains("updatedAt"));
         assertTrue(fieldNames.contains("deleted"));
@@ -230,15 +223,7 @@ class ElasticsearchSearchIndexGatewayTest {
 
         gateway.search(
                 new SearchKeyword("黄帝", "黄帝", "黄帝"),
-                new SearchScope(
-                        List.of(),
-                        List.of(),
-                        List.of(),
-                        List.of(),
-                        List.of("PUBLIC", "PRIVATE"),
-                        List.of("SANCAI_ENTRY"),
-                        null,
-                        null),
+                new SearchScope(List.of(), List.of(), List.of(), List.of("SANCAI_ENTRY"), null, null),
                 1,
                 20);
 
@@ -428,8 +413,6 @@ class ElasticsearchSearchIndexGatewayTest {
                 "摘要",
                 List.of("正文"),
                 List.of(),
-                "PUBLISHED",
-                "PUBLIC",
                 3,
                 null,
                 null)));
@@ -439,7 +422,7 @@ class ElasticsearchSearchIndexGatewayTest {
     }
 
     @Test
-    void rebuildIndexShouldOnlySavePublicDocuments() {
+    void rebuildIndexShouldSaveAllDocuments() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
         IndexOperations indexOperations = mock(IndexOperations.class);
@@ -453,37 +436,33 @@ class ElasticsearchSearchIndexGatewayTest {
         ElasticsearchSearchIndexGateway gateway =
                 new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
 
-        gateway.rebuildIndex(List.of(sourceContent("1001", "PUBLIC"), sourceContent("1002", "PRIVATE")));
+        gateway.rebuildIndex(List.of(sourceContent("1001"), sourceContent("1002")));
 
         verify(operations)
                 .save(
                         documentsCaptor.capture(),
                         any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class));
-        assertEquals(1, documentsCaptor.getValue().size());
+        assertEquals(2, documentsCaptor.getValue().size());
         assertEquals("1001", documentsCaptor.getValue().get(0).getContentId());
-        assertEquals("PUBLIC", documentsCaptor.getValue().get(0).getVisibility());
     }
 
     @Test
-    void upsertDocumentsShouldDeleteNonPublicDocumentsAndSavePublicDocumentsOnly() {
+    void upsertDocumentsShouldSaveAllDocuments() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
         ArgumentCaptor<List<DiscoverySearchDocument>> documentsCaptor = ArgumentCaptor.forClass(List.class);
         ElasticsearchSearchIndexGateway gateway =
                 new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
 
-        gateway.upsertDocuments(List.of(sourceContent("1001", "PUBLIC"), sourceContent("1002", "PRIVATE")));
+        gateway.upsertDocuments(List.of(sourceContent("1001"), sourceContent("1002")));
 
-        verify(operations)
-                .delete(
-                        eq("SANCAI_ENTRY:1002"),
-                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class));
         verify(operations)
                 .save(
                         documentsCaptor.capture(),
                         any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class));
-        assertEquals(1, documentsCaptor.getValue().size());
+        assertEquals(2, documentsCaptor.getValue().size());
         assertEquals("1001", documentsCaptor.getValue().get(0).getContentId());
+        assertEquals("1002", documentsCaptor.getValue().get(1).getContentId());
     }
 
     @Test
@@ -570,8 +549,6 @@ class ElasticsearchSearchIndexGatewayTest {
                 summary,
                 bodyText,
                 List.of(),
-                "PUBLISHED",
-                "PUBLIC",
                 rank,
                 null,
                 null,
@@ -588,7 +565,7 @@ class ElasticsearchSearchIndexGatewayTest {
         return document;
     }
 
-    private SearchSourceContent sourceContent(String contentId, String visibility) {
+    private SearchSourceContent sourceContent(String contentId) {
         return new SearchSourceContent(
                 "CLASSICS",
                 "SANCAI_ENTRY",
@@ -600,8 +577,6 @@ class ElasticsearchSearchIndexGatewayTest {
                 "摘要",
                 List.of("正文"),
                 List.of(),
-                "PUBLISHED",
-                visibility,
                 3,
                 null,
                 null);

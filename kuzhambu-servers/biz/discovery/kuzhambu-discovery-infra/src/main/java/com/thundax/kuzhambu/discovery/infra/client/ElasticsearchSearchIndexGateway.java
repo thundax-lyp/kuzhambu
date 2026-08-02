@@ -46,7 +46,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     private static final int CATEGORY_AGGREGATION_BUCKET_SIZE = 1000;
     private static final String READY_CATEGORY_AGGREGATION = "ready_categories";
     private static final String REPRESENTATIVE_HIT_AGGREGATION = "representative_hit";
-    private static final String PUBLIC_VISIBILITY = "PUBLIC";
     private static final String PUBLICATION_PREPARING = "PREPARING";
     private static final String PUBLICATION_READY = "READY";
     private static final String PUBLICATION_OFFLINE = "OFFLINE";
@@ -107,15 +106,14 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     public void rebuildIndex(List<SearchSourceContent> sourceContents) {
         ElasticsearchOperations operations = requireOperations("rebuild");
         ElasticsearchOperationsSupport.recreateIndex(operations, indexCoordinates(), DiscoverySearchDocument.class);
-        saveDocuments(operations, toPublicDocuments(sourceContents));
+        saveDocuments(operations, toDocuments(sourceContents));
     }
 
     @Override
     public void upsertDocuments(List<SearchSourceContent> sourceContents) {
         ElasticsearchOperations operations = requireOperations("upsert");
         List<DiscoverySearchDocument> documents = toDocuments(sourceContents);
-        deleteNonPublicDocuments(operations, documents);
-        saveDocuments(operations, publicDocuments(documents));
+        saveDocuments(operations, documents);
     }
 
     @Override
@@ -195,8 +193,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         target.setTextSegments(document.getTextSegments());
         target.setBodyText(joinTextSegments(document.getTextSegments()));
         target.setTagNames(document.getTagNames());
-        target.setStatus("PUBLISHED");
-        target.setVisibility(null);
         target.setPublicationStatus(PUBLICATION_PREPARING);
         target.setDeleted(Boolean.FALSE);
         target.setDeletedAt(null);
@@ -230,7 +226,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
             return false;
         }
         document.setPublicationStatus(PUBLICATION_READY);
-        document.setVisibility(PUBLIC_VISIBILITY);
         document.setDeleted(Boolean.FALSE);
         document.setDeletedAt(null);
         operations.save(document, indexCoordinates());
@@ -246,7 +241,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
             return true;
         }
         document.setPublicationStatus(PUBLICATION_OFFLINE);
-        document.setVisibility(null);
         document.setDeleted(Boolean.TRUE);
         document.setDeletedAt(occurredAt);
         operations.save(document, indexCoordinates());
@@ -411,33 +405,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         return documents;
     }
 
-    private List<DiscoverySearchDocument> toPublicDocuments(List<SearchSourceContent> sourceContents) {
-        return publicDocuments(toDocuments(sourceContents));
-    }
-
-    private List<DiscoverySearchDocument> publicDocuments(List<DiscoverySearchDocument> documents) {
-        if (documents == null || documents.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return documents.stream().filter(this::isPublicDocument).toList();
-    }
-
-    private void deleteNonPublicDocuments(ElasticsearchOperations operations, List<DiscoverySearchDocument> documents) {
-        if (documents == null || documents.isEmpty()) {
-            return;
-        }
-        for (DiscoverySearchDocument document : documents) {
-            if (isPublicDocument(document) || document.getDocumentId() == null) {
-                continue;
-            }
-            operations.delete(document.getDocumentId(), indexCoordinates());
-        }
-    }
-
-    private boolean isPublicDocument(DiscoverySearchDocument document) {
-        return document != null && PUBLIC_VISIBILITY.equalsIgnoreCase(document.getVisibility());
-    }
-
     private void saveDocuments(ElasticsearchOperations operations, List<DiscoverySearchDocument> documents) {
         if (documents.isEmpty()) {
             return;
@@ -454,7 +421,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         criteria = appendInFilter(criteria, "knowledgeBase", searchScope.getKnowledgeBases());
         criteria = appendInFilter(criteria, "categoryCode", searchScope.getCategoryCodes());
         criteria = appendInFilter(criteria, "tagNames", searchScope.getTagNames());
-        criteria = appendInFilter(criteria, "status", searchScope.getContentStatuses());
         criteria = appendReadyPublicationFilter(criteria);
         if (searchScope.getDateFrom() != null) {
             criteria = criteria.and(new Criteria("updatedAt").greaterThanEqual(searchScope.getDateFrom()));
@@ -484,10 +450,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
             return criteria;
         }
         return criteria.and(new Criteria(fieldName).in(filteredValues.toArray()));
-    }
-
-    private Criteria appendPublicVisibilityFilter(Criteria criteria) {
-        return criteria.and(new Criteria("visibility").is(PUBLIC_VISIBILITY));
     }
 
     private Criteria appendReadyPublicationFilter(Criteria criteria) {
@@ -534,8 +496,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
                     document.getSummary(),
                     buildHighlightText(document, keyword),
                     document.getTagNames(),
-                    document.getStatus(),
-                    document.getVisibility(),
                     document.getUpdatedAt() == null
                             ? null
                             : document.getUpdatedAt().toEpochMilli(),
@@ -567,8 +527,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
                 document.getSummary(),
                 document.getBodyText(),
                 document.getTagNames(),
-                document.getStatus(),
-                document.getVisibility(),
                 document.getSourceVersionNo(),
                 document.getPublishedAt() == null
                         ? null

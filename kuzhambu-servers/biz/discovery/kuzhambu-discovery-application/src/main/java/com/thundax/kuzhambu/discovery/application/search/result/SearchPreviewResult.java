@@ -21,8 +21,6 @@ public class SearchPreviewResult {
     private String summary;
     private String bodyText;
     private List<String> tagNames;
-    private String contentStatus;
-    private String visibility;
     private Integer sourceVersionNo;
     private Long publishedAt;
     private Long updatedAt;
