@@ -258,29 +258,6 @@ const installFetchMock = () => {
         ) {
             return apiResponse(mockQaRecords);
         }
-        if (path.endsWith("/classics/shares/batch/create")) {
-            return apiResponse({
-                failureCount: 1,
-                failures: [
-                    {
-                        contentId: "2",
-                        contentType: "WANGQI_DOCUMENT",
-                        failureCode: "CONTENT_NOT_FOUND",
-                        failureReason: "文档不存在",
-                        status: "FAILED"
-                    }
-                ],
-                successCount: 1,
-                successes: [
-                    {
-                        contentId: "1",
-                        contentType: "WANGQI_DOCUMENT",
-                        resultId: "9101",
-                        status: "ACTIVE"
-                    }
-                ]
-            });
-        }
         if (path.endsWith("/classics/content/visibility/change")) {
             return apiResponse({
                 failureCount: 1,
@@ -432,7 +409,6 @@ describe("WangqiPage", () => {
         replacePermissions([
             "classics:wangqi:view",
             "classics:wangqi:edit",
-            "classics:sharing:edit",
             "classics:content:export",
             "discovery:qa:view"
         ]);
@@ -990,7 +966,6 @@ describe("WangqiPage", () => {
         replacePermissions([
             "classics:wangqi:view",
             "classics:wangqi:edit",
-            "classics:sharing:edit",
             "classics:content:export"
         ]);
 
@@ -1006,32 +981,6 @@ describe("WangqiPage", () => {
         await openQaSection(user);
 
         expect(await screen.findByRole("button", { name: "单文档问答" })).toBeDisabled();
-    }, 30000);
-
-    it("creates batch shares from selected documents and shows item failures", async () => {
-        const user = userEvent.setup();
-
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <WangqiPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
-
-        const table = await screen.findByLabelText("王圻文档表格");
-        await waitForSelectableRow(table);
-        const batchShareButton = screen.getByTestId("classics-wangqi-wangqi-batch-share-button");
-        selectFirstRow(table);
-        await waitFor(() => {
-            expect(batchShareButton).not.toBeDisabled();
-        });
-        await user.click(batchShareButton);
-
-        await waitFor(() => {
-            expect(screen.getByText("分享结果：成功 1，失败 1")).toBeInTheDocument();
-        });
-        expect(screen.getByText("WANGQI_DOCUMENT#2: 文档不存在")).toBeInTheDocument();
     }, 30000);
 
     it("changes selected documents visibility and shows item failures", async () => {

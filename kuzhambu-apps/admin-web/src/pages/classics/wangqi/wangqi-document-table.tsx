@@ -57,9 +57,7 @@ const readSummaryLines = (summary?: string | null) => {
 interface WangqiDocumentTableProps {
     canChangeDocumentVisibility: boolean;
     canExport?: boolean;
-    canShare?: boolean;
     dataSource: WangqiDocumentRecord[];
-    isBatchSharing: boolean;
     isBatchVisibilityChanging: boolean;
     isPublicationChanging: boolean;
     loading?: boolean;
@@ -70,8 +68,6 @@ interface WangqiDocumentTableProps {
     onOpenBatchCandidateDrawer: () => void;
     onPublicationAction: (record: WangqiDocumentRecord, action: "PUBLISH" | "OFFLINE") => void;
     onPublicationBatch: (action: "PUBLISH" | "OFFLINE") => void;
-    onShare: (record: WangqiDocumentRecord) => void;
-    onShareSelectedDocuments: () => void;
     onSelectedDocumentIdsChange: (ids: string[]) => void;
     onSortDirectionChange: (sortDirection: "ASC" | "DESC") => void;
     pagination: KuzhambuTableProps<WangqiDocumentRecord>["pagination"];
@@ -82,9 +78,7 @@ interface WangqiDocumentTableProps {
 export const WangqiDocumentTable = ({
     canChangeDocumentVisibility,
     canExport = true,
-    canShare = true,
     dataSource,
-    isBatchSharing,
     isBatchVisibilityChanging,
     isPublicationChanging,
     loading = false,
@@ -95,8 +89,6 @@ export const WangqiDocumentTable = ({
     onOpenBatchCandidateDrawer,
     onPublicationAction,
     onPublicationBatch,
-    onShare,
-    onShareSelectedDocuments,
     onSelectedDocumentIdsChange,
     onSortDirectionChange,
     pagination,
@@ -206,13 +198,6 @@ export const WangqiDocumentTable = ({
                         onClick: () => onPublicationAction(record, publicationAction)
                     },
                     {
-                        key: "share",
-                        text: "分享",
-                        ariaLabel: `分享 ${record.title || "未命名文档"}`,
-                        disabled: !canShare || isTransitionActive,
-                        onClick: () => onShare(record)
-                    },
-                    {
                         key: "export",
                         text: "导出",
                         ariaLabel: `导出 ${record.title || "未命名文档"}`,
@@ -262,13 +247,6 @@ export const WangqiDocumentTable = ({
                             disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
                             loading: isPublicationChanging,
                             action: () => onPublicationBatch("OFFLINE")
-                        },
-                        {
-                            testId: "classics-wangqi-wangqi-batch-share-button",
-                            title: "分享文档",
-                            disabled: !selectedDocumentIds.length || !canShare,
-                            loading: isBatchSharing,
-                            action: onShareSelectedDocuments
                         },
                         {
                             testId: "classics-wangqi-wangqi-action-button",
