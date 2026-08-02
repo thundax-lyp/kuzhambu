@@ -79,6 +79,22 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
     }
 
     @Test
+    void adminStarterShouldOwnClassicsPublicationSchedules() throws IOException {
+        String applicationYaml = loadApplicationYaml();
+
+        Assertions.assertThat(applicationYaml)
+                .contains("enabled: ${KUZHAMBU_CLASSICS_PUBLICATION_ENABLED:true}")
+                .contains("dispatch-fixed-delay: ${KUZHAMBU_CLASSICS_PUBLICATION_DISPATCH_FIXED_DELAY:5s}")
+                .contains(
+                        "success-reconcile-fixed-delay: ${KUZHAMBU_CLASSICS_PUBLICATION_SUCCESS_RECONCILE_FIXED_DELAY:30s}")
+                .contains(
+                        "failure-reconcile-fixed-delay: ${KUZHAMBU_CLASSICS_PUBLICATION_FAILURE_RECONCILE_FIXED_DELAY:30s}")
+                .contains("es-cleanup-fixed-delay: ${KUZHAMBU_CLASSICS_PUBLICATION_ES_CLEANUP_FIXED_DELAY:60s}")
+                .contains(
+                        "fastgpt-cleanup-fixed-delay: ${KUZHAMBU_CLASSICS_PUBLICATION_FASTGPT_CLEANUP_FIXED_DELAY:60s}");
+    }
+
+    @Test
     void adminStarterShouldExposeOperationsBackupScheduleConfiguration() throws IOException {
         String applicationYaml = loadApplicationYaml();
 
