@@ -818,7 +818,7 @@ flowchart TD
 | 1. Foundation | `COMPLETE` | 100-170 | contracts/static checks and full Java checks |
 | 2. External systems and job core | `COMPLETE` | 80-150 | full Java checks |
 | 3. Runtime and Admin | `PENDING` | 100-180 | full Java and admin-web checks |
-| 4. Portal cutover and sharing frontend removal | `PENDING` | 50-100 | full Java/frontend checks and sharing residue scans |
+| 4. Portal cutover and sharing frontend removal | `COMPLETE` | 50-100 | full Java/frontend checks and sharing residue scans |
 | 5. Publication visibility and legacy MQ removal | `PENDING` | 90-170 | full Java/frontend checks and legacy residue scans |
 | 6. Database reset and smoke | `PENDING` | 20-60 | full checks plus runtime smoke |
 
@@ -1205,7 +1205,7 @@ cleanup (Stage 5); database reset, real ES/FastGPT runtime smoke and RUNBOOK del
 
 ### Stage 4: Portal cutover and sharing frontend removal
 
-Status: ACTIVE
+Status: COMPLETE
 
 该 stage 把 Portal/公开搜索切换到 ES READY，并清除 sharing frontend。三类稿件
 visibility 和旧 RocketMQ 搜索同步保留到 Stage 5；本 stage 结束时系统必须独立编译和测试。
@@ -1214,13 +1214,13 @@ visibility 和旧 RocketMQ 搜索同步保留到 Stage 5；本 stage 结束时�
 
 Actions:
 
-- [ ] Discovery public query 固定过滤 `publicationStatus = READY and deleted = false`。
-- [ ] Classics Portal list/search 从 Discovery facade 获取 candidate IDs。
-- [ ] detail 必须先由 Discovery 确认 ES READY/not deleted。
-- [ ] ES 可见后再由 Classics application hydration category、volume、image、asset 和正式 snapshot。
-- [ ] Portal 不按主库 lifecycle 二次判断候选可见性。
-- [ ] 保留 ES READY 早于主库 PUBLISHED 的已接受窗口。
-- [ ] 更新 public search、Classics Portal 和 portal-web tests。
+- [x] Discovery public query 固定过滤 `publicationStatus = READY and deleted = false`。
+- [x] Classics Portal list/search 从 Discovery facade 获取 candidate IDs。
+- [x] detail 必须先由 Discovery 确认 ES READY/not deleted。
+- [x] ES 可见后再由 Classics application hydration category、volume、image、asset 和正式 snapshot。
+- [x] Portal 不按主库 lifecycle 二次判断候选可见性。
+- [x] 保留 ES READY 早于主库 PUBLISHED 的已接受窗口。
+- [x] 更新 public search、Classics Portal 和 portal-web tests。
 
 Tests:
 
@@ -1248,12 +1248,12 @@ Commit split:
 
 Actions:
 
-- [ ] 删除 admin `pages/classics/sharing`。
-- [ ] 删除 admin `pages/classics/common/classics-share-*`。
-- [ ] 删除 portal `share-list` 和 `share-detail`。
-- [ ] 删除 private-share HTTP exception。
-- [ ] 删除 sharing routes、tests、CSS 和 E2E。
-- [ ] 删除前端 sharing permission/menu fallback。
+- [x] 删除 admin `pages/classics/sharing`。
+- [x] 删除 admin `pages/classics/common/classics-share-*`。
+- [x] 删除 portal `share-list` 和 `share-detail`。
+- [x] 删除 private-share HTTP exception。
+- [x] 删除 sharing routes、tests、CSS 和 E2E。
+- [x] 删除前端 sharing permission/menu fallback。
 
 Zero-result scans:
 
