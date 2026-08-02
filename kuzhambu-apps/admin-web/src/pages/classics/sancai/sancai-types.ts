@@ -33,7 +33,6 @@ export interface SancaiEntryRecord {
     lifecycleStatus?: SancaiEntryLifecycleStatus | string | null;
     transitionStatus?: SancaiEntryTransitionStatus | string | null;
     currentPublicationJobId?: string | null;
-    visibility?: string | null;
     translationStatus?: string | null;
     imageStatus?: string | null;
     visualAssetStatus?: string | null;
@@ -143,7 +142,6 @@ export interface SancaiVersionSnapshot {
     translationText?: string | null;
     summary?: string | null;
     lifecycleStatus?: string | null;
-    visibility?: string | null;
     translationStatus?: string | null;
     imageStatus?: string | null;
     visualAssetStatus?: string | null;

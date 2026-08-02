@@ -28,7 +28,6 @@ const compareFields: Array<{
     { key: "translationText", label: "译文" },
     { key: "summary", label: "摘要" },
     { key: "lifecycleStatus", label: "生命周期" },
-    { key: "visibility", label: "可见性" },
     { key: "translationStatus", label: "翻译状态" },
     { key: "imageStatus", label: "配图状态" },
     { key: "visualAssetStatus", label: "视觉处理状态" },

@@ -90,7 +90,6 @@ const installFetchMock = () => {
                     translationText: "译文",
                     summary: "天地摘要",
                     lifecycleStatus: "PUBLISHED",
-                    visibility: "PUBLIC",
                     translationStatus: "READY",
                     imageStatus: "READY",
                     visualAssetStatus: "READY",
@@ -112,7 +111,6 @@ const installFetchMock = () => {
                 translationText: "译文",
                 summary: "天地摘要",
                 lifecycleStatus: "PUBLISHED",
-                visibility: "PUBLIC",
                 translationStatus: "READY",
                 imageStatus: "READY",
                 visualAssetStatus: "READY",
@@ -217,7 +215,6 @@ const buildEntry = (id: string, title: string): SancaiEntryRecord =>
         translationText: `${title}译文`,
         summary: `${title}摘要`,
         lifecycleStatus: "PUBLISHED",
-        visibility: "PUBLIC",
         translationStatus: "READY",
         imageStatus: "READY",
         visualAssetStatus: "READY",
@@ -337,13 +334,13 @@ describe("SancaiPage", () => {
         const table = await screen.findByLabelText("三才图会条目表格");
 
         expect(screen.getByText("当前页已选 0 条")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "公 开" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "批量发布" })).toBeDisabled();
 
         const rowCheckbox = within(table).getAllByRole("checkbox")[1];
         await user.click(rowCheckbox.closest("label") ?? rowCheckbox);
 
         expect(await screen.findByText("当前页已选 1 条")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "公 开" })).not.toBeDisabled();
+        expect(screen.getByRole("button", { name: "批量发布" })).not.toBeDisabled();
 
         rerender(
             <QueryClientProvider client={queryClient}>
@@ -369,7 +366,7 @@ describe("SancaiPage", () => {
         await waitFor(() => {
             expect(screen.getByText("当前页已选 0 条")).toBeInTheDocument();
         });
-        expect(screen.getByRole("button", { name: "公 开" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "批量发布" })).toBeDisabled();
         expect(screen.getByText("山川")).toBeInTheDocument();
     }, 30000);
 });

@@ -22,7 +22,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +54,6 @@ class SancaiEntryVersionRestorerTest {
         assertEquals(SancaiEntryLifecycleStatus.OFFLINE, restored.getLifecycleStatus());
         assertEquals(ClassicsPublicationTransitionStatus.NONE, restored.getTransitionStatus());
         assertEquals(ClassicsPublicationJobIdCodec.toDomain(900L), restored.getCurrentPublicationJobId());
-        assertEquals(SancaiEntryVisibility.PUBLIC, restored.getVisibility());
         assertEquals(8, restored.getPriority());
         assertNotNull(restored.getContentUpdatedAt());
         assertEquals(restored, repository.restoredEntry);
@@ -148,7 +146,6 @@ class SancaiEntryVersionRestorerTest {
                   "translationText": "历史译文",
                   "summary": "历史摘要",
                   "lifecycleStatus": "PUBLISHED",
-                  "visibility": "PUBLIC",
                   "translationStatus": "READY",
                   "imageStatus": "READY",
                   "visualAssetStatus": "READY",
@@ -205,7 +202,6 @@ class SancaiEntryVersionRestorerTest {
             entry.setLifecycleStatus(SancaiEntryLifecycleStatus.OFFLINE);
             entry.setTransitionStatus(ClassicsPublicationTransitionStatus.NONE);
             entry.setCurrentPublicationJobId(ClassicsPublicationJobIdCodec.toDomain(900L));
-            entry.setVisibility(SancaiEntryVisibility.PUBLIC);
             return entry;
         }
     }

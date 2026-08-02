@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Form, Input, Switch } from "antd";
+import { App, Form, Input } from "antd";
 import { useEffect, useMemo } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -305,20 +305,6 @@ export const SancaiEntryBasicSection = ({
                     mode={mode}
                     summaryTasks={summaryTasks}
                     onRequestSummaryTask={onRequestSummaryTask}
-                />
-            </KuzhambuFormItem>
-            <KuzhambuFormItem
-                name="visibility"
-                label="可见性"
-                layoutSize="large"
-                valuePropName="checked"
-                getValueProps={(visibility) => ({ checked: visibility === "PUBLIC" })}
-                normalize={(checked) => (checked ? "PUBLIC" : "PRIVATE")}
-            >
-                <Switch
-                    checkedChildren="公开"
-                    unCheckedChildren="私有"
-                    aria-label="三才图会公开状态"
                 />
             </KuzhambuFormItem>
             {entryId ? (

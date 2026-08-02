@@ -36,7 +36,6 @@ export interface SancaiEntryRecord {
     translationText?: string | null;
     summary?: string | null;
     lifecycleStatus?: string | null;
-    visibility?: string | null;
     translationStatus?: string | null;
     imageStatus?: string | null;
     visualAssetStatus?: string | null;

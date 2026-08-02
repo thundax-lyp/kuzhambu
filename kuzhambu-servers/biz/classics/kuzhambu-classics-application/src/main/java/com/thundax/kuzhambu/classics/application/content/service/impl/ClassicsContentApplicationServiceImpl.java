@@ -1175,10 +1175,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private boolean isPublicSearchContent(Versionable content) {
         if (content instanceof SancaiEntry entry) {
             return entry.getLifecycleStatus()
-                            == com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus
-                                    .PUBLISHED
-                    && entry.getVisibility()
-                            == com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility.PUBLIC;
+                    == com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus.PUBLISHED;
         }
         if (content instanceof WangqiDocument document) {
             return document.getVisibility()

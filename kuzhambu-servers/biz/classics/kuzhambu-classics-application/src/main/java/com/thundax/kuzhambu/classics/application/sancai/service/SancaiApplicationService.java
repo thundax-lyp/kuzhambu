@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.classics.application.sancai.service;
 
-import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
@@ -19,7 +18,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolum
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
-import java.util.Set;
 
 public interface SancaiApplicationService {
 
@@ -68,13 +66,6 @@ public interface SancaiApplicationService {
     SancaiEntryId updateEntry(SancaiEntryCommand command);
 
     void changeEntryStatus(SancaiEntryStatusCommand command);
-
-    void changeEntryVisibility(SancaiEntryId id, String visibility);
-
-    ClassicsBatchOperationResult batchChangeEntryVisibility(List<SancaiEntryId> ids, String visibility);
-
-    ClassicsBatchOperationResult batchChangeEntryVisibility(
-            List<SancaiEntryId> ids, String visibility, Set<String> operatorPermissions);
 
     void deleteEntry(SancaiEntryId id);
 }

@@ -78,7 +78,6 @@ img{display:block;max-width:100%;height:auto;border:1px solid rgba(124,93,59,.24
 <main>
 <h1>${escapeHtml(form.title || "未命名条目")}</h1>
 <div class="meta">
-<span>可见性：${escapeHtml(form.visibility)}</span>
 <span>当前视觉处理历史：${escapeHtml(readVisualAssetTitle(currentVisualAsset))}</span>
 </div>
 <section class="paper">

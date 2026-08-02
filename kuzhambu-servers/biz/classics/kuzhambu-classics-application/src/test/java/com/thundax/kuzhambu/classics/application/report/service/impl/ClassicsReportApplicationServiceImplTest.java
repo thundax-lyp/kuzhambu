@@ -13,7 +13,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageS
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
@@ -39,8 +38,7 @@ class ClassicsReportApplicationServiceImplTest {
                         null,
                         null,
                         null,
-                        null,
-                        SancaiEntryVisibility.PUBLIC.value(),
+                        SancaiEntryLifecycleStatus.PUBLISHED.value(),
                         null,
                         null,
                         null,
@@ -87,7 +85,6 @@ class ClassicsReportApplicationServiceImplTest {
         SancaiEntry entry = new SancaiEntry();
         entry.setTitle(title);
         entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
-        entry.setVisibility(SancaiEntryVisibility.PUBLIC);
         entry.setTranslationStatus(translationStatus);
         entry.setImageStatus(imageStatus);
         entry.setVisualAssetStatus(visualAssetStatus);

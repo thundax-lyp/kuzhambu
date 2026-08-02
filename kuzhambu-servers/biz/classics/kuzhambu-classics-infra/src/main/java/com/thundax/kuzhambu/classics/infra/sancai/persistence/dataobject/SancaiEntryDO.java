@@ -24,7 +24,6 @@ public class SancaiEntryDO {
     private String lifecycleStatus;
     private String transitionStatus;
     private Long currentPublicationJobId;
-    private String visibility;
     private String translationStatus;
     private String imageStatus;
     private String visualAssetStatus;

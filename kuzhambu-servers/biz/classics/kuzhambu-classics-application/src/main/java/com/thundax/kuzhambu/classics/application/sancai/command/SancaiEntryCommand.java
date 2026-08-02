@@ -4,7 +4,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageS
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +22,6 @@ public class SancaiEntryCommand {
     private String translationText;
     private String summary;
     private SancaiEntryLifecycleStatus lifecycleStatus;
-    private SancaiEntryVisibility visibility;
     private SancaiEntryTranslationStatus translationStatus;
     private SancaiEntryImageStatus imageStatus;
     private SancaiEntryVisualAssetStatus visualAssetStatus;

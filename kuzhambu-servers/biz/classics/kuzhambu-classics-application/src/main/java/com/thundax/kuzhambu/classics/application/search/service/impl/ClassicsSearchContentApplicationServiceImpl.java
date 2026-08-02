@@ -23,7 +23,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
@@ -86,16 +85,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         Map<Long, SancaiCategory> categoryById = listSancaiCategoryMap();
         Map<Long, Long> categoryIdByVolumeId = listSancaiCategoryIdByVolumeId();
         List<SancaiEntry> entries = sancaiApplicationService.listEntries(new SancaiEntryPageQuery(
-                null,
-                null,
-                null,
-                SancaiEntryLifecycleStatus.PUBLISHED,
-                SancaiEntryVisibility.PUBLIC,
-                null,
-                null,
-                null,
-                null,
-                SortDirection.ASC));
+                null, null, null, SancaiEntryLifecycleStatus.PUBLISHED, null, null, null, null, SortDirection.ASC));
         if (entries == null || entries.isEmpty()) {
             return Collections.emptyList();
         }
@@ -205,8 +195,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
             SancaiEntry entry, Map<Long, SancaiCategory> categoryById, Map<Long, Long> categoryIdByVolumeId) {
         if (entry == null
                 || entry.getId() == null
-                || entry.getLifecycleStatus() != SancaiEntryLifecycleStatus.PUBLISHED
-                || entry.getVisibility() != SancaiEntryVisibility.PUBLIC) {
+                || entry.getLifecycleStatus() != SancaiEntryLifecycleStatus.PUBLISHED) {
             return null;
         }
         Long volumeId = entry.getVolumeId() == null ? null : entry.getVolumeId().value();
@@ -228,7 +217,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 textSegments,
                 tagNames(contentType, contentId),
                 entry.getLifecycleStatus().value(),
-                entry.getVisibility().value(),
+                null,
                 entry.getCurrentVersionNo(),
                 entry.getContentUpdatedAt(),
                 entry.getContentUpdatedAt());

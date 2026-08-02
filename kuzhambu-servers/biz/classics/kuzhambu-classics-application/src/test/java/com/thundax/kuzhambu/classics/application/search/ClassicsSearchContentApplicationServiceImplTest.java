@@ -31,7 +31,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
@@ -67,7 +66,6 @@ class ClassicsSearchContentApplicationServiceImplTest {
         sancaiEntry.setTranslationText("译文");
         sancaiEntry.setSummary("摘要");
         sancaiEntry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
-        sancaiEntry.setVisibility(SancaiEntryVisibility.PUBLIC);
         sancaiEntry.setContentUpdatedAt(Instant.ofEpochMilli(1_718_000_000_000L));
         when(sancaiApplicationService.listCategories()).thenReturn(List.of(category));
         when(sancaiApplicationService.listVolumes(SancaiCategoryIdCodec.toDomain(11L)))

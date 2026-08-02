@@ -31,7 +31,6 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportSt
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
@@ -326,21 +325,13 @@ class ClassicsContentAdminControllerTest {
     }
 
     @Test
-    void batchVisibilityRequestShouldDispatchSancaiEntries() {
+    void batchVisibilityRequestShouldRejectSancaiEntries() {
         ClassicsBatchVisibilityRequest request = new ClassicsBatchVisibilityRequest();
         request.setContentType("SANCAI_ENTRY");
         request.setContentIds(List.of(4001L, 4002L));
         request.setVisibility("PUBLIC");
 
-        ClassicsBatchOperationResponse response = controller().changeBatchVisibility(request);
-
-        assertEquals(2, response.getSuccessCount());
-        assertEquals(0, response.getFailureCount());
-        JsonNode firstSuccess =
-                OBJECT_MAPPER.valueToTree(response.getSuccesses().get(0));
-        assertEquals("SANCAI_ENTRY", firstSuccess.get("contentType").asText());
-        assertEquals(4001L, firstSuccess.get("contentId").asLong());
-        assertEquals("PUBLIC", firstSuccess.get("status").asText());
+        assertThrows(RuntimeException.class, () -> controller().changeBatchVisibility(request));
     }
 
     @Test
@@ -554,19 +545,6 @@ class ClassicsContentAdminControllerTest {
                 SancaiApplicationService.class.getClassLoader(),
                 new Class<?>[] {SancaiApplicationService.class},
                 (proxy, method, args) -> {
-                    if ("batchChangeEntryVisibility".equals(method.getName())) {
-                        @SuppressWarnings("unchecked")
-                        List<SancaiEntryId> ids = (List<SancaiEntryId>) args[0];
-                        assertEquals(
-                                List.of(4001L, 4002L),
-                                ids.stream().map(SancaiEntryId::value).toList());
-                        assertEquals("PUBLIC", args[1]);
-                        assertTrue(args[2] instanceof java.util.Set<?>);
-                        return batchResult(
-                                "SANCAI_ENTRY",
-                                ids.stream().map(SancaiEntryId::value).toList(),
-                                "PUBLIC");
-                    }
                     throw new UnsupportedOperationException(method.getName());
                 });
     }

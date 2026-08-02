@@ -103,10 +103,6 @@ public final class SancaiPortalInterfaceAssembler {
                         entry.getLifecycleStatus() == null
                                 ? null
                                 : entry.getLifecycleStatus().value())
-                .visibility(
-                        entry.getVisibility() == null
-                                ? null
-                                : entry.getVisibility().value())
                 .translationStatus(
                         entry.getTranslationStatus() == null
                                 ? null

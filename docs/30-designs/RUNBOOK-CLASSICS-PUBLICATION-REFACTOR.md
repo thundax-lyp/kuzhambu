@@ -1046,18 +1046,23 @@ Stage 4 已固定的 ES READY/not deleted 候选入口，不得重新引入主�
 
 Actions:
 
-- [ ] 删除 Sancai domain/application/infra/interface 的 publication `visibility`。
-- [ ] 删除 repository query/update visibility。
-- [ ] 删除 Admin Sancai visibility filter、column、form 和 batch-private/public actions。
-- [ ] 删除 Portal Sancai visibility fields。
-- [ ] 更新 Sancai tests、fixtures 和 E2E。
-- [ ] 保留资产审核中的 `visibilityRiskStatus`。
+- [x] 删除 Sancai domain/application/infra/interface 的 publication `visibility`。
+- [x] 删除 repository query/update visibility。
+- [x] 删除 Admin Sancai visibility filter、column、form 和 batch-private/public actions。
+- [x] 删除 Portal Sancai visibility fields。
+- [x] 更新 Sancai tests、fixtures 和 E2E。
+- [x] 保留资产审核中的 `visibilityRiskStatus`。
 
 Exit:
 
 - Sancai 发布可见性只由 lifecycle/transition/job 表达。
 - Sancai 不再读取 schema 中不存在的 visibility column。
 - 完整 Java门禁和前端 workspace 门禁通过。
+
+Verification:
+
+- `cd kuzhambu-servers && mvn -q spotless:check checkstyle:check test`
+- `cd kuzhambu-apps && pnpm run format:check && pnpm run lint && pnpm run test`
 
 Commit split:
 

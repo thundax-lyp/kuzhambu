@@ -24,9 +24,6 @@ public class SancaiEntryPageRequest extends PageRequest {
     @JsonProperty("lifecycleStatus")
     private String lifecycleStatus;
 
-    @JsonProperty("visibility")
-    private String visibility;
-
     @JsonProperty("translationStatus")
     private String translationStatus;
 

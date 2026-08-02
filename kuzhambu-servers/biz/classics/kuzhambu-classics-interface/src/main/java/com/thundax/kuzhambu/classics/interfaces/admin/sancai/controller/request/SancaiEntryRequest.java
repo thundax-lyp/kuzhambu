@@ -32,9 +32,6 @@ public class SancaiEntryRequest {
     @JsonProperty("lifecycleStatus")
     private String lifecycleStatus;
 
-    @JsonProperty("visibility")
-    private String visibility;
-
     @JsonProperty("translationStatus")
     private String translationStatus;
 

@@ -17,7 +17,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageS
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler;
@@ -45,7 +44,6 @@ public final class SancaiInterfaceAssembler {
         query.setVolumeId(request.getVolumeId());
         query.setKeyword(request.getKeyword());
         query.setLifecycleStatus(fromLifecycle(request.getLifecycleStatus()));
-        query.setVisibility(fromVisibility(request.getVisibility()));
         query.setTranslationStatus(fromTranslation(request.getTranslationStatus()));
         query.setImageStatus(fromImage(request.getImageStatus()));
         query.setVisualAssetStatus(fromVisualAsset(request.getVisualAssetStatus()));
@@ -67,7 +65,6 @@ public final class SancaiInterfaceAssembler {
                 request.getTranslationText(),
                 request.getSummary(),
                 fromLifecycle(request.getLifecycleStatus()),
-                fromVisibility(request.getVisibility()),
                 fromTranslation(request.getTranslationStatus()),
                 fromImage(request.getImageStatus()),
                 fromVisualAsset(request.getVisualAssetStatus()),
@@ -137,7 +134,6 @@ public final class SancaiInterfaceAssembler {
                         entity.getCurrentPublicationJobId() == null
                                 ? null
                                 : entity.getCurrentPublicationJobId().value())
-                .visibility(value(entity.getVisibility()))
                 .translationStatus(value(entity.getTranslationStatus()))
                 .imageStatus(value(entity.getImageStatus()))
                 .visualAssetStatus(value(entity.getVisualAssetStatus()))
@@ -227,10 +223,6 @@ public final class SancaiInterfaceAssembler {
 
     private static SancaiEntryLifecycleStatus fromLifecycle(String value) {
         return StringUtils.isBlank(value) ? null : SancaiEntryLifecycleStatus.from(value);
-    }
-
-    private static SancaiEntryVisibility fromVisibility(String value) {
-        return StringUtils.isBlank(value) ? null : SancaiEntryVisibility.from(value);
     }
 
     private static SancaiEntryTranslationStatus fromTranslation(String value) {

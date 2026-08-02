@@ -69,7 +69,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageS
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
@@ -119,7 +118,6 @@ class ClassicsContentApplicationServiceImplTest {
                 service(repository, null, null, null, null, null, null, null, null, null);
         SancaiEntry entry = baseSancaiEntry(101L);
         entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
-        entry.setVisibility(SancaiEntryVisibility.PUBLIC);
 
         ClassicsContentVersion version = service.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "发布条目");
 
@@ -819,7 +817,6 @@ class ClassicsContentApplicationServiceImplTest {
                   "translationText": "历史译文",
                   "summary": "历史摘要",
                   "lifecycleStatus": "PUBLISHED",
-                  "visibility": "PUBLIC",
                   "translationStatus": "READY",
                   "imageStatus": "READY",
                   "visualAssetStatus": "READY",
@@ -886,14 +883,12 @@ class ClassicsContentApplicationServiceImplTest {
     private static SancaiEntry publicSancaiEntry(Long id) {
         SancaiEntry entry = baseSancaiEntry(id);
         entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
-        entry.setVisibility(SancaiEntryVisibility.PUBLIC);
         return entry;
     }
 
     private static SancaiEntry privateSancaiEntry(Long id) {
         SancaiEntry entry = baseSancaiEntry(id);
         entry.setLifecycleStatus(SancaiEntryLifecycleStatus.DRAFT);
-        entry.setVisibility(SancaiEntryVisibility.PRIVATE);
         return entry;
     }
 
@@ -1177,7 +1172,6 @@ class ClassicsContentApplicationServiceImplTest {
             SancaiEntry entry = new SancaiEntry();
             entry.setId(id);
             entry.setLifecycleStatus(SancaiEntryLifecycleStatus.DRAFT);
-            entry.setVisibility(SancaiEntryVisibility.PRIVATE);
             return entry;
         }
 
@@ -1192,7 +1186,6 @@ class ClassicsContentApplicationServiceImplTest {
             assertEquals(8, entry.getPriority());
             assertEquals("历史标题", entry.getTitle());
             assertEquals(SancaiEntryLifecycleStatus.DRAFT, entry.getLifecycleStatus());
-            assertEquals(SancaiEntryVisibility.PRIVATE, entry.getVisibility());
             assertEquals(SancaiEntryTranslationStatus.READY, entry.getTranslationStatus());
             assertEquals(SancaiEntryImageStatus.READY, entry.getImageStatus());
             assertEquals(SancaiEntryVisualAssetStatus.READY, entry.getVisualAssetStatus());

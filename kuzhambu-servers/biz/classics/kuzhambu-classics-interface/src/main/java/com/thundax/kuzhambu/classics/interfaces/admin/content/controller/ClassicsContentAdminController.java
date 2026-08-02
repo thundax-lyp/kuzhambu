@@ -19,7 +19,6 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
-import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
@@ -538,11 +537,7 @@ public class ClassicsContentAdminController {
     private ClassicsBatchOperationResult changeBatchVisibility(
             String contentType, List<Long> contentIds, String visibility) {
         return switch (contentType) {
-            case "SANCAI_ENTRY" ->
-                sancaiService.batchChangeEntryVisibility(
-                        RequestListHelper.map(contentIds, SancaiEntryIdCodec::toDomain),
-                        visibility,
-                        KuzhambuContextHolder.currentAuthorities());
+            case "SANCAI_ENTRY" -> throw AdminResponseExceptions.invalidParameter("contentType");
             case "WANGQI_DOCUMENT" ->
                 wangqiDocumentService.batchChangeVisibility(
                         RequestListHelper.map(contentIds, WangqiDocumentIdCodec::toDomain),

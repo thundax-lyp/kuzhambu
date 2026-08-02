@@ -67,7 +67,6 @@ public interface SancaiRepository {
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,
-            String visibility,
             String translationStatus,
             String imageStatus,
             String visualAssetStatus,
@@ -81,7 +80,6 @@ public interface SancaiRepository {
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,
-            String visibility,
             String translationStatus,
             String imageStatus,
             String visualAssetStatus,
@@ -95,8 +93,6 @@ public interface SancaiRepository {
     int updateRestoredEntry(SancaiEntry entry);
 
     int updateEntryStatus(SancaiEntry entry);
-
-    int updateEntryVisibility(SancaiEntryId id, String visibility);
 
     int deleteEntryById(SancaiEntryId id);
 

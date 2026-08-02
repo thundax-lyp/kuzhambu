@@ -8,8 +8,8 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsV
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
@@ -52,8 +52,7 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
                 null,
                 null,
                 null,
-                null,
-                SancaiEntryVisibility.PUBLIC.value(),
+                SancaiEntryLifecycleStatus.PUBLISHED.value(),
                 null,
                 null,
                 null,
