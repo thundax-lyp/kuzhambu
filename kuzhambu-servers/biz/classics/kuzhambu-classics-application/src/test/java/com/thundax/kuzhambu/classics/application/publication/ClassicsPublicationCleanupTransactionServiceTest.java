@@ -6,7 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationCleanupTransactionService;
+import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationCleanupApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
@@ -22,8 +22,8 @@ class ClassicsPublicationCleanupTransactionServiceTest {
     void deletedContentShouldRemainEligibleWhenJobHasDeletionTombstone() {
         ClassicsPublicationJobRepository jobRepository = mock(ClassicsPublicationJobRepository.class);
         ClassicsContentRepository contentRepository = mock(ClassicsContentRepository.class);
-        ClassicsPublicationCleanupTransactionService service =
-                new ClassicsPublicationCleanupTransactionService(jobRepository, contentRepository);
+        ClassicsPublicationCleanupApplicationServiceImpl service =
+                new ClassicsPublicationCleanupApplicationServiceImpl(jobRepository, contentRepository);
         ClassicsPublicationJob job = new ClassicsPublicationJob();
         job.setId(new ClassicsPublicationJobId(11L));
         job.setContentType(ClassicsContentType.SANCAI_ENTRY);

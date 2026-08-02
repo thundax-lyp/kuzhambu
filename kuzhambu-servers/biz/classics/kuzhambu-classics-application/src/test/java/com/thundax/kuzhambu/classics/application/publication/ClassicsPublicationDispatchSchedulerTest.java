@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
 import com.thundax.kuzhambu.classics.application.publication.scheduler.ClassicsPublicationDispatchScheduler;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationStepExecutor;
-import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationExecutionTransactionService;
+import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationExecutionApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
@@ -56,8 +56,8 @@ class ClassicsPublicationDispatchSchedulerTest {
 
     private static final class Fixture {
         private final ClassicsPublicationJobRepository jobRepository = mock(ClassicsPublicationJobRepository.class);
-        private final ClassicsPublicationExecutionTransactionService transactionService =
-                mock(ClassicsPublicationExecutionTransactionService.class);
+        private final ClassicsPublicationExecutionApplicationServiceImpl transactionService =
+                mock(ClassicsPublicationExecutionApplicationServiceImpl.class);
         private final ThreadPoolTaskExecutor taskExecutor = mock(ThreadPoolTaskExecutor.class);
         private final ClassicsPublicationDispatchScheduler scheduler;
 

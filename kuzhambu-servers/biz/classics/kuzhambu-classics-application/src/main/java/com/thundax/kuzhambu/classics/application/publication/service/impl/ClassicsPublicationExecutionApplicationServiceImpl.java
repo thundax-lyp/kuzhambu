@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ClassicsPublicationExecutionTransactionService {
+public class ClassicsPublicationExecutionApplicationServiceImpl {
     private final ClassicsPublicationJobRepository jobRepository;
 
-    public ClassicsPublicationExecutionTransactionService(ClassicsPublicationJobRepository jobRepository) {
+    public ClassicsPublicationExecutionApplicationServiceImpl(ClassicsPublicationJobRepository jobRepository) {
         this.jobRepository = jobRepository;
     }
 

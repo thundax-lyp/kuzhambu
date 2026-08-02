@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.application.publication.scheduler;
 
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
-import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationReconcileTransactionService;
+import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationReconcileApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component;
 public class ClassicsPublicationFailureReconcileScheduler {
     private final ClassicsPublicationProperties properties;
     private final ClassicsPublicationJobRepository jobRepository;
-    private final ClassicsPublicationReconcileTransactionService transactionService;
+    private final ClassicsPublicationReconcileApplicationServiceImpl transactionService;
 
     public ClassicsPublicationFailureReconcileScheduler(
             ClassicsPublicationProperties properties,
             ClassicsPublicationJobRepository jobRepository,
-            ClassicsPublicationReconcileTransactionService transactionService) {
+            ClassicsPublicationReconcileApplicationServiceImpl transactionService) {
         this.properties = properties;
         this.jobRepository = jobRepository;
         this.transactionService = transactionService;

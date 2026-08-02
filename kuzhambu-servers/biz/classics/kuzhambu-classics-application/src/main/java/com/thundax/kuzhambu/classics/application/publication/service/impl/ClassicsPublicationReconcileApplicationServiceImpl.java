@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ClassicsPublicationReconcileTransactionService {
+public class ClassicsPublicationReconcileApplicationServiceImpl {
     private final ClassicsPublicationJobRepository jobRepository;
     private final ClassicsContentRepository contentRepository;
 
-    public ClassicsPublicationReconcileTransactionService(
+    public ClassicsPublicationReconcileApplicationServiceImpl(
             ClassicsPublicationJobRepository jobRepository, ClassicsContentRepository contentRepository) {
         this.jobRepository = jobRepository;
         this.contentRepository = contentRepository;

@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.application.publication.scheduler;
 
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
-import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationCleanupTransactionService;
+import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationCleanupApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationFastGptGateway;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
@@ -15,14 +15,14 @@ import org.springframework.stereotype.Component;
 public class ClassicsPublicationFastGptCleanupScheduler {
     private final ClassicsPublicationProperties properties;
     private final ClassicsPublicationJobRepository jobRepository;
-    private final ClassicsPublicationCleanupTransactionService transactionService;
+    private final ClassicsPublicationCleanupApplicationServiceImpl transactionService;
     private final ClassicsPublicationFastGptGateway fastGptGateway;
     private final Clock clock;
 
     public ClassicsPublicationFastGptCleanupScheduler(
             ClassicsPublicationProperties properties,
             ClassicsPublicationJobRepository jobRepository,
-            ClassicsPublicationCleanupTransactionService transactionService,
+            ClassicsPublicationCleanupApplicationServiceImpl transactionService,
             ClassicsPublicationFastGptGateway fastGptGateway,
             Clock clock) {
         this.properties = properties;

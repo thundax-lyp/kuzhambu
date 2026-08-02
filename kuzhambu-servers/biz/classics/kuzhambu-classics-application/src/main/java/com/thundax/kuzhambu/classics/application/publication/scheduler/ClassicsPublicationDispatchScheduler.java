@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.classics.application.publication.scheduler;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationExecutorConfiguration;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationStepExecutor;
-import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationExecutionTransactionService;
+import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationExecutionApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationStateMachine;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
@@ -25,7 +25,7 @@ public class ClassicsPublicationDispatchScheduler {
 
     private final ClassicsPublicationProperties properties;
     private final ClassicsPublicationJobRepository jobRepository;
-    private final ClassicsPublicationExecutionTransactionService transactionService;
+    private final ClassicsPublicationExecutionApplicationServiceImpl transactionService;
     private final ClassicsPublicationStepExecutor stepExecutor;
     private final ThreadPoolTaskExecutor taskExecutor;
     private final Clock clock;
@@ -33,7 +33,7 @@ public class ClassicsPublicationDispatchScheduler {
     public ClassicsPublicationDispatchScheduler(
             ClassicsPublicationProperties properties,
             ClassicsPublicationJobRepository jobRepository,
-            ClassicsPublicationExecutionTransactionService transactionService,
+            ClassicsPublicationExecutionApplicationServiceImpl transactionService,
             ClassicsPublicationStepExecutor stepExecutor,
             @Qualifier(ClassicsPublicationExecutorConfiguration.TASK_EXECUTOR) ThreadPoolTaskExecutor taskExecutor,
             Clock clock) {
