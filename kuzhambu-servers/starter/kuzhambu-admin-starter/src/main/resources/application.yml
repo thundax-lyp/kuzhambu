@@ -99,6 +99,22 @@ kuzhambu:
     bucket-name: ${KUZHAMBU_STORAGE_BUCKET_NAME:local}
     content-path: ${KUZHAMBU_STORAGE_CONTENT_PATH:/kuzhambu-admin-api/api/storage/object/}
   classics:
+    publication:
+      enabled: ${KUZHAMBU_CLASSICS_PUBLICATION_ENABLED:true}
+      dispatch-fixed-delay: ${KUZHAMBU_CLASSICS_PUBLICATION_DISPATCH_FIXED_DELAY:5s}
+      success-reconcile-fixed-delay: ${KUZHAMBU_CLASSICS_PUBLICATION_SUCCESS_RECONCILE_FIXED_DELAY:30s}
+      failure-reconcile-fixed-delay: ${KUZHAMBU_CLASSICS_PUBLICATION_FAILURE_RECONCILE_FIXED_DELAY:30s}
+      es-cleanup-fixed-delay: ${KUZHAMBU_CLASSICS_PUBLICATION_ES_CLEANUP_FIXED_DELAY:60s}
+      fastgpt-cleanup-fixed-delay: ${KUZHAMBU_CLASSICS_PUBLICATION_FASTGPT_CLEANUP_FIXED_DELAY:60s}
+      dispatch-lease: ${KUZHAMBU_CLASSICS_PUBLICATION_DISPATCH_LEASE:30s}
+      slice-lease: ${KUZHAMBU_CLASSICS_PUBLICATION_SLICE_LEASE:10m}
+      cleanup-lease: ${KUZHAMBU_CLASSICS_PUBLICATION_CLEANUP_LEASE:5m}
+      retry-delay: ${KUZHAMBU_CLASSICS_PUBLICATION_RETRY_DELAY:30s}
+      claim-limit: ${KUZHAMBU_CLASSICS_PUBLICATION_CLAIM_LIMIT:20}
+      executor-core-size: ${KUZHAMBU_CLASSICS_PUBLICATION_EXECUTOR_CORE_SIZE:2}
+      executor-max-size: ${KUZHAMBU_CLASSICS_PUBLICATION_EXECUTOR_MAX_SIZE:4}
+      executor-queue-capacity: ${KUZHAMBU_CLASSICS_PUBLICATION_EXECUTOR_QUEUE_CAPACITY:100}
+      executor-await-termination: ${KUZHAMBU_CLASSICS_PUBLICATION_EXECUTOR_AWAIT_TERMINATION:30s}
     share:
       portal-web-base-url: ${KUZHAMBU_PORTAL_WEB_BASE_URL:http://localhost:5174}
   discovery:

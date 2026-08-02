@@ -62,6 +62,9 @@ logging:
     com.thundax.kuzhambu: ${KUZHAMBU_APP_LOG_LEVEL:INFO}
 
 kuzhambu:
+  classics:
+    publication:
+      enabled: ${KUZHAMBU_CLASSICS_PUBLICATION_ENABLED:false}
   discovery:
     search:
       index-sync:
