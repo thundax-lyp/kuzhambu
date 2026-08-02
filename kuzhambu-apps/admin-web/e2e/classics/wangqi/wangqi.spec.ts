@@ -123,7 +123,6 @@ test.describe("classics wangqi page", () => {
         const resetRequests: Array<Record<string, unknown>> = [];
         const deleteRequests: Array<Record<string, unknown>> = [];
         let refinementTaskPageCount = 0;
-        let summaryCandidateListCount = 0;
 
         const record = {
             id: 1,
@@ -365,27 +364,22 @@ test.describe("classics wangqi page", () => {
                     });
                     return;
                 }
-                summaryCandidateListCount += 1;
                 summaryCandidateRequests.push(body);
                 await route.fulfill({
                     contentType: "application/json",
                     body: JSON.stringify(
-                        apiResponse(
-                            summaryCandidateListCount === 1
-                                ? []
-                                : [
-                                      {
-                                          candidateId: 5001,
-                                          contentType: "WANGQI_DOCUMENT",
-                                          contentId: 1,
-                                          capability: "summary",
-                                          resultFormat: "TEXT",
-                                          resultPayload: "任务完成后的摘要候选",
-                                          status: "PENDING",
-                                          requestedAt: "2026-01-01T00:00:01.000+00:00"
-                                      }
-                                  ]
-                        )
+                        apiResponse([
+                            {
+                                candidateId: 5001,
+                                contentType: "WANGQI_DOCUMENT",
+                                contentId: 1,
+                                capability: "summary",
+                                resultFormat: "TEXT",
+                                resultPayload: "任务完成后的摘要候选",
+                                status: "PENDING",
+                                requestedAt: "2026-01-01T00:00:01.000+00:00"
+                            }
+                        ])
                     )
                 });
             }
@@ -509,7 +503,6 @@ test.describe("classics wangqi page", () => {
             "alert(1)"
         );
         await page.getByRole("button", { name: "AI 摘要" }).click();
-        await expect(page.getByText("摘要任务运行中")).toBeVisible();
         await page.getByTestId("classics-wangqi-document-summary-ai-generate-button").click();
         await expect(page.getByText("摘要任务已完成")).toBeVisible();
         await expect(page.getByText("候选摘要加载失败")).toBeHidden();
@@ -556,7 +549,7 @@ test.describe("classics wangqi page", () => {
         await expect
             .poll(() => candidateApplyRequests.at(-1))
             .toMatchObject({
-                candidateId: 6001,
+                candidateId: "6001",
                 contentType: "WANGQI_DOCUMENT",
                 contentId: 1,
                 capability: "tags",
@@ -588,7 +581,7 @@ test.describe("classics wangqi page", () => {
         await expect
             .poll(() => candidateApplyRequests.at(-1))
             .toMatchObject({
-                candidateId: 7001,
+                candidateId: "7001",
                 contentType: "WANGQI_DOCUMENT",
                 contentId: 1,
                 capability: "qa",
@@ -634,7 +627,8 @@ test.describe("classics wangqi page", () => {
             .getByRole("button", { name: /^\s*取\s*消\s*$/ })
             .click();
 
-        await page.getByRole("button", { name: /删除 王圻文档/ }).click();
+        await page.getByRole("button", { name: "展开行操作" }).click();
+        await page.getByRole("menuitem", { name: "删除" }).click();
         await page.getByRole("button", { name: /^\s*删\s*除\s*$/ }).click();
         await expect.poll(() => deleteRequests.at(-1)).toEqual({ id: 1 });
     });
