@@ -12,6 +12,28 @@ import org.apache.ibatis.annotations.Update;
 public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublicationJobDO> {
     @Select(
             """
+            select job.* from classics_publication_job job
+            where job.job_result_status = 'FAILED' and (
+              (job.content_type = 'SANCAI_ENTRY' and exists (
+                select 1 from classics_sancai_entry content where content.id = job.content_id
+                  and (content.current_publication_job_id = job.id or content.transition_status != 'NONE')
+              )) or
+              (job.content_type = 'WANGQI_DOCUMENT' and exists (
+                select 1 from classics_wangqi_document content where content.id = job.content_id
+                  and (content.current_publication_job_id = job.id or content.transition_status != 'NONE')
+              )) or
+              (job.content_type = 'MING_CUSTOMS' and exists (
+                select 1 from classics_ming_customs_entry content where content.id = job.content_id
+                  and (content.current_publication_job_id = job.id or content.transition_status != 'NONE')
+              ))
+            )
+            order by job.requested_at asc, job.id asc
+            limit #{limit}
+            """)
+    java.util.List<ClassicsPublicationJobDO> selectFailureReconcileCandidates(@Param("limit") int limit);
+
+    @Select(
+            """
             select * from classics_publication_job
             where content_type = #{contentType} and content_id = #{contentId}
             for update

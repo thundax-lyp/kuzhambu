@@ -219,12 +219,7 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
 
     @Override
     public List<ClassicsPublicationJob> listFailureReconcileCandidates(int limit) {
-        LambdaQueryWrapper<ClassicsPublicationJobDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ClassicsPublicationJobDO::getJobResultStatus, ClassicsPublicationJobResultStatus.FAILED.name())
-                .orderByAsc(ClassicsPublicationJobDO::getRequestedAt)
-                .orderByAsc(ClassicsPublicationJobDO::getId)
-                .last("limit " + positiveLimit(limit));
-        return mapper.selectList(wrapper).stream()
+        return mapper.selectFailureReconcileCandidates(positiveLimit(limit)).stream()
                 .map(ClassicsPublicationPersistenceAssembler::toDomain)
                 .toList();
     }
