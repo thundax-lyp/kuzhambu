@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.classics.application.wangqi.service.impl;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
@@ -17,6 +19,7 @@ import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObje
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
@@ -54,17 +57,20 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
     private final StorageFacade storageFacade;
+    private final ClassicsPublicationWriteGuard publicationWriteGuard;
 
     @Autowired
     public WangqiDocumentApplicationServiceImpl(
             WangqiDocumentRepository repository,
             ClassicsContentApplicationService contentApplicationService,
             ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
-            StorageFacade storageFacade) {
+            StorageFacade storageFacade,
+            ClassicsPublicationWriteGuard publicationWriteGuard) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.storageFacade = storageFacade;
+        this.publicationWriteGuard = publicationWriteGuard;
     }
 
     @Override
@@ -118,6 +124,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     @Transactional(rollbackFor = Exception.class)
     public WangqiDocumentId update(WangqiDocumentCommand command) {
         WangqiDocument document = toDocument(command);
+        requireWritable(document.getId(), ClassicsPublicationWriteOperation.EDIT);
         requireDocument(document.getId());
         bindStorageObjectIfNeeded(document);
         document.setContentUpdatedAt(Instant.now());
@@ -131,6 +138,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     @Transactional(rollbackFor = Exception.class)
     public WangqiDocumentSourceFile changeSourceFile(WangqiDocumentSourceFileCommand command) {
         WangqiDocumentId documentId = WangqiDocumentIdCodec.toDomain(command == null ? null : command.getDocumentId());
+        requireWritable(documentId, ClassicsPublicationWriteOperation.EDIT);
         WangqiDocument document = requireDocument(documentId);
         boolean replacing = document.getStorageObjectId() != null;
 
@@ -187,6 +195,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeStorageObject(WangqiDocumentId id, StorageObjectId storageObjectId) {
+        requireWritable(id, ClassicsPublicationWriteOperation.EDIT);
         repository.updateStorageObjectId(id, storageObjectId);
     }
 
@@ -196,7 +205,9 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         if (hasPermissionContext(command.getOperatorPermissions()) && !canEdit(command.getOperatorPermissions())) {
             throw permissionDenied();
         }
-        WangqiDocument document = requireDocument(WangqiDocumentIdCodec.toDomain(command.getId()));
+        WangqiDocumentId documentId = WangqiDocumentIdCodec.toDomain(command.getId());
+        requireWritable(documentId, ClassicsPublicationWriteOperation.EDIT);
+        WangqiDocument document = requireDocument(documentId);
         changeExistingVisibility(document, command.getVisibility());
     }
 
@@ -227,6 +238,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
                 continue;
             }
             try {
+                requireWritable(id, ClassicsPublicationWriteOperation.EDIT);
                 WangqiDocument document = id == null ? null : get(id);
                 if (document == null) {
                     failures.add(ClassicsBatchOperationItemResult.failure(
@@ -256,6 +268,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         if (id == null) {
             return;
         }
+        requireWritable(id, ClassicsPublicationWriteOperation.DELETE);
         WangqiDocument document = get(id);
         if (document != null) {
             document.setContentUpdatedAt(Instant.now());
@@ -271,6 +284,11 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         releaseSourceFile(document);
         repository.deleteByDocumentId(id);
         repository.deleteById(id);
+    }
+
+    private void requireWritable(WangqiDocumentId id, ClassicsPublicationWriteOperation operation) {
+        publicationWriteGuard.requireWritable(
+                ClassicsContentType.WANGQI_DOCUMENT, new ClassicsContentId(id == null ? null : id.value()), operation);
     }
 
     private static WangqiDocument toDocument(WangqiDocumentCommand command) {
