@@ -422,6 +422,26 @@ describe("MingCustomsPage", () => {
         expect(await screen.findByText("岁时礼仪：元旦朝贺")).toBeInTheDocument();
     }, 30000);
 
+    it("disables entry writes while publication is transitioning", async () => {
+        mockMingCustomsRecord = {
+            ...mockMingCustomsRecord,
+            lifecycleStatus: "PUBLISHED",
+            transitionStatus: "OFFLINING"
+        };
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        expect(await screen.findByTestId("ming-customs-edit-500000000001-button")).toBeDisabled();
+        const table = screen.getByLabelText("明代习俗表格");
+        expect(within(table).getAllByRole("checkbox")[1]).toBeDisabled();
+    }, 30000);
+
     it("opens export jobs from a large drawer action", async () => {
         const user = userEvent.setup();
 

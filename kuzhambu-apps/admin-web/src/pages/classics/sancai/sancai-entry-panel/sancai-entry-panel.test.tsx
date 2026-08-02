@@ -818,6 +818,23 @@ describe("SancaiEntryPanel batch operations", () => {
         ).toEqual(["编辑 天地", "导出 天地", "视觉处理 天地", "下线 天地", "删除 天地"]);
     }, 30000);
 
+    it("disables entry writes while publication is transitioning", async () => {
+        const entries = await entryService.list({} as never);
+        vi.mocked(entryService.list).mockResolvedValueOnce(
+            entries.map((entry) =>
+                entry.id === "3001" ? { ...entry, transitionStatus: "PUBLISHING" } : entry
+            )
+        );
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        expect(
+            await within(entryTable).findByTestId("sancai-entry-3001-view-button")
+        ).toBeDisabled();
+        expect(within(entryTable).getAllByRole("checkbox")[1]).toBeDisabled();
+    }, 30000);
+
     it("moves an edited entry to the selected category volume", async () => {
         const user = userEvent.setup();
 

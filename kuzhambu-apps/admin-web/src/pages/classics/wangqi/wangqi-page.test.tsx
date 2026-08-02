@@ -460,6 +460,26 @@ describe("WangqiPage", () => {
         expect(await screen.findByText("王圻文档")).toBeInTheDocument();
     }, 30000);
 
+    it("disables document writes while publication is transitioning", async () => {
+        mockDocumentRecord = {
+            ...mockDocumentRecord,
+            lifecycleStatus: "DRAFT",
+            transitionStatus: "PUBLISHING"
+        };
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        expect(await screen.findByTestId("wangqi-document-edit-1-button")).toBeDisabled();
+        const table = screen.getByLabelText("王圻文档表格");
+        expect(within(table).getAllByRole("checkbox")[1]).toBeDisabled();
+    }, 30000);
+
     it("does not render a left document index", async () => {
         render(
             <QueryClientProvider client={queryClient}>

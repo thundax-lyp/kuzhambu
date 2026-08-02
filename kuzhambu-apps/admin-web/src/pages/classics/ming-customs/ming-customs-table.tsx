@@ -32,6 +32,9 @@ const visibilityTagType = (visibility?: string | null) => {
     return visibility === "PUBLIC" ? "success" : "neutral";
 };
 
+const isPublicationTransitionActive = (record: MingCustomsRecord) =>
+    Boolean(record.transitionStatus && record.transitionStatus !== "NONE");
+
 interface MingCustomsTableProps {
     batchShareResult: ClassicsBatchOperationRecord | null;
     batchVisibilityResult: ClassicsBatchOperationRecord | null;
@@ -109,6 +112,7 @@ export const MingCustomsTable = ({
                     testId={`ming-customs-edit-${record.id}-button`}
                     type="link"
                     className="ming-customs-title-link"
+                    disabled={isPublicationTransitionActive(record)}
                     onClick={() => onOpenEdit(record)}
                 >
                     <Text strong>{title || "未命名条目"}</Text>
@@ -186,9 +190,7 @@ export const MingCustomsTable = ({
         {
             key: "actions",
             options: (record) => {
-                const isTransitionActive = Boolean(
-                    record.transitionStatus && record.transitionStatus !== "NONE"
-                );
+                const isTransitionActive = isPublicationTransitionActive(record);
                 const publicationAction =
                     record.lifecycleStatus === "PUBLISHED" ? "OFFLINE" : "PUBLISH";
                 return [
@@ -196,6 +198,7 @@ export const MingCustomsTable = ({
                         key: "edit",
                         text: "编辑",
                         ariaLabel: `编辑 ${record.title || "未命名条目"}`,
+                        disabled: isTransitionActive,
                         onClick: () => onOpenEdit(record)
                     },
                     {
@@ -209,7 +212,7 @@ export const MingCustomsTable = ({
                         key: "share",
                         text: "分享",
                         ariaLabel: `分享 ${record.title || "未命名条目"}`,
-                        disabled: !canShare,
+                        disabled: !canShare || isTransitionActive,
                         onClick: () => onShare(record)
                     },
                     {
@@ -333,7 +336,10 @@ export const MingCustomsTable = ({
                 }}
                 rowSelection={{
                     selectedRowKeys: selectedEntryIds,
-                    onChange: (keys) => onSelectedEntryIdsChange(keys.map(String))
+                    onChange: (keys) => onSelectedEntryIdsChange(keys.map(String)),
+                    getCheckboxProps: (record) => ({
+                        disabled: isPublicationTransitionActive(record)
+                    })
                 }}
             />
         </>

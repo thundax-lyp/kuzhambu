@@ -5,6 +5,7 @@ import { hasPermission } from "@/auth/permission-storage";
 import { isSameId } from "@/types/id";
 import {
     KuzhambuAlert,
+    KuzhambuButton,
     KuzhambuTable,
     type KuzhambuTableProps,
     type KuzhambuTableSortPosition,
@@ -64,6 +65,9 @@ const getPublicationAction = (entry: SancaiEntryRecord): SancaiPublicationAction
     }
     return null;
 };
+
+const isPublicationTransitionActive = (entry: SancaiEntryRecord) =>
+    Boolean(entry.transitionStatus && entry.transitionStatus !== "NONE");
 
 const readEntrySummary = (entry: SancaiEntryRecord) => {
     return entry.summary?.trim() || entry.originalText?.trim() || "暂无摘要";
@@ -197,20 +201,29 @@ export const SancaiEntryList = ({
             title: "条目",
             key: "title",
             width: 220,
-            render: (_, entry) => (
-                <div className="sancai-entry-title-cell">
-                    <a
-                        href="#"
-                        aria-label={`打开条目 ${readTitle(entry, "条目")}`}
-                        onClick={(event) => {
-                            event.preventDefault();
-                            onView(entry);
-                        }}
-                    >
-                        {readTitle(entry, "条目")}
-                    </a>
-                </div>
-            )
+            render: (_, entry) => {
+                const title = readTitle(entry, "条目");
+                return (
+                    <div className="sancai-entry-title-cell">
+                        {isPublicationTransitionActive(entry) ? (
+                            <KuzhambuButton type="link" aria-label={`打开条目 ${title}`} disabled>
+                                {title}
+                            </KuzhambuButton>
+                        ) : (
+                            <a
+                                href="#"
+                                aria-label={`打开条目 ${title}`}
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    onView(entry);
+                                }}
+                            >
+                                {title}
+                            </a>
+                        )}
+                    </div>
+                );
+            }
         },
         {
             title: "卷",
@@ -245,9 +258,7 @@ export const SancaiEntryList = ({
             key: "actions",
             options: (entry) => {
                 const publicationAction = getPublicationAction(entry);
-                const isTransitionActive = Boolean(
-                    entry.transitionStatus && entry.transitionStatus !== "NONE"
-                );
+                const isTransitionActive = isPublicationTransitionActive(entry);
                 const viewOrEditText =
                     canChangeEntryVisibility && !isTransitionActive ? "编辑" : "查看";
                 return [
@@ -256,6 +267,7 @@ export const SancaiEntryList = ({
                         text: viewOrEditText,
                         ariaLabel: `${viewOrEditText} ${readTitle(entry, "条目")}`,
                         testId: `sancai-entry-${entry.id}-view-button`,
+                        disabled: isTransitionActive,
                         onClick: () => onView(entry)
                     },
                     {
@@ -394,7 +406,10 @@ export const SancaiEntryList = ({
                         setSelectedRowsState({
                             keys: keys.map(String),
                             scopeKey: currentPageSelectionScopeKey
-                        })
+                        }),
+                    getCheckboxProps: (entry) => ({
+                        disabled: isPublicationTransitionActive(entry)
+                    })
                 }}
                 rowKey={(entry) => String(entry.id ?? "")}
                 size="middle"

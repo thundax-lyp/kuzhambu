@@ -21,6 +21,9 @@ const visibilityTagType = (visibility?: string | null) => {
     return visibility === "PUBLIC" ? "success" : "neutral";
 };
 
+const isPublicationTransitionActive = (record: WangqiDocumentRecord) =>
+    Boolean(record.transitionStatus && record.transitionStatus !== "NONE");
+
 const formatDateTime = (value?: string | null) => {
     if (!value) {
         return "未填写";
@@ -114,6 +117,7 @@ export const WangqiDocumentTable = ({
                             testId={`wangqi-document-edit-${record.id}-button`}
                             type="link"
                             className="wangqi-document-title-link"
+                            disabled={isPublicationTransitionActive(record)}
                             onClick={() => onOpenEdit(record)}
                         >
                             <span className="wangqi-document-title-text">
@@ -183,9 +187,7 @@ export const WangqiDocumentTable = ({
         {
             key: "actions",
             options: (record) => {
-                const isTransitionActive = Boolean(
-                    record.transitionStatus && record.transitionStatus !== "NONE"
-                );
+                const isTransitionActive = isPublicationTransitionActive(record);
                 const publicationAction =
                     record.lifecycleStatus === "PUBLISHED" ? "OFFLINE" : "PUBLISH";
                 return [
@@ -193,6 +195,7 @@ export const WangqiDocumentTable = ({
                         key: "edit",
                         text: "编辑",
                         ariaLabel: `编辑 ${record.title || "未命名文档"}`,
+                        disabled: isTransitionActive,
                         onClick: () => onOpenEdit(record)
                     },
                     {
@@ -206,7 +209,7 @@ export const WangqiDocumentTable = ({
                         key: "share",
                         text: "分享",
                         ariaLabel: `分享 ${record.title || "未命名文档"}`,
-                        disabled: !canShare,
+                        disabled: !canShare || isTransitionActive,
                         onClick: () => onShare(record)
                     },
                     {
@@ -299,7 +302,10 @@ export const WangqiDocumentTable = ({
                 pagination={pagination}
                 rowSelection={{
                     selectedRowKeys: selectedDocumentIds,
-                    onChange: (keys) => onSelectedDocumentIdsChange(keys.map(String))
+                    onChange: (keys) => onSelectedDocumentIdsChange(keys.map(String)),
+                    getCheckboxProps: (record) => ({
+                        disabled: isPublicationTransitionActive(record)
+                    })
                 }}
             />
         </>
