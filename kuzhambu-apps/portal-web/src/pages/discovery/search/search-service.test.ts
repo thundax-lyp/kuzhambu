@@ -85,7 +85,7 @@ describe("discovery search service", () => {
             resultGroupKey: "SANCAI_ENTRY",
             resultRank: 1,
             searchEventId: "1001",
-            targetPath: "/shares/1001"
+            targetPath: "/classics/sancai?entryId=1001"
         });
 
         expect(mocks.postJson).toHaveBeenCalledWith("/portal/discovery/search/click", {
@@ -97,7 +97,7 @@ describe("discovery search service", () => {
             resultGroupKey: "SANCAI_ENTRY",
             resultRank: 1,
             searchEventId: "1001",
-            targetPath: "/shares/1001"
+            targetPath: "/classics/sancai?entryId=1001"
         });
     });
 });

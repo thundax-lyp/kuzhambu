@@ -138,7 +138,7 @@ describe("DiscoveryQaPage", () => {
                     sourceId: "SANCAI_ENTRY:1001",
                     sourceRank: 1,
                     sourceStatus: "AVAILABLE",
-                    sourcePath: "/shares/1001",
+                    sourcePath: "/classics/sancai?entryId=1001",
                     snippet: "礼器在章节中常用于秩序相关记载。",
                     titleSnapshot: null
                 }
@@ -188,7 +188,7 @@ describe("DiscoveryQaPage", () => {
         expect(container.textContent).toContain("礼器常见于典章与礼仪条目。");
         expect(container.textContent).toContain("SANCAI_ENTRY:1001");
         expect(container.querySelectorAll(".portal-qa-avatar")).toHaveLength(2);
-        expect(container.querySelector('a[href="/shares/1001"]')).not.toBeNull();
+        expect(container.querySelector('a[href="/classics/sancai?entryId=1001"]')).not.toBeNull();
 
         act(() => {
             root.unmount();

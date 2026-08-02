@@ -47,7 +47,6 @@ describe("HomePage", () => {
                     text: "搜索条目、图像、人物、地名、典籍...搜索"
                 }),
                 expect.objectContaining({ href: "/discovery/search", text: "进入知识检索" }),
-                expect.objectContaining({ href: "/shares", text: "公开分享" }),
                 expect.objectContaining({ href: "/discovery/qa", text: "问答" }),
                 expect.objectContaining({
                     href: "/classics/sancai",
