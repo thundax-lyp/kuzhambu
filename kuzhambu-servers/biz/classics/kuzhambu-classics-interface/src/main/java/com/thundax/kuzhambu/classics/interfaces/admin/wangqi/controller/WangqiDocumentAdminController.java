@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
@@ -10,14 +9,8 @@ import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobType;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
-import com.thundax.kuzhambu.classics.interfaces.admin.publication.assembler.ClassicsPublicationInterfaceAssembler;
-import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.request.ClassicsPublicationActionRequest;
-import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.request.ClassicsPublicationBatchActionRequest;
-import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.response.ClassicsPublicationBatchResponse;
-import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.response.ClassicsPublicationCreateResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler.WangqiDocumentInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentVersionRequest;
@@ -62,63 +55,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class WangqiDocumentAdminController {
     private final WangqiDocumentApplicationService service;
     private final ClassicsContentApplicationService contentService;
-    private final ClassicsPublicationApplicationService publicationService;
 
     public WangqiDocumentAdminController(
-            WangqiDocumentApplicationService service,
-            ClassicsContentApplicationService contentService,
-            ClassicsPublicationApplicationService publicationService) {
+            WangqiDocumentApplicationService service, ClassicsContentApplicationService contentService) {
         this.service = service;
         this.contentService = contentService;
-        this.publicationService = publicationService;
-    }
-
-    @Operation(summary = "发布王圻文档", description = "classics:wangqi:edit")
-    @HasPermission("classics:wangqi:edit")
-    @SysLogger(value = "发布")
-    @PostMapping("publish")
-    public ClassicsPublicationCreateResponse publish(@Valid @RequestBody ClassicsPublicationActionRequest request) {
-        return publicationAction(request, ClassicsPublicationJobType.PUBLISH);
-    }
-
-    @Operation(summary = "下线王圻文档", description = "classics:wangqi:edit")
-    @HasPermission("classics:wangqi:edit")
-    @SysLogger(value = "下线")
-    @PostMapping("offline")
-    public ClassicsPublicationCreateResponse offline(@Valid @RequestBody ClassicsPublicationActionRequest request) {
-        return publicationAction(request, ClassicsPublicationJobType.OFFLINE);
-    }
-
-    @Operation(summary = "批量发布王圻文档", description = "classics:wangqi:edit")
-    @HasPermission("classics:wangqi:edit")
-    @SysLogger(value = "批量发布")
-    @PostMapping("batch/publish")
-    public ClassicsPublicationBatchResponse batchPublish(
-            @Valid @RequestBody ClassicsPublicationBatchActionRequest request) {
-        return publicationBatchAction(request, ClassicsPublicationJobType.PUBLISH);
-    }
-
-    @Operation(summary = "批量下线王圻文档", description = "classics:wangqi:edit")
-    @HasPermission("classics:wangqi:edit")
-    @SysLogger(value = "批量下线")
-    @PostMapping("batch/offline")
-    public ClassicsPublicationBatchResponse batchOffline(
-            @Valid @RequestBody ClassicsPublicationBatchActionRequest request) {
-        return publicationBatchAction(request, ClassicsPublicationJobType.OFFLINE);
-    }
-
-    private ClassicsPublicationCreateResponse publicationAction(
-            ClassicsPublicationActionRequest request, ClassicsPublicationJobType jobType) {
-        return ClassicsPublicationInterfaceAssembler.toResponse(
-                publicationService.create(ClassicsPublicationInterfaceAssembler.toCommand(
-                        request, ClassicsContentType.WANGQI_DOCUMENT, jobType)));
-    }
-
-    private ClassicsPublicationBatchResponse publicationBatchAction(
-            ClassicsPublicationBatchActionRequest request, ClassicsPublicationJobType jobType) {
-        return ClassicsPublicationInterfaceAssembler.toBatchResponse(
-                publicationService.createBatch(ClassicsPublicationInterfaceAssembler.toCommands(
-                        request, ClassicsContentType.WANGQI_DOCUMENT, jobType)));
     }
 
     @Operation(summary = "分页查询王圻文档", description = "classics:wangqi:view")

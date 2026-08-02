@@ -1,12 +1,10 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
@@ -229,8 +227,7 @@ class WangqiDocumentAdminControllerTest {
     }
 
     private static WangqiDocumentAdminController controller() {
-        return new WangqiDocumentAdminController(
-                service(), contentService(), mock(ClassicsPublicationApplicationService.class));
+        return new WangqiDocumentAdminController(service(), contentService());
     }
 
     private static WangqiDocumentApplicationService service() {

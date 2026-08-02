@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
-import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
@@ -278,8 +277,7 @@ class MingCustomsAdminControllerTest {
 
     private static MingCustomsAdminController controller(
             MingCustomsApplicationService service, ClassicsContentApplicationService contentService) {
-        return new MingCustomsAdminController(
-                service, contentService, mock(ClassicsPublicationApplicationService.class));
+        return new MingCustomsAdminController(service, contentService);
     }
 
     private static ClassicsContentVersion version(

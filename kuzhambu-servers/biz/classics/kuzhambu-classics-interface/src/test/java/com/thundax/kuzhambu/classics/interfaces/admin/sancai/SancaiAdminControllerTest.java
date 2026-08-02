@@ -4,12 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
@@ -645,7 +643,7 @@ class SancaiAdminControllerTest {
 
     private static SancaiAdminController controller(
             SancaiApplicationService service, ClassicsContentApplicationService contentService) {
-        return new SancaiAdminController(service, contentService, mock(ClassicsPublicationApplicationService.class));
+        return new SancaiAdminController(service, contentService);
     }
 
     private static ClassicsContentVersion version(

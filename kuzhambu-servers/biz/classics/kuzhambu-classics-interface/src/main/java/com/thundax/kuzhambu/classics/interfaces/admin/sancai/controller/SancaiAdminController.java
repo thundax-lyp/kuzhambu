@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
@@ -10,18 +9,12 @@ import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobType;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
-import com.thundax.kuzhambu.classics.interfaces.admin.publication.assembler.ClassicsPublicationInterfaceAssembler;
-import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.request.ClassicsPublicationActionRequest;
-import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.request.ClassicsPublicationBatchActionRequest;
-import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.response.ClassicsPublicationBatchResponse;
-import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.response.ClassicsPublicationCreateResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiCategoryRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiCategorySortRequest;
@@ -64,63 +57,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class SancaiAdminController {
     private final SancaiApplicationService service;
     private final ClassicsContentApplicationService contentService;
-    private final ClassicsPublicationApplicationService publicationService;
 
-    public SancaiAdminController(
-            SancaiApplicationService service,
-            ClassicsContentApplicationService contentService,
-            ClassicsPublicationApplicationService publicationService) {
+    public SancaiAdminController(SancaiApplicationService service, ClassicsContentApplicationService contentService) {
         this.service = service;
         this.contentService = contentService;
-        this.publicationService = publicationService;
-    }
-
-    @Operation(summary = "发布三才图会条目", description = "classics:sancai:edit")
-    @HasPermission("classics:sancai:edit")
-    @SysLogger(value = "条目发布")
-    @PostMapping("entries/publish")
-    public ClassicsPublicationCreateResponse publishEntry(
-            @Valid @RequestBody ClassicsPublicationActionRequest request) {
-        return publicationAction(request, ClassicsPublicationJobType.PUBLISH);
-    }
-
-    @Operation(summary = "下线三才图会条目", description = "classics:sancai:edit")
-    @HasPermission("classics:sancai:edit")
-    @SysLogger(value = "条目下线")
-    @PostMapping("entries/offline")
-    public ClassicsPublicationCreateResponse offlineEntry(
-            @Valid @RequestBody ClassicsPublicationActionRequest request) {
-        return publicationAction(request, ClassicsPublicationJobType.OFFLINE);
-    }
-
-    @Operation(summary = "批量发布三才图会条目", description = "classics:sancai:edit")
-    @HasPermission("classics:sancai:edit")
-    @SysLogger(value = "条目批量发布")
-    @PostMapping("entries/batch/publish")
-    public ClassicsPublicationBatchResponse batchPublishEntries(
-            @Valid @RequestBody ClassicsPublicationBatchActionRequest request) {
-        return publicationBatchAction(request, ClassicsPublicationJobType.PUBLISH);
-    }
-
-    @Operation(summary = "批量下线三才图会条目", description = "classics:sancai:edit")
-    @HasPermission("classics:sancai:edit")
-    @SysLogger(value = "条目批量下线")
-    @PostMapping("entries/batch/offline")
-    public ClassicsPublicationBatchResponse batchOfflineEntries(
-            @Valid @RequestBody ClassicsPublicationBatchActionRequest request) {
-        return publicationBatchAction(request, ClassicsPublicationJobType.OFFLINE);
-    }
-
-    private ClassicsPublicationCreateResponse publicationAction(
-            ClassicsPublicationActionRequest request, ClassicsPublicationJobType jobType) {
-        return ClassicsPublicationInterfaceAssembler.toResponse(publicationService.create(
-                ClassicsPublicationInterfaceAssembler.toCommand(request, ClassicsContentType.SANCAI_ENTRY, jobType)));
-    }
-
-    private ClassicsPublicationBatchResponse publicationBatchAction(
-            ClassicsPublicationBatchActionRequest request, ClassicsPublicationJobType jobType) {
-        return ClassicsPublicationInterfaceAssembler.toBatchResponse(publicationService.createBatch(
-                ClassicsPublicationInterfaceAssembler.toCommands(request, ClassicsContentType.SANCAI_ENTRY, jobType)));
     }
 
     @Operation(summary = "查询三才图会门类类型", description = "classics:sancai:view")

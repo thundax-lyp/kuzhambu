@@ -7,11 +7,14 @@ import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.req
 import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.request.ClassicsPublicationJobPageRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.response.ClassicsPublicationJobResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,6 +34,7 @@ public class ClassicsPublicationAdminController {
     }
 
     @Operation(summary = "分页查询发布任务", description = "classics:publication:view")
+    @ApiImplicitParams(@ApiImplicitParam(name = AccessTokenNames.HEADER_TOKEN, paramType = "header"))
     @HasPermission("classics:publication:view")
     @SysLogger(value = "分页查询")
     @PostMapping("page")
@@ -44,6 +48,7 @@ public class ClassicsPublicationAdminController {
     }
 
     @Operation(summary = "查看发布任务", description = "classics:publication:view")
+    @ApiImplicitParams(@ApiImplicitParam(name = AccessTokenNames.HEADER_TOKEN, paramType = "header"))
     @HasPermission("classics:publication:view")
     @SysLogger(value = "任务详情")
     @PostMapping("get")

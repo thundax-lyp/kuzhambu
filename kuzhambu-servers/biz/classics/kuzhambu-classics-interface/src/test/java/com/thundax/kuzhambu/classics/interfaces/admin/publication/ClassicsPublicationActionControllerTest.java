@@ -6,20 +6,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationCreateResult;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
-import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
-import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
-import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.MingCustomsAdminController;
+import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.ClassicsPublicationActionController;
 import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.request.ClassicsPublicationActionRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.request.ClassicsPublicationBatchActionRequest;
-import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController;
-import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.WangqiDocumentAdminController;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import java.lang.reflect.Method;
@@ -31,39 +25,34 @@ class ClassicsPublicationActionControllerTest {
 
     @Test
     void shouldExposePublicationActionRoutesWithEditPermissionAndAudit() throws Exception {
-        assertRoutes(SancaiAdminController.class, "classics:sancai:edit", new String[][] {
-            {"publishEntry", "entries/publish"},
-            {"offlineEntry", "entries/offline"},
-            {"batchPublishEntries", "entries/batch/publish"},
-            {"batchOfflineEntries", "entries/batch/offline"}
+        assertRoutes(ClassicsPublicationActionController.class, "classics:sancai:edit", new String[][] {
+            {"publishSancai", "sancai/entries/publish"},
+            {"offlineSancai", "sancai/entries/offline"},
+            {"publishSancaiBatch", "sancai/entries/batch/publish"},
+            {"offlineSancaiBatch", "sancai/entries/batch/offline"}
         });
-        assertRoutes(WangqiDocumentAdminController.class, "classics:wangqi:edit", new String[][] {
-            {"publish", "publish"},
-            {"offline", "offline"},
-            {"batchPublish", "batch/publish"},
-            {"batchOffline", "batch/offline"}
+        assertRoutes(ClassicsPublicationActionController.class, "classics:wangqi:edit", new String[][] {
+            {"publishWangqi", "wangqi/documents/publish"},
+            {"offlineWangqi", "wangqi/documents/offline"},
+            {"publishWangqiBatch", "wangqi/documents/batch/publish"},
+            {"offlineWangqiBatch", "wangqi/documents/batch/offline"}
         });
-        assertRoutes(MingCustomsAdminController.class, "classics:mingcustoms:edit", new String[][] {
-            {"publish", "publish"},
-            {"offline", "offline"},
-            {"batchPublish", "batch/publish"},
-            {"batchOffline", "batch/offline"}
+        assertRoutes(ClassicsPublicationActionController.class, "classics:mingcustoms:edit", new String[][] {
+            {"publishMingCustoms", "ming-customs/publish"},
+            {"offlineMingCustoms", "ming-customs/offline"},
+            {"publishMingCustomsBatch", "ming-customs/batch/publish"},
+            {"offlineMingCustomsBatch", "ming-customs/batch/offline"}
         });
     }
 
     @Test
     void shouldDelegateEachContentTypeToPublicationService() {
         ClassicsPublicationApplicationService publicationService = publicationService();
-        ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
+        var controller = new ClassicsPublicationActionController(publicationService);
 
-        var sancai = new SancaiAdminController(mock(SancaiApplicationService.class), contentService, publicationService)
-                .publishEntry(new ClassicsPublicationActionRequest(11L));
-        var wangqi = new WangqiDocumentAdminController(
-                        mock(WangqiDocumentApplicationService.class), contentService, publicationService)
-                .publish(new ClassicsPublicationActionRequest(12L));
-        var ming = new MingCustomsAdminController(
-                        mock(MingCustomsApplicationService.class), contentService, publicationService)
-                .publish(new ClassicsPublicationActionRequest(13L));
+        var sancai = controller.publishSancai(new ClassicsPublicationActionRequest(11L));
+        var wangqi = controller.publishWangqi(new ClassicsPublicationActionRequest(12L));
+        var ming = controller.publishMingCustoms(new ClassicsPublicationActionRequest(13L));
 
         assertEquals("SANCAI_ENTRY", sancai.contentType());
         assertEquals("WANGQI_DOCUMENT", wangqi.contentType());
@@ -89,7 +78,7 @@ class ClassicsPublicationActionControllerTest {
 
     private static void assertRoutes(Class<?> type, String permission, String[][] routes) throws Exception {
         for (String[] route : routes) {
-            Class<?> requestType = route[0].startsWith("batch")
+            Class<?> requestType = route[0].endsWith("Batch")
                     ? ClassicsPublicationBatchActionRequest.class
                     : ClassicsPublicationActionRequest.class;
             Method method = type.getMethod(route[0], requestType);
