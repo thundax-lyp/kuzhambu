@@ -5,6 +5,8 @@ import type {
     SancaiEntryImageRecord,
     SancaiEntryLifecycleStatus,
     SancaiEntryRecord,
+    SancaiPublicationActionRecord,
+    SancaiPublicationBatchRecord,
     SancaiRefinementBatchRecord,
     SancaiVisualAssetRecord
 } from "./sancai-types";
@@ -49,6 +51,14 @@ export interface SancaiEntryLifecycleCommand {
 export interface SancaiEntrySortCommand {
     orderedIds: string[];
     sortDirection?: "ASC" | "DESC" | null;
+}
+
+export interface SancaiPublicationActionCommand {
+    id: string;
+}
+
+export interface SancaiPublicationBatchCommand {
+    ids: string[];
 }
 
 interface SancaiVersionCommand {
@@ -150,6 +160,34 @@ export const changeLifecycleStatus = (request: SancaiEntryLifecycleCommand) => {
     return postJson<boolean, SancaiEntryLifecycleCommand>(`${ENTRIES_PATH}/lifecycle/change`, {
         body: request
     });
+};
+
+export const publish = (command: SancaiPublicationActionCommand) => {
+    return postJson<SancaiPublicationActionRecord, SancaiPublicationActionCommand>(
+        `${ENTRIES_PATH}/publish`,
+        { body: command }
+    );
+};
+
+export const submitOffline = (command: SancaiPublicationActionCommand) => {
+    return postJson<SancaiPublicationActionRecord, SancaiPublicationActionCommand>(
+        `${ENTRIES_PATH}/offline`,
+        { body: command }
+    );
+};
+
+export const publishBatch = (command: SancaiPublicationBatchCommand) => {
+    return postJson<SancaiPublicationBatchRecord, SancaiPublicationBatchCommand>(
+        `${ENTRIES_PATH}/batch/publish`,
+        { body: command }
+    );
+};
+
+export const submitOfflineBatch = (command: SancaiPublicationBatchCommand) => {
+    return postJson<SancaiPublicationBatchRecord, SancaiPublicationBatchCommand>(
+        `${ENTRIES_PATH}/batch/offline`,
+        { body: command }
+    );
 };
 
 export const deleteById = (id: string) => {

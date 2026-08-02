@@ -20,7 +20,8 @@ export interface SancaiVolumeRecord {
 
 export type SancaiVolumeTypeRecord = DictItem;
 
-export type SancaiEntryLifecycleStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+export type SancaiEntryLifecycleStatus = "DRAFT" | "PUBLISHED" | "OFFLINE" | "ERROR";
+export type SancaiEntryTransitionStatus = "NONE" | "PUBLISHING" | "OFFLINING";
 
 export interface SancaiEntryRecord {
     id: string;
@@ -30,6 +31,8 @@ export interface SancaiEntryRecord {
     translationText?: string | null;
     summary?: string | null;
     lifecycleStatus?: SancaiEntryLifecycleStatus | string | null;
+    transitionStatus?: SancaiEntryTransitionStatus | string | null;
+    currentPublicationJobId?: string | null;
     visibility?: string | null;
     translationStatus?: string | null;
     imageStatus?: string | null;
@@ -42,6 +45,27 @@ export interface SancaiEntryRecord {
     contentUpdatedAt?: string | null;
     versionDirty?: boolean;
     tags?: ClassicsContentTagRecord[];
+}
+
+export interface SancaiPublicationActionRecord {
+    jobId: string;
+    contentType: "SANCAI_ENTRY";
+    contentId: string;
+    lifecycleStatus: SancaiEntryLifecycleStatus;
+    transitionStatus: SancaiEntryTransitionStatus;
+}
+
+export interface SancaiPublicationBatchItemRecord {
+    contentId: string;
+    accepted: boolean;
+    jobId?: string | null;
+    reason?: string | null;
+}
+
+export interface SancaiPublicationBatchRecord {
+    acceptedCount: number;
+    rejectedCount: number;
+    items: SancaiPublicationBatchItemRecord[];
 }
 
 export interface SancaiEntryImageRecord {
