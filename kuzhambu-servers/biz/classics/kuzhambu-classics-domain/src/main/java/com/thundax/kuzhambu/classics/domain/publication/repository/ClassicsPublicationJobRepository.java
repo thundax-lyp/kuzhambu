@@ -27,6 +27,8 @@ public interface ClassicsPublicationJobRepository {
 
     ClassicsPublicationJob lockByContent(ClassicsContentType contentType, Long contentId);
 
+    int markContentDeleted(ClassicsPublicationJobId id, String contentTitleSnapshot, Instant contentDeletedAt);
+
     int deleteById(ClassicsPublicationJobId id);
 
     int claimExecution(

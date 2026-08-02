@@ -127,6 +127,19 @@ class ClassicsPublicationJobPersistenceTest {
     }
 
     @Test
+    void contentDeletionShouldPreserveExternalReferencesForCleanup() throws Exception {
+        Method method = ClassicsPublicationJobMapper.class.getMethod(
+                "markContentDeleted", Long.class, String.class, Instant.class);
+        String sql = String.join(" ", method.getAnnotation(Update.class).value());
+
+        assertTrue(sql.contains("content_title_snapshot = #{contentTitleSnapshot}"));
+        assertTrue(sql.contains("content_deleted_at = #{contentDeletedAt}"));
+        assertTrue(sql.contains("es_document_id is null then es_cleanup_status else 'PENDING'"));
+        assertTrue(sql.contains("fastgpt_collection_id is null then fastgpt_cleanup_status else 'PENDING'"));
+        assertTrue(sql.contains("content_deleted_at is null"));
+    }
+
+    @Test
     void annotationSqlShouldUseNativeComparisonOperators() {
         for (Method method : ClassicsPublicationJobMapper.class.getDeclaredMethods()) {
             Update update = method.getAnnotation(Update.class);

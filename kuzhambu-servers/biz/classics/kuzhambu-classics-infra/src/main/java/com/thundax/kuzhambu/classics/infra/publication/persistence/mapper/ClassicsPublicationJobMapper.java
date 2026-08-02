@@ -10,6 +10,21 @@ import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublicationJobDO> {
+
+    @Update(
+            """
+            update classics_publication_job
+            set content_title_snapshot = #{contentTitleSnapshot}, content_deleted_at = #{contentDeletedAt},
+                es_cleanup_status = case when es_document_id is null then es_cleanup_status else 'PENDING' end,
+                fastgpt_cleanup_status =
+                    case when fastgpt_collection_id is null then fastgpt_cleanup_status else 'PENDING' end
+            where id = #{id} and content_deleted_at is null
+            """)
+    int markContentDeleted(
+            @Param("id") Long id,
+            @Param("contentTitleSnapshot") String contentTitleSnapshot,
+            @Param("contentDeletedAt") Instant contentDeletedAt);
+
     @Select(
             """
             select job.* from classics_publication_job job

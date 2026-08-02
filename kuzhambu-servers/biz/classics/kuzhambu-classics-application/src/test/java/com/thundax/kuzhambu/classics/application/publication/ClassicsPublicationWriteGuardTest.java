@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
@@ -12,8 +14,11 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationContent;
+import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
+import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
+import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -62,6 +67,52 @@ class ClassicsPublicationWriteGuardTest {
         assertEquals("CONTENT_NOT_FOUND", exception.getDefaultMessage());
     }
 
+    @Test
+    void shouldWriteTombstoneAndScheduleCleanupBeforeDeletingExternalContent() {
+        ClassicsContentRepository contentRepository = mock(ClassicsContentRepository.class);
+        ClassicsPublicationJobRepository jobRepository = mock(ClassicsPublicationJobRepository.class);
+        when(contentRepository.lockPublicationContent(CONTENT_TYPE, CONTENT_ID))
+                .thenReturn(
+                        content(ClassicsPublicationLifecycleStatus.ERROR, ClassicsPublicationTransitionStatus.NONE));
+        ClassicsPublicationJob job = new ClassicsPublicationJob();
+        job.setId(new ClassicsPublicationJobId(19L));
+        job.setEsDocumentId("WANGQI_DOCUMENT:7");
+        when(jobRepository.lockByContent(CONTENT_TYPE, 7L)).thenReturn(job);
+        when(jobRepository.markContentDeleted(
+                        org.mockito.ArgumentMatchers.eq(job.getId()),
+                        org.mockito.ArgumentMatchers.eq("稿件"),
+                        org.mockito.ArgumentMatchers.any()))
+                .thenReturn(1);
+
+        new ClassicsPublicationWriteGuard(contentRepository, jobRepository).prepareDeletion(CONTENT_TYPE, CONTENT_ID);
+
+        verify(jobRepository)
+                .markContentDeleted(
+                        org.mockito.ArgumentMatchers.eq(job.getId()),
+                        org.mockito.ArgumentMatchers.eq("稿件"),
+                        org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void shouldNotWriteTombstoneWithoutExternalReference() {
+        ClassicsContentRepository contentRepository = mock(ClassicsContentRepository.class);
+        ClassicsPublicationJobRepository jobRepository = mock(ClassicsPublicationJobRepository.class);
+        when(contentRepository.lockPublicationContent(CONTENT_TYPE, CONTENT_ID))
+                .thenReturn(
+                        content(ClassicsPublicationLifecycleStatus.OFFLINE, ClassicsPublicationTransitionStatus.NONE));
+        ClassicsPublicationJob job = new ClassicsPublicationJob();
+        job.setId(new ClassicsPublicationJobId(20L));
+        when(jobRepository.lockByContent(CONTENT_TYPE, 7L)).thenReturn(job);
+
+        new ClassicsPublicationWriteGuard(contentRepository, jobRepository).prepareDeletion(CONTENT_TYPE, CONTENT_ID);
+
+        verify(jobRepository, never())
+                .markContentDeleted(
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any());
+    }
+
     private static Stream<Arguments> allowedOperations() {
         return Stream.of(
                         ClassicsPublicationLifecycleStatus.DRAFT,
@@ -88,7 +139,7 @@ class ClassicsPublicationWriteGuardTest {
     private static ClassicsPublicationWriteGuard guard(ClassicsPublicationContent content) {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         when(repository.lockPublicationContent(CONTENT_TYPE, CONTENT_ID)).thenReturn(content);
-        return new ClassicsPublicationWriteGuard(repository);
+        return new ClassicsPublicationWriteGuard(repository, mock(ClassicsPublicationJobRepository.class));
     }
 
     private static ClassicsPublicationContent content(

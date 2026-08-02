@@ -71,11 +71,7 @@ class SancaiApplicationServiceImplTest {
                         ClassicsContentType.SANCAI_ENTRY,
                         new ClassicsContentId(1001L),
                         ClassicsPublicationWriteOperation.EDIT);
-        verify(writeGuard)
-                .requireWritable(
-                        ClassicsContentType.SANCAI_ENTRY,
-                        new ClassicsContentId(1001L),
-                        ClassicsPublicationWriteOperation.DELETE);
+        verify(writeGuard).prepareDeletion(ClassicsContentType.SANCAI_ENTRY, new ClassicsContentId(1001L));
     }
 
     @Test

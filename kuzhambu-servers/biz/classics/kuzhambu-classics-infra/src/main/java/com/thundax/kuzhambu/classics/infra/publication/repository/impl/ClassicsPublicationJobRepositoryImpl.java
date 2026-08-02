@@ -84,6 +84,12 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
     }
 
     @Override
+    public int markContentDeleted(ClassicsPublicationJobId id, String contentTitleSnapshot, Instant contentDeletedAt) {
+        return mapper.markContentDeleted(
+                ClassicsPublicationJobIdCodec.toValue(id), contentTitleSnapshot, contentDeletedAt);
+    }
+
+    @Override
     public int deleteById(ClassicsPublicationJobId id) {
         return mapper.deleteById(ClassicsPublicationJobIdCodec.toValue(id));
     }

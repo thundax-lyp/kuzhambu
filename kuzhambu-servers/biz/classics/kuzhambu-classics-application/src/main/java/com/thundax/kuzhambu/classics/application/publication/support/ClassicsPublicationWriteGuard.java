@@ -4,17 +4,23 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationContent;
+import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
+import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import java.time.Instant;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ClassicsPublicationWriteGuard {
     private final ClassicsContentRepository contentRepository;
+    private final ClassicsPublicationJobRepository jobRepository;
 
-    public ClassicsPublicationWriteGuard(ClassicsContentRepository contentRepository) {
+    public ClassicsPublicationWriteGuard(
+            ClassicsContentRepository contentRepository, ClassicsPublicationJobRepository jobRepository) {
         this.contentRepository = contentRepository;
+        this.jobRepository = jobRepository;
     }
 
     public ClassicsPublicationContent requireWritable(
@@ -25,6 +31,22 @@ public class ClassicsPublicationWriteGuard {
         }
         validate(content, operation);
         return content;
+    }
+
+    public void prepareDeletion(ClassicsContentType contentType, ClassicsContentId contentId) {
+        ClassicsPublicationContent content =
+                requireWritable(contentType, contentId, ClassicsPublicationWriteOperation.DELETE);
+        if (content.getLifecycleStatus() != ClassicsPublicationLifecycleStatus.ERROR
+                && content.getLifecycleStatus() != ClassicsPublicationLifecycleStatus.OFFLINE) {
+            return;
+        }
+        ClassicsPublicationJob job = jobRepository.lockByContent(contentType, contentId.value());
+        if (job == null || (job.getEsDocumentId() == null && job.getFastGptCollectionId() == null)) {
+            return;
+        }
+        if (jobRepository.markContentDeleted(job.getId(), content.getContentTitle(), Instant.now()) != 1) {
+            throw conflict("CONTENT_DELETE_TOMBSTONE_FAILED");
+        }
     }
 
     static void validate(ClassicsPublicationContent content, ClassicsPublicationWriteOperation operation) {

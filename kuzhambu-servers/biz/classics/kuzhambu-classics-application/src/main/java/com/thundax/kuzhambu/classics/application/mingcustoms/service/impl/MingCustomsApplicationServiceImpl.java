@@ -182,7 +182,8 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(MingCustomsEntryId id) {
-        requireWritable(id, ClassicsPublicationWriteOperation.DELETE);
+        publicationWriteGuard.prepareDeletion(
+                ClassicsContentType.MING_CUSTOMS, new ClassicsContentId(id == null ? null : id.value()));
         MingCustomsEntry entry = repository.getById(id);
         if (entry == null) {
             return;

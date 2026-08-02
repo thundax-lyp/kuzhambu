@@ -268,7 +268,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         if (id == null) {
             return;
         }
-        requireWritable(id, ClassicsPublicationWriteOperation.DELETE);
+        publicationWriteGuard.prepareDeletion(ClassicsContentType.WANGQI_DOCUMENT, new ClassicsContentId(id.value()));
         WangqiDocument document = get(id);
         if (document != null) {
             document.setContentUpdatedAt(Instant.now());

@@ -426,7 +426,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteEntry(SancaiEntryId id) {
-        requireWritable(id, ClassicsPublicationWriteOperation.DELETE);
+        prepareDeletion(id);
         SancaiEntry entry = repository.getEntryById(id);
         if (entry == null) {
             return;
@@ -440,6 +440,11 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     private void requireWritable(SancaiEntryId id, ClassicsPublicationWriteOperation operation) {
         publicationWriteGuard.requireWritable(
                 ClassicsContentType.SANCAI_ENTRY, new ClassicsContentId(id == null ? null : id.value()), operation);
+    }
+
+    private void prepareDeletion(SancaiEntryId id) {
+        publicationWriteGuard.prepareDeletion(
+                ClassicsContentType.SANCAI_ENTRY, new ClassicsContentId(id == null ? null : id.value()));
     }
 
     private void updateCategoryPriorityOrThrow(SancaiCategoryId id, int priority) {
