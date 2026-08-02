@@ -1033,7 +1033,7 @@ Status: COMPLETE
 
 ### Stage 3: Runtime and Admin
 
-Status: PENDING
+Status: ACTIVE
 
 该 stage 让 job 可以由线程池和 5 个 Schedule 自动收口，并完成写保护、Admin API 和 Admin UI。
 
