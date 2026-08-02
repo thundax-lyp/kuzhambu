@@ -5,7 +5,6 @@ import com.thundax.kuzhambu.classics.application.content.support.ClassicsContent
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
@@ -17,7 +16,6 @@ import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
-import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
@@ -51,7 +49,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     private final WangqiDocumentRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
-    private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
     private final StorageFacade storageFacade;
     private final ClassicsPublicationWriteGuard publicationWriteGuard;
 
@@ -59,12 +56,10 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     public WangqiDocumentApplicationServiceImpl(
             WangqiDocumentRepository repository,
             ClassicsContentApplicationService contentApplicationService,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
             StorageFacade storageFacade,
             ClassicsPublicationWriteGuard publicationWriteGuard) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
-        this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.storageFacade = storageFacade;
         this.publicationWriteGuard = publicationWriteGuard;
     }
@@ -106,7 +101,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         document.setId(id);
         bindStorageObjectIfNeeded(document);
         markManualSaveVersion(document);
-        publishSearchSyncAfterCommit(document);
         return id;
     }
 
@@ -121,7 +115,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         document.setContentUpdatedAt(Instant.now());
         repository.update(document);
         markManualSaveVersion(document);
-        publishSearchSyncAfterCommit(document);
         return document.getId();
     }
 
@@ -148,7 +141,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         document.setStorageObjectId(StorageObjectIdCodec.toDomain(uploadResponse.getStorageObjectId()));
         document.setContentUpdatedAt(Instant.now());
         markVersion(document, replacing ? "替换原始文件" : "上传原始文件");
-        publishSearchSyncAfterCommit(document);
         return toSourceFile(documentId, uploadResponse.getStorageObjectId(), uploadResponse);
     }
 
@@ -201,7 +193,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         if (document != null) {
             document.setContentUpdatedAt(Instant.now());
             contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
-            publishDeleteAfterCommit(document);
         }
         contentApplicationService.deleteVersions(
                 ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(id.value()));
@@ -247,34 +238,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     private void markVersion(WangqiDocument document, String changeSummary) {
         contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
         repository.update(document);
-    }
-
-    private void publishSearchSyncAfterCommit(WangqiDocument document) {
-        if (isPublicSearchDocument(document)) {
-            searchIndexSyncPublishSupport.publishUpsertAfterCommit(
-                    ClassicsContentType.WANGQI_DOCUMENT,
-                    String.valueOf(document.getId().value()),
-                    document.getCurrentVersionNo());
-            return;
-        }
-        publishDeleteAfterCommit(document);
-    }
-
-    private void publishDeleteAfterCommit(WangqiDocument document) {
-        if (document == null || document.getId() == null || document.getCurrentVersionNo() == null) {
-            return;
-        }
-        searchIndexSyncPublishSupport.publishDeleteAfterCommit(
-                ClassicsContentType.WANGQI_DOCUMENT,
-                String.valueOf(document.getId().value()),
-                document.getCurrentVersionNo());
-    }
-
-    private boolean isPublicSearchDocument(WangqiDocument document) {
-        return document != null
-                && document.getId() != null
-                && document.getCurrentVersionNo() != null
-                && document.getLifecycleStatus() == ClassicsPublicationLifecycleStatus.PUBLISHED;
     }
 
     private WangqiDocument requireDocument(WangqiDocumentId id) {

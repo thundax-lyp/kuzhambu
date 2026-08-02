@@ -84,7 +84,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                         ClassicsPublicationWriteOperation.EDIT))
                 .thenThrow(new BizException("TRANSITION_ACTIVE"));
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiFacade, null, null, null, writeGuard);
+                repository, null, null, null, null, null, aiFacade, null, null, writeGuard);
 
         assertThrows(
                 BizException.class,
@@ -730,7 +730,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 aiFacade,
                 tagBindingSupport,
                 null,
-                null,
                 mock(ClassicsPublicationWriteGuard.class));
 
         service.applyAiCandidate(
@@ -911,7 +910,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 aiFacade,
                 null,
                 null,
-                null,
                 mock(ClassicsPublicationWriteGuard.class));
 
         setPermissions(Set.of("classics:sancai:edit"));
@@ -970,7 +968,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 aiFacade,
                 null,
                 null,
-                null,
                 mock(ClassicsPublicationWriteGuard.class));
 
         setPermissions(Set.of("classics:sancai:edit"));
@@ -1011,7 +1008,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 null,
                 null,
                 aiFacade,
-                null,
                 null,
                 null,
                 mock(ClassicsPublicationWriteGuard.class));
@@ -1058,7 +1054,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 aiFacade,
                 null,
                 null,
-                null,
                 mock(ClassicsPublicationWriteGuard.class));
 
         setPermissions(Set.of("classics:sancai:edit"));
@@ -1093,7 +1088,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 null,
                 null,
                 aiFacade,
-                null,
                 null,
                 null,
                 mock(ClassicsPublicationWriteGuard.class));

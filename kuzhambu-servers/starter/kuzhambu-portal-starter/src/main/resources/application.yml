@@ -22,11 +22,6 @@ spring:
     uris: ${KUZHAMBU_ELASTICSEARCH_URIS:https://127.0.0.1:9200}
     username: ${KUZHAMBU_ELASTICSEARCH_USERNAME:elastic}
     password: ${KUZHAMBU_ELASTICSEARCH_PASSWORD:elastic}
-rocketmq:
-  name-server: ${KUZHAMBU_ROCKETMQ_NAME_SERVER:127.0.0.1:9876}
-  producer:
-    group: ${KUZHAMBU_ROCKETMQ_PRODUCER_GROUP:kuzhambu-portal-starter-producer}
-
 springdoc:
   api-docs:
     enabled: ${KUZHAMBU_OPENAPI_ENABLED:true}
@@ -65,13 +60,6 @@ kuzhambu:
   classics:
     publication:
       enabled: ${KUZHAMBU_CLASSICS_PUBLICATION_ENABLED:false}
-  discovery:
-    search:
-      index-sync:
-        topic: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_TOPIC:kuzhambu-discovery-search-index-sync}
-        producer-tag-upsert: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_TAG_UPSERT:UPSERT}
-        producer-tag-delete: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_TAG_DELETE:DELETE}
-        consumer-enabled: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_CONSUMER_ENABLED:false}
   access-token-filter:
     exclude-path:
       - /api/portal/classics/sancai/**

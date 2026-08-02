@@ -13,7 +13,6 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeComm
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
-import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
@@ -60,7 +59,6 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     private final SancaiRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
-    private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
     private final ClassicsPublicationWriteGuard publicationWriteGuard;
     private final DiscoverySearchPublicationFacade discoverySearchPublicationFacade;
 
@@ -68,12 +66,10 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     public SancaiApplicationServiceImpl(
             SancaiRepository repository,
             ClassicsContentApplicationService contentApplicationService,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
             ClassicsPublicationWriteGuard publicationWriteGuard,
             DiscoverySearchPublicationFacade discoverySearchPublicationFacade) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
-        this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.publicationWriteGuard = publicationWriteGuard;
         this.discoverySearchPublicationFacade = discoverySearchPublicationFacade;
     }
@@ -383,7 +379,6 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         SancaiEntryId id = repository.insertEntry(entry);
         entry.setId(id);
         markManualSaveVersion(entry);
-        publishSearchSyncAfterCommit(entry);
         return id;
     }
 
@@ -408,7 +403,6 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
             throw new BizException("三才图会条目不存在");
         }
         markManualSaveVersion(entry);
-        publishSearchSyncAfterCommit(entry);
         return entry.getId();
     }
 
@@ -433,7 +427,6 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         entry.setLifecycleStatus(targetStatus);
         entry.setContentUpdatedAt(Instant.now());
         markManualSaveVersion(entry, lifecycleChangeSummary(currentStatus, targetStatus));
-        publishSearchSyncAfterCommit(entry);
     }
 
     @Override
@@ -446,7 +439,6 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         }
         entry.setContentUpdatedAt(Instant.now());
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
-        publishDeleteAfterCommit(entry);
         repository.deleteEntryById(id);
     }
 
@@ -636,29 +628,6 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     private void markManualSaveVersion(SancaiEntry entry, String changeSummary) {
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
         repository.updateEntry(entry);
-    }
-
-    private void publishSearchSyncAfterCommit(SancaiEntry entry) {
-        if (isPublicSearchEntry(entry)) {
-            searchIndexSyncPublishSupport.publishUpsertAfterCommit(
-                    ClassicsContentType.SANCAI_ENTRY,
-                    String.valueOf(entry.getId().value()),
-                    entry.getCurrentVersionNo());
-            return;
-        }
-        publishDeleteAfterCommit(entry);
-    }
-
-    private void publishDeleteAfterCommit(SancaiEntry entry) {
-        searchIndexSyncPublishSupport.publishDeleteAfterCommit(
-                ClassicsContentType.SANCAI_ENTRY, String.valueOf(entry.getId().value()), entry.getCurrentVersionNo());
-    }
-
-    private boolean isPublicSearchEntry(SancaiEntry entry) {
-        return entry != null
-                && entry.getId() != null
-                && entry.getCurrentVersionNo() != null
-                && entry.getLifecycleStatus() == SancaiEntryLifecycleStatus.PUBLISHED;
     }
 
     private static void validateLifecycleChange(

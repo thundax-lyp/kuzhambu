@@ -36,7 +36,6 @@ import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationRe
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
-import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer;
 import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
@@ -135,7 +134,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final AiFacade aiFacade;
     private final ClassicsAiCandidatePayloadParser aiCandidatePayloadParser;
     private final ClassicsTagBindingSupport tagBindingSupport;
-    private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
     private final ClassicsPublicationWriteGuard publicationWriteGuard;
     private static final String DEFAULT_REJECT_ERROR_TYPE = "USER_REJECTED";
     private static final String DEFAULT_REJECT_ERROR_MESSAGE = "用户已批量拒绝该 AI 候选";
@@ -162,7 +160,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             StorageFacade storageFacade,
             AiFacade aiFacade,
             ClassicsTagBindingSupport tagBindingSupport,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
             SancaiRepository sancaiRepository,
             ClassicsPublicationWriteGuard publicationWriteGuard) {
         this.repository = repository;
@@ -174,7 +171,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         this.storageFacade = storageFacade;
         this.aiFacade = aiFacade;
         this.tagBindingSupport = tagBindingSupport;
-        this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.publicationWriteGuard = publicationWriteGuard;
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
         this.aiCandidatePayloadParser = new ClassicsAiCandidatePayloadParser(this.objectMapper);
@@ -349,15 +345,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 ClassicsContentQaPair::getPriority,
                 repository::maxQaPairPriority,
                 this::updateQaPairPriorityOrThrow);
-
-        if (!currentQaPairs.isEmpty() && currentQaPairs.get(0) != null) {
-            ClassicsContentType contentType = currentQaPairs.get(0).getContentType();
-            ClassicsContentId contentId = currentQaPairs.get(0).getContentId();
-            Versionable content = loadContentForGovernance(contentType, contentId);
-            if (content != null) {
-                publishSearchSyncAfterCommit(content);
-            }
-        }
     }
 
     @Override
@@ -533,7 +520,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         }
         ClassicsContentVersion version = applyAiResult(content, changeSummary);
         persistVersionMarkers(content);
-        publishSearchSyncAfterCommit(content);
         markAiCandidateApplied(command);
         return new AiCandidateApplyContentResult(
                 contentType,
@@ -1126,7 +1112,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         touchContentUpdatedAt(contentType, content);
         ensureVersioned(content, changeType, changeSummary);
         persistVersionMarkers(content);
-        publishSearchSyncAfterCommit(content);
     }
 
     private Versionable loadContentForGovernance(ClassicsContentType contentType, ClassicsContentId contentId) {
@@ -1154,42 +1139,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         }
     }
 
-    private void publishSearchSyncAfterCommit(Versionable content) {
-        if (searchIndexSyncPublishSupport == null || content == null || content.contentType() == null) {
-            return;
-        }
-        ClassicsContentId contentId = content.contentId();
-        Integer currentVersionNo = content.currentVersionNo();
-        if (contentId == null || contentId.value() == null || currentVersionNo == null) {
-            return;
-        }
-        if (isPublicSearchContent(content)) {
-            searchIndexSyncPublishSupport.publishUpsertAfterCommit(
-                    content.contentType(), String.valueOf(contentId.value()), currentVersionNo);
-            return;
-        }
-        searchIndexSyncPublishSupport.publishDeleteAfterCommit(
-                content.contentType(), String.valueOf(contentId.value()), currentVersionNo);
-    }
-
-    private boolean isPublicSearchContent(Versionable content) {
-        if (content instanceof SancaiEntry entry) {
-            return entry.getLifecycleStatus()
-                    == com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus.PUBLISHED;
-        }
-        if (content instanceof WangqiDocument document) {
-            return document.getLifecycleStatus()
-                    == com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus
-                            .PUBLISHED;
-        }
-        if (content instanceof MingCustomsEntry entry) {
-            return entry.getLifecycleStatus()
-                    == com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus
-                            .PUBLISHED;
-        }
-        return false;
-    }
-
     private void ensureUpdate(int updated, String message) {
         if (updated != 1) {
             throw new BizException(message + ": " + updated);
@@ -1208,21 +1157,18 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             Versionable restored = wangqiDocumentVersionRestorer.restoreSnapshot(version);
             ClassicsContentVersion restoredVersion = createRestoredVersion(restored, version);
             wangqiDocumentVersionRestorer.markVersioned((WangqiDocument) restored);
-            publishSearchSyncAfterCommit(restored);
             return restoredVersion;
         }
         if (version.getContentType() == ClassicsContentType.MING_CUSTOMS) {
             Versionable restored = restoreMingCustomsFromSnapshot(version);
             ClassicsContentVersion restoredVersion = createRestoredVersion(restored, version);
             persistVersionMarkers(restored);
-            publishSearchSyncAfterCommit(restored);
             return restoredVersion;
         }
         if (version.getContentType() == ClassicsContentType.SANCAI_ENTRY) {
             Versionable restored = sancaiEntryVersionRestorer.restoreSnapshot(version);
             ClassicsContentVersion restoredVersion = createRestoredVersion(restored, version);
             sancaiEntryVersionRestorer.markVersioned((SancaiEntry) restored);
-            publishSearchSyncAfterCommit(restored);
             return restoredVersion;
         }
         throw new BizException("暂不支持恢复该类型历史版本: " + version.getContentType());

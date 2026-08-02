@@ -28,7 +28,6 @@ import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBind
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
-import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer;
 import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
@@ -94,7 +93,7 @@ class ClassicsContentApplicationServiceImplTest {
     void ensureVersionedShouldInsertVersionAndBackfillContentMarker() {
         FakeRepository repository = new FakeRepository();
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, null, null);
+                service(repository, null, null, null, null, null, null, null, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(100L));
         entry.setTitle("entry");
@@ -114,7 +113,7 @@ class ClassicsContentApplicationServiceImplTest {
     void ensureVersionedShouldSnapshotSancaiLifecycleStatus() throws Exception {
         FakeRepository repository = new FakeRepository();
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, null, null);
+                service(repository, null, null, null, null, null, null, null, null);
         SancaiEntry entry = baseSancaiEntry(101L);
         entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
 
@@ -133,7 +132,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentVersion existing = existingVersion(9L, 2, Instant.ofEpochMilli(2_000L));
         repository.insertedVersions.add(existing);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, null, null);
+                service(repository, null, null, null, null, null, null, null, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(100L));
         entry.setCurrentVersionId(existing.getId());
@@ -157,7 +156,6 @@ class ClassicsContentApplicationServiceImplTest {
         repository.versionById = restoredFrom;
         repository.insertedVersions.add(restoredFrom);
         FakeSancaiRepository sancaiRepository = new FakeSancaiRepository();
-        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         ClassicsContentApplicationServiceImpl service = service(
                 repository,
                 null,
@@ -167,7 +165,6 @@ class ClassicsContentApplicationServiceImplTest {
                 null,
                 null,
                 null,
-                publishSupport,
                 null);
 
         ClassicsContentVersion restoredVersion =
@@ -180,11 +177,10 @@ class ClassicsContentApplicationServiceImplTest {
         assertEquals(restoredVersion.getId(), sancaiRepository.restoredEntry.getCurrentVersionId());
         assertEquals(restoredVersion.getVersionNo(), sancaiRepository.restoredEntry.getCurrentVersionNo());
         assertNotNull(sancaiRepository.restoredEntry.getCurrentVersionedAt());
-        verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.SANCAI_ENTRY, "100", 2);
     }
 
     @Test
-    void restoreHistoryVersionShouldRestoreMingCustomsEntryFieldsAndPublishUpsert() {
+    void restoreHistoryVersionShouldRestoreMingCustomsEntryFields() {
         FakeRepository repository = new FakeRepository();
         ClassicsContentVersion restoredFrom = existingVersion(11L, 1, Instant.ofEpochMilli(2_000L));
         restoredFrom.setContentType(ClassicsContentType.MING_CUSTOMS);
@@ -193,9 +189,8 @@ class ClassicsContentApplicationServiceImplTest {
         repository.versionById = restoredFrom;
         repository.insertedVersions.add(restoredFrom);
         repository.mingCustomsEntryForAiApply = mingCustomsEntry(100L);
-        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, publishSupport, null);
+                service(repository, null, null, null, null, null, null, null, null);
 
         ClassicsContentVersion restoredVersion =
                 service.restoreHistoryVersion(ClassicsContentVersionIdCodec.toDomain(11L));
@@ -218,7 +213,6 @@ class ClassicsContentApplicationServiceImplTest {
         assertEquals(restoredVersion.getVersionNo(), restoredEntry.getCurrentVersionNo());
         assertNotNull(restoredEntry.getCurrentVersionedAt());
         assertNotEquals(1L, restoredEntry.getContentUpdatedAt().toEpochMilli());
-        verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.MING_CUSTOMS, "100", 2);
     }
 
     @Test
@@ -231,7 +225,7 @@ class ClassicsContentApplicationServiceImplTest {
         repository.versionById = restoredFrom;
         repository.mingCustomsEntryForAiApply = mingCustomsEntry(100L);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, null, null);
+                service(repository, null, null, null, null, null, null, null, null);
 
         BizException exception = assertThrows(
                 BizException.class, () -> service.restoreHistoryVersion(ClassicsContentVersionIdCodec.toDomain(12L)));
@@ -249,7 +243,7 @@ class ClassicsContentApplicationServiceImplTest {
         repository.versionById = restoredFrom;
         repository.mingCustomsEntryForAiApply = mingCustomsEntry(100L);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, null, null);
+                service(repository, null, null, null, null, null, null, null, null);
 
         BizException exception = assertThrows(
                 BizException.class, () -> service.restoreHistoryVersion(ClassicsContentVersionIdCodec.toDomain(13L)));
@@ -266,7 +260,7 @@ class ClassicsContentApplicationServiceImplTest {
         restoredFrom.setSnapshotJson(mingCustomsSnapshotJson());
         repository.versionById = restoredFrom;
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, null, null);
+                service(repository, null, null, null, null, null, null, null, null);
 
         BizException exception = assertThrows(
                 BizException.class, () -> service.restoreHistoryVersion(ClassicsContentVersionIdCodec.toDomain(14L)));
@@ -290,7 +284,7 @@ class ClassicsContentApplicationServiceImplTest {
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(response);
         when(storageFacade.upload(any(UploadStorageFacadeRequest.class))).thenReturn(uploadResponse());
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null, null);
+                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
 
@@ -341,7 +335,7 @@ class ClassicsContentApplicationServiceImplTest {
         response.getArtifact().setSizeBytes(50L * 1024L * 1024L + 1L);
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(response);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null, null);
+                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
 
@@ -359,7 +353,7 @@ class ClassicsContentApplicationServiceImplTest {
         command.setContentType(ClassicsContentType.SANCAI_ENTRY);
         command.setVisibilityRiskStatus(SancaiVisibilityRiskStatus.PRIVATE_CONFIRMED);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, workerRenderClient, null, null, null, null, null);
+                service(repository, null, null, null, workerRenderClient, null, null, null, null);
 
         assertThrows(BizException.class, () -> service.createExportJob(command));
 
@@ -382,7 +376,7 @@ class ClassicsContentApplicationServiceImplTest {
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobIdCodec.toDomain(900000000006L));
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderFailedResponse());
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, workerRenderClient, null, null, null, null, null);
+                service(repository, null, null, null, workerRenderClient, null, null, null, null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
 
@@ -407,7 +401,7 @@ class ClassicsContentApplicationServiceImplTest {
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderSuccessResponse("wangqi.json"));
         when(storageFacade.upload(any(UploadStorageFacadeRequest.class))).thenReturn(uploadResponse());
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null, null);
+                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null);
 
         service.createExportJob(command);
 
@@ -448,7 +442,7 @@ class ClassicsContentApplicationServiceImplTest {
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderSuccessResponse("sancai.json"));
         when(storageFacade.upload(any(UploadStorageFacadeRequest.class))).thenReturn(uploadResponse());
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null, null);
+                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null);
 
         service.createExportJob(command);
 
@@ -496,7 +490,7 @@ class ClassicsContentApplicationServiceImplTest {
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(response);
         when(storageFacade.upload(any(UploadStorageFacadeRequest.class))).thenReturn(uploadResponse());
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null, null);
+                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null);
 
         service.createExportJob(command);
 
@@ -523,7 +517,7 @@ class ClassicsContentApplicationServiceImplTest {
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobIdCodec.toDomain(900000000002L));
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderFailedResponse());
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null, null);
+                service(repository, null, null, null, workerRenderClient, storageFacade, null, null, null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
 
@@ -536,7 +530,7 @@ class ClassicsContentApplicationServiceImplTest {
     void sortTagsShouldUseGlobalTagListAndPriorityRange() {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, null, null);
+                service(repository, null, null, null, null, null, null, null, null);
         ClassicsContentTag first = new ClassicsContentTag();
         first.setId(ClassicsContentTagIdCodec.toDomain(1L));
         first.setPriority(1);
@@ -559,7 +553,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, tagBindingSupport, null, null);
+                service(repository, null, null, null, null, null, null, tagBindingSupport, null);
         ContentTagCommand command = new ContentTagCommand(
                 null,
                 ClassicsContentType.SANCAI_ENTRY,
@@ -596,7 +590,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, tagBindingSupport, null, null);
+                service(repository, null, null, null, null, null, null, tagBindingSupport, null);
         ContentTagCommand command = new ContentTagCommand(
                 9001L,
                 ClassicsContentType.SANCAI_ENTRY,
@@ -637,7 +631,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, tagBindingSupport, null, null);
+                service(repository, null, null, null, null, null, null, tagBindingSupport, null);
         ClassicsContentTag existingTag = new ClassicsContentTag();
         existingTag.setId(ClassicsContentTagIdCodec.toDomain(9001L));
         existingTag.setContentType(ClassicsContentType.SANCAI_ENTRY);
@@ -655,14 +649,13 @@ class ClassicsContentApplicationServiceImplTest {
     }
 
     @Test
-    void addTagShouldPersistVersionMarkersAndPublishUpsertForPublicContent() {
+    void addTagShouldPersistVersionMarkersForPublicContent() {
         FakeRepository repository = new FakeRepository();
         repository.sancaiEntryForAiApply = publicSancaiEntry(100L);
         repository.nextTagPriority = 2;
         repository.insertedTagId = ClassicsContentTagIdCodec.toDomain(9002L);
-        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, publishSupport, null);
+                service(repository, null, null, null, null, null, null, null, null);
 
         service.addTag(new ContentTagCommand(
                 null,
@@ -674,11 +667,10 @@ class ClassicsContentApplicationServiceImplTest {
                 ClassicsContentTagStatus.ACTIVE));
 
         assertEquals(1, repository.sancaiEntryVersionMarker.getCurrentVersionNo());
-        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "100", 1);
     }
 
     @Test
-    void deleteQaPairShouldPersistVersionMarkersAndPublishDeleteForPrivateContent() {
+    void deleteQaPairShouldPersistVersionMarkersForPrivateContent() {
         FakeRepository repository = new FakeRepository();
         repository.sancaiEntryForAiApply = privateSancaiEntry(101L);
         ClassicsContentQaPair qaPair = new ClassicsContentQaPair();
@@ -686,9 +678,8 @@ class ClassicsContentApplicationServiceImplTest {
         qaPair.setContentType(ClassicsContentType.SANCAI_ENTRY);
         qaPair.setContentId(ClassicsContentIdCodec.toDomain(101L));
         repository.qaPairById = qaPair;
-        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, publishSupport, null);
+                service(repository, null, null, null, null, null, null, null, null);
 
         service.deleteQaPair(ClassicsContentQaPairIdCodec.toDomain(9010L));
 
@@ -697,17 +688,15 @@ class ClassicsContentApplicationServiceImplTest {
                 ClassicsContentChangeType.QA_CHANGED,
                 repository.insertedVersions.get(0).getChangeType());
         assertEquals("删除问答对", repository.insertedVersions.get(0).getChangeSummary());
-        verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.SANCAI_ENTRY, "101", 1);
     }
 
     @Test
-    void addQaPairShouldCreateQaChangedVersionAndPublishUpsert() {
+    void addQaPairShouldCreateQaChangedVersion() {
         FakeRepository repository = new FakeRepository();
         repository.sancaiEntryForAiApply = publicSancaiEntry(102L);
         repository.insertedQaPairId = ClassicsContentQaPairIdCodec.toDomain(9020L);
-        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, publishSupport, null);
+                service(repository, null, null, null, null, null, null, null, null);
 
         ClassicsContentQaPairId id = service.addQaPair(new ContentQaPairCommand(
                 null, ClassicsContentType.SANCAI_ENTRY, 102L, "问题", "答案", ClassicsContentSource.MANUAL));
@@ -718,16 +707,14 @@ class ClassicsContentApplicationServiceImplTest {
                 ClassicsContentChangeType.QA_CHANGED,
                 repository.insertedVersions.get(0).getChangeType());
         assertEquals("新增问答对", repository.insertedVersions.get(0).getChangeSummary());
-        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "102", 1);
     }
 
     @Test
-    void updateQaPairShouldCreateQaChangedVersionAndPublishUpsert() {
+    void updateQaPairShouldCreateQaChangedVersion() {
         FakeRepository repository = new FakeRepository();
         repository.sancaiEntryForAiApply = publicSancaiEntry(103L);
-        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, null, null, publishSupport, null);
+                service(repository, null, null, null, null, null, null, null, null);
 
         ClassicsContentQaPairId id = service.updateQaPair(new ContentQaPairCommand(
                 9030L, ClassicsContentType.SANCAI_ENTRY, 103L, "问题", "答案", ClassicsContentSource.MANUAL));
@@ -738,15 +725,13 @@ class ClassicsContentApplicationServiceImplTest {
                 ClassicsContentChangeType.QA_CHANGED,
                 repository.insertedVersions.get(0).getChangeType());
         assertEquals("更新问答对", repository.insertedVersions.get(0).getChangeSummary());
-        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "103", 1);
     }
 
     @Test
-    void applyAiCandidateShouldPersistVersionMarkersAndPublishSync() {
+    void applyAiCandidateShouldPersistVersionMarkersAndMarkApplied() {
         FakeRepository repository = new FakeRepository();
         repository.sancaiEntryForAiApply = publicSancaiEntry(102L);
         AiFacade aiFacade = mock(AiFacade.class);
-        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
                 .candidateId(7001L)
                 .capability("summary")
@@ -757,14 +742,13 @@ class ClassicsContentApplicationServiceImplTest {
         when(aiFacade.requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class)))
                 .thenReturn(candidate);
         ClassicsContentApplicationServiceImpl service =
-                service(repository, null, null, null, null, null, aiFacade, null, publishSupport, null);
+                service(repository, null, null, null, null, null, aiFacade, null, null);
 
         service.applyAiCandidate(new AiCandidateApplyContentCommand(
                 7001L, ClassicsContentType.SANCAI_ENTRY, 102L, null, "summary", "TEXT", "AI摘要", null, null));
 
         assertEquals("AI摘要", repository.sancaiEntryForAiApply.getSummary());
         assertEquals(1, repository.sancaiEntryVersionMarker.getCurrentVersionNo());
-        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "102", 1);
         verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
@@ -896,7 +880,6 @@ class ClassicsContentApplicationServiceImplTest {
             StorageFacade storageFacade,
             AiFacade aiFacade,
             ClassicsTagBindingSupport tagBindingSupport,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
             SancaiRepository sancaiRepository) {
         return new ClassicsContentApplicationServiceImpl(
                 repository,
@@ -907,7 +890,6 @@ class ClassicsContentApplicationServiceImplTest {
                 storageFacade,
                 aiFacade,
                 tagBindingSupport,
-                searchIndexSyncPublishSupport,
                 sancaiRepository,
                 mock(ClassicsPublicationWriteGuard.class));
     }

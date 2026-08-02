@@ -15,12 +15,12 @@ public class DiscoverySearchDeletedDocumentCleanupTask {
 
     public DiscoverySearchDeletedDocumentCleanupTask(
             SearchIndexCleanupApplicationService searchIndexCleanupApplicationService,
-            @Value("${kuzhambu.discovery.search.index-sync.deleted-retention-days:7}") int retentionDays) {
+            @Value("${kuzhambu.discovery.search.deleted-cleanup.retention-days:7}") int retentionDays) {
         this.searchIndexCleanupApplicationService = searchIndexCleanupApplicationService;
         this.retentionDays = retentionDays;
     }
 
-    @Scheduled(cron = "${kuzhambu.discovery.search.index-sync.deleted-cleanup-cron:0 0 3 * * ?}")
+    @Scheduled(cron = "${kuzhambu.discovery.search.deleted-cleanup.cron:0 0 3 * * ?}")
     public Integer cleanupDeletedDocuments() {
         return searchIndexCleanupApplicationService.cleanupDeletedDocuments(retentionDays);
     }

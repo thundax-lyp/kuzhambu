@@ -1029,7 +1029,7 @@ Stage 4 exit:
 
 ### Stage 5: Publication visibility and legacy MQ removal
 
-Status: PENDING
+Status: ACTIVE
 
 Entry:
 
@@ -1077,11 +1077,11 @@ Commit split:
 
 Actions:
 
-- [ ] 删除 Wangqi publication `visibility` 全栈字段、query 和 mutation。
-- [ ] 删除 Ming Customs publication `visibility` 全栈字段、query 和 mutation。
-- [ ] 删除 shared Classics content 中仅服务 visibility 的 contract/support。
-- [ ] 删除 Admin Wangqi/Ming visibility filter、column、form 和 batch actions。
-- [ ] 更新 timeline、version、tag cloud 和 content tests。
+- [x] 删除 Wangqi publication `visibility` 全栈字段、query 和 mutation。
+- [x] 删除 Ming Customs publication `visibility` 全栈字段、query 和 mutation。
+- [x] 删除 shared Classics content 中仅服务 visibility 的 contract/support。
+- [x] 删除 Admin Wangqi/Ming visibility filter、column、form 和 batch actions。
+- [x] 更新 timeline、version、tag cloud 和 content tests。
 
 Exit:
 
@@ -1102,15 +1102,15 @@ Commit split:
 
 Actions:
 
-- [ ] 删除 Discovery public search 的 `visibilityScopes` 和旧 `contentStatuses`。
-- [ ] 删除 ES document 中仅服务旧发布模型的 `visibility/contentStatus`。
-- [ ] 删除 QA/FastGPT 同步中基于 PUBLIC/PRIVATE 的过滤。
-- [ ] 删除 portal-web Discovery visibility filters/types/tests。
-- [ ] 删除 Classics search-sync publisher/support/message。
-- [ ] 删除 Classics search-sync facade DTO。
-- [ ] 删除 RocketMQ Classics publisher 和 Discovery consumer。
-- [ ] ordinary manuscript save 不再推送 ES upsert/delete。
-- [ ] 无其他用途后移除相关 module 的 `kuzhambu-common-rocketmq` dependency。
+- [x] 删除 Discovery public search 的 `visibilityScopes` 和旧 `contentStatuses`。
+- [x] 删除 ES document 中仅服务旧发布模型的 `visibility/contentStatus`。
+- [x] 删除 QA/FastGPT 同步中基于 PUBLIC/PRIVATE 的过滤。
+- [x] 删除 portal-web Discovery visibility filters/types/tests。
+- [x] 删除 Classics search-sync publisher/support/message。
+- [x] 删除 Classics search-sync facade DTO。
+- [x] 删除 RocketMQ Classics publisher 和 Discovery consumer。
+- [x] ordinary manuscript save 不再推送 ES upsert/delete。
+- [x] 无其他用途后移除相关 module 的 `kuzhambu-common-rocketmq` dependency。
 
 Zero-result scans:
 
