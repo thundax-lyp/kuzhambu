@@ -50,7 +50,7 @@ Status: DELIVERED_PENDING_MERGE
 - Baseline commit: `d7dea5f6a`
 - Functional commit range (inclusive): `932453204^..e2b0c75f6`
 - Changed files: 170
-- Diff: 422 insertions, 3,284 deletions
+- Diff: 433 insertions, 3,419 deletions
 
 Stage 5 删除三类 Classics 稿件 publication visibility、Discovery public search 旧
 `visibilityScopes/contentStatuses` 契约，以及 Classics -> RocketMQ -> Discovery 旧搜索同步链路。
