@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeyword
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
@@ -33,7 +34,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
 import java.util.List;
@@ -78,7 +78,7 @@ class ClassicsSearchContentApplicationServiceImplTest {
         wangqiDocument.setTitle("天工");
         wangqiDocument.setSummary("王圻摘要");
         wangqiDocument.setContent("正文");
-        wangqiDocument.setVisibility(WangqiDocumentVisibility.PUBLIC);
+        wangqiDocument.setLifecycleStatus(ClassicsPublicationLifecycleStatus.PUBLISHED);
         wangqiDocument.setDocumentTime(Instant.ofEpochMilli(1_718_100_000_000L));
         wangqiDocument.setContentUpdatedAt(Instant.ofEpochMilli(1_718_200_000_000L));
         when(wangqiDocumentApplicationService.listTimeline(

@@ -17,7 +17,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisual
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.time.Instant;
@@ -57,7 +56,7 @@ class ClassicsReportApplicationServiceImplTest {
                                 SancaiEntryImageStatus.MISSING,
                                 SancaiEntryVisualAssetStatus.MISSING,
                                 instant(1_718_086_400_000L))));
-        when(wangqiDocumentRepository.listTimeline(null, WangqiDocumentVisibility.PUBLIC.value(), SortDirection.ASC))
+        when(wangqiDocumentRepository.listTimeline(null, SortDirection.ASC))
                 .thenReturn(List.of(wangqiDocument("王圻图谱", instant(1_718_086_400_000L))));
         when(mingCustomsRepository.list(
                         null, null, null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC))
@@ -97,7 +96,6 @@ class ClassicsReportApplicationServiceImplTest {
         WangqiDocument document = new WangqiDocument();
         document.setTitle(title);
         document.setContentFormat(WangqiContentFormat.MARKDOWN);
-        document.setVisibility(WangqiDocumentVisibility.PUBLIC);
         document.setContentUpdatedAt(contentUpdatedAt);
         return document;
     }

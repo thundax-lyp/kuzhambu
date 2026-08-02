@@ -13,7 +13,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTransl
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
@@ -58,8 +57,7 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
                 null,
                 null,
                 SortDirection.ASC);
-        List<WangqiDocument> publicWangqiDocuments =
-                wangqiDocumentRepository.listTimeline(null, WangqiDocumentVisibility.PUBLIC.value(), SortDirection.ASC);
+        List<WangqiDocument> publicWangqiDocuments = wangqiDocumentRepository.listTimeline(null, SortDirection.ASC);
         List<MingCustomsEntry> publicMingCustomsEntries = mingCustomsRepository.list(
                 null, null, null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC);
 

@@ -1178,8 +1178,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     == com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus.PUBLISHED;
         }
         if (content instanceof WangqiDocument document) {
-            return document.getVisibility()
-                    == com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility.PUBLIC;
+            return document.getLifecycleStatus()
+                    == com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus
+                            .PUBLISHED;
         }
         if (content instanceof MingCustomsEntry entry) {
             return entry.getVisibility()

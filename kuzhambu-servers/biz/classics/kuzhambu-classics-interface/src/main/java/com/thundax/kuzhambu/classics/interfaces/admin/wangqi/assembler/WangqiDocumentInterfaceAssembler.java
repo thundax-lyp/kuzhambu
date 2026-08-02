@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler;
 
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
-import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
@@ -12,7 +11,6 @@ import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentEventIdCo
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocumentEvent;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentEventResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentResponse;
@@ -27,7 +25,6 @@ public final class WangqiDocumentInterfaceAssembler {
     public static WangqiDocumentPageQuery toQuery(WangqiDocumentRequest request) {
         return new WangqiDocumentPageQuery(
                 request.getKeyword(),
-                visibility(request.getVisibility()),
                 StringUtils.isBlank(request.getSortDirection())
                         ? SortDirection.ASC
                         : SortDirection.valueOf(
@@ -44,12 +41,7 @@ public final class WangqiDocumentInterfaceAssembler {
                         : WangqiContentFormat.from(request.getContentFormat()),
                 request.getContent(),
                 request.getDocumentTime(),
-                request.getStorageObjectId(),
-                visibility(request.getVisibility()));
-    }
-
-    public static WangqiDocumentVisibilityCommand toVisibilityCommand(WangqiDocumentRequest request) {
-        return new WangqiDocumentVisibilityCommand(request.getId(), visibility(request.getVisibility()));
+                request.getStorageObjectId());
     }
 
     public static WangqiDocumentResponse toResponse(WangqiDocument entity) {
@@ -78,10 +70,6 @@ public final class WangqiDocumentInterfaceAssembler {
                                 entity.getCurrentPublicationJobId() == null
                                         ? null
                                         : entity.getCurrentPublicationJobId().value())
-                        .visibility(
-                                entity.getVisibility() == null
-                                        ? null
-                                        : entity.getVisibility().value())
                         .events(toEventResponses(entity.getEvents()))
                         .build();
     }
@@ -118,10 +106,6 @@ public final class WangqiDocumentInterfaceAssembler {
                                         : version.getChangeType().value())
                         .changeSummary(version.getChangeSummary())
                         .build();
-    }
-
-    private static WangqiDocumentVisibility visibility(String value) {
-        return StringUtils.isBlank(value) ? null : WangqiDocumentVisibility.from(value);
     }
 
     private static java.util.List<WangqiDocumentEventResponse> toEventResponses(

@@ -18,8 +18,6 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustoms
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
-import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
@@ -31,8 +29,6 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportSt
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.ClassicsContentAdminController;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsBatchVisibilityRequest;
@@ -335,21 +331,13 @@ class ClassicsContentAdminControllerTest {
     }
 
     @Test
-    void batchVisibilityRequestShouldDispatchWangqiDocuments() {
+    void batchVisibilityRequestShouldRejectWangqiDocuments() {
         ClassicsBatchVisibilityRequest request = new ClassicsBatchVisibilityRequest();
         request.setContentType("WANGQI_DOCUMENT");
         request.setContentIds(List.of(5001L, 5002L));
         request.setVisibility("PRIVATE");
 
-        ClassicsBatchOperationResponse response = controller().changeBatchVisibility(request);
-
-        assertEquals(2, response.getSuccessCount());
-        assertEquals(0, response.getFailureCount());
-        JsonNode firstSuccess =
-                OBJECT_MAPPER.valueToTree(response.getSuccesses().get(0));
-        assertEquals("WANGQI_DOCUMENT", firstSuccess.get("contentType").asText());
-        assertEquals(5001L, firstSuccess.get("contentId").asLong());
-        assertEquals("PRIVATE", firstSuccess.get("status").asText());
+        assertThrows(RuntimeException.class, () -> controller().changeBatchVisibility(request));
     }
 
     @Test
@@ -536,39 +524,7 @@ class ClassicsContentAdminControllerTest {
     }
 
     private static ClassicsContentAdminController controller() {
-        return new ClassicsContentAdminController(
-                contentService(), sancaiService(), wangqiDocumentService(), mingCustomsService());
-    }
-
-    private static SancaiApplicationService sancaiService() {
-        return (SancaiApplicationService) Proxy.newProxyInstance(
-                SancaiApplicationService.class.getClassLoader(),
-                new Class<?>[] {SancaiApplicationService.class},
-                (proxy, method, args) -> {
-                    throw new UnsupportedOperationException(method.getName());
-                });
-    }
-
-    private static WangqiDocumentApplicationService wangqiDocumentService() {
-        return (WangqiDocumentApplicationService) Proxy.newProxyInstance(
-                WangqiDocumentApplicationService.class.getClassLoader(),
-                new Class<?>[] {WangqiDocumentApplicationService.class},
-                (proxy, method, args) -> {
-                    if ("batchChangeVisibility".equals(method.getName())) {
-                        @SuppressWarnings("unchecked")
-                        List<WangqiDocumentId> ids = (List<WangqiDocumentId>) args[0];
-                        assertEquals(
-                                List.of(5001L, 5002L),
-                                ids.stream().map(WangqiDocumentId::value).toList());
-                        assertEquals(WangqiDocumentVisibility.PRIVATE, args[1]);
-                        assertTrue(args[2] instanceof java.util.Set<?>);
-                        return batchResult(
-                                "WANGQI_DOCUMENT",
-                                ids.stream().map(WangqiDocumentId::value).toList(),
-                                "PRIVATE");
-                    }
-                    throw new UnsupportedOperationException(method.getName());
-                });
+        return new ClassicsContentAdminController(contentService(), mingCustomsService());
     }
 
     private static MingCustomsApplicationService mingCustomsService() {

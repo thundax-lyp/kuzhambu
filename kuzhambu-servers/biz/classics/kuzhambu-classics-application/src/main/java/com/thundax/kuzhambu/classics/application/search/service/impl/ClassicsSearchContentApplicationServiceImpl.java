@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryId
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
@@ -25,7 +26,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.ArrayList;
@@ -100,8 +100,8 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
     }
 
     private List<ClassicsSearchSourceContent> listPublicWangqiDocuments() {
-        List<WangqiDocument> documents = wangqiDocumentApplicationService.listTimeline(
-                new WangqiDocumentPageQuery(null, WangqiDocumentVisibility.PUBLIC, SortDirection.ASC));
+        List<WangqiDocument> documents =
+                wangqiDocumentApplicationService.listTimeline(new WangqiDocumentPageQuery(null, SortDirection.ASC));
         if (documents == null || documents.isEmpty()) {
             return Collections.emptyList();
         }
@@ -226,7 +226,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
     private ClassicsSearchSourceContent toPublicWangqiDocument(WangqiDocument document) {
         if (document == null
                 || document.getId() == null
-                || document.getVisibility() != WangqiDocumentVisibility.PUBLIC) {
+                || document.getLifecycleStatus() != ClassicsPublicationLifecycleStatus.PUBLISHED) {
             return null;
         }
         String contentType = ClassicsContentType.WANGQI_DOCUMENT.value();
@@ -244,7 +244,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 textSegments,
                 tagNames(contentType, contentId),
                 "PUBLISHED",
-                document.getVisibility().value(),
+                null,
                 document.getCurrentVersionNo(),
                 document.getDocumentTime() == null ? document.getContentUpdatedAt() : document.getDocumentTime(),
                 document.getContentUpdatedAt());

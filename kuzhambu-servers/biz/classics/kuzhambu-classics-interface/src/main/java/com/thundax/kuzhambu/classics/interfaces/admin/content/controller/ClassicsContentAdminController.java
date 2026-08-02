@@ -9,8 +9,6 @@ import com.thundax.kuzhambu.classics.application.content.service.ClassicsContent
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
-import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
@@ -19,8 +17,6 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
-import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsBatchVisibilityRequest;
@@ -67,25 +63,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/api/classics/content")
 @WrappedApiController
 public class ClassicsContentAdminController {
-    private static final Set<String> BATCH_VISIBILITY_CONTENT_TYPES =
-            Set.of("SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS");
+    private static final Set<String> BATCH_VISIBILITY_CONTENT_TYPES = Set.of("MING_CUSTOMS");
     private static final Set<String> BATCH_VISIBILITIES = Set.of("PUBLIC", "PRIVATE");
     private static final Set<String> CONTENT_TAG_CONTENT_TYPES =
             Set.of("SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS");
 
     private final ClassicsContentApplicationService service;
-    private final SancaiApplicationService sancaiService;
-    private final WangqiDocumentApplicationService wangqiDocumentService;
     private final MingCustomsApplicationService mingCustomsService;
 
     public ClassicsContentAdminController(
-            ClassicsContentApplicationService service,
-            SancaiApplicationService sancaiService,
-            WangqiDocumentApplicationService wangqiDocumentService,
-            MingCustomsApplicationService mingCustomsService) {
+            ClassicsContentApplicationService service, MingCustomsApplicationService mingCustomsService) {
         this.service = service;
-        this.sancaiService = sancaiService;
-        this.wangqiDocumentService = wangqiDocumentService;
         this.mingCustomsService = mingCustomsService;
     }
 
@@ -537,12 +525,6 @@ public class ClassicsContentAdminController {
     private ClassicsBatchOperationResult changeBatchVisibility(
             String contentType, List<Long> contentIds, String visibility) {
         return switch (contentType) {
-            case "SANCAI_ENTRY" -> throw AdminResponseExceptions.invalidParameter("contentType");
-            case "WANGQI_DOCUMENT" ->
-                wangqiDocumentService.batchChangeVisibility(
-                        RequestListHelper.map(contentIds, WangqiDocumentIdCodec::toDomain),
-                        WangqiDocumentVisibility.from(visibility),
-                        KuzhambuContextHolder.currentAuthorities());
             case "MING_CUSTOMS" ->
                 mingCustomsService.batchChangeVisibility(
                         RequestListHelper.map(contentIds, MingCustomsEntryIdCodec::toDomain),

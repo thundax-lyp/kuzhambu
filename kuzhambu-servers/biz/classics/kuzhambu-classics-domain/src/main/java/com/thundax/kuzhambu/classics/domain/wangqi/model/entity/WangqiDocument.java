@@ -11,7 +11,6 @@ import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPubl
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import java.time.Instant;
 import java.util.List;
@@ -35,7 +34,6 @@ public class WangqiDocument implements Versionable {
     private ClassicsPublicationLifecycleStatus lifecycleStatus;
     private ClassicsPublicationTransitionStatus transitionStatus;
     private ClassicsPublicationJobId currentPublicationJobId;
-    private WangqiDocumentVisibility visibility;
     private ClassicsContentVersionId currentVersionId;
     private Integer currentVersionNo;
     private Instant currentVersionedAt;
@@ -49,8 +47,7 @@ public class WangqiDocument implements Versionable {
             WangqiContentFormat contentFormat,
             String content,
             Instant documentTime,
-            StorageObjectId storageObjectId,
-            WangqiDocumentVisibility visibility) {
+            StorageObjectId storageObjectId) {
         this.id = id;
         this.title = title;
         this.summary = summary;
@@ -58,7 +55,6 @@ public class WangqiDocument implements Versionable {
         this.content = content;
         this.documentTime = documentTime;
         this.storageObjectId = storageObjectId;
-        this.visibility = visibility;
     }
 
     @Override

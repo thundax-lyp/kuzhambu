@@ -59,7 +59,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisua
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -488,8 +487,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 WangqiContentFormat.HTML,
                 "content",
                 Instant.now(),
-                null,
-                WangqiDocumentVisibility.PUBLIC);
+                null);
         repository.wangqiDocumentForAiApply = document;
 
         AiFacade aiFacade = mockAiFacade(
@@ -753,8 +751,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 WangqiContentFormat.HTML,
                 "content",
                 Instant.now(),
-                null,
-                WangqiDocumentVisibility.PUBLIC);
+                null);
         repository.wangqiDocumentForAiApply = document;
 
         AiFacade aiFacade = mockAiFacade(

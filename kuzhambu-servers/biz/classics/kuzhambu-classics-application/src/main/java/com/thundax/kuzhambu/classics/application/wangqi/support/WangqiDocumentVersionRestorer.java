@@ -63,7 +63,6 @@ public class WangqiDocumentVersionRestorer {
         restored.setLifecycleStatus(current.getLifecycleStatus());
         restored.setTransitionStatus(current.getTransitionStatus());
         restored.setCurrentPublicationJobId(current.getCurrentPublicationJobId());
-        restored.setVisibility(current.getVisibility());
         restored.setContentUpdatedAt(Instant.now());
         restoreTags(restored, parsedSnapshot);
         restoreQaPairs(restored, parsedSnapshot);

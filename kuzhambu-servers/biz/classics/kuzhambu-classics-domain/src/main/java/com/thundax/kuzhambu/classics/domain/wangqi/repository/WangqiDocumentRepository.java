@@ -12,10 +12,9 @@ public interface WangqiDocumentRepository {
 
     WangqiDocument getById(WangqiDocumentId id);
 
-    PageResult<WangqiDocument> page(
-            String keyword, String visibility, SortDirection sortDirection, int pageNo, int pageSize);
+    PageResult<WangqiDocument> page(String keyword, SortDirection sortDirection, int pageNo, int pageSize);
 
-    List<WangqiDocument> listTimeline(String keyword, String visibility, SortDirection sortDirection);
+    List<WangqiDocument> listTimeline(String keyword, SortDirection sortDirection);
 
     List<WangqiDocumentEvent> listEvents(List<WangqiDocumentId> documentIds);
 
@@ -26,8 +25,6 @@ public interface WangqiDocumentRepository {
     int updateRestoredVersion(WangqiDocument document);
 
     int updateStorageObjectId(WangqiDocumentId id, StorageObjectId storageObjectId);
-
-    int updateVisibility(WangqiDocumentId id, String visibility);
 
     int deleteByDocumentId(WangqiDocumentId id);
 

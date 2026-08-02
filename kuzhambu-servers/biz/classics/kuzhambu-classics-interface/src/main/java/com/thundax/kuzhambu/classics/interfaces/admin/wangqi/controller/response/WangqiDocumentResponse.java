@@ -44,9 +44,6 @@ public class WangqiDocumentResponse implements Serializable {
     @JsonProperty("currentPublicationJobId")
     private Long currentPublicationJobId;
 
-    @JsonProperty("visibility")
-    private String visibility;
-
     @JsonProperty("events")
     private List<WangqiDocumentEventResponse> events;
 }
