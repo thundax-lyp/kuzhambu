@@ -144,6 +144,22 @@ describe("ming customs service request contracts", () => {
         expectLastCall("POST", "/classics/ming-customs/delete", {
             id: "500000000001"
         });
+
+        await service.publish({ id: "500000000001" });
+        expectLastCall("POST", "/classics/ming-customs/publish", { id: "500000000001" });
+
+        await service.submitOffline({ id: "500000000001" });
+        expectLastCall("POST", "/classics/ming-customs/offline", { id: "500000000001" });
+
+        await service.publishBatch({ ids: ["500000000001", "500000000002"] });
+        expectLastCall("POST", "/classics/ming-customs/batch/publish", {
+            ids: ["500000000001", "500000000002"]
+        });
+
+        await service.submitOfflineBatch({ ids: ["500000000001", "500000000002"] });
+        expectLastCall("POST", "/classics/ming-customs/batch/offline", {
+            ids: ["500000000001", "500000000002"]
+        });
     });
 
     it("sends ming customs option and keyword cloud requests", async () => {
