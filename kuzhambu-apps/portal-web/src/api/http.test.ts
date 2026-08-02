@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildApiUrl, getJson, postJson, postJsonWithAccessToken } from "./http";
+import { buildApiUrl, getJson, postJson } from "./http";
 
 describe("portal web http utilities", () => {
     afterEach(() => {
@@ -26,7 +26,7 @@ describe("portal web http utilities", () => {
                         code: "COMMON-00000",
                         data: {
                             id: 10001,
-                            title: "公开分享"
+                            title: "三才条目"
                         },
                         message: "ok"
                     }),
@@ -39,16 +39,16 @@ describe("portal web http utilities", () => {
                 )
         );
 
-        const data = await getJson<{ id: number; title: string }>("/portal/classics/shares", {
+        const data = await getJson<{ id: number; title: string }>("/portal/classics/sancai", {
             pageNo: 1
         });
 
         expect(data).toEqual({
             id: 10001,
-            title: "公开分享"
+            title: "三才条目"
         });
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/kuzhambu-api/api/portal/classics/shares?pageNo=1",
+            "/kuzhambu-api/api/portal/classics/sancai?pageNo=1",
             {
                 headers: {
                     Accept: "application/json"
@@ -63,7 +63,7 @@ describe("portal web http utilities", () => {
             async () => new Response("error", { status: 500 })
         );
 
-        await expect(getJson("/portal/classics/shares", {})).rejects.toThrow(
+        await expect(getJson("/portal/classics/sancai", {})).rejects.toThrow(
             "Portal API request failed"
         );
     });
@@ -106,51 +106,6 @@ describe("portal web http utilities", () => {
                 }),
                 headers: {
                     Accept: "application/json",
-                    "Content-Type": "application/json"
-                },
-                method: "POST"
-            }
-        );
-    });
-
-    it("postJsonWithAccessToken sends access token header", async () => {
-        vi.spyOn(globalThis, "fetch").mockImplementation(
-            async () =>
-                new Response(
-                    JSON.stringify({
-                        code: "COMMON-00000",
-                        data: {
-                            visibility: "PRIVATE"
-                        },
-                        message: "ok"
-                    }),
-                    {
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        status: 200
-                    }
-                )
-        );
-
-        const data = await postJsonWithAccessToken<{ visibility: string }, { shareToken: string }>(
-            "/portal/classics/private-shares/get",
-            { shareToken: "private-token" },
-            "access-token"
-        );
-
-        expect(data).toEqual({
-            visibility: "PRIVATE"
-        });
-        expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/kuzhambu-api/api/portal/classics/private-shares/get",
-            {
-                body: JSON.stringify({
-                    shareToken: "private-token"
-                }),
-                headers: {
-                    Accept: "application/json",
-                    "Access-Token": "access-token",
                     "Content-Type": "application/json"
                 },
                 method: "POST"

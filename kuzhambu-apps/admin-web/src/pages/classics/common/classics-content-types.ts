@@ -2,10 +2,9 @@ import type { AiCandidateApplyPayload } from "./ai-candidate-types";
 
 export type ClassicsContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS" | string;
 export type ClassicsContentVisibility = "PRIVATE" | "PUBLIC";
-export type ClassicsContentPermissionAction = "edit" | "export" | "share";
+export type ClassicsContentPermissionAction = "edit" | "export";
 
 export const CLASSICS_CONTENT_EXPORT_PERMISSION = "classics:content:export";
-export const CLASSICS_SHARING_EDIT_PERMISSION = "classics:sharing:edit";
 
 const CLASSICS_CONTENT_VIEW_PERMISSIONS: Record<string, string> = {
     MING_CUSTOMS: "classics:mingcustoms:view",
@@ -35,11 +34,7 @@ export const hasClassicsContentPermission = (
         return false;
     }
 
-    if (action === "export") {
-        return hasPermission(CLASSICS_CONTENT_EXPORT_PERMISSION);
-    }
-
-    return hasPermission(CLASSICS_SHARING_EDIT_PERMISSION);
+    return hasPermission(CLASSICS_CONTENT_EXPORT_PERMISSION);
 };
 
 export interface ClassicsContentRef {

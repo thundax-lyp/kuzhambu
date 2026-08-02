@@ -173,7 +173,6 @@ interface TrendPanelProps {
 interface DashboardPermissionCapabilities {
     canViewDashboard: boolean;
     canViewClassicsContentSummary: boolean;
-    canViewClassicsSharingSummary: boolean;
     canViewDiscoverySearchSummary: boolean;
     canViewDiscoveryQaSummary: boolean;
     canViewAiInvocationSummary: boolean;
@@ -253,7 +252,6 @@ export const OperationsDashboardPage = () => {
     const canViewDashboard = permissions.canViewDashboard;
     const canViewHealthPage = permissions.canViewHealthSummary;
     const canViewClassicsContentSummary = permissions.canViewClassicsContentSummary;
-    const canViewClassicsSharingSummary = permissions.canViewClassicsSharingSummary;
     const canManageHealthAlert = permissions.canManageHealthAlert;
     const canViewDiscoverySearchSummary = permissions.canViewDiscoverySearchSummary;
     const canViewDiscoveryQaSummary = permissions.canViewDiscoveryQaSummary;
@@ -413,8 +411,7 @@ export const OperationsDashboardPage = () => {
             : null,
         canViewClassicsContentSummary
             ? `图像就绪 ${formatNumber(overview?.imageReadyContentCount)}`
-            : null,
-        canViewClassicsSharingSummary ? `分享访问 ${formatNumber(overview?.shareVisitCount)}` : null
+            : null
     ]
         .filter((text): text is string => text != null)
         .join("，");
@@ -873,7 +870,6 @@ const resolveDashboardPermissionCapabilities = (): DashboardPermissionCapabiliti
         hasPermission("classics:sancai:view") ||
         hasPermission("classics:wangqi:view") ||
         hasPermission("classics:mingcustoms:view") ||
-        hasPermission("classics:sharing:view") ||
         hasPermission("discovery:search:view") ||
         hasPermission("discovery:qa:view") ||
         hasPermission("ai:invocation:view") ||
@@ -888,7 +884,6 @@ const resolveDashboardPermissionCapabilities = (): DashboardPermissionCapabiliti
             hasPermission("classics:sancai:view") ||
             hasPermission("classics:wangqi:view") ||
             hasPermission("classics:mingcustoms:view"),
-        canViewClassicsSharingSummary: hasPermission("classics:sharing:view"),
         canViewDiscoverySearchSummary: hasPermission("discovery:search:view"),
         canViewDiscoveryQaSummary: hasPermission("discovery:qa:view"),
         canViewAiInvocationSummary: hasPermission("ai:invocation:view"),

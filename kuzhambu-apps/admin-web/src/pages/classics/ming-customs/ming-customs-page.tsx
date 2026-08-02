@@ -8,7 +8,6 @@ import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-
 import type { AiRefinementTaskCapability } from "@/pages/classics/common/ai-refinement-task-types";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
-import * as shareService from "@/pages/classics/common/classics-share-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import {
     hasClassicsContentPermission,
@@ -161,9 +160,6 @@ export const MingCustomsPage = () => {
         {}
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
-    const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
-        null
-    );
     const [batchVisibilityResult, setBatchVisibilityResult] =
         useState<ClassicsBatchOperationRecord | null>(null);
     const [publicationBatchResult, setPublicationBatchResult] =
@@ -279,7 +275,6 @@ export const MingCustomsPage = () => {
             ),
         [records, selectedEntryIds]
     );
-    const canShareEntries = hasClassicsContentPermission("MING_CUSTOMS", "share", hasPermission);
     const canExportEntries = hasClassicsContentPermission("MING_CUSTOMS", "export", hasPermission);
     const canChangeEntryVisibility = hasClassicsContentPermission(
         "MING_CUSTOMS",
@@ -388,32 +383,6 @@ export const MingCustomsPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "批量发布状态变更失败");
-        }
-    });
-    const shareMutation = useMutation({
-        mutationFn: shareService.create,
-        onSuccess: (share) => {
-            if (typeof navigator.clipboard?.writeText === "function") {
-                void navigator.clipboard.writeText(share.shareUrl);
-                messageApi.success("分享链接已复制");
-                return;
-            }
-            messageApi.success(`分享链接：${share.shareUrl}`);
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "分享创建失败");
-        }
-    });
-    const batchShareMutation = useMutation({
-        mutationFn: shareService.createBatch,
-        onSuccess: (result) => {
-            setBatchShareResult(result);
-            messageApi.success(
-                `批量分享完成：成功 ${result.successCount}，失败 ${result.failureCount}`
-            );
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "批量分享创建失败");
         }
     });
     const batchVisibilityMutation = useMutation({
@@ -634,44 +603,6 @@ export const MingCustomsPage = () => {
         });
     };
 
-    const shareEntry = (entry: MingCustomsRecord) => {
-        if (!canShareEntries) {
-            messageApi.warning("当前账号缺少明代习俗分享权限");
-            return;
-        }
-        const title = entry.title?.trim() || `条目 ${entry.id}`;
-        shareMutation.mutate({
-            targets: [
-                {
-                    contentId: entry.id,
-                    contentType: "MING_CUSTOMS"
-                }
-            ],
-            title: `${title} 分享`,
-            visibility: "PUBLIC"
-        });
-    };
-    const shareSelectedEntries = () => {
-        if (!canShareEntries) {
-            messageApi.warning("当前账号缺少明代习俗分享权限");
-            return;
-        }
-        if (!selectedEntries.length) {
-            messageApi.warning("请先选择当前页要批量分享的明代习俗");
-            return;
-        }
-        batchShareMutation.mutate({
-            privateContentConfirmed: false,
-            status: "ACTIVE",
-            targets: selectedEntries.map((entry) => ({
-                contentId: entry.id,
-                contentType: "MING_CUSTOMS"
-            })),
-            titlePrefix: "明代习俗批量分享 - ",
-            visibility: "PUBLIC"
-        });
-    };
-
     const changeSelectedVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
         if (!canChangeEntryVisibility) {
             messageApi.warning("当前账号缺少明代习俗编辑权限");
@@ -807,12 +738,10 @@ export const MingCustomsPage = () => {
                             openExportJobs={exportJobsDrawerOpen}
                         />
                         <MingCustomsTable
-                            batchShareResult={batchShareResult}
                             batchVisibilityResult={batchVisibilityResult}
                             publicationBatchResult={publicationBatchResult}
                             canChangeEntryVisibility={canChangeEntryVisibility}
                             canExport={canExportEntries}
-                            canShare={canShareEntries}
                             categoryLabels={categoryLabels}
                             loading={mingCustomsQuery.isLoading}
                             dataSource={records}
@@ -829,8 +758,6 @@ export const MingCustomsPage = () => {
                                     scopeKey: currentPageSelectionScopeKey
                                 })
                             }
-                            onShare={shareEntry}
-                            onShareSelectedEntries={shareSelectedEntries}
                             pagination={{
                                 current: currentPageNo,
                                 pageSize: currentPageSize,
@@ -843,7 +770,6 @@ export const MingCustomsPage = () => {
                                     }))
                             }}
                             selectedEntryIds={selectedEntryIds}
-                            sharing={batchShareMutation.isPending}
                             publicationChanging={
                                 publicationMutation.isPending || publicationBatchMutation.isPending
                             }

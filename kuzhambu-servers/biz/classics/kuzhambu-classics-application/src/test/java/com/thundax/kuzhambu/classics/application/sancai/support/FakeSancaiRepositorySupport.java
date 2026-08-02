@@ -35,6 +35,12 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
     }
 
     @Override
+    public List<SancaiCategoryOverview> listCategoryRepresentativeOverviewsByEntryIds(
+            List<Long> entryIds, SortDirection sortDirection) {
+        return List.of();
+    }
+
+    @Override
     public int maxCategoryPriority() {
         return 0;
     }
@@ -101,6 +107,11 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
 
     @Override
     public List<SancaiEntry> listEntriesByVolumeId(SancaiVolumeId volumeId, SortDirection sortDirection) {
+        return List.of();
+    }
+
+    @Override
+    public List<SancaiEntry> listEntriesByIds(List<SancaiEntryId> ids) {
         return List.of();
     }
 

@@ -9,8 +9,6 @@ import { KnowledgeAtlasPage } from "@/pages/knowledge/atlas/atlas-page";
 import { KnowledgeHomePage } from "@/pages/knowledge/home/home-page";
 import { KnowledgeLineagePage } from "@/pages/knowledge/lineage/lineage-page";
 import { KnowledgeQualityPage } from "@/pages/knowledge/quality/quality-page";
-import { ShareDetailPage } from "@/pages/share-detail/share-detail-page";
-import { ShareListPage } from "@/pages/share-list/share-list-page";
 
 import "./styles.css";
 import "@/components/portal-shared.css";
@@ -18,7 +16,6 @@ import "@/components/portal-shared-responsive.css";
 import "@/pages/discovery/qa/qa-page.css";
 import "@/pages/discovery/search/search-page.css";
 import "@/pages/knowledge/knowledge-shell.css";
-import "@/pages/share-detail/share-detail-page.css";
 
 const normalizeRouterBasename = (baseUrl: string) => {
     const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
@@ -39,8 +36,6 @@ export const App = () => {
                     <Route path="/discovery/search" element={<DiscoverySearchPage />} />
                     <Route path="/discovery/search-item" element={<DiscoverySearchItemPage />} />
                     <Route path="/discovery/qa" element={<DiscoveryQaPage />} />
-                    <Route path="/shares" element={<ShareListPage />} />
-                    <Route path="/share/:shareToken" element={<ShareDetailPage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

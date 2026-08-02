@@ -25,9 +25,6 @@ classics_sancai_entry_image
 classics_sancai_showcase
 classics_sancai_visual_asset
 classics_sancai_volume
-classics_share_access_record
-classics_share_link
-classics_share_target
 classics_wangqi_document
 discovery_qa_message
 discovery_qa_message_source

@@ -28,7 +28,6 @@ import type {
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import * as shareService from "@/pages/classics/common/classics-share-service";
 import {
     hasClassicsContentPermission,
     type ClassicsBatchOperationRecord
@@ -214,9 +213,6 @@ export const WangqiPage = () => {
         {}
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
-    const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
-        null
-    );
     const [batchVisibilityResult, setBatchVisibilityResult] =
         useState<ClassicsBatchOperationRecord | null>(null);
     const [publicationBatchResult, setPublicationBatchResult] =
@@ -363,11 +359,6 @@ export const WangqiPage = () => {
                 (record) => record.id != null && selectedDocumentIds.includes(String(record.id))
             ),
         [records, selectedDocumentIds]
-    );
-    const canShareDocuments = hasClassicsContentPermission(
-        "WANGQI_DOCUMENT",
-        "share",
-        hasPermission
     );
     const canChangeDocumentVisibility = hasClassicsContentPermission(
         "WANGQI_DOCUMENT",
@@ -536,32 +527,6 @@ export const WangqiPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "版本恢复失败");
-        }
-    });
-    const shareDocumentMutation = useMutation({
-        mutationFn: shareService.create,
-        onSuccess: (share) => {
-            if (typeof navigator.clipboard?.writeText === "function") {
-                void navigator.clipboard.writeText(share.shareUrl);
-                messageApi.success("分享链接已复制");
-                return;
-            }
-            messageApi.success(`分享链接：${share.shareUrl}`);
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "分享创建失败");
-        }
-    });
-    const batchShareMutation = useMutation({
-        mutationFn: shareService.createBatch,
-        onSuccess: (result) => {
-            setBatchShareResult(result);
-            messageApi.success(
-                `批量分享完成：成功 ${result.successCount}，失败 ${result.failureCount}`
-            );
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "批量分享创建失败");
         }
     });
     const batchVisibilityMutation = useMutation({
@@ -797,45 +762,6 @@ export const WangqiPage = () => {
         });
     };
 
-    const shareDocument = (document: WangqiDocumentRecord) => {
-        if (!canShareDocuments) {
-            messageApi.warning("当前账号缺少王圻文档分享权限");
-            return;
-        }
-        const title = readDocumentTitle(document);
-        shareDocumentMutation.mutate({
-            targets: [
-                {
-                    contentId: document.id,
-                    contentType: "WANGQI_DOCUMENT"
-                }
-            ],
-            title: `${title} 分享`,
-            visibility: "PUBLIC"
-        });
-    };
-
-    const shareSelectedDocuments = () => {
-        if (!canShareDocuments) {
-            messageApi.warning("当前账号缺少王圻文档分享权限");
-            return;
-        }
-        if (!selectedDocuments.length) {
-            messageApi.warning("请先选择要批量分享的王圻文档");
-            return;
-        }
-        batchShareMutation.mutate({
-            privateContentConfirmed: false,
-            status: "ACTIVE",
-            targets: selectedDocuments.map((document) => ({
-                contentId: document.id,
-                contentType: "WANGQI_DOCUMENT"
-            })),
-            titlePrefix: "王圻批量分享 - ",
-            visibility: "PUBLIC"
-        });
-    };
-
     const changeSelectedVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
         if (!canChangeDocumentVisibility) {
             messageApi.warning("当前账号缺少王圻文档编辑权限");
@@ -1016,10 +942,7 @@ export const WangqiPage = () => {
                     onReset={resetFilters}
                 />
                 <div className="wangqi-document-panel">
-                    <WangqiDocumentBatchResults
-                        batchShareResult={batchShareResult}
-                        batchVisibilityResult={batchVisibilityResult}
-                    />
+                    <WangqiDocumentBatchResults batchVisibilityResult={batchVisibilityResult} />
                     {publicationBatchResult ? (
                         <KuzhambuAlert
                             showIcon
@@ -1034,8 +957,6 @@ export const WangqiPage = () => {
                     <WangqiDocumentTable
                         canChangeDocumentVisibility={canChangeDocumentVisibility}
                         canExport={canExportDocuments}
-                        canShare={canShareDocuments}
-                        isBatchSharing={batchShareMutation.isPending}
                         isBatchVisibilityChanging={batchVisibilityMutation.isPending}
                         isPublicationChanging={
                             publicationMutation.isPending || publicationBatchMutation.isPending
@@ -1049,8 +970,6 @@ export const WangqiPage = () => {
                         onOpenBatchCandidateDrawer={openBatchCandidateDrawer}
                         onPublicationAction={changePublicationStatus}
                         onPublicationBatch={changePublicationStatusBatch}
-                        onShare={shareDocument}
-                        onShareSelectedDocuments={shareSelectedDocuments}
                         onSelectedDocumentIdsChange={setSelectedDocumentIds}
                         onSortDirectionChange={sortWangqiDocuments}
                         pagination={{

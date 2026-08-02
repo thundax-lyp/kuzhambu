@@ -9,7 +9,7 @@ class SpringSecurityConfigurationTest {
     @Test
     void publicApiPathTemplateShouldBeAntMatcherCompatible() {
         assertEquals(
-                "/api/portal/classics/shares/*",
-                SpringSecurityConfiguration.normalizePublicApiPath("/api/portal/classics/shares/{shareToken}"));
+                "/api/portal/classics/sancai/*",
+                SpringSecurityConfiguration.normalizePublicApiPath("/api/portal/classics/sancai/{entryId}"));
     }
 }

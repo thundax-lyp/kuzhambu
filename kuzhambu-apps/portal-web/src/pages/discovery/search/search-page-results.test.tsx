@@ -120,7 +120,7 @@ describe("DiscoverySearchPage", () => {
                             permissionDebugTrace: "DO_NOT_RENDER_ITEM_TRACE",
                             resultRank: 1,
                             summary: "礼器条目摘要",
-                            targetPath: "/shares/1001",
+                            targetPath: "/classics/sancai?entryId=1001",
                             title: "礼器条目"
                         }
                     ]
@@ -137,7 +137,8 @@ describe("DiscoverySearchPage", () => {
                             groupRank: 1,
                             resultRank: 2,
                             summary: "王圻文档中的礼器线索",
-                            targetPath: "/shares/1002",
+                            targetPath:
+                                "/discovery/search-item?contentType=WANGQI_DOCUMENT&contentId=1002",
                             title: "王圻礼器"
                         }
                     ]
@@ -215,7 +216,7 @@ describe("DiscoverySearchPage", () => {
             resultGroupKey: "SANCAI_ENTRY",
             resultRank: 1,
             searchEventId: "9001",
-            targetPath: "/shares/1001"
+            targetPath: "/classics/sancai?entryId=1001"
         });
         expect(mocks.previewSearchResult).not.toHaveBeenCalled();
         expect(getLocation()).toBe("/discovery/search?q=%E7%A4%BC%E5%99%A8");

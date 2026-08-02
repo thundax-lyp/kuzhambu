@@ -275,29 +275,6 @@ const installFetchMock = () => {
                 changeSummary: "恢复历史版本 v1"
             });
         }
-        if (path.endsWith("/classics/shares/batch/create")) {
-            return apiResponse({
-                failureCount: 1,
-                failures: [
-                    {
-                        contentId: "500000000002",
-                        contentType: "MING_CUSTOMS",
-                        failureCode: "CONTENT_NOT_FOUND",
-                        failureReason: "习俗条目不存在",
-                        status: "FAILED"
-                    }
-                ],
-                successCount: 1,
-                successes: [
-                    {
-                        contentId: "500000000001",
-                        contentType: "MING_CUSTOMS",
-                        resultId: "9201",
-                        status: "ACTIVE"
-                    }
-                ]
-            });
-        }
         if (path.endsWith("/classics/content/visibility/change")) {
             return apiResponse({
                 failureCount: 1,
@@ -395,7 +372,6 @@ describe("MingCustomsPage", () => {
         replacePermissions([
             "classics:mingcustoms:view",
             "classics:mingcustoms:edit",
-            "classics:sharing:edit",
             "classics:content:export"
         ]);
         installFetchMock();
@@ -595,36 +571,6 @@ describe("MingCustomsPage", () => {
         expect(
             await screen.findByText("正文与原文摘录均为空，无法创建 AI 精修任务")
         ).toBeInTheDocument();
-    }, 30000);
-
-    it("creates batch shares from selected entries and shows item failures", async () => {
-        const user = userEvent.setup();
-
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <MingCustomsPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
-
-        const table = await screen.findByLabelText("明代习俗表格");
-        await waitForSelectableRow(table);
-        expect(screen.getByText("当前页已选 0 条")).toBeInTheDocument();
-        const batchShareButton = screen.getByTestId(
-            "classics-ming-customs-ming-customs-batch-share-button"
-        );
-        selectFirstRow(table);
-        await waitFor(() => {
-            expect(batchShareButton).not.toBeDisabled();
-            expect(screen.getByText("当前页已选 1 条")).toBeInTheDocument();
-        });
-        await user.click(batchShareButton);
-
-        await waitFor(() => {
-            expect(screen.getByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
-        });
-        expect(screen.getByText("MING_CUSTOMS#500000000002: 习俗条目不存在")).toBeInTheDocument();
     }, 30000);
 
     it("submits selected entries for batch publication", async () => {

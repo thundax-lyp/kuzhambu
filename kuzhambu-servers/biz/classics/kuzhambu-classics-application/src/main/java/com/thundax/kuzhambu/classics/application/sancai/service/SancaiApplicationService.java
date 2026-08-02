@@ -27,6 +27,8 @@ public interface SancaiApplicationService {
 
     List<SancaiCategoryOverview> listCategoryOverviews();
 
+    List<SancaiCategoryOverview> listPortalReadyCategoryOverviews();
+
     SancaiCategory getCategory(SancaiCategoryId id);
 
     SancaiCategoryId addCategory(SancaiCategoryCommand command);
@@ -53,7 +55,11 @@ public interface SancaiApplicationService {
 
     SancaiEntry getEntry(SancaiEntryId id);
 
+    boolean isPortalReadyEntry(SancaiEntryId id);
+
     PageResult<SancaiEntry> pageEntries(SancaiEntryPageQuery query, PageQuery page);
+
+    PageResult<SancaiEntry> pagePortalReadyEntries(SancaiEntryPageQuery query, PageQuery page);
 
     List<SancaiEntry> listEntries(SancaiEntryPageQuery query);
 

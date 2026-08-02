@@ -109,6 +109,53 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
+    public List<SancaiCategoryOverview> listCategoryRepresentativeOverviewsByEntryIds(
+            List<Long> entryIds, SortDirection sortDirection) {
+        if (entryIds == null || entryIds.isEmpty()) {
+            return List.of();
+        }
+        String representativeEntryIds = entryIds.stream()
+                .filter(Objects::nonNull)
+                .map(String::valueOf)
+                .distinct()
+                .collect(java.util.stream.Collectors.joining(","));
+        if (representativeEntryIds.isBlank()) {
+            return List.of();
+        }
+        String representativeEntryCondition = " AND e.id IN (" + representativeEntryIds + ")";
+        QueryWrapper<SancaiCategoryDO> wrapper = new QueryWrapper<>();
+        wrapper.select(
+                        "id AS categoryId",
+                        "0 AS publicEntryCount",
+                        "0 AS illustratedEntryCount",
+                        "(SELECT e.id FROM classics_sancai_entry e"
+                                + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
+                                + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
+                                + " WHERE v.category_id = classics_sancai_category.id"
+                                + representativeEntryCondition
+                                + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
+                                + " AS representativeEntryId",
+                        "(SELECT i.id FROM classics_sancai_entry e"
+                                + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
+                                + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
+                                + " WHERE v.category_id = classics_sancai_category.id"
+                                + representativeEntryCondition
+                                + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
+                                + " AS representativeImageId",
+                        "(SELECT COALESCE(i.title, e.title) FROM classics_sancai_entry e"
+                                + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
+                                + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
+                                + " WHERE v.category_id = classics_sancai_category.id"
+                                + representativeEntryCondition
+                                + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
+                                + " AS representativeImageTitle")
+                .orderBy(true, sortDirection != SortDirection.DESC, "priority");
+        return categoryMapper.selectMaps(wrapper).stream()
+                .map(SancaiRepositoryImpl::toCategoryOverview)
+                .toList();
+    }
+
+    @Override
     public int maxCategoryPriority() {
         return maxPriority(categoryMapper.selectObjs(new QueryWrapper<SancaiCategoryDO>().select("max(priority)")));
     }
@@ -207,6 +254,22 @@ public class SancaiRepositoryImpl implements SancaiRepository {
         wrapper.eq(volumeId != null, SancaiEntryDO::getVolumeId, SancaiVolumeIdCodec.toValue(volumeId));
         wrapper.orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryDO::getPriority);
         return SancaiPersistenceAssembler.toEntryDomainList(entryMapper.selectList(wrapper));
+    }
+
+    @Override
+    public List<SancaiEntry> listEntriesByIds(List<SancaiEntryId> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        List<Long> idValues = ids.stream()
+                .map(SancaiEntryIdCodec::toValue)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (idValues.isEmpty()) {
+            return List.of();
+        }
+        return SancaiPersistenceAssembler.toEntryDomainList(entryMapper.selectBatchIds(idValues));
     }
 
     @Override

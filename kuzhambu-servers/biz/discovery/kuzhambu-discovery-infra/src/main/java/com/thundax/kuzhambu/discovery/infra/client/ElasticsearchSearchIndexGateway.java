@@ -1,9 +1,17 @@
 package com.thundax.kuzhambu.discovery.infra.client;
 
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.json.JsonData;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.elasticsearch.support.ElasticsearchOperationsSupport;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCategoryAggregationResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationDocument;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
@@ -17,8 +25,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -32,6 +43,9 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
 
     private static final int HIGHLIGHT_CONTEXT_LENGTH = 60;
     private static final int FALLBACK_LENGTH = 160;
+    private static final int CATEGORY_AGGREGATION_BUCKET_SIZE = 1000;
+    private static final String READY_CATEGORY_AGGREGATION = "ready_categories";
+    private static final String REPRESENTATIVE_HIT_AGGREGATION = "representative_hit";
     private static final String PUBLIC_VISIBILITY = "PUBLIC";
     private static final String PUBLICATION_PREPARING = "PREPARING";
     private static final String PUBLICATION_READY = "READY";
@@ -76,8 +90,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     public SearchPreviewResult getPreview(String contentType, String contentId) {
         ElasticsearchOperations operations = requireOperations("preview");
         Criteria criteria = new Criteria("contentType").is(contentType).and(new Criteria("contentId").is(contentId));
-        criteria = appendPublicVisibilityFilter(criteria);
-        criteria = criteria.and(new Criteria("deleted").is(false));
+        criteria = appendReadyPublicationFilter(criteria);
         CriteriaQuery query = new CriteriaQuery(criteria);
         query.setPageable(PageRequest.of(0, 1));
         List<SearchHit<DiscoverySearchDocument>> hits = operations
@@ -245,6 +258,44 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         requireOperations("publication-delete").delete(documentId, indexCoordinates());
     }
 
+    @Override
+    public PageResult<SearchPublicationCandidateResult> pageReadyPublicationCandidates(
+            String contentType, String categoryId, String volumeId, String keyword, int pageNo, int pageSize) {
+        ElasticsearchOperations operations = requireOperations("publication-candidates");
+        Criteria criteria = buildPublicationCandidateCriteria(contentType, categoryId, volumeId, keyword);
+        CriteriaQuery query = new CriteriaQuery(criteria);
+        query.setPageable(PageRequest.of(Math.max(pageNo - 1, 0), pageSize));
+        SearchHits<DiscoverySearchDocument> searchHits =
+                operations.search(query, DiscoverySearchDocument.class, indexCoordinates());
+        List<SearchPublicationCandidateResult> records = searchHits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .filter(document -> document != null && document.getContentId() != null)
+                .map(document -> new SearchPublicationCandidateResult(
+                        document.getContentType(),
+                        document.getContentId(),
+                        document.getCategoryCode(),
+                        document.getVolumeId()))
+                .toList();
+        return PageResult.of(
+                pageNo, pageSize, ElasticsearchOperationsSupport.toIntTotalHits(searchHits.getTotalHits()), records);
+    }
+
+    @Override
+    public List<SearchPublicationCategoryAggregationResult> listReadyPublicationCategoryAggregations(
+            String contentType) {
+        ElasticsearchOperations operations = requireOperations("publication-category-aggregations");
+        NativeQuery query = NativeQuery.builder()
+                .withQuery(buildReadyPublicationNativeQuery(contentType))
+                .withAggregation(READY_CATEGORY_AGGREGATION, Aggregation.of(aggregation -> aggregation
+                        .terms(terms -> terms.field("categoryCode").size(CATEGORY_AGGREGATION_BUCKET_SIZE))
+                        .aggregations(REPRESENTATIVE_HIT_AGGREGATION, representativeHitAggregation())))
+                .withMaxResults(0)
+                .build();
+        SearchHits<DiscoverySearchDocument> searchHits =
+                operations.search(query, DiscoverySearchDocument.class, indexCoordinates());
+        return toCategoryAggregationResults(searchHits);
+    }
+
     private ElasticsearchOperations requireOperations(String operation) {
         return ElasticsearchOperationsSupport.requireOperations(
                 elasticsearchOperations, "Discovery search", operation, properties.getIndexName());
@@ -255,6 +306,74 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         return document != null
                 && java.util.Objects.equals(document.getContentVersionId(), contentVersionId)
                 && java.util.Objects.equals(document.getContentVersionNo(), contentVersionNo);
+    }
+
+    private Query buildReadyPublicationNativeQuery(String contentType) {
+        return Query.of(query -> query.bool(bool -> {
+            bool.filter(termQuery("publicationStatus", PUBLICATION_READY));
+            bool.filter(termQuery("deleted", false));
+            if (contentType != null && !contentType.isBlank()) {
+                bool.filter(termQuery("contentType", contentType));
+            }
+            return bool;
+        }));
+    }
+
+    private Query termQuery(String fieldName, String value) {
+        return Query.of(query -> query.term(term -> term.field(fieldName).value(value)));
+    }
+
+    private Query termQuery(String fieldName, boolean value) {
+        return Query.of(query -> query.term(term -> term.field(fieldName).value(value)));
+    }
+
+    private Aggregation representativeHitAggregation() {
+        return Aggregation.of(aggregation -> aggregation.topHits(
+                topHits -> topHits.size(1).source(source -> source.filter(filter -> filter.includes("contentId")))));
+    }
+
+    private List<SearchPublicationCategoryAggregationResult> toCategoryAggregationResults(
+            SearchHits<DiscoverySearchDocument> searchHits) {
+        if (searchHits == null || !(searchHits.getAggregations() instanceof ElasticsearchAggregations aggregations)) {
+            return List.of();
+        }
+        var categoryAggregation = aggregations.get(READY_CATEGORY_AGGREGATION);
+        Aggregate aggregate = categoryAggregation == null
+                ? null
+                : categoryAggregation.aggregation().getAggregate();
+        if (aggregate == null || !aggregate.isSterms()) {
+            return List.of();
+        }
+        return aggregate.sterms().buckets().array().stream()
+                .filter(Objects::nonNull)
+                .map(this::toCategoryAggregationResult)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private SearchPublicationCategoryAggregationResult toCategoryAggregationResult(StringTermsBucket bucket) {
+        if (bucket.key() == null || !bucket.key().isString()) {
+            return null;
+        }
+        return new SearchPublicationCategoryAggregationResult(
+                bucket.key().stringValue(), bucket.docCount(), representativeContentId(bucket));
+    }
+
+    private String representativeContentId(StringTermsBucket bucket) {
+        Aggregate aggregate = bucket.aggregations().get(REPRESENTATIVE_HIT_AGGREGATION);
+        if (aggregate == null || !aggregate.isTopHits()) {
+            return null;
+        }
+        var hits = aggregate.topHits().hits();
+        if (hits == null || hits.hits() == null || hits.hits().isEmpty()) {
+            return null;
+        }
+        JsonData source = hits.hits().get(0).source();
+        if (source == null) {
+            return null;
+        }
+        Object contentId = source.to(Map.class).get("contentId");
+        return contentId == null ? null : String.valueOf(contentId);
     }
 
     private String joinTextSegments(List<String> textSegments) {
@@ -330,15 +449,13 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     private Criteria buildCriteria(String keyword, SearchScope searchScope) {
         Criteria criteria = baseKeywordCriteria(keyword);
         if (searchScope == null) {
-            criteria = appendPublicVisibilityFilter(criteria);
-            return criteria.and(new Criteria("deleted").is(false));
+            return appendReadyPublicationFilter(criteria);
         }
         criteria = appendInFilter(criteria, "knowledgeBase", searchScope.getKnowledgeBases());
         criteria = appendInFilter(criteria, "categoryCode", searchScope.getCategoryCodes());
         criteria = appendInFilter(criteria, "tagNames", searchScope.getTagNames());
         criteria = appendInFilter(criteria, "status", searchScope.getContentStatuses());
-        criteria = appendPublicVisibilityFilter(criteria);
-        criteria = criteria.and(new Criteria("deleted").is(false));
+        criteria = appendReadyPublicationFilter(criteria);
         if (searchScope.getDateFrom() != null) {
             criteria = criteria.and(new Criteria("updatedAt").greaterThanEqual(searchScope.getDateFrom()));
         }
@@ -371,6 +488,27 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
 
     private Criteria appendPublicVisibilityFilter(Criteria criteria) {
         return criteria.and(new Criteria("visibility").is(PUBLIC_VISIBILITY));
+    }
+
+    private Criteria appendReadyPublicationFilter(Criteria criteria) {
+        return criteria.and(new Criteria("publicationStatus").is(PUBLICATION_READY))
+                .and(new Criteria("deleted").is(false));
+    }
+
+    private Criteria buildPublicationCandidateCriteria(
+            String contentType, String categoryId, String volumeId, String keyword) {
+        Criteria criteria = baseKeywordCriteria(keyword);
+        criteria = appendReadyPublicationFilter(criteria);
+        if (contentType != null && !contentType.isBlank()) {
+            criteria = criteria.and(new Criteria("contentType").is(contentType));
+        }
+        if (categoryId != null && !categoryId.isBlank()) {
+            criteria = criteria.and(new Criteria("categoryCode").is(categoryId));
+        }
+        if (volumeId != null && !volumeId.isBlank()) {
+            criteria = criteria.and(new Criteria("volumeId").is(volumeId));
+        }
+        return criteria;
     }
 
     private List<SearchGroupResult> toGroupedResults(List<SearchHit<DiscoverySearchDocument>> hits, String keyword) {

@@ -127,26 +127,3 @@ export const postEventStream = async <P extends object = object>(
         reader.releaseLock();
     }
 };
-
-export const postJsonWithAccessToken = async <T, P extends object = object>(
-    path: string,
-    body: P,
-    accessToken: string
-) => {
-    const response = await fetch(buildApiUrl(path), {
-        body: JSON.stringify(body),
-        headers: {
-            Accept: "application/json",
-            "Access-Token": accessToken,
-            "Content-Type": "application/json"
-        },
-        method: "POST"
-    });
-
-    if (!response.ok) {
-        throw new Error(`Portal API request failed: ${response.status}`);
-    }
-
-    const payload = (await response.json()) as ApiResponse<T>;
-    return payload.data as T;
-};

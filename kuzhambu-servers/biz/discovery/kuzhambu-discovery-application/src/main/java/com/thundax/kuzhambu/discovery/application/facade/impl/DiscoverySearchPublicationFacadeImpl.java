@@ -3,9 +3,14 @@ package com.thundax.kuzhambu.discovery.application.facade.impl;
 import com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoverySearchPublicationFacadeAssembler;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchPublicationApplicationService;
 import com.thundax.kuzhambu.discovery.facade.DiscoverySearchPublicationFacade;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCandidatePageFacadeRequest;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCategoryAggregationFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationPrepareFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationReferenceFacadeRequest;
+import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCandidatePageFacadeResponse;
+import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCategoryAggregationFacadeResponse;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationProbeFacadeResponse;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -46,5 +51,20 @@ public class DiscoverySearchPublicationFacadeImpl implements DiscoverySearchPubl
             DiscoverySearchPublicationReferenceFacadeRequest request) {
         return assembler.toProbeResponse(
                 searchPublicationApplicationService.probe(assembler.toReferenceCommand(request)));
+    }
+
+    @Override
+    public DiscoverySearchPublicationCandidatePageFacadeResponse pageReadyCandidates(
+            DiscoverySearchPublicationCandidatePageFacadeRequest request) {
+        return assembler.toCandidatePageResponse(
+                searchPublicationApplicationService.pageReadyCandidates(assembler.toCandidatePageQuery(request)));
+    }
+
+    @Override
+    public List<DiscoverySearchPublicationCategoryAggregationFacadeResponse> listReadyCandidateCategoryAggregations(
+            DiscoverySearchPublicationCategoryAggregationFacadeRequest request) {
+        return assembler.toCategoryAggregationResponses(
+                searchPublicationApplicationService.listReadyCandidateCategoryAggregations(
+                        assembler.toCategoryAggregationQuery(request)));
     }
 }

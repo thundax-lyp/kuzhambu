@@ -817,8 +817,8 @@ flowchart TD
 | --- | --- | ---: | --- |
 | 1. Foundation | `COMPLETE` | 100-170 | contracts/static checks and full Java checks |
 | 2. External systems and job core | `COMPLETE` | 80-150 | full Java checks |
-| 3. Runtime and Admin | `PENDING` | 100-180 | full Java and admin-web checks |
-| 4. Portal cutover and sharing frontend removal | `PENDING` | 50-100 | full Java/frontend checks and sharing residue scans |
+| 3. Runtime and Admin | `COMPLETE` | 100-180 | full Java and admin-web checks |
+| 4. Portal cutover and sharing frontend removal | `COMPLETE` | 50-100 | full Java/frontend checks and sharing residue scans |
 | 5. Publication visibility and legacy MQ removal | `PENDING` | 90-170 | full Java/frontend checks and legacy residue scans |
 | 6. Database reset and smoke | `PENDING` | 20-60 | full checks plus runtime smoke |
 
@@ -827,99 +827,8 @@ flowchart TD
 
 ## Stage File Manifest
 
-以下是必查路径，不是允许忽略 `rg` 新命中的白名单。
-
-### Stage 1
-
-Delete:
-
-```text
-kuzhambu-servers/biz/classics/**/sharing/**
-kuzhambu-servers/biz/classics/**/*Sharing*
-kuzhambu-servers/biz/classics/**/*Share*
-```
-
-Add or modify:
-
-```text
-docs/20-interfaces/CLASSICS-PUBLICATION-INTERFACE.md
-kuzhambu-servers/biz/classics/kuzhambu-classics-domain/**/publication/**
-kuzhambu-servers/biz/classics/kuzhambu-classics-infra/**/publication/**
-kuzhambu-servers/biz/classics/**/sancai/**
-kuzhambu-servers/biz/classics/**/wangqi/**
-kuzhambu-servers/biz/classics/**/mingcustoms/**
-kuzhambu-servers/biz/classics/**/pom.xml
-```
-
-Required tests:
-
-```text
-ClassicsPublicationJob*Test
-ClassicsPublicationRepository*Test
-Classics*PersistenceMappingTest
-```
-
-### Stage 2
-
-Add or modify:
-
-```text
-kuzhambu-servers/biz/discovery/kuzhambu-discovery-facade/**
-kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/**/search/**
-kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/**/ElasticsearchSearchIndexGateway*
-kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/**/DiscoverySearchDocument*
-kuzhambu-servers/common/kuzhambu-common-knowledge/**
-kuzhambu-servers/biz/classics/kuzhambu-classics-application/**/publication/**
-kuzhambu-servers/biz/classics/**/pom.xml
-```
-
-Required tests:
-
-```text
-DiscoverySearchPublicationFacade*Test
-ElasticsearchSearchIndexGateway*Test
-FastGptKnowledgeBaseClientTest
-ClassicsPublicationStateMachineTest
-ClassicsPublicationStepExecutorTest
-ClassicsPublicationApplicationService*Test
-```
-
-### Stage 3
-
-Add or modify:
-
-```text
-kuzhambu-servers/biz/classics/kuzhambu-classics-application/**/publication/scheduler/**
-kuzhambu-servers/biz/classics/kuzhambu-classics-application/**/publication/configure/**
-kuzhambu-servers/biz/classics/kuzhambu-classics-interface/**/publication/**
-kuzhambu-servers/biz/classics/**/sancai/**
-kuzhambu-servers/biz/classics/**/wangqi/**
-kuzhambu-servers/biz/classics/**/mingcustoms/**
-kuzhambu-servers/starter/kuzhambu-admin-starter/**
-kuzhambu-servers/starter/kuzhambu-portal-starter/**
-kuzhambu-apps/admin-web/src/pages/classics/publication-jobs/**
-kuzhambu-apps/admin-web/src/pages/classics/sancai/**
-kuzhambu-apps/admin-web/src/pages/classics/wangqi/**
-kuzhambu-apps/admin-web/src/pages/classics/ming-customs/**
-kuzhambu-apps/admin-web/src/router/**
-.env.example
-deploy/.env.example
-```
-
-Required tests:
-
-```text
-ClassicsPublicationDispatchSchedulerTest
-ClassicsPublicationSuccessReconcileSchedulerTest
-ClassicsPublicationFailureReconcileSchedulerTest
-ClassicsPublicationEsCleanupSchedulerTest
-ClassicsPublicationFastGptCleanupSchedulerTest
-ClassicsPublicationWriteGuardTest
-ClassicsPublicationAdminControllerTest
-publication-jobs page/service tests
-admin starter scheduling ownership test
-portal starter scheduling exclusion test
-```
+以下仅保留 Stage 4-6 的必查路径。Stage 1-3 已按完成摘要收口，
+不再保留历史清单；这不是允许忽略 `rg` 新命中的白名单。
 
 ### Stage 4
 
@@ -1003,209 +912,37 @@ Status: COMPLETE
 
 Status: COMPLETE
 
-- Branch: `feature/classics-publication-stage-2-job-core`
-- Base: `origin/main` at `d6af806b0`
 - Functional commits: `d862d7a1f^..05c7e8a52`
-- Delivery PR: `#194`
-- Result:
-  - Discovery 提供 `PREPARING/READY/OFFLINE` 全量覆盖、物理删除和探测能力，
-    `_id` 固定为 `contentType:contentId`。
-  - FastGPT client 支持 virtual collection、`forbid` enable/disable、分页清空、
-    200 条分批写入、探测和删除；Classics gateway 始终执行 collection 全量替换。
-  - `ClassicsPublicationContent` 是发布领域使用的稿件实体视图；job 创建事务完成
-    稿件优先行锁、状态校验、旧 job 替换、外部引用继承和 transition 回填。
-    batch 逐稿件使用独立事务，page/detail 可按结果状态和当前步骤定位失败点。
-  - snapshot bind 在同一本地事务内完成正式版本、稿件 version marker、payload
-    校验和 milestone；payload 的 `searchDocument` 是 ES 写入对象。
-  - FastGPT 新 collection ID 在清空和写入前写回 job，切片失败后重试复用该引用；
-    ES 字段、标签去重和 FastGPT fragment 顺序确定。
-  - 纯状态机和单切片 executor 已覆盖发布、下线及最终稿件状态回填；远端调用
-    不持有本地事务，milestone 使用 execution token 条件推进。
-- Verification:
-  - `mvn spotless:check`
-  - `mvn checkstyle:check`
-  - `mvn test`
-  - 58-module Java reactor passed；ES、FastGPT、job creation、payload、state
-    machine、step executor 和 persistence focused tests passed。
-- Deferred: Portal/public READY filter, runtime lease and 5 Schedules, write guard,
-  Admin API/UI (Stage 3-4); legacy MQ and visibility removal (Stage 5); runtime smoke
-  and RUNBOOK deletion (Stage 6).
+- Delivery PR: `#194` (`merge`)
+- Files: not recorded in completed summary
+- Verification: `mvn spotless:check`; `mvn checkstyle:check`; `mvn test`
+  （58-module reactor；ES、FastGPT、job creation、payload、state machine、step
+  executor 和 persistence focused tests passed）
+- Result: Discovery 发布索引、FastGPT collection/data client、Classics publication
+  job creation、snapshot bind、payload assembly、state machine 和单切片 executor 已形成
+  可独立验证的任务核心。
+- Deferred: Portal/public READY filter and Admin/runtime delivery (Stage 3-4);
+  legacy MQ and visibility removal (Stage 5); runtime smoke and RUNBOOK deletion (Stage 6).
 
 ### Stage 3: Runtime and Admin
 
 Status: COMPLETE
 
-该 stage 让 job 可以由线程池和 5 个 Schedule 自动收口，并完成写保护、Admin API 和 Admin UI。
-
-#### Work Package 3A: Build leases and 5 Schedules
-
-Actions:
-
-- [x] 增加固定 bean name/prefix、`AbortPolicy` 和 shutdown 语义的 bounded
-  `ThreadPoolTaskExecutor`。
-- [x] Scheduler claim 写短 dispatch lease，不增加 attempt。
-- [x] Thread start token match 后写 slice lease，并增加 attempt。
-- [x] 每次远端调用前检查 `expires_at - 5s`。
-- [x] 可重试失败清租约，写 `next_retry_at = now + 30s`，线程退出。
-- [x] 第 4 次失败写 FAILED 和 cleanup PENDING。
-- [x] pool rejection 清 dispatch lease，不增加 attempt。
-- [x] 实现且仅实现 5 个 Schedule：
-  `ClassicsPublicationDispatchScheduler`、
-  `ClassicsPublicationSuccessReconcileScheduler`、
-  `ClassicsPublicationFailureReconcileScheduler`、
-  `ClassicsPublicationEsCleanupScheduler`、
-  `ClassicsPublicationFastGptCleanupScheduler`。
-- [x] admin runtime 独占 5 个 Schedule。
-- [x] 增加 job/content ref、milestone、attempt 和 elapsed structured log。
-
-Tests 使用 controllable clock，覆盖：
-
-- ready/retry/expired lease；
-- unexpired foreign token；
-- pool rejection；
-- CallerRunsPolicy zero-use architecture assertion；
-- external gateway invocation has no active local transaction；
-- claim 后 thread start 前重启等价恢复；
-- remote success 后 milestone 前中断等价恢复；
-- `RUNNING + CONTENT_COMMITTED`；
-- FAILED content reconcile；
-- cleanup PENDING/FAILED/expired RUNNING。
-
-Exit:
-
-- 每个 milestone 最多 4 次 thread start。
-- retry 只能由新 Scheduler submission 触发。
-- CONTENT_COMMITTED 不进入 dispatch。
-- success/failure reconcile 可恢复分事务中断。
-- ES/FastGPT cleanup 互不修改。
-- starter context test 证明 portal runtime 不执行这些 Schedule。
-- 完整 Java formatter/static/test 门禁通过。
-
-Commit split:
-
-1. Executor/configuration。
-2. Dispatch claim/scheduler。
-3. Retry/final failure。
-4. Success reconcile。
-5. Failure reconcile。
-6. ES cleanup。
-7. FastGPT cleanup。
-8. Starter ownership/config samples。
-
-#### Work Package 3B: Enforce write guards and add Admin API
-
-Write guards:
-
-- [x] 增加共享 state guard。
-- [x] 覆盖 edit、delete、内容迁移、sort、tag/QA、version restore 和 AI result apply。
-- [x] PUBLISHING/OFFLINING 拒绝全部业务写。
-- [x] PUBLISHED 拒绝 edit/delete。
-- [x] DRAFT/OFFLINE/ERROR + NONE 按设计允许对应操作。
-- [x] 删除 ERROR/OFFLINE 且有外部引用时写 tombstone 和 cleanup PENDING。
-- [x] 稿件删除不级联删除 publication job。
-- [x] missing content 只有 `content_deleted_at != null` 才允许 cleanup。
-
-Admin API:
-
-- [x] 提供本文规定的 4 个 Sancai entries publish/offline endpoint。
-- [x] 提供本文规定的 4 个 Wangqi documents publish/offline endpoint。
-- [x] 提供本文规定的 4 个 Ming customs publish/offline endpoint。
-- [x] 增加只读 `ClassicsPublicationAdminController` 的 job page/get endpoint。
-- [x] 三类稿件响应返回 lifecycle、transition 和 current job ID。
-- [x] 返回 invalid lifecycle、active transition、active job 和 active cleanup 的明确 conflict。
-- [x] 三类动作复用各自 `*:edit` 权限；job page/get 使用 `classics:publication:view`。
-- [x] 用 `@SysLogger` 记录 publish/offline 发起动作，通过 System audit 查询发起人。
-- [x] 不增加 cancel/retry/edit/advance/cleanup endpoint。
-
-实现说明：为保持 interface model 的子域隔离，三类稿件共 12 个动作 endpoint 集中在
-`ClassicsPublicationActionController`；路径、请求/响应、权限和审计契约保持不变。
-
-Exit:
-
-- service-level operation matrix 全覆盖。
-- tombstone cleanup eligibility tests 通过。
-- controller contract tests 与 Stage 1 接口一致。
-- 完整 Java formatter/static/test 门禁通过。
-
-Commit split:
-
-1. Shared guard/matrix tests。
-2. Sancai guard integration。
-3. Wangqi guard integration。
-4. Ming guard integration。
-5. Tombstone deletion。
-6. Admin publication controller。
-7. Manuscript state response。
-
-#### Work Package 3C: Build Admin publication UI
-
-Actions:
-
-- [x] 新增 `src/pages/classics/publication-jobs/`。
-- [x] 注册 `/classics/publication-jobs`，移除 router 对 `SharingPage` 的依赖。
-- [x] 实现只读 job table/detail。
-- [x] 展示 result、milestone、failure step、attempt、retry time、lease、external refs、cleanup 和 failure summary。
-- [x] 不显示 cancel、retry、edit、advance 或 cleanup 控件。
-- [x] 三类稿件页面增加 publish/offline action 和 lifecycle/transition tag。
-- [x] transition active 时禁用所有写入控件。
-- [x] batch 显示 accepted/rejected 和逐条原因。
-- [x] ERROR 显示外部残留最终一致性提示。
-- [x] 增加 service contract、page tests 和 E2E。
-
-Exit:
-
-- menu URL、router 和 page 一致。
-- UI action matrix 与 server 一致。
-- job 页面严格只读。
-- 完整 Java门禁和前端 workspace 门禁通过。
-
-Commit split:
-
-1. Job page service/types。
-2. Job page table/detail。
-3. Sancai actions。
-4. Wangqi actions。
-5. Ming actions。
-6. Batch/error UI。
-7. Frontend tests/E2E。
-
-Stage 3 exit:
-
-- 5 个 Schedule 可自动推进、重试、对账和清理。
-- 三类稿件写保护、Admin API 和 Admin UI 完整可用。
-- job 页面严格只读。
-- 完整 Java和前端 workspace 门禁通过。
-- 工作区干净，Stage 3 已拆为多个小 commit。
-
-Result:
-
-- bounded executor、dispatch/reconcile/cleanup runtime 和 5 个 Schedule 已完成，且由
-  admin starter 独占；lease、attempt、重试、拒绝和分事务恢复路径均有自动化覆盖。
-- 三类稿件共享 publication state guard、删除 tombstone、动作 API、状态响应和冲突
-  契约已完成；publication job API 与页面保持只读。
-- Admin 三类稿件页面已接入单条/批量发布下线、状态标签、过渡态写保护、逐条拒绝原因
-  和外部残留提示。
-
-Verification:
-
-- `mvn spotless:check`
-- `mvn checkstyle:check`
-- `mvn test`（58-module reactor；Surefire reports 均为 0 failure / 0 error）
-- `pnpm run format:check`
-- `pnpm run lint`
-- `pnpm run build`
-- `pnpm run test`（admin 90 files / 385 tests；portal 25 files / 79 tests）
-- `pnpm exec playwright test e2e/classics/publication-jobs/publication-jobs.spec.ts`
-  （Chromium；1 test passed）
-- `pnpm exec playwright test`（Chromium；31 tests passed）
-
-Deferred: Portal/public READY cutover (Stage 4); legacy MQ and remaining visibility
-cleanup (Stage 5); database reset, real ES/FastGPT runtime smoke and RUNBOOK deletion
-(Stage 6).
+- Functional commits: `9a227b299^..07f8f5736`
+- Delivery PR: `#195` (`merge`)
+- Files: 107
+- Verification: `mvn spotless:check`; `mvn checkstyle:check`; `mvn test`;
+  `pnpm run format:check`; `pnpm run lint`; `pnpm run build`; `pnpm run test`;
+  targeted and full Chromium Playwright checks passed.
+- Result: bounded executor、5 个 publication schedules、lease/retry/reconcile/cleanup、
+  write guards、Admin publication APIs、readonly job API 和 Admin UI 已完整交付。
+- Deferred: Portal/public READY cutover (Stage 4); legacy MQ and remaining visibility
+  cleanup (Stage 5); database reset, real ES/FastGPT runtime smoke and RUNBOOK deletion
+  (Stage 6).
 
 ### Stage 4: Portal cutover and sharing frontend removal
 
-Status: PENDING
+Status: COMPLETE
 
 该 stage 把 Portal/公开搜索切换到 ES READY，并清除 sharing frontend。三类稿件
 visibility 和旧 RocketMQ 搜索同步保留到 Stage 5；本 stage 结束时系统必须独立编译和测试。
@@ -1214,13 +951,13 @@ visibility 和旧 RocketMQ 搜索同步保留到 Stage 5；本 stage 结束时�
 
 Actions:
 
-- [ ] Discovery public query 固定过滤 `publicationStatus = READY and deleted = false`。
-- [ ] Classics Portal list/search 从 Discovery facade 获取 candidate IDs。
-- [ ] detail 必须先由 Discovery 确认 ES READY/not deleted。
-- [ ] ES 可见后再由 Classics application hydration category、volume、image、asset 和正式 snapshot。
-- [ ] Portal 不按主库 lifecycle 二次判断候选可见性。
-- [ ] 保留 ES READY 早于主库 PUBLISHED 的已接受窗口。
-- [ ] 更新 public search、Classics Portal 和 portal-web tests。
+- [x] Discovery public query 固定过滤 `publicationStatus = READY and deleted = false`。
+- [x] Classics Portal list/search 从 Discovery facade 获取 candidate IDs。
+- [x] detail 必须先由 Discovery 确认 ES READY/not deleted。
+- [x] ES 可见后再由 Classics application hydration category、volume、image、asset 和正式 snapshot。
+- [x] Portal 不按主库 lifecycle 二次判断候选可见性。
+- [x] 保留 ES READY 早于主库 PUBLISHED 的已接受窗口。
+- [x] 更新 public search、Classics Portal 和 portal-web tests。
 
 Tests:
 
@@ -1248,12 +985,12 @@ Commit split:
 
 Actions:
 
-- [ ] 删除 admin `pages/classics/sharing`。
-- [ ] 删除 admin `pages/classics/common/classics-share-*`。
-- [ ] 删除 portal `share-list` 和 `share-detail`。
-- [ ] 删除 private-share HTTP exception。
-- [ ] 删除 sharing routes、tests、CSS 和 E2E。
-- [ ] 删除前端 sharing permission/menu fallback。
+- [x] 删除 admin `pages/classics/sharing`。
+- [x] 删除 admin `pages/classics/common/classics-share-*`。
+- [x] 删除 portal `share-list` 和 `share-detail`。
+- [x] 删除 private-share HTTP exception。
+- [x] 删除 sharing routes、tests、CSS 和 E2E。
+- [x] 删除前端 sharing permission/menu fallback。
 
 Zero-result scans:
 

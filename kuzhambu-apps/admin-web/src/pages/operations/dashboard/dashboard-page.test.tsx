@@ -239,7 +239,6 @@ describe("OperationsDashboardPage", () => {
         replacePermissions([
             "operations:dashboard:view",
             "classics:content:view",
-            "classics:sharing:view",
             "discovery:search:view",
             "operations:health:view",
             "operations:task:view",
@@ -254,7 +253,6 @@ describe("OperationsDashboardPage", () => {
         expect(screen.getByRole("button", { name: /刷新/ })).toBeInTheDocument();
         expect(screen.getByText("admin-server")).toBeInTheDocument();
         expect(screen.getByText("TRANSLATE")).toBeInTheDocument();
-        expect(screen.getByText(/分享访问\s+100/)).toBeInTheDocument();
         expect(screen.getByText("健康告警 1 个，严重 1 个")).toBeInTheDocument();
         expect(screen.getByText("任务台账")).toBeInTheDocument();
         expect(screen.getByRole("link", { name: "查看全部" })).toHaveAttribute(
@@ -402,7 +400,6 @@ describe("OperationsDashboardPage", () => {
         replacePermissions([
             "operations:dashboard:view",
             "classics:content:view",
-            "classics:sharing:view",
             "discovery:search:view",
             "knowledge:taxonomy:view",
             "ai:invocation:view",
@@ -493,8 +490,8 @@ describe("OperationsDashboardPage", () => {
         expect(screen.queryByText("搜索 / 问答")).not.toBeInTheDocument();
     }, 30000);
 
-    it("renders empty chart section only with non-graph content sharing permission", async () => {
-        replacePermissions(["operations:dashboard:view", "classics:sharing:view"]);
+    it("renders empty chart section without graph permissions", async () => {
+        replacePermissions(["operations:dashboard:view"]);
 
         renderPage();
 

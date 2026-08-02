@@ -36,12 +36,10 @@ const isPublicationTransitionActive = (record: MingCustomsRecord) =>
     Boolean(record.transitionStatus && record.transitionStatus !== "NONE");
 
 interface MingCustomsTableProps {
-    batchShareResult: ClassicsBatchOperationRecord | null;
     batchVisibilityResult: ClassicsBatchOperationRecord | null;
     publicationBatchResult: MingCustomsPublicationBatchRecord | null;
     canChangeEntryVisibility?: boolean;
     canExport?: boolean;
-    canShare?: boolean;
     categoryLabels: Record<string, string>;
     dataSource: MingCustomsRecord[];
     loading?: boolean;
@@ -53,11 +51,8 @@ interface MingCustomsTableProps {
     onPublicationBatch: (action: "PUBLISH" | "OFFLINE") => void;
     onExport: (record: MingCustomsRecord) => void;
     onSelectedEntryIdsChange: (ids: string[]) => void;
-    onShare: (record: MingCustomsRecord) => void;
-    onShareSelectedEntries: () => void;
     pagination: KuzhambuTableProps<MingCustomsRecord>["pagination"];
     selectedEntryIds: string[];
-    sharing?: boolean;
     publicationChanging?: boolean;
     visibilityChanging?: boolean;
 }
@@ -76,12 +71,10 @@ const renderBatchResultDescription = (result: ClassicsBatchOperationRecord) => {
 };
 
 export const MingCustomsTable = ({
-    batchShareResult,
     batchVisibilityResult,
     publicationBatchResult,
     canChangeEntryVisibility = true,
     canExport = true,
-    canShare = true,
     categoryLabels,
     dataSource,
     loading = false,
@@ -93,11 +86,8 @@ export const MingCustomsTable = ({
     onPublicationBatch,
     onExport,
     onSelectedEntryIdsChange,
-    onShare,
-    onShareSelectedEntries,
     pagination,
     selectedEntryIds,
-    sharing = false,
     publicationChanging = false,
     visibilityChanging = false
 }: MingCustomsTableProps) => {
@@ -209,13 +199,6 @@ export const MingCustomsTable = ({
                         onClick: () => onPublicationAction(record, publicationAction)
                     },
                     {
-                        key: "share",
-                        text: "分享",
-                        ariaLabel: `分享 ${record.title || "未命名条目"}`,
-                        disabled: !canShare || isTransitionActive,
-                        onClick: () => onShare(record)
-                    },
-                    {
                         key: "export",
                         text: "导出",
                         ariaLabel: `导出 ${record.title || "未命名条目"}`,
@@ -239,19 +222,6 @@ export const MingCustomsTable = ({
     return (
         <>
             <ClassicsPublicationErrorAlert items={dataSource} />
-            {batchShareResult ? (
-                <KuzhambuAlert
-                    showIcon
-                    type={batchShareResult.failureCount > 0 ? "warning" : "success"}
-                    style={{ marginBottom: 12 }}
-                    title={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
-                    description={
-                        batchShareResult.failures.length
-                            ? renderBatchResultDescription(batchShareResult)
-                            : "全部选中明代习俗已创建分享记录。"
-                    }
-                />
-            ) : null}
             {batchVisibilityResult ? (
                 <KuzhambuAlert
                     showIcon
@@ -304,13 +274,6 @@ export const MingCustomsTable = ({
                             disabled: !selectedEntryIds.length || !canChangeEntryVisibility,
                             loading: publicationChanging,
                             action: () => onPublicationBatch("OFFLINE")
-                        },
-                        {
-                            testId: "classics-ming-customs-ming-customs-batch-share-button",
-                            title: "分享",
-                            disabled: !selectedEntryIds.length || !canShare,
-                            loading: sharing,
-                            action: onShareSelectedEntries
                         },
                         {
                             testId: "classics-ming-customs-ming-customs-batch-public-button",

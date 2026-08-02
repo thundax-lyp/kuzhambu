@@ -11,8 +11,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
@@ -36,8 +34,6 @@ public final class SancaiPortalInterfaceAssembler {
         query.setCategoryId(effectiveRequest.getCategoryId());
         query.setVolumeId(effectiveRequest.getVolumeId());
         query.setKeyword(effectiveRequest.getKeyword());
-        query.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
-        query.setVisibility(SancaiEntryVisibility.PUBLIC);
         query.setSortDirection(SortDirection.ASC);
         return query;
     }
@@ -240,12 +236,6 @@ public final class SancaiPortalInterfaceAssembler {
             return 20;
         }
         return Math.min(pageSize, 100);
-    }
-
-    public static boolean isPublicPublished(SancaiEntry entry) {
-        return entry != null
-                && entry.getLifecycleStatus() == SancaiEntryLifecycleStatus.PUBLISHED
-                && entry.getVisibility() == SancaiEntryVisibility.PUBLIC;
     }
 
     public static String normalizeKeyword(String keyword) {

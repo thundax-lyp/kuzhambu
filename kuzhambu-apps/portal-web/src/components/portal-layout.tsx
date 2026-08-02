@@ -46,7 +46,6 @@ const navigationItems = [
     { label: "三才图会", href: "/classics/sancai" },
     { label: "知识图谱", href: "/knowledge" },
     { label: "古籍检索", href: "/discovery/search" },
-    { label: "公开分享", href: "/shares" },
     { label: "问答", href: "/discovery/qa" }
 ];
 
@@ -75,7 +74,7 @@ const footerGroups = [
     },
     {
         title: "社区与协作",
-        links: ["公开分享", "问答", "整理与校勘协作", "意见反馈"]
+        links: ["问答", "整理与校勘协作", "意见反馈"]
     },
     {
         title: "关于我们",

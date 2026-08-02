@@ -11,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
@@ -22,6 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -205,13 +207,13 @@ class ElasticsearchSearchIndexGatewayTest {
         assertTrue(fieldNames.contains("categoryCode"));
         assertTrue(fieldNames.contains("tagNames"));
         assertTrue(fieldNames.contains("status"));
-        assertTrue(fieldNames.contains("visibility"));
+        assertTrue(fieldNames.contains("publicationStatus"));
         assertTrue(fieldNames.contains("updatedAt"));
         assertTrue(fieldNames.contains("deleted"));
     }
 
     @Test
-    void searchShouldApplyExplicitVisibilityCriteriaWithoutPrivateKnowledgeBasePermissionCriteria() {
+    void searchShouldIgnoreVisibilityScopesAndApplyPublicationReadyCriteria() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
         @SuppressWarnings("unchecked")
@@ -245,12 +247,14 @@ class ElasticsearchSearchIndexGatewayTest {
                 .filter(field -> field != null && field.getName() != null)
                 .map(field -> field.getName())
                 .collect(Collectors.toSet());
-        assertTrue(fieldNames.contains("visibility"));
+        assertTrue(fieldNames.contains("publicationStatus"));
+        assertTrue(fieldNames.contains("deleted"));
+        assertFalse(fieldNames.contains("visibility"));
         assertFalse(fieldNames.contains("knowledgeBase"));
     }
 
     @Test
-    void previewShouldApplyPublicVisibilityCriteria() {
+    void previewShouldApplyPublicationReadyCriteria() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
         @SuppressWarnings("unchecked")
@@ -277,7 +281,8 @@ class ElasticsearchSearchIndexGatewayTest {
         assertEquals("正文", preview.getBodyText());
         assertTrue(fieldNames.contains("contentType"));
         assertTrue(fieldNames.contains("contentId"));
-        assertTrue(fieldNames.contains("visibility"));
+        assertTrue(fieldNames.contains("publicationStatus"));
+        assertFalse(fieldNames.contains("visibility"));
         assertFalse(fieldNames.contains("knowledgeBase"));
         assertTrue(fieldNames.contains("deleted"));
     }
@@ -300,6 +305,74 @@ class ElasticsearchSearchIndexGatewayTest {
         var preview = gateway.getPreview("SANCAI_ENTRY", "1001");
 
         assertEquals(null, preview);
+    }
+
+    @Test
+    void pageReadyPublicationCandidatesShouldApplyReadyFiltersAndMapIds() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        ArgumentCaptor<CriteriaQuery> queryCaptor = ArgumentCaptor.forClass(CriteriaQuery.class);
+        SearchHit<DiscoverySearchDocument> firstHit = searchHit(publicationDocument("1001", "11", "21"));
+        SearchHit<DiscoverySearchDocument> secondHit = searchHit(publicationDocument("1002", "11", "21"));
+        when(searchHits.getTotalHits()).thenReturn(2L);
+        when(searchHits.getSearchHits()).thenReturn(List.of(firstHit, secondHit));
+        when(operations.search(
+                        queryCaptor.capture(),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        var page = gateway.pageReadyPublicationCandidates("SANCAI_ENTRY", "11", "21", "天地", 1, 20);
+
+        Set<String> fieldNames = flattenCriteria(queryCaptor.getValue().getCriteria()).stream()
+                .map(Criteria::getField)
+                .filter(field -> field != null && field.getName() != null)
+                .map(field -> field.getName())
+                .collect(Collectors.toSet());
+        assertEquals(2, page.getTotalCount());
+        assertEquals(
+                List.of("1001", "1002"),
+                page.getRecords().stream()
+                        .map(SearchPublicationCandidateResult::getContentId)
+                        .toList());
+        assertTrue(fieldNames.contains("contentType"));
+        assertTrue(fieldNames.contains("categoryCode"));
+        assertTrue(fieldNames.contains("volumeId"));
+        assertTrue(fieldNames.contains("publicationStatus"));
+        assertTrue(fieldNames.contains("deleted"));
+    }
+
+    @Test
+    void listReadyPublicationCategoryAggregationsShouldUseNativeTermsAggregation() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        ArgumentCaptor<NativeQuery> queryCaptor = ArgumentCaptor.forClass(NativeQuery.class);
+        when(operations.search(
+                        queryCaptor.capture(),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        var results = gateway.listReadyPublicationCategoryAggregations("SANCAI_ENTRY");
+
+        NativeQuery query = queryCaptor.getValue();
+        assertTrue(results.isEmpty());
+        assertEquals(0, query.getMaxResults());
+        assertTrue(query.getAggregations().containsKey("ready_categories"));
+        assertTrue(query.getQuery().bool().filter().stream()
+                .anyMatch(filter -> filter.term().field().equals("publicationStatus")
+                        && filter.term().value().stringValue().equals("READY")));
+        assertTrue(query.getQuery().bool().filter().stream()
+                .anyMatch(filter -> filter.term().field().equals("contentType")
+                        && filter.term().value().stringValue().equals("SANCAI_ENTRY")));
     }
 
     @Test
@@ -505,6 +578,14 @@ class ElasticsearchSearchIndexGatewayTest {
                 false,
                 null,
                 "/classics/sancai/" + contentId);
+    }
+
+    private DiscoverySearchDocument publicationDocument(String contentId, String categoryId, String volumeId) {
+        DiscoverySearchDocument document = document(contentId, "标题", "摘要", "正文", 1);
+        document.setPublicationStatus("READY");
+        document.setCategoryCode(categoryId);
+        document.setVolumeId(volumeId);
+        return document;
     }
 
     private SearchSourceContent sourceContent(String contentId, String visibility) {

@@ -704,7 +704,6 @@ describe("SancaiEntryPanel batch operations", () => {
         replacePermissions([
             "classics:sancai:view",
             "classics:sancai:edit",
-            "classics:sharing:edit",
             "classics:content:export",
             "classics:content:edit",
             "ai:invocation:edit",
