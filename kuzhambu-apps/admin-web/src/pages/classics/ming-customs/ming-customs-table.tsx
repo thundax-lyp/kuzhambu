@@ -8,8 +8,9 @@ import {
     KuzhambuTag
 } from "@/components";
 import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-content-types";
+import { ClassicsPublicationErrorAlert } from "@/pages/classics/common/classics-publication-error-alert";
 
-import type { MingCustomsRecord } from "./ming-customs-types";
+import type { MingCustomsPublicationBatchRecord, MingCustomsRecord } from "./ming-customs-types";
 
 const { Text } = Typography;
 
@@ -31,9 +32,13 @@ const visibilityTagType = (visibility?: string | null) => {
     return visibility === "PUBLIC" ? "success" : "neutral";
 };
 
+const isPublicationTransitionActive = (record: MingCustomsRecord) =>
+    Boolean(record.transitionStatus && record.transitionStatus !== "NONE");
+
 interface MingCustomsTableProps {
     batchShareResult: ClassicsBatchOperationRecord | null;
     batchVisibilityResult: ClassicsBatchOperationRecord | null;
+    publicationBatchResult: MingCustomsPublicationBatchRecord | null;
     canChangeEntryVisibility?: boolean;
     canExport?: boolean;
     canShare?: boolean;
@@ -44,6 +49,8 @@ interface MingCustomsTableProps {
     onChangeSelectedVisibility: (visibility: "PRIVATE" | "PUBLIC") => void;
     onDelete: (record: MingCustomsRecord) => void;
     onOpenEdit: (record: MingCustomsRecord) => void;
+    onPublicationAction: (record: MingCustomsRecord, action: "PUBLISH" | "OFFLINE") => void;
+    onPublicationBatch: (action: "PUBLISH" | "OFFLINE") => void;
     onExport: (record: MingCustomsRecord) => void;
     onSelectedEntryIdsChange: (ids: string[]) => void;
     onShare: (record: MingCustomsRecord) => void;
@@ -51,6 +58,7 @@ interface MingCustomsTableProps {
     pagination: KuzhambuTableProps<MingCustomsRecord>["pagination"];
     selectedEntryIds: string[];
     sharing?: boolean;
+    publicationChanging?: boolean;
     visibilityChanging?: boolean;
 }
 
@@ -70,6 +78,7 @@ const renderBatchResultDescription = (result: ClassicsBatchOperationRecord) => {
 export const MingCustomsTable = ({
     batchShareResult,
     batchVisibilityResult,
+    publicationBatchResult,
     canChangeEntryVisibility = true,
     canExport = true,
     canShare = true,
@@ -80,6 +89,8 @@ export const MingCustomsTable = ({
     onChangeSelectedVisibility,
     onDelete,
     onOpenEdit,
+    onPublicationAction,
+    onPublicationBatch,
     onExport,
     onSelectedEntryIdsChange,
     onShare,
@@ -87,6 +98,7 @@ export const MingCustomsTable = ({
     pagination,
     selectedEntryIds,
     sharing = false,
+    publicationChanging = false,
     visibilityChanging = false
 }: MingCustomsTableProps) => {
     const columns: KuzhambuTableProps<MingCustomsRecord>["columns"] = [
@@ -100,6 +112,7 @@ export const MingCustomsTable = ({
                     testId={`ming-customs-edit-${record.id}-button`}
                     type="link"
                     className="ming-customs-title-link"
+                    disabled={isPublicationTransitionActive(record)}
                     onClick={() => onOpenEdit(record)}
                 >
                     <Text strong>{title || "未命名条目"}</Text>
@@ -133,6 +146,29 @@ export const MingCustomsTable = ({
             render: (section?: string | null) => section || "未填写"
         },
         {
+            title: "发布状态",
+            key: "publicationStatus",
+            width: 140,
+            render: (_, record) => (
+                <KuzhambuSpace size={4} wrap>
+                    <KuzhambuTag
+                        type={
+                            record.lifecycleStatus === "PUBLISHED"
+                                ? "success"
+                                : record.lifecycleStatus === "ERROR"
+                                  ? "danger"
+                                  : "neutral"
+                        }
+                    >
+                        {record.lifecycleStatus || "DRAFT"}
+                    </KuzhambuTag>
+                    {record.transitionStatus && record.transitionStatus !== "NONE" ? (
+                        <KuzhambuTag type="info">{record.transitionStatus}</KuzhambuTag>
+                    ) : null}
+                </KuzhambuSpace>
+            )
+        },
+        {
             title: "可见性",
             dataIndex: "visibility",
             key: "visibility",
@@ -153,41 +189,56 @@ export const MingCustomsTable = ({
         },
         {
             key: "actions",
-            options: (record) => [
-                {
-                    key: "edit",
-                    text: "编辑",
-                    ariaLabel: `编辑 ${record.title || "未命名条目"}`,
-                    onClick: () => onOpenEdit(record)
-                },
-                {
-                    key: "share",
-                    text: "分享",
-                    ariaLabel: `分享 ${record.title || "未命名条目"}`,
-                    disabled: !canShare,
-                    onClick: () => onShare(record)
-                },
-                {
-                    key: "export",
-                    text: "导出",
-                    ariaLabel: `导出 ${record.title || "未命名条目"}`,
-                    disabled: !canExport,
-                    onClick: () => onExport(record)
-                },
-                { type: "divider" },
-                {
-                    key: "delete",
-                    text: "删除",
-                    type: "danger",
-                    ariaLabel: `删除 ${record.title || "未命名条目"}`,
-                    onClick: () => onDelete(record)
-                }
-            ]
+            options: (record) => {
+                const isTransitionActive = isPublicationTransitionActive(record);
+                const publicationAction =
+                    record.lifecycleStatus === "PUBLISHED" ? "OFFLINE" : "PUBLISH";
+                return [
+                    {
+                        key: "edit",
+                        text: "编辑",
+                        ariaLabel: `编辑 ${record.title || "未命名条目"}`,
+                        disabled: isTransitionActive,
+                        onClick: () => onOpenEdit(record)
+                    },
+                    {
+                        key: "publication",
+                        text: publicationAction === "PUBLISH" ? "发布" : "下线",
+                        ariaLabel: `${publicationAction === "PUBLISH" ? "发布" : "下线"} ${record.title || "未命名条目"}`,
+                        disabled: isTransitionActive,
+                        onClick: () => onPublicationAction(record, publicationAction)
+                    },
+                    {
+                        key: "share",
+                        text: "分享",
+                        ariaLabel: `分享 ${record.title || "未命名条目"}`,
+                        disabled: !canShare || isTransitionActive,
+                        onClick: () => onShare(record)
+                    },
+                    {
+                        key: "export",
+                        text: "导出",
+                        ariaLabel: `导出 ${record.title || "未命名条目"}`,
+                        disabled: !canExport,
+                        onClick: () => onExport(record)
+                    },
+                    { type: "divider" },
+                    {
+                        key: "delete",
+                        text: "删除",
+                        type: "danger",
+                        ariaLabel: `删除 ${record.title || "未命名条目"}`,
+                        disabled: isTransitionActive || record.lifecycleStatus === "PUBLISHED",
+                        onClick: () => onDelete(record)
+                    }
+                ];
+            }
         }
     ];
 
     return (
         <>
+            <ClassicsPublicationErrorAlert items={dataSource} />
             {batchShareResult ? (
                 <KuzhambuAlert
                     showIcon
@@ -214,6 +265,18 @@ export const MingCustomsTable = ({
                     }
                 />
             ) : null}
+            {publicationBatchResult ? (
+                <KuzhambuAlert
+                    showIcon
+                    type={publicationBatchResult.rejectedCount > 0 ? "warning" : "success"}
+                    style={{ marginBottom: 12 }}
+                    title={`批量发布操作：接受 ${publicationBatchResult.acceptedCount}，拒绝 ${publicationBatchResult.rejectedCount}`}
+                    description={publicationBatchResult.items
+                        .filter((item) => !item.accepted)
+                        .map((item) => `#${item.contentId}: ${item.reason || "请求被拒绝"}`)
+                        .join("；")}
+                />
+            ) : null}
             <KuzhambuTable<MingCustomsRecord>
                 ariaLabel="明代习俗表格"
                 rowKey={(record) => String(record.id ?? "")}
@@ -228,6 +291,20 @@ export const MingCustomsTable = ({
                         </KuzhambuSpace>
                     ),
                     actions: [
+                        {
+                            testId: "classics-ming-customs-batch-publish-button",
+                            title: "批量发布",
+                            disabled: !selectedEntryIds.length || !canChangeEntryVisibility,
+                            loading: publicationChanging,
+                            action: () => onPublicationBatch("PUBLISH")
+                        },
+                        {
+                            testId: "classics-ming-customs-batch-offline-button",
+                            title: "批量下线",
+                            disabled: !selectedEntryIds.length || !canChangeEntryVisibility,
+                            loading: publicationChanging,
+                            action: () => onPublicationBatch("OFFLINE")
+                        },
                         {
                             testId: "classics-ming-customs-ming-customs-batch-share-button",
                             title: "分享",
@@ -259,7 +336,10 @@ export const MingCustomsTable = ({
                 }}
                 rowSelection={{
                     selectedRowKeys: selectedEntryIds,
-                    onChange: (keys) => onSelectedEntryIdsChange(keys.map(String))
+                    onChange: (keys) => onSelectedEntryIdsChange(keys.map(String)),
+                    getCheckboxProps: (record) => ({
+                        disabled: isPublicationTransitionActive(record)
+                    })
                 }}
             />
         </>

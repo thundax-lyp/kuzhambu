@@ -36,6 +36,12 @@ public class SancaiEntryResponse implements Serializable {
     @JsonProperty("lifecycleStatus")
     private String lifecycleStatus;
 
+    @JsonProperty("transitionStatus")
+    private String transitionStatus;
+
+    @JsonProperty("currentPublicationJobId")
+    private Long currentPublicationJobId;
+
     @JsonProperty("visibility")
     private String visibility;
 

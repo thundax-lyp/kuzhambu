@@ -17,12 +17,34 @@ export interface WangqiDocumentRecord {
     documentTime?: string | null;
     storageObjectId?: string | null;
     visibility?: string | null;
+    lifecycleStatus?: "DRAFT" | "PUBLISHED" | "OFFLINE" | "ERROR" | string | null;
+    transitionStatus?: "NONE" | "PUBLISHING" | "OFFLINING" | string | null;
+    currentPublicationJobId?: string | null;
     currentVersionId?: string | null;
     currentVersionNo?: number | null;
     currentVersionedAt?: string | null;
     contentUpdatedAt?: string | null;
     events?: WangqiDocumentEventRecord[];
     versionDirty?: boolean;
+}
+
+export interface WangqiPublicationActionRecord {
+    jobId: string;
+    contentType: "WANGQI_DOCUMENT";
+    contentId: string;
+    lifecycleStatus: string;
+    transitionStatus: string;
+}
+
+export interface WangqiPublicationBatchRecord {
+    acceptedCount: number;
+    rejectedCount: number;
+    items: Array<{
+        contentId: string;
+        accepted: boolean;
+        jobId?: string | null;
+        reason?: string | null;
+    }>;
 }
 
 export interface WangqiSourceFileRecord {

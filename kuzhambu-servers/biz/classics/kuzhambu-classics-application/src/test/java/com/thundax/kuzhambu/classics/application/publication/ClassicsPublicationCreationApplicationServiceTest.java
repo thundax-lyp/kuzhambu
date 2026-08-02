@@ -72,6 +72,8 @@ class ClassicsPublicationCreationApplicationServiceTest {
                 new ClassicsPublicationCreateCommand(CONTENT_TYPE, CONTENT_ID, ClassicsPublicationJobType.PUBLISH));
 
         assertTrue(result.succeeded());
+        assertEquals(ClassicsPublicationLifecycleStatus.ERROR, result.lifecycleStatus());
+        assertEquals(ClassicsPublicationTransitionStatus.PUBLISHING, result.transitionStatus());
         verify(jobRepository).deleteById(oldJob.getId());
         ArgumentCaptor<ClassicsPublicationJob> jobCaptor = ArgumentCaptor.forClass(ClassicsPublicationJob.class);
         verify(jobRepository).insert(jobCaptor.capture());

@@ -15,7 +15,7 @@ import { ClassicsContentTagPanel } from "@/pages/classics/common/classics-conten
 import { ClassicsContentTagAiPanel } from "@/pages/classics/common/classics-content-tag-ai-panel";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/ai-candidate-batch-drawer";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
-import { SancaiEntryList } from "./sancai-entry-list";
+import { SancaiEntryList, type SancaiPublicationAction } from "./sancai-entry-list";
 import { SancaiEntryEditDrawer } from "../components/sancai-entry-edit-drawer";
 import { SancaiEntryExportActions } from "../sancai-entry-export-actions";
 import { SancaiEntryVersionSection } from "../sancai-entry-version-section";
@@ -26,6 +26,7 @@ import type {
     SancaiCategoryRecord,
     SancaiContentVersionRecord,
     SancaiEntryRecord,
+    SancaiPublicationBatchRecord,
     SancaiVolumeRecord
 } from "@/pages/classics/sancai/sancai-types";
 
@@ -41,15 +42,6 @@ const readEntryTitle = (entry: SancaiEntryRecord) => {
 const readEntrySummary = (entry: SancaiEntryRecord) => {
     return entry.summary?.trim() || entry.originalText?.trim() || "暂无简介/摘要";
 };
-
-interface SancaiEntryLifecycleAction {
-    confirmDescription: string;
-    confirmMessage: string;
-    confirmTitle: string;
-    okText: string;
-    successMessage: string;
-    targetStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-}
 
 interface SancaiEntryPanelProps {
     categories?: SancaiCategoryRecord[];
@@ -91,6 +83,8 @@ export const SancaiEntryPanel = ({
         {}
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
+    const [publicationBatchResult, setPublicationBatchResult] =
+        useState<SancaiPublicationBatchRecord | null>(null);
     const [internalExportJobsDrawerOpen, setInternalExportJobsDrawerOpen] = useState(false);
     const tagPanelRef = useRef<HTMLDivElement | null>(null);
     const categoryOptions = useMemo(
@@ -232,7 +226,7 @@ export const SancaiEntryPanel = ({
             queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "exports", "jobs"] })
         ]);
     }, [queryClient]);
-    const refreshAfterLifecycleChange = useCallback(
+    const refreshAfterPublicationChange = useCallback(
         async (entryId: string) => {
             const refreshes = [invalidateEntries()];
             if (isModelOpen && !isCreating && selectedEntry?.id === entryId) {
@@ -242,29 +236,12 @@ export const SancaiEntryPanel = ({
                     }),
                     queryClient.invalidateQueries({
                         queryKey: ["classics", "sancai", "entries", "versions", entryId]
-                    }),
-                    queryClient.invalidateQueries({
-                        queryKey: [
-                            "classics",
-                            "sancai",
-                            "entries",
-                            "version",
-                            entryId,
-                            selectedVersionId
-                        ]
                     })
                 );
             }
             await Promise.all(refreshes);
         },
-        [
-            invalidateEntries,
-            isCreating,
-            isModelOpen,
-            queryClient,
-            selectedEntry?.id,
-            selectedVersionId
-        ]
+        [invalidateEntries, isCreating, isModelOpen, queryClient, selectedEntry?.id]
     );
     const invalidateRefinementTasks = useCallback(async () => {
         await queryClient.invalidateQueries({
@@ -370,10 +347,47 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "排序保存失败");
         }
     });
-    const changeLifecycleStatusMutation = useMutation({
-        mutationFn: entryService.changeLifecycleStatus,
+    const publicationMutation = useMutation({
+        mutationFn: ({
+            entry,
+            action
+        }: {
+            entry: SancaiEntryRecord;
+            action: SancaiPublicationAction;
+        }) =>
+            action === "PUBLISH"
+                ? entryService.publish({ id: entry.id })
+                : entryService.submitOffline({ id: entry.id }),
+        onSuccess: async (result) => {
+            await refreshAfterPublicationChange(result.contentId);
+            messageApi.success("发布状态变更请求已接受");
+        },
         onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "生命周期变更失败");
+            messageApi.error(error instanceof Error ? error.message : "发布状态变更失败");
+        }
+    });
+    const publicationBatchMutation = useMutation({
+        mutationFn: ({
+            entries,
+            action
+        }: {
+            entries: SancaiEntryRecord[];
+            action: SancaiPublicationAction;
+        }) => {
+            const command = { ids: entries.map((entry) => entry.id) };
+            return action === "PUBLISH"
+                ? entryService.publishBatch(command)
+                : entryService.submitOfflineBatch(command);
+        },
+        onSuccess: async (result) => {
+            setPublicationBatchResult(result);
+            await invalidateEntries();
+            messageApi.success(
+                `批量请求完成：接受 ${result.acceptedCount}，拒绝 ${result.rejectedCount}`
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量发布状态变更失败");
         }
     });
     const resetVersionMutation = useMutation({
@@ -487,23 +501,28 @@ export const SancaiEntryPanel = ({
             onConfirm: () => deleteEntryMutation.mutateAsync(entry.id)
         });
     };
-    const changeLifecycleStatus = (
-        entry: SancaiEntryRecord,
-        action: SancaiEntryLifecycleAction
-    ) => {
+    const changePublicationStatus = (entry: SancaiEntryRecord, action: SancaiPublicationAction) => {
+        const actionText = action === "PUBLISH" ? "发布" : "下线";
         confirm.danger({
-            title: action.confirmTitle,
-            message: action.confirmMessage,
-            description: action.confirmDescription,
-            okText: action.okText,
-            onConfirm: async () => {
-                await changeLifecycleStatusMutation.mutateAsync({
-                    id: entry.id,
-                    lifecycleStatus: action.targetStatus
-                });
-                await refreshAfterLifecycleChange(entry.id);
-                messageApi.success(action.successMessage);
-            }
+            title: `${actionText}三才图会条目`,
+            message: `确认${actionText} ${readEntryTitle(entry)}？`,
+            description: "请求提交后由后台任务异步同步搜索与知识库状态。",
+            okText: actionText,
+            onConfirm: () => publicationMutation.mutateAsync({ entry, action })
+        });
+    };
+    const changePublicationStatusBatch = (
+        selectedEntries: SancaiEntryRecord[],
+        action: SancaiPublicationAction
+    ) => {
+        const actionText = action === "PUBLISH" ? "发布" : "下线";
+        confirm.danger({
+            title: `批量${actionText}三才图会条目`,
+            message: `确认${actionText}选中的 ${selectedEntries.length} 条稿件？`,
+            description: "服务端将逐条受理，并返回每条稿件的接受或拒绝原因。",
+            okText: `批量${actionText}`,
+            onConfirm: () =>
+                publicationBatchMutation.mutateAsync({ entries: selectedEntries, action })
         });
     };
 
@@ -600,7 +619,9 @@ export const SancaiEntryPanel = ({
                 entries={entries}
                 isLoading={isLoading || sortEntryMutation.isPending}
                 volumes={volumes}
-                onChangeLifecycleStatus={changeLifecycleStatus}
+                onPublicationAction={changePublicationStatus}
+                onPublicationBatch={changePublicationStatusBatch}
+                publicationBatchResult={publicationBatchResult}
                 onDelete={deleteEntry}
                 onExport={exportEntry}
                 onRefresh={() => {

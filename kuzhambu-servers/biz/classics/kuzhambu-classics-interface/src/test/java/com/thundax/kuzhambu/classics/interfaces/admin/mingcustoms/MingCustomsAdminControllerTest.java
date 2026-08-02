@@ -57,7 +57,7 @@ class MingCustomsAdminControllerTest {
     void keywordCloudShouldReturnKeywordAndCount() {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         when(service.listKeywordCloud("PUBLIC")).thenReturn(List.of(new MingCustomsKeywordCloudItem("礼俗", 3L)));
-        MingCustomsAdminController controller = new MingCustomsAdminController(service);
+        MingCustomsAdminController controller = controller(service, null);
         MingCustomsRequest request = new MingCustomsRequest();
         request.setVisibility("PUBLIC");
 
@@ -72,7 +72,7 @@ class MingCustomsAdminControllerTest {
     void pageShouldAttachOperatorPermissionsToQuery() {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         when(service.page(any(), any())).thenReturn(PageResult.of(1, 20, 0, List.of()));
-        MingCustomsAdminController controller = new MingCustomsAdminController(service);
+        MingCustomsAdminController controller = controller(service, null);
         MingCustomsRequest request = new MingCustomsRequest();
         request.setPageNo(1);
         request.setPageSize(20);
@@ -92,7 +92,7 @@ class MingCustomsAdminControllerTest {
     void tagCloudShouldReturnStableTagFieldsAndAttachOperatorPermissions() {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         when(service.listTagCloud(any())).thenReturn(List.of(new MingCustomsTagCloudItem(7001L, "祭祀", 3L)));
-        MingCustomsAdminController controller = new MingCustomsAdminController(service);
+        MingCustomsAdminController controller = controller(service, null);
         MingCustomsRequest request = new MingCustomsRequest();
         request.setCategory("礼俗");
         request.setKeyword("祭祀");
@@ -121,8 +121,7 @@ class MingCustomsAdminControllerTest {
 
     @Test
     void versionResponseShouldKeepStableFields() {
-        MingCustomsAdminController controller =
-                new MingCustomsAdminController(mock(MingCustomsApplicationService.class));
+        MingCustomsAdminController controller = controller(mock(MingCustomsApplicationService.class), null);
         ClassicsContentVersion version = new ClassicsContentVersion(
                 ClassicsContentVersionIdCodec.toDomain(9001L),
                 ClassicsContentType.MING_CUSTOMS,
@@ -185,7 +184,7 @@ class MingCustomsAdminControllerTest {
         ClassicsContentId entryId = ClassicsContentIdCodec.toDomain(500000000001L);
         when(contentService.listVersions("MING_CUSTOMS", entryId))
                 .thenReturn(List.of(version(9001L, ClassicsContentType.MING_CUSTOMS, entryId)));
-        MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
+        MingCustomsAdminController controller = controller(service, contentService);
 
         List<MingCustomsVersionResponse> versions = controller.listVersions(versionRequest());
 
@@ -202,7 +201,7 @@ class MingCustomsAdminControllerTest {
         when(contentService.getVersion(ClassicsContentVersionIdCodec.toDomain(9001L)))
                 .thenReturn(version(
                         9001L, ClassicsContentType.MING_CUSTOMS, ClassicsContentIdCodec.toDomain(500000000001L)));
-        MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
+        MingCustomsAdminController controller = controller(service, contentService);
 
         MingCustomsVersionResponse response = controller.getVersion(versionRequest());
 
@@ -220,7 +219,7 @@ class MingCustomsAdminControllerTest {
         when(contentService.restoreHistoryVersion(ClassicsContentVersionIdCodec.toDomain(9001L)))
                 .thenReturn(version(
                         9002L, ClassicsContentType.MING_CUSTOMS, ClassicsContentIdCodec.toDomain(500000000001L)));
-        MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
+        MingCustomsAdminController controller = controller(service, contentService);
 
         MingCustomsVersionResponse response = controller.resetVersion(versionRequest());
 
@@ -235,7 +234,7 @@ class MingCustomsAdminControllerTest {
         when(contentService.getVersion(ClassicsContentVersionIdCodec.toDomain(9001L)))
                 .thenReturn(version(
                         9001L, ClassicsContentType.WANGQI_DOCUMENT, ClassicsContentIdCodec.toDomain(400000000001L)));
-        MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
+        MingCustomsAdminController controller = controller(service, contentService);
 
         BizException exception = assertThrows(BizException.class, () -> controller.getVersion(versionRequest()));
         assertEquals("历史版本不属于当前明代习俗条目", exception.getMessage());
@@ -247,7 +246,7 @@ class MingCustomsAdminControllerTest {
         ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
         when(contentService.getVersion(ClassicsContentVersionIdCodec.toDomain(9001L)))
                 .thenReturn(null);
-        MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
+        MingCustomsAdminController controller = controller(service, contentService);
 
         BizException exception = assertThrows(BizException.class, () -> controller.getVersion(versionRequest()));
         assertEquals("明代习俗历史版本不存在", exception.getMessage());
@@ -274,6 +273,11 @@ class MingCustomsAdminControllerTest {
         request.setId(500000000001L);
         request.setVersionId(9001L);
         return request;
+    }
+
+    private static MingCustomsAdminController controller(
+            MingCustomsApplicationService service, ClassicsContentApplicationService contentService) {
+        return new MingCustomsAdminController(service, contentService);
     }
 
     private static ClassicsContentVersion version(

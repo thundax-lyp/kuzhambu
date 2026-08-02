@@ -39,6 +39,15 @@ public class MingCustomsResponse implements Serializable {
     @JsonProperty("originalExcerpts")
     private String originalExcerpts;
 
+    @JsonProperty("lifecycleStatus")
+    private String lifecycleStatus;
+
+    @JsonProperty("transitionStatus")
+    private String transitionStatus;
+
+    @JsonProperty("currentPublicationJobId")
+    private Long currentPublicationJobId;
+
     @JsonProperty("visibility")
     private String visibility;
 }

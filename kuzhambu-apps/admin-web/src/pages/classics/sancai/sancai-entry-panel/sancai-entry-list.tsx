@@ -5,6 +5,7 @@ import { hasPermission } from "@/auth/permission-storage";
 import { isSameId } from "@/types/id";
 import {
     KuzhambuAlert,
+    KuzhambuButton,
     KuzhambuTable,
     type KuzhambuTableProps,
     type KuzhambuTableSortPosition,
@@ -12,22 +13,27 @@ import {
 } from "@/components";
 
 import * as contentService from "@/pages/classics/common/classics-content-service";
+import { ClassicsPublicationErrorAlert } from "@/pages/classics/common/classics-publication-error-alert";
 import {
     hasClassicsContentPermission,
     type ClassicsBatchOperationRecord
 } from "@/pages/classics/common/classics-content-types";
 import type {
-    SancaiEntryLifecycleStatus,
     SancaiEntryRecord,
+    SancaiPublicationBatchRecord,
     SancaiVolumeRecord
 } from "@/pages/classics/sancai/sancai-types";
+
+export type SancaiPublicationAction = "PUBLISH" | "OFFLINE";
 
 const { Text } = Typography;
 
 interface SancaiEntryListProps {
     entries: SancaiEntryRecord[];
     isLoading: boolean;
-    onChangeLifecycleStatus: (entry: SancaiEntryRecord, action: SancaiEntryLifecycleAction) => void;
+    onPublicationAction: (entry: SancaiEntryRecord, action: SancaiPublicationAction) => void;
+    onPublicationBatch: (entries: SancaiEntryRecord[], action: SancaiPublicationAction) => void;
+    publicationBatchResult?: SancaiPublicationBatchRecord | null;
     onDelete: (entry: SancaiEntryRecord) => void;
     onExport: (entry: SancaiEntryRecord) => void;
     onRefresh: () => void;
@@ -46,81 +52,22 @@ const readTitle = (value: { id: string; title?: string | null }, fallback: strin
     return value.title?.trim() || `${fallback} ${value.id}`;
 };
 
-interface SancaiEntryLifecycleAction {
-    ariaLabel: string;
-    confirmDescription: string;
-    confirmMessage: string;
-    confirmTitle: string;
-    okText: string;
-    successMessage: string;
-    targetStatus: SancaiEntryLifecycleStatus;
-    text: string;
-}
-
-const lifecycleActionMeta: Record<
-    SancaiEntryLifecycleStatus,
-    {
-        confirmDescription: string;
-        confirmTitle: string;
-        confirmVerb: string;
-        okText: string;
-        successMessage: string;
-        targetStatus: SancaiEntryLifecycleStatus;
-        text: string;
-    } | null
-> = {
-    ARCHIVED: {
-        confirmDescription: "恢复后条目重新进入已发布治理范围。",
-        confirmTitle: "恢复发布三才图会条目",
-        confirmVerb: "恢复发布",
-        okText: "恢复发布",
-        successMessage: "三才图会条目已恢复发布",
-        targetStatus: "PUBLISHED",
-        text: "恢复发布"
-    },
-    DRAFT: {
-        confirmDescription: "发布后条目进入已发布治理范围，公开或私有仍由可见性字段决定。",
-        confirmTitle: "发布三才图会条目",
-        confirmVerb: "发布",
-        okText: "发布",
-        successMessage: "三才图会条目已发布",
-        targetStatus: "PUBLISHED",
-        text: "发布"
-    },
-    PUBLISHED: {
-        confirmDescription: "下线后条目退出默认已发布治理范围和 portal 展示，但仍可继续编辑。",
-        confirmTitle: "下线三才图会条目",
-        confirmVerb: "下线",
-        okText: "下线",
-        successMessage: "三才图会条目已下线",
-        targetStatus: "ARCHIVED",
-        text: "下线"
+const getPublicationAction = (entry: SancaiEntryRecord): SancaiPublicationAction | null => {
+    if (entry.lifecycleStatus === "PUBLISHED") {
+        return "OFFLINE";
     }
+    if (
+        entry.lifecycleStatus === "DRAFT" ||
+        entry.lifecycleStatus === "OFFLINE" ||
+        entry.lifecycleStatus === "ERROR"
+    ) {
+        return "PUBLISH";
+    }
+    return null;
 };
 
-const getSancaiEntryLifecycleAction = (
-    entry: SancaiEntryRecord
-): SancaiEntryLifecycleAction | null => {
-    const status = entry.lifecycleStatus;
-    if (status !== "ARCHIVED" && status !== "DRAFT" && status !== "PUBLISHED") {
-        return null;
-    }
-    const meta = lifecycleActionMeta[status];
-    if (!meta) {
-        return null;
-    }
-    const title = readTitle(entry, "条目");
-    return {
-        ariaLabel: `${meta.text} ${title}`,
-        confirmDescription: meta.confirmDescription,
-        confirmMessage: `确认${meta.confirmVerb} ${title}？`,
-        confirmTitle: meta.confirmTitle,
-        okText: meta.okText,
-        successMessage: meta.successMessage,
-        targetStatus: meta.targetStatus,
-        text: meta.text
-    };
-};
+const isPublicationTransitionActive = (entry: SancaiEntryRecord) =>
+    Boolean(entry.transitionStatus && entry.transitionStatus !== "NONE");
 
 const readEntrySummary = (entry: SancaiEntryRecord) => {
     return entry.summary?.trim() || entry.originalText?.trim() || "暂无摘要";
@@ -132,8 +79,9 @@ const readVolumeTitle = (entry: SancaiEntryRecord, volumes: SancaiVolumeRecord[]
 };
 
 const statusTagMeta: Record<string, { color: string; label: string }> = {
-    ARCHIVED: { color: "default", label: "已下线" },
     DRAFT: { color: "gold", label: "草稿" },
+    ERROR: { color: "red", label: "异常" },
+    OFFLINE: { color: "default", label: "已下线" },
     PUBLISHED: { color: "green", label: "已发布" }
 };
 
@@ -149,7 +97,9 @@ const renderStatusTag = (status?: string | null) => {
 export const SancaiEntryList = ({
     entries,
     isLoading,
-    onChangeLifecycleStatus,
+    onPublicationAction,
+    onPublicationBatch,
+    publicationBatchResult,
     onDelete,
     onExport,
     onRefresh,
@@ -251,20 +201,34 @@ export const SancaiEntryList = ({
             title: "条目",
             key: "title",
             width: 220,
-            render: (_, entry) => (
-                <div className="sancai-entry-title-cell">
-                    <a
-                        href="#"
-                        aria-label={`打开条目 ${readTitle(entry, "条目")}`}
-                        onClick={(event) => {
-                            event.preventDefault();
-                            onView(entry);
-                        }}
-                    >
-                        {readTitle(entry, "条目")}
-                    </a>
-                </div>
-            )
+            render: (_, entry) => {
+                const title = readTitle(entry, "条目");
+                return (
+                    <div className="sancai-entry-title-cell">
+                        {isPublicationTransitionActive(entry) ? (
+                            <KuzhambuButton
+                                type="link"
+                                aria-label={`打开条目 ${title}`}
+                                testId={`sancai-entry-${entry.id}-title-button`}
+                                disabled
+                            >
+                                {title}
+                            </KuzhambuButton>
+                        ) : (
+                            <a
+                                href="#"
+                                aria-label={`打开条目 ${title}`}
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    onView(entry);
+                                }}
+                            >
+                                {title}
+                            </a>
+                        )}
+                    </div>
+                );
+            }
         },
         {
             title: "卷",
@@ -283,20 +247,32 @@ export const SancaiEntryList = ({
             dataIndex: "lifecycleStatus",
             key: "status",
             width: 120,
-            render: renderStatusTag
+            render: (_, entry) => (
+                <KuzhambuSpace orientation="vertical" size={2}>
+                    {renderStatusTag(entry.lifecycleStatus)}
+                    {entry.transitionStatus && entry.transitionStatus !== "NONE" ? (
+                        <Tag color="processing">
+                            {entry.transitionStatus === "PUBLISHING" ? "发布中" : "下线中"}
+                        </Tag>
+                    ) : null}
+                </KuzhambuSpace>
+            )
         },
         {
             inlineLimit: 6,
             key: "actions",
             options: (entry) => {
-                const lifecycleAction = getSancaiEntryLifecycleAction(entry);
-                const viewOrEditText = canChangeEntryVisibility ? "编辑" : "查看";
+                const publicationAction = getPublicationAction(entry);
+                const isTransitionActive = isPublicationTransitionActive(entry);
+                const viewOrEditText =
+                    canChangeEntryVisibility && !isTransitionActive ? "编辑" : "查看";
                 return [
                     {
                         key: "view",
                         text: viewOrEditText,
                         ariaLabel: `${viewOrEditText} ${readTitle(entry, "条目")}`,
                         testId: `sancai-entry-${entry.id}-view-button`,
+                        disabled: isTransitionActive,
                         onClick: () => onView(entry)
                     },
                     {
@@ -312,18 +288,18 @@ export const SancaiEntryList = ({
                         text: "视觉",
                         ariaLabel: `视觉处理 ${readTitle(entry, "条目")}`,
                         testId: `sancai-entry-${entry.id}-visual-button`,
-                        disabled: !canRunVisualProcessing,
+                        disabled: !canRunVisualProcessing || isTransitionActive,
                         onClick: () => onVisual(entry)
                     },
-                    ...(lifecycleAction
+                    ...(publicationAction
                         ? [
                               {
-                                  key: "lifecycle",
-                                  text: lifecycleAction.text,
-                                  ariaLabel: lifecycleAction.ariaLabel,
+                                  key: "publication",
+                                  text: publicationAction === "PUBLISH" ? "发布" : "下线",
+                                  ariaLabel: `${publicationAction === "PUBLISH" ? "发布" : "下线"} ${readTitle(entry, "条目")}`,
                                   testId: `sancai-entry-${entry.id}-lifecycle-button`,
-                                  disabled: !canChangeEntryVisibility,
-                                  onClick: () => onChangeLifecycleStatus(entry, lifecycleAction)
+                                  disabled: !canChangeEntryVisibility || isTransitionActive,
+                                  onClick: () => onPublicationAction(entry, publicationAction)
                               }
                           ]
                         : []),
@@ -334,6 +310,7 @@ export const SancaiEntryList = ({
                         text: "删除",
                         ariaLabel: `删除 ${readTitle(entry, "条目")}`,
                         testId: `sancai-entry-${entry.id}-delete-button`,
+                        disabled: isTransitionActive || entry.lifecycleStatus === "PUBLISHED",
                         onClick: () => onDelete(entry)
                     }
                 ];
@@ -343,6 +320,7 @@ export const SancaiEntryList = ({
 
     return (
         <div className="sancai-entry-table-wrap">
+            <ClassicsPublicationErrorAlert items={entries} />
             {batchVisibilityResult ? (
                 <KuzhambuAlert
                     showIcon
@@ -361,6 +339,18 @@ export const SancaiEntryList = ({
                     }
                 />
             ) : null}
+            {publicationBatchResult ? (
+                <KuzhambuAlert
+                    showIcon
+                    type={publicationBatchResult.rejectedCount > 0 ? "warning" : "success"}
+                    style={{ marginBottom: 12 }}
+                    title={`批量发布操作：接受 ${publicationBatchResult.acceptedCount}，拒绝 ${publicationBatchResult.rejectedCount}`}
+                    description={publicationBatchResult.items
+                        .filter((item) => !item.accepted)
+                        .map((item) => `#${item.contentId}: ${item.reason || "请求被拒绝"}`)
+                        .join("；")}
+                />
+            ) : null}
             <KuzhambuTable
                 className="sancai-entry-table"
                 ariaLabel="三才图会条目表格"
@@ -373,6 +363,18 @@ export const SancaiEntryList = ({
                         </KuzhambuSpace>
                     ),
                     actions: [
+                        {
+                            testId: "classics-sancai-batch-publish-button",
+                            title: "批量发布",
+                            disabled: !selectedEntries.length || !canChangeEntryVisibility,
+                            action: () => onPublicationBatch(selectedEntries, "PUBLISH")
+                        },
+                        {
+                            testId: "classics-sancai-batch-offline-button",
+                            title: "批量下线",
+                            disabled: !selectedEntries.length || !canChangeEntryVisibility,
+                            action: () => onPublicationBatch(selectedEntries, "OFFLINE")
+                        },
                         {
                             testId: "classics-sancai-sancai-entry-action-button-3",
                             title: "公开",
@@ -409,7 +411,10 @@ export const SancaiEntryList = ({
                         setSelectedRowsState({
                             keys: keys.map(String),
                             scopeKey: currentPageSelectionScopeKey
-                        })
+                        }),
+                    getCheckboxProps: (entry) => ({
+                        disabled: isPublicationTransitionActive(entry)
+                    })
                 }}
                 rowKey={(entry) => String(entry.id ?? "")}
                 size="middle"

@@ -267,13 +267,20 @@ describe("sancai service request contracts", () => {
             volumeId: "202"
         });
 
-        await entryService.changeLifecycleStatus({
-            id: "3001",
-            lifecycleStatus: "ARCHIVED"
+        await entryService.publish({ id: "3001" });
+        expectLastCall("POST", "/classics/sancai/entries/publish", { id: "3001" });
+
+        await entryService.submitOffline({ id: "3001" });
+        expectLastCall("POST", "/classics/sancai/entries/offline", { id: "3001" });
+
+        await entryService.publishBatch({ ids: ["3001", "3002"] });
+        expectLastCall("POST", "/classics/sancai/entries/batch/publish", {
+            ids: ["3001", "3002"]
         });
-        expectLastCall("POST", "/classics/sancai/entries/lifecycle/change", {
-            id: "3001",
-            lifecycleStatus: "ARCHIVED"
+
+        await entryService.submitOfflineBatch({ ids: ["3001", "3002"] });
+        expectLastCall("POST", "/classics/sancai/entries/batch/offline", {
+            ids: ["3001", "3002"]
         });
 
         await entryService.deleteById("3001");

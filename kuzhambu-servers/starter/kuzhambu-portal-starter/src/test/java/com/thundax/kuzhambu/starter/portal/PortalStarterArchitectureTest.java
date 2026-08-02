@@ -4,6 +4,9 @@ import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.StarterArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,6 +14,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 class PortalStarterArchitectureTest extends AbstractArchitectureTest {
 
@@ -69,5 +73,21 @@ class PortalStarterArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.ai.infra.refinement.persistence.mapper",
                         "com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper",
                         "com.thundax.kuzhambu.discovery.infra.search.persistence.mapper");
+    }
+
+    @Test
+    void portalStarterShouldNotRunClassicsPublicationSchedules() throws IOException {
+        Assertions.assertThat(KuzhambuPortalApplication.class.getAnnotation(EnableScheduling.class))
+                .isNull();
+        Assertions.assertThat(loadApplicationYaml())
+                .contains("enabled: ${KUZHAMBU_CLASSICS_PUBLICATION_ENABLED:false}");
+    }
+
+    private static String loadApplicationYaml() throws IOException {
+        try (InputStream input =
+                PortalStarterArchitectureTest.class.getClassLoader().getResourceAsStream("application.yml")) {
+            Assertions.assertThat(input).isNotNull();
+            return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 }

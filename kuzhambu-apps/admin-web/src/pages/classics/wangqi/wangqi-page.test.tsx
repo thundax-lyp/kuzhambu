@@ -6,7 +6,7 @@ import { clearPermissions, replacePermissions } from "@/auth/permission-storage"
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import { WangqiPage } from "./wangqi-page";
 import { WangqiVersionPanel } from "./wangqi-version-panel";
-import type { WangqiContentVersionRecord } from "./wangqi-types";
+import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
 
 vi.mock("@/pages/classics/common/ai-candidate-panel", () => {
     const aiCandidatePanelMock = ({
@@ -83,7 +83,7 @@ interface CapturedCall {
 }
 
 const capturedCalls: CapturedCall[] = [];
-let mockDocumentRecord = {
+let mockDocumentRecord: WangqiDocumentRecord = {
     id: "1",
     title: "王圻文档",
     summary: "记录王圻古籍条目。",
@@ -91,7 +91,9 @@ let mockDocumentRecord = {
     content: "## 王圻",
     documentTime: "2026-01-01T00:00:00.000+00:00",
     storageObjectId: "7001",
-    visibility: "PUBLIC"
+    visibility: "PUBLIC",
+    lifecycleStatus: "DRAFT",
+    transitionStatus: "NONE"
 };
 let mockSummaryCandidates = [
     {
@@ -226,6 +228,13 @@ const installFetchMock = () => {
         }
         if (path.endsWith("/classics/wangqi/documents/get")) {
             return apiResponse(mockDocumentRecord);
+        }
+        if (path.endsWith("/classics/wangqi/documents/batch/publish")) {
+            return apiResponse({
+                acceptedCount: 1,
+                rejectedCount: 0,
+                items: [{ contentId: "1", accepted: true, jobId: "9001" }]
+            });
         }
         if (path.endsWith("/classics/wangqi/documents/timeline/list")) {
             return apiResponse([]);
@@ -449,6 +458,26 @@ describe("WangqiPage", () => {
 
         expect(await screen.findByRole("heading", { name: "王圻文档" })).toBeInTheDocument();
         expect(await screen.findByText("王圻文档")).toBeInTheDocument();
+    }, 30000);
+
+    it("disables document writes while publication is transitioning", async () => {
+        mockDocumentRecord = {
+            ...mockDocumentRecord,
+            lifecycleStatus: "DRAFT",
+            transitionStatus: "PUBLISHING"
+        };
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        expect(await screen.findByTestId("wangqi-document-edit-1-button")).toBeDisabled();
+        const table = screen.getByLabelText("王圻文档表格");
+        expect(within(table).getAllByRole("checkbox")[1]).toBeDisabled();
     }, 30000);
 
     it("does not render a left document index", async () => {
@@ -1264,5 +1293,34 @@ describe("WangqiPage", () => {
             screen.getByText("Q: 什么是经文注释？；A: 为文献加注释与解释。")
         ).toBeInTheDocument();
         expect(screen.getByText("Q: 应用来源有哪些？；A: 来自专家校对。")).toBeInTheDocument();
+    });
+
+    it("submits selected documents for batch publication", async () => {
+        const user = userEvent.setup();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const table = await screen.findByLabelText("王圻文档表格");
+        await waitForSelectableRow(table);
+        selectFirstRow(table);
+        const batchPublishButton = screen.getByTestId("classics-wangqi-batch-publish-button");
+        await waitFor(() => expect(batchPublishButton).not.toBeDisabled());
+        await user.click(batchPublishButton);
+
+        await waitFor(() => {
+            expect(
+                capturedCalls.some(
+                    (call) =>
+                        call.path === "/classics/wangqi/documents/batch/publish" &&
+                        JSON.stringify(call.body) === JSON.stringify({ ids: ["1"] })
+                )
+            ).toBeTruthy();
+        });
+        expect(await screen.findByText("批量发布操作：接受 1，拒绝 0")).toBeInTheDocument();
     });
 });

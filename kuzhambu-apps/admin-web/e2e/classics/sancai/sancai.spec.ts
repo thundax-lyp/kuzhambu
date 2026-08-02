@@ -199,41 +199,38 @@ test.describe("classics sancai page", () => {
                 });
             }
         );
-        await page.route(
-            "**/kuzhambu-admin-api/api/classics/sancai/entries/3001",
-            async (route) => {
-                await route.fulfill({
-                    contentType: "application/json",
-                    body: JSON.stringify({
-                        code: "COMMON-00000",
-                        message: "success",
-                        data: {
-                            id: 3001,
-                            volumeId: 101,
-                            title: entryRestored ? "历史天地" : "天地",
-                            originalText: entryRestored ? "历史原文" : "原文",
-                            translationText: entryRestored ? "历史译文" : "译文",
-                            summary: entryRestored ? "历史摘要" : "天地初分，清浊定位。",
-                            lifecycleStatus: "PUBLISHED",
-                            visibility: "PUBLIC",
-                            translationStatus: "TRANSLATED",
-                            imageStatus: "HAS_IMAGE",
-                            visualAssetStatus: "READY",
-                            refinementStatus: "COMPLETE",
-                            currentVersionId: entryRestored ? 9002 : 9001,
-                            currentVersionNo: entryRestored ? 2 : 1,
-                            currentVersionedAt: entryRestored
-                                ? "2026-06-21T01:00:00.000+08:00"
-                                : "2026-06-20T01:00:00.000+08:00",
-                            contentUpdatedAt: entryRestored
-                                ? "2026-06-21T01:00:00.000+08:00"
-                                : "2026-06-20T01:00:00.000+08:00",
-                            versionDirty: false
-                        }
-                    })
-                });
-            }
-        );
+        await page.route("**/kuzhambu-admin-api/api/classics/sancai/entries/get", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        id: 3001,
+                        volumeId: 101,
+                        title: entryRestored ? "历史天地" : "天地",
+                        originalText: entryRestored ? "历史原文" : "原文",
+                        translationText: entryRestored ? "历史译文" : "译文",
+                        summary: entryRestored ? "历史摘要" : "天地初分，清浊定位。",
+                        lifecycleStatus: "PUBLISHED",
+                        visibility: "PUBLIC",
+                        translationStatus: "TRANSLATED",
+                        imageStatus: "HAS_IMAGE",
+                        visualAssetStatus: "READY",
+                        refinementStatus: "COMPLETE",
+                        currentVersionId: entryRestored ? 9002 : 9001,
+                        currentVersionNo: entryRestored ? 2 : 1,
+                        currentVersionedAt: entryRestored
+                            ? "2026-06-21T01:00:00.000+08:00"
+                            : "2026-06-20T01:00:00.000+08:00",
+                        contentUpdatedAt: entryRestored
+                            ? "2026-06-21T01:00:00.000+08:00"
+                            : "2026-06-20T01:00:00.000+08:00",
+                        versionDirty: false
+                    }
+                })
+            });
+        });
         await page.route(
             "**/kuzhambu-admin-api/api/classics/sancai/entries/versions/list",
             async (route) => {
@@ -362,7 +359,7 @@ test.describe("classics sancai page", () => {
         await expect(entryTable.getByRole("columnheader", { name: "状态" })).toBeVisible();
         await expect(entryTable.getByRole("columnheader", { name: "摘要" })).toHaveCount(1);
         await expect(entryTable.getByRole("columnheader", { name: "操作" })).toBeVisible();
-        await expect(page.getByRole("button", { name: /查看/ })).toBeVisible();
+        await expect(page.getByRole("link", { name: "打开条目 天地" })).toBeVisible();
         await expect
             .poll(() => entryListRequests.at(-1))
             .toEqual({
@@ -388,11 +385,13 @@ test.describe("classics sancai page", () => {
                 sortDirection: "ASC"
             });
 
-        await page.getByRole("button", { name: /查看/ }).click();
-        await expect(page.getByLabel("三才图会版本历史面板")).toBeVisible();
-        await page.getByRole("button", { name: "查看三才图会版本 1" }).click();
+        await page.getByRole("link", { name: "打开条目 天地" }).click();
+        await page.getByText("版本", { exact: true }).click();
+        await expect(page.getByLabel("三才图会版本面板")).toBeVisible();
+        const versionPanel = page.getByLabel("三才图会版本面板");
+        await versionPanel.getByRole("button", { name: "查看" }).click();
         await expect(page.getByText("历史：历史天地")).toBeVisible();
-        await page.getByRole("button", { name: "恢复三才图会版本 1" }).click();
+        await versionPanel.getByRole("button", { name: "恢复此版本" }).click();
         await page
             .locator(".ant-modal-wrap")
             .getByRole("button", { name: /恢\s*复/ })

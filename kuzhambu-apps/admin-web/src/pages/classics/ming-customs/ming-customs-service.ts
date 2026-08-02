@@ -4,6 +4,8 @@ import type { Page, PageQuery } from "@/types/page";
 import type {
     MingCustomsContentVersionRecord,
     MingCustomsKeywordCloudRecord,
+    MingCustomsPublicationActionRecord,
+    MingCustomsPublicationBatchRecord,
     MingCustomsRecord,
     MingCustomsTagCloudRecord
 } from "./ming-customs-types";
@@ -44,6 +46,14 @@ interface MingCustomsVersionCommand {
     versionId?: string | null;
 }
 
+export interface MingCustomsPublicationActionCommand {
+    id: string;
+}
+
+export interface MingCustomsPublicationBatchCommand {
+    ids: string[];
+}
+
 export const page = (request: MingCustomsQuery = {}) => {
     return postJson<Page<MingCustomsRecord>, MingCustomsQuery>("/classics/ming-customs/page", {
         body: request
@@ -72,6 +82,34 @@ export const deleteById = (id: string) => {
     return postJson<void, MingCustomsCommand>("/classics/ming-customs/delete", {
         body: { id }
     });
+};
+
+export const publish = (command: MingCustomsPublicationActionCommand) => {
+    return postJson<MingCustomsPublicationActionRecord, MingCustomsPublicationActionCommand>(
+        "/classics/ming-customs/publish",
+        { body: command }
+    );
+};
+
+export const submitOffline = (command: MingCustomsPublicationActionCommand) => {
+    return postJson<MingCustomsPublicationActionRecord, MingCustomsPublicationActionCommand>(
+        "/classics/ming-customs/offline",
+        { body: command }
+    );
+};
+
+export const publishBatch = (command: MingCustomsPublicationBatchCommand) => {
+    return postJson<MingCustomsPublicationBatchRecord, MingCustomsPublicationBatchCommand>(
+        "/classics/ming-customs/batch/publish",
+        { body: command }
+    );
+};
+
+export const submitOfflineBatch = (command: MingCustomsPublicationBatchCommand) => {
+    return postJson<MingCustomsPublicationBatchRecord, MingCustomsPublicationBatchCommand>(
+        "/classics/ming-customs/batch/offline",
+        { body: command }
+    );
 };
 
 export const listKeywordCloud = (visibility?: string | null) => {

@@ -6,7 +6,7 @@ import { clearPermissions, replacePermissions } from "@/auth/permission-storage"
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import { MingCustomsVersionHistoryPanel } from "./ming-customs-version-history-panel";
 import { MingCustomsPage } from "./ming-customs-page";
-import type { MingCustomsContentVersionRecord } from "./ming-customs-types";
+import type { MingCustomsContentVersionRecord, MingCustomsRecord } from "./ming-customs-types";
 
 const confirmDangerMock = vi.hoisted(() =>
     vi.fn((options: { onConfirm?: () => void }) => options.onConfirm?.())
@@ -83,7 +83,7 @@ interface CapturedCall {
 }
 
 const capturedCalls: CapturedCall[] = [];
-let mockMingCustomsRecord = {
+let mockMingCustomsRecord: MingCustomsRecord = {
     id: "500000000001",
     title: "岁时礼仪：元旦朝贺",
     category: "RITUAL",
@@ -93,7 +93,9 @@ let mockMingCustomsRecord = {
     contentFormat: "MARKDOWN",
     content: "## 正旦",
     originalExcerpts: "正旦朝贺。",
-    visibility: "PUBLIC"
+    visibility: "PUBLIC",
+    lifecycleStatus: "DRAFT",
+    transitionStatus: "NONE"
 };
 
 const selectFirstRow = (table: HTMLElement) => {
@@ -150,6 +152,13 @@ const installFetchMock = () => {
                 count: 1,
                 totalPage: 1,
                 records: [mockMingCustomsRecord]
+            });
+        }
+        if (path.endsWith("/classics/ming-customs/batch/publish")) {
+            return apiResponse({
+                acceptedCount: 1,
+                rejectedCount: 0,
+                items: [{ contentId: "500000000001", accepted: true, jobId: "9001" }]
             });
         }
 
@@ -413,6 +422,26 @@ describe("MingCustomsPage", () => {
         expect(await screen.findByText("岁时礼仪：元旦朝贺")).toBeInTheDocument();
     }, 30000);
 
+    it("disables entry writes while publication is transitioning", async () => {
+        mockMingCustomsRecord = {
+            ...mockMingCustomsRecord,
+            lifecycleStatus: "PUBLISHED",
+            transitionStatus: "OFFLINING"
+        };
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        expect(await screen.findByTestId("ming-customs-edit-500000000001-button")).toBeDisabled();
+        const table = screen.getByLabelText("明代习俗表格");
+        expect(within(table).getAllByRole("checkbox")[1]).toBeDisabled();
+    }, 30000);
+
     it("opens export jobs from a large drawer action", async () => {
         const user = userEvent.setup();
 
@@ -596,6 +625,36 @@ describe("MingCustomsPage", () => {
             expect(screen.getByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
         });
         expect(screen.getByText("MING_CUSTOMS#500000000002: 习俗条目不存在")).toBeInTheDocument();
+    }, 30000);
+
+    it("submits selected entries for batch publication", async () => {
+        const user = userEvent.setup();
+        const queryClient = createTestQueryClient();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const table = await screen.findByLabelText("明代习俗表格");
+        await waitForSelectableRow(table);
+        selectFirstRow(table);
+        const batchPublishButton = screen.getByTestId("classics-ming-customs-batch-publish-button");
+        await waitFor(() => expect(batchPublishButton).not.toBeDisabled());
+        await user.click(batchPublishButton);
+
+        await waitFor(() => {
+            expect(
+                capturedCalls.some(
+                    (call) =>
+                        call.path === "/classics/ming-customs/batch/publish" &&
+                        JSON.stringify(call.body) === JSON.stringify({ ids: ["500000000001"] })
+                )
+            ).toBeTruthy();
+        });
+        expect(await screen.findByText("批量发布操作：接受 1，拒绝 0")).toBeInTheDocument();
     }, 30000);
 
     it("changes selected entries visibility and shows item failures", async () => {

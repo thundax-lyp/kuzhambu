@@ -26,6 +26,8 @@ public final class ApiAnnotationArchitectureRuleSupport {
             "add",
             "create",
             "complete",
+            "publish",
+            "offline",
             "remove",
             "delete",
             "abort",

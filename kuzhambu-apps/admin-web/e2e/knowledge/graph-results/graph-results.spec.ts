@@ -294,7 +294,7 @@ test.describe("admin graph results smoke", () => {
             "aria-selected",
             "true"
         );
-        await expect.poll(() => mocks.getEntityPagePayload()).toMatchObject({ versionId: 71 });
+        await expect.poll(() => mocks.getEntityPagePayload()).toMatchObject({ versionId: "71" });
         await expect(page.getByRole("table", { name: "知识正式实体表格" })).toContainText("李时珍");
         await page
             .getByRole("table", { name: "知识正式实体表格" })
@@ -306,7 +306,7 @@ test.describe("admin graph results smoke", () => {
         await page.keyboard.press("Escape");
 
         await page.getByRole("tab", { name: "正式关系" }).click();
-        await expect.poll(() => mocks.getRelationPagePayload()).toMatchObject({ versionId: 71 });
+        await expect.poll(() => mocks.getRelationPagePayload()).toMatchObject({ versionId: "71" });
         await expect(page.getByRole("table", { name: "知识正式关系表格" })).toContainText(
             "AUTHOR_OF"
         );
@@ -320,11 +320,13 @@ test.describe("admin graph results smoke", () => {
         await page.keyboard.press("Escape");
 
         await page.getByRole("tab", { name: "正式世系" }).click();
-        await expect.poll(() => mocks.getLineageNodePagePayload()).toMatchObject({ versionId: 71 });
+        await expect
+            .poll(() => mocks.getLineageNodePagePayload())
+            .toMatchObject({ versionId: "71" });
         await expect
             .poll(() => mocks.getLineageRelationPagePayload())
             .toMatchObject({
-                versionId: 71
+                versionId: "71"
             });
         await expect(page.getByRole("table", { name: "知识正式世系节点表格" })).toContainText(
             "祖父"

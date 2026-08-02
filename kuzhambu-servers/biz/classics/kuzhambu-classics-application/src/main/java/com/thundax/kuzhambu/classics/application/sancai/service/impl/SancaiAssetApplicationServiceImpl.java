@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationAssembler;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
@@ -20,6 +22,8 @@ import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
@@ -102,21 +106,25 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     private final WorkerRenderClient workerRenderClient;
     private final StorageFacade storageFacade;
     private final ObjectMapper objectMapper;
+    private final ClassicsPublicationWriteGuard publicationWriteGuard;
 
     public SancaiAssetApplicationServiceImpl(
             SancaiAssetRepository repository,
             WorkerRenderClient workerRenderClient,
             StorageFacade storageFacade,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            ClassicsPublicationWriteGuard publicationWriteGuard) {
         this.repository = repository;
         this.workerRenderClient = workerRenderClient;
         this.storageFacade = storageFacade;
         this.objectMapper = objectMapper == null ? new ObjectMapper().findAndRegisterModules() : objectMapper;
+        this.publicationWriteGuard = publicationWriteGuard;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryDraftId updateDraft(SancaiDraftCommand command) {
+        requireWritable(SancaiEntryIdCodec.toDomain(command.getEntryId()));
         SancaiEntryDraft draft = new SancaiEntryDraft();
         draft.setEntryId(SancaiEntryIdCodec.toDomain(command.getEntryId()));
         draft.setAutosavedAt(command.getAutosavedAt() == null ? Instant.now() : command.getAutosavedAt());
@@ -132,6 +140,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryImageId updateImage(SancaiImageCommand command) {
+        requireWritable(SancaiEntryIdCodec.toDomain(command.getEntryId()));
         SancaiEntryImage image = new SancaiEntryImage();
         image.setId(SancaiEntryImageIdCodec.toDomain(command.getId()));
         image.setEntryId(SancaiEntryIdCodec.toDomain(command.getEntryId()));
@@ -157,6 +166,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     public SancaiEntryImageResource uploadImage(SancaiEntryImageUploadCommand command) {
         SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command == null ? null : command.getEntryId());
         validateImageUpload(command);
+        requireWritable(entryId);
 
         UploadStorageFacadeResponse uploadResponse = storageFacade.upload(UploadStorageFacadeRequest.builder()
                 .inputStream(command.getInputStream())
@@ -220,9 +230,11 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Transactional(rollbackFor = Exception.class)
     public void sortImages(SancaiEntryImageSortCommand command) {
         List<SancaiEntryImageId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<SancaiEntryImage> images = repository.listImages(SortDirection.ASC);
+        images.stream().map(SancaiEntryImage::getEntryId).distinct().forEach(this::requireWritable);
         SortablePrioritySwapSupport.sort(
                 orderedIdList,
-                repository.listImages(SortDirection.ASC),
+                images,
                 SancaiEntryImage::getId,
                 SancaiEntryImageId::value,
                 SancaiEntryImage::getPriority,
@@ -233,6 +245,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void useImage(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+        requireWritable(entryId);
         requireImage(entryId, imageId);
         repository.clearCurrentImagesByEntryId(entryId);
         if (repository.markImageCurrent(entryId, imageId) != 1) {
@@ -247,6 +260,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         if (image == null) {
             throw new BizException("三才图片不存在");
         }
+        requireWritable(image.getEntryId());
         repository.deleteImageById(id);
         unbindStorageOwner(image);
         if (storageFacade != null && image.getStorageObjectId() != null) {
@@ -265,6 +279,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiVisualAssetId updateVisualAsset(SancaiVisualAsset visualAsset) {
+        requireWritable(visualAsset == null ? null : visualAsset.getEntryId());
         validateVisualWeights(visualAsset);
         if (visualAsset.getId() == null) {
             return repository.insertVisualAsset(visualAsset);
@@ -276,6 +291,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void useVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
+        requireWritable(entryId);
         repository.updateCurrentVisualAsset(entryId, visualAssetId);
     }
 
@@ -291,6 +307,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         if (entryId == null || visualAssetId == null || StringUtils.isBlank(fusionDescription)) {
             throw new BizException("三才信息融合写回参数不完整");
         }
+        requireWritable(entryId);
         SancaiVisualAsset currentAsset = requireVisualAsset(entryId, visualAssetId);
         validateVisualWeights(currentAsset, "三才信息融合写回");
         if (StringUtils.isBlank(currentAsset.getImageAnalysisMarkdown())) {
@@ -306,6 +323,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         if (entryId == null || visualAssetId == null || generatedImageStorageObjectId == null) {
             throw new BizException("三才生图版本参数不完整");
         }
+        requireWritable(entryId);
         SancaiVisualAsset currentAsset = requireVisualAsset(entryId, visualAssetId);
         validateVisualWeights(currentAsset, "三才生图版本创建");
         if (currentAsset.getSourceImageStorageObjectId() == null) {
@@ -330,6 +348,13 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         nextAsset.setGenerationParamsJson(currentAsset.getGenerationParamsJson());
         nextAsset.setId(repository.insertVisualAsset(nextAsset));
         return nextAsset;
+    }
+
+    private void requireWritable(SancaiEntryId entryId) {
+        publicationWriteGuard.requireWritable(
+                ClassicsContentType.SANCAI_ENTRY,
+                new ClassicsContentId(entryId == null ? null : entryId.value()),
+                ClassicsPublicationWriteOperation.EDIT);
     }
 
     @Override

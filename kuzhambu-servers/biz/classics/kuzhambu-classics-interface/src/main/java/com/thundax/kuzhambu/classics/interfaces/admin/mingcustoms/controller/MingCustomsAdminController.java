@@ -36,7 +36,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,11 +48,6 @@ public class MingCustomsAdminController {
     private final MingCustomsApplicationService service;
     private final ClassicsContentApplicationService contentService;
 
-    public MingCustomsAdminController(MingCustomsApplicationService service) {
-        this(service, null);
-    }
-
-    @Autowired
     public MingCustomsAdminController(
             MingCustomsApplicationService service, ClassicsContentApplicationService contentService) {
         this.service = service;

@@ -29,6 +29,8 @@ import com.thundax.kuzhambu.classics.application.content.support.ClassicsContent
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.content.support.MingCustomsVersionSnapshot;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
@@ -134,6 +136,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final ClassicsAiCandidatePayloadParser aiCandidatePayloadParser;
     private final ClassicsTagBindingSupport tagBindingSupport;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
+    private final ClassicsPublicationWriteGuard publicationWriteGuard;
     private static final String DEFAULT_REJECT_ERROR_TYPE = "USER_REJECTED";
     private static final String DEFAULT_REJECT_ERROR_MESSAGE = "用户已批量拒绝该 AI 候选";
     private static final String FAILURE_PERMISSION_DENIED = "PERMISSION_DENIED";
@@ -160,7 +163,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             AiFacade aiFacade,
             ClassicsTagBindingSupport tagBindingSupport,
             ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
-            SancaiRepository sancaiRepository) {
+            SancaiRepository sancaiRepository,
+            ClassicsPublicationWriteGuard publicationWriteGuard) {
         this.repository = repository;
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
         this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
@@ -171,6 +175,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         this.aiFacade = aiFacade;
         this.tagBindingSupport = tagBindingSupport;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
+        this.publicationWriteGuard = publicationWriteGuard;
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
         this.aiCandidatePayloadParser = new ClassicsAiCandidatePayloadParser(this.objectMapper);
     }
@@ -185,9 +190,16 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Transactional(rollbackFor = Exception.class)
     public void sortTags(ContentTagSortCommand command) {
         List<ClassicsContentTagId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<ClassicsContentTag> tags = repository.listTags(SortDirection.ASC);
+        tags.stream()
+                .filter(Objects::nonNull)
+                .filter(tag -> tag.getContentType() != null && tag.getContentId() != null)
+                .map(tag -> new ContentRef(tag.getContentType(), tag.getContentId()))
+                .distinct()
+                .forEach(ref -> requireWritable(ref.contentType(), ref.contentId()));
         SortablePrioritySwapSupport.sort(
                 orderedIdList,
-                repository.listTags(SortDirection.ASC),
+                tags,
                 ClassicsContentTag::getId,
                 ClassicsContentTagId::value,
                 ClassicsContentTag::getPriority,
@@ -201,6 +213,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         validateTagCommand(command, false);
         ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
         ClassicsContentType contentType = command.getContentType();
+        requireWritable(contentType, contentId);
         int nextPriority = repository.maxTagPriority(null, null) + 1;
         ClassicsContentTag tag;
         if (tagBindingSupport == null) {
@@ -229,6 +242,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         validateTagCommand(command, true);
         ClassicsContentType contentType = command.getContentType();
         ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
+        requireWritable(contentType, contentId);
         ClassicsContentTag existing =
                 repository.getTagById(command == null ? null : ClassicsContentTagIdCodec.toDomain(command.getId()));
         if (existing == null) {
@@ -263,6 +277,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (existing == null) {
             return;
         }
+        requireWritable(existing.getContentType(), existing.getContentId());
         repository.deleteTagById(
                 existing == null || existing.getContentType() == null
                         ? null
@@ -286,6 +301,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentQaPairId addQaPair(ContentQaPairCommand command) {
         ClassicsContentQaPair qaPair = ClassicsContentApplicationAssembler.toQaPair(command);
+        requireWritable(qaPair.getContentType(), qaPair.getContentId());
         qaPair.setId(null);
         qaPair.setPriority(repository.maxQaPairPriority() + 1);
         ClassicsContentQaPairId createdId = repository.insertQaPair(qaPair);
@@ -298,6 +314,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentQaPairId updateQaPair(ContentQaPairCommand command) {
         ClassicsContentQaPair qaPair = ClassicsContentApplicationAssembler.toQaPair(command);
+        requireWritable(qaPair.getContentType(), qaPair.getContentId());
         repository.updateQaPair(qaPair);
         versionAndPublishContentSync(
                 qaPair.getContentType(), qaPair.getContentId(), ClassicsContentChangeType.QA_CHANGED, "更新问答对");
@@ -317,6 +334,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private void sortQaPairs(ContentQaPairSortCommand command, List<ClassicsContentQaPair> currentQaPairs) {
+        currentQaPairs.stream()
+                .filter(Objects::nonNull)
+                .filter(pair -> pair.getContentType() != null && pair.getContentId() != null)
+                .map(pair -> new ContentRef(pair.getContentType(), pair.getContentId()))
+                .distinct()
+                .forEach(ref -> requireWritable(ref.contentType(), ref.contentId()));
         List<ClassicsContentQaPairId> orderedIdList = command == null ? null : command.getOrderedIds();
         SortablePrioritySwapSupport.sort(
                 orderedIdList,
@@ -341,6 +364,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Transactional(rollbackFor = Exception.class)
     public void deleteQaPair(ClassicsContentQaPairId id) {
         ClassicsContentQaPair existing = repository.getQaPairById(id);
+        if (existing != null) {
+            requireWritable(existing.getContentType(), existing.getContentId());
+        }
         repository.deleteQaPairById(id);
         if (existing != null && existing.getContentType() != null && existing.getContentId() != null) {
             versionAndPublishContentSync(
@@ -392,6 +418,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentVersion applyAiResult(Versionable content, String changeSummary) {
+        if (content != null) {
+            requireWritable(content.contentType(), content.contentId());
+        }
         return ensureVersioned(content, ClassicsContentChangeType.AI_APPLIED, changeSummary);
     }
 
@@ -410,6 +439,10 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             throw new BizException("AI候选应用参数不完整");
         }
 
+        ClassicsContentType contentType = command.getContentType();
+        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
+        requireWritable(contentType, contentId);
+
         if (aiFacade == null) {
             throw new BizException("AI候选服务未就绪");
         }
@@ -421,9 +454,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 .capability(command.getCapability())
                 .build());
 
-        ClassicsContentType contentType = command.getContentType();
         String capability = command.getCapability();
-        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
         String changeSummary = resolveChangeSummary(capability, command.getChangeSummary());
         Versionable content = null;
 
@@ -1173,6 +1204,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (version == null) {
             throw new BizException("历史版本不存在");
         }
+        requireWritable(version.getContentType(), version.getContentId());
         if (version.getContentType() == ClassicsContentType.WANGQI_DOCUMENT) {
             Versionable restored = wangqiDocumentVersionRestorer.restoreSnapshot(version);
             ClassicsContentVersion restoredVersion = createRestoredVersion(restored, version);
@@ -1196,6 +1228,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         }
         throw new BizException("暂不支持恢复该类型历史版本: " + version.getContentType());
     }
+
+    private void requireWritable(ClassicsContentType contentType, ClassicsContentId contentId) {
+        publicationWriteGuard.requireWritable(contentType, contentId, ClassicsPublicationWriteOperation.EDIT);
+    }
+
+    private record ContentRef(ClassicsContentType contentType, ClassicsContentId contentId) {}
 
     private Versionable restoreMingCustomsFromSnapshot(ClassicsContentVersion version) {
         MingCustomsEntry entry = repository.getMingCustomsEntryForAiApply(version.getContentId());

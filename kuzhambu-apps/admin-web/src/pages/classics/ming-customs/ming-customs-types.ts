@@ -9,6 +9,28 @@ export interface MingCustomsRecord {
     content?: string | null;
     originalExcerpts?: string | null;
     visibility?: string | null;
+    lifecycleStatus?: "DRAFT" | "PUBLISHED" | "OFFLINE" | "ERROR" | string | null;
+    transitionStatus?: "NONE" | "PUBLISHING" | "OFFLINING" | string | null;
+    currentPublicationJobId?: string | null;
+}
+
+export interface MingCustomsPublicationActionRecord {
+    jobId: string;
+    contentType: "MING_CUSTOMS";
+    contentId: string;
+    lifecycleStatus: string;
+    transitionStatus: string;
+}
+
+export interface MingCustomsPublicationBatchRecord {
+    acceptedCount: number;
+    rejectedCount: number;
+    items: Array<{
+        contentId: string;
+        accepted: boolean;
+        jobId?: string | null;
+        reason?: string | null;
+    }>;
 }
 
 export interface MingCustomsKeywordCloudItem {

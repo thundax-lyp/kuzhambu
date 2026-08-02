@@ -33,6 +33,7 @@ import * as service from "./ming-customs-service";
 import type { MingCustomsCommand, MingCustomsQuery } from "./ming-customs-service";
 import type {
     MingCustomsContentVersionRecord,
+    MingCustomsPublicationBatchRecord,
     MingCustomsRecord,
     MingCustomsTagCloudItem
 } from "./ming-customs-types";
@@ -165,6 +166,8 @@ export const MingCustomsPage = () => {
     );
     const [batchVisibilityResult, setBatchVisibilityResult] =
         useState<ClassicsBatchOperationRecord | null>(null);
+    const [publicationBatchResult, setPublicationBatchResult] =
+        useState<MingCustomsPublicationBatchRecord | null>(null);
     const [exportJobsDrawerOpen, setExportJobsDrawerOpen] = useState(false);
     const [creatingRefinementCapability, setCreatingRefinementCapability] =
         useState<AiRefinementTaskCapability | null>(null);
@@ -348,6 +351,43 @@ export const MingCustomsPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "删除失败");
+        }
+    });
+    const publicationMutation = useMutation({
+        mutationFn: ({
+            entry,
+            action
+        }: {
+            entry: MingCustomsRecord;
+            action: "PUBLISH" | "OFFLINE";
+        }) =>
+            action === "PUBLISH"
+                ? service.publish({ id: entry.id })
+                : service.submitOffline({ id: entry.id }),
+        onSuccess: async () => {
+            await invalidateMingCustoms();
+            messageApi.success("发布状态变更请求已接受");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "发布状态变更失败");
+        }
+    });
+    const publicationBatchMutation = useMutation({
+        mutationFn: (action: "PUBLISH" | "OFFLINE") => {
+            const command = { ids: selectedEntryIds };
+            return action === "PUBLISH"
+                ? service.publishBatch(command)
+                : service.submitOfflineBatch(command);
+        },
+        onSuccess: async (result) => {
+            setPublicationBatchResult(result);
+            await invalidateMingCustoms();
+            messageApi.success(
+                `批量请求完成：接受 ${result.acceptedCount}，拒绝 ${result.rejectedCount}`
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量发布状态变更失败");
         }
     });
     const shareMutation = useMutation({
@@ -572,6 +612,28 @@ export const MingCustomsPage = () => {
         });
     };
 
+    const changePublicationStatus = (entry: MingCustomsRecord, action: "PUBLISH" | "OFFLINE") => {
+        const actionText = action === "PUBLISH" ? "发布" : "下线";
+        confirm.danger({
+            title: `${actionText}明代习俗`,
+            message: `确认${actionText} ${readTitle(entry)}？`,
+            description: "请求提交后由后台任务异步同步搜索与知识库状态。",
+            okText: actionText,
+            onConfirm: () => publicationMutation.mutateAsync({ entry, action })
+        });
+    };
+
+    const changePublicationStatusBatch = (action: "PUBLISH" | "OFFLINE") => {
+        const actionText = action === "PUBLISH" ? "发布" : "下线";
+        confirm.danger({
+            title: `批量${actionText}明代习俗`,
+            message: `确认${actionText}选中的 ${selectedEntryIds.length} 条稿件？`,
+            description: "服务端将逐条受理，并返回每条稿件的接受或拒绝原因。",
+            okText: `批量${actionText}`,
+            onConfirm: () => publicationBatchMutation.mutateAsync(action)
+        });
+    };
+
     const shareEntry = (entry: MingCustomsRecord) => {
         if (!canShareEntries) {
             messageApi.warning("当前账号缺少明代习俗分享权限");
@@ -747,6 +809,7 @@ export const MingCustomsPage = () => {
                         <MingCustomsTable
                             batchShareResult={batchShareResult}
                             batchVisibilityResult={batchVisibilityResult}
+                            publicationBatchResult={publicationBatchResult}
                             canChangeEntryVisibility={canChangeEntryVisibility}
                             canExport={canExportEntries}
                             canShare={canShareEntries}
@@ -758,6 +821,8 @@ export const MingCustomsPage = () => {
                             onExport={exportEntry}
                             onChangeSelectedVisibility={changeSelectedVisibility}
                             onOpenEdit={openEditMingCustomsDrawer}
+                            onPublicationAction={changePublicationStatus}
+                            onPublicationBatch={changePublicationStatusBatch}
                             onSelectedEntryIdsChange={(ids) =>
                                 setSelectedEntryRowsState({
                                     keys: ids,
@@ -779,6 +844,9 @@ export const MingCustomsPage = () => {
                             }}
                             selectedEntryIds={selectedEntryIds}
                             sharing={batchShareMutation.isPending}
+                            publicationChanging={
+                                publicationMutation.isPending || publicationBatchMutation.isPending
+                            }
                             visibilityChanging={batchVisibilityMutation.isPending}
                         />
                         <AiCandidateBatchDrawer

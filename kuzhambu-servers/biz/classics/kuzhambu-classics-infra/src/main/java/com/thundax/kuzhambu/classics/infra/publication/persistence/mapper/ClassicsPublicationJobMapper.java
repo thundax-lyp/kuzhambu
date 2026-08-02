@@ -10,6 +10,43 @@ import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublicationJobDO> {
+
+    @Update(
+            """
+            update classics_publication_job
+            set content_title_snapshot = #{contentTitleSnapshot}, content_deleted_at = #{contentDeletedAt},
+                es_cleanup_status = case when es_document_id is null then es_cleanup_status else 'PENDING' end,
+                fastgpt_cleanup_status =
+                    case when fastgpt_collection_id is null then fastgpt_cleanup_status else 'PENDING' end
+            where id = #{id} and content_deleted_at is null
+            """)
+    int markContentDeleted(
+            @Param("id") Long id,
+            @Param("contentTitleSnapshot") String contentTitleSnapshot,
+            @Param("contentDeletedAt") Instant contentDeletedAt);
+
+    @Select(
+            """
+            select job.* from classics_publication_job job
+            where job.job_result_status = 'FAILED' and (
+              (job.content_type = 'SANCAI_ENTRY' and exists (
+                select 1 from classics_sancai_entry content where content.id = job.content_id
+                  and (content.current_publication_job_id = job.id or content.transition_status != 'NONE')
+              )) or
+              (job.content_type = 'WANGQI_DOCUMENT' and exists (
+                select 1 from classics_wangqi_document content where content.id = job.content_id
+                  and (content.current_publication_job_id = job.id or content.transition_status != 'NONE')
+              )) or
+              (job.content_type = 'MING_CUSTOMS' and exists (
+                select 1 from classics_ming_customs_entry content where content.id = job.content_id
+                  and (content.current_publication_job_id = job.id or content.transition_status != 'NONE')
+              ))
+            )
+            order by job.requested_at asc, job.id asc
+            limit #{limit}
+            """)
+    java.util.List<ClassicsPublicationJobDO> selectFailureReconcileCandidates(@Param("limit") int limit);
+
     @Select(
             """
             select * from classics_publication_job
@@ -36,6 +73,14 @@ public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublica
             @Param("token") String token,
             @Param("now") Instant now,
             @Param("expiresAt") Instant expiresAt);
+
+    @Update(
+            """
+            update classics_publication_job
+            set execution_token = null, expires_at = null
+            where id = #{id} and execution_token = #{token} and job_result_status = 'RUNNING'
+            """)
+    int releaseExecutionClaim(@Param("id") Long id, @Param("token") String token);
 
     @Update(
             """
@@ -126,6 +171,16 @@ public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublica
     @Update(
             """
             update classics_publication_job
+            set job_result_status = 'SUCCEEDED', finished_at = #{finishedAt},
+                execution_token = null, expires_at = null, next_retry_at = null
+            where id = #{id} and job_result_status = 'RUNNING'
+              and job_status = 'CONTENT_COMMITTED'
+            """)
+    int markSucceeded(@Param("id") Long id, @Param("finishedAt") Instant finishedAt);
+
+    @Update(
+            """
+            update classics_publication_job
             set es_cleanup_status = 'RUNNING', es_cleanup_token = #{token},
                 es_cleanup_expires_at = #{expiresAt}
             where id = #{id} and es_document_id is not null
@@ -139,6 +194,14 @@ public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublica
             @Param("token") String token,
             @Param("now") Instant now,
             @Param("expiresAt") Instant expiresAt);
+
+    @Update(
+            """
+            update classics_publication_job
+            set es_cleanup_status = 'PENDING', es_cleanup_token = null, es_cleanup_expires_at = null
+            where id = #{id} and es_cleanup_status = 'RUNNING' and es_cleanup_token = #{token}
+            """)
+    int releaseEsCleanupClaim(@Param("id") Long id, @Param("token") String token);
 
     @Update(
             """
@@ -174,6 +237,15 @@ public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublica
             @Param("token") String token,
             @Param("now") Instant now,
             @Param("expiresAt") Instant expiresAt);
+
+    @Update(
+            """
+            update classics_publication_job
+            set fastgpt_cleanup_status = 'PENDING', fastgpt_cleanup_token = null,
+                fastgpt_cleanup_expires_at = null
+            where id = #{id} and fastgpt_cleanup_status = 'RUNNING' and fastgpt_cleanup_token = #{token}
+            """)
+    int releaseFastGptCleanupClaim(@Param("id") Long id, @Param("token") String token);
 
     @Update(
             """

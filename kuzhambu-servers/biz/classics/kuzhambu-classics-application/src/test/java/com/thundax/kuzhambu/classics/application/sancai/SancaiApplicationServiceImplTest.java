@@ -14,6 +14,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
@@ -23,6 +25,7 @@ import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSear
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
@@ -47,12 +50,36 @@ import org.mockito.ArgumentCaptor;
 class SancaiApplicationServiceImplTest {
 
     @Test
+    void updateAndDeleteShouldUsePublicationWriteGuard() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        ClassicsPublicationWriteGuard writeGuard = mock(ClassicsPublicationWriteGuard.class);
+        SancaiApplicationServiceImpl service =
+                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport, writeGuard);
+        SancaiEntry entry = existingEntry(1001L, SancaiEntryLifecycleStatus.DRAFT, SancaiEntryVisibility.PRIVATE);
+        when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1001L))).thenReturn(entry);
+        when(repository.getVolumeById(SancaiVolumeIdCodec.toDomain(2001L))).thenReturn(volume(2001L));
+        when(repository.updateEntry(any())).thenReturn(1);
+        versionEntryOnEnsure(contentApplicationService, 1);
+
+        service.updateEntry(privateDraftCommand(1001L));
+        service.deleteEntry(SancaiEntryIdCodec.toDomain(1001L));
+
+        verify(writeGuard)
+                .requireWritable(
+                        ClassicsContentType.SANCAI_ENTRY,
+                        new ClassicsContentId(1001L),
+                        ClassicsPublicationWriteOperation.EDIT);
+        verify(writeGuard).prepareDeletion(ClassicsContentType.SANCAI_ENTRY, new ClassicsContentId(1001L));
+    }
+
+    @Test
     void addEntryShouldPublishUpsertAfterCommitWhenEntryIsPublic() {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         when(repository.getVolumeById(SancaiVolumeIdCodec.toDomain(2001L))).thenReturn(volume(2001L));
         when(repository.maxEntryPriority()).thenReturn(9);
         when(repository.insertEntry(any())).thenReturn(SancaiEntryIdCodec.toDomain(1001L));
@@ -68,8 +95,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         SancaiEntry entry = existingEntry(1002L, SancaiEntryLifecycleStatus.DRAFT, SancaiEntryVisibility.PRIVATE);
         entry.setPriority(12);
         when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1002L))).thenReturn(entry);
@@ -87,8 +113,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         SancaiEntry currentEntry =
                 existingEntry(1010L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryVisibility.PUBLIC);
         currentEntry.setPriority(12);
@@ -114,8 +139,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         SancaiEntry currentEntry =
                 existingEntry(1011L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryVisibility.PUBLIC);
         currentEntry.setPriority(44);
@@ -137,8 +161,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         SancaiEntry currentEntry =
                 existingEntry(1012L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryVisibility.PUBLIC);
         when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1012L))).thenReturn(currentEntry);
@@ -155,8 +178,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         when(repository.getVolumeById(SancaiVolumeIdCodec.toDomain(9091L))).thenReturn(null);
 
         assertThrows(BizException.class, () -> service.addEntry(publicCommand(null, 9091L)));
@@ -170,8 +192,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         SancaiEntry entry = existingEntry(1003L, SancaiEntryLifecycleStatus.DRAFT, SancaiEntryVisibility.PUBLIC);
         when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1003L))).thenReturn(entry);
         when(repository.updateEntry(any())).thenReturn(1);
@@ -204,8 +225,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         SancaiEntryStatusCommand command = new SancaiEntryStatusCommand(
                 1203L, SancaiEntryLifecycleStatus.PUBLISHED, Set.of("classics:sancai:view"));
 
@@ -223,8 +243,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         SancaiEntry entry = existingEntry(1004L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryVisibility.PUBLIC);
         when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1004L))).thenReturn(entry);
         when(repository.updateEntry(any())).thenReturn(1);
@@ -238,7 +257,7 @@ class SancaiApplicationServiceImplTest {
     @Test
     void pageEntriesShouldReturnEmptyWhenPermissionContextLacksSancaiView() {
         SancaiRepository repository = mock(SancaiRepository.class);
-        SancaiApplicationServiceImpl service = new SancaiApplicationServiceImpl(repository, null, null);
+        SancaiApplicationServiceImpl service = service(repository, null, null);
         SancaiEntryPageQuery query = new SancaiEntryPageQuery();
         query.setOperatorPermissions(Set.of("classics:content:view"));
 
@@ -253,7 +272,7 @@ class SancaiApplicationServiceImplTest {
     @Test
     void pageEntriesShouldForwardCategoryFilterToRepository() {
         SancaiRepository repository = mock(SancaiRepository.class);
-        SancaiApplicationServiceImpl service = new SancaiApplicationServiceImpl(repository, null, null);
+        SancaiApplicationServiceImpl service = service(repository, null, null);
         SancaiEntryPageQuery query = new SancaiEntryPageQuery();
         query.setCategoryId(2L);
         query.setVolumeId(101L);
@@ -282,8 +301,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         SancaiEntry entry = existingEntry(1006L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryVisibility.PUBLIC);
         when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1006L))).thenReturn(entry);
         when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1007L))).thenReturn(null);
@@ -306,8 +324,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
 
         ClassicsBatchOperationResult result = service.batchChangeEntryVisibility(
                 List.of(SancaiEntryIdCodec.toDomain(1008L)), "PRIVATE", Set.of("classics:sancai:view"));
@@ -325,8 +342,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         SancaiEntry entry = existingEntry(1005L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryVisibility.PUBLIC);
         when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1005L))).thenReturn(entry);
         versionEntryOnEnsure(contentApplicationService, 7);
@@ -358,8 +374,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         SancaiEntry entry = existingEntry(id, currentStatus, SancaiEntryVisibility.PUBLIC);
         when(repository.getEntryById(SancaiEntryIdCodec.toDomain(id))).thenReturn(entry);
         when(repository.updateEntry(any())).thenReturn(1);
@@ -384,8 +399,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiApplicationServiceImpl service = service(repository, contentApplicationService, publishSupport);
         SancaiEntry entry = existingEntry(id, currentStatus, SancaiEntryVisibility.PUBLIC);
         when(repository.getEntryById(SancaiEntryIdCodec.toDomain(id))).thenReturn(entry);
 
@@ -414,6 +428,14 @@ class SancaiApplicationServiceImplTest {
         entry.setVisualAssetStatus(SancaiEntryVisualAssetStatus.MISSING);
         entry.setRefinementStatus(SancaiEntryRefinementStatus.RAW);
         return entry;
+    }
+
+    private static SancaiApplicationServiceImpl service(
+            SancaiRepository repository,
+            ClassicsContentApplicationService contentApplicationService,
+            ClassicsSearchIndexSyncPublishSupport publishSupport) {
+        return new SancaiApplicationServiceImpl(
+                repository, contentApplicationService, publishSupport, mock(ClassicsPublicationWriteGuard.class));
     }
 
     private static SancaiVolume volume(long id) {

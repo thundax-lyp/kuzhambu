@@ -60,7 +60,9 @@ test.describe("classics ming customs page", () => {
                         perms: [
                             "classics:mingcustoms:view",
                             "classics:mingcustoms:edit",
-                            "classics:mingcustoms:delete"
+                            "classics:mingcustoms:delete",
+                            "classics:sharing:edit",
+                            "classics:content:export"
                         ]
                     })
                 )
@@ -78,7 +80,9 @@ test.describe("classics ming customs page", () => {
                 JSON.stringify([
                     "classics:mingcustoms:view",
                     "classics:mingcustoms:edit",
-                    "classics:mingcustoms:delete"
+                    "classics:mingcustoms:delete",
+                    "classics:sharing:edit",
+                    "classics:content:export"
                 ])
             );
         });
@@ -150,42 +154,39 @@ test.describe("classics ming customs page", () => {
             });
         });
         await page.route(
-            "**/kuzhambu-admin-api/api/classics/ming-customs/keyword-cloud**",
+            "**/kuzhambu-admin-api/api/classics/ming-customs/tag-cloud**",
             async (route) => {
                 await route.fulfill({
                     contentType: "application/json",
                     body: JSON.stringify(
                         apiResponse([
-                            { keyword: "礼制", count: 8 },
-                            { keyword: "正旦", count: 2 }
+                            { tagId: 1, tagNameSnapshot: "礼制", count: 8 },
+                            { tagId: 2, tagNameSnapshot: "正旦", count: 2 }
                         ])
                     )
                 });
             }
         );
-        await page.route(
-            "**/kuzhambu-admin-api/api/classics/ming-customs/500000000001",
-            async (route) => {
-                await route.fulfill({
-                    contentType: "application/json",
-                    body: JSON.stringify(
-                        apiResponse({
-                            id: 500000000001,
-                            title: "岁时礼仪：元旦朝贺",
-                            category: "RITUAL",
-                            chapter: "岁时礼仪",
-                            section: "正旦",
-                            summary: "记录明代正旦朝贺与家族拜礼。",
-                            contentFormat: "HTML",
-                            content:
-                                "<h2>正旦</h2><img src=x onerror=alert(1)><script>alert(1)</script>",
-                            originalExcerpts: "正旦朝贺。",
-                            visibility: "PUBLIC"
-                        })
-                    )
-                });
-            }
-        );
+        await page.route("**/kuzhambu-admin-api/api/classics/ming-customs/get", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify(
+                    apiResponse({
+                        id: 500000000001,
+                        title: "岁时礼仪：元旦朝贺",
+                        category: "RITUAL",
+                        chapter: "岁时礼仪",
+                        section: "正旦",
+                        summary: "记录明代正旦朝贺与家族拜礼。",
+                        contentFormat: "HTML",
+                        content:
+                            "<h2>正旦</h2><img src=x onerror=alert(1)><script>alert(1)</script>",
+                        originalExcerpts: "正旦朝贺。",
+                        visibility: "PUBLIC"
+                    })
+                )
+            });
+        });
         await page.route(
             "**/kuzhambu-admin-api/api/classics/ming-customs/versions/list",
             async (route) => {
@@ -359,14 +360,16 @@ test.describe("classics ming customs page", () => {
                 sortDirection: "DESC"
             });
 
-        const keywordCloud = page.getByLabel("明代习俗关键词云");
-        await expect(keywordCloud.getByText("8")).toBeVisible();
-        await keywordCloud.getByRole("button", { name: "筛选关键词 正旦，2 次" }).click();
+        await page.getByRole("button", { name: /标签云/ }).click();
+        await expect(page.getByRole("button", { name: "筛选标签 礼制，8 条" })).toBeVisible();
+        await page.getByRole("button", { name: "筛选标签 正旦，2 条" }).click();
         await expect
             .poll(() => pageRequests.at(-1))
             .toMatchObject({
-                keyword: "正旦",
+                keyword: "礼制",
                 category: "RITUAL",
+                tagId: 2,
+                tagNameSnapshot: "正旦",
                 sortDirection: "DESC"
             });
 
@@ -386,7 +389,7 @@ test.describe("classics ming customs page", () => {
                 visibility: "PUBLIC"
             });
 
-        await page.getByLabel("编辑明代习俗 岁时礼仪：元旦朝贺").click();
+        await page.getByRole("button", { name: "编辑 岁时礼仪：元旦朝贺" }).click();
         const preview = page.getByLabel("明代习俗正文预览");
         await expect(preview.getByRole("heading", { name: "正旦" })).toBeVisible();
         await expect(preview.locator("script")).toHaveCount(0);
@@ -416,7 +419,8 @@ test.describe("classics ming customs page", () => {
                 visibility: "PUBLIC"
             });
 
-        await page.getByRole("button", { name: "删除 岁时礼仪：元旦朝贺" }).click();
+        await page.getByRole("button", { name: "展开行操作" }).click();
+        await page.getByRole("menuitem", { name: "删除" }).click();
         const confirmDialog = page.getByRole("dialog");
         await expect(page.getByText("确认删除 岁时礼仪：元旦朝贺？")).toBeVisible();
         await confirmDialog.getByRole("button", { name: /删\s*除/ }).click();
@@ -428,13 +432,105 @@ test.describe("classics ming customs page", () => {
     });
 
     test("restores selected ming customs version from history panel", async ({ page }) => {
+        const record = {
+            id: 500000000001,
+            title: "岁时礼仪：元旦朝贺",
+            category: "RITUAL",
+            chapter: "岁时礼仪",
+            section: "正旦",
+            summary: "记录明代正旦朝贺与家族拜礼。",
+            contentFormat: "MARKDOWN",
+            content: "## 正旦\n\n士民相贺。",
+            visibility: "PUBLIC",
+            lifecycleStatus: "DRAFT",
+            transitionStatus: "NONE"
+        };
+        await page.route("**/kuzhambu-admin-api/api/sys/dict/page", (route) =>
+            route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify(apiResponse({ records: [] }))
+            })
+        );
+        await page.route("**/kuzhambu-admin-api/api/classics/content/exports/page", (route) =>
+            route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify(
+                    apiResponse({ pageNo: 1, pageSize: 20, count: 0, totalPage: 0, records: [] })
+                )
+            })
+        );
+        await page.route("**/kuzhambu-admin-api/api/classics/ming-customs/page", (route) =>
+            route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify(
+                    apiResponse({
+                        pageNo: 1,
+                        pageSize: 20,
+                        count: 1,
+                        totalPage: 1,
+                        records: [record]
+                    })
+                )
+            })
+        );
+        await page.route("**/kuzhambu-admin-api/api/classics/ming-customs/get", (route) =>
+            route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify(apiResponse(record))
+            })
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/ming-customs/versions/list",
+            async (route) => {
+                versionsListRequests.push(readRequestBody(route.request().postData()));
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(
+                        apiResponse([
+                            {
+                                id: 9001,
+                                versionNo: 1,
+                                snapshotJson: JSON.stringify({ title: "旧标题" })
+                            }
+                        ])
+                    )
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/ming-customs/versions/get",
+            async (route) => {
+                versionsGetRequests.push(readRequestBody(route.request().postData()));
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(
+                        apiResponse({
+                            id: 9001,
+                            versionNo: 1,
+                            snapshotJson: JSON.stringify({ title: "旧标题" })
+                        })
+                    )
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/ming-customs/versions/reset",
+            async (route) => {
+                versionsResetRequests.push(readRequestBody(route.request().postData()));
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(apiResponse({ id: 9002, versionNo: 2 }))
+                });
+            }
+        );
         await page.setViewportSize({ width: 1280, height: 800 });
         await page.goto("/classics/ming-customs");
 
-        await page.getByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" }).click();
+        await page.getByRole("button", { name: "编辑 岁时礼仪：元旦朝贺" }).click();
         await expect(page.getByLabel("明代习俗版本历史面板")).toBeVisible();
-        await page.getByRole("button", { name: "查看明代习俗版本 1" }).click();
-        await expect(page.getByText("标题")).toBeVisible();
+        const versionPanel = page.getByLabel("明代习俗版本历史面板");
+        await versionPanel.getByRole("button", { name: "查看" }).click();
+        await expect(versionPanel.getByText("标题", { exact: true })).toBeVisible();
         await expect(page.getByText("当前：岁时礼仪：元旦朝贺")).toBeVisible();
         await expect(page.getByText("历史：旧标题")).toBeVisible();
 
@@ -443,10 +539,10 @@ test.describe("classics ming customs page", () => {
             .poll(() => versionsGetRequests.at(-1))
             .toMatchObject({ id: 500000000001, versionId: 9001 });
 
-        await page.getByRole("button", { name: "恢复明代习俗版本 1" }).click();
-        const confirmDialog = page.getByRole("dialog");
-        await expect(confirmDialog.getByText("确认恢复明代习俗历史版本")).toBeVisible();
-        await confirmDialog.getByRole("button", { name: /确认/ }).click();
+        await versionPanel.getByRole("button", { name: "恢复此版本" }).click();
+        const confirmDialog = page.getByRole("dialog", { name: "确认恢复明代习俗历史版本" });
+        await expect(confirmDialog).toBeVisible();
+        await confirmDialog.getByRole("button", { name: /确\s*认/ }).click();
 
         await expect(page.getByText("明代习俗版本已恢复")).toBeVisible();
         await expect

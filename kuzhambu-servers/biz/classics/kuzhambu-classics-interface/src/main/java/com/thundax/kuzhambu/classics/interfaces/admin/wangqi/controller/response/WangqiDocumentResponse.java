@@ -35,6 +35,15 @@ public class WangqiDocumentResponse implements Serializable {
     @JsonProperty("storageObjectId")
     private Long storageObjectId;
 
+    @JsonProperty("lifecycleStatus")
+    private String lifecycleStatus;
+
+    @JsonProperty("transitionStatus")
+    private String transitionStatus;
+
+    @JsonProperty("currentPublicationJobId")
+    private Long currentPublicationJobId;
+
     @JsonProperty("visibility")
     private String visibility;
 

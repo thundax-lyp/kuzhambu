@@ -361,7 +361,7 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
             originalText: "人物",
             translationText: "译文",
             summary: "人物摘要",
-            lifecycleStatus: "ARCHIVED",
+            lifecycleStatus: "OFFLINE",
             visibility: "PUBLIC",
             translationStatus: "READY",
             imageStatus: "READY",
@@ -399,7 +399,30 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
         }
     ]),
     deleteImage: vi.fn(async () => true),
-    changeLifecycleStatus: vi.fn(async () => true),
+    publish: vi.fn(async ({ id }: { id: string }) => ({
+        jobId: "9101",
+        contentType: "SANCAI_ENTRY",
+        contentId: id,
+        lifecycleStatus: "DRAFT",
+        transitionStatus: "PUBLISHING"
+    })),
+    submitOffline: vi.fn(async ({ id }: { id: string }) => ({
+        jobId: "9102",
+        contentType: "SANCAI_ENTRY",
+        contentId: id,
+        lifecycleStatus: "PUBLISHED",
+        transitionStatus: "OFFLINING"
+    })),
+    publishBatch: vi.fn(async ({ ids }: { ids: string[] }) => ({
+        acceptedCount: ids.length,
+        rejectedCount: 0,
+        items: ids.map((contentId) => ({ contentId, accepted: true, jobId: "9201" }))
+    })),
+    submitOfflineBatch: vi.fn(async ({ ids }: { ids: string[] }) => ({
+        acceptedCount: ids.length,
+        rejectedCount: 0,
+        items: ids.map((contentId) => ({ contentId, accepted: true, jobId: "9202" }))
+    })),
     changeCurrentImage: vi.fn(async () => true),
     sortImages: vi.fn(async () => true),
     listVisualAssets: vi.fn(async () => [
@@ -795,6 +818,23 @@ describe("SancaiEntryPanel batch operations", () => {
         ).toEqual(["编辑 天地", "导出 天地", "视觉处理 天地", "下线 天地", "删除 天地"]);
     }, 30000);
 
+    it("disables entry writes while publication is transitioning", async () => {
+        const entries = await entryService.list({} as never);
+        vi.mocked(entryService.list).mockResolvedValueOnce(
+            entries.map((entry) =>
+                entry.id === "3001" ? { ...entry, transitionStatus: "PUBLISHING" } : entry
+            )
+        );
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        expect(
+            await within(entryTable).findByTestId("sancai-entry-3001-view-button")
+        ).toBeDisabled();
+        expect(within(entryTable).getAllByRole("checkbox")[1]).toBeDisabled();
+    }, 30000);
+
     it("moves an edited entry to the selected category volume", async () => {
         const user = userEvent.setup();
 
@@ -849,58 +889,54 @@ describe("SancaiEntryPanel batch operations", () => {
             expect.objectContaining({
                 title: "发布三才图会条目",
                 message: "确认发布 地理？",
-                description: "发布后条目进入已发布治理范围，公开或私有仍由可见性字段决定。",
+                description: "请求提交后由后台任务异步同步搜索与知识库状态。",
                 okText: "发布"
             })
         );
         await waitFor(() => {
-            expect(entryService.changeLifecycleStatus).toHaveBeenCalled();
+            expect(entryService.publish).toHaveBeenCalled();
         });
-        expect(vi.mocked(entryService.changeLifecycleStatus).mock.calls[0]?.[0]).toEqual({
-            id: "3002",
-            lifecycleStatus: "PUBLISHED"
-        });
-        expect(await screen.findByText("三才图会条目已发布")).toBeInTheDocument();
+        expect(vi.mocked(entryService.publish).mock.calls[0]?.[0]).toEqual({ id: "3002" });
+        expect(await screen.findByText("发布状态变更请求已接受")).toBeInTheDocument();
     }, 30000);
 
-    it("refreshes the open entry drawer after lifecycle changes", async () => {
+    it("submits selected entries to the batch publish endpoint", async () => {
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(within(entryTable).getAllByRole("checkbox")[1]);
+        await user.click(screen.getByTestId("classics-sancai-batch-publish-button"));
+
+        await waitFor(() => {
+            expect(entryService.publishBatch).toHaveBeenCalledWith({ ids: ["3001"] });
+        });
+        expect(await screen.findByText("批量发布操作：接受 1，拒绝 0")).toBeInTheDocument();
+    }, 30000);
+
+    it("refreshes entries after an offline request is accepted", async () => {
         const user = userEvent.setup();
         const client = renderEntryPanel();
         const invalidateSpy = vi.spyOn(client, "invalidateQueries");
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
-        await openVersionSection(user);
-        expect(await screen.findByLabelText("三才图会版本面板")).toBeInTheDocument();
-
         await user.click(within(entryTable).getByTestId("sancai-entry-3001-lifecycle-button"));
 
         await waitFor(() => {
-            expect(entryService.changeLifecycleStatus).toHaveBeenCalled();
+            expect(entryService.submitOffline).toHaveBeenCalled();
         });
-        expect(vi.mocked(entryService.changeLifecycleStatus).mock.calls[0]?.[0]).toEqual({
-            id: "3001",
-            lifecycleStatus: "ARCHIVED"
+        expect(vi.mocked(entryService.submitOffline).mock.calls[0]?.[0]).toEqual({ id: "3001" });
+        await waitFor(() => {
+            expect(
+                invalidateSpy.mock.calls.some(
+                    (call) =>
+                        JSON.stringify(call[0]) ===
+                        JSON.stringify({ queryKey: ["classics", "sancai", "entries"] })
+                )
+            ).toBeTruthy();
         });
-        expect(
-            invalidateSpy.mock.calls.some(
-                (call) =>
-                    JSON.stringify(call[0]) ===
-                    JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "detail", "3001"]
-                    })
-            )
-        ).toBeTruthy();
-        expect(
-            invalidateSpy.mock.calls.some(
-                (call) =>
-                    JSON.stringify(call[0]) ===
-                    JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "versions", "3001"]
-                    })
-            )
-        ).toBeTruthy();
-        expect(await screen.findByText("三才图会条目已下线")).toBeInTheDocument();
+        expect(await screen.findByText("发布状态变更请求已接受")).toBeInTheDocument();
     }, 30000);
 
     it("loads version detail, restores it and refreshes the open drawer", async () => {

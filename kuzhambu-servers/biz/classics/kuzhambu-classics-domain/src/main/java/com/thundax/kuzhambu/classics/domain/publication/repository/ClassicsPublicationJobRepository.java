@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.Classi
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
+import java.util.List;
 
 public interface ClassicsPublicationJobRepository {
     ClassicsPublicationJobId insert(ClassicsPublicationJob job);
@@ -26,6 +27,8 @@ public interface ClassicsPublicationJobRepository {
 
     ClassicsPublicationJob lockByContent(ClassicsContentType contentType, Long contentId);
 
+    int markContentDeleted(ClassicsPublicationJobId id, String contentTitleSnapshot, Instant contentDeletedAt);
+
     int deleteById(ClassicsPublicationJobId id);
 
     int claimExecution(
@@ -33,6 +36,10 @@ public interface ClassicsPublicationJobRepository {
             ClassicsPublicationExecutionToken token,
             Instant now,
             Instant dispatchExpiresAt);
+
+    List<ClassicsPublicationJob> listDispatchCandidates(Instant now, int limit);
+
+    int releaseExecutionClaim(ClassicsPublicationJobId id, ClassicsPublicationExecutionToken token);
 
     int markThreadStarted(
             ClassicsPublicationJobId id,
@@ -72,13 +79,27 @@ public interface ClassicsPublicationJobRepository {
             String failureReason,
             String detailJson);
 
+    List<ClassicsPublicationJob> listSuccessReconcileCandidates(int limit);
+
+    int markSucceeded(ClassicsPublicationJobId id, Instant finishedAt);
+
+    List<ClassicsPublicationJob> listFailureReconcileCandidates(int limit);
+
     int claimEsCleanup(ClassicsPublicationJobId id, String token, Instant now, Instant expiresAt);
+
+    List<ClassicsPublicationJob> listEsCleanupCandidates(Instant now, int limit);
+
+    int releaseEsCleanupClaim(ClassicsPublicationJobId id, String token);
 
     int completeEsCleanup(ClassicsPublicationJobId id, String token);
 
     int failEsCleanup(ClassicsPublicationJobId id, String token, String detailJson);
 
     int claimFastGptCleanup(ClassicsPublicationJobId id, String token, Instant now, Instant expiresAt);
+
+    List<ClassicsPublicationJob> listFastGptCleanupCandidates(Instant now, int limit);
+
+    int releaseFastGptCleanupClaim(ClassicsPublicationJobId id, String token);
 
     int completeFastGptCleanup(ClassicsPublicationJobId id, String token);
 

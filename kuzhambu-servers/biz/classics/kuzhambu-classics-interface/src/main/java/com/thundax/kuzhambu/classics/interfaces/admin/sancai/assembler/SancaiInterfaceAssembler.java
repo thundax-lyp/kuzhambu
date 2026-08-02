@@ -132,6 +132,11 @@ public final class SancaiInterfaceAssembler {
                 .translationText(entity.getTranslationText())
                 .summary(entity.getSummary())
                 .lifecycleStatus(value(entity.getLifecycleStatus()))
+                .transitionStatus(value(entity.getTransitionStatus()))
+                .currentPublicationJobId(
+                        entity.getCurrentPublicationJobId() == null
+                                ? null
+                                : entity.getCurrentPublicationJobId().value())
                 .visibility(value(entity.getVisibility()))
                 .translationStatus(value(entity.getTranslationStatus()))
                 .imageStatus(value(entity.getImageStatus()))
