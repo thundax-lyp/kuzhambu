@@ -21,6 +21,8 @@ public interface SancaiRepository {
 
     List<SancaiCategoryOverview> listCategoryOverviews(SortDirection sortDirection);
 
+    List<SancaiCategoryOverview> listCategoryOverviewsByEntryIds(List<Long> entryIds, SortDirection sortDirection);
+
     int maxCategoryPriority();
 
     SancaiCategoryId insertCategory(SancaiCategory category);
@@ -48,6 +50,8 @@ public interface SancaiRepository {
     List<SancaiEntry> listEntries(SortDirection sortDirection);
 
     List<SancaiEntry> listEntriesByVolumeId(SancaiVolumeId volumeId, SortDirection sortDirection);
+
+    List<SancaiEntry> listEntriesByIds(List<SancaiEntryId> ids);
 
     int maxVolumePriority();
 

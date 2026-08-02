@@ -67,7 +67,7 @@ public class SancaiPortalController {
     @Operation(summary = "查询三才图会门户门类", description = "公开访问")
     @PostMapping("categories/list")
     public List<SancaiPortalCategoryResponse> listCategories() {
-        Map<Long, SancaiCategoryOverview> overviewByCategoryId = service.listCategoryOverviews().stream()
+        Map<Long, SancaiCategoryOverview> overviewByCategoryId = service.listPortalReadyCategoryOverviews().stream()
                 .filter(overview -> overview.getCategoryId() != null)
                 .collect(Collectors.toMap(
                         overview -> overview.getCategoryId().value(), Function.identity(), (left, right) -> left));
@@ -98,7 +98,7 @@ public class SancaiPortalController {
                 request == null ? new SancaiPortalEntrySearchRequest() : request;
         effectiveRequest.setKeyword(SancaiPortalInterfaceAssembler.normalizeKeyword(effectiveRequest.getKeyword()));
         return PageResponseHelper.fromPageResult(
-                service.pageEntries(
+                service.pagePortalReadyEntries(
                         SancaiPortalInterfaceAssembler.toPublicQuery(effectiveRequest),
                         new PageQuery(
                                 SancaiPortalInterfaceAssembler.pageNo(effectiveRequest.getPageNo()),
@@ -165,8 +165,11 @@ public class SancaiPortalController {
     }
 
     private SancaiEntry requirePublicEntry(SancaiEntryId entryId) {
+        if (!service.isPortalReadyEntry(entryId)) {
+            throw new BizException("三才图会条目不存在或不可公开访问");
+        }
         SancaiEntry entry = service.getEntry(entryId);
-        if (!SancaiPortalInterfaceAssembler.isPublicPublished(entry)) {
+        if (entry == null) {
             throw new BizException("三才图会条目不存在或不可公开访问");
         }
         return entry;

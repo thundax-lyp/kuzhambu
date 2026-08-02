@@ -41,6 +41,12 @@ import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.discovery.facade.DiscoverySearchPublicationFacade;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCandidatePageFacadeRequest;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationReferenceFacadeRequest;
+import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCandidateFacadeResponse;
+import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCandidatePageFacadeResponse;
+import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationProbeFacadeResponse;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -55,8 +61,12 @@ class SancaiApplicationServiceImplTest {
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         ClassicsPublicationWriteGuard writeGuard = mock(ClassicsPublicationWriteGuard.class);
-        SancaiApplicationServiceImpl service =
-                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport, writeGuard);
+        SancaiApplicationServiceImpl service = new SancaiApplicationServiceImpl(
+                repository,
+                contentApplicationService,
+                publishSupport,
+                writeGuard,
+                mock(DiscoverySearchPublicationFacade.class));
         SancaiEntry entry = existingEntry(1001L, SancaiEntryLifecycleStatus.DRAFT, SancaiEntryVisibility.PRIVATE);
         when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1001L))).thenReturn(entry);
         when(repository.getVolumeById(SancaiVolumeIdCodec.toDomain(2001L))).thenReturn(volume(2001L));
@@ -297,6 +307,67 @@ class SancaiApplicationServiceImplTest {
     }
 
     @Test
+    void pagePortalReadyEntriesShouldHydrateDiscoveryCandidatesInReturnedOrder() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        DiscoverySearchPublicationFacade discoveryFacade = mock(DiscoverySearchPublicationFacade.class);
+        SancaiApplicationServiceImpl service = new SancaiApplicationServiceImpl(
+                repository, null, null, mock(ClassicsPublicationWriteGuard.class), discoveryFacade);
+        when(discoveryFacade.pageReadyCandidates(any()))
+                .thenReturn(DiscoverySearchPublicationCandidatePageFacadeResponse.builder()
+                        .pageNo(1)
+                        .pageSize(20)
+                        .totalCount(2)
+                        .records(List.of(candidate("1002", "11", "21"), candidate("1001", "11", "21")))
+                        .build());
+        when(repository.listEntriesByIds(
+                        List.of(SancaiEntryIdCodec.toDomain(1002L), SancaiEntryIdCodec.toDomain(1001L))))
+                .thenReturn(List.of(
+                        existingEntry(1001L, SancaiEntryLifecycleStatus.DRAFT, SancaiEntryVisibility.PRIVATE),
+                        existingEntry(1002L, SancaiEntryLifecycleStatus.DRAFT, SancaiEntryVisibility.PRIVATE)));
+        SancaiEntryPageQuery query = new SancaiEntryPageQuery();
+        query.setCategoryId(11L);
+        query.setVolumeId(21L);
+        query.setKeyword("天地");
+
+        PageResult<SancaiEntry> result = service.pagePortalReadyEntries(query, new PageQuery(1, 20));
+
+        ArgumentCaptor<DiscoverySearchPublicationCandidatePageFacadeRequest> requestCaptor =
+                ArgumentCaptor.forClass(DiscoverySearchPublicationCandidatePageFacadeRequest.class);
+        verify(discoveryFacade).pageReadyCandidates(requestCaptor.capture());
+        assertEquals("SANCAI_ENTRY", requestCaptor.getValue().getContentType());
+        assertEquals("11", requestCaptor.getValue().getCategoryId());
+        assertEquals("21", requestCaptor.getValue().getVolumeId());
+        assertEquals("天地", requestCaptor.getValue().getKeyword());
+        assertEquals(2, result.getTotalCount());
+        assertEquals(1002L, result.getRecords().get(0).getId().value());
+        assertEquals(1001L, result.getRecords().get(1).getId().value());
+        verify(repository, never())
+                .pageEntries(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), anyInt());
+    }
+
+    @Test
+    void isPortalReadyEntryShouldOnlyAcceptReadyNonDeletedProbe() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        DiscoverySearchPublicationFacade discoveryFacade = mock(DiscoverySearchPublicationFacade.class);
+        SancaiApplicationServiceImpl service = new SancaiApplicationServiceImpl(
+                repository, null, null, mock(ClassicsPublicationWriteGuard.class), discoveryFacade);
+        when(discoveryFacade.probe(any()))
+                .thenReturn(DiscoverySearchPublicationProbeFacadeResponse.builder()
+                        .present(true)
+                        .publicationStatus("READY")
+                        .deleted(false)
+                        .build());
+
+        boolean ready = service.isPortalReadyEntry(SancaiEntryIdCodec.toDomain(1001L));
+
+        ArgumentCaptor<DiscoverySearchPublicationReferenceFacadeRequest> requestCaptor =
+                ArgumentCaptor.forClass(DiscoverySearchPublicationReferenceFacadeRequest.class);
+        verify(discoveryFacade).probe(requestCaptor.capture());
+        assertEquals("SANCAI_ENTRY:1001", requestCaptor.getValue().getDocumentId());
+        assertEquals(true, ready);
+    }
+
+    @Test
     void batchChangeEntryVisibilityShouldReturnPartialResultAndKeepSearchSync() {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
@@ -430,12 +501,26 @@ class SancaiApplicationServiceImplTest {
         return entry;
     }
 
+    private static DiscoverySearchPublicationCandidateFacadeResponse candidate(
+            String contentId, String categoryId, String volumeId) {
+        return DiscoverySearchPublicationCandidateFacadeResponse.builder()
+                .contentType("SANCAI_ENTRY")
+                .contentId(contentId)
+                .categoryId(categoryId)
+                .volumeId(volumeId)
+                .build();
+    }
+
     private static SancaiApplicationServiceImpl service(
             SancaiRepository repository,
             ClassicsContentApplicationService contentApplicationService,
             ClassicsSearchIndexSyncPublishSupport publishSupport) {
         return new SancaiApplicationServiceImpl(
-                repository, contentApplicationService, publishSupport, mock(ClassicsPublicationWriteGuard.class));
+                repository,
+                contentApplicationService,
+                publishSupport,
+                mock(ClassicsPublicationWriteGuard.class),
+                mock(DiscoverySearchPublicationFacade.class));
     }
 
     private static SancaiVolume volume(long id) {

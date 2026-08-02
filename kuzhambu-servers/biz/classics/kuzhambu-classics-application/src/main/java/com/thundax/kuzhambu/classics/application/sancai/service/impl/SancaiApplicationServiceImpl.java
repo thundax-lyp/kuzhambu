@@ -39,9 +39,16 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
+import com.thundax.kuzhambu.discovery.facade.DiscoverySearchPublicationFacade;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCandidatePageFacadeRequest;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationReferenceFacadeRequest;
+import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCandidateFacadeResponse;
+import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationProbeFacadeResponse;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,17 +64,20 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
     private final ClassicsPublicationWriteGuard publicationWriteGuard;
+    private final DiscoverySearchPublicationFacade discoverySearchPublicationFacade;
 
     @Autowired
     public SancaiApplicationServiceImpl(
             SancaiRepository repository,
             ClassicsContentApplicationService contentApplicationService,
             ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
-            ClassicsPublicationWriteGuard publicationWriteGuard) {
+            ClassicsPublicationWriteGuard publicationWriteGuard,
+            DiscoverySearchPublicationFacade discoverySearchPublicationFacade) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.publicationWriteGuard = publicationWriteGuard;
+        this.discoverySearchPublicationFacade = discoverySearchPublicationFacade;
     }
 
     @Override
@@ -78,6 +88,12 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     public List<SancaiCategoryOverview> listCategoryOverviews() {
         return repository.listCategoryOverviews(SortDirection.ASC);
+    }
+
+    @Override
+    public List<SancaiCategoryOverview> listPortalReadyCategoryOverviews() {
+        List<Long> readyEntryIds = listAllPortalReadyCandidateIds(null, null, null);
+        return repository.listCategoryOverviewsByEntryIds(readyEntryIds, SortDirection.ASC);
     }
 
     @Override
@@ -238,6 +254,22 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     @Override
+    public boolean isPortalReadyEntry(SancaiEntryId id) {
+        Long contentId = SancaiEntryIdCodec.toValue(id);
+        if (contentId == null) {
+            return false;
+        }
+        DiscoverySearchPublicationProbeFacadeResponse probe =
+                discoverySearchPublicationFacade.probe(DiscoverySearchPublicationReferenceFacadeRequest.builder()
+                        .documentId(ClassicsContentType.SANCAI_ENTRY.value() + ":" + contentId)
+                        .build());
+        return probe != null
+                && probe.isPresent()
+                && "READY".equals(probe.getPublicationStatus())
+                && !Boolean.TRUE.equals(probe.getDeleted());
+    }
+
+    @Override
     public PageResult<SancaiEntry> pageEntries(SancaiEntryPageQuery query, PageQuery page) {
         if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
             return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
@@ -267,6 +299,41 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
                 query == null ? SortDirection.ASC : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
+    }
+
+    @Override
+    public PageResult<SancaiEntry> pagePortalReadyEntries(SancaiEntryPageQuery query, PageQuery page) {
+        int pageNo = page == null ? 1 : page.getPageNo();
+        int pageSize = page == null ? 20 : page.getPageSize();
+        var candidatePage = discoverySearchPublicationFacade.pageReadyCandidates(
+                DiscoverySearchPublicationCandidatePageFacadeRequest.builder()
+                        .contentType(ClassicsContentType.SANCAI_ENTRY.value())
+                        .categoryId(stringValue(query == null ? null : query.getCategoryId()))
+                        .volumeId(stringValue(query == null ? null : query.getVolumeId()))
+                        .keyword(query == null ? null : query.getKeyword())
+                        .pageNo(pageNo)
+                        .pageSize(pageSize)
+                        .build());
+        List<SancaiEntryId> ids = candidatePage.getRecords() == null
+                ? List.of()
+                : candidatePage.getRecords().stream()
+                        .map(DiscoverySearchPublicationCandidateFacadeResponse::getContentId)
+                        .map(SancaiApplicationServiceImpl::longValue)
+                        .map(SancaiEntryIdCodec::toDomain)
+                        .toList();
+        Map<Long, SancaiEntry> entryById = new LinkedHashMap<>();
+        repository.listEntriesByIds(ids).forEach(entry -> {
+            Long idValue = SancaiEntryIdCodec.toValue(entry.getId());
+            if (idValue != null) {
+                entryById.put(idValue, entry);
+            }
+        });
+        List<SancaiEntry> records = ids.stream()
+                .map(SancaiEntryIdCodec::toValue)
+                .map(entryById::get)
+                .filter(entry -> entry != null)
+                .toList();
+        return PageResult.of(pageNo, pageSize, candidatePage.getTotalCount(), records);
     }
 
     @Override
@@ -499,6 +566,45 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     private static BizException permissionDenied() {
         return new BizException("PERMISSION_DENIED");
+    }
+
+    private List<Long> listAllPortalReadyCandidateIds(Long categoryId, Long volumeId, String keyword) {
+        List<Long> ids = new ArrayList<>();
+        int pageNo = 1;
+        int pageSize = 500;
+        while (true) {
+            var page = discoverySearchPublicationFacade.pageReadyCandidates(
+                    DiscoverySearchPublicationCandidatePageFacadeRequest.builder()
+                            .contentType(ClassicsContentType.SANCAI_ENTRY.value())
+                            .categoryId(stringValue(categoryId))
+                            .volumeId(stringValue(volumeId))
+                            .keyword(keyword)
+                            .pageNo(pageNo)
+                            .pageSize(pageSize)
+                            .build());
+            List<DiscoverySearchPublicationCandidateFacadeResponse> records =
+                    page.getRecords() == null ? List.of() : page.getRecords();
+            ids.addAll(records.stream()
+                    .map(DiscoverySearchPublicationCandidateFacadeResponse::getContentId)
+                    .map(SancaiApplicationServiceImpl::longValue)
+                    .filter(value -> value != null)
+                    .toList());
+            if (records.isEmpty() || ids.size() >= page.getTotalCount()) {
+                return ids;
+            }
+            pageNo++;
+        }
+    }
+
+    private static String stringValue(Long value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private static Long longValue(String value) {
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+        return Long.valueOf(value);
     }
 
     private static BizException invalidCategory(String field) {

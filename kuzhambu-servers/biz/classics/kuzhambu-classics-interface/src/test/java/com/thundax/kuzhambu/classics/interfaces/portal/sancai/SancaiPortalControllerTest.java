@@ -91,7 +91,7 @@ class SancaiPortalControllerTest {
     }
 
     @Test
-    void pageEntriesShouldForcePublicPublishedFilter() {
+    void pageEntriesShouldUsePortalReadyCandidates() {
         SancaiPortalController controller = controller();
         SancaiPortalEntrySearchRequest request = new SancaiPortalEntrySearchRequest();
         request.setCategoryId(2L);
@@ -123,7 +123,7 @@ class SancaiPortalControllerTest {
     }
 
     @Test
-    void getEntryShouldRejectNonPublicPublishedEntry() {
+    void getEntryShouldRejectNonReadyEntry() {
         SancaiPortalController controller = controller();
 
         SancaiPortalEntrySearchRequest request = new SancaiPortalEntrySearchRequest();
@@ -167,7 +167,7 @@ class SancaiPortalControllerTest {
                         return List.of(new SancaiCategory(
                                 SancaiCategoryIdCodec.toDomain(2L), "天文", SancaiCategoryType.FORMAL, 1));
                     }
-                    if ("listCategoryOverviews".equals(method.getName())) {
+                    if ("listPortalReadyCategoryOverviews".equals(method.getName())) {
                         return List.of(new SancaiCategoryOverview(
                                 SancaiCategoryIdCodec.toDomain(2L),
                                 12L,
@@ -185,25 +185,23 @@ class SancaiPortalControllerTest {
                                 SancaiVolumeType.MAIN,
                                 1));
                     }
-                    if ("pageEntries".equals(method.getName())) {
+                    if ("pagePortalReadyEntries".equals(method.getName())) {
                         SancaiEntryPageQuery query = (SancaiEntryPageQuery) args[0];
                         PageQuery pageQuery = (PageQuery) args[1];
                         assertEquals(2L, query.getCategoryId());
                         assertEquals(101L, query.getVolumeId());
                         assertEquals("天地", query.getKeyword());
-                        assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, query.getLifecycleStatus());
-                        assertEquals(SancaiEntryVisibility.PUBLIC, query.getVisibility());
+                        assertEquals(null, query.getLifecycleStatus());
+                        assertEquals(null, query.getVisibility());
                         assertEquals(SortDirection.ASC, query.getSortDirection());
                         assertEquals(1, pageQuery.getPageNo());
                         assertEquals(100, pageQuery.getPageSize());
                         return PageResult.of(1, 100, 1, List.of(publicEntry()));
                     }
+                    if ("isPortalReadyEntry".equals(method.getName())) {
+                        return SancaiEntryIdCodec.toDomain(3001L).equals(args[0]);
+                    }
                     if ("getEntry".equals(method.getName())) {
-                        if (SancaiEntryIdCodec.toDomain(3002L).equals(args[0])) {
-                            SancaiEntry entry = publicEntry();
-                            entry.setVisibility(SancaiEntryVisibility.PRIVATE);
-                            return entry;
-                        }
                         return publicEntry();
                     }
                     throw new UnsupportedOperationException(method.getName());
