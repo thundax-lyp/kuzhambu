@@ -1,9 +1,11 @@
 package com.thundax.kuzhambu.discovery.infra.client;
 
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.elasticsearch.support.ElasticsearchOperationsSupport;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationDocument;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
@@ -244,6 +246,28 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         requireOperations("publication-delete").delete(documentId, indexCoordinates());
     }
 
+    @Override
+    public PageResult<SearchPublicationCandidateResult> pageReadyPublicationCandidates(
+            String contentType, String categoryId, String volumeId, String keyword, int pageNo, int pageSize) {
+        ElasticsearchOperations operations = requireOperations("publication-candidates");
+        Criteria criteria = buildPublicationCandidateCriteria(contentType, categoryId, volumeId, keyword);
+        CriteriaQuery query = new CriteriaQuery(criteria);
+        query.setPageable(PageRequest.of(Math.max(pageNo - 1, 0), pageSize));
+        SearchHits<DiscoverySearchDocument> searchHits =
+                operations.search(query, DiscoverySearchDocument.class, indexCoordinates());
+        List<SearchPublicationCandidateResult> records = searchHits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .filter(document -> document != null && document.getContentId() != null)
+                .map(document -> new SearchPublicationCandidateResult(
+                        document.getContentType(),
+                        document.getContentId(),
+                        document.getCategoryCode(),
+                        document.getVolumeId()))
+                .toList();
+        return PageResult.of(
+                pageNo, pageSize, ElasticsearchOperationsSupport.toIntTotalHits(searchHits.getTotalHits()), records);
+    }
+
     private ElasticsearchOperations requireOperations(String operation) {
         return ElasticsearchOperationsSupport.requireOperations(
                 elasticsearchOperations, "Discovery search", operation, properties.getIndexName());
@@ -373,6 +397,22 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     private Criteria appendReadyPublicationFilter(Criteria criteria) {
         return criteria.and(new Criteria("publicationStatus").is(PUBLICATION_READY))
                 .and(new Criteria("deleted").is(false));
+    }
+
+    private Criteria buildPublicationCandidateCriteria(
+            String contentType, String categoryId, String volumeId, String keyword) {
+        Criteria criteria = baseKeywordCriteria(keyword);
+        criteria = appendReadyPublicationFilter(criteria);
+        if (contentType != null && !contentType.isBlank()) {
+            criteria = criteria.and(new Criteria("contentType").is(contentType));
+        }
+        if (categoryId != null && !categoryId.isBlank()) {
+            criteria = criteria.and(new Criteria("categoryCode").is(categoryId));
+        }
+        if (volumeId != null && !volumeId.isBlank()) {
+            criteria = criteria.and(new Criteria("volumeId").is(volumeId));
+        }
+        return criteria;
     }
 
     private List<SearchGroupResult> toGroupedResults(List<SearchHit<DiscoverySearchDocument>> hits, String keyword) {

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
@@ -306,6 +307,45 @@ class ElasticsearchSearchIndexGatewayTest {
     }
 
     @Test
+    void pageReadyPublicationCandidatesShouldApplyReadyFiltersAndMapIds() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        ArgumentCaptor<CriteriaQuery> queryCaptor = ArgumentCaptor.forClass(CriteriaQuery.class);
+        SearchHit<DiscoverySearchDocument> firstHit = searchHit(publicationDocument("1001", "11", "21"));
+        SearchHit<DiscoverySearchDocument> secondHit = searchHit(publicationDocument("1002", "11", "21"));
+        when(searchHits.getTotalHits()).thenReturn(2L);
+        when(searchHits.getSearchHits()).thenReturn(List.of(firstHit, secondHit));
+        when(operations.search(
+                        queryCaptor.capture(),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        var page = gateway.pageReadyPublicationCandidates("SANCAI_ENTRY", "11", "21", "天地", 1, 20);
+
+        Set<String> fieldNames = flattenCriteria(queryCaptor.getValue().getCriteria()).stream()
+                .map(Criteria::getField)
+                .filter(field -> field != null && field.getName() != null)
+                .map(field -> field.getName())
+                .collect(Collectors.toSet());
+        assertEquals(2, page.getTotalCount());
+        assertEquals(
+                List.of("1001", "1002"),
+                page.getRecords().stream()
+                        .map(SearchPublicationCandidateResult::getContentId)
+                        .toList());
+        assertTrue(fieldNames.contains("contentType"));
+        assertTrue(fieldNames.contains("categoryCode"));
+        assertTrue(fieldNames.contains("volumeId"));
+        assertTrue(fieldNames.contains("publicationStatus"));
+        assertTrue(fieldNames.contains("deleted"));
+    }
+
+    @Test
     void searchShouldUseMatchCriteriaForChineseKeyword() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
@@ -508,6 +548,14 @@ class ElasticsearchSearchIndexGatewayTest {
                 false,
                 null,
                 "/classics/sancai/" + contentId);
+    }
+
+    private DiscoverySearchDocument publicationDocument(String contentId, String categoryId, String volumeId) {
+        DiscoverySearchDocument document = document(contentId, "标题", "摘要", "正文", 1);
+        document.setPublicationStatus("READY");
+        document.setCategoryCode(categoryId);
+        document.setVolumeId(volumeId);
+        return document;
     }
 
     private SearchSourceContent sourceContent(String contentId, String visibility) {

@@ -1,7 +1,10 @@
 package com.thundax.kuzhambu.discovery.application.search.service;
 
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidatePageQuery;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
 
 public interface SearchPublicationApplicationService {
@@ -15,4 +18,6 @@ public interface SearchPublicationApplicationService {
     void delete(SearchPublicationReferenceCommand command);
 
     SearchPublicationProbeResult probe(SearchPublicationReferenceCommand command);
+
+    PageResult<SearchPublicationCandidateResult> pageReadyCandidates(SearchPublicationCandidatePageQuery query);
 }
