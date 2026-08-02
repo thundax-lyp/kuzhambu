@@ -230,6 +230,16 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
     }
 
     @Override
+    public List<ClassicsPublicationJob> listEsCleanupCandidates(Instant now, int limit) {
+        return listCleanupCandidates(true, now, limit);
+    }
+
+    @Override
+    public int releaseEsCleanupClaim(ClassicsPublicationJobId id, String token) {
+        return mapper.releaseEsCleanupClaim(ClassicsPublicationJobIdCodec.toValue(id), token);
+    }
+
+    @Override
     public int completeEsCleanup(ClassicsPublicationJobId id, String token) {
         return mapper.completeEsCleanup(ClassicsPublicationJobIdCodec.toValue(id), token);
     }
@@ -242,6 +252,16 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
     @Override
     public int claimFastGptCleanup(ClassicsPublicationJobId id, String token, Instant now, Instant expiresAt) {
         return mapper.claimFastGptCleanup(ClassicsPublicationJobIdCodec.toValue(id), token, now, expiresAt);
+    }
+
+    @Override
+    public List<ClassicsPublicationJob> listFastGptCleanupCandidates(Instant now, int limit) {
+        return listCleanupCandidates(false, now, limit);
+    }
+
+    @Override
+    public int releaseFastGptCleanupClaim(ClassicsPublicationJobId id, String token) {
+        return mapper.releaseFastGptCleanupClaim(ClassicsPublicationJobIdCodec.toValue(id), token);
     }
 
     @Override
@@ -260,6 +280,27 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
         wrapper.eq(ClassicsPublicationJobDO::getJobResultStatus, resultStatus.name())
                 .eq(ClassicsPublicationJobDO::getJobStatus, jobStatus.name())
                 .orderByAsc(ClassicsPublicationJobDO::getRequestedAt)
+                .orderByAsc(ClassicsPublicationJobDO::getId)
+                .last("limit " + positiveLimit(limit));
+        return mapper.selectList(wrapper).stream()
+                .map(ClassicsPublicationPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    private List<ClassicsPublicationJob> listCleanupCandidates(boolean es, Instant now, int limit) {
+        LambdaQueryWrapper<ClassicsPublicationJobDO> wrapper = new LambdaQueryWrapper<>();
+        if (es) {
+            wrapper.isNotNull(ClassicsPublicationJobDO::getEsDocumentId)
+                    .and(scope -> scope.in(ClassicsPublicationJobDO::getEsCleanupStatus, "PENDING", "FAILED")
+                            .or(expired -> expired.eq(ClassicsPublicationJobDO::getEsCleanupStatus, "RUNNING")
+                                    .le(ClassicsPublicationJobDO::getEsCleanupExpiresAt, now)));
+        } else {
+            wrapper.isNotNull(ClassicsPublicationJobDO::getFastGptCollectionId)
+                    .and(scope -> scope.in(ClassicsPublicationJobDO::getFastGptCleanupStatus, "PENDING", "FAILED")
+                            .or(expired -> expired.eq(ClassicsPublicationJobDO::getFastGptCleanupStatus, "RUNNING")
+                                    .le(ClassicsPublicationJobDO::getFastGptCleanupExpiresAt, now)));
+        }
+        wrapper.orderByAsc(ClassicsPublicationJobDO::getRequestedAt)
                 .orderByAsc(ClassicsPublicationJobDO::getId)
                 .last("limit " + positiveLimit(limit));
         return mapper.selectList(wrapper).stream()

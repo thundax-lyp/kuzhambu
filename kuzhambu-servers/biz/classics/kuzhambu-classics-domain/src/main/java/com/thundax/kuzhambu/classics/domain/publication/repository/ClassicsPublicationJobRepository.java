@@ -85,11 +85,19 @@ public interface ClassicsPublicationJobRepository {
 
     int claimEsCleanup(ClassicsPublicationJobId id, String token, Instant now, Instant expiresAt);
 
+    List<ClassicsPublicationJob> listEsCleanupCandidates(Instant now, int limit);
+
+    int releaseEsCleanupClaim(ClassicsPublicationJobId id, String token);
+
     int completeEsCleanup(ClassicsPublicationJobId id, String token);
 
     int failEsCleanup(ClassicsPublicationJobId id, String token, String detailJson);
 
     int claimFastGptCleanup(ClassicsPublicationJobId id, String token, Instant now, Instant expiresAt);
+
+    List<ClassicsPublicationJob> listFastGptCleanupCandidates(Instant now, int limit);
+
+    int releaseFastGptCleanupClaim(ClassicsPublicationJobId id, String token);
 
     int completeFastGptCleanup(ClassicsPublicationJobId id, String token);
 

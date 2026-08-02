@@ -183,6 +183,14 @@ public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublica
     @Update(
             """
             update classics_publication_job
+            set es_cleanup_status = 'PENDING', es_cleanup_token = null, es_cleanup_expires_at = null
+            where id = #{id} and es_cleanup_status = 'RUNNING' and es_cleanup_token = #{token}
+            """)
+    int releaseEsCleanupClaim(@Param("id") Long id, @Param("token") String token);
+
+    @Update(
+            """
+            update classics_publication_job
             set es_cleanup_status = 'SUCCEEDED', es_document_id = null,
                 es_cleanup_token = null, es_cleanup_expires_at = null
             where id = #{id} and es_cleanup_status = 'RUNNING' and es_cleanup_token = #{token}
@@ -214,6 +222,15 @@ public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublica
             @Param("token") String token,
             @Param("now") Instant now,
             @Param("expiresAt") Instant expiresAt);
+
+    @Update(
+            """
+            update classics_publication_job
+            set fastgpt_cleanup_status = 'PENDING', fastgpt_cleanup_token = null,
+                fastgpt_cleanup_expires_at = null
+            where id = #{id} and fastgpt_cleanup_status = 'RUNNING' and fastgpt_cleanup_token = #{token}
+            """)
+    int releaseFastGptCleanupClaim(@Param("id") Long id, @Param("token") String token);
 
     @Update(
             """
