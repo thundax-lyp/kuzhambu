@@ -4,10 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
@@ -320,7 +322,7 @@ class SancaiAdminControllerTest {
 
     @Test
     void listAndEntryMethodsShouldUseApplicationContracts() {
-        SancaiAdminController controller = new SancaiAdminController(sancaiService(), contentService());
+        SancaiAdminController controller = controller(sancaiService(), contentService());
 
         List<DictResponse> categoryTypes = controller.listCategoryTypes();
         assertEquals("SANCAI_CATEGORY_TYPE", categoryTypes.get(0).getType());
@@ -394,7 +396,7 @@ class SancaiAdminControllerTest {
 
     @Test
     void updateEntryShouldPassTargetVolumeIdToApplication() {
-        SancaiAdminController controller = new SancaiAdminController(updateEntryService(), contentService());
+        SancaiAdminController controller = controller(updateEntryService(), contentService());
         SancaiEntryRequest entryRequest = new SancaiEntryRequest();
         entryRequest.setId(3001L);
         entryRequest.setVolumeId(202L);
@@ -407,7 +409,7 @@ class SancaiAdminControllerTest {
 
     @Test
     void versionMethodsShouldUseContentContracts() {
-        SancaiAdminController controller = new SancaiAdminController(sancaiService(), contentService());
+        SancaiAdminController controller = controller(sancaiService(), contentService());
         SancaiEntryVersionRequest request = new SancaiEntryVersionRequest();
         request.setId(3001L);
         request.setVersionId(9001L);
@@ -428,7 +430,7 @@ class SancaiAdminControllerTest {
 
     @Test
     void versionMethodsShouldRejectMismatchedVersionOwnership() {
-        SancaiAdminController controller = new SancaiAdminController(sancaiService(), contentService());
+        SancaiAdminController controller = controller(sancaiService(), contentService());
         SancaiEntryVersionRequest request = new SancaiEntryVersionRequest();
         request.setId(3002L);
         request.setVersionId(9001L);
@@ -439,7 +441,7 @@ class SancaiAdminControllerTest {
 
     @Test
     void versionMethodsShouldRejectMissingVersionId() {
-        SancaiAdminController controller = new SancaiAdminController(sancaiService(), contentService());
+        SancaiAdminController controller = controller(sancaiService(), contentService());
         SancaiEntryVersionRequest request = new SancaiEntryVersionRequest();
         request.setId(3001L);
 
@@ -449,7 +451,7 @@ class SancaiAdminControllerTest {
 
     @Test
     void invalidPageEnumShouldBeRejectedBeforeApplicationCall() {
-        SancaiAdminController controller = new SancaiAdminController(sancaiService(), contentService());
+        SancaiAdminController controller = controller(sancaiService(), contentService());
         SancaiEntryPageRequest request = new SancaiEntryPageRequest();
         request.setLifecycleStatus("UNKNOWN");
 
@@ -639,6 +641,11 @@ class SancaiAdminControllerTest {
                 SancaiEntryVisualAssetStatus.READY,
                 SancaiEntryRefinementStatus.COMPLETE,
                 1);
+    }
+
+    private static SancaiAdminController controller(
+            SancaiApplicationService service, ClassicsContentApplicationService contentService) {
+        return new SancaiAdminController(service, contentService, mock(ClassicsPublicationApplicationService.class));
     }
 
     private static ClassicsContentVersion version(

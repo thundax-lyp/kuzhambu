@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.classics.application.content.service.ClassicsContent
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
+import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
@@ -11,6 +12,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobType;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler.MingCustomsInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsKeywordSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsRequest;
@@ -19,6 +21,11 @@ import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.res
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsTagCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsVersionResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.publication.assembler.ClassicsPublicationInterfaceAssembler;
+import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.request.ClassicsPublicationActionRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.request.ClassicsPublicationBatchActionRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.response.ClassicsPublicationBatchResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.response.ClassicsPublicationCreateResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
@@ -36,7 +43,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,16 +54,61 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class MingCustomsAdminController {
     private final MingCustomsApplicationService service;
     private final ClassicsContentApplicationService contentService;
+    private final ClassicsPublicationApplicationService publicationService;
 
-    public MingCustomsAdminController(MingCustomsApplicationService service) {
-        this(service, null);
-    }
-
-    @Autowired
     public MingCustomsAdminController(
-            MingCustomsApplicationService service, ClassicsContentApplicationService contentService) {
+            MingCustomsApplicationService service,
+            ClassicsContentApplicationService contentService,
+            ClassicsPublicationApplicationService publicationService) {
         this.service = service;
         this.contentService = contentService;
+        this.publicationService = publicationService;
+    }
+
+    @Operation(summary = "发布明代习俗", description = "classics:mingcustoms:edit")
+    @HasPermission("classics:mingcustoms:edit")
+    @SysLogger(value = "发布")
+    @PostMapping("publish")
+    public ClassicsPublicationCreateResponse publish(@Valid @RequestBody ClassicsPublicationActionRequest request) {
+        return publicationAction(request, ClassicsPublicationJobType.PUBLISH);
+    }
+
+    @Operation(summary = "下线明代习俗", description = "classics:mingcustoms:edit")
+    @HasPermission("classics:mingcustoms:edit")
+    @SysLogger(value = "下线")
+    @PostMapping("offline")
+    public ClassicsPublicationCreateResponse offline(@Valid @RequestBody ClassicsPublicationActionRequest request) {
+        return publicationAction(request, ClassicsPublicationJobType.OFFLINE);
+    }
+
+    @Operation(summary = "批量发布明代习俗", description = "classics:mingcustoms:edit")
+    @HasPermission("classics:mingcustoms:edit")
+    @SysLogger(value = "批量发布")
+    @PostMapping("batch/publish")
+    public ClassicsPublicationBatchResponse batchPublish(
+            @Valid @RequestBody ClassicsPublicationBatchActionRequest request) {
+        return publicationBatchAction(request, ClassicsPublicationJobType.PUBLISH);
+    }
+
+    @Operation(summary = "批量下线明代习俗", description = "classics:mingcustoms:edit")
+    @HasPermission("classics:mingcustoms:edit")
+    @SysLogger(value = "批量下线")
+    @PostMapping("batch/offline")
+    public ClassicsPublicationBatchResponse batchOffline(
+            @Valid @RequestBody ClassicsPublicationBatchActionRequest request) {
+        return publicationBatchAction(request, ClassicsPublicationJobType.OFFLINE);
+    }
+
+    private ClassicsPublicationCreateResponse publicationAction(
+            ClassicsPublicationActionRequest request, ClassicsPublicationJobType jobType) {
+        return ClassicsPublicationInterfaceAssembler.toResponse(publicationService.create(
+                ClassicsPublicationInterfaceAssembler.toCommand(request, ClassicsContentType.MING_CUSTOMS, jobType)));
+    }
+
+    private ClassicsPublicationBatchResponse publicationBatchAction(
+            ClassicsPublicationBatchActionRequest request, ClassicsPublicationJobType jobType) {
+        return ClassicsPublicationInterfaceAssembler.toBatchResponse(publicationService.createBatch(
+                ClassicsPublicationInterfaceAssembler.toCommands(request, ClassicsContentType.MING_CUSTOMS, jobType)));
     }
 
     @Operation(summary = "分页查询明代习俗", description = "classics:mingcustoms:view")
