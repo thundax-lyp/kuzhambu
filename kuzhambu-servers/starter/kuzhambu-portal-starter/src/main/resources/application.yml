@@ -74,9 +74,7 @@ kuzhambu:
         consumer-enabled: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_CONSUMER_ENABLED:false}
   access-token-filter:
     exclude-path:
-      - /api/portal/classics/shares/**
       - /api/portal/classics/sancai/**
-      - ${KUZHAMBU_PORTAL_SERVER_CONTEXT_PATH:${SERVER_SERVLET_CONTEXT_PATH:/kuzhambu-api}}/api/portal/classics/shares/**
       - ${KUZHAMBU_PORTAL_SERVER_CONTEXT_PATH:${SERVER_SERVLET_CONTEXT_PATH:/kuzhambu-api}}/api/portal/classics/sancai/**
   auth:
     captcha:

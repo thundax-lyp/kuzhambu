@@ -95,7 +95,6 @@ test.describe("classics ming customs page", () => {
         const addRequests: Array<Record<string, unknown>> = [];
         const updateRequests: Array<Record<string, unknown>> = [];
         const deleteRequests: Array<Record<string, unknown>> = [];
-        const shareRequests: Array<Record<string, unknown>> = [];
 
         await page.route("**/kuzhambu-admin-api/api/sys/dict/page", async (route) => {
             await route.fulfill({
@@ -311,22 +310,6 @@ test.describe("classics ming customs page", () => {
                 });
             }
         );
-        await page.route("**/kuzhambu-admin-api/api/classics/shares/create", async (route) => {
-            shareRequests.push(readRequestBody(route.request().postData()));
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify(
-                    apiResponse({
-                        id: 900000000001,
-                        shareToken: "abc123_-",
-                        shareUrl: "http://127.0.0.1:5174/share/abc123_-",
-                        title: "岁时礼仪：元旦朝贺 分享",
-                        visibility: "PUBLIC"
-                    })
-                )
-            });
-        });
-
         await page.setViewportSize({ width: 1280, height: 800 });
         await page.goto("/classics/ming-customs");
 
@@ -402,20 +385,6 @@ test.describe("classics ming customs page", () => {
                 id: 500000000001,
                 content: "更新后的正文",
                 contentFormat: "HTML",
-                visibility: "PUBLIC"
-            });
-
-        await page.getByRole("button", { name: "分享 岁时礼仪：元旦朝贺" }).click();
-        await expect
-            .poll(() => shareRequests.at(-1))
-            .toEqual({
-                targets: [
-                    {
-                        contentId: 500000000001,
-                        contentType: "MING_CUSTOMS"
-                    }
-                ],
-                title: "岁时礼仪：元旦朝贺 分享",
                 visibility: "PUBLIC"
             });
 
