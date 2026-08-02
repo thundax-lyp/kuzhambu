@@ -148,7 +148,7 @@ describe("DiscoverySearchPage", () => {
         });
 
         const { container, root } = renderPage(
-            "/discovery/search?q=%E7%A4%BC%E5%99%A8&knowledgeBases=SANCAI_ENTRY&categoryCodes=SANCAI_ENTRY&visibilityScopes=PUBLIC&pageNo=2&pageSize=20"
+            "/discovery/search?q=%E7%A4%BC%E5%99%A8&knowledgeBases=SANCAI_ENTRY&categoryCodes=SANCAI_ENTRY&pageNo=2&pageSize=20"
         );
         await flushMutations();
 
@@ -163,15 +163,13 @@ describe("DiscoverySearchPage", () => {
         expect(container.textContent).not.toContain("可见性");
         expect(mocks.searchDiscovery).toHaveBeenCalledWith({
             categoryCodes: [],
-            contentStatuses: [],
             dateFrom: null,
             dateTo: null,
             knowledgeBases: ["SANCAI_ENTRY"],
             pageNo: 2,
             pageSize: 20,
             queryText: "礼器",
-            tagNames: [],
-            visibilityScopes: []
+            tagNames: []
         });
 
         act(() => {
@@ -256,15 +254,13 @@ describe("DiscoverySearchPage", () => {
 
         expect(mocks.searchDiscovery).toHaveBeenCalledWith({
             categoryCodes: [],
-            contentStatuses: [],
             dateFrom: new Date("2026-01-02T00:00:00").toISOString(),
             dateTo: new Date("2026-01-31T23:59:59").toISOString(),
             knowledgeBases: ["SANCAI_ENTRY", "MING_CUSTOMS"],
             pageNo: 1,
             pageSize: 10,
             queryText: "礼俗",
-            tagNames: [],
-            visibilityScopes: []
+            tagNames: []
         });
 
         act(() => {

@@ -170,7 +170,7 @@ describe("DiscoverySearchPage", () => {
             });
 
         const { container, getLocation, root } = renderPage(
-            "/discovery/search?q=%E5%AE%98%E5%88%B6&knowledgeBases=WANGQI_DOCUMENT&categoryCodes=WANGQI_DOCUMENT&tagNames=%E5%88%B6%E5%BA%A6&visibilityScopes=PRIVATE"
+            "/discovery/search?q=%E5%AE%98%E5%88%B6&knowledgeBases=WANGQI_DOCUMENT&categoryCodes=WANGQI_DOCUMENT&tagNames=%E5%88%B6%E5%BA%A6"
         );
         await flushMutations();
 
@@ -191,15 +191,13 @@ describe("DiscoverySearchPage", () => {
                 categoryCodes: [],
                 knowledgeBases: [],
                 queryText: "官制",
-                tagNames: [],
-                visibilityScopes: []
+                tagNames: []
             })
         );
         expect(getLocation()).toContain("q=%E5%AE%98%E5%88%B6");
         expect(getLocation()).not.toContain("knowledgeBases");
         expect(getLocation()).not.toContain("categoryCodes");
         expect(getLocation()).not.toContain("tagNames");
-        expect(getLocation()).not.toContain("visibilityScopes");
 
         act(() => {
             root.unmount();

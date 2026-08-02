@@ -22,7 +22,6 @@ describe("discovery search service", () => {
 
         const request = {
             categoryCodes: ["RITUAL"],
-            contentStatuses: ["PUBLISHED"],
             dateFrom: "2026-01-02T00:00:00.000Z",
             dateTo: "2026-01-31T15:59:59.000Z",
             internalTrimmedCount: 10,
@@ -31,8 +30,7 @@ describe("discovery search service", () => {
             pageSize: 20,
             permissionDebugTrace: "internal-only",
             queryText: "礼俗",
-            tagNames: ["礼制"],
-            visibilityScopes: ["PUBLIC"]
+            tagNames: ["礼制"]
         } as DiscoverySearchRequest & {
             internalTrimmedCount: number;
             permissionDebugTrace: string;
@@ -42,15 +40,13 @@ describe("discovery search service", () => {
 
         expect(mocks.postJson).toHaveBeenCalledWith("/portal/discovery/search/search", {
             categoryCodes: ["RITUAL"],
-            contentStatuses: ["PUBLISHED"],
             dateFrom: "2026-01-02T00:00:00.000Z",
             dateTo: "2026-01-31T15:59:59.000Z",
             knowledgeBases: ["SANCAI_ENTRY"],
             pageNo: 2,
             pageSize: 20,
             queryText: "礼俗",
-            tagNames: ["礼制"],
-            visibilityScopes: ["PUBLIC"]
+            tagNames: ["礼制"]
         });
     });
 

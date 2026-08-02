@@ -11,15 +11,13 @@ export const toDiscoverySearchPayload = (
     request: DiscoverySearchRequest
 ): DiscoverySearchRequest => ({
     categoryCodes: request.categoryCodes,
-    contentStatuses: request.contentStatuses,
     dateFrom: request.dateFrom,
     dateTo: request.dateTo,
     knowledgeBases: request.knowledgeBases,
     pageNo: request.pageNo,
     pageSize: request.pageSize,
     queryText: request.queryText,
-    tagNames: request.tagNames,
-    visibilityScopes: request.visibilityScopes
+    tagNames: request.tagNames
 });
 
 export const searchDiscovery = (request: DiscoverySearchRequest) => {

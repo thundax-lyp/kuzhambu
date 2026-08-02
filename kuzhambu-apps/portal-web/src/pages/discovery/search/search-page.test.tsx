@@ -86,15 +86,13 @@ describe("DiscoverySearchPage", () => {
 
         expect(mocks.searchDiscovery).toHaveBeenCalledWith({
             categoryCodes: [],
-            contentStatuses: [],
             dateFrom: null,
             dateTo: null,
             knowledgeBases: [],
             pageNo: 1,
             pageSize: 10,
             queryText: "",
-            tagNames: [],
-            visibilityScopes: []
+            tagNames: []
         });
         expect(container.textContent).toContain("共 0 条命中");
         expect(container.textContent).not.toContain("等待检索");
