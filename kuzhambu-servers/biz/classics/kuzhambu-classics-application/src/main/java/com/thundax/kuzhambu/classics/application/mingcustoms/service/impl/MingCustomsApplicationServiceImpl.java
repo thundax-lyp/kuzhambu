@@ -7,11 +7,14 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustoms
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
+import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
@@ -43,15 +46,18 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     private final MingCustomsRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
+    private final ClassicsPublicationWriteGuard publicationWriteGuard;
 
     @Autowired
     public MingCustomsApplicationServiceImpl(
             MingCustomsRepository repository,
             ClassicsContentApplicationService contentApplicationService,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
+            ClassicsPublicationWriteGuard publicationWriteGuard) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
+        this.publicationWriteGuard = publicationWriteGuard;
     }
 
     @Override
@@ -100,6 +106,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (entry == null) {
             return null;
         }
+        requireWritable(entry.getId(), ClassicsPublicationWriteOperation.EDIT);
         entry.setContentUpdatedAt(Instant.now());
         repository.update(entry);
         markManualSaveVersion(entry);
@@ -117,6 +124,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (hasPermissionContext(operatorPermissions) && !canEdit(operatorPermissions)) {
             throw permissionDenied();
         }
+        requireWritable(id, ClassicsPublicationWriteOperation.EDIT);
         MingCustomsEntry entry = repository.getById(id);
         if (entry == null) {
             return;
@@ -147,6 +155,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
                 continue;
             }
             try {
+                requireWritable(id, ClassicsPublicationWriteOperation.EDIT);
                 MingCustomsEntry entry = id == null ? null : repository.getById(id);
                 if (entry == null) {
                     failures.add(ClassicsBatchOperationItemResult.failure(
@@ -173,6 +182,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(MingCustomsEntryId id) {
+        requireWritable(id, ClassicsPublicationWriteOperation.DELETE);
         MingCustomsEntry entry = repository.getById(id);
         if (entry == null) {
             return;
@@ -194,6 +204,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (command == null) {
             return null;
         }
+        requireWritable(command.getCustomId(), ClassicsPublicationWriteOperation.EDIT);
         MingCustomsKeyword keyword = new MingCustomsKeyword();
         keyword.setCustomId(command.getCustomId());
         keyword.setKeyword(command.getKeyword());
@@ -207,9 +218,14 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     @Transactional(rollbackFor = Exception.class)
     public void sortKeywords(MingCustomsKeywordSortCommand command) {
         List<MingCustomsKeywordId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<MingCustomsKeyword> keywords = repository.listKeywords(SortDirection.ASC);
+        keywords.stream()
+                .map(MingCustomsKeyword::getCustomId)
+                .distinct()
+                .forEach(id -> requireWritable(id, ClassicsPublicationWriteOperation.EDIT));
         SortablePrioritySwapSupport.sort(
                 orderedIdList,
-                repository.listKeywords(SortDirection.ASC),
+                keywords,
                 MingCustomsKeyword::getId,
                 MingCustomsKeywordId::value,
                 MingCustomsKeyword::getPriority,
@@ -221,6 +237,9 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     @Transactional(rollbackFor = Exception.class)
     public void deleteKeyword(MingCustomsKeywordId id) {
         MingCustomsKeyword keyword = findKeyword(id);
+        if (keyword != null) {
+            requireWritable(keyword.getCustomId(), ClassicsPublicationWriteOperation.EDIT);
+        }
         repository.deleteKeywordById(id);
         if (keyword != null) {
             publishSearchSyncAfterCommit(repository.getById(keyword.getCustomId()));
@@ -251,6 +270,11 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (repository.updateKeywordPriority(keyword) != 1) {
             throw sortDbFailure();
         }
+    }
+
+    private void requireWritable(MingCustomsEntryId id, ClassicsPublicationWriteOperation operation) {
+        publicationWriteGuard.requireWritable(
+                ClassicsContentType.MING_CUSTOMS, new ClassicsContentId(id == null ? null : id.value()), operation);
     }
 
     private MingCustomsKeyword findKeyword(MingCustomsKeywordId id) {
