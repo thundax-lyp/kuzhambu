@@ -1033,7 +1033,7 @@ Status: COMPLETE
 
 ### Stage 3: Runtime and Admin
 
-Status: ACTIVE
+Status: COMPLETE
 
 该 stage 让 job 可以由线程池和 5 个 Schedule 自动收口，并完成写保护、Admin API 和 Admin UI。
 
@@ -1041,22 +1041,22 @@ Status: ACTIVE
 
 Actions:
 
-- [ ] 增加固定 bean name/prefix、`AbortPolicy` 和 shutdown 语义的 bounded
+- [x] 增加固定 bean name/prefix、`AbortPolicy` 和 shutdown 语义的 bounded
   `ThreadPoolTaskExecutor`。
-- [ ] Scheduler claim 写短 dispatch lease，不增加 attempt。
-- [ ] Thread start token match 后写 slice lease，并增加 attempt。
-- [ ] 每次远端调用前检查 `expires_at - 5s`。
-- [ ] 可重试失败清租约，写 `next_retry_at = now + 30s`，线程退出。
-- [ ] 第 4 次失败写 FAILED 和 cleanup PENDING。
-- [ ] pool rejection 清 dispatch lease，不增加 attempt。
-- [ ] 实现且仅实现 5 个 Schedule：
+- [x] Scheduler claim 写短 dispatch lease，不增加 attempt。
+- [x] Thread start token match 后写 slice lease，并增加 attempt。
+- [x] 每次远端调用前检查 `expires_at - 5s`。
+- [x] 可重试失败清租约，写 `next_retry_at = now + 30s`，线程退出。
+- [x] 第 4 次失败写 FAILED 和 cleanup PENDING。
+- [x] pool rejection 清 dispatch lease，不增加 attempt。
+- [x] 实现且仅实现 5 个 Schedule：
   `ClassicsPublicationDispatchScheduler`、
   `ClassicsPublicationSuccessReconcileScheduler`、
   `ClassicsPublicationFailureReconcileScheduler`、
   `ClassicsPublicationEsCleanupScheduler`、
   `ClassicsPublicationFastGptCleanupScheduler`。
-- [ ] admin runtime 独占 5 个 Schedule。
-- [ ] 增加 job/content ref、milestone、attempt 和 elapsed structured log。
+- [x] admin runtime 独占 5 个 Schedule。
+- [x] 增加 job/content ref、milestone、attempt 和 elapsed structured log。
 
 Tests 使用 controllable clock，覆盖：
 
@@ -1096,26 +1096,29 @@ Commit split:
 
 Write guards:
 
-- [ ] 增加共享 state guard。
-- [ ] 覆盖 edit、delete、内容迁移、sort、tag/QA、version restore 和 AI result apply。
-- [ ] PUBLISHING/OFFLINING 拒绝全部业务写。
-- [ ] PUBLISHED 拒绝 edit/delete。
-- [ ] DRAFT/OFFLINE/ERROR + NONE 按设计允许对应操作。
-- [ ] 删除 ERROR/OFFLINE 且有外部引用时写 tombstone 和 cleanup PENDING。
-- [ ] 稿件删除不级联删除 publication job。
-- [ ] missing content 只有 `content_deleted_at != null` 才允许 cleanup。
+- [x] 增加共享 state guard。
+- [x] 覆盖 edit、delete、内容迁移、sort、tag/QA、version restore 和 AI result apply。
+- [x] PUBLISHING/OFFLINING 拒绝全部业务写。
+- [x] PUBLISHED 拒绝 edit/delete。
+- [x] DRAFT/OFFLINE/ERROR + NONE 按设计允许对应操作。
+- [x] 删除 ERROR/OFFLINE 且有外部引用时写 tombstone 和 cleanup PENDING。
+- [x] 稿件删除不级联删除 publication job。
+- [x] missing content 只有 `content_deleted_at != null` 才允许 cleanup。
 
 Admin API:
 
-- [ ] 在 `SancaiAdminController` 增加本文规定的 4 个 entries publish/offline endpoint。
-- [ ] 在 `WangqiDocumentAdminController` 增加本文规定的 4 个 documents publish/offline endpoint。
-- [ ] 在 `MingCustomsAdminController` 增加本文规定的 4 个 publish/offline endpoint。
-- [ ] 增加只读 `ClassicsPublicationAdminController` 的 job page/get endpoint。
-- [ ] 三类稿件响应返回 lifecycle、transition 和 current job ID。
-- [ ] 返回 invalid lifecycle、active transition、active job 和 active cleanup 的明确 conflict。
-- [ ] 三类动作复用各自 `*:edit` 权限；job page/get 使用 `classics:publication:view`。
-- [ ] 用 `@SysLogger` 记录 publish/offline 发起动作，通过 System audit 查询发起人。
-- [ ] 不增加 cancel/retry/edit/advance/cleanup endpoint。
+- [x] 提供本文规定的 4 个 Sancai entries publish/offline endpoint。
+- [x] 提供本文规定的 4 个 Wangqi documents publish/offline endpoint。
+- [x] 提供本文规定的 4 个 Ming customs publish/offline endpoint。
+- [x] 增加只读 `ClassicsPublicationAdminController` 的 job page/get endpoint。
+- [x] 三类稿件响应返回 lifecycle、transition 和 current job ID。
+- [x] 返回 invalid lifecycle、active transition、active job 和 active cleanup 的明确 conflict。
+- [x] 三类动作复用各自 `*:edit` 权限；job page/get 使用 `classics:publication:view`。
+- [x] 用 `@SysLogger` 记录 publish/offline 发起动作，通过 System audit 查询发起人。
+- [x] 不增加 cancel/retry/edit/advance/cleanup endpoint。
+
+实现说明：为保持 interface model 的子域隔离，三类稿件共 12 个动作 endpoint 集中在
+`ClassicsPublicationActionController`；路径、请求/响应、权限和审计契约保持不变。
 
 Exit:
 
@@ -1138,16 +1141,16 @@ Commit split:
 
 Actions:
 
-- [ ] 新增 `src/pages/classics/publication-jobs/`。
-- [ ] 注册 `/classics/publication-jobs`，移除 router 对 `SharingPage` 的依赖。
-- [ ] 实现只读 job table/detail。
-- [ ] 展示 result、milestone、failure step、attempt、retry time、lease、external refs、cleanup 和 failure summary。
-- [ ] 不显示 cancel、retry、edit、advance 或 cleanup 控件。
-- [ ] 三类稿件页面增加 publish/offline action 和 lifecycle/transition tag。
-- [ ] transition active 时禁用所有写入控件。
-- [ ] batch 显示 accepted/rejected 和逐条原因。
-- [ ] ERROR 显示外部残留最终一致性提示。
-- [ ] 增加 service contract、page tests 和 E2E。
+- [x] 新增 `src/pages/classics/publication-jobs/`。
+- [x] 注册 `/classics/publication-jobs`，移除 router 对 `SharingPage` 的依赖。
+- [x] 实现只读 job table/detail。
+- [x] 展示 result、milestone、failure step、attempt、retry time、lease、external refs、cleanup 和 failure summary。
+- [x] 不显示 cancel、retry、edit、advance 或 cleanup 控件。
+- [x] 三类稿件页面增加 publish/offline action 和 lifecycle/transition tag。
+- [x] transition active 时禁用所有写入控件。
+- [x] batch 显示 accepted/rejected 和逐条原因。
+- [x] ERROR 显示外部残留最终一致性提示。
+- [x] 增加 service contract、page tests 和 E2E。
 
 Exit:
 
@@ -1173,6 +1176,30 @@ Stage 3 exit:
 - job 页面严格只读。
 - 完整 Java和前端 workspace 门禁通过。
 - 工作区干净，Stage 3 已拆为多个小 commit。
+
+Result:
+
+- bounded executor、dispatch/reconcile/cleanup runtime 和 5 个 Schedule 已完成，且由
+  admin starter 独占；lease、attempt、重试、拒绝和分事务恢复路径均有自动化覆盖。
+- 三类稿件共享 publication state guard、删除 tombstone、动作 API、状态响应和冲突
+  契约已完成；publication job API 与页面保持只读。
+- Admin 三类稿件页面已接入单条/批量发布下线、状态标签、过渡态写保护、逐条拒绝原因
+  和外部残留提示。
+
+Verification:
+
+- `mvn spotless:check`
+- `mvn checkstyle:check`
+- `mvn test`（58-module reactor；Surefire reports 均为 0 failure / 0 error）
+- `pnpm run format:check`
+- `pnpm run lint`
+- `pnpm run build`
+- `pnpm run test`（admin 90 files / 385 tests；portal 25 files / 79 tests）
+- Playwright E2E spec 可被 `playwright --list` 发现；本机缺少 Chromium binary，未执行浏览器用例。
+
+Deferred: Portal/public READY cutover (Stage 4); legacy MQ and remaining visibility
+cleanup (Stage 5); database reset, real ES/FastGPT runtime smoke and RUNBOOK deletion
+(Stage 6).
 
 ### Stage 4: Portal cutover and sharing frontend removal
 
