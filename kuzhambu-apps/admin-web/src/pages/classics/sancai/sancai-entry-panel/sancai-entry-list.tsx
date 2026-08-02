@@ -12,6 +12,7 @@ import {
 } from "@/components";
 
 import * as contentService from "@/pages/classics/common/classics-content-service";
+import { ClassicsPublicationErrorAlert } from "@/pages/classics/common/classics-publication-error-alert";
 import {
     hasClassicsContentPermission,
     type ClassicsBatchOperationRecord
@@ -302,6 +303,7 @@ export const SancaiEntryList = ({
 
     return (
         <div className="sancai-entry-table-wrap">
+            <ClassicsPublicationErrorAlert items={entries} />
             {batchVisibilityResult ? (
                 <KuzhambuAlert
                     showIcon

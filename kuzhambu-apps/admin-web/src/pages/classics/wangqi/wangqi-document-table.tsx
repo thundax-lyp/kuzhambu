@@ -1,5 +1,6 @@
 import { Typography } from "antd";
 import { KuzhambuButton, KuzhambuTable, type KuzhambuTableProps, KuzhambuTag } from "@/components";
+import { ClassicsPublicationErrorAlert } from "@/pages/classics/common/classics-publication-error-alert";
 
 import type { WangqiDocumentRecord } from "./wangqi-types";
 
@@ -230,74 +231,77 @@ export const WangqiDocumentTable = ({
     ];
 
     return (
-        <KuzhambuTable<WangqiDocumentRecord>
-            ariaLabel="王圻文档表格"
-            rowKey={(record) => String(record.id ?? "")}
-            loading={loading}
-            dataSource={dataSource}
-            columns={columns}
-            toolbar={{
-                leading: (
-                    <Text type="secondary">
-                        已选 {selectedDocumentIds.length} / 当前页 {dataSource.length}
-                    </Text>
-                ),
-                actions: [
-                    {
-                        testId: "classics-wangqi-batch-publish-button",
-                        title: "批量发布",
-                        disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
-                        loading: isPublicationChanging,
-                        action: () => onPublicationBatch("PUBLISH")
-                    },
-                    {
-                        testId: "classics-wangqi-batch-offline-button",
-                        title: "批量下线",
-                        disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
-                        loading: isPublicationChanging,
-                        action: () => onPublicationBatch("OFFLINE")
-                    },
-                    {
-                        testId: "classics-wangqi-wangqi-batch-share-button",
-                        title: "分享文档",
-                        disabled: !selectedDocumentIds.length || !canShare,
-                        loading: isBatchSharing,
-                        action: onShareSelectedDocuments
-                    },
-                    {
-                        testId: "classics-wangqi-wangqi-action-button",
-                        title: "候选治理",
-                        disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
-                        action: onOpenBatchCandidateDrawer
-                    },
-                    {
-                        testId: "classics-wangqi-wangqi-batch-public-button",
-                        title: "设为公开",
-                        disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
-                        loading: isBatchVisibilityChanging,
-                        action: () => onChangeSelectedVisibility("PUBLIC")
-                    },
-                    {
-                        testId: "classics-wangqi-wangqi-batch-private-button",
-                        title: "设为私有",
-                        disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
-                        loading: isBatchVisibilityChanging,
-                        action: () => onChangeSelectedVisibility("PRIVATE")
+        <>
+            <ClassicsPublicationErrorAlert items={dataSource} />
+            <KuzhambuTable<WangqiDocumentRecord>
+                ariaLabel="王圻文档表格"
+                rowKey={(record) => String(record.id ?? "")}
+                loading={loading}
+                dataSource={dataSource}
+                columns={columns}
+                toolbar={{
+                    leading: (
+                        <Text type="secondary">
+                            已选 {selectedDocumentIds.length} / 当前页 {dataSource.length}
+                        </Text>
+                    ),
+                    actions: [
+                        {
+                            testId: "classics-wangqi-batch-publish-button",
+                            title: "批量发布",
+                            disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                            loading: isPublicationChanging,
+                            action: () => onPublicationBatch("PUBLISH")
+                        },
+                        {
+                            testId: "classics-wangqi-batch-offline-button",
+                            title: "批量下线",
+                            disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                            loading: isPublicationChanging,
+                            action: () => onPublicationBatch("OFFLINE")
+                        },
+                        {
+                            testId: "classics-wangqi-wangqi-batch-share-button",
+                            title: "分享文档",
+                            disabled: !selectedDocumentIds.length || !canShare,
+                            loading: isBatchSharing,
+                            action: onShareSelectedDocuments
+                        },
+                        {
+                            testId: "classics-wangqi-wangqi-action-button",
+                            title: "候选治理",
+                            disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                            action: onOpenBatchCandidateDrawer
+                        },
+                        {
+                            testId: "classics-wangqi-wangqi-batch-public-button",
+                            title: "设为公开",
+                            disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                            loading: isBatchVisibilityChanging,
+                            action: () => onChangeSelectedVisibility("PUBLIC")
+                        },
+                        {
+                            testId: "classics-wangqi-wangqi-batch-private-button",
+                            title: "设为私有",
+                            disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                            loading: isBatchVisibilityChanging,
+                            action: () => onChangeSelectedVisibility("PRIVATE")
+                        }
+                    ]
+                }}
+                onChange={(_pagination, _filters, sorter) => {
+                    const activeSorter = Array.isArray(sorter) ? sorter[0] : sorter;
+                    if (activeSorter?.columnKey !== "documentTime" || !activeSorter.order) {
+                        return;
                     }
-                ]
-            }}
-            onChange={(_pagination, _filters, sorter) => {
-                const activeSorter = Array.isArray(sorter) ? sorter[0] : sorter;
-                if (activeSorter?.columnKey !== "documentTime" || !activeSorter.order) {
-                    return;
-                }
-                onSortDirectionChange(activeSorter.order === "ascend" ? "ASC" : "DESC");
-            }}
-            pagination={pagination}
-            rowSelection={{
-                selectedRowKeys: selectedDocumentIds,
-                onChange: (keys) => onSelectedDocumentIdsChange(keys.map(String))
-            }}
-        />
+                    onSortDirectionChange(activeSorter.order === "ascend" ? "ASC" : "DESC");
+                }}
+                pagination={pagination}
+                rowSelection={{
+                    selectedRowKeys: selectedDocumentIds,
+                    onChange: (keys) => onSelectedDocumentIdsChange(keys.map(String))
+                }}
+            />
+        </>
     );
 };
