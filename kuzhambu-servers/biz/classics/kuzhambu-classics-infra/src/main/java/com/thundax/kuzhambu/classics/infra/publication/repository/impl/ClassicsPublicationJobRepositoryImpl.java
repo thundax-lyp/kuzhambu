@@ -102,6 +102,30 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
     }
 
     @Override
+    public List<ClassicsPublicationJob> listDispatchCandidates(Instant now, int limit) {
+        LambdaQueryWrapper<ClassicsPublicationJobDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ClassicsPublicationJobDO::getJobResultStatus, ClassicsPublicationJobResultStatus.RUNNING.name())
+                .ne(ClassicsPublicationJobDO::getJobStatus, ClassicsPublicationJobStatus.CONTENT_COMMITTED.name())
+                .and(scope -> scope.nested(ready -> ready.isNull(ClassicsPublicationJobDO::getExecutionToken)
+                                .isNull(ClassicsPublicationJobDO::getExpiresAt)
+                                .isNull(ClassicsPublicationJobDO::getNextRetryAt))
+                        .or(retry -> retry.le(ClassicsPublicationJobDO::getNextRetryAt, now))
+                        .or(expired -> expired.le(ClassicsPublicationJobDO::getExpiresAt, now)))
+                .orderByAsc(ClassicsPublicationJobDO::getRequestedAt)
+                .orderByAsc(ClassicsPublicationJobDO::getId)
+                .last("limit " + positiveLimit(limit));
+        return mapper.selectList(wrapper).stream()
+                .map(ClassicsPublicationPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
+    public int releaseExecutionClaim(ClassicsPublicationJobId id, ClassicsPublicationExecutionToken token) {
+        return mapper.releaseExecutionClaim(
+                ClassicsPublicationJobIdCodec.toValue(id), ClassicsPublicationExecutionTokenCodec.toValue(token));
+    }
+
+    @Override
     public int markThreadStarted(
             ClassicsPublicationJobId id,
             ClassicsPublicationExecutionToken token,
@@ -183,6 +207,29 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
     }
 
     @Override
+    public List<ClassicsPublicationJob> listSuccessReconcileCandidates(int limit) {
+        return listByResultAndMilestone(
+                ClassicsPublicationJobResultStatus.RUNNING, ClassicsPublicationJobStatus.CONTENT_COMMITTED, limit);
+    }
+
+    @Override
+    public int markSucceeded(ClassicsPublicationJobId id, Instant finishedAt) {
+        return mapper.markSucceeded(ClassicsPublicationJobIdCodec.toValue(id), finishedAt);
+    }
+
+    @Override
+    public List<ClassicsPublicationJob> listFailureReconcileCandidates(int limit) {
+        LambdaQueryWrapper<ClassicsPublicationJobDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ClassicsPublicationJobDO::getJobResultStatus, ClassicsPublicationJobResultStatus.FAILED.name())
+                .orderByAsc(ClassicsPublicationJobDO::getRequestedAt)
+                .orderByAsc(ClassicsPublicationJobDO::getId)
+                .last("limit " + positiveLimit(limit));
+        return mapper.selectList(wrapper).stream()
+                .map(ClassicsPublicationPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
     public int claimEsCleanup(ClassicsPublicationJobId id, String token, Instant now, Instant expiresAt) {
         return mapper.claimEsCleanup(ClassicsPublicationJobIdCodec.toValue(id), token, now, expiresAt);
     }
@@ -210,5 +257,25 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
     @Override
     public int failFastGptCleanup(ClassicsPublicationJobId id, String token, String detailJson) {
         return mapper.failFastGptCleanup(ClassicsPublicationJobIdCodec.toValue(id), token, detailJson);
+    }
+
+    private List<ClassicsPublicationJob> listByResultAndMilestone(
+            ClassicsPublicationJobResultStatus resultStatus, ClassicsPublicationJobStatus jobStatus, int limit) {
+        LambdaQueryWrapper<ClassicsPublicationJobDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ClassicsPublicationJobDO::getJobResultStatus, resultStatus.name())
+                .eq(ClassicsPublicationJobDO::getJobStatus, jobStatus.name())
+                .orderByAsc(ClassicsPublicationJobDO::getRequestedAt)
+                .orderByAsc(ClassicsPublicationJobDO::getId)
+                .last("limit " + positiveLimit(limit));
+        return mapper.selectList(wrapper).stream()
+                .map(ClassicsPublicationPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    private static int positiveLimit(int limit) {
+        if (limit <= 0) {
+            throw new IllegalArgumentException("Publication claim limit must be positive");
+        }
+        return limit;
     }
 }

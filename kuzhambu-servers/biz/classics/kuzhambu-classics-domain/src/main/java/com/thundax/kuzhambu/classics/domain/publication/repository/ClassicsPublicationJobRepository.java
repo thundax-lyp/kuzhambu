@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.Classi
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
+import java.util.List;
 
 public interface ClassicsPublicationJobRepository {
     ClassicsPublicationJobId insert(ClassicsPublicationJob job);
@@ -33,6 +34,10 @@ public interface ClassicsPublicationJobRepository {
             ClassicsPublicationExecutionToken token,
             Instant now,
             Instant dispatchExpiresAt);
+
+    List<ClassicsPublicationJob> listDispatchCandidates(Instant now, int limit);
+
+    int releaseExecutionClaim(ClassicsPublicationJobId id, ClassicsPublicationExecutionToken token);
 
     int markThreadStarted(
             ClassicsPublicationJobId id,
@@ -71,6 +76,12 @@ public interface ClassicsPublicationJobRepository {
             Instant finishedAt,
             String failureReason,
             String detailJson);
+
+    List<ClassicsPublicationJob> listSuccessReconcileCandidates(int limit);
+
+    int markSucceeded(ClassicsPublicationJobId id, Instant finishedAt);
+
+    List<ClassicsPublicationJob> listFailureReconcileCandidates(int limit);
 
     int claimEsCleanup(ClassicsPublicationJobId id, String token, Instant now, Instant expiresAt);
 

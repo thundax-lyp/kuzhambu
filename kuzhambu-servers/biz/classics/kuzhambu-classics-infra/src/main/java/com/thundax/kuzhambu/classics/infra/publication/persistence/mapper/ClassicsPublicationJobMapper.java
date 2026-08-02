@@ -40,6 +40,14 @@ public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublica
     @Update(
             """
             update classics_publication_job
+            set execution_token = null, expires_at = null
+            where id = #{id} and execution_token = #{token} and job_result_status = 'RUNNING'
+            """)
+    int releaseExecutionClaim(@Param("id") Long id, @Param("token") String token);
+
+    @Update(
+            """
+            update classics_publication_job
             set expires_at = #{expiresAt}, attempt_count = attempt_count + 1,
                 started_at = coalesce(started_at, #{startedAt})
             where id = #{id} and execution_token = #{token} and job_result_status = 'RUNNING'
@@ -122,6 +130,16 @@ public interface ClassicsPublicationJobMapper extends BaseMapper<ClassicsPublica
             @Param("finishedAt") Instant finishedAt,
             @Param("failureReason") String failureReason,
             @Param("detailJson") String detailJson);
+
+    @Update(
+            """
+            update classics_publication_job
+            set job_result_status = 'SUCCEEDED', finished_at = #{finishedAt},
+                execution_token = null, expires_at = null, next_retry_at = null
+            where id = #{id} and job_result_status = 'RUNNING'
+              and job_status = 'CONTENT_COMMITTED'
+            """)
+    int markSucceeded(@Param("id") Long id, @Param("finishedAt") Instant finishedAt);
 
     @Update(
             """
