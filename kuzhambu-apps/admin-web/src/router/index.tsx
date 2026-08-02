@@ -14,7 +14,7 @@ import { MingCustomsPage } from "../pages/classics/ming-customs/ming-customs-pag
 import { SancaiPage } from "../pages/classics/sancai/sancai-page";
 import { SancaiVisualPage } from "../pages/classics/sancai-visual/sancai-visual-page";
 import { WangqiPage } from "../pages/classics/wangqi/wangqi-page";
-import { SharingPage } from "../pages/classics/sharing/sharing-page";
+import { PublicationJobsPage } from "../pages/classics/publication-jobs/publication-jobs-page";
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
 import { GraphExtractionPage } from "../pages/knowledge/graph-extraction/graph-extraction-page";
 import { LineagePage } from "../pages/knowledge/lineage/lineage-page";
@@ -128,8 +128,8 @@ const router = createBrowserRouter(
                             element: <WangqiPage />
                         },
                         {
-                            path: "classics/sharing",
-                            element: <SharingPage />
+                            path: "classics/publication-jobs",
+                            element: <PublicationJobsPage />
                         },
                         {
                             path: "knowledge/graph",
