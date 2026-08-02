@@ -4,8 +4,11 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidatePageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCategoryAggregationQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCategoryAggregationResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
+import java.util.List;
 
 public interface SearchPublicationApplicationService {
 
@@ -20,4 +23,7 @@ public interface SearchPublicationApplicationService {
     SearchPublicationProbeResult probe(SearchPublicationReferenceCommand command);
 
     PageResult<SearchPublicationCandidateResult> pageReadyCandidates(SearchPublicationCandidatePageQuery query);
+
+    List<SearchPublicationCategoryAggregationResult> listReadyCandidateCategoryAggregations(
+            SearchPublicationCategoryAggregationQuery query);
 }

@@ -109,53 +109,44 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
-    public List<SancaiCategoryOverview> listCategoryOverviewsByEntryIds(
+    public List<SancaiCategoryOverview> listCategoryRepresentativeOverviewsByEntryIds(
             List<Long> entryIds, SortDirection sortDirection) {
         if (entryIds == null || entryIds.isEmpty()) {
             return List.of();
         }
-        String readyEntryIds = entryIds.stream()
+        String representativeEntryIds = entryIds.stream()
                 .filter(Objects::nonNull)
                 .map(String::valueOf)
                 .distinct()
                 .collect(java.util.stream.Collectors.joining(","));
-        if (readyEntryIds.isBlank()) {
+        if (representativeEntryIds.isBlank()) {
             return List.of();
         }
-        String readyEntryCondition = " AND e.id IN (" + readyEntryIds + ")";
+        String representativeEntryCondition = " AND e.id IN (" + representativeEntryIds + ")";
         QueryWrapper<SancaiCategoryDO> wrapper = new QueryWrapper<>();
         wrapper.select(
                         "id AS categoryId",
-                        "COALESCE((SELECT COUNT(1) FROM classics_sancai_entry e"
-                                + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
-                                + " WHERE v.category_id = classics_sancai_category.id"
-                                + readyEntryCondition
-                                + "), 0) AS publicEntryCount",
-                        "COALESCE((SELECT COUNT(DISTINCT e.id) FROM classics_sancai_entry e"
-                                + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
-                                + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
-                                + " WHERE v.category_id = classics_sancai_category.id"
-                                + readyEntryCondition
-                                + "), 0) AS illustratedEntryCount",
+                        "0 AS publicEntryCount",
+                        "0 AS illustratedEntryCount",
                         "(SELECT e.id FROM classics_sancai_entry e"
                                 + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
                                 + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
                                 + " WHERE v.category_id = classics_sancai_category.id"
-                                + readyEntryCondition
+                                + representativeEntryCondition
                                 + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
                                 + " AS representativeEntryId",
                         "(SELECT i.id FROM classics_sancai_entry e"
                                 + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
                                 + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
                                 + " WHERE v.category_id = classics_sancai_category.id"
-                                + readyEntryCondition
+                                + representativeEntryCondition
                                 + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
                                 + " AS representativeImageId",
                         "(SELECT COALESCE(i.title, e.title) FROM classics_sancai_entry e"
                                 + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
                                 + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
                                 + " WHERE v.category_id = classics_sancai_category.id"
-                                + readyEntryCondition
+                                + representativeEntryCondition
                                 + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
                                 + " AS representativeImageTitle")
                 .orderBy(true, sortDirection != SortDirection.DESC, "priority");

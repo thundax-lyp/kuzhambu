@@ -35,7 +35,7 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
     }
 
     @Override
-    public List<SancaiCategoryOverview> listCategoryOverviewsByEntryIds(
+    public List<SancaiCategoryOverview> listCategoryRepresentativeOverviewsByEntryIds(
             List<Long> entryIds, SortDirection sortDirection) {
         return List.of();
     }

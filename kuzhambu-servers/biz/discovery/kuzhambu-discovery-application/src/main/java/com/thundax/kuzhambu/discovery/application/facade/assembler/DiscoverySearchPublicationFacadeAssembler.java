@@ -4,13 +4,17 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidatePageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCategoryAggregationQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCategoryAggregationResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCandidatePageFacadeRequest;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCategoryAggregationFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationPrepareFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationReferenceFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCandidateFacadeResponse;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCandidatePageFacadeResponse;
+import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCategoryAggregationFacadeResponse;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationProbeFacadeResponse;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -56,6 +60,11 @@ public class DiscoverySearchPublicationFacadeAssembler {
                 request == null ? null : request.getPageSize());
     }
 
+    public SearchPublicationCategoryAggregationQuery toCategoryAggregationQuery(
+            DiscoverySearchPublicationCategoryAggregationFacadeRequest request) {
+        return new SearchPublicationCategoryAggregationQuery(request == null ? null : request.getContentType());
+    }
+
     public DiscoverySearchPublicationProbeFacadeResponse toProbeResponse(SearchPublicationProbeResult result) {
         return DiscoverySearchPublicationProbeFacadeResponse.builder()
                 .present(result.isPresent())
@@ -86,6 +95,23 @@ public class DiscoverySearchPublicationFacadeAssembler {
                 .contentId(result.getContentId())
                 .categoryId(result.getCategoryId())
                 .volumeId(result.getVolumeId())
+                .build();
+    }
+
+    public List<DiscoverySearchPublicationCategoryAggregationFacadeResponse> toCategoryAggregationResponses(
+            List<SearchPublicationCategoryAggregationResult> results) {
+        if (results == null || results.isEmpty()) {
+            return List.of();
+        }
+        return results.stream().map(this::toCategoryAggregationResponse).toList();
+    }
+
+    private DiscoverySearchPublicationCategoryAggregationFacadeResponse toCategoryAggregationResponse(
+            SearchPublicationCategoryAggregationResult result) {
+        return DiscoverySearchPublicationCategoryAggregationFacadeResponse.builder()
+                .categoryId(result.getCategoryId())
+                .readyEntryCount(result.getReadyEntryCount())
+                .representativeContentId(result.getRepresentativeContentId())
                 .build();
     }
 }

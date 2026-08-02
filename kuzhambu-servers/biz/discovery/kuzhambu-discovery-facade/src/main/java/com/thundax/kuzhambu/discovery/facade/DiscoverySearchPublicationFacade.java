@@ -1,10 +1,13 @@
 package com.thundax.kuzhambu.discovery.facade;
 
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCandidatePageFacadeRequest;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCategoryAggregationFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationPrepareFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationReferenceFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCandidatePageFacadeResponse;
+import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCategoryAggregationFacadeResponse;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationProbeFacadeResponse;
+import java.util.List;
 
 public interface DiscoverySearchPublicationFacade {
 
@@ -20,4 +23,7 @@ public interface DiscoverySearchPublicationFacade {
 
     DiscoverySearchPublicationCandidatePageFacadeResponse pageReadyCandidates(
             DiscoverySearchPublicationCandidatePageFacadeRequest request);
+
+    List<DiscoverySearchPublicationCategoryAggregationFacadeResponse> listReadyCandidateCategoryAggregations(
+            DiscoverySearchPublicationCategoryAggregationFacadeRequest request);
 }

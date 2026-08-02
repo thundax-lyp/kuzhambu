@@ -1,11 +1,17 @@
 package com.thundax.kuzhambu.discovery.infra.client;
 
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.json.JsonData;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.elasticsearch.support.ElasticsearchOperationsSupport;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCategoryAggregationResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationDocument;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
@@ -19,8 +25,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -34,6 +43,9 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
 
     private static final int HIGHLIGHT_CONTEXT_LENGTH = 60;
     private static final int FALLBACK_LENGTH = 160;
+    private static final int CATEGORY_AGGREGATION_BUCKET_SIZE = 1000;
+    private static final String READY_CATEGORY_AGGREGATION = "ready_categories";
+    private static final String REPRESENTATIVE_HIT_AGGREGATION = "representative_hit";
     private static final String PUBLIC_VISIBILITY = "PUBLIC";
     private static final String PUBLICATION_PREPARING = "PREPARING";
     private static final String PUBLICATION_READY = "READY";
@@ -268,6 +280,22 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
                 pageNo, pageSize, ElasticsearchOperationsSupport.toIntTotalHits(searchHits.getTotalHits()), records);
     }
 
+    @Override
+    public List<SearchPublicationCategoryAggregationResult> listReadyPublicationCategoryAggregations(
+            String contentType) {
+        ElasticsearchOperations operations = requireOperations("publication-category-aggregations");
+        NativeQuery query = NativeQuery.builder()
+                .withQuery(buildReadyPublicationNativeQuery(contentType))
+                .withAggregation(READY_CATEGORY_AGGREGATION, Aggregation.of(aggregation -> aggregation
+                        .terms(terms -> terms.field("categoryCode").size(CATEGORY_AGGREGATION_BUCKET_SIZE))
+                        .aggregations(REPRESENTATIVE_HIT_AGGREGATION, representativeHitAggregation())))
+                .withMaxResults(0)
+                .build();
+        SearchHits<DiscoverySearchDocument> searchHits =
+                operations.search(query, DiscoverySearchDocument.class, indexCoordinates());
+        return toCategoryAggregationResults(searchHits);
+    }
+
     private ElasticsearchOperations requireOperations(String operation) {
         return ElasticsearchOperationsSupport.requireOperations(
                 elasticsearchOperations, "Discovery search", operation, properties.getIndexName());
@@ -278,6 +306,74 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         return document != null
                 && java.util.Objects.equals(document.getContentVersionId(), contentVersionId)
                 && java.util.Objects.equals(document.getContentVersionNo(), contentVersionNo);
+    }
+
+    private Query buildReadyPublicationNativeQuery(String contentType) {
+        return Query.of(query -> query.bool(bool -> {
+            bool.filter(termQuery("publicationStatus", PUBLICATION_READY));
+            bool.filter(termQuery("deleted", false));
+            if (contentType != null && !contentType.isBlank()) {
+                bool.filter(termQuery("contentType", contentType));
+            }
+            return bool;
+        }));
+    }
+
+    private Query termQuery(String fieldName, String value) {
+        return Query.of(query -> query.term(term -> term.field(fieldName).value(value)));
+    }
+
+    private Query termQuery(String fieldName, boolean value) {
+        return Query.of(query -> query.term(term -> term.field(fieldName).value(value)));
+    }
+
+    private Aggregation representativeHitAggregation() {
+        return Aggregation.of(aggregation -> aggregation.topHits(
+                topHits -> topHits.size(1).source(source -> source.filter(filter -> filter.includes("contentId")))));
+    }
+
+    private List<SearchPublicationCategoryAggregationResult> toCategoryAggregationResults(
+            SearchHits<DiscoverySearchDocument> searchHits) {
+        if (searchHits == null || !(searchHits.getAggregations() instanceof ElasticsearchAggregations aggregations)) {
+            return List.of();
+        }
+        var categoryAggregation = aggregations.get(READY_CATEGORY_AGGREGATION);
+        Aggregate aggregate = categoryAggregation == null
+                ? null
+                : categoryAggregation.aggregation().getAggregate();
+        if (aggregate == null || !aggregate.isSterms()) {
+            return List.of();
+        }
+        return aggregate.sterms().buckets().array().stream()
+                .filter(Objects::nonNull)
+                .map(this::toCategoryAggregationResult)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private SearchPublicationCategoryAggregationResult toCategoryAggregationResult(StringTermsBucket bucket) {
+        if (bucket.key() == null || !bucket.key().isString()) {
+            return null;
+        }
+        return new SearchPublicationCategoryAggregationResult(
+                bucket.key().stringValue(), bucket.docCount(), representativeContentId(bucket));
+    }
+
+    private String representativeContentId(StringTermsBucket bucket) {
+        Aggregate aggregate = bucket.aggregations().get(REPRESENTATIVE_HIT_AGGREGATION);
+        if (aggregate == null || !aggregate.isTopHits()) {
+            return null;
+        }
+        var hits = aggregate.topHits().hits();
+        if (hits == null || hits.hits() == null || hits.hits().isEmpty()) {
+            return null;
+        }
+        JsonData source = hits.hits().get(0).source();
+        if (source == null) {
+            return null;
+        }
+        Object contentId = source.to(Map.class).get("contentId");
+        return contentId == null ? null : String.valueOf(contentId);
     }
 
     private String joinTextSegments(List<String> textSegments) {

@@ -21,7 +21,8 @@ public interface SancaiRepository {
 
     List<SancaiCategoryOverview> listCategoryOverviews(SortDirection sortDirection);
 
-    List<SancaiCategoryOverview> listCategoryOverviewsByEntryIds(List<Long> entryIds, SortDirection sortDirection);
+    List<SancaiCategoryOverview> listCategoryRepresentativeOverviewsByEntryIds(
+            List<Long> entryIds, SortDirection sortDirection);
 
     int maxCategoryPriority();
 

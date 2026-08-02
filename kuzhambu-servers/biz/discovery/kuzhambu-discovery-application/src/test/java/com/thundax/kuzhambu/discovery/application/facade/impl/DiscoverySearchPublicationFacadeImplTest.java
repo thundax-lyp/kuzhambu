@@ -10,8 +10,11 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoverySearchPublicationFacadeAssembler;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCategoryAggregationQuery;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCategoryAggregationResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchPublicationApplicationService;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCategoryAggregationFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationPrepareFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationReferenceFacadeRequest;
 import java.util.List;
@@ -69,5 +72,24 @@ class DiscoverySearchPublicationFacadeImplTest {
         verify(service).delete(any(SearchPublicationReferenceCommand.class));
         assertTrue(result.isPresent());
         assertEquals("READY", result.getPublicationStatus());
+    }
+
+    @Test
+    void listReadyCandidateCategoryAggregationsShouldMapRequestAndResponse() {
+        when(service.listReadyCandidateCategoryAggregations(any(SearchPublicationCategoryAggregationQuery.class)))
+                .thenReturn(List.of(new SearchPublicationCategoryAggregationResult("11", 13, "1001")));
+        ArgumentCaptor<SearchPublicationCategoryAggregationQuery> captor =
+                ArgumentCaptor.forClass(SearchPublicationCategoryAggregationQuery.class);
+
+        var result = facade.listReadyCandidateCategoryAggregations(
+                DiscoverySearchPublicationCategoryAggregationFacadeRequest.builder()
+                        .contentType("SANCAI_ENTRY")
+                        .build());
+
+        verify(service).listReadyCandidateCategoryAggregations(captor.capture());
+        assertEquals("SANCAI_ENTRY", captor.getValue().getContentType());
+        assertEquals("11", result.get(0).getCategoryId());
+        assertEquals(13, result.get(0).getReadyEntryCount());
+        assertEquals("1001", result.get(0).getRepresentativeContentId());
     }
 }

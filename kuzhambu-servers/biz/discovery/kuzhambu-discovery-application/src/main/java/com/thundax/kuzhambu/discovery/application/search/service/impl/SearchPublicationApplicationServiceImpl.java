@@ -6,12 +6,15 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidatePageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCategoryAggregationQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCategoryAggregationResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationDocument;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchPublicationApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
 import java.util.Collections;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -84,6 +87,13 @@ public class SearchPublicationApplicationServiceImpl implements SearchPublicatio
                 query == null ? null : query.getKeyword(),
                 normalizePageNo(query == null ? null : query.getPageNo()),
                 normalizePageSize(query == null ? null : query.getPageSize()));
+    }
+
+    @Override
+    public List<SearchPublicationCategoryAggregationResult> listReadyCandidateCategoryAggregations(
+            SearchPublicationCategoryAggregationQuery query) {
+        return searchIndexGateway.listReadyPublicationCategoryAggregations(
+                query == null ? null : query.getContentType());
     }
 
     private int normalizePageNo(Integer pageNo) {

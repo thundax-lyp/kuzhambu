@@ -41,8 +41,10 @@ import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.discovery.facade.DiscoverySearchPublicationFacade;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCandidatePageFacadeRequest;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCategoryAggregationFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationReferenceFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCandidateFacadeResponse;
+import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCategoryAggregationFacadeResponse;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationProbeFacadeResponse;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -92,8 +94,20 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     public List<SancaiCategoryOverview> listPortalReadyCategoryOverviews() {
-        List<Long> readyEntryIds = listAllPortalReadyCandidateIds(null, null, null);
-        return repository.listCategoryOverviewsByEntryIds(readyEntryIds, SortDirection.ASC);
+        List<DiscoverySearchPublicationCategoryAggregationFacadeResponse> aggregations =
+                discoverySearchPublicationFacade.listReadyCandidateCategoryAggregations(
+                        DiscoverySearchPublicationCategoryAggregationFacadeRequest.builder()
+                                .contentType(ClassicsContentType.SANCAI_ENTRY.value())
+                                .build());
+        if (aggregations == null || aggregations.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, SancaiCategoryOverview> representativeOverviewByCategoryId =
+                representativeOverviewByCategoryId(aggregations);
+        return aggregations.stream()
+                .map(aggregation -> toReadyCategoryOverview(aggregation, representativeOverviewByCategoryId))
+                .filter(overview -> overview != null)
+                .toList();
     }
 
     @Override
@@ -568,36 +582,50 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         return new BizException("PERMISSION_DENIED");
     }
 
-    private List<Long> listAllPortalReadyCandidateIds(Long categoryId, Long volumeId, String keyword) {
-        List<Long> ids = new ArrayList<>();
-        int pageNo = 1;
-        int pageSize = 500;
-        while (true) {
-            var page = discoverySearchPublicationFacade.pageReadyCandidates(
-                    DiscoverySearchPublicationCandidatePageFacadeRequest.builder()
-                            .contentType(ClassicsContentType.SANCAI_ENTRY.value())
-                            .categoryId(stringValue(categoryId))
-                            .volumeId(stringValue(volumeId))
-                            .keyword(keyword)
-                            .pageNo(pageNo)
-                            .pageSize(pageSize)
-                            .build());
-            List<DiscoverySearchPublicationCandidateFacadeResponse> records =
-                    page.getRecords() == null ? List.of() : page.getRecords();
-            ids.addAll(records.stream()
-                    .map(DiscoverySearchPublicationCandidateFacadeResponse::getContentId)
-                    .map(SancaiApplicationServiceImpl::longValue)
-                    .filter(value -> value != null)
-                    .toList());
-            if (records.isEmpty() || ids.size() >= page.getTotalCount()) {
-                return ids;
-            }
-            pageNo++;
-        }
-    }
-
     private static String stringValue(Long value) {
         return value == null ? null : String.valueOf(value);
+    }
+
+    private Map<Long, SancaiCategoryOverview> representativeOverviewByCategoryId(
+            List<DiscoverySearchPublicationCategoryAggregationFacadeResponse> aggregations) {
+        List<Long> representativeEntryIds = aggregations.stream()
+                .map(DiscoverySearchPublicationCategoryAggregationFacadeResponse::getRepresentativeContentId)
+                .map(SancaiApplicationServiceImpl::longValue)
+                .filter(value -> value != null)
+                .distinct()
+                .toList();
+        if (representativeEntryIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, SancaiCategoryOverview> overviewByCategoryId = new LinkedHashMap<>();
+        repository
+                .listCategoryRepresentativeOverviewsByEntryIds(representativeEntryIds, SortDirection.ASC)
+                .forEach(overview -> {
+                    Long categoryId = overview.getCategoryId() == null
+                            ? null
+                            : overview.getCategoryId().value();
+                    if (categoryId != null) {
+                        overviewByCategoryId.put(categoryId, overview);
+                    }
+                });
+        return overviewByCategoryId;
+    }
+
+    private SancaiCategoryOverview toReadyCategoryOverview(
+            DiscoverySearchPublicationCategoryAggregationFacadeResponse aggregation,
+            Map<Long, SancaiCategoryOverview> representativeOverviewByCategoryId) {
+        Long categoryId = longValue(aggregation.getCategoryId());
+        if (categoryId == null) {
+            return null;
+        }
+        SancaiCategoryOverview representativeOverview = representativeOverviewByCategoryId.get(categoryId);
+        return new SancaiCategoryOverview(
+                SancaiCategoryIdCodec.toDomain(categoryId),
+                aggregation.getReadyEntryCount(),
+                representativeOverview == null ? 0 : representativeOverview.getIllustratedEntryCount(),
+                representativeOverview == null ? null : representativeOverview.getRepresentativeEntryId(),
+                representativeOverview == null ? null : representativeOverview.getRepresentativeImageId(),
+                representativeOverview == null ? null : representativeOverview.getRepresentativeImageTitle());
     }
 
     private static Long longValue(String value) {

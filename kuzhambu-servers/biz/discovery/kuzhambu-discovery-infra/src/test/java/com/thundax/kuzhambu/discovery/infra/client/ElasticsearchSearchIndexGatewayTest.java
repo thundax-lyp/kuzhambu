@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -343,6 +344,35 @@ class ElasticsearchSearchIndexGatewayTest {
         assertTrue(fieldNames.contains("volumeId"));
         assertTrue(fieldNames.contains("publicationStatus"));
         assertTrue(fieldNames.contains("deleted"));
+    }
+
+    @Test
+    void listReadyPublicationCategoryAggregationsShouldUseNativeTermsAggregation() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        ArgumentCaptor<NativeQuery> queryCaptor = ArgumentCaptor.forClass(NativeQuery.class);
+        when(operations.search(
+                        queryCaptor.capture(),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        var results = gateway.listReadyPublicationCategoryAggregations("SANCAI_ENTRY");
+
+        NativeQuery query = queryCaptor.getValue();
+        assertTrue(results.isEmpty());
+        assertEquals(0, query.getMaxResults());
+        assertTrue(query.getAggregations().containsKey("ready_categories"));
+        assertTrue(query.getQuery().bool().filter().stream()
+                .anyMatch(filter -> filter.term().field().equals("publicationStatus")
+                        && filter.term().value().stringValue().equals("READY")));
+        assertTrue(query.getQuery().bool().filter().stream()
+                .anyMatch(filter -> filter.term().field().equals("contentType")
+                        && filter.term().value().stringValue().equals("SANCAI_ENTRY")));
     }
 
     @Test

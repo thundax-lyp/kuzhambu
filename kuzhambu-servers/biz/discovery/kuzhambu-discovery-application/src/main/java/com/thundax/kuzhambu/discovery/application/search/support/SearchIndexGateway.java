@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCategoryAggregationResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationDocument;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
@@ -40,4 +41,6 @@ public interface SearchIndexGateway {
 
     PageResult<SearchPublicationCandidateResult> pageReadyPublicationCandidates(
             String contentType, String categoryId, String volumeId, String keyword, int pageNo, int pageSize);
+
+    List<SearchPublicationCategoryAggregationResult> listReadyPublicationCategoryAggregations(String contentType);
 }
