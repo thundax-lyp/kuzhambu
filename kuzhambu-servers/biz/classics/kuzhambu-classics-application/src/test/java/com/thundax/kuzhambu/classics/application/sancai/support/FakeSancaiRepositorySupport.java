@@ -141,7 +141,6 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,
-            String visibility,
             String translationStatus,
             String imageStatus,
             String visualAssetStatus,
@@ -158,7 +157,6 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,
-            String visibility,
             String translationStatus,
             String imageStatus,
             String visualAssetStatus,
@@ -184,11 +182,6 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
 
     @Override
     public int updateEntryStatus(SancaiEntry entry) {
-        return 0;
-    }
-
-    @Override
-    public int updateEntryVisibility(SancaiEntryId id, String visibility) {
         return 0;
     }
 

@@ -47,8 +47,6 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 request.getKnowledgeBases(),
                 request.getCategoryCodes(),
                 request.getTagNames(),
-                request.getContentStatuses(),
-                request.getVisibilityScopes(),
                 parseDate(request.getDateFrom(), "dateFrom"),
                 parseDate(request.getDateTo(), "dateTo"),
                 request.getPageNo() == null ? 1 : request.getPageNo(),
@@ -197,8 +195,6 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 .summary(result.getSummary())
                 .bodyText(result.getBodyText())
                 .tagNames(result.getTagNames())
-                .contentStatus(result.getContentStatus())
-                .visibility(result.getVisibility())
                 .sourceVersionNo(result.getSourceVersionNo())
                 .publishedAt(result.getPublishedAt())
                 .updatedAt(result.getUpdatedAt())

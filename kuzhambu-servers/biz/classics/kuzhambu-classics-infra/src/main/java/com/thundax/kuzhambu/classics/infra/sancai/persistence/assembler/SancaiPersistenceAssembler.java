@@ -14,7 +14,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageS
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject.SancaiCategoryDO;
@@ -127,7 +126,6 @@ public final class SancaiPersistenceAssembler {
         dataObject.setTransitionStatus(value(entity.getTransitionStatus()));
         dataObject.setCurrentPublicationJobId(
                 ClassicsPublicationJobIdCodec.toValue(entity.getCurrentPublicationJobId()));
-        dataObject.setVisibility(value(entity.getVisibility()));
         dataObject.setTranslationStatus(value(entity.getTranslationStatus()));
         dataObject.setImageStatus(value(entity.getImageStatus()));
         dataObject.setVisualAssetStatus(value(entity.getVisualAssetStatus()));
@@ -161,8 +159,6 @@ public final class SancaiPersistenceAssembler {
                         : ClassicsPublicationTransitionStatus.valueOf(dataObject.getTransitionStatus()));
         entry.setCurrentPublicationJobId(
                 ClassicsPublicationJobIdCodec.toDomain(dataObject.getCurrentPublicationJobId()));
-        entry.setVisibility(
-                dataObject.getVisibility() == null ? null : SancaiEntryVisibility.from(dataObject.getVisibility()));
         entry.setTranslationStatus(
                 dataObject.getTranslationStatus() == null
                         ? null

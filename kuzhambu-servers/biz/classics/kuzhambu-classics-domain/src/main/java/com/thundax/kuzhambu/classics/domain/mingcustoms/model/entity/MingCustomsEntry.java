@@ -7,7 +7,6 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
@@ -35,7 +34,6 @@ public class MingCustomsEntry implements Versionable {
     private ClassicsPublicationLifecycleStatus lifecycleStatus;
     private ClassicsPublicationTransitionStatus transitionStatus;
     private ClassicsPublicationJobId currentPublicationJobId;
-    private MingCustomsVisibility visibility;
     private ClassicsContentVersionId currentVersionId;
     private Integer currentVersionNo;
     private Instant currentVersionedAt;
@@ -50,8 +48,7 @@ public class MingCustomsEntry implements Versionable {
             String summary,
             MingCustomsContentFormat contentFormat,
             String content,
-            String originalExcerpts,
-            MingCustomsVisibility visibility) {
+            String originalExcerpts) {
         this.id = id;
         this.title = title;
         this.category = category;
@@ -61,7 +58,6 @@ public class MingCustomsEntry implements Versionable {
         this.contentFormat = contentFormat;
         this.content = content;
         this.originalExcerpts = originalExcerpts;
-        this.visibility = visibility;
     }
 
     @Override

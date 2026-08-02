@@ -8,17 +8,7 @@ const { Text } = Typography;
 
 const DEFAULT_COLUMN_WIDTHS = {
     document: 600,
-    documentTime: 180,
-    visibility: 120
-};
-
-const visibilityLabels: Record<string, string> = {
-    PUBLIC: "公开",
-    PRIVATE: "私有"
-};
-
-const visibilityTagType = (visibility?: string | null) => {
-    return visibility === "PUBLIC" ? "success" : "neutral";
+    documentTime: 180
 };
 
 const isPublicationTransitionActive = (record: WangqiDocumentRecord) =>
@@ -55,13 +45,11 @@ const readSummaryLines = (summary?: string | null) => {
 };
 
 interface WangqiDocumentTableProps {
-    canChangeDocumentVisibility: boolean;
+    canChangeDocumentPublication: boolean;
     canExport?: boolean;
     dataSource: WangqiDocumentRecord[];
-    isBatchVisibilityChanging: boolean;
     isPublicationChanging: boolean;
     loading?: boolean;
-    onChangeSelectedVisibility: (visibility: "PRIVATE" | "PUBLIC") => void;
     onDelete: (record: WangqiDocumentRecord) => void;
     onExport: (record: WangqiDocumentRecord) => void;
     onOpenEdit: (record: WangqiDocumentRecord) => void;
@@ -76,13 +64,11 @@ interface WangqiDocumentTableProps {
 }
 
 export const WangqiDocumentTable = ({
-    canChangeDocumentVisibility,
+    canChangeDocumentPublication,
     canExport = true,
     dataSource,
-    isBatchVisibilityChanging,
     isPublicationChanging,
     loading = false,
-    onChangeSelectedVisibility,
     onDelete,
     onExport,
     onOpenEdit,
@@ -166,17 +152,6 @@ export const WangqiDocumentTable = ({
             )
         },
         {
-            title: "可见性",
-            dataIndex: "visibility",
-            key: "visibility",
-            width: DEFAULT_COLUMN_WIDTHS.visibility,
-            render: (visibility?: string | null) => (
-                <KuzhambuTag type={visibilityTagType(visibility)}>
-                    {visibility ? (visibilityLabels[visibility] ?? visibility) : "未设置"}
-                </KuzhambuTag>
-            )
-        },
-        {
             key: "actions",
             options: (record) => {
                 const isTransitionActive = isPublicationTransitionActive(record);
@@ -237,36 +212,22 @@ export const WangqiDocumentTable = ({
                         {
                             testId: "classics-wangqi-batch-publish-button",
                             title: "批量发布",
-                            disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                            disabled: !selectedDocumentIds.length || !canChangeDocumentPublication,
                             loading: isPublicationChanging,
                             action: () => onPublicationBatch("PUBLISH")
                         },
                         {
                             testId: "classics-wangqi-batch-offline-button",
                             title: "批量下线",
-                            disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                            disabled: !selectedDocumentIds.length || !canChangeDocumentPublication,
                             loading: isPublicationChanging,
                             action: () => onPublicationBatch("OFFLINE")
                         },
                         {
                             testId: "classics-wangqi-wangqi-action-button",
                             title: "候选治理",
-                            disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                            disabled: !selectedDocumentIds.length || !canChangeDocumentPublication,
                             action: onOpenBatchCandidateDrawer
-                        },
-                        {
-                            testId: "classics-wangqi-wangqi-batch-public-button",
-                            title: "设为公开",
-                            disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
-                            loading: isBatchVisibilityChanging,
-                            action: () => onChangeSelectedVisibility("PUBLIC")
-                        },
-                        {
-                            testId: "classics-wangqi-wangqi-batch-private-button",
-                            title: "设为私有",
-                            disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
-                            loading: isBatchVisibilityChanging,
-                            action: () => onChangeSelectedVisibility("PRIVATE")
                         }
                     ]
                 }}

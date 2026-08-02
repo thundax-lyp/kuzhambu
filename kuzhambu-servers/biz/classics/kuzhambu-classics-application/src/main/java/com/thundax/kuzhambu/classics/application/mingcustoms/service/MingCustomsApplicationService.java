@@ -4,7 +4,6 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustoms
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
-import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
@@ -14,7 +13,6 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCu
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
-import java.util.Set;
 
 public interface MingCustomsApplicationService {
 
@@ -26,13 +24,6 @@ public interface MingCustomsApplicationService {
 
     MingCustomsEntryId update(MingCustomsCommand command);
 
-    void changeVisibility(MingCustomsEntryId id, String visibility);
-
-    ClassicsBatchOperationResult batchChangeVisibility(List<MingCustomsEntryId> ids, String visibility);
-
-    ClassicsBatchOperationResult batchChangeVisibility(
-            List<MingCustomsEntryId> ids, String visibility, Set<String> operatorPermissions);
-
     void delete(MingCustomsEntryId id);
 
     List<MingCustomsKeyword> listKeywords(MingCustomsEntryId customId);
@@ -43,7 +34,7 @@ public interface MingCustomsApplicationService {
 
     void deleteKeyword(MingCustomsKeywordId id);
 
-    List<MingCustomsKeywordCloudItem> listKeywordCloud(String visibility);
+    List<MingCustomsKeywordCloudItem> listKeywordCloud();
 
     List<MingCustomsTagCloudItem> listTagCloud(MingCustomsPageQuery query);
 }

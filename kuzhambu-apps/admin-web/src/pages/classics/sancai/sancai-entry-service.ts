@@ -20,7 +20,6 @@ export interface SancaiEntryQuery {
     volumeId?: string | null;
     keyword?: string | null;
     lifecycleStatus?: string | null;
-    visibility?: string | null;
     translationStatus?: string | null;
     imageStatus?: string | null;
     visualAssetStatus?: string | null;
@@ -36,7 +35,6 @@ export interface SancaiEntryCommand {
     translationText?: string | null;
     summary?: string | null;
     lifecycleStatus?: string | null;
-    visibility?: string | null;
     translationStatus?: string | null;
     imageStatus?: string | null;
     visualAssetStatus?: string | null;

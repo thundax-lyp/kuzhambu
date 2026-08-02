@@ -41,7 +41,7 @@ class MingCustomsRepositoryTest {
         MingCustomsRepositoryImpl repository =
                 new MingCustomsRepositoryImpl(mock(MingCustomsEntryMapper.class), keywordMapper);
 
-        List<MingCustomsKeywordCloudItem> items = repository.listKeywordCloud(null);
+        List<MingCustomsKeywordCloudItem> items = repository.listKeywordCloud();
 
         assertEquals(1, items.size());
         assertEquals("礼俗", items.get(0).getKeyword());
@@ -51,18 +51,18 @@ class MingCustomsRepositoryTest {
     @Test
     void tagCloudShouldMapUnifiedContentTagAggregatedCounts() {
         MingCustomsEntryMapper entryMapper = mock(MingCustomsEntryMapper.class);
-        when(entryMapper.selectTagCloud("礼俗", "祭祀", "PUBLIC"))
+        when(entryMapper.selectTagCloud("礼俗", "祭祀"))
                 .thenReturn(List.of(Map.of("tagId", 7001L, "tagNameSnapshot", "祭祀", "count", 3L)));
         MingCustomsRepositoryImpl repository =
                 new MingCustomsRepositoryImpl(entryMapper, mock(MingCustomsMapper.class));
 
-        List<MingCustomsTagCloudItem> items = repository.listTagCloud("礼俗", "祭祀", "PUBLIC");
+        List<MingCustomsTagCloudItem> items = repository.listTagCloud("礼俗", "祭祀");
 
         assertEquals(1, items.size());
         assertEquals(7001L, items.get(0).getTagId());
         assertEquals("祭祀", items.get(0).getTagNameSnapshot());
         assertEquals(3L, items.get(0).getCount());
-        verify(entryMapper).selectTagCloud("礼俗", "祭祀", "PUBLIC");
+        verify(entryMapper).selectTagCloud("礼俗", "祭祀");
     }
 
     @Test
@@ -73,7 +73,7 @@ class MingCustomsRepositoryTest {
         MingCustomsRepositoryImpl repository =
                 new MingCustomsRepositoryImpl(entryMapper, mock(MingCustomsMapper.class));
 
-        repository.page(null, null, null, 7001L, null, "PUBLIC", SortDirection.ASC, 1, 20);
+        repository.page(null, null, null, 7001L, null, SortDirection.ASC, 1, 20);
 
         ArgumentCaptor<LambdaQueryWrapper<MingCustomsEntryDO>> captor =
                 ArgumentCaptor.forClass(LambdaQueryWrapper.class);
@@ -92,7 +92,7 @@ class MingCustomsRepositoryTest {
         MingCustomsRepositoryImpl repository =
                 new MingCustomsRepositoryImpl(entryMapper, mock(MingCustomsMapper.class));
 
-        repository.page(null, null, "旧关键词", null, "祭祀", "PUBLIC", SortDirection.ASC, 1, 20);
+        repository.page(null, null, "旧关键词", null, "祭祀", SortDirection.ASC, 1, 20);
 
         ArgumentCaptor<LambdaQueryWrapper<MingCustomsEntryDO>> captor =
                 ArgumentCaptor.forClass(LambdaQueryWrapper.class);
@@ -103,13 +103,13 @@ class MingCustomsRepositoryTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    void keywordCloudShouldApplyVisibilityFilter() {
+    void keywordCloudShouldNotApplyVisibilityFilter() {
         MingCustomsMapper keywordMapper = mock(MingCustomsMapper.class);
         when(keywordMapper.selectMaps(any())).thenReturn(List.of());
         MingCustomsRepositoryImpl repository =
                 new MingCustomsRepositoryImpl(mock(MingCustomsEntryMapper.class), keywordMapper);
 
-        repository.listKeywordCloud("PUBLIC");
+        repository.listKeywordCloud();
 
         ArgumentCaptor<QueryWrapper<MingCustomsKeywordDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(keywordMapper).selectMaps(captor.capture());
@@ -117,7 +117,5 @@ class MingCustomsRepositoryTest {
         assertEquals("keyword,count(*) as count", wrapper.getSqlSelect());
         assertTrue(wrapper.getSqlSegment().contains("GROUP BY keyword"));
         assertTrue(wrapper.getSqlSegment().contains("ORDER BY count DESC,keyword ASC"));
-        assertTrue(wrapper.getSqlSegment().contains("classics_ming_customs_entry"));
-        assertTrue(wrapper.getSqlSegment().contains("visibility"));
     }
 }

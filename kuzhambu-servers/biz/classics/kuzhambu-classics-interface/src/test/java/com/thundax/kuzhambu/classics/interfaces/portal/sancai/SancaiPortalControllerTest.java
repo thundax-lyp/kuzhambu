@@ -32,7 +32,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiCategoryType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.SancaiPortalController;
@@ -105,7 +104,6 @@ class SancaiPortalControllerTest {
         assertEquals(1, page.getRecords().size());
         assertEquals("天地", page.getRecords().get(0).getTitle());
         assertEquals("PUBLISHED", page.getRecords().get(0).getLifecycleStatus());
-        assertEquals("PUBLIC", page.getRecords().get(0).getVisibility());
     }
 
     @Test
@@ -192,7 +190,6 @@ class SancaiPortalControllerTest {
                         assertEquals(101L, query.getVolumeId());
                         assertEquals("天地", query.getKeyword());
                         assertEquals(null, query.getLifecycleStatus());
-                        assertEquals(null, query.getVisibility());
                         assertEquals(SortDirection.ASC, query.getSortDirection());
                         assertEquals(1, pageQuery.getPageNo());
                         assertEquals(100, pageQuery.getPageSize());
@@ -253,7 +250,6 @@ class SancaiPortalControllerTest {
         entry.setTranslationText("天地的译文");
         entry.setSummary("公开摘要");
         entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
-        entry.setVisibility(SancaiEntryVisibility.PUBLIC);
         return entry;
     }
 

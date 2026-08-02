@@ -8,7 +8,6 @@ export interface MingCustomsRecord {
     contentFormat?: string | null;
     content?: string | null;
     originalExcerpts?: string | null;
-    visibility?: string | null;
     lifecycleStatus?: "DRAFT" | "PUBLISHED" | "OFFLINE" | "ERROR" | string | null;
     transitionStatus?: "NONE" | "PUBLISHING" | "OFFLINING" | string | null;
     currentPublicationJobId?: string | null;
@@ -83,7 +82,6 @@ export interface MingCustomsVersionSnapshot {
     contentFormat?: string | null;
     content?: string | null;
     originalExcerpts?: string | null;
-    visibility?: string | null;
     tags?: MingCustomsTagSnapshotRecord[];
     qaPairs?: MingCustomsQaPairSnapshotRecord[];
 }

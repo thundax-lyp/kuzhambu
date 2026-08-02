@@ -4,13 +4,9 @@ import com.thundax.kuzhambu.classics.application.content.service.ClassicsContent
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
-import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
-import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
-import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
@@ -22,7 +18,6 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -40,7 +35,6 @@ import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +49,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     private final WangqiDocumentRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
-    private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
     private final StorageFacade storageFacade;
     private final ClassicsPublicationWriteGuard publicationWriteGuard;
 
@@ -63,12 +56,10 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     public WangqiDocumentApplicationServiceImpl(
             WangqiDocumentRepository repository,
             ClassicsContentApplicationService contentApplicationService,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
             StorageFacade storageFacade,
             ClassicsPublicationWriteGuard publicationWriteGuard) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
-        this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.storageFacade = storageFacade;
         this.publicationWriteGuard = publicationWriteGuard;
     }
@@ -85,9 +76,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         }
         return repository.page(
                 query == null ? null : query.getKeyword(),
-                query == null || query.getVisibility() == null
-                        ? null
-                        : query.getVisibility().value(),
                 query == null ? SortDirection.ASC : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
@@ -100,9 +88,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         }
         return repository.listTimeline(
                 query == null ? null : query.getKeyword(),
-                query == null || query.getVisibility() == null
-                        ? null
-                        : query.getVisibility().value(),
                 query == null ? SortDirection.ASC : query.getSortDirection());
     }
 
@@ -116,7 +101,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         document.setId(id);
         bindStorageObjectIfNeeded(document);
         markManualSaveVersion(document);
-        publishSearchSyncAfterCommit(document);
         return id;
     }
 
@@ -125,12 +109,12 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     public WangqiDocumentId update(WangqiDocumentCommand command) {
         WangqiDocument document = toDocument(command);
         requireWritable(document.getId(), ClassicsPublicationWriteOperation.EDIT);
-        requireDocument(document.getId());
+        WangqiDocument current = requireDocument(document.getId());
+        preservePublicationState(document, current);
         bindStorageObjectIfNeeded(document);
         document.setContentUpdatedAt(Instant.now());
         repository.update(document);
         markManualSaveVersion(document);
-        publishSearchSyncAfterCommit(document);
         return document.getId();
     }
 
@@ -157,7 +141,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         document.setStorageObjectId(StorageObjectIdCodec.toDomain(uploadResponse.getStorageObjectId()));
         document.setContentUpdatedAt(Instant.now());
         markVersion(document, replacing ? "替换原始文件" : "上传原始文件");
-        publishSearchSyncAfterCommit(document);
         return toSourceFile(documentId, uploadResponse.getStorageObjectId(), uploadResponse);
     }
 
@@ -201,69 +184,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void changeVisibility(WangqiDocumentVisibilityCommand command) {
-        if (hasPermissionContext(command.getOperatorPermissions()) && !canEdit(command.getOperatorPermissions())) {
-            throw permissionDenied();
-        }
-        WangqiDocumentId documentId = WangqiDocumentIdCodec.toDomain(command.getId());
-        requireWritable(documentId, ClassicsPublicationWriteOperation.EDIT);
-        WangqiDocument document = requireDocument(documentId);
-        changeExistingVisibility(document, command.getVisibility());
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ClassicsBatchOperationResult batchChangeVisibility(
-            List<WangqiDocumentId> ids, WangqiDocumentVisibility visibility) {
-        return batchChangeVisibility(ids, visibility, null);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ClassicsBatchOperationResult batchChangeVisibility(
-            List<WangqiDocumentId> ids, WangqiDocumentVisibility visibility, Set<String> operatorPermissions) {
-        if (ids == null || ids.isEmpty()) {
-            return ClassicsBatchOperationResult.empty();
-        }
-        List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
-        List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
-        for (WangqiDocumentId id : ids) {
-            Long contentId = id == null ? null : id.value();
-            if (hasPermissionContext(operatorPermissions) && !canEdit(operatorPermissions)) {
-                failures.add(ClassicsBatchOperationItemResult.failure(
-                        ClassicsContentType.WANGQI_DOCUMENT.value(),
-                        contentId,
-                        "PERMISSION_DENIED",
-                        "PERMISSION_DENIED"));
-                continue;
-            }
-            try {
-                requireWritable(id, ClassicsPublicationWriteOperation.EDIT);
-                WangqiDocument document = id == null ? null : get(id);
-                if (document == null) {
-                    failures.add(ClassicsBatchOperationItemResult.failure(
-                            ClassicsContentType.WANGQI_DOCUMENT.value(), contentId, "CONTENT_NOT_FOUND", "王圻文档不存在"));
-                    continue;
-                }
-                changeExistingVisibility(document, visibility);
-                successes.add(ClassicsBatchOperationItemResult.success(
-                        ClassicsContentType.WANGQI_DOCUMENT.value(),
-                        contentId,
-                        contentId,
-                        document.getVisibility().value()));
-            } catch (RuntimeException ex) {
-                failures.add(ClassicsBatchOperationItemResult.failure(
-                        ClassicsContentType.WANGQI_DOCUMENT.value(),
-                        contentId,
-                        "BATCH_VISIBILITY_FAILED",
-                        ex.getMessage()));
-            }
-        }
-        return ClassicsBatchOperationResult.of(successes, failures);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
     public void delete(WangqiDocumentId id) {
         if (id == null) {
             return;
@@ -273,7 +193,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         if (document != null) {
             document.setContentUpdatedAt(Instant.now());
             contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
-            publishDeleteAfterCommit(document);
         }
         contentApplicationService.deleteVersions(
                 ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(id.value()));
@@ -300,8 +219,16 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         document.setContent(command.getContent());
         document.setDocumentTime(command.getDocumentTime());
         document.setStorageObjectId(StorageObjectIdCodec.toDomain(command.getStorageObjectId()));
-        document.setVisibility(command.getVisibility());
         return document;
+    }
+
+    private static void preservePublicationState(WangqiDocument document, WangqiDocument current) {
+        document.setLifecycleStatus(current.getLifecycleStatus());
+        document.setTransitionStatus(current.getTransitionStatus());
+        document.setCurrentPublicationJobId(current.getCurrentPublicationJobId());
+        document.setCurrentVersionId(current.getCurrentVersionId());
+        document.setCurrentVersionNo(current.getCurrentVersionNo());
+        document.setCurrentVersionedAt(current.getCurrentVersionedAt());
     }
 
     private void markManualSaveVersion(WangqiDocument document) {
@@ -311,41 +238,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     private void markVersion(WangqiDocument document, String changeSummary) {
         contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
         repository.update(document);
-    }
-
-    private void changeExistingVisibility(WangqiDocument document, WangqiDocumentVisibility visibility) {
-        document.setVisibility(visibility);
-        document.setContentUpdatedAt(Instant.now());
-        markVersion(document, "更新可见性");
-        publishSearchSyncAfterCommit(document);
-    }
-
-    private void publishSearchSyncAfterCommit(WangqiDocument document) {
-        if (isPublicSearchDocument(document)) {
-            searchIndexSyncPublishSupport.publishUpsertAfterCommit(
-                    ClassicsContentType.WANGQI_DOCUMENT,
-                    String.valueOf(document.getId().value()),
-                    document.getCurrentVersionNo());
-            return;
-        }
-        publishDeleteAfterCommit(document);
-    }
-
-    private void publishDeleteAfterCommit(WangqiDocument document) {
-        if (document == null || document.getId() == null || document.getCurrentVersionNo() == null) {
-            return;
-        }
-        searchIndexSyncPublishSupport.publishDeleteAfterCommit(
-                ClassicsContentType.WANGQI_DOCUMENT,
-                String.valueOf(document.getId().value()),
-                document.getCurrentVersionNo());
-    }
-
-    private boolean isPublicSearchDocument(WangqiDocument document) {
-        return document != null
-                && document.getId() != null
-                && document.getCurrentVersionNo() != null
-                && document.getVisibility() == WangqiDocumentVisibility.PUBLIC;
     }
 
     private WangqiDocument requireDocument(WangqiDocumentId id) {
@@ -428,13 +320,5 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     private static boolean canView(Set<String> operatorPermissions) {
         return ClassicsContentPermissionSupport.canView(ClassicsContentType.WANGQI_DOCUMENT, operatorPermissions);
-    }
-
-    private static boolean canEdit(Set<String> operatorPermissions) {
-        return ClassicsContentPermissionSupport.canEdit(ClassicsContentType.WANGQI_DOCUMENT, operatorPermissions);
-    }
-
-    private static BizException permissionDenied() {
-        return new BizException("PERMISSION_DENIED");
     }
 }

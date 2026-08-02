@@ -167,15 +167,13 @@ describe("DiscoverySearchPage", () => {
 
         expect(mocks.searchDiscovery).toHaveBeenCalledWith({
             categoryCodes: [],
-            contentStatuses: [],
             dateFrom: null,
             dateTo: null,
             knowledgeBases: [],
             pageNo: 1,
             pageSize: 10,
             queryText: "礼器",
-            tagNames: [],
-            visibilityScopes: []
+            tagNames: []
         });
         expect(container.textContent).toContain("共 2 条命中");
         expect(container.textContent).toContain("三才图会");

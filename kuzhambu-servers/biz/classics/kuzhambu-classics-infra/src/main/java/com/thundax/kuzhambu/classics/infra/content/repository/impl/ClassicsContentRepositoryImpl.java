@@ -306,7 +306,6 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
                         .set(MingCustomsEntryDO::getContentFormat, dataObject.getContentFormat())
                         .set(MingCustomsEntryDO::getContent, dataObject.getContent())
                         .set(MingCustomsEntryDO::getOriginalExcerpts, dataObject.getOriginalExcerpts())
-                        .set(MingCustomsEntryDO::getVisibility, dataObject.getVisibility())
                         .set(MingCustomsEntryDO::getCurrentVersionId, dataObject.getCurrentVersionId())
                         .set(MingCustomsEntryDO::getCurrentVersionNo, dataObject.getCurrentVersionNo())
                         .set(MingCustomsEntryDO::getCurrentVersionedAt, dataObject.getCurrentVersionedAt())

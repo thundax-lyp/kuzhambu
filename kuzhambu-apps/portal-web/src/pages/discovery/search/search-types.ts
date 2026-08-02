@@ -1,6 +1,5 @@
 export interface DiscoverySearchRequest {
     categoryCodes: string[];
-    contentStatuses: string[];
     dateFrom: string | null;
     dateTo: string | null;
     knowledgeBases: string[];
@@ -8,7 +7,6 @@ export interface DiscoverySearchRequest {
     pageSize: number;
     queryText: string;
     tagNames: string[];
-    visibilityScopes: string[];
 }
 
 export interface DiscoverySearchClickEventRequest {
@@ -34,7 +32,6 @@ export interface DiscoverySearchPreviewResponse {
     categoryName?: string | null;
     contentDomain?: string | null;
     contentId?: string | null;
-    contentStatus?: string | null;
     contentType?: string | null;
     knowledgeBase?: string | null;
     publishedAt?: number | null;
@@ -44,7 +41,6 @@ export interface DiscoverySearchPreviewResponse {
     targetPath?: string | null;
     title?: string | null;
     updatedAt?: number | null;
-    visibility?: string | null;
 }
 
 export interface DiscoverySearchItemResponse {

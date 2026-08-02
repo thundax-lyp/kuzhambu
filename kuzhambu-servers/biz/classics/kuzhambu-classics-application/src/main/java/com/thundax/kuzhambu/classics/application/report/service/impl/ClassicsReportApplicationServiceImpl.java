@@ -4,16 +4,14 @@ import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSum
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult.ContentGrowthPointResult;
 import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
@@ -52,17 +50,15 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
                 null,
                 null,
                 null,
-                null,
-                SancaiEntryVisibility.PUBLIC.value(),
+                SancaiEntryLifecycleStatus.PUBLISHED.value(),
                 null,
                 null,
                 null,
                 null,
                 SortDirection.ASC);
-        List<WangqiDocument> publicWangqiDocuments =
-                wangqiDocumentRepository.listTimeline(null, WangqiDocumentVisibility.PUBLIC.value(), SortDirection.ASC);
-        List<MingCustomsEntry> publicMingCustomsEntries = mingCustomsRepository.list(
-                null, null, null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC);
+        List<WangqiDocument> publicWangqiDocuments = wangqiDocumentRepository.listTimeline(null, SortDirection.ASC);
+        List<MingCustomsEntry> publicMingCustomsEntries =
+                mingCustomsRepository.list(null, null, null, null, null, SortDirection.ASC);
 
         long translatedContentCount = publicSancaiEntries.stream()
                 .filter(entry -> entry != null && entry.getTranslationStatus() == SancaiEntryTranslationStatus.READY)

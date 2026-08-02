@@ -73,33 +73,33 @@ public class SancaiRepositoryImpl implements SancaiRepository {
                         "COALESCE((SELECT COUNT(1) FROM classics_sancai_entry e"
                                 + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
                                 + " WHERE v.category_id = classics_sancai_category.id"
-                                + " AND e.lifecycle_status = 'PUBLISHED' AND e.visibility = 'PUBLIC'), 0)"
+                                + " AND e.lifecycle_status = 'PUBLISHED'), 0)"
                                 + " AS publicEntryCount",
                         "COALESCE((SELECT COUNT(DISTINCT e.id) FROM classics_sancai_entry e"
                                 + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
                                 + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
                                 + " WHERE v.category_id = classics_sancai_category.id"
-                                + " AND e.lifecycle_status = 'PUBLISHED' AND e.visibility = 'PUBLIC'), 0)"
+                                + " AND e.lifecycle_status = 'PUBLISHED'), 0)"
                                 + " AS illustratedEntryCount",
                         "(SELECT e.id FROM classics_sancai_entry e"
                                 + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
                                 + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
                                 + " WHERE v.category_id = classics_sancai_category.id"
-                                + " AND e.lifecycle_status = 'PUBLISHED' AND e.visibility = 'PUBLIC'"
+                                + " AND e.lifecycle_status = 'PUBLISHED'"
                                 + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
                                 + " AS representativeEntryId",
                         "(SELECT i.id FROM classics_sancai_entry e"
                                 + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
                                 + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
                                 + " WHERE v.category_id = classics_sancai_category.id"
-                                + " AND e.lifecycle_status = 'PUBLISHED' AND e.visibility = 'PUBLIC'"
+                                + " AND e.lifecycle_status = 'PUBLISHED'"
                                 + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
                                 + " AS representativeImageId",
                         "(SELECT COALESCE(i.title, e.title) FROM classics_sancai_entry e"
                                 + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
                                 + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
                                 + " WHERE v.category_id = classics_sancai_category.id"
-                                + " AND e.lifecycle_status = 'PUBLISHED' AND e.visibility = 'PUBLIC'"
+                                + " AND e.lifecycle_status = 'PUBLISHED'"
                                 + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
                                 + " AS representativeImageTitle")
                 .orderBy(true, sortDirection != SortDirection.DESC, "priority");
@@ -300,7 +300,6 @@ public class SancaiRepositoryImpl implements SancaiRepository {
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,
-            String visibility,
             String translationStatus,
             String imageStatus,
             String visualAssetStatus,
@@ -322,7 +321,6 @@ public class SancaiRepositoryImpl implements SancaiRepository {
         wrapper.eq(volumeId != null, SancaiEntryDO::getVolumeId, SancaiVolumeIdCodec.toValue(volumeId))
                 .in(volumeId == null && categoryId != null, SancaiEntryDO::getVolumeId, categoryVolumeIds)
                 .eq(StringUtils.isNotBlank(lifecycleStatus), SancaiEntryDO::getLifecycleStatus, lifecycleStatus)
-                .eq(StringUtils.isNotBlank(visibility), SancaiEntryDO::getVisibility, visibility)
                 .eq(StringUtils.isNotBlank(translationStatus), SancaiEntryDO::getTranslationStatus, translationStatus)
                 .eq(StringUtils.isNotBlank(imageStatus), SancaiEntryDO::getImageStatus, imageStatus)
                 .eq(StringUtils.isNotBlank(visualAssetStatus), SancaiEntryDO::getVisualAssetStatus, visualAssetStatus)
@@ -347,7 +345,6 @@ public class SancaiRepositoryImpl implements SancaiRepository {
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,
-            String visibility,
             String translationStatus,
             String imageStatus,
             String visualAssetStatus,
@@ -367,7 +364,6 @@ public class SancaiRepositoryImpl implements SancaiRepository {
         wrapper.eq(volumeId != null, SancaiEntryDO::getVolumeId, SancaiVolumeIdCodec.toValue(volumeId))
                 .in(volumeId == null && categoryId != null, SancaiEntryDO::getVolumeId, categoryVolumeIds)
                 .eq(StringUtils.isNotBlank(lifecycleStatus), SancaiEntryDO::getLifecycleStatus, lifecycleStatus)
-                .eq(StringUtils.isNotBlank(visibility), SancaiEntryDO::getVisibility, visibility)
                 .eq(StringUtils.isNotBlank(translationStatus), SancaiEntryDO::getTranslationStatus, translationStatus)
                 .eq(StringUtils.isNotBlank(imageStatus), SancaiEntryDO::getImageStatus, imageStatus)
                 .eq(StringUtils.isNotBlank(visualAssetStatus), SancaiEntryDO::getVisualAssetStatus, visualAssetStatus)
@@ -413,7 +409,6 @@ public class SancaiRepositoryImpl implements SancaiRepository {
                         .set(SancaiEntryDO::getTranslationText, dataObject.getTranslationText())
                         .set(SancaiEntryDO::getSummary, dataObject.getSummary())
                         .set(SancaiEntryDO::getLifecycleStatus, dataObject.getLifecycleStatus())
-                        .set(SancaiEntryDO::getVisibility, dataObject.getVisibility())
                         .set(SancaiEntryDO::getTranslationStatus, dataObject.getTranslationStatus())
                         .set(SancaiEntryDO::getImageStatus, dataObject.getImageStatus())
                         .set(SancaiEntryDO::getVisualAssetStatus, dataObject.getVisualAssetStatus())
@@ -446,7 +441,6 @@ public class SancaiRepositoryImpl implements SancaiRepository {
                         .set(SancaiEntryDO::getTranslationText, dataObject.getTranslationText())
                         .set(SancaiEntryDO::getSummary, dataObject.getSummary())
                         .set(SancaiEntryDO::getLifecycleStatus, dataObject.getLifecycleStatus())
-                        .set(SancaiEntryDO::getVisibility, dataObject.getVisibility())
                         .set(SancaiEntryDO::getTranslationStatus, dataObject.getTranslationStatus())
                         .set(SancaiEntryDO::getImageStatus, dataObject.getImageStatus())
                         .set(SancaiEntryDO::getVisualAssetStatus, dataObject.getVisualAssetStatus())
@@ -478,15 +472,6 @@ public class SancaiRepositoryImpl implements SancaiRepository {
                                 entry.getLifecycleStatus() == null
                                         ? null
                                         : entry.getLifecycleStatus().value()));
-    }
-
-    @Override
-    public int updateEntryVisibility(SancaiEntryId id, String visibility) {
-        return entryMapper.update(
-                null,
-                new LambdaUpdateWrapper<SancaiEntryDO>()
-                        .eq(SancaiEntryDO::getId, SancaiEntryIdCodec.toValue(id))
-                        .set(SancaiEntryDO::getVisibility, visibility));
     }
 
     @Override

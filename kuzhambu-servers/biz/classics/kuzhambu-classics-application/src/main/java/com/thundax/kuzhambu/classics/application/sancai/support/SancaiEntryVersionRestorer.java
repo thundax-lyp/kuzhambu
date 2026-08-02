@@ -66,7 +66,6 @@ public class SancaiEntryVersionRestorer {
         restored.setLifecycleStatus(current.getLifecycleStatus());
         restored.setTransitionStatus(current.getTransitionStatus());
         restored.setCurrentPublicationJobId(current.getCurrentPublicationJobId());
-        restored.setVisibility(current.getVisibility());
         restored.setPriority(repository.maxEntryPriority() + 1);
         restored.setContentUpdatedAt(Instant.now());
         updateRestoredEntryOrThrow(restored);

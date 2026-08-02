@@ -41,7 +41,6 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
             "com.thundax.kuzhambu.classics.application",
             "com.thundax.kuzhambu.classics.infra",
             "com.thundax.kuzhambu.classics.interfaces.portal",
-            "com.thundax.kuzhambu.classics.interfaces.admin.searchsync.mq",
             "com.thundax.kuzhambu.knowledge.domain",
             "com.thundax.kuzhambu.knowledge.application",
             "com.thundax.kuzhambu.knowledge.infra",

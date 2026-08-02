@@ -26,8 +26,6 @@ public class DiscoverySearchDocumentAssembler {
         document.setTextSegments(sourceContent.getTextSegments());
         document.setTagNames(
                 sourceContent.getTagNames() == null ? Collections.emptyList() : sourceContent.getTagNames());
-        document.setStatus(sourceContent.getStatus());
-        document.setVisibility(sourceContent.getVisibility());
         document.setSourceVersionNo(sourceContent.getCurrentVersionNo());
         document.setPublishedAt(sourceContent.getPublishedAt());
         document.setUpdatedAt(sourceContent.getUpdatedAt());

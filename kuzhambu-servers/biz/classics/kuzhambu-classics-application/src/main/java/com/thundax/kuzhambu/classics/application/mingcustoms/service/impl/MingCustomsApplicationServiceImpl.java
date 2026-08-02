@@ -9,15 +9,11 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPa
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
-import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
-import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
-import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
@@ -31,7 +27,6 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,18 +40,15 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     private final MingCustomsRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
-    private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
     private final ClassicsPublicationWriteGuard publicationWriteGuard;
 
     @Autowired
     public MingCustomsApplicationServiceImpl(
             MingCustomsRepository repository,
             ClassicsContentApplicationService contentApplicationService,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
             ClassicsPublicationWriteGuard publicationWriteGuard) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
-        this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.publicationWriteGuard = publicationWriteGuard;
     }
 
@@ -70,14 +62,12 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
             return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
         }
-        MingCustomsVisibility visibility = resolveReadableVisibility(query);
         return repository.page(
                 query == null ? null : query.getCategory(),
                 query == null ? null : query.getKeyword(),
                 query == null ? null : query.getTagName(),
                 query == null ? null : query.getTagId(),
                 query == null ? null : query.getTagNameSnapshot(),
-                visibility == null ? null : visibility.value(),
                 query == null ? SortDirection.ASC : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
@@ -95,7 +85,6 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         MingCustomsEntryId id = repository.insert(entry);
         entry.setId(id);
         markManualSaveVersion(entry);
-        publishSearchSyncAfterCommit(entry);
         return id;
     }
 
@@ -107,76 +96,12 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
             return null;
         }
         requireWritable(entry.getId(), ClassicsPublicationWriteOperation.EDIT);
+        MingCustomsEntry current = requireEntry(entry.getId());
+        preservePublicationState(entry, current);
         entry.setContentUpdatedAt(Instant.now());
         repository.update(entry);
         markManualSaveVersion(entry);
-        publishSearchSyncAfterCommit(entry);
         return entry.getId();
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void changeVisibility(MingCustomsEntryId id, String visibility) {
-        changeVisibility(id, visibility, null);
-    }
-
-    void changeVisibility(MingCustomsEntryId id, String visibility, Set<String> operatorPermissions) {
-        if (hasPermissionContext(operatorPermissions) && !canEdit(operatorPermissions)) {
-            throw permissionDenied();
-        }
-        requireWritable(id, ClassicsPublicationWriteOperation.EDIT);
-        MingCustomsEntry entry = repository.getById(id);
-        if (entry == null) {
-            return;
-        }
-        changeExistingVisibility(entry, visibility);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ClassicsBatchOperationResult batchChangeVisibility(List<MingCustomsEntryId> ids, String visibility) {
-        return batchChangeVisibility(ids, visibility, null);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ClassicsBatchOperationResult batchChangeVisibility(
-            List<MingCustomsEntryId> ids, String visibility, Set<String> operatorPermissions) {
-        if (ids == null || ids.isEmpty()) {
-            return ClassicsBatchOperationResult.empty();
-        }
-        List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
-        List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
-        for (MingCustomsEntryId id : ids) {
-            Long contentId = id == null ? null : id.value();
-            if (hasPermissionContext(operatorPermissions) && !canEdit(operatorPermissions)) {
-                failures.add(ClassicsBatchOperationItemResult.failure(
-                        ClassicsContentType.MING_CUSTOMS.value(), contentId, "PERMISSION_DENIED", "PERMISSION_DENIED"));
-                continue;
-            }
-            try {
-                requireWritable(id, ClassicsPublicationWriteOperation.EDIT);
-                MingCustomsEntry entry = id == null ? null : repository.getById(id);
-                if (entry == null) {
-                    failures.add(ClassicsBatchOperationItemResult.failure(
-                            ClassicsContentType.MING_CUSTOMS.value(), contentId, "CONTENT_NOT_FOUND", "明代海关条目不存在"));
-                    continue;
-                }
-                changeExistingVisibility(entry, visibility);
-                successes.add(ClassicsBatchOperationItemResult.success(
-                        ClassicsContentType.MING_CUSTOMS.value(),
-                        contentId,
-                        contentId,
-                        entry.getVisibility().value()));
-            } catch (RuntimeException ex) {
-                failures.add(ClassicsBatchOperationItemResult.failure(
-                        ClassicsContentType.MING_CUSTOMS.value(),
-                        contentId,
-                        "BATCH_VISIBILITY_FAILED",
-                        ex.getMessage()));
-            }
-        }
-        return ClassicsBatchOperationResult.of(successes, failures);
     }
 
     @Override
@@ -190,7 +115,6 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         }
         entry.setContentUpdatedAt(Instant.now());
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
-        publishDeleteAfterCommit(entry);
         repository.deleteById(id);
     }
 
@@ -211,7 +135,6 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         keyword.setKeyword(command.getKeyword());
         keyword.setPriority(repository.maxPriority() + 1);
         MingCustomsKeywordId keywordId = repository.insertKeyword(keyword);
-        publishSearchSyncAfterCommit(repository.getById(command.getCustomId()));
         return keywordId;
     }
 
@@ -242,14 +165,11 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
             requireWritable(keyword.getCustomId(), ClassicsPublicationWriteOperation.EDIT);
         }
         repository.deleteKeywordById(id);
-        if (keyword != null) {
-            publishSearchSyncAfterCommit(repository.getById(keyword.getCustomId()));
-        }
     }
 
     @Override
-    public List<MingCustomsKeywordCloudItem> listKeywordCloud(String visibility) {
-        return repository.listKeywordCloud(visibility);
+    public List<MingCustomsKeywordCloudItem> listKeywordCloud() {
+        return repository.listKeywordCloud();
     }
 
     @Override
@@ -257,11 +177,8 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
             return List.of();
         }
-        MingCustomsVisibility visibility = resolveReadableVisibility(query);
         return repository.listTagCloud(
-                query == null ? null : query.getCategory(),
-                query == null ? null : query.getKeyword(),
-                visibility == null ? null : visibility.value());
+                query == null ? null : query.getCategory(), query == null ? null : query.getKeyword());
     }
 
     private void updatePriorityOrThrow(MingCustomsKeywordId id, int priority) {
@@ -313,8 +230,16 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         entry.setContentFormat(command.getContentFormat());
         entry.setContent(command.getContent());
         entry.setOriginalExcerpts(command.getOriginalExcerpts());
-        entry.setVisibility(command.getVisibility());
         return entry;
+    }
+
+    private static void preservePublicationState(MingCustomsEntry entry, MingCustomsEntry current) {
+        entry.setLifecycleStatus(current.getLifecycleStatus());
+        entry.setTransitionStatus(current.getTransitionStatus());
+        entry.setCurrentPublicationJobId(current.getCurrentPublicationJobId());
+        entry.setCurrentVersionId(current.getCurrentVersionId());
+        entry.setCurrentVersionNo(current.getCurrentVersionNo());
+        entry.setCurrentVersionedAt(current.getCurrentVersionedAt());
     }
 
     private void markManualSaveVersion(MingCustomsEntry entry) {
@@ -322,37 +247,12 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         repository.update(entry);
     }
 
-    private void changeExistingVisibility(MingCustomsEntry entry, String visibility) {
-        entry.setVisibility(MingCustomsVisibility.from(visibility));
-        entry.setContentUpdatedAt(Instant.now());
-        markManualSaveVersion(entry);
-        publishSearchSyncAfterCommit(entry);
-    }
-
-    private void publishSearchSyncAfterCommit(MingCustomsEntry entry) {
-        if (isPublicSearchEntry(entry)) {
-            searchIndexSyncPublishSupport.publishUpsertAfterCommit(
-                    ClassicsContentType.MING_CUSTOMS,
-                    String.valueOf(entry.getId().value()),
-                    entry.getCurrentVersionNo());
-            return;
+    private MingCustomsEntry requireEntry(MingCustomsEntryId id) {
+        MingCustomsEntry entry = repository.getById(id);
+        if (entry == null) {
+            throw new BizException("明代海关条目不存在");
         }
-        publishDeleteAfterCommit(entry);
-    }
-
-    private void publishDeleteAfterCommit(MingCustomsEntry entry) {
-        if (entry == null || entry.getId() == null || entry.getCurrentVersionNo() == null) {
-            return;
-        }
-        searchIndexSyncPublishSupport.publishDeleteAfterCommit(
-                ClassicsContentType.MING_CUSTOMS, String.valueOf(entry.getId().value()), entry.getCurrentVersionNo());
-    }
-
-    private boolean isPublicSearchEntry(MingCustomsEntry entry) {
-        return entry != null
-                && entry.getId() != null
-                && entry.getCurrentVersionNo() != null
-                && entry.getVisibility() == MingCustomsVisibility.PUBLIC;
+        return entry;
     }
 
     private static boolean hasPermissionContext(MingCustomsPageQuery query) {
@@ -365,27 +265,5 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     private static boolean canView(Set<String> operatorPermissions) {
         return ClassicsContentPermissionSupport.canView(ClassicsContentType.MING_CUSTOMS, operatorPermissions);
-    }
-
-    private static boolean canViewPrivate(Set<String> operatorPermissions) {
-        return ClassicsContentPermissionSupport.canViewPrivate(ClassicsContentType.MING_CUSTOMS, operatorPermissions);
-    }
-
-    private static boolean canEdit(Set<String> operatorPermissions) {
-        return ClassicsContentPermissionSupport.canEdit(ClassicsContentType.MING_CUSTOMS, operatorPermissions);
-    }
-
-    private static MingCustomsVisibility resolveReadableVisibility(MingCustomsPageQuery query) {
-        if (query == null) {
-            return null;
-        }
-        if (!hasPermissionContext(query) || canViewPrivate(query.getOperatorPermissions())) {
-            return query.getVisibility();
-        }
-        return MingCustomsVisibility.PUBLIC;
-    }
-
-    private static BizException permissionDenied() {
-        return new BizException("PERMISSION_DENIED");
     }
 }

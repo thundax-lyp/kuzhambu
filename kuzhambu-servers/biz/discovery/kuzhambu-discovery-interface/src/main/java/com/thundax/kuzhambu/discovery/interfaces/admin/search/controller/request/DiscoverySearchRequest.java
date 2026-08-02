@@ -32,14 +32,6 @@ public class DiscoverySearchRequest extends PageRequest {
     @JsonProperty(value = "tagNames")
     private List<String> tagNames;
 
-    @Schema(name = "contentStatuses", description = "状态筛选")
-    @JsonProperty(value = "contentStatuses")
-    private List<String> contentStatuses;
-
-    @Schema(name = "visibilityScopes", description = "可见性筛选")
-    @JsonProperty(value = "visibilityScopes")
-    private List<String> visibilityScopes;
-
     @Schema(name = "dateFrom", description = "ISO-8601 起始时间")
     @JsonProperty(value = "dateFrom")
     private String dateFrom;

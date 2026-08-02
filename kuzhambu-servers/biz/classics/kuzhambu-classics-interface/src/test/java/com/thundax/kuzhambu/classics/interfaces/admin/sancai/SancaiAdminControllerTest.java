@@ -35,7 +35,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageS
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController;
@@ -118,7 +117,6 @@ class SancaiAdminControllerTest {
                   "volumeId": 101,
                   "keyword": "天地",
                   "lifecycleStatus": "PUBLISHED",
-                  "visibility": "PUBLIC",
                   "translationStatus": "READY",
                   "imageStatus": "READY",
                   "visualAssetStatus": "READY",
@@ -139,7 +137,6 @@ class SancaiAdminControllerTest {
                 "volumeId",
                 "keyword",
                 "lifecycleStatus",
-                "visibility",
                 "translationStatus",
                 "imageStatus",
                 "visualAssetStatus",
@@ -181,7 +178,6 @@ class SancaiAdminControllerTest {
                   "translationText": "译文",
                   "summary": "摘要",
                   "lifecycleStatus": "PUBLISHED",
-                  "visibility": "PUBLIC",
                   "translationStatus": "READY",
                   "imageStatus": "READY",
                   "visualAssetStatus": "READY",
@@ -199,7 +195,6 @@ class SancaiAdminControllerTest {
                 "translationText",
                 "summary",
                 "lifecycleStatus",
-                "visibility",
                 "translationStatus",
                 "imageStatus",
                 "visualAssetStatus",
@@ -258,7 +253,6 @@ class SancaiAdminControllerTest {
                         .translationText("译文")
                         .summary("摘要")
                         .lifecycleStatus("PUBLISHED")
-                        .visibility("PUBLIC")
                         .translationStatus("READY")
                         .imageStatus("READY")
                         .visualAssetStatus("READY")
@@ -286,7 +280,6 @@ class SancaiAdminControllerTest {
                 "translationText",
                 "summary",
                 "lifecycleStatus",
-                "visibility",
                 "translationStatus",
                 "imageStatus",
                 "visualAssetStatus",
@@ -364,7 +357,6 @@ class SancaiAdminControllerTest {
         pageRequest.setVolumeId(101L);
         pageRequest.setKeyword("天地");
         pageRequest.setLifecycleStatus("PUBLISHED");
-        pageRequest.setVisibility("PUBLIC");
         pageRequest.setSortDirection("ASC");
         pageRequest.setPageNo(1);
         pageRequest.setPageSize(50);
@@ -377,7 +369,6 @@ class SancaiAdminControllerTest {
         entryRequest.setVolumeId(101L);
         entryRequest.setTitle("天地");
         entryRequest.setLifecycleStatus("PUBLISHED");
-        entryRequest.setVisibility("PUBLIC");
         SancaiEntryResponse detail = controller.getEntry(entryRequest);
         assertEquals("天地", detail.getTitle());
         assertEquals("天文", detail.getTags().get(0).getTagNameSnapshot());
@@ -400,7 +391,6 @@ class SancaiAdminControllerTest {
         entryRequest.setVolumeId(202L);
         entryRequest.setTitle("迁移条目");
         entryRequest.setLifecycleStatus("PUBLISHED");
-        entryRequest.setVisibility("PUBLIC");
 
         assertEquals(3001L, controller.updateEntry(entryRequest).getId());
     }
@@ -527,7 +517,6 @@ class SancaiAdminControllerTest {
                         assertEquals(101L, query.getVolumeId());
                         assertEquals("天地", query.getKeyword());
                         assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, query.getLifecycleStatus());
-                        assertEquals(SancaiEntryVisibility.PUBLIC, query.getVisibility());
                         assertEquals(true, query.getOperatorPermissions() != null);
                         assertEquals(1, page.getPageNo());
                         assertEquals(50, page.getPageSize());
@@ -538,7 +527,6 @@ class SancaiAdminControllerTest {
                         assertEquals(101L, query.getVolumeId());
                         assertEquals("天地", query.getKeyword());
                         assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, query.getLifecycleStatus());
-                        assertEquals(SancaiEntryVisibility.PUBLIC, query.getVisibility());
                         assertEquals(true, query.getOperatorPermissions() != null);
                         return List.of(entry());
                     }
@@ -552,7 +540,6 @@ class SancaiAdminControllerTest {
                         assertEquals(101L, command.getVolumeId());
                         assertEquals("天地", command.getTitle());
                         assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, command.getLifecycleStatus());
-                        assertEquals(SancaiEntryVisibility.PUBLIC, command.getVisibility());
                         return SancaiEntryIdCodec.toDomain(3001L);
                     }
                     if ("changeEntryStatus".equals(method.getName())) {
@@ -581,7 +568,6 @@ class SancaiAdminControllerTest {
                         assertEquals(202L, command.getVolumeId());
                         assertEquals("迁移条目", command.getTitle());
                         assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, command.getLifecycleStatus());
-                        assertEquals(SancaiEntryVisibility.PUBLIC, command.getVisibility());
                         return SancaiEntryIdCodec.toDomain(3001L);
                     }
                     throw new UnsupportedOperationException(method.getName());
@@ -633,7 +619,6 @@ class SancaiAdminControllerTest {
                 "译文",
                 "摘要",
                 SancaiEntryLifecycleStatus.PUBLISHED,
-                SancaiEntryVisibility.PUBLIC,
                 SancaiEntryTranslationStatus.READY,
                 SancaiEntryImageStatus.READY,
                 SancaiEntryVisualAssetStatus.READY,

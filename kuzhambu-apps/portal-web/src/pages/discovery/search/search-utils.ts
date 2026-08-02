@@ -42,7 +42,6 @@ export const DEFAULT_PAGE_SIZE = "10";
 
 export interface SearchFormState {
     categoryCodes: string;
-    contentStatuses: string;
     dateFrom: string;
     dateTo: string;
     knowledgeBases: string;
@@ -50,20 +49,17 @@ export interface SearchFormState {
     pageSize: string;
     queryText: string;
     tagNames: string;
-    visibilityScopes: string;
 }
 
 export const INITIAL_FORM_STATE: SearchFormState = {
     categoryCodes: "",
-    contentStatuses: "",
     dateFrom: "",
     dateTo: "",
     knowledgeBases: "",
     pageNo: "1",
     pageSize: DEFAULT_PAGE_SIZE,
     queryText: "",
-    tagNames: "",
-    visibilityScopes: ""
+    tagNames: ""
 };
 
 export const hasAdvancedFilters = (form: SearchFormState) => {
@@ -73,15 +69,13 @@ export const hasAdvancedFilters = (form: SearchFormState) => {
 export const toFormState = (searchParams: URLSearchParams): SearchFormState => {
     return {
         categoryCodes: "",
-        contentStatuses: "",
         dateFrom: searchParams.get("dateFrom") ?? "",
         dateTo: searchParams.get("dateTo") ?? "",
         knowledgeBases: searchParams.get("knowledgeBases") ?? "",
         pageNo: searchParams.get("pageNo") ?? INITIAL_FORM_STATE.pageNo,
         pageSize: searchParams.get("pageSize") ?? INITIAL_FORM_STATE.pageSize,
         queryText: searchParams.get("q") ?? "",
-        tagNames: "",
-        visibilityScopes: ""
+        tagNames: ""
     };
 };
 
@@ -128,15 +122,13 @@ export const flattenGroups = (groups: DiscoverySearchGroupResponse[]) => {
 export const toRequest = (form: SearchFormState): DiscoverySearchRequest => {
     return {
         categoryCodes: splitList(form.categoryCodes),
-        contentStatuses: splitList(form.contentStatuses),
         dateFrom: toIsoStartOfDay(form.dateFrom),
         dateTo: toIsoEndOfDay(form.dateTo),
         knowledgeBases: splitList(form.knowledgeBases),
         pageNo: Number.parseInt(form.pageNo, 10) || 1,
         pageSize: Number.parseInt(form.pageSize, 10) || 10,
         queryText: form.queryText.trim(),
-        tagNames: splitList(form.tagNames),
-        visibilityScopes: splitList(form.visibilityScopes)
+        tagNames: splitList(form.tagNames)
     };
 };
 

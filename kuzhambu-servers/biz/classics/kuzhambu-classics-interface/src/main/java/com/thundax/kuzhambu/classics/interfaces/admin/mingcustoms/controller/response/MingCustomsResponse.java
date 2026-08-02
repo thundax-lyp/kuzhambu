@@ -47,7 +47,4 @@ public class MingCustomsResponse implements Serializable {
 
     @JsonProperty("currentPublicationJobId")
     private Long currentPublicationJobId;
-
-    @JsonProperty("visibility")
-    private String visibility;
 }

@@ -44,8 +44,7 @@ const installFetchMock = () => {
                     originalText: "地者，万物之成。",
                     translationText: "地承载万物。",
                     summary: "地理条目",
-                    lifecycleStatus: "PUBLISHED",
-                    visibility: "PUBLIC"
+                    lifecycleStatus: "PUBLISHED"
                 });
             }
             return apiResponse({
@@ -60,7 +59,6 @@ const installFetchMock = () => {
                 refinementStatus: "REFINED",
                 translationStatus: "READY",
                 visualAssetStatus: "GENERATED",
-                visibility: "PUBLIC",
                 tags: [{ id: 5001, tagId: 6001, tagName: "天文", source: "MANUAL", priority: 1 }],
                 images: [
                     {
@@ -95,8 +93,7 @@ const installFetchMock = () => {
                             originalText: "地者，万物之成。",
                             translationText: "地承载万物。",
                             summary: "地理条目",
-                            lifecycleStatus: "PUBLISHED",
-                            visibility: "PUBLIC"
+                            lifecycleStatus: "PUBLISHED"
                         }
                     ]
                 });
@@ -116,8 +113,7 @@ const installFetchMock = () => {
                             originalText: "人者，万物之灵。",
                             translationText: "人是万物之灵。",
                             summary: "人物条目",
-                            lifecycleStatus: "PUBLISHED",
-                            visibility: "PUBLIC"
+                            lifecycleStatus: "PUBLISHED"
                         }
                     ]
                 });
@@ -136,8 +132,7 @@ const installFetchMock = () => {
                         originalText: "天者，万物之始。",
                         translationText: "天是万物的开端。",
                         summary: "天地门条目",
-                        lifecycleStatus: "PUBLISHED",
-                        visibility: "PUBLIC"
+                        lifecycleStatus: "PUBLISHED"
                     }
                 ]
             });

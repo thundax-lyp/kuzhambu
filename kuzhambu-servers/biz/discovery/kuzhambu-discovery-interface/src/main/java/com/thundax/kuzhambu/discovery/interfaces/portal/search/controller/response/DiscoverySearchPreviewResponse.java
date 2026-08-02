@@ -56,14 +56,6 @@ public class DiscoverySearchPreviewResponse implements Serializable {
     @JsonProperty(value = "tagNames")
     private List<String> tagNames;
 
-    @Schema(name = "contentStatus", description = "内容状态")
-    @JsonProperty(value = "contentStatus")
-    private String contentStatus;
-
-    @Schema(name = "visibility", description = "可见性")
-    @JsonProperty(value = "visibility")
-    private String visibility;
-
     @Schema(name = "sourceVersionNo", description = "来源版本号")
     @JsonProperty(value = "sourceVersionNo")
     private Integer sourceVersionNo;

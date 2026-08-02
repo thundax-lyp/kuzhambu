@@ -3,7 +3,6 @@ import * as contentService from "@/pages/classics/common/classics-content-servic
 import type {
     ClassicsAiCandidateBatchApplyCommand,
     ClassicsAiCandidateBatchRejectCommand,
-    ClassicsBatchVisibilityCommand,
     ClassicsContentQaPairCommand,
     ClassicsContentQaPairDeleteCommand,
     ClassicsContentQaPairSortCommand,
@@ -51,33 +50,6 @@ const installFetchRecorder = () => {
         });
 
         const data = (() => {
-            if (path === "/classics/content/visibility/change") {
-                return {
-                    failureCount: 1,
-                    failures: [
-                        {
-                            contentId: "4002",
-                            contentType: "WANGQI_DOCUMENT",
-                            failureCode: "BATCH_VISIBILITY_FAILED",
-                            failureReason: "内容不存在",
-                            resultId: null,
-                            status: null
-                        }
-                    ],
-                    successCount: 1,
-                    successes: [
-                        {
-                            contentId: "4001",
-                            contentType: "WANGQI_DOCUMENT",
-                            failureCode: null,
-                            failureReason: null,
-                            resultId: "4001",
-                            status: "PUBLIC"
-                        }
-                    ]
-                };
-            }
-
             if (path === "/classics/content/ai-candidates/batch/apply") {
                 return {
                     failureCount: 1,
@@ -271,36 +243,6 @@ describe("classics content service request contracts", () => {
 
         await contentService.deleteQaPair(deleteQaCommand);
         expectLastCall("POST", "/classics/content/qa-pairs/delete", deleteQaCommand);
-    });
-
-    it("sends batch visibility commands and preserves operation result fields", async () => {
-        const command: ClassicsBatchVisibilityCommand = {
-            contentIds: ["4001", "4002"],
-            contentType: "WANGQI_DOCUMENT",
-            visibility: "PUBLIC"
-        };
-
-        const response = await contentService.changeVisibilityBatch(command);
-
-        expectLastCall("POST", "/classics/content/visibility/change", command);
-        expect(response.successCount).toBe(1);
-        expect(response.successes[0]).toEqual({
-            contentId: "4001",
-            contentType: "WANGQI_DOCUMENT",
-            failureCode: null,
-            failureReason: null,
-            resultId: "4001",
-            status: "PUBLIC"
-        });
-        expect(response.failureCount).toBe(1);
-        expect(response.failures[0]).toEqual({
-            contentId: "4002",
-            contentType: "WANGQI_DOCUMENT",
-            failureCode: "BATCH_VISIBILITY_FAILED",
-            failureReason: "内容不存在",
-            resultId: null,
-            status: null
-        });
     });
 
     it("sends ai candidate batch apply commands and preserves operation result fields", async () => {

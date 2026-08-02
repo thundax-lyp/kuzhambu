@@ -172,7 +172,7 @@ public class MingCustomsAdminController {
     @SysLogger(value = "关键词云")
     @PostMapping("keyword-cloud/list")
     public List<MingCustomsKeywordCloudItemResponse> listKeywordCloud(@Valid @RequestBody MingCustomsRequest request) {
-        return service.listKeywordCloud(request == null ? null : request.getVisibility()).stream()
+        return service.listKeywordCloud().stream()
                 .map(MingCustomsInterfaceAssembler::toKeywordCloudResponse)
                 .toList();
     }
@@ -190,9 +190,7 @@ public class MingCustomsAdminController {
     @PostMapping("tag-cloud/list")
     public List<MingCustomsTagCloudItemResponse> listTagCloud(@Valid @RequestBody MingCustomsRequest request) {
         MingCustomsPageQuery query = MingCustomsInterfaceAssembler.toTagCloudQuery(
-                request == null ? null : request.getCategory(),
-                request == null ? null : request.getKeyword(),
-                request == null ? null : request.getVisibility());
+                request == null ? null : request.getCategory(), request == null ? null : request.getKeyword());
         query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
         return service.listTagCloud(query).stream()
                 .map(MingCustomsInterfaceAssembler::toTagCloudResponse)

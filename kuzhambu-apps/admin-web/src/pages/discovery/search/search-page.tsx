@@ -16,8 +16,6 @@ import "./search-page.css";
 
 const DEFAULT_PAGE_NO = "1";
 const DEFAULT_PAGE_SIZE = "10";
-const PUBLIC_VISIBILITY_SCOPE = "PUBLIC";
-const PUBLISHED_CONTENT_STATUS = "PUBLISHED";
 
 const KNOWLEDGE_BASE_OPTIONS = [
     { label: "三才图会", value: "SANCAI_ENTRY" },
@@ -88,15 +86,13 @@ const toIsoEndOfDay = (value: string) => {
 
 const toRequest = (form: SearchFormState): DiscoverySearchQuery => ({
     categoryCodes: [],
-    contentStatuses: [PUBLISHED_CONTENT_STATUS],
     dateFrom: toIsoStartOfDay(form.dateFrom),
     dateTo: toIsoEndOfDay(form.dateTo),
     knowledgeBases: form.knowledgeBases,
     pageNo: Number.parseInt(form.pageNo, 10) || 1,
     pageSize: Number.parseInt(form.pageSize, 10) || 10,
     queryText: form.queryText.trim(),
-    tagNames: [],
-    visibilityScopes: [PUBLIC_VISIBILITY_SCOPE]
+    tagNames: []
 });
 
 const renderHighlightText = (highlightText?: string | null) => {

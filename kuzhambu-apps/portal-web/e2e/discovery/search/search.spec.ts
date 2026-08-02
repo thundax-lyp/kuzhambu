@@ -2,7 +2,6 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 
 type ApiPayload = {
     categoryCodes?: unknown[];
-    contentStatuses?: unknown[];
     dateFrom?: unknown;
     dateTo?: unknown;
     knowledgeBases?: unknown[];
@@ -10,7 +9,6 @@ type ApiPayload = {
     pageSize?: number;
     queryText?: string;
     tagNames?: unknown[];
-    visibilityScopes?: unknown[];
 };
 
 const readRequestBody = (postData: string | null) => {
@@ -195,8 +193,6 @@ test.describe("portal discovery search smoke", () => {
             knowledgeBases: ["SANCAI_ENTRY"],
             categoryCodes: [],
             tagNames: [],
-            contentStatuses: [],
-            visibilityScopes: [],
             pageNo: 1,
             pageSize: 10
         });

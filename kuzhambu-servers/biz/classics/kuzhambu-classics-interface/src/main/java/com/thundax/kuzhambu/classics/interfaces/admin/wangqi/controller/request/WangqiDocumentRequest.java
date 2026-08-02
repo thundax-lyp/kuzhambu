@@ -34,9 +34,6 @@ public class WangqiDocumentRequest extends PageRequest {
     @JsonProperty("storageObjectId")
     private Long storageObjectId;
 
-    @JsonProperty("visibility")
-    private String visibility;
-
     @JsonProperty("keyword")
     private String keyword;
 

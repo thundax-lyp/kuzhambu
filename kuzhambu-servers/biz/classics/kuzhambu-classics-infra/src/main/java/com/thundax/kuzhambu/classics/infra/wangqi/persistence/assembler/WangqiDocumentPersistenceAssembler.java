@@ -8,7 +8,6 @@ import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPubl
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.dataobject.WangqiDocumentDO;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ public final class WangqiDocumentPersistenceAssembler {
         dataObject.setTransitionStatus(value(entity.getTransitionStatus()));
         dataObject.setCurrentPublicationJobId(
                 ClassicsPublicationJobIdCodec.toValue(entity.getCurrentPublicationJobId()));
-        dataObject.setVisibility(value(entity.getVisibility()));
         dataObject.setCurrentVersionId(ClassicsContentVersionIdCodec.toValue(entity.getCurrentVersionId()));
         dataObject.setCurrentVersionNo(entity.getCurrentVersionNo());
         dataObject.setCurrentVersionedAt(entity.getCurrentVersionedAt());
@@ -56,8 +54,7 @@ public final class WangqiDocumentPersistenceAssembler {
                 dataObject.getContentFormat() == null ? null : WangqiContentFormat.from(dataObject.getContentFormat()),
                 dataObject.getContent(),
                 dataObject.getDocumentTime(),
-                StorageObjectIdCodec.toDomain(dataObject.getStorageObjectId()),
-                dataObject.getVisibility() == null ? null : WangqiDocumentVisibility.from(dataObject.getVisibility()));
+                StorageObjectIdCodec.toDomain(dataObject.getStorageObjectId()));
         document.setLifecycleStatus(parseLifecycle(dataObject.getLifecycleStatus()));
         document.setTransitionStatus(parseTransition(dataObject.getTransitionStatus()));
         document.setCurrentPublicationJobId(

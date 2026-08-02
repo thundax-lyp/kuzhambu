@@ -12,14 +12,12 @@ const mocks = vi.hoisted(() => ({
         bodyText: "第一段正文。\n\n第二段正文。",
         categoryName: "器用",
         contentId: "1001",
-        contentStatus: "PUBLISHED",
         contentType: "SANCAI_ENTRY",
         knowledgeBase: "SANCAI_ENTRY",
         summary: "索引摘要",
         tagNames: ["礼器"],
         targetPath: "/classics/sancai",
-        title: "礼器图",
-        visibility: "PUBLIC"
+        title: "礼器图"
     })),
     searchDiscovery: vi.fn(async () => ({
         displayQueryText: "礼器",
@@ -89,22 +87,20 @@ describe("SearchPage", () => {
         expect(screen.getByRole("button", { name: "搜索" })).toBeInTheDocument();
     });
 
-    it("loads public published search on initial open", async () => {
+    it("loads publication-ready search on initial open", async () => {
         renderPage();
 
         await waitFor(() => {
             expect(mocks.searchDiscovery).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    contentStatuses: ["PUBLISHED"],
-                    queryText: "",
-                    visibilityScopes: ["PUBLIC"]
+                    queryText: ""
                 }),
                 expect.anything()
             );
         });
     });
 
-    it("submits public published search request and renders grouped results", async () => {
+    it("submits publication-ready search request and renders grouped results", async () => {
         const user = userEvent.setup();
         renderPage();
 
@@ -114,9 +110,7 @@ describe("SearchPage", () => {
         await waitFor(() => {
             expect(mocks.searchDiscovery).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    contentStatuses: ["PUBLISHED"],
-                    queryText: "礼器",
-                    visibilityScopes: ["PUBLIC"]
+                    queryText: "礼器"
                 }),
                 expect.anything()
             );

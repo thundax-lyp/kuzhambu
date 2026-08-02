@@ -9,7 +9,6 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsTagCloudItem;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsRequest;
@@ -30,13 +29,12 @@ public final class MingCustomsInterfaceAssembler {
                 request.getTagName(),
                 request.getTagId(),
                 request.getTagNameSnapshot(),
-                visibility(request.getVisibility()),
                 sortDirection(request.getSortDirection()),
                 null);
     }
 
-    public static MingCustomsPageQuery toTagCloudQuery(String category, String keyword, String visibility) {
-        return new MingCustomsPageQuery(category, keyword, null, null, null, visibility(visibility), null, null);
+    public static MingCustomsPageQuery toTagCloudQuery(String category, String keyword) {
+        return new MingCustomsPageQuery(category, keyword, null, null, null, null, null);
     }
 
     public static MingCustomsCommand toCommand(MingCustomsRequest request) {
@@ -51,8 +49,7 @@ public final class MingCustomsInterfaceAssembler {
                         ? null
                         : MingCustomsContentFormat.from(request.getContentFormat()),
                 request.getContent(),
-                request.getOriginalExcerpts(),
-                visibility(request.getVisibility()));
+                request.getOriginalExcerpts());
     }
 
     public static MingCustomsKeywordCommand toKeywordCommand(Long customId, MingCustomsRequest request) {
@@ -87,10 +84,6 @@ public final class MingCustomsInterfaceAssembler {
                                 entity.getCurrentPublicationJobId() == null
                                         ? null
                                         : entity.getCurrentPublicationJobId().value())
-                        .visibility(
-                                entity.getVisibility() == null
-                                        ? null
-                                        : entity.getVisibility().value())
                         .build();
     }
 
@@ -132,10 +125,6 @@ public final class MingCustomsInterfaceAssembler {
                                         : version.getChangeType().value())
                         .changeSummary(version.getChangeSummary())
                         .build();
-    }
-
-    private static MingCustomsVisibility visibility(String value) {
-        return StringUtils.isBlank(value) ? null : MingCustomsVisibility.from(value);
     }
 
     private static SortDirection sortDirection(String value) {

@@ -20,7 +20,6 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.WangqiDocumentAdminController;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
@@ -133,7 +132,6 @@ class WangqiDocumentAdminControllerTest {
                   "content": "正文",
                   "documentTime": "2026-01-01T00:00:00.000+00:00",
                   "storageObjectId": 7001,
-                  "visibility": "PUBLIC",
                   "keyword": "王圻",
                   "sortDirection": "DESC",
                   "pageNo": 1,
@@ -148,7 +146,6 @@ class WangqiDocumentAdminControllerTest {
         assertEquals("MARKDOWN", request.getContentFormat());
         assertEquals("正文", request.getContent());
         assertEquals(7001L, request.getStorageObjectId());
-        assertEquals("PUBLIC", request.getVisibility());
         assertEquals("王圻", request.getKeyword());
         assertEquals("DESC", request.getSortDirection());
         assertEquals(1, request.getPageNo());
@@ -161,7 +158,6 @@ class WangqiDocumentAdminControllerTest {
         assertEquals("MARKDOWN", response.get("contentFormat").asText());
         assertEquals("正文", response.get("content").asText());
         assertEquals(7001L, response.get("storageObjectId").asLong());
-        assertEquals("PUBLIC", response.get("visibility").asText());
 
         JsonNode versionResponse = OBJECT_MAPPER.valueToTree(controller().getVersion(versionRequest()));
         assertEquals(9001L, versionResponse.get("id").asLong());
@@ -258,7 +254,6 @@ class WangqiDocumentAdminControllerTest {
                         assertEquals(WangqiContentFormat.MARKDOWN, command.getContentFormat());
                         assertEquals("正文", command.getContent());
                         assertEquals(7001L, command.getStorageObjectId());
-                        assertEquals(WangqiDocumentVisibility.PUBLIC, command.getVisibility());
                         return WangqiDocumentIdCodec.toDomain(400000000001L);
                     }
                     if ("delete".equals(method.getName())) {
@@ -310,7 +305,6 @@ class WangqiDocumentAdminControllerTest {
     private static void assertQuery(Object[] args) {
         WangqiDocumentPageQuery query = (WangqiDocumentPageQuery) args[0];
         assertEquals("王圻", query.getKeyword());
-        assertEquals(WangqiDocumentVisibility.PUBLIC, query.getVisibility());
         assertEquals(SortDirection.DESC, query.getSortDirection());
         assertEquals(true, query.getOperatorPermissions() != null);
     }
@@ -324,7 +318,6 @@ class WangqiDocumentAdminControllerTest {
         request.setContent("正文");
         request.setDocumentTime(Instant.ofEpochMilli(1767225600000L));
         request.setStorageObjectId(7001L);
-        request.setVisibility("PUBLIC");
         request.setKeyword("王圻");
         request.setSortDirection("DESC");
         request.setPageNo(1);
@@ -347,8 +340,7 @@ class WangqiDocumentAdminControllerTest {
                 WangqiContentFormat.MARKDOWN,
                 "正文",
                 Instant.ofEpochMilli(1767225600000L),
-                StorageObjectIdCodec.toDomain(7001L),
-                WangqiDocumentVisibility.PUBLIC);
+                StorageObjectIdCodec.toDomain(7001L));
     }
 
     private static ClassicsContentVersion version(Long id, int versionNo, ClassicsContentChangeType changeType) {

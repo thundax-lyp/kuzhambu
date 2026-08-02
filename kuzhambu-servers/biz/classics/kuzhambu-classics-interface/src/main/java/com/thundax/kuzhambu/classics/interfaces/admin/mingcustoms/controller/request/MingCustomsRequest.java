@@ -39,9 +39,6 @@ public class MingCustomsRequest extends PageRequest {
     @JsonProperty("originalExcerpts")
     private String originalExcerpts;
 
-    @JsonProperty("visibility")
-    private String visibility;
-
     @JsonProperty("keyword")
     private String keyword;
 

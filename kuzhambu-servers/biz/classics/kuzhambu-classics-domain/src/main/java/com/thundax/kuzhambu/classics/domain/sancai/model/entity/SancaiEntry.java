@@ -12,7 +12,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageS
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
@@ -37,7 +36,6 @@ public class SancaiEntry implements Sortable, Versionable {
     private SancaiEntryLifecycleStatus lifecycleStatus;
     private ClassicsPublicationTransitionStatus transitionStatus;
     private ClassicsPublicationJobId currentPublicationJobId;
-    private SancaiEntryVisibility visibility;
     private SancaiEntryTranslationStatus translationStatus;
     private SancaiEntryImageStatus imageStatus;
     private SancaiEntryVisualAssetStatus visualAssetStatus;
@@ -56,7 +54,6 @@ public class SancaiEntry implements Sortable, Versionable {
             String translationText,
             String summary,
             SancaiEntryLifecycleStatus lifecycleStatus,
-            SancaiEntryVisibility visibility,
             SancaiEntryTranslationStatus translationStatus,
             SancaiEntryImageStatus imageStatus,
             SancaiEntryVisualAssetStatus visualAssetStatus,
@@ -69,7 +66,6 @@ public class SancaiEntry implements Sortable, Versionable {
         this.translationText = translationText;
         this.summary = summary;
         this.lifecycleStatus = lifecycleStatus;
-        this.visibility = visibility;
         this.translationStatus = translationStatus;
         this.imageStatus = imageStatus;
         this.visualAssetStatus = visualAssetStatus;

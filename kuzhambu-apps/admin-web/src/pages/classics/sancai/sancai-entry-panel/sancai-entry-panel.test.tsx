@@ -7,7 +7,6 @@ import { MemoryRouter, useLocation } from "react-router-dom";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
-import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as visualPreviewService from "@/pages/classics/common/sancai-visual-preview-service";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { SancaiEntryPanel } from "./sancai-entry-panel";
@@ -22,27 +21,6 @@ vi.mock("@/pages/classics/common/classics-content-service", () => ({
     rejectAiCandidatesBatch: vi.fn(),
     addQaPair: vi.fn(),
     addTag: vi.fn(),
-    changeVisibilityBatch: vi.fn(async () => ({
-        failureCount: 1,
-        failures: [
-            {
-                contentId: "3002",
-                contentType: "SANCAI_ENTRY",
-                failureCode: "PERMISSION_DENIED",
-                failureReason: "PERMISSION_DENIED",
-                status: "FAILED"
-            }
-        ],
-        successCount: 1,
-        successes: [
-            {
-                contentId: "3001",
-                contentType: "SANCAI_ENTRY",
-                resultId: "3001",
-                status: "PRIVATE"
-            }
-        ]
-    })),
     deleteTag: vi.fn(),
     listQaPairs: vi.fn(async () => [
         {
@@ -275,7 +253,6 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
         translationText: entryState.restored ? "历史译文" : "译文",
         summary: entryState.restored ? "历史摘要" : "天地摘要",
         lifecycleStatus: "PUBLISHED",
-        visibility: "PUBLIC",
         translationStatus: "READY",
         imageStatus: "READY",
         visualAssetStatus: "READY",
@@ -305,7 +282,6 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
             translationText: "历史译文",
             summary: "历史摘要",
             lifecycleStatus: "PUBLISHED",
-            visibility: "PUBLIC",
             translationStatus: "READY",
             imageStatus: "READY",
             visualAssetStatus: "READY",
@@ -324,7 +300,6 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
             translationText: "译文",
             summary: "天地摘要",
             lifecycleStatus: "PUBLISHED",
-            visibility: "PUBLIC",
             translationStatus: "READY",
             imageStatus: "READY",
             visualAssetStatus: "READY",
@@ -343,7 +318,6 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
             translationText: "译文",
             summary: "地理摘要",
             lifecycleStatus: "DRAFT",
-            visibility: "PRIVATE",
             translationStatus: "PENDING",
             imageStatus: "PENDING",
             visualAssetStatus: "PENDING",
@@ -362,7 +336,6 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
             translationText: "译文",
             summary: "人物摘要",
             lifecycleStatus: "OFFLINE",
-            visibility: "PUBLIC",
             translationStatus: "READY",
             imageStatus: "READY",
             visualAssetStatus: "READY",
@@ -722,29 +695,7 @@ describe("SancaiEntryPanel batch operations", () => {
         clearPermissions();
     });
 
-    it("changes selected entries visibility and shows item failures", async () => {
-        const user = userEvent.setup();
-
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
-        await user.click(rowCheckbox);
-        await user.click(screen.getByTestId("classics-sancai-sancai-entry-action-button-4"));
-
-        await waitFor(() => {
-            expect(contentService.changeVisibilityBatch).toHaveBeenCalled();
-        });
-        expect(vi.mocked(contentService.changeVisibilityBatch).mock.calls[0]?.[0]).toEqual({
-            contentIds: ["3001"],
-            contentType: "SANCAI_ENTRY",
-            visibility: "PRIVATE"
-        });
-        expect(await screen.findByText("批量可见性结果：成功 1，失败 1")).toBeInTheDocument();
-        expect(await screen.findByText("SANCAI_ENTRY#3002: PERMISSION_DENIED")).toBeInTheDocument();
-    }, 30000);
-
-    it("disables export and visibility controls without content permissions", async () => {
+    it("disables export and publication controls without content permissions", async () => {
         clearPermissions();
 
         renderEntryPanel();
@@ -766,8 +717,6 @@ describe("SancaiEntryPanel batch operations", () => {
         expect(readEntryButton("sancai-entry-3001-lifecycle-button")).toBeDisabled();
         expect(readEntryButton("sancai-entry-3002-lifecycle-button")).toBeDisabled();
         expect(readEntryButton("sancai-entry-3003-lifecycle-button")).toBeDisabled();
-        expect(readButtonByText("公开")).toBeDisabled();
-        expect(readButtonByText("私有")).toBeDisabled();
         expect(readButtonByText("候选治理")).toBeDisabled();
     });
 
@@ -779,7 +728,7 @@ describe("SancaiEntryPanel batch operations", () => {
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
         await user.click(rowCheckbox);
-        await user.click(screen.getByTestId("classics-sancai-sancai-entry-action-button-5"));
+        await user.click(screen.getByTestId("classics-sancai-sancai-entry-action-button-3"));
 
         expect(await screen.findByText("AI 候选批量治理")).toBeInTheDocument();
         expect(await screen.findByText("暂无待处理候选")).toBeInTheDocument();
@@ -866,7 +815,6 @@ describe("SancaiEntryPanel batch operations", () => {
             translationText: "译文",
             summary: "天地摘要",
             lifecycleStatus: "PUBLISHED",
-            visibility: "PUBLIC",
             translationStatus: "READY",
             imageStatus: "READY",
             visualAssetStatus: "READY",

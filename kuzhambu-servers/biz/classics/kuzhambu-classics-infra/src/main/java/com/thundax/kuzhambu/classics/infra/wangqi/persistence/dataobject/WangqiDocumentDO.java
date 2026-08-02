@@ -25,7 +25,6 @@ public class WangqiDocumentDO {
     private String lifecycleStatus;
     private String transitionStatus;
     private Long currentPublicationJobId;
-    private String visibility;
     private Long currentVersionId;
     private Integer currentVersionNo;
     private Instant currentVersionedAt;

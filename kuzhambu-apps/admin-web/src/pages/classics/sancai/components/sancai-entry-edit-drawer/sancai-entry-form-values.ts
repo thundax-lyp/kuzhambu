@@ -8,7 +8,6 @@ export interface SancaiEntryFormValues {
     title: string;
     translationText: string;
     volumeId: string | null;
-    visibility: string;
 }
 
 export const toEntryFormValues = (
@@ -25,7 +24,6 @@ export const toEntryFormValues = (
         summary: entry?.summary || "",
         title: entry?.title || "",
         translationText: entry?.translationText || "",
-        volumeId,
-        visibility: entry?.visibility || "PUBLIC"
+        volumeId
     };
 };

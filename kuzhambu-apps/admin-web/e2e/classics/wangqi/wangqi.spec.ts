@@ -131,8 +131,7 @@ test.describe("classics wangqi page", () => {
             contentFormat: "MARKDOWN",
             content: "## 王圻\n\n古籍正文。",
             documentTime: "2026-01-01T00:00:00.000+00:00",
-            storageObjectId: 7001,
-            visibility: "PUBLIC"
+            storageObjectId: 7001
         };
 
         await page.route(
@@ -149,7 +148,7 @@ test.describe("classics wangqi page", () => {
                             totalCount: 1,
                             count: 1,
                             totalPage: 1,
-                            records: [{ ...record, visibility: body.visibility ?? "PUBLIC" }]
+                            records: [record]
                         })
                     )
                 });

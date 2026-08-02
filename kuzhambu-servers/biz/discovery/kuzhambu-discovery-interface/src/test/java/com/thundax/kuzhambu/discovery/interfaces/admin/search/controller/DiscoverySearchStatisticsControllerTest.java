@@ -295,8 +295,6 @@ class DiscoverySearchStatisticsControllerTest {
                         "摘要",
                         "正文",
                         List.of("上古"),
-                        "PUBLISHED",
-                        "PUBLIC",
                         3,
                         1_767_225_600_000L,
                         1_767_312_000_000L,
@@ -364,7 +362,7 @@ class DiscoverySearchStatisticsControllerTest {
                         "黄帝",
                         "黄帝",
                         "KEYWORD_SEARCH",
-                        "{\"knowledgeBases\":[\"SANCAI_ENTRY\"],\"visibilityScopes\":[\"PUBLIC\"]}",
+                        "{\"knowledgeBases\":[\"SANCAI_ENTRY\"]}",
                         0,
                         0,
                         "FAILED",
@@ -382,7 +380,7 @@ class DiscoverySearchStatisticsControllerTest {
         assertEquals("FAILED", response.getSearchStatus());
         assertEquals("DISCOVERY-20001", response.getFailureCode());
         assertEquals("Search backend is not implemented", response.getFailureMessage());
-        assertTrue(response.getSearchScopesJson().contains("visibilityScopes"));
+        assertTrue(response.getSearchScopesJson().contains("knowledgeBases"));
         assertEquals("req-2", response.getRequestId());
         assertEquals("trace-2", response.getTraceId());
     }

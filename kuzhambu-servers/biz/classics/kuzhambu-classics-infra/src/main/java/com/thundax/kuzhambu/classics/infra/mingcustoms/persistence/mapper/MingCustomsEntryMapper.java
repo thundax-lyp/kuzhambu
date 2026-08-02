@@ -29,9 +29,6 @@ public interface MingCustomsEntryMapper extends BaseMapper<MingCustomsEntryDO> {
                 <if test="category != null and category != ''">
                     and entry.category = #{category}
                 </if>
-                <if test="visibility != null and visibility != ''">
-                    and entry.visibility = #{visibility}
-                </if>
                 <if test="keyword != null and keyword != ''">
                     and (
                         entry.title like concat('%', #{keyword}, '%')
@@ -44,10 +41,7 @@ public interface MingCustomsEntryMapper extends BaseMapper<MingCustomsEntryDO> {
             order by count desc, tag.tag_name_snapshot asc
             </script>
             """)
-    List<Map<String, Object>> selectTagCloud(
-            @Param("category") String category,
-            @Param("keyword") String keyword,
-            @Param("visibility") String visibility);
+    List<Map<String, Object>> selectTagCloud(@Param("category") String category, @Param("keyword") String keyword);
 
     @org.apache.ibatis.annotations.Update(
             """

@@ -6,19 +6,16 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.time.Instant;
@@ -39,8 +36,7 @@ class ClassicsReportApplicationServiceImplTest {
                         null,
                         null,
                         null,
-                        null,
-                        SancaiEntryVisibility.PUBLIC.value(),
+                        SancaiEntryLifecycleStatus.PUBLISHED.value(),
                         null,
                         null,
                         null,
@@ -59,10 +55,9 @@ class ClassicsReportApplicationServiceImplTest {
                                 SancaiEntryImageStatus.MISSING,
                                 SancaiEntryVisualAssetStatus.MISSING,
                                 instant(1_718_086_400_000L))));
-        when(wangqiDocumentRepository.listTimeline(null, WangqiDocumentVisibility.PUBLIC.value(), SortDirection.ASC))
+        when(wangqiDocumentRepository.listTimeline(null, SortDirection.ASC))
                 .thenReturn(List.of(wangqiDocument("王圻图谱", instant(1_718_086_400_000L))));
-        when(mingCustomsRepository.list(
-                        null, null, null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC))
+        when(mingCustomsRepository.list(null, null, null, null, null, SortDirection.ASC))
                 .thenReturn(List.of(mingCustomsEntry("明礼汇编", instant(1_718_172_800_000L))));
 
         ClassicsReportSummaryResult result = service.summary(date(1_718_000_000_000L), date(1_718_259_200_000L), "DAY");
@@ -87,7 +82,6 @@ class ClassicsReportApplicationServiceImplTest {
         SancaiEntry entry = new SancaiEntry();
         entry.setTitle(title);
         entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
-        entry.setVisibility(SancaiEntryVisibility.PUBLIC);
         entry.setTranslationStatus(translationStatus);
         entry.setImageStatus(imageStatus);
         entry.setVisualAssetStatus(visualAssetStatus);
@@ -100,7 +94,6 @@ class ClassicsReportApplicationServiceImplTest {
         WangqiDocument document = new WangqiDocument();
         document.setTitle(title);
         document.setContentFormat(WangqiContentFormat.MARKDOWN);
-        document.setVisibility(WangqiDocumentVisibility.PUBLIC);
         document.setContentUpdatedAt(contentUpdatedAt);
         return document;
     }
@@ -108,7 +101,6 @@ class ClassicsReportApplicationServiceImplTest {
     private static MingCustomsEntry mingCustomsEntry(String title, Instant contentUpdatedAt) {
         MingCustomsEntry entry = new MingCustomsEntry();
         entry.setTitle(title);
-        entry.setVisibility(MingCustomsVisibility.PUBLIC);
         entry.setContentUpdatedAt(contentUpdatedAt);
         return entry;
     }

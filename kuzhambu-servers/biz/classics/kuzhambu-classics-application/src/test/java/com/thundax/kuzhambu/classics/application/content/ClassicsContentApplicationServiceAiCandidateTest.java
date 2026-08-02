@@ -59,7 +59,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisua
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -85,7 +84,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                         ClassicsPublicationWriteOperation.EDIT))
                 .thenThrow(new BizException("TRANSITION_ACTIVE"));
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiFacade, null, null, null, writeGuard);
+                repository, null, null, null, null, null, aiFacade, null, null, writeGuard);
 
         assertThrows(
                 BizException.class,
@@ -488,8 +487,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 WangqiContentFormat.HTML,
                 "content",
                 Instant.now(),
-                null,
-                WangqiDocumentVisibility.PUBLIC);
+                null);
         repository.wangqiDocumentForAiApply = document;
 
         AiFacade aiFacade = mockAiFacade(
@@ -732,7 +730,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 aiFacade,
                 tagBindingSupport,
                 null,
-                null,
                 mock(ClassicsPublicationWriteGuard.class));
 
         service.applyAiCandidate(
@@ -753,8 +750,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 WangqiContentFormat.HTML,
                 "content",
                 Instant.now(),
-                null,
-                WangqiDocumentVisibility.PUBLIC);
+                null);
         repository.wangqiDocumentForAiApply = document;
 
         AiFacade aiFacade = mockAiFacade(
@@ -914,7 +910,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 aiFacade,
                 null,
                 null,
-                null,
                 mock(ClassicsPublicationWriteGuard.class));
 
         setPermissions(Set.of("classics:sancai:edit"));
@@ -973,7 +968,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 aiFacade,
                 null,
                 null,
-                null,
                 mock(ClassicsPublicationWriteGuard.class));
 
         setPermissions(Set.of("classics:sancai:edit"));
@@ -1014,7 +1008,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 null,
                 null,
                 aiFacade,
-                null,
                 null,
                 null,
                 mock(ClassicsPublicationWriteGuard.class));
@@ -1061,7 +1054,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 aiFacade,
                 null,
                 null,
-                null,
                 mock(ClassicsPublicationWriteGuard.class));
 
         setPermissions(Set.of("classics:sancai:edit"));
@@ -1096,7 +1088,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 null,
                 null,
                 aiFacade,
-                null,
                 null,
                 null,
                 mock(ClassicsPublicationWriteGuard.class));

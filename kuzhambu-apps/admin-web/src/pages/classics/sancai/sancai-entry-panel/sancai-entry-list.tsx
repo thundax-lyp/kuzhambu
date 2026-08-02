@@ -1,4 +1,3 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { App, Empty, Skeleton, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -12,12 +11,8 @@ import {
     KuzhambuSpace
 } from "@/components";
 
-import * as contentService from "@/pages/classics/common/classics-content-service";
 import { ClassicsPublicationErrorAlert } from "@/pages/classics/common/classics-publication-error-alert";
-import {
-    hasClassicsContentPermission,
-    type ClassicsBatchOperationRecord
-} from "@/pages/classics/common/classics-content-types";
+import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import type {
     SancaiEntryRecord,
     SancaiPublicationBatchRecord,
@@ -110,37 +105,16 @@ export const SancaiEntryList = ({
     volumes
 }: SancaiEntryListProps) => {
     const { message: messageApi } = App.useApp();
-    const queryClient = useQueryClient();
     const [selectedRowsState, setSelectedRowsState] = useState<{
         keys: string[];
         scopeKey: string;
     }>({ keys: [], scopeKey: "" });
-    const [batchVisibilityResult, setBatchVisibilityResult] =
-        useState<ClassicsBatchOperationRecord | null>(null);
     const canExportEntries = hasClassicsContentPermission("SANCAI_ENTRY", "export", hasPermission);
-    const canChangeEntryVisibility = hasClassicsContentPermission(
-        "SANCAI_ENTRY",
-        "edit",
-        hasPermission
-    );
+    const canEditEntries = hasClassicsContentPermission("SANCAI_ENTRY", "edit", hasPermission);
     const canRunVisualProcessing =
-        canChangeEntryVisibility &&
+        canEditEntries &&
         hasPermission("ai:refinement:edit") &&
         hasPermission("classics:content:edit");
-
-    const changeVisibilityBatchMutation = useMutation({
-        mutationFn: contentService.changeVisibilityBatch,
-        onSuccess: async (result) => {
-            setBatchVisibilityResult(result);
-            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
-            messageApi.success(
-                `批量可见性完成：成功 ${result.successCount}，失败 ${result.failureCount}`
-            );
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "批量可见性修改失败");
-        }
-    });
 
     const currentPageSelectionScopeKey = useMemo(
         () => entries.map((entry) => String(entry.id ?? "")).join("|"),
@@ -160,24 +134,8 @@ export const SancaiEntryList = ({
             ),
         [entries, selectedRowKeys]
     );
-    const changeBatchVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
-        if (!canChangeEntryVisibility) {
-            messageApi.warning("当前账号缺少三才图会编辑权限");
-            return;
-        }
-        if (!selectedEntries.length) {
-            messageApi.warning("请先选择当前页要批量修改可见性的条目");
-            return;
-        }
-        changeVisibilityBatchMutation.mutate({
-            contentIds: selectedEntries.map((entry) => entry.id),
-            contentType: "SANCAI_ENTRY",
-            visibility
-        });
-    };
-
     const openBatchCandidateGovernance = () => {
-        if (!canChangeEntryVisibility) {
+        if (!canEditEntries) {
             messageApi.warning("当前账号缺少三才图会编辑权限");
             return;
         }
@@ -264,8 +222,7 @@ export const SancaiEntryList = ({
             options: (entry) => {
                 const publicationAction = getPublicationAction(entry);
                 const isTransitionActive = isPublicationTransitionActive(entry);
-                const viewOrEditText =
-                    canChangeEntryVisibility && !isTransitionActive ? "编辑" : "查看";
+                const viewOrEditText = canEditEntries && !isTransitionActive ? "编辑" : "查看";
                 return [
                     {
                         key: "view",
@@ -298,7 +255,7 @@ export const SancaiEntryList = ({
                                   text: publicationAction === "PUBLISH" ? "发布" : "下线",
                                   ariaLabel: `${publicationAction === "PUBLISH" ? "发布" : "下线"} ${readTitle(entry, "条目")}`,
                                   testId: `sancai-entry-${entry.id}-lifecycle-button`,
-                                  disabled: !canChangeEntryVisibility || isTransitionActive,
+                                  disabled: !canEditEntries || isTransitionActive,
                                   onClick: () => onPublicationAction(entry, publicationAction)
                               }
                           ]
@@ -321,24 +278,6 @@ export const SancaiEntryList = ({
     return (
         <div className="sancai-entry-table-wrap">
             <ClassicsPublicationErrorAlert items={entries} />
-            {batchVisibilityResult ? (
-                <KuzhambuAlert
-                    showIcon
-                    type={batchVisibilityResult.failureCount > 0 ? "warning" : "success"}
-                    style={{ marginBottom: 12 }}
-                    title={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
-                    description={
-                        batchVisibilityResult.failures.length
-                            ? batchVisibilityResult.failures
-                                  .map(
-                                      (item) =>
-                                          `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
-                                  )
-                                  .join("；")
-                            : "全部选中条目已更新可见性。"
-                    }
-                />
-            ) : null}
             {publicationBatchResult ? (
                 <KuzhambuAlert
                     showIcon
@@ -366,33 +305,19 @@ export const SancaiEntryList = ({
                         {
                             testId: "classics-sancai-batch-publish-button",
                             title: "批量发布",
-                            disabled: !selectedEntries.length || !canChangeEntryVisibility,
+                            disabled: !selectedEntries.length || !canEditEntries,
                             action: () => onPublicationBatch(selectedEntries, "PUBLISH")
                         },
                         {
                             testId: "classics-sancai-batch-offline-button",
                             title: "批量下线",
-                            disabled: !selectedEntries.length || !canChangeEntryVisibility,
+                            disabled: !selectedEntries.length || !canEditEntries,
                             action: () => onPublicationBatch(selectedEntries, "OFFLINE")
                         },
                         {
                             testId: "classics-sancai-sancai-entry-action-button-3",
-                            title: "公开",
-                            disabled: !selectedEntries.length || !canChangeEntryVisibility,
-                            loading: changeVisibilityBatchMutation.isPending,
-                            action: () => changeBatchVisibility("PUBLIC")
-                        },
-                        {
-                            testId: "classics-sancai-sancai-entry-action-button-4",
-                            title: "私有",
-                            disabled: !selectedEntries.length || !canChangeEntryVisibility,
-                            loading: changeVisibilityBatchMutation.isPending,
-                            action: () => changeBatchVisibility("PRIVATE")
-                        },
-                        {
-                            testId: "classics-sancai-sancai-entry-action-button-5",
                             title: "候选治理",
-                            disabled: !selectedEntries.length || !canChangeEntryVisibility,
+                            disabled: !selectedEntries.length || !canEditEntries,
                             action: openBatchCandidateGovernance
                         },
                         {

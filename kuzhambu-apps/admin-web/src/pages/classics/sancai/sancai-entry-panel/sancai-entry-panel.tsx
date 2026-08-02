@@ -161,11 +161,7 @@ export const SancaiEntryPanel = ({
         versionDetailQuery.data ||
         versions.find((version) => isSameId(version.id, selectedVersionId)) ||
         null;
-    const canChangeEntryVisibility = hasClassicsContentPermission(
-        "SANCAI_ENTRY",
-        "edit",
-        hasPermission
-    );
+    const canEditEntries = hasClassicsContentPermission("SANCAI_ENTRY", "edit", hasPermission);
     const canManageGeneratedArtifacts = hasClassicsContentPermission(
         "SANCAI_ENTRY",
         "export",
@@ -465,7 +461,6 @@ export const SancaiEntryPanel = ({
                 translationText: form.translationText,
                 summary: form.summary,
                 lifecycleStatus: "DRAFT",
-                visibility: form.visibility,
                 translationStatus: "PENDING",
                 imageStatus: "PENDING",
                 visualAssetStatus: "PENDING",
@@ -484,7 +479,6 @@ export const SancaiEntryPanel = ({
             translationText: form.translationText,
             summary: form.summary,
             lifecycleStatus: selectedEntry.lifecycleStatus,
-            visibility: form.visibility,
             translationStatus: selectedEntry.translationStatus,
             imageStatus: selectedEntry.imageStatus,
             visualAssetStatus: selectedEntry.visualAssetStatus,
@@ -663,7 +657,7 @@ export const SancaiEntryPanel = ({
                 ]}
                 contentTitleById={batchCandidateTitleById}
                 contentType="SANCAI_ENTRY"
-                canEdit={canChangeEntryVisibility}
+                canEdit={canEditEntries}
                 open={batchCandidateDrawerOpen}
                 onChanged={invalidateBatchCandidateData}
                 onClose={() => setBatchCandidateDrawerOpen(false)}

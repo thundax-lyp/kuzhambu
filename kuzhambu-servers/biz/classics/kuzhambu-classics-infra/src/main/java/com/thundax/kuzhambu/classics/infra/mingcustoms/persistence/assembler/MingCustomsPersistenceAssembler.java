@@ -6,7 +6,6 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeyword
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.publication.codec.ClassicsPublicationJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
@@ -49,7 +48,6 @@ public final class MingCustomsPersistenceAssembler {
         dataObject.setTransitionStatus(value(entity.getTransitionStatus()));
         dataObject.setCurrentPublicationJobId(
                 ClassicsPublicationJobIdCodec.toValue(entity.getCurrentPublicationJobId()));
-        dataObject.setVisibility(value(entity.getVisibility()));
         dataObject.setCurrentVersionId(ClassicsContentVersionIdCodec.toValue(entity.getCurrentVersionId()));
         dataObject.setCurrentVersionNo(entity.getCurrentVersionNo());
         dataObject.setCurrentVersionedAt(entity.getCurrentVersionedAt());
@@ -72,8 +70,7 @@ public final class MingCustomsPersistenceAssembler {
                         ? null
                         : MingCustomsContentFormat.from(dataObject.getContentFormat()),
                 dataObject.getContent(),
-                dataObject.getOriginalExcerpts(),
-                dataObject.getVisibility() == null ? null : MingCustomsVisibility.from(dataObject.getVisibility()));
+                dataObject.getOriginalExcerpts());
         entry.setLifecycleStatus(parseLifecycle(dataObject.getLifecycleStatus()));
         entry.setTransitionStatus(parseTransition(dataObject.getTransitionStatus()));
         entry.setCurrentPublicationJobId(

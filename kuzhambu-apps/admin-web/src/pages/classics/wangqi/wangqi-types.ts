@@ -16,7 +16,6 @@ export interface WangqiDocumentRecord {
     content?: string | null;
     documentTime?: string | null;
     storageObjectId?: string | null;
-    visibility?: string | null;
     lifecycleStatus?: "DRAFT" | "PUBLISHED" | "OFFLINE" | "ERROR" | string | null;
     transitionStatus?: "NONE" | "PUBLISHING" | "OFFLINING" | string | null;
     currentPublicationJobId?: string | null;
@@ -91,7 +90,6 @@ export interface WangqiVersionSnapshot {
     content?: string | null;
     documentTime?: string | null;
     storageObjectId?: string | null;
-    visibility?: string | null;
     tags?: WangqiTagSnapshotRecord[];
     qaPairs?: WangqiQaPairSnapshotRecord[];
 }

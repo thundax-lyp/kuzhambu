@@ -91,14 +91,12 @@ describe("wangqi service request contracts", () => {
             pageNo: 1,
             pageSize: 20,
             keyword: "王圻",
-            visibility: "PUBLIC",
             sortDirection: "DESC"
         });
         expectLastCall("POST", "/classics/wangqi/documents/page", {
             pageNo: 1,
             pageSize: 20,
             keyword: "王圻",
-            visibility: "PUBLIC",
             sortDirection: "DESC"
         });
 
@@ -109,12 +107,10 @@ describe("wangqi service request contracts", () => {
 
         await service.listTimeline({
             keyword: "万历",
-            visibility: "PUBLIC",
             sortDirection: "ASC"
         });
         expectLastCall("POST", "/classics/wangqi/documents/timeline/list", {
             keyword: "万历",
-            visibility: "PUBLIC",
             sortDirection: "ASC"
         });
     });
@@ -126,8 +122,7 @@ describe("wangqi service request contracts", () => {
             contentFormat: "MARKDOWN",
             content: "正文",
             documentTime: "2026-01-01T00:00:00.000+00:00",
-            storageObjectId: "7001",
-            visibility: "PUBLIC"
+            storageObjectId: "7001"
         };
 
         await service.add(command);

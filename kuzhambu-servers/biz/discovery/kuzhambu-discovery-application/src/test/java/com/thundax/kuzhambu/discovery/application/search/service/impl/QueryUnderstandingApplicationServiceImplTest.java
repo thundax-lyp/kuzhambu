@@ -51,8 +51,6 @@ class QueryUnderstandingApplicationServiceImplTest {
                 List.of(),
                 List.of(),
                 List.of(),
-                List.of(),
-                List.of(),
                 null,
                 null,
                 1,
@@ -101,8 +99,6 @@ class QueryUnderstandingApplicationServiceImplTest {
                 List.of(),
                 List.of(),
                 List.of(),
-                List.of(),
-                List.of(),
                 null,
                 null,
                 1,
@@ -144,8 +140,6 @@ class QueryUnderstandingApplicationServiceImplTest {
                 new QueryUnderstandingApplicationServiceImpl(repository, enhancementProvider, payloadBuilder, aiFacade);
         SearchQuery query = new SearchQuery(
                 "礼制",
-                List.of(),
-                List.of(),
                 List.of(),
                 List.of(),
                 List.of(),

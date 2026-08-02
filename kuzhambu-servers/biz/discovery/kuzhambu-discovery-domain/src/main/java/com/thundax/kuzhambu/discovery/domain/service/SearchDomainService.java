@@ -25,8 +25,6 @@ public class SearchDomainService {
                     Collections.emptyList(),
                     Collections.emptyList(),
                     Collections.emptyList(),
-                    Collections.emptyList(),
-                    Collections.emptyList(),
                     null,
                     null);
         }

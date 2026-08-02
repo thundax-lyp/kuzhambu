@@ -47,9 +47,8 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
-    public PageResult<WangqiDocument> page(
-            String keyword, String visibility, SortDirection sortDirection, int pageNo, int pageSize) {
-        LambdaQueryWrapper<WangqiDocumentDO> wrapper = buildWrapper(keyword, visibility, sortDirection);
+    public PageResult<WangqiDocument> page(String keyword, SortDirection sortDirection, int pageNo, int pageSize) {
+        LambdaQueryWrapper<WangqiDocumentDO> wrapper = buildWrapper(keyword, sortDirection);
         Page<WangqiDocumentDO> dataPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
         List<WangqiDocument> documents = WangqiDocumentPersistenceAssembler.toDomainList(dataPage.getRecords());
         attachEvents(documents);
@@ -57,8 +56,8 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
-    public List<WangqiDocument> listTimeline(String keyword, String visibility, SortDirection sortDirection) {
-        LambdaQueryWrapper<WangqiDocumentDO> wrapper = buildWrapper(keyword, visibility, sortDirection);
+    public List<WangqiDocument> listTimeline(String keyword, SortDirection sortDirection) {
+        LambdaQueryWrapper<WangqiDocumentDO> wrapper = buildWrapper(keyword, sortDirection);
         List<WangqiDocument> documents = WangqiDocumentPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
         attachEvents(documents);
         return documents;
@@ -126,15 +125,6 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
-    public int updateVisibility(WangqiDocumentId id, String visibility) {
-        return mapper.update(
-                null,
-                new LambdaUpdateWrapper<WangqiDocumentDO>()
-                        .eq(WangqiDocumentDO::getId, WangqiDocumentIdCodec.toValue(id))
-                        .set(WangqiDocumentDO::getVisibility, visibility));
-    }
-
-    @Override
     public int deleteByDocumentId(WangqiDocumentId id) {
         return eventMapper.delete(new LambdaQueryWrapper<WangqiDocumentEventDO>()
                 .eq(WangqiDocumentEventDO::getDocumentId, WangqiDocumentIdCodec.toValue(id)));
@@ -145,11 +135,9 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
         return mapper.deleteById(WangqiDocumentIdCodec.toValue(id));
     }
 
-    private static LambdaQueryWrapper<WangqiDocumentDO> buildWrapper(
-            String keyword, String visibility, SortDirection sortDirection) {
+    private static LambdaQueryWrapper<WangqiDocumentDO> buildWrapper(String keyword, SortDirection sortDirection) {
         LambdaQueryWrapper<WangqiDocumentDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(visibility), WangqiDocumentDO::getVisibility, visibility)
-                .and(StringUtils.isNotBlank(keyword), item -> item.like(WangqiDocumentDO::getTitle, keyword)
+        wrapper.and(StringUtils.isNotBlank(keyword), item -> item.like(WangqiDocumentDO::getTitle, keyword)
                         .or()
                         .like(WangqiDocumentDO::getSummary, keyword)
                         .or()

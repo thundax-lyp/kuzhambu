@@ -819,7 +819,7 @@ flowchart TD
 | 2. External systems and job core | `COMPLETE` | 80-150 | full Java checks |
 | 3. Runtime and Admin | `COMPLETE` | 100-180 | full Java and admin-web checks |
 | 4. Portal cutover and sharing frontend removal | `COMPLETE` | 50-100 | full Java/frontend checks and sharing residue scans |
-| 5. Publication visibility and legacy MQ removal | `PENDING` | 90-170 | full Java/frontend checks and legacy residue scans |
+| 5. Publication visibility and legacy MQ removal | `COMPLETE` | 90-170 | full Java/frontend checks and legacy residue scans |
 | 6. Database reset and smoke | `PENDING` | 20-60 | full checks plus runtime smoke |
 
 文件数是基于当前扫描的估计，不是硬上限。每个 stage 内按 work package 和可独立理解、
@@ -827,59 +827,8 @@ flowchart TD
 
 ## Stage File Manifest
 
-以下仅保留 Stage 4-6 的必查路径。Stage 1-3 已按完成摘要收口，
-不再保留历史清单；这不是允许忽略 `rg` 新命中的白名单。
-
-### Stage 4
-
-Delete or modify:
-
-```text
-kuzhambu-apps/admin-web/src/pages/classics/sharing/**
-kuzhambu-apps/admin-web/src/pages/classics/common/classics-share-*
-kuzhambu-apps/portal-web/src/pages/share-list/**
-kuzhambu-apps/portal-web/src/pages/share-detail/**
-kuzhambu-servers/biz/classics/kuzhambu-classics-application/**/portal/**
-kuzhambu-servers/biz/classics/kuzhambu-classics-interface/**/portal/**
-kuzhambu-servers/biz/discovery/**/search/**
-kuzhambu-apps/portal-web/src/pages/classics/**
-kuzhambu-apps/portal-web/src/pages/discovery/**
-```
-
-Required tests:
-
-```text
-Discovery public READY filter tests
-Classics Portal list/detail visibility tests
-portal-web Classics list/detail tests
-portal-web Discovery search tests
-admin/portal route tests
-```
-
-### Stage 5
-
-Delete or modify:
-
-```text
-kuzhambu-servers/biz/classics/**/searchsync/**
-kuzhambu-servers/biz/discovery/**/*RocketMqDiscoverySearchIndexSync*
-kuzhambu-servers/biz/classics/**/*Visibility*
-kuzhambu-servers/biz/classics/**/sancai/**
-kuzhambu-servers/biz/classics/**/wangqi/**
-kuzhambu-servers/biz/classics/**/mingcustoms/**
-kuzhambu-apps/admin-web/src/pages/classics/**
-kuzhambu-apps/portal-web/src/pages/classics/**
-kuzhambu-apps/portal-web/src/pages/discovery/**
-```
-
-Required tests:
-
-```text
-Sancai/Wangqi/Ming visibility-removal tests
-Discovery publicationStatus-only contract tests
-ordinary-save no-external-sync tests
-zero-result legacy architecture tests
-```
+Stage 1-5 已按完成摘要和 readiness evidence 收口；不再保留历史清单。以下只保留
+Stage 6 执行前仍需检查或新增的路径。
 
 ### Stage 6
 
@@ -944,207 +893,33 @@ Status: COMPLETE
 
 Status: COMPLETE
 
-该 stage 把 Portal/公开搜索切换到 ES READY，并清除 sharing frontend。三类稿件
-visibility 和旧 RocketMQ 搜索同步保留到 Stage 5；本 stage 结束时系统必须独立编译和测试。
-
-#### Work Package 4A: Cut Portal to ES READY
-
-Actions:
-
-- [x] Discovery public query 固定过滤 `publicationStatus = READY and deleted = false`。
-- [x] Classics Portal list/search 从 Discovery facade 获取 candidate IDs。
-- [x] detail 必须先由 Discovery 确认 ES READY/not deleted。
-- [x] ES 可见后再由 Classics application hydration category、volume、image、asset 和正式 snapshot。
-- [x] Portal 不按主库 lifecycle 二次判断候选可见性。
-- [x] 保留 ES READY 早于主库 PUBLISHED 的已接受窗口。
-- [x] 更新 public search、Classics Portal 和 portal-web tests。
-
-Tests:
-
-- ES PREPARING + main PUBLISHED：隐藏。
-- ES READY + main `DRAFT + PUBLISHING`：可见。
-- ES OFFLINE/deleted + main PUBLISHED：隐藏。
-- direct detail 非 READY：隐藏。
-- ES hit 后主库详情缺失：安全 not found。
-
-Exit:
-
-- Portal candidate visibility 只由 ES 决定。
-- detail hydration 不能绕过 READY。
-- 完整 Java门禁和前端 workspace 门禁通过。
-
-Commit split:
-
-1. READY query filter。
-2. Portal visibility facade。
-3. Classics Portal list/detail。
-4. portal-web integration。
-5. Visibility tests。
-
-#### Work Package 4B: Remove sharing frontend
-
-Actions:
-
-- [x] 删除 admin `pages/classics/sharing`。
-- [x] 删除 admin `pages/classics/common/classics-share-*`。
-- [x] 删除 portal `share-list` 和 `share-detail`。
-- [x] 删除 private-share HTTP exception。
-- [x] 删除 sharing routes、tests、CSS 和 E2E。
-- [x] 删除前端 sharing permission/menu fallback。
-
-Zero-result scans:
-
-```sh
-rg -n "SharingPage|classics-share|private-shares|share-list|share-detail" \
-  kuzhambu-apps
-
-rg -n "ClassicsSharing|ClassicsShare|classics_share|share-links" \
-  kuzhambu-servers kuzhambu-apps db
-```
-
-两条扫描都必须零命中。历史设计说明位于 `docs/`，不在本扫描范围；任何 live code、
-route、menu、permission、test fixture 或 schema 命中都必须在本 stage 清除。
-
-Exit:
-
-- 前端没有 share token、private share 或 SharingPage。
-- `/classics/publication-jobs` 是唯一对应菜单页面。
-- 完整前端 workspace 门禁通过。
-
-Commit split:
-
-1. Admin sharing page/common deletion。
-2. Portal share-list deletion。
-3. Portal share-detail deletion。
-4. Routes/http/tests residue。
-
-Stage 4 exit:
-
-- Portal/public search candidate visibility 只由 ES READY/not deleted 决定。
-- sharing backend 和 frontend 全部移除。
-- 三类稿件旧 visibility 和旧 MQ 仍可存在，但不得参与 Portal 可见性决策。
-- 完整 Java和前端 workspace 门禁通过。
-- Stage 4 residue scans 已逐项审阅。
-- 工作区干净，Stage 4 已拆为多个小 commit。
+- Functional commits: Stage 4 branch commits before PR `#196`
+- Delivery PR: `#196` (`merge`)
+- Portal/public search candidate visibility 已切换为 ES `READY/deleted=false`；
+  detail hydration 不再绕过 READY。
+- Admin/Portal sharing frontend、routes、tests、CSS、permission/menu fallback 和
+  backend sharing live code 均已移除。
+- 三类稿件旧 visibility 和旧 MQ 在 Stage 4 不参与 Portal 可见性决策，并已由
+  Stage 5 清理。
+- 验证证据沉淀到 `docs/40-readiness/CLASSICS-PUBLICATION-EVIDENCE.md`。
 
 ### Stage 5: Publication visibility and legacy MQ removal
 
-Status: PENDING
+Status: COMPLETE
 
-Entry:
-
-- Stage 4 为 COMPLETE。
-- Portal 和公开搜索已经只使用 ES READY/not deleted。
-- sharing backend/frontend 已无 live code。
-- 工作区干净，Java和前端完整门禁已通过。
-
-该 stage 删除三类稿件剩余 publication visibility，并拆除 Classics -> RocketMQ ->
-Discovery 旧搜索同步。可以删除 Portal response/type 中的旧 visibility 字段，但不得改变
-Stage 4 已固定的 ES READY/not deleted 候选入口，不得重新引入主库可见性 fallback。
-
-#### Work Package 5A: Remove Sancai publication visibility
-
-Actions:
-
-- [ ] 删除 Sancai domain/application/infra/interface 的 publication `visibility`。
-- [ ] 删除 repository query/update visibility。
-- [ ] 删除 Admin Sancai visibility filter、column、form 和 batch-private/public actions。
-- [ ] 删除 Portal Sancai visibility fields。
-- [ ] 更新 Sancai tests、fixtures 和 E2E。
-- [ ] 保留资产审核中的 `visibilityRiskStatus`。
-
-Exit:
-
-- Sancai 发布可见性只由 lifecycle/transition/job 表达。
-- Sancai 不再读取 schema 中不存在的 visibility column。
-- 完整 Java门禁和前端 workspace 门禁通过。
-
-Commit split:
-
-1. Sancai domain/application。
-2. Sancai infra。
-3. Sancai interface。
-4. Admin Sancai。
-5. Portal Sancai。
-6. Tests/E2E。
-
-#### Work Package 5B: Remove Wangqi and Ming publication visibility
-
-Actions:
-
-- [ ] 删除 Wangqi publication `visibility` 全栈字段、query 和 mutation。
-- [ ] 删除 Ming Customs publication `visibility` 全栈字段、query 和 mutation。
-- [ ] 删除 shared Classics content 中仅服务 visibility 的 contract/support。
-- [ ] 删除 Admin Wangqi/Ming visibility filter、column、form 和 batch actions。
-- [ ] 更新 timeline、version、tag cloud 和 content tests。
-
-Exit:
-
-- 三类稿件均不读取 visibility column。
-- Admin 三类页面不再展示 PRIVATE/PUBLIC。
-- 完整 Java门禁和前端 workspace 门禁通过。
-
-Commit split:
-
-1. Wangqi server。
-2. Wangqi Admin。
-3. Ming server。
-4. Ming Admin。
-5. Shared content contract。
-6. Tests/E2E。
-
-#### Work Package 5C: Remove Discovery visibility and legacy MQ
-
-Actions:
-
-- [ ] 删除 Discovery public search 的 `visibilityScopes` 和旧 `contentStatuses`。
-- [ ] 删除 ES document 中仅服务旧发布模型的 `visibility/contentStatus`。
-- [ ] 删除 QA/FastGPT 同步中基于 PUBLIC/PRIVATE 的过滤。
-- [ ] 删除 portal-web Discovery visibility filters/types/tests。
-- [ ] 删除 Classics search-sync publisher/support/message。
-- [ ] 删除 Classics search-sync facade DTO。
-- [ ] 删除 RocketMQ Classics publisher 和 Discovery consumer。
-- [ ] ordinary manuscript save 不再推送 ES upsert/delete。
-- [ ] 无其他用途后移除相关 module 的 `kuzhambu-common-rocketmq` dependency。
-
-Zero-result scans:
-
-```sh
-rg -n "ClassicsSearchIndexSync|RocketMqDiscoverySearchIndexSync|SearchIndexSyncEvent" \
-  kuzhambu-servers
-
-rg -n "visibilityScopes|ClassicsSharing|ClassicsShare|private-shares|share-links|classics_share" \
-  kuzhambu-servers kuzhambu-apps db
-```
-
-对 `visibility`、PUBLIC、PRIVATE 的剩余结果逐项审阅，不全局替换。
-
-Exit:
-
-- ordinary manuscript save 不写 ES/FastGPT。
-- publication executor 是稿件发布状态唯一端侧写入口。
-- 没有 sharing 或 legacy search MQ live code。
-- public search 只使用 publicationStatus READY/not deleted。
-- 完整 Java门禁和前端 workspace 门禁通过。
-
-Commit split:
-
-1. Discovery public contract。
-2. Discovery document/filter。
-3. Portal Discovery frontend。
-4. Classics publisher/support deletion。
-5. Discovery consumer deletion。
-6. MQ dependency residue。
-7. Static residue tests。
-
-Stage 5 exit:
-
-- 稿件 publication visibility 和旧 MQ 同步全部移除。
-- Portal/public search 继续只由 ES READY/not deleted 决定。
-- ordinary manuscript save 不写 ES/FastGPT。
-- 完整 Java和前端 workspace 门禁通过。
-- residue scans 已逐项审阅。
-- 工作区干净，Stage 5 已拆为多个小 commit。
+- Delivery PR: `#197` (`draft`)
+- Functional commit range: `932453204^..e2b0c75f6`
+- 删除三类 Classics 稿件 publication visibility 全栈字段、query、mutation 和
+  Admin/Portal 展示入口。
+- 删除 Classics -> RocketMQ -> Discovery 旧搜索同步 publisher、message、
+  facade DTO、consumer、starter 配置和相关 module dependency。
+- Discovery public search 旧 `visibilityScopes/contentStatuses` 契约已删除；
+  Portal/public search 继续只由 ES `publicationStatus = READY` 且
+  `deleted = false` 决定。
+- ordinary manuscript save 不再写 ES/FastGPT；publication executor 保持稿件
+  发布状态唯一端侧写入口。
+- 验证证据沉淀到 `docs/40-readiness/CLASSICS-PUBLICATION-EVIDENCE.md`。
+- 剩余 Stage 6：database reset、real ES/FastGPT runtime smoke、删除本 RUNBOOK。
 
 ### Stage 6: Reset database, smoke and close
 

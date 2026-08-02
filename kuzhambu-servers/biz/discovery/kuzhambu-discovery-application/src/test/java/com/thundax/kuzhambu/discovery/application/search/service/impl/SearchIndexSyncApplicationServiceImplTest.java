@@ -103,8 +103,6 @@ class SearchIndexSyncApplicationServiceImplTest {
                 "摘要",
                 List.of("原文"),
                 List.of(),
-                "PUBLISHED",
-                "PUBLIC",
                 currentVersionNo,
                 null,
                 null);

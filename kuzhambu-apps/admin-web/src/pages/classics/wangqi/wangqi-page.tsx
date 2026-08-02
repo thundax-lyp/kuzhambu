@@ -25,20 +25,15 @@ import type {
     AiRefinementTaskCapability,
     AiRefinementTaskRecord
 } from "@/pages/classics/common/ai-refinement-task-types";
-import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import {
-    hasClassicsContentPermission,
-    type ClassicsBatchOperationRecord
-} from "@/pages/classics/common/classics-content-types";
+import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import type {
     ClassicsExportJobRecord,
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
 import { isSameId } from "@/types/id";
 import { WangqiDocumentTable } from "./wangqi-document-table";
-import { WangqiDocumentBatchResults } from "./wangqi-document-batch-results";
 import { WangqiExportActions } from "./wangqi-export-actions";
 import { WangqiDocumentEditDrawer } from "./components/wangqi-document-edit-drawer";
 import type { WangqiQaTaskPair } from "./wangqi-qa-ai-modal";
@@ -56,17 +51,14 @@ import type {
 
 import "./wangqi-page.css";
 
-type WangqiVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type WangqiSortDirectionFilter = "ASC" | "DESC";
 
 interface WangqiFilters {
     sortDirection: WangqiSortDirectionFilter;
-    visibility: WangqiVisibilityFilter;
 }
 
 const DEFAULT_WANGQI_FILTERS: WangqiFilters = {
-    sortDirection: "DESC",
-    visibility: "ALL"
+    sortDirection: "DESC"
 };
 const TASK_POLL_INTERVAL_MS = 3000;
 const EXPORT_PAGE_SIZE = 8;
@@ -77,10 +69,6 @@ const DEFAULT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
 const normalizeSearch = (value?: string | null) => {
     const normalizedValue = value?.trim();
     return normalizedValue || undefined;
-};
-
-const readVisibilityValue = (visibility: WangqiVisibilityFilter) => {
-    return visibility === "ALL" ? undefined : visibility;
 };
 
 const createEventId = (prefix: string) => {
@@ -180,7 +168,6 @@ const buildExportScopeJson = (document: WangqiDocumentRecord) => {
                 title,
                 text: document.content || "",
                 summary: document.summary || null,
-                visibility: document.visibility || null,
                 documentTime: document.documentTime || null,
                 sourceFileStorageObjectId: document.storageObjectId || null
             }
@@ -213,8 +200,6 @@ export const WangqiPage = () => {
         {}
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
-    const [batchVisibilityResult, setBatchVisibilityResult] =
-        useState<ClassicsBatchOperationRecord | null>(null);
     const [publicationBatchResult, setPublicationBatchResult] =
         useState<WangqiPublicationBatchRecord | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -228,10 +213,7 @@ export const WangqiPage = () => {
     const [qaTrackingTask, setQaTrackingTask] = useState<AiRefinementTaskRecord | null>(null);
     const handledSucceededTaskIdsRef = useRef<Set<string>>(new Set());
 
-    const hasActiveFilters = Boolean(
-        filters.visibility !== "ALL" ||
-        filters.sortDirection !== DEFAULT_WANGQI_FILTERS.sortDirection
-    );
+    const hasActiveFilters = filters.sortDirection !== DEFAULT_WANGQI_FILTERS.sortDirection;
 
     const wangqiDocumentPageQuery = useQuery({
         queryKey: ["wangqi", "page", query],
@@ -360,7 +342,7 @@ export const WangqiPage = () => {
             ),
         [records, selectedDocumentIds]
     );
-    const canChangeDocumentVisibility = hasClassicsContentPermission(
+    const canChangeDocumentPublication = hasClassicsContentPermission(
         "WANGQI_DOCUMENT",
         "edit",
         hasPermission
@@ -379,7 +361,7 @@ export const WangqiPage = () => {
     }
 
     const openBatchCandidateDrawer = () => {
-        if (!canChangeDocumentVisibility) {
+        if (!canChangeDocumentPublication) {
             messageApi.warning("当前账号缺少王圻文档编辑权限");
             return;
         }
@@ -529,19 +511,6 @@ export const WangqiPage = () => {
             messageApi.error(error instanceof Error ? error.message : "版本恢复失败");
         }
     });
-    const batchVisibilityMutation = useMutation({
-        mutationFn: contentService.changeVisibilityBatch,
-        onSuccess: async (result) => {
-            setBatchVisibilityResult(result);
-            await invalidateWangqi();
-            messageApi.success(
-                `批量可见性完成：成功 ${result.successCount}，失败 ${result.failureCount}`
-            );
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "批量可见性修改失败");
-        }
-    });
     const exportMutation = useMutation({
         mutationFn: (document: WangqiDocumentRecord) =>
             exportService.create({
@@ -615,7 +584,6 @@ export const WangqiPage = () => {
 
     const applyFilters = () => {
         updateQuery({
-            visibility: readVisibilityValue(filters.visibility),
             sortDirection: filters.sortDirection
         });
     };
@@ -631,7 +599,6 @@ export const WangqiPage = () => {
     const resetFilters = () => {
         setFilters(DEFAULT_WANGQI_FILTERS);
         updateQuery({
-            visibility: undefined,
             sortDirection: DEFAULT_WANGQI_FILTERS.sortDirection
         });
     };
@@ -762,22 +729,6 @@ export const WangqiPage = () => {
         });
     };
 
-    const changeSelectedVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
-        if (!canChangeDocumentVisibility) {
-            messageApi.warning("当前账号缺少王圻文档编辑权限");
-            return;
-        }
-        if (!selectedDocuments.length) {
-            messageApi.warning("请先选择要批量修改可见性的王圻文档");
-            return;
-        }
-        batchVisibilityMutation.mutate({
-            contentIds: selectedDocuments.map((document) => document.id),
-            contentType: "WANGQI_DOCUMENT",
-            visibility
-        });
-    };
-
     const exportDocument = (document: WangqiDocumentRecord) => {
         if (!canExportDocuments) {
             messageApi.warning("当前账号缺少王圻文档导出权限");
@@ -894,27 +845,6 @@ export const WangqiPage = () => {
                     resetDisabled={!hasActiveFilters}
                     fields={[
                         {
-                            name: "visibility",
-                            label: "可见性",
-                            render: () => (
-                                <KuzhambuSelect
-                                    aria-label="王圻文档可见性"
-                                    value={filters.visibility}
-                                    options={[
-                                        { value: "ALL", label: "全部" },
-                                        { value: "PUBLIC", label: "公开" },
-                                        { value: "PRIVATE", label: "私有" }
-                                    ]}
-                                    onChange={(value) =>
-                                        setFilters((currentFilters) => ({
-                                            ...currentFilters,
-                                            visibility: value
-                                        }))
-                                    }
-                                />
-                            )
-                        },
-                        {
                             name: "sortDirection",
                             label: "排序",
                             render: () => (
@@ -942,7 +872,6 @@ export const WangqiPage = () => {
                     onReset={resetFilters}
                 />
                 <div className="wangqi-document-panel">
-                    <WangqiDocumentBatchResults batchVisibilityResult={batchVisibilityResult} />
                     {publicationBatchResult ? (
                         <KuzhambuAlert
                             showIcon
@@ -955,15 +884,13 @@ export const WangqiPage = () => {
                         />
                     ) : null}
                     <WangqiDocumentTable
-                        canChangeDocumentVisibility={canChangeDocumentVisibility}
+                        canChangeDocumentPublication={canChangeDocumentPublication}
                         canExport={canExportDocuments}
-                        isBatchVisibilityChanging={batchVisibilityMutation.isPending}
                         isPublicationChanging={
                             publicationMutation.isPending || publicationBatchMutation.isPending
                         }
                         loading={wangqiDocumentPageQuery.isLoading}
                         dataSource={records}
-                        onChangeSelectedVisibility={changeSelectedVisibility}
                         onDelete={deleteDocument}
                         onExport={exportDocument}
                         onOpenEdit={openEditWangqiDocumentDrawer}
@@ -1005,7 +932,7 @@ export const WangqiPage = () => {
                 contentIds={batchCandidateDocumentIds}
                 capabilities={["summary", "tags", "qa"]}
                 contentTitleById={batchCandidateTitleById}
-                canEdit={canChangeDocumentVisibility}
+                canEdit={canChangeDocumentPublication}
                 onClose={() => setBatchCandidateDrawerOpen(false)}
                 onChanged={invalidateWangqi}
             />

@@ -20,7 +20,6 @@ public interface MingCustomsRepository {
             String tagName,
             Long tagId,
             String tagNameSnapshot,
-            String visibility,
             SortDirection sortDirection,
             int pageNo,
             int pageSize);
@@ -31,14 +30,11 @@ public interface MingCustomsRepository {
             String tagName,
             Long tagId,
             String tagNameSnapshot,
-            String visibility,
             SortDirection sortDirection);
 
     MingCustomsEntryId insert(MingCustomsEntry entry);
 
     int update(MingCustomsEntry entry);
-
-    int updateVisibility(MingCustomsEntryId id, String visibility);
 
     int deleteById(MingCustomsEntryId id);
 
@@ -54,7 +50,7 @@ public interface MingCustomsRepository {
 
     int deleteKeywordById(MingCustomsKeywordId id);
 
-    List<MingCustomsKeywordCloudItem> listKeywordCloud(String visibility);
+    List<MingCustomsKeywordCloudItem> listKeywordCloud();
 
-    List<MingCustomsTagCloudItem> listTagCloud(String category, String keyword, String visibility);
+    List<MingCustomsTagCloudItem> listTagCloud(String category, String keyword);
 }

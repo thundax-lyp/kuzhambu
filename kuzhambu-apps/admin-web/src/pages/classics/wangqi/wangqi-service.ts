@@ -13,7 +13,6 @@ const DOCUMENTS_PATH = "/classics/wangqi/documents";
 
 export type WangqiDocumentQuery = PageQuery<{
     keyword?: string | null;
-    visibility?: string | null;
     sortDirection?: "ASC" | "DESC" | null;
 }>;
 
@@ -25,7 +24,6 @@ export interface WangqiDocumentCommand {
     content?: string | null;
     documentTime?: string | null;
     storageObjectId?: string | null;
-    visibility?: string | null;
 }
 
 interface WangqiVersionCommand {
