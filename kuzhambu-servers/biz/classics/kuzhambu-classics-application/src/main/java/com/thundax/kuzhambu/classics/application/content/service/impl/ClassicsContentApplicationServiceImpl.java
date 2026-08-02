@@ -1183,8 +1183,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                             .PUBLISHED;
         }
         if (content instanceof MingCustomsEntry entry) {
-            return entry.getVisibility()
-                    == com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility.PUBLIC;
+            return entry.getLifecycleStatus()
+                    == com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus
+                            .PUBLISHED;
         }
         return false;
     }

@@ -56,10 +56,9 @@ class MingCustomsAdminControllerTest {
     @Test
     void keywordCloudShouldReturnKeywordAndCount() {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
-        when(service.listKeywordCloud("PUBLIC")).thenReturn(List.of(new MingCustomsKeywordCloudItem("礼俗", 3L)));
+        when(service.listKeywordCloud()).thenReturn(List.of(new MingCustomsKeywordCloudItem("礼俗", 3L)));
         MingCustomsAdminController controller = controller(service, null);
         MingCustomsRequest request = new MingCustomsRequest();
-        request.setVisibility("PUBLIC");
 
         List<MingCustomsKeywordCloudItemResponse> responses = controller.listKeywordCloud(request);
 
@@ -96,7 +95,6 @@ class MingCustomsAdminControllerTest {
         MingCustomsRequest request = new MingCustomsRequest();
         request.setCategory("礼俗");
         request.setKeyword("祭祀");
-        request.setVisibility("PUBLIC");
 
         List<MingCustomsTagCloudItemResponse> responses = controller.listTagCloud(request);
 

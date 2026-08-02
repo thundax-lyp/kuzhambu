@@ -14,7 +14,6 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortC
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
@@ -27,11 +26,9 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportKi
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportScopeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.ClassicsContentAdminController;
-import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsBatchVisibilityRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response.ClassicsContentResponse;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -70,12 +67,6 @@ class ClassicsContentAdminControllerTest {
                 "exports/page",
                 "classics:content:view",
                 ClassicsContentRequest.class);
-        assertPostMapping(
-                ClassicsContentAdminController.class,
-                "changeBatchVisibility",
-                "visibility/change",
-                "classics:content:edit",
-                ClassicsBatchVisibilityRequest.class);
         assertPostMapping(
                 ClassicsContentAdminController.class,
                 "changeAiCandidate",
@@ -321,44 +312,6 @@ class ClassicsContentAdminControllerTest {
     }
 
     @Test
-    void batchVisibilityRequestShouldRejectSancaiEntries() {
-        ClassicsBatchVisibilityRequest request = new ClassicsBatchVisibilityRequest();
-        request.setContentType("SANCAI_ENTRY");
-        request.setContentIds(List.of(4001L, 4002L));
-        request.setVisibility("PUBLIC");
-
-        assertThrows(RuntimeException.class, () -> controller().changeBatchVisibility(request));
-    }
-
-    @Test
-    void batchVisibilityRequestShouldRejectWangqiDocuments() {
-        ClassicsBatchVisibilityRequest request = new ClassicsBatchVisibilityRequest();
-        request.setContentType("WANGQI_DOCUMENT");
-        request.setContentIds(List.of(5001L, 5002L));
-        request.setVisibility("PRIVATE");
-
-        assertThrows(RuntimeException.class, () -> controller().changeBatchVisibility(request));
-    }
-
-    @Test
-    void batchVisibilityRequestShouldDispatchMingCustomsEntries() {
-        ClassicsBatchVisibilityRequest request = new ClassicsBatchVisibilityRequest();
-        request.setContentType("MING_CUSTOMS");
-        request.setContentIds(List.of(6001L, 6002L));
-        request.setVisibility("PUBLIC");
-
-        ClassicsBatchOperationResponse response = controller().changeBatchVisibility(request);
-
-        assertEquals(2, response.getSuccessCount());
-        assertEquals(0, response.getFailureCount());
-        JsonNode firstSuccess =
-                OBJECT_MAPPER.valueToTree(response.getSuccesses().get(0));
-        assertEquals("MING_CUSTOMS", firstSuccess.get("contentType").asText());
-        assertEquals(6001L, firstSuccess.get("contentId").asLong());
-        assertEquals("PUBLIC", firstSuccess.get("status").asText());
-    }
-
-    @Test
     void classicsBatchOperationResponseShouldIncludeCandidateFieldsWhenPresent() {
         ClassicsBatchOperationResponse response = ClassicsBatchOperationResponse.from(ClassicsBatchOperationResult.of(
                 List.of(ClassicsBatchOperationItemResult.successForCandidate(
@@ -386,25 +339,6 @@ class ClassicsContentAdminControllerTest {
         assertEquals(2001L, firstFailure.get("contentId").asLong());
         assertEquals("PERMISSION_DENIED", firstFailure.get("failureCode").asText());
         assertEquals("无权操作", firstFailure.get("failureReason").asText());
-    }
-
-    @Test
-    void batchVisibilityRequestShouldRejectUnsupportedFields() {
-        ClassicsContentAdminController controller = controller();
-        ClassicsBatchVisibilityRequest request = new ClassicsBatchVisibilityRequest();
-        request.setContentType("UNKNOWN");
-        request.setContentIds(List.of(4001L));
-        request.setVisibility("PUBLIC");
-
-        assertThrows(RuntimeException.class, () -> controller.changeBatchVisibility(request));
-
-        request.setContentType("WANGQI_DOCUMENT");
-        request.setVisibility("ARCHIVED");
-        assertThrows(RuntimeException.class, () -> controller.changeBatchVisibility(request));
-
-        request.setVisibility("PUBLIC");
-        request.setContentIds(List.of(4001L, 4001L));
-        assertThrows(RuntimeException.class, () -> controller.changeBatchVisibility(request));
     }
 
     @Test
@@ -524,37 +458,7 @@ class ClassicsContentAdminControllerTest {
     }
 
     private static ClassicsContentAdminController controller() {
-        return new ClassicsContentAdminController(contentService(), mingCustomsService());
-    }
-
-    private static MingCustomsApplicationService mingCustomsService() {
-        return (MingCustomsApplicationService) Proxy.newProxyInstance(
-                MingCustomsApplicationService.class.getClassLoader(),
-                new Class<?>[] {MingCustomsApplicationService.class},
-                (proxy, method, args) -> {
-                    if ("batchChangeVisibility".equals(method.getName())) {
-                        @SuppressWarnings("unchecked")
-                        List<MingCustomsEntryId> ids = (List<MingCustomsEntryId>) args[0];
-                        assertEquals(
-                                List.of(6001L, 6002L),
-                                ids.stream().map(MingCustomsEntryId::value).toList());
-                        assertEquals("PUBLIC", args[1]);
-                        assertTrue(args[2] instanceof java.util.Set<?>);
-                        return batchResult(
-                                "MING_CUSTOMS",
-                                ids.stream().map(MingCustomsEntryId::value).toList(),
-                                "PUBLIC");
-                    }
-                    throw new UnsupportedOperationException(method.getName());
-                });
-    }
-
-    private static ClassicsBatchOperationResult batchResult(String contentType, List<Long> ids, String visibility) {
-        return ClassicsBatchOperationResult.of(
-                ids.stream()
-                        .map(id -> ClassicsBatchOperationItemResult.success(contentType, id, id, visibility))
-                        .toList(),
-                List.of());
+        return new ClassicsContentAdminController(contentService());
     }
 
     private static ClassicsContentApplicationService contentService() {

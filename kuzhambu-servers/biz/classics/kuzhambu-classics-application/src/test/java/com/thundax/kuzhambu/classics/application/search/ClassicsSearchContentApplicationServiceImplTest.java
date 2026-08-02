@@ -23,7 +23,6 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryId
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
@@ -92,7 +91,7 @@ class ClassicsSearchContentApplicationServiceImplTest {
         mingEntry.setSummary("节令摘要");
         mingEntry.setContent("节令正文");
         mingEntry.setOriginalExcerpts("原文摘录");
-        mingEntry.setVisibility(MingCustomsVisibility.PUBLIC);
+        mingEntry.setLifecycleStatus(ClassicsPublicationLifecycleStatus.PUBLISHED);
         mingEntry.setContentUpdatedAt(Instant.ofEpochMilli(1_718_300_000_000L));
         when(mingCustomsApplicationService.page(
                         org.mockito.ArgumentMatchers.any(MingCustomsPageQuery.class),

@@ -17,7 +17,6 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
@@ -120,7 +119,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         int pageNo = 1;
         while (true) {
             var pageResult = mingCustomsApplicationService.page(
-                    new MingCustomsPageQuery(null, null, null, MingCustomsVisibility.PUBLIC, SortDirection.ASC),
+                    new MingCustomsPageQuery(null, null, null, SortDirection.ASC),
                     new PageQuery(pageNo, FETCH_PAGE_SIZE));
             if (pageResult == null
                     || pageResult.getRecords() == null
@@ -251,7 +250,9 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
     }
 
     private ClassicsSearchSourceContent toPublicMingCustomsEntry(MingCustomsEntry entry) {
-        if (entry == null || entry.getId() == null || entry.getVisibility() != MingCustomsVisibility.PUBLIC) {
+        if (entry == null
+                || entry.getId() == null
+                || entry.getLifecycleStatus() != ClassicsPublicationLifecycleStatus.PUBLISHED) {
             return null;
         }
         String contentType = ClassicsContentType.MING_CUSTOMS.value();
@@ -271,7 +272,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 textSegments,
                 tagNames(contentType, contentId),
                 "PUBLISHED",
-                entry.getVisibility().value(),
+                null,
                 entry.getCurrentVersionNo(),
                 entry.getContentUpdatedAt(),
                 entry.getContentUpdatedAt());

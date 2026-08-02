@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.classics.application.mingcustoms.command;
 
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -23,7 +22,6 @@ public class MingCustomsCommand {
     private MingCustomsContentFormat contentFormat;
     private String content;
     private String originalExcerpts;
-    private MingCustomsVisibility visibility;
     private Set<String> operatorPermissions;
 
     public MingCustomsCommand(
@@ -35,19 +33,7 @@ public class MingCustomsCommand {
             String summary,
             MingCustomsContentFormat contentFormat,
             String content,
-            String originalExcerpts,
-            MingCustomsVisibility visibility) {
-        this(
-                id,
-                title,
-                category,
-                chapter,
-                section,
-                summary,
-                contentFormat,
-                content,
-                originalExcerpts,
-                visibility,
-                null);
+            String originalExcerpts) {
+        this(id, title, category, chapter, section, summary, contentFormat, content, originalExcerpts, null);
     }
 }

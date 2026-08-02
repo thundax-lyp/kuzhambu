@@ -4,7 +4,6 @@ import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSum
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult.ContentGrowthPointResult;
 import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
@@ -58,8 +57,8 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
                 null,
                 SortDirection.ASC);
         List<WangqiDocument> publicWangqiDocuments = wangqiDocumentRepository.listTimeline(null, SortDirection.ASC);
-        List<MingCustomsEntry> publicMingCustomsEntries = mingCustomsRepository.list(
-                null, null, null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC);
+        List<MingCustomsEntry> publicMingCustomsEntries =
+                mingCustomsRepository.list(null, null, null, null, null, SortDirection.ASC);
 
         long translatedContentCount = publicSancaiEntries.stream()
                 .filter(entry -> entry != null && entry.getTranslationStatus() == SancaiEntryTranslationStatus.READY)

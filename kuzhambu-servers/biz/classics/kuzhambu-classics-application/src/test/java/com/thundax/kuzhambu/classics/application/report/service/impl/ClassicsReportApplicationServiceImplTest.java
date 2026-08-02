@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
@@ -58,8 +57,7 @@ class ClassicsReportApplicationServiceImplTest {
                                 instant(1_718_086_400_000L))));
         when(wangqiDocumentRepository.listTimeline(null, SortDirection.ASC))
                 .thenReturn(List.of(wangqiDocument("王圻图谱", instant(1_718_086_400_000L))));
-        when(mingCustomsRepository.list(
-                        null, null, null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC))
+        when(mingCustomsRepository.list(null, null, null, null, null, SortDirection.ASC))
                 .thenReturn(List.of(mingCustomsEntry("明礼汇编", instant(1_718_172_800_000L))));
 
         ClassicsReportSummaryResult result = service.summary(date(1_718_000_000_000L), date(1_718_259_200_000L), "DAY");
@@ -103,7 +101,6 @@ class ClassicsReportApplicationServiceImplTest {
     private static MingCustomsEntry mingCustomsEntry(String title, Instant contentUpdatedAt) {
         MingCustomsEntry entry = new MingCustomsEntry();
         entry.setTitle(title);
-        entry.setVisibility(MingCustomsVisibility.PUBLIC);
         entry.setContentUpdatedAt(contentUpdatedAt);
         return entry;
     }

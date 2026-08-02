@@ -60,7 +60,6 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationContent;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
@@ -215,7 +214,6 @@ class ClassicsContentApplicationServiceImplTest {
         assertEquals(MingCustomsContentFormat.MARKDOWN, restoredEntry.getContentFormat());
         assertEquals("复原正文", restoredEntry.getContent());
         assertEquals("复原原文", restoredEntry.getOriginalExcerpts());
-        assertEquals(MingCustomsVisibility.PRIVATE, restoredEntry.getVisibility());
         assertEquals(restoredVersion.getId(), restoredEntry.getCurrentVersionId());
         assertEquals(restoredVersion.getVersionNo(), restoredEntry.getCurrentVersionNo());
         assertNotNull(restoredEntry.getCurrentVersionedAt());
@@ -839,8 +837,7 @@ class ClassicsContentApplicationServiceImplTest {
                   "summary": "复原摘要",
                   "contentFormat": "MARKDOWN",
                   "content": "复原正文",
-                  "originalExcerpts": "复原原文",
-                  "visibility": "PUBLIC"
+                  "originalExcerpts": "复原原文"
                 }
                 """;
     }
@@ -858,8 +855,7 @@ class ClassicsContentApplicationServiceImplTest {
                   "summary": "复原摘要",
                   "contentFormat": "MARKDOWN",
                   "content": "复原正文",
-                  "originalExcerpts": "复原原文",
-                  "visibility": "PUBLIC"
+                  "originalExcerpts": "复原原文"
                 }
                 """;
     }
@@ -875,7 +871,6 @@ class ClassicsContentApplicationServiceImplTest {
         entry.setContentFormat(MingCustomsContentFormat.TEXT);
         entry.setContent("旧正文");
         entry.setOriginalExcerpts("旧原文");
-        entry.setVisibility(MingCustomsVisibility.PRIVATE);
         entry.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
         return entry;
     }
