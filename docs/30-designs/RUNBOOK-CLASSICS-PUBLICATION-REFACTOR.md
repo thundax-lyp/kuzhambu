@@ -1205,7 +1205,7 @@ cleanup (Stage 5); database reset, real ES/FastGPT runtime smoke and RUNBOOK del
 
 ### Stage 4: Portal cutover and sharing frontend removal
 
-Status: PENDING
+Status: ACTIVE
 
 该 stage 把 Portal/公开搜索切换到 ES READY，并清除 sharing frontend。三类稿件
 visibility 和旧 RocketMQ 搜索同步保留到 Stage 5；本 stage 结束时系统必须独立编译和测试。
