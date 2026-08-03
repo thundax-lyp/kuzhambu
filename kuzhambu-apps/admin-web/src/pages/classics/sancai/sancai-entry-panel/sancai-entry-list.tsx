@@ -10,7 +10,6 @@ import {
     KuzhambuSpace
 } from "@/components";
 
-import { ClassicsPublicationErrorAlert } from "@/pages/classics/common/classics-publication-error-alert";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import type {
     SancaiEntryRecord,
@@ -264,7 +263,6 @@ export const SancaiEntryList = ({
 
     return (
         <div className="sancai-entry-table-wrap">
-            <ClassicsPublicationErrorAlert items={entries} />
             {publicationBatchResult ? (
                 <KuzhambuAlert
                     showIcon

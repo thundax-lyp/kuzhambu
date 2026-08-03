@@ -1,6 +1,5 @@
 import { Typography } from "antd";
 import { KuzhambuButton, KuzhambuTable, type KuzhambuTableProps, KuzhambuTag } from "@/components";
-import { ClassicsPublicationErrorAlert } from "@/pages/classics/common/classics-publication-error-alert";
 
 import type { WangqiDocumentRecord } from "./wangqi-types";
 
@@ -195,7 +194,6 @@ export const WangqiDocumentTable = ({
 
     return (
         <>
-            <ClassicsPublicationErrorAlert items={dataSource} />
             <KuzhambuTable<WangqiDocumentRecord>
                 ariaLabel="王圻文档表格"
                 rowKey={(record) => String(record.id ?? "")}
