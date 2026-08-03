@@ -9,17 +9,6 @@
     font-weight: 600;
 }
 
-.sancai-visual-main-panel {
-    display: grid;
-    gap: 12px;
-    width: min(100%, 1120px);
-    min-width: 0;
-}
-
-.sancai-visual-empty {
-    padding: 96px 0;
-}
-
 .sancai-visual-page .sancai-visual-asset-field.sancai-detail-card {
     padding: 0;
     background: transparent;
@@ -31,9 +20,5 @@
 @media (max-width: 700px) {
     .sancai-visual-page {
         --kuzhambu-page-padding: 16px 0 0;
-    }
-
-    .sancai-visual-main-panel {
-        gap: 10px;
     }
 }

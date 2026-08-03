@@ -1,0 +1,16 @@
+.sancai-visual-main-panel {
+    display: grid;
+    gap: 12px;
+    width: min(100%, 1120px);
+    min-width: 0;
+}
+
+.sancai-visual-empty {
+    padding: 96px 0;
+}
+
+@media (max-width: 700px) {
+    .sancai-visual-main-panel {
+        gap: 10px;
+    }
+}
