@@ -58,23 +58,17 @@ docker compose --env-file .env up --build
 ## External Knowledge Base
 
 FastGPT is intentionally kept in a separate compose project because its dependency stack is large. See `deploy/fastgpt/README.md`.
-For a Docker-only full-stack smoke, start and bootstrap FastGPT first, then start Kuzhambu:
+For a Docker-only full-stack smoke, use the smoke orchestrator from the repository root:
 
 ```sh
-cd deploy/fastgpt
-cp .env.example .env
-# Fill FASTGPT_BOOTSTRAP_* and FASTGPT_KUZHAMBU_* values in .env.
-./bootstrap-fastgpt.sh .env
-../../scripts/smoke/docker-fastgpt-smoke.sh .env generated/kuzhambu-fastgpt.env
-
-cd ..
-docker compose --env-file .env \
-  --env-file fastgpt/generated/kuzhambu-fastgpt.env \
-  -f docker-compose.yml up -d
+scripts/smoke/docker-full-smoke.sh deploy/.env deploy/fastgpt/.env
 ```
 
 FastGPT and Kuzhambu must keep separate MySQL/Mongo/Redis/ES/Pgvector/MinIO volumes and
 service containers. They may share a Docker network or public URL only for HTTP integration.
+If you start the two compose projects manually and use `FASTGPT_KUZHAMBU_BASE_URL=http://fastgpt-app:3000`,
+attach both projects to the same explicit Docker network; otherwise use a public or host-reachable FastGPT URL
+in the generated Kuzhambu env.
 
 ## Images
 
@@ -138,9 +132,41 @@ Offline Docker image delivery has two separate steps:
 
 Script entry points:
 
-- Build host image preparation uses the compose build and `docker save` commands in this README. Keep source download choices outside committed env files and repeatable deploy commands.
+- Build host image preparation uses `docker compose build` and `docker save`. Keep source download choices outside committed env files and repeatable deploy commands.
 - Deploy host image loading uses `scripts/smoke/docker-load-image-files.sh [deploy/image-files]`.
 - Full Docker smoke uses `scripts/smoke/docker-full-smoke.sh deploy/.env deploy/fastgpt/.env`; it calls the image loading script before starting the Kuzhambu compose stack. It does not rebuild Kuzhambu images by default. Set `KUZHAMBU_SMOKE_BUILD_IMAGES=true` only when the smoke target is also the build host; that mode rebuilds the Kuzhambu web, starter, workers and Elasticsearch images before startup.
+
+Build host image preparation:
+
+```sh
+cd deploy
+cp .env.example .env
+
+# The final ES image requires a same-version IK plugin zip under deploy/elasticsearch/.
+curl --fail --location \
+  --output "elasticsearch/elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION:-8.18.8}.zip" \
+  "https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION:-8.18.8}.zip"
+
+docker compose --env-file .env build
+docker compose --env-file .env pull nginx mysql redis rocketmq-namesrv
+
+mkdir -p image-files
+for image in admin-web portal-web admin-starter portal-starter workers; do
+  docker save "kuzhambu/${image}:dev" -o "image-files/kuzhambu-${image}-dev.tar"
+done
+docker save nginx:1.27-alpine -o image-files/foundation-nginx-1.27-alpine.tar
+docker save mysql:8.4 -o image-files/foundation-mysql-8.4.tar
+docker save redis:7.2 -o image-files/foundation-redis-7.2.tar
+docker save kuzhambu/elasticsearch:8.18.8 -o image-files/foundation-elasticsearch-8.18.8.tar
+docker save apache/rocketmq:5.4.0 -o image-files/foundation-rocketmq-5.4.0.tar
+```
+
+Deploy host image publication:
+
+```sh
+scripts/smoke/docker-load-image-files.sh deploy/image-files
+docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
+```
 
 Dockerfile base images are configurable because CI and deployment hosts may have different registry access. These base images are build inputs, not release artifacts. Defaults are `node:22-bookworm-slim`, `nginx:1.27-alpine`, `maven:3.9.11-eclipse-temurin-17`, `eclipse-temurin:17-jre`, and `python:3.10-slim`. Override `KUZHAMBU_WEB_BUILD_IMAGE`, `KUZHAMBU_WEB_RUNTIME_IMAGE`, `KUZHAMBU_SERVER_BUILD_IMAGE`, `KUZHAMBU_SERVER_RUNTIME_IMAGE`, or `KUZHAMBU_WORKERS_BASE_IMAGE` without changing Dockerfiles.
 

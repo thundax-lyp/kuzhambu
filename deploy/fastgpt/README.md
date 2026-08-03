@@ -62,19 +62,37 @@ starting Kuzhambu compose so `KUZHAMBU_KNOWLEDGE_ENABLED=true`,
 `KUZHAMBU_KNOWLEDGE_FASTGPT_APPID`, and
 `KUZHAMBU_KNOWLEDGE_FASTGPT_KNOWLEDGE_BASE_ID` match the running FastGPT cluster.
 
-`smoke-fastgpt.sh` verifies the bootstrap result before Kuzhambu starts. It checks active LLM and
+`scripts/smoke/docker-fastgpt-smoke.sh` verifies the bootstrap result before Kuzhambu starts. It checks active LLM and
 embedding records, OpenAPI key health, dataset visibility, and the publication-critical collection
 operations: create, disable, pushData, list, enable and delete.
 
-The Docker startup order for an isolated full-stack smoke is:
+The recommended Docker startup order for an isolated full-stack smoke is to run the repository-level
+orchestrator from the repository root:
 
-1. Start the blank FastGPT compose cluster.
-2. Run `deploy/fastgpt/bootstrap-fastgpt.sh` to configure LLM, embedding, OpenAPI key,
+```sh
+scripts/smoke/docker-full-smoke.sh deploy/.env deploy/fastgpt/.env
+```
+
+The script creates a shared smoke network, removes `container_name` from the FastGPT compose override,
+bootstraps FastGPT, runs the FastGPT smoke, loads Kuzhambu image files, initializes the database and
+checks Kuzhambu HTTP health.
+
+If you run the two compose projects manually, use this order:
+
+1. Set `FASTGPT_KUZHAMBU_BASE_URL` to a FastGPT URL reachable from Kuzhambu containers, such as a
+   public reverse-proxy URL or the deploy host LAN URL with `FASTGPT_HTTP_PORT`.
+2. Start the blank FastGPT compose cluster.
+3. Run `deploy/fastgpt/bootstrap-fastgpt.sh` to configure LLM, embedding, OpenAPI key,
    dataset and app.
-3. Run `deploy/fastgpt/smoke-fastgpt.sh` against the generated env.
-4. Use `deploy/fastgpt/generated/kuzhambu-fastgpt.env` as an additional Kuzhambu compose
+4. Run `scripts/smoke/docker-fastgpt-smoke.sh` against the generated env.
+5. Use `deploy/fastgpt/generated/kuzhambu-fastgpt.env` as an additional Kuzhambu compose
    env source.
-5. Start the Kuzhambu compose cluster.
+6. Start the Kuzhambu compose cluster.
+
+When `FASTGPT_KUZHAMBU_BASE_URL=http://fastgpt-app:3000`, both compose projects must join the same
+explicit Docker network so Kuzhambu containers can resolve `fastgpt-app`. If the projects do not share
+a Docker network, set `FASTGPT_KUZHAMBU_BASE_URL` to a public or host-reachable FastGPT URL before
+running bootstrap.
 
 ## API Endpoints
 
