@@ -45,7 +45,7 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 - `SearchEvent`：记录一次搜索请求的输入、范围、结果数量和失败摘要。
 - `SearchClickEvent`：记录一次搜索结果点击，保存内容快照标识和命中位置。
 - `QueryUnderstanding`：记录查询清洗、改写和实体识别的结果；当前阶段允许是占位结构。
-- `SearchScope`：承载知识库、门类、标签、状态、可见性和时间范围。
+- `SearchScope`：承载知识库、门类、标签、发布状态和时间范围。
 - `SearchKeyword`：承载原始 query、清洗后 query 和展示 query。
 - `SearchIntentType`：当前固定为 `KEYWORD_SEARCH`、`NATURAL_LANGUAGE_SEARCH`、`UNKNOWN`。
 
@@ -197,7 +197,7 @@ Admin：
 - Portal 搜索接口返回 `id`、`queryText`、`displayQueryText`、`totalCount`、`groupCount` 和分组结果。
 - 分组结果包含 `groupKey`、`groupTitle`、`count` 和 `items`。
 - 结果项固定保留 `highlightText` 字段，即使当前阶段不实现高亮。
-- Portal/Admin 搜索预览接口只展示 Search 索引派生读模型中的有限字段；能从搜索结果命中的内容即可按 `contentType`、`contentId` 和 `deleted=false` 读取预览，不再二次执行可见性权限判断。
+- Portal/Admin 搜索预览接口只展示 Search 索引派生读模型中的有限字段；能从搜索结果命中的内容即可按 `contentType`、`contentId`、`publicationStatus = READY` 和 `deleted = false` 读取预览，不再二次读取 Classics 主库生命周期。
 - Portal/Admin 搜索结果点击默认打开内部预览抽屉，通过 `contentType` 与 `contentId` 内部传递数据并调用 Search 预览接口。
 - `targetPath` 只作为来源元数据和点击事件字段保留，不作为 Portal/Admin 搜索页的前端路由跳转依据。
 - Admin 检索统计接口权限码固定为 `discovery:search:view`。
@@ -231,7 +231,7 @@ Admin：
 - Portal QA 只暴露 Discovery API，不接收 provider app、dataset、collection 或 file 路由配置。
 - Portal QA 会话删除是软删除，只允许删除 owner 匹配的未删除会话；删除后 Portal 列表、详情、追问和导出均不可再访问该会话。
 - Portal QA 会话导出固定生成 CSV，写入 `discovery_qa_session_export`，上传到 Storage，返回 `id`、`storageObjectId`、`filename`、`contentType` 和导出状态。
-- 来源列表从回答顶层 `sources` 返回；返回前必须按当前 Kuzhambu 可见性重新校验，不可见来源标记为 `UNAVAILABLE`。
+- 来源列表从回答顶层 `sources` 返回；返回前必须按当前 Kuzhambu 发布可消费状态重新校验，不可消费来源标记为 `UNAVAILABLE`。
 - Admin QA 暴露知识库健康、重建、同步状态、会话详情、会话删除和会话 CSV 导出，不暴露本地来源列表、provider trace 或 provider 路由配置。
 - 问答来源、分段召回、provider 请求和 trace 诊断归 FastGPT 产品查看；admin-web 只提供 FastGPT 控制台跳转，不复刻 provider 诊断界面。
 - Admin QA 可以读取和导出已删除会话，导出 CSV 保留会话删除状态用于审计。

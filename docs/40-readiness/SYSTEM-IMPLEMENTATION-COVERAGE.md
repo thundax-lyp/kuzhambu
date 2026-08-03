@@ -14,7 +14,7 @@
 - 当前用户信息、菜单树和权限码查询已完成。
 - 审计日志和认证事件已支持分页、筛选、详情、对象视图和字段级变更输出。
 - Portal 不提供通用审计查询入口，符合当前边界。
-- Classics 内容域 view/edit/export/share 权限已完成后端运行态和 Admin Web 控件消费。
+- Classics 内容域 view/edit/export 权限和 publication job 查看权限已完成后端运行态和 Admin Web 控件消费。
 - `db/data-source/system.json` 与 `db/data/system.sql` 已通过生成一致性校验。
 
 ## Open Items
@@ -25,7 +25,7 @@
 ## Validation Evidence
 
 - 登录、认证事件、权限和审计链路已有接口契约测试。
-- Classics 内容域权限资源点已通过系统菜单数据生成校验和页面控件消费验证。
+- Classics 内容域权限资源点和发布任务菜单已通过系统菜单数据生成校验和页面控件消费验证。
 
 ## Requirement Coverage Matrix
 
