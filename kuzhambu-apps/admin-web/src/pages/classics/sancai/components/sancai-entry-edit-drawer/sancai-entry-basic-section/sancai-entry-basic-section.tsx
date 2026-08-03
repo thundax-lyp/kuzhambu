@@ -58,6 +58,7 @@ interface SancaiEntryBasicSectionProps {
     isCreatingSummaryTask: boolean;
     isCreatingTranslationTask: boolean;
     mode: "create" | "edit";
+    readOnly: boolean;
     summaryTasks: AiRefinementTaskRecord[];
     translationTasks: AiRefinementTaskRecord[];
     value: SancaiEntryFormValues;
@@ -74,6 +75,7 @@ export const SancaiEntryBasicSection = ({
     isCreatingSummaryTask,
     isCreatingTranslationTask,
     mode,
+    readOnly,
     summaryTasks,
     translationTasks,
     value,
@@ -260,6 +262,7 @@ export const SancaiEntryBasicSection = ({
             className="sancai-detail-card sancai-entry-edit-drawer-form"
             colon={false}
             component="div"
+            disabled={readOnly}
             initialValues={value}
             onValuesChange={changeFormValues}
         >

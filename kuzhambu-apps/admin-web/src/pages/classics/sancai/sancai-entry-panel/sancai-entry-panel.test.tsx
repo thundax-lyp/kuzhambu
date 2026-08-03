@@ -766,7 +766,8 @@ describe("SancaiEntryPanel batch operations", () => {
         ).toEqual(["编辑 天地", "导出 天地", "视觉处理 天地", "下线 天地", "删除 天地"]);
     }, 30000);
 
-    it("disables entry writes while publication is transitioning", async () => {
+    it("keeps transition entries viewable while disabling editing", async () => {
+        const user = userEvent.setup();
         const entries = await entryService.list({} as never);
         vi.mocked(entryService.list).mockResolvedValueOnce(
             entries.map((entry) =>
@@ -777,10 +778,17 @@ describe("SancaiEntryPanel batch operations", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        expect(
-            await within(entryTable).findByTestId("sancai-entry-3001-view-button")
-        ).toBeDisabled();
+        const viewButton = await within(entryTable).findByTestId("sancai-entry-3001-view-button");
+        expect(viewButton).toBeEnabled();
+        expect(viewButton).toHaveTextContent("查看");
+        expect(within(entryTable).getByRole("link", { name: "打开条目 天地" })).toBeVisible();
         expect(within(entryTable).getAllByRole("checkbox")[1]).toBeDisabled();
+
+        await user.click(viewButton);
+        expect(await screen.findByText("查看条目")).toBeInTheDocument();
+        expect(
+            screen.queryByTestId("classics-sancai-sancai-entry-create-button")
+        ).not.toBeInTheDocument();
     }, 30000);
 
     it("moves an edited entry to the selected category volume", async () => {

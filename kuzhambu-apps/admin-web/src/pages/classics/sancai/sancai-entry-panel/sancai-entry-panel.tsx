@@ -126,6 +126,9 @@ export const SancaiEntryPanel = ({
         retry: false
     });
     const selectedEntry = isCreating ? undefined : (detailQuery.data ?? editingEntry ?? undefined);
+    const isSelectedEntryReadOnly = Boolean(
+        editingEntry?.transitionStatus && editingEntry.transitionStatus !== "NONE"
+    );
     const selectedEntryId = selectedEntry?.id ?? null;
     const selectedEntryVolume = useMemo(
         () => volumes.find((volume) => isSameId(volume.id, selectedEntry?.volumeId)) ?? null,
@@ -671,6 +674,7 @@ export const SancaiEntryPanel = ({
                 initialVolumeId={volumeId}
                 mode={isCreating ? "create" : "edit"}
                 open={isModelOpen && !isLoading}
+                readOnly={isSelectedEntryReadOnly}
                 volumes={volumes}
                 onCancel={closeModel}
                 onSubmit={submitEntry}
