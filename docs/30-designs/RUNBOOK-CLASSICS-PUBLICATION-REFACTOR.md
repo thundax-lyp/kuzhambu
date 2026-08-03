@@ -1157,6 +1157,28 @@ Smoke evidence:
 
 不得记录 API key、完整 snapshot、密码或 `dev.env` 内容。
 
+### Docker compose images
+
+Stage 6 需要确认 compose 业务镜像可构建并可离线交付。业务镜像归档只放在
+`deploy/image-files/`，该目录忽略大文件，只提交目录说明。归档固定按镜像拆分为多个
+tar 文件，避免后续只替换一个镜像时必须重新分发合并大包。
+
+```bash
+# From repo root.
+docker compose --env-file deploy/.env.example -f deploy/docker-compose.yml config >/tmp/kuzhambu-compose-config.yml
+docker compose --env-file deploy/.env.example -f deploy/docker-compose.yml build
+mkdir -p deploy/image-files
+for image in admin-web portal-web admin-starter portal-starter workers; do
+  docker save "kuzhambu/${image}:dev" -o "deploy/image-files/kuzhambu-${image}-dev.tar"
+done
+```
+
+如构建主机无法拉取默认 Dockerfile base image，先把可用来源重建或导入为项目自有
+`kuzhambu/*` 基准镜像，再通过 `KUZHAMBU_WEB_BUILD_IMAGE`、`KUZHAMBU_WEB_RUNTIME_IMAGE`、
+`KUZHAMBU_SERVER_BUILD_IMAGE`、`KUZHAMBU_SERVER_RUNTIME_IMAGE` 或
+`KUZHAMBU_WORKERS_BASE_IMAGE` 传给 compose；不要在可重复命令或提交的 env 中直接引用
+临时第三方镜像。
+
 全部 live 和 automated smoke 完成后，在四个运行终端分别发送 `Ctrl-C`，等待 Maven/Vite
 进程退出。不得在 stage 结束或最终答复时遗留 starter、Vite 或测试进程。
 
@@ -1168,6 +1190,8 @@ Exit:
 - 数据库重建后表数和 seed 状态断言通过。
 - 10 个 live happy-path 步骤通过。
 - 8 个 automated recovery smoke 场景通过。
+- compose config、compose build 和业务镜像归档完成，镜像 tar 位于 `deploy/image-files/`
+  且未进入 Git。
 - 证据写入 `docs/40-readiness/CLASSICS-PUBLICATION-EVIDENCE.md`。
 - TODO 已删除或收窄为真实剩余范围。
 - 本 RUNBOOK 的长期结论已进入稳定文档。

@@ -27,6 +27,10 @@
 - 后端统一使用 Java 17。
 - 后端构建系统使用 `kuzhambu-servers/pom.xml` 管理的 Maven 多模块。
 - 后端采用 Spring Boot 3.x，不采用 Spring Cloud 微服务架构。
+- Elasticsearch Java client 版本由 Spring Boot dependency management 统一管理，不在业务 POM
+  中手工覆盖。部署侧 Elasticsearch server 镜像必须与当前 Spring Boot 管理的 client
+  小版本对齐；Spring Boot `3.5.11` 对应 Elasticsearch `8.18.8`，`deploy/docker-compose.yml`
+  和 `deploy/.env.example` 默认使用 `docker.elastic.co/elasticsearch/elasticsearch:8.18.8`。
 
 ## Module Layout
 
