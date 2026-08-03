@@ -820,7 +820,7 @@ flowchart TD
 | 3. Runtime and Admin | `COMPLETE` | 100-180 | full Java and admin-web checks |
 | 4. Portal cutover and sharing frontend removal | `COMPLETE` | 50-100 | full Java/frontend checks and sharing residue scans |
 | 5. Publication visibility and legacy MQ removal | `COMPLETE` | 90-170 | full Java/frontend checks and legacy residue scans |
-| 6. Database reset and smoke | `PENDING` | 20-60 | full checks plus runtime smoke |
+| 6. Database reset and smoke | `ACTIVE` | 20-60 | full checks plus runtime smoke |
 
 文件数是基于当前扫描的估计，不是硬上限。每个 stage 内按 work package 和可独立理解、
 可验证的工程判断推进；stage 结束时只设置一个独立编译、测试检查点。
@@ -923,7 +923,7 @@ Status: COMPLETE
 
 ### Stage 6: Reset database, smoke and close
 
-Status: PENDING
+Status: ACTIVE
 
 Entry:
 
