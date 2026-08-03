@@ -57,6 +57,8 @@ logging:
     com.thundax.kuzhambu: ${KUZHAMBU_APP_LOG_LEVEL:INFO}
 
 kuzhambu:
+  rocketmq:
+    enabled: false
   classics:
     publication:
       enabled: ${KUZHAMBU_CLASSICS_PUBLICATION_ENABLED:false}

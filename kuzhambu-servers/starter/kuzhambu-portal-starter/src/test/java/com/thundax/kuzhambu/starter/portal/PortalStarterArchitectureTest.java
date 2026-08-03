@@ -79,7 +79,8 @@ class PortalStarterArchitectureTest extends AbstractArchitectureTest {
         Assertions.assertThat(KuzhambuPortalApplication.class.getAnnotation(EnableScheduling.class))
                 .isNull();
         Assertions.assertThat(loadApplicationYaml())
-                .contains("enabled: ${KUZHAMBU_CLASSICS_PUBLICATION_ENABLED:false}");
+                .contains("enabled: ${KUZHAMBU_CLASSICS_PUBLICATION_ENABLED:false}")
+                .contains("rocketmq:", "enabled: false");
     }
 
     private static String loadApplicationYaml() throws IOException {
