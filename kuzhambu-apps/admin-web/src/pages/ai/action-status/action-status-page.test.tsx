@@ -16,7 +16,7 @@ const statuses = [
         scope: "classics",
         capability: "summary",
         available: false,
-        unavailableReason: "No enabled capability mapping",
+        unavailableReason: "No enabled business configuration",
         checkedAt: "2026-07-01T00:00:00.000Z"
     }
 ];
@@ -62,7 +62,7 @@ describe("ActionStatusPage", () => {
         expect(await screen.findByRole("heading", { name: "AI 动作状态" })).toBeInTheDocument();
         expect(await screen.findByText("summary")).toBeInTheDocument();
         expect(screen.getByText("不可用")).toBeInTheDocument();
-        expect(screen.getByText("No enabled capability mapping")).toBeInTheDocument();
+        expect(screen.getByText("No enabled business configuration")).toBeInTheDocument();
     });
 
     it("refreshes one action status", async () => {
