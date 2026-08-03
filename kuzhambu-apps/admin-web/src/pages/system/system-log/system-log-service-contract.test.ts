@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as auditLogService from "@/pages/audit/audit-log/audit-log-service";
 import * as systemLogService from "@/pages/system/system-log/system-log-service";
 
 interface CapturedCall {
@@ -53,7 +52,7 @@ const expectLastCall = (path: string, body: unknown) => {
     });
 };
 
-describe("log service request contracts", () => {
+describe("system log service request contracts", () => {
     beforeEach(() => {
         capturedCalls.length = 0;
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
@@ -67,33 +66,6 @@ describe("log service request contracts", () => {
     afterEach(() => {
         vi.restoreAllMocks();
         localStorage.clear();
-    });
-
-    it("sends audit log requests with backend request fields", async () => {
-        const pageRequest: auditLogService.AuditLogPageQuery = {
-            pageNo: 1,
-            pageSize: 20,
-            objectType: "USER",
-            objectId: "user-1",
-            action: "CREATE",
-            operatorType: "USER",
-            operatorId: "operator-1",
-            source: "ADMIN_WEB",
-            requestId: "request-1",
-            beginDate: "2026-06-18 00:00:00",
-            endDate: "2026-06-18 23:59:59"
-        };
-
-        await auditLogService.pageAuditLogs(pageRequest);
-        expectLastCall("/audit/log/page", pageRequest);
-
-        await auditLogService.getAuditLogDetail("audit-1");
-        expectLastCall("/audit/log/detail", {
-            id: "audit-1"
-        });
-
-        await auditLogService.getAuditOptions();
-        expectLastCall("/audit/log/options", {});
     });
 
     it("sends system log requests with backend request fields", async () => {
