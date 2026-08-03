@@ -29,8 +29,12 @@
 - 后端采用 Spring Boot 3.x，不采用 Spring Cloud 微服务架构。
 - Elasticsearch Java client 版本由 Spring Boot dependency management 统一管理，不在业务 POM
   中手工覆盖。部署侧 Elasticsearch server 镜像必须与当前 Spring Boot 管理的 client
-  小版本对齐；Spring Boot `3.5.11` 对应 Elasticsearch `8.18.8`，`deploy/docker-compose.yml`
-  和 `deploy/.env.example` 默认使用 `docker.elastic.co/elasticsearch/elasticsearch:8.18.8`。
+  小版本对齐；Spring Boot `3.5.11` 对应 Elasticsearch `8.18.8`。
+- 部署侧默认使用项目自定义 `kuzhambu/elasticsearch:8.18.8` 镜像。该镜像基于
+  Elasticsearch `8.18.8` 的 `linux/amd64` 基础镜像构建，并内置同版本 `analysis-ik`
+  插件；部署服务器架构、Docker 平台和 ES 镜像平台必须一致。Search 索引中文全文字段
+  的默认建索引 analyzer 为 `ik_max_word`，查询 analyzer 为 `ik_smart`，必须可通过
+  环境变量覆盖。
 
 ## Module Layout
 

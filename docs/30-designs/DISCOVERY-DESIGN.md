@@ -82,6 +82,12 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 当前规则：
 
 - 索引文档是派生读模型，不承载业务真相。
+- 中文全文字段使用可配置 analyzer：默认建索引分词器为 `ik_max_word`，查询分词器为
+  `ik_smart`。运行环境通过 `KUZHAMBU_DISCOVERY_SEARCH_INDEX_ANALYZER` 和
+  `KUZHAMBU_DISCOVERY_SEARCH_SEARCH_ANALYZER` 覆盖；keyword、状态、ID 和时间字段不分词。
+- 部署侧 Elasticsearch 镜像必须提供上述 analyzer。默认部署镜像为项目自定义
+  `kuzhambu/elasticsearch:8.18.8`，基于 Elasticsearch `8.18.8` 的 `linux/amd64`
+  基础镜像构建，并内置与 ES 版本一致的 `analysis-ik` 插件；版本和平台必须一起校准。
 - ES 搜索文档不保存 Classics 主库的 `lifecycleStatus`，避免主库生命周期与索引消费状态形成双状态。
 - 搜索索引只允许对外返回 `publicationStatus = READY` 且 `deleted = false` 的内容；Classics 发布和下线任务必须分别通过 `PREPARE / READY / OFFLINE` 控制内容是否进入可查询范围。
 - `sourceVersionNo` 固定使用 Classics 内容表上的 `currentVersionNo`。

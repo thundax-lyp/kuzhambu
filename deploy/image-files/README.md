@@ -14,4 +14,9 @@ kuzhambu-portal-web-dev.tar
 kuzhambu-admin-starter-dev.tar
 kuzhambu-portal-starter-dev.tar
 kuzhambu-workers-dev.tar
+foundation-nginx-1.27-alpine.tar
+foundation-mysql-8.4.tar
+foundation-redis-7.2.tar
+foundation-elasticsearch-8.18.8.tar
+foundation-rocketmq-5.3.0.tar
 ```

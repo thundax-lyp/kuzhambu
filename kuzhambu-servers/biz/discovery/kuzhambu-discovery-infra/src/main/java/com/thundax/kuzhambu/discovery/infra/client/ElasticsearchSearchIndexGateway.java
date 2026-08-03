@@ -33,6 +33,7 @@ import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
@@ -49,6 +50,8 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     private static final String PUBLICATION_PREPARING = "PREPARING";
     private static final String PUBLICATION_READY = "READY";
     private static final String PUBLICATION_OFFLINE = "OFFLINE";
+    private static final List<String> CHINESE_TEXT_FIELDS =
+            List.of("categoryName", "volumeTitle", "title", "summary", "bodyText", "textSegments");
 
     private final DiscoverySearchIndexProperties properties;
     private final ElasticsearchOperations elasticsearchOperations;
@@ -105,8 +108,36 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     @Override
     public void rebuildIndex(List<SearchSourceContent> sourceContents) {
         ElasticsearchOperations operations = requireOperations("rebuild");
-        ElasticsearchOperationsSupport.recreateIndex(operations, indexCoordinates(), DiscoverySearchDocument.class);
+        recreateIndex(operations);
         saveDocuments(operations, toDocuments(sourceContents));
+    }
+
+    private void recreateIndex(ElasticsearchOperations operations) {
+        var indexOperations = operations.indexOps(indexCoordinates());
+        if (indexOperations.exists()) {
+            indexOperations.delete();
+        }
+        indexOperations.create();
+        Document mapping = indexOperations.createMapping(DiscoverySearchDocument.class);
+        applyConfiguredAnalyzers(mapping);
+        indexOperations.putMapping(mapping);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void applyConfiguredAnalyzers(Document mapping) {
+        Object propertiesNode = mapping.get("properties");
+        if (!(propertiesNode instanceof Map<?, ?>)) {
+            return;
+        }
+        Map<String, Object> fieldMappings = (Map<String, Object>) propertiesNode;
+        for (String fieldName : CHINESE_TEXT_FIELDS) {
+            Object fieldNode = fieldMappings.get(fieldName);
+            if (fieldNode instanceof Map<?, ?> fieldMap) {
+                Map<String, Object> mutableFieldMap = (Map<String, Object>) fieldMap;
+                mutableFieldMap.put("analyzer", properties.getIndexAnalyzer());
+                mutableFieldMap.put("search_analyzer", properties.getSearchAnalyzer());
+            }
+        }
     }
 
     @Override

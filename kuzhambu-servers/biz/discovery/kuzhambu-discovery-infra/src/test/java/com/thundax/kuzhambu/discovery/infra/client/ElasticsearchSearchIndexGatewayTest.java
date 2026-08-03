@@ -18,7 +18,9 @@ import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScop
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -422,6 +424,36 @@ class ElasticsearchSearchIndexGatewayTest {
     }
 
     @Test
+    void rebuildIndexShouldApplyConfiguredChineseAnalyzers() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        properties.setIndexAnalyzer("custom_index_analyzer");
+        properties.setSearchAnalyzer("custom_search_analyzer");
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        IndexOperations indexOperations = mock(IndexOperations.class);
+        ArgumentCaptor<Document> mappingCaptor = ArgumentCaptor.forClass(Document.class);
+        when(operations.indexOps(any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(indexOperations);
+        when(indexOperations.exists()).thenReturn(false);
+        when(indexOperations.create()).thenReturn(true);
+        when(indexOperations.createMapping(DiscoverySearchDocument.class)).thenReturn(searchDocumentMapping());
+        when(indexOperations.putMapping(any(Document.class))).thenReturn(true);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        gateway.rebuildIndex(Collections.emptyList());
+
+        verify(indexOperations).putMapping(mappingCaptor.capture());
+        Map<?, ?> fieldMappings = (Map<?, ?>) mappingCaptor.getValue().get("properties");
+        for (String fieldName :
+                List.of("categoryName", "volumeTitle", "title", "summary", "bodyText", "textSegments")) {
+            Map<?, ?> fieldMapping = (Map<?, ?>) fieldMappings.get(fieldName);
+            assertEquals("custom_index_analyzer", fieldMapping.get("analyzer"));
+            assertEquals("custom_search_analyzer", fieldMapping.get("search_analyzer"));
+        }
+        assertFalse(((Map<?, ?>) fieldMappings.get("contentId")).containsKey("analyzer"));
+    }
+
+    @Test
     void rebuildIndexShouldSaveAllDocuments() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
@@ -444,6 +476,18 @@ class ElasticsearchSearchIndexGatewayTest {
                         any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class));
         assertEquals(2, documentsCaptor.getValue().size());
         assertEquals("1001", documentsCaptor.getValue().get(0).getContentId());
+    }
+
+    private static Document searchDocumentMapping() {
+        Document mapping = Document.create();
+        Map<String, Object> properties = new LinkedHashMap<>();
+        for (String fieldName :
+                List.of("categoryName", "volumeTitle", "title", "summary", "bodyText", "textSegments")) {
+            properties.put(fieldName, new LinkedHashMap<>(Map.of("type", "text")));
+        }
+        properties.put("contentId", new LinkedHashMap<>(Map.of("type", "keyword")));
+        mapping.put("properties", properties);
+        return mapping;
     }
 
     @Test

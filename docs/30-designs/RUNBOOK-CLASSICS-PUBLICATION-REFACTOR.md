@@ -1159,7 +1159,7 @@ Smoke evidence:
 
 ### Docker compose images
 
-Stage 6 需要确认 compose 业务镜像可构建并可离线交付。业务镜像归档只放在
+Stage 6 需要确认 compose 镜像可构建或拉取，并可离线交付。镜像归档只放在
 `deploy/image-files/`，该目录忽略大文件，只提交目录说明。归档固定按镜像拆分为多个
 tar 文件，避免后续只替换一个镜像时必须重新分发合并大包。
 
@@ -1167,10 +1167,18 @@ tar 文件，避免后续只替换一个镜像时必须重新分发合并大包�
 # From repo root.
 docker compose --env-file deploy/.env.example -f deploy/docker-compose.yml config >/tmp/kuzhambu-compose-config.yml
 docker compose --env-file deploy/.env.example -f deploy/docker-compose.yml build
+docker compose --env-file deploy/.env.example -f deploy/docker-compose.yml pull \
+  nginx mysql redis rocketmq-namesrv
 mkdir -p deploy/image-files
 for image in admin-web portal-web admin-starter portal-starter workers; do
   docker save "kuzhambu/${image}:dev" -o "deploy/image-files/kuzhambu-${image}-dev.tar"
 done
+docker save nginx:1.27-alpine -o deploy/image-files/foundation-nginx-1.27-alpine.tar
+docker save mysql:8.4 -o deploy/image-files/foundation-mysql-8.4.tar
+docker save redis:7.2 -o deploy/image-files/foundation-redis-7.2.tar
+docker save kuzhambu/elasticsearch:8.18.8 \
+  -o deploy/image-files/foundation-elasticsearch-8.18.8.tar
+docker save apache/rocketmq:5.3.0 -o deploy/image-files/foundation-rocketmq-5.3.0.tar
 ```
 
 如构建主机无法拉取默认 Dockerfile base image，先把可用来源重建或导入为项目自有
