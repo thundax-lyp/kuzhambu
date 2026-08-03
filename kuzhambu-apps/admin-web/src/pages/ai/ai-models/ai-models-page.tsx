@@ -1,17 +1,46 @@
+import { DeleteOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App } from "antd";
+import { App, Typography } from "antd";
 import type { Key } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import {
+    KuzhambuButton,
+    KuzhambuListPage,
+    KuzhambuSelect,
+    KuzhambuSpace,
+    KuzhambuSwitch,
+    type KuzhambuTableProps,
+    KuzhambuTag
+} from "@/components";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { AiModelFilterPanel, type ModelFilters } from "./ai-model-filter-panel";
-import { AiModelTable } from "./ai-model-table";
 import { AiModelEditDrawer } from "./ai-model-edit-drawer";
-import { normalizeJsonText } from "./ai-models-metadata";
+import {
+    API_SOURCE_OPTIONS,
+    normalizeJsonText,
+    readApiSourceMeta,
+    readCapabilityMeta
+} from "./ai-models-options";
 import * as service from "./ai-models-service";
 import type { AiModelChangeCommand, AiModelListQuery } from "./ai-models-service";
 import type { AiModelRecord } from "./ai-models-types";
 import "./ai-models-page.css";
+
+const { Text } = Typography;
+
+const DEFAULT_COLUMN_WIDTHS = {
+    displayName: 180,
+    modelName: 300,
+    apiSource: 120,
+    capabilities: 112,
+    enabled: 96,
+    registeredAt: 120
+};
+
+interface ModelFilters {
+    apiSource?: string | null;
+    enabled: "ALL" | "ENABLED" | "DISABLED";
+}
 
 const DEFAULT_MODEL_FILTERS: ModelFilters = {
     apiSource: null,
@@ -31,6 +60,24 @@ const toEnabledQueryValue = (enabled: ModelFilters["enabled"]) => {
 const readModelName = (record: AiModelRecord) => {
     return record.displayName?.trim() || record.modelName;
 };
+
+const formatDateTime = (value?: string | null) => {
+    if (!value) {
+        return "-";
+    }
+    const timestamp = Date.parse(value);
+    if (Number.isNaN(timestamp)) {
+        return value;
+    }
+    const date = new Date(timestamp);
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${date.getFullYear()}-${month}-${day}`;
+};
+
+const centerColumnTitle = (title: string) => (
+    <span className="ai-models-center-column-title">{title}</span>
+);
 
 export const AiModelsPage = () => {
     const { message: messageApi } = App.useApp();
@@ -210,45 +257,232 @@ export const AiModelsPage = () => {
         setSelectedRowKeys([]);
     };
 
+    const columns: KuzhambuTableProps<AiModelRecord>["columns"] = [
+        {
+            title: "模型名称",
+            dataIndex: "displayName",
+            key: "displayName",
+            width: DEFAULT_COLUMN_WIDTHS.displayName,
+            ellipsis: true,
+            render: (value: string | null, record) => value || record.modelName
+        },
+        {
+            title: "模型标识",
+            dataIndex: "modelName",
+            key: "modelName",
+            minWidth: DEFAULT_COLUMN_WIDTHS.modelName,
+            width: DEFAULT_COLUMN_WIDTHS.modelName,
+            ellipsis: true,
+            render: (modelName: string) => (
+                <Text strong ellipsis title={modelName}>
+                    {modelName}
+                </Text>
+            )
+        },
+        {
+            title: centerColumnTitle("供应商"),
+            dataIndex: "apiSource",
+            key: "apiSource",
+            align: "center",
+            className: "ai-models-center-column",
+            width: DEFAULT_COLUMN_WIDTHS.apiSource,
+            render: (apiSource: string) => {
+                const apiSourceMeta = readApiSourceMeta(apiSource);
+                return <KuzhambuTag type={apiSourceMeta.type}>{apiSourceMeta.label}</KuzhambuTag>;
+            }
+        },
+        {
+            title: centerColumnTitle("能力"),
+            dataIndex: "capabilities",
+            key: "capabilities",
+            align: "center",
+            className: "ai-models-center-column",
+            width: DEFAULT_COLUMN_WIDTHS.capabilities,
+            render: (tags: string[] = []) => (
+                <div className="ai-models-capabilities">
+                    {tags.map((tag) => {
+                        const capabilityMeta = readCapabilityMeta(tag);
+                        return (
+                            <KuzhambuTag key={tag} type={capabilityMeta.type}>
+                                {capabilityMeta.label}
+                            </KuzhambuTag>
+                        );
+                    })}
+                </div>
+            )
+        },
+        {
+            title: centerColumnTitle("状态"),
+            dataIndex: "enabled",
+            key: "enabled",
+            align: "center",
+            className: "ai-models-center-column",
+            width: DEFAULT_COLUMN_WIDTHS.enabled,
+            render: (enabled: boolean, record) => (
+                <KuzhambuSwitch
+                    checked={enabled}
+                    checkedChildren="启用"
+                    unCheckedChildren="禁用"
+                    aria-label={`切换 ${readModelName(record)} 状态，当前${enabled ? "启用" : "禁用"}`}
+                    disabled={!canEditConfig || updateModelMutation.isPending}
+                    onChange={(checked) => void changeEnabled(record, checked)}
+                />
+            )
+        },
+        {
+            title: centerColumnTitle("注册时间"),
+            dataIndex: "registeredAt",
+            key: "registeredAt",
+            align: "center",
+            className: "ai-models-center-column",
+            width: DEFAULT_COLUMN_WIDTHS.registeredAt,
+            render: formatDateTime
+        },
+        {
+            key: "actions",
+            options: (record) => [
+                {
+                    key: "edit",
+                    text: "编辑",
+                    ariaLabel: `编辑 ${readModelName(record)}`,
+                    disabled: !canEditConfig,
+                    onClick: () => openEditAiModelDrawer(record)
+                },
+                { type: "divider" },
+                {
+                    key: "delete",
+                    text: "删除",
+                    type: "danger",
+                    ariaLabel: `删除 ${readModelName(record)}`,
+                    disabled: !canEditConfig,
+                    onClick: () => confirmDeleteModel(record)
+                }
+            ]
+        }
+    ];
+
     return (
-        <div className="ai-models-page-root">
-            <AiModelFilterPanel
-                batchDeleting={deleteMutation.isPending}
-                batchUpdating={updateModelMutation.isPending}
-                canEditConfig={canEditConfig}
-                filterActive={hasActiveFilters}
-                filters={filters}
-                hasSelectedModels={hasSelectedModels}
-                loading={aiModelListQuery.isFetching}
+        <>
+            <KuzhambuListPage<AiModelRecord>
+                pageClassName="ai-models-page"
+                title="模型管理"
+                description="维护 AI 模型、供应商、能力和调用参数。"
+                subjectName="模型"
+                enableAdd={canEditConfig}
+                enableFilter
+                enableSearch
+                searchShortcut="⌘K"
+                searchValue={searchText}
+                searchPlaceholder="搜索模型..."
+                onSearchChange={setSearchText}
                 onAdd={openCreateAiModelDrawer}
-                onBatchDelete={batchDeleteModels}
-                onBatchUpdateEnabled={(enabled) => void batchUpdateEnabled(enabled)}
+                filterActive={hasActiveFilters}
+                filterFields={[
+                    {
+                        name: "apiSource",
+                        label: "供应商",
+                        render: () => (
+                            <KuzhambuSelect
+                                allowClear
+                                value={filters.apiSource ?? undefined}
+                                options={API_SOURCE_OPTIONS.map((value) => ({
+                                    label: readApiSourceMeta(value).label,
+                                    value
+                                }))}
+                                onChange={(apiSource) =>
+                                    setFilters((current) => ({
+                                        ...current,
+                                        apiSource: apiSource ?? null
+                                    }))
+                                }
+                            />
+                        )
+                    },
+                    {
+                        name: "enabled",
+                        label: "状态",
+                        render: () => (
+                            <KuzhambuSelect
+                                value={filters.enabled}
+                                options={[
+                                    { label: "全部", value: "ALL" },
+                                    { label: "启用", value: "ENABLED" },
+                                    { label: "禁用", value: "DISABLED" }
+                                ]}
+                                onChange={(enabled) =>
+                                    setFilters((current) => ({
+                                        ...current,
+                                        enabled
+                                    }))
+                                }
+                            />
+                        )
+                    }
+                ]}
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
-                onFiltersChange={setFilters}
-                onRefresh={() => void aiModelListQuery.refetch()}
-                onSearchChange={setSearchText}
-                searchText={searchText}
-                selectedCount={selectedRowKeys.length}
-                table={(batchActionBar) => (
-                    <AiModelTable
-                        batchActionBar={batchActionBar}
-                        canEditConfig={canEditConfig}
-                        changing={updateModelMutation.isPending}
-                        dataSource={filteredModels}
+                pageActions={
+                    <KuzhambuButton
+                        testId="ai-models-refresh-button"
+                        icon={<ReloadOutlined />}
                         loading={aiModelListQuery.isFetching}
-                        locale={{
-                            emptyText: aiModelListQuery.isError
-                                ? "模型列表加载失败，请确认权限和接口状态。"
-                                : "暂无模型"
-                        }}
-                        onChangeEnabled={(record, enabled) => void changeEnabled(record, enabled)}
-                        onDelete={confirmDeleteModel}
-                        onOpenEdit={openEditAiModelDrawer}
-                        onSelectedRowKeysChange={setSelectedRowKeys}
-                        selectedRowKeys={selectedRowKeys}
-                    />
-                )}
+                        onClick={() => void aiModelListQuery.refetch()}
+                    >
+                        刷新
+                    </KuzhambuButton>
+                }
+                batchActions={
+                    <KuzhambuSpace wrap>
+                        <KuzhambuButton
+                            testId="ai-models-enable-button"
+                            disabled={!canEditConfig || !hasSelectedModels}
+                            loading={updateModelMutation.isPending}
+                            onClick={() => void batchUpdateEnabled(true)}
+                        >
+                            启用
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            testId="ai-models-disable-button"
+                            disabled={!canEditConfig || !hasSelectedModels}
+                            loading={updateModelMutation.isPending}
+                            onClick={() => void batchUpdateEnabled(false)}
+                        >
+                            禁用
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            testId="ai-models-batch-delete-button"
+                            danger
+                            icon={<DeleteOutlined />}
+                            disabled={!canEditConfig || !hasSelectedModels}
+                            loading={deleteMutation.isPending}
+                            onClick={batchDeleteModels}
+                        >
+                            批量删除
+                        </KuzhambuButton>
+                    </KuzhambuSpace>
+                }
+                batchClassName="ai-models-table-toolbar"
+                selectedCount={selectedRowKeys.length}
+                ariaLabel="模型列表"
+                rowKey="id"
+                className="ai-models-table"
+                columns={columns}
+                dataSource={filteredModels}
+                loading={aiModelListQuery.isFetching}
+                locale={{
+                    emptyText: aiModelListQuery.isError
+                        ? "模型列表加载失败，请确认权限和接口状态。"
+                        : "暂无模型"
+                }}
+                pagination={{ pageSize: 10, showSizeChanger: true }}
+                scroll={{ x: 1052 }}
+                rowSelection={{
+                    selectedRowKeys,
+                    onChange: setSelectedRowKeys,
+                    getCheckboxProps: () => ({
+                        disabled: !canEditConfig
+                    })
+                }}
             />
 
             <AiModelEditDrawer
@@ -259,6 +493,6 @@ export const AiModelsPage = () => {
                 onClose={closeAiModelEditDrawer}
                 onSave={saveModel}
             />
-        </div>
+        </>
     );
 };

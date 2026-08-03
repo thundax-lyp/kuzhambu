@@ -1,4 +1,4 @@
-import { App, Form, Input } from "antd";
+import { Form, Input } from "antd";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import {
     KuzhambuDrawer,
@@ -8,8 +8,8 @@ import {
     KuzhambuSelect
 } from "@/components";
 
-import type { AiModelChangeCommand } from "./ai-models-service";
-import type { AiModelRecord } from "./ai-models-types";
+import type { AiModelChangeCommand } from "../ai-models-service";
+import type { AiModelRecord } from "../ai-models-types";
 
 import {
     API_SOURCE_OPTIONS,
@@ -18,7 +18,8 @@ import {
     normalizeJsonText,
     readApiSourceMeta,
     readCapabilityMeta
-} from "./ai-models-metadata";
+} from "../ai-models-options";
+import "./ai-model-edit-drawer.css";
 
 type AiModelFormValues = AiModelChangeCommand;
 
@@ -71,6 +72,15 @@ const omitBlankApiKey = (command: AiModelChangeCommand): AiModelChangeCommand =>
     return command;
 };
 
+const assertJsonText = (value?: string | null) => {
+    try {
+        JSON.parse(normalizeJsonText(value));
+        return Promise.resolve();
+    } catch {
+        return Promise.reject(new Error("请输入合法 JSON"));
+    }
+};
+
 export const AiModelEditDrawer = ({
     canEdit,
     model,
@@ -102,51 +112,30 @@ const AiModelEditDrawerForm = ({
     onClose,
     onSave
 }: AiModelEditDrawerProps) => {
-    const { message: messageApi } = App.useApp();
     const [form] = Form.useForm<AiModelFormValues>();
     const initialValues = toFormValues(model);
 
     const submitForm = () => {
-        form.validateFields().then((values) => {
-            if (!values.displayName?.trim()) {
-                messageApi.warning("请输入模型名称");
-                return;
-            }
-            if (!values.modelName.trim()) {
-                messageApi.warning("请输入模型标识");
-                return;
-            }
-            if (!values.apiSource) {
-                messageApi.warning("请选择供应商");
-                return;
-            }
-            if (!values.baseUrl.trim()) {
-                messageApi.warning("请输入服务地址");
-                return;
-            }
-            try {
-                JSON.parse(normalizeJsonText(values.defaultParamsJson));
-            } catch {
-                messageApi.warning("请输入合法 JSON");
-                return;
-            }
-
-            const command = {
-                ...values,
-                id: model?.id || values.id || null,
-                baseUrl: values.baseUrl.trim(),
-                modelName: values.modelName.trim(),
-                defaultParamsJson: normalizeJsonText(values.defaultParamsJson),
-                displayName: values.displayName?.trim() || null,
-                description: values.description?.trim() || null,
-                capabilities: values.capabilities || []
-            };
-            onSave(model ? omitBlankApiKey(command) : command);
-        });
+        void form
+            .validateFields()
+            .then((values) => {
+                const command = {
+                    ...values,
+                    id: model?.id || values.id || null,
+                    baseUrl: values.baseUrl.trim(),
+                    modelName: values.modelName.trim(),
+                    defaultParamsJson: normalizeJsonText(values.defaultParamsJson),
+                    displayName: values.displayName?.trim() || null,
+                    description: values.description?.trim() || null,
+                    capabilities: values.capabilities || []
+                };
+                onSave(model ? omitBlankApiKey(command) : command);
+            })
+            .catch(() => undefined);
     };
 
     const formProps = {
-        className: "ai-models-form",
+        className: "ai-model-edit-drawer-form",
         colon: false,
         component: "div" as const
     };
@@ -175,10 +164,18 @@ const AiModelEditDrawerForm = ({
                 form={form}
                 initialValues={initialValues}
             >
-                <KuzhambuFormItem name="displayName" label="模型名称">
+                <KuzhambuFormItem
+                    name="displayName"
+                    label="模型名称"
+                    rules={[{ required: true, whitespace: true, message: "请输入模型名称" }]}
+                >
                     <Input aria-label="AI模型名称" placeholder="对后台用户展示的名称" />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem name="apiSource" label="供应商">
+                <KuzhambuFormItem
+                    name="apiSource"
+                    label="供应商"
+                    rules={[{ required: true, message: "请选择供应商" }]}
+                >
                     <KuzhambuSelect
                         aria-label="AI模型供应商"
                         options={API_SOURCE_OPTIONS.map((value) => ({
@@ -187,7 +184,12 @@ const AiModelEditDrawerForm = ({
                         }))}
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem name="baseUrl" label="服务地址" layoutSize="large">
+                <KuzhambuFormItem
+                    name="baseUrl"
+                    label="服务地址"
+                    layoutSize="large"
+                    rules={[{ required: true, whitespace: true, message: "请输入服务地址" }]}
+                >
                     <Input aria-label="AI模型服务地址" placeholder="https://api.example.com/v1" />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem name="apiKey" label="API 密钥" layoutSize="large">
@@ -196,7 +198,12 @@ const AiModelEditDrawerForm = ({
                         placeholder={model?.apiKeyConfigured ? "已配置，留空则不更新" : ""}
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem name="modelName" label="模型标识" layoutSize="large">
+                <KuzhambuFormItem
+                    name="modelName"
+                    label="模型标识"
+                    layoutSize="large"
+                    rules={[{ required: true, whitespace: true, message: "请输入模型标识" }]}
+                >
                     <Input aria-label="AI模型标识" placeholder="gpt-4o" />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem name="capabilities" label="能力" layoutSize="middle">
@@ -221,7 +228,12 @@ const AiModelEditDrawerForm = ({
                         unCheckedChildren="禁用"
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem name="defaultParamsJson" label="默认参数 JSON" layoutSize="large">
+                <KuzhambuFormItem
+                    name="defaultParamsJson"
+                    label="默认参数 JSON"
+                    layoutSize="large"
+                    rules={[{ validator: (_, value) => assertJsonText(value) }]}
+                >
                     <Input.TextArea
                         aria-label="AI模型默认参数JSON"
                         autoSize={resolveTextAreaAutoSize({ minRows: 6, maxRows: 10 })}
