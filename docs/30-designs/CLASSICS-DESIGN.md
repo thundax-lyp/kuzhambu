@@ -139,7 +139,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 
 本节定义三才图会 Portal 逻辑读模型，不对应数据库表或数据库 view。Portal 在线展示不生成静态展示包，也不维护展示包任务记录。
 
-约束：Portal 条目列表和检索入口必须查询 ES 中 `publicationStatus = READY` 且 `deleted = false` 的文档；命中后通过 Classics application 只读能力组装门类、卷、条目、图片和视觉资产详情，不允许 portal-web 直接读取 Classics 数据表，也不再按主库 `lifecycle_status` 二次决定列表可见性。Portal 详情接口必须先通过 Discovery 校验同一内容仍满足 ES READY 查询条件，禁止仅凭 `contentType + contentId` 绕过 ES 可见性读取详情。
+约束：Portal 条目列表和检索入口必须查询 ES 中 `publicationStatus = READY` 且 `deleted = false` 的文档；命中后通过 Classics application 只读能力组装门类、卷、条目、图片和视觉资产详情，不允许 portal-web 直接读取 Classics 数据表，也不再按主库 `lifecycle_status` 二次决定列表是否可见。Portal 详情接口必须先通过 Discovery 校验同一内容仍满足 ES READY 查询条件，禁止仅凭 `contentType + contentId` 绕过 ES READY 读取详情。
 
 ### classics_wangqi_document
 

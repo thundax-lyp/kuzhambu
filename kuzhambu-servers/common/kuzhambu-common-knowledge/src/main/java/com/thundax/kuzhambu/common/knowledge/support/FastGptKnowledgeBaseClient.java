@@ -669,6 +669,7 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         headers.setBearerAuth(properties.getApiKey());
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        headers.set(HttpHeaders.CONNECTION, "close");
         return headers;
     }
 
@@ -677,6 +678,7 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         headers.setBearerAuth(resolveChatApiKey());
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        headers.set(HttpHeaders.CONNECTION, "close");
         return headers;
     }
 

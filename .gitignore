@@ -5,6 +5,7 @@
 # Log file
 *.log
 .DS_Store
+._*
 
 # BlueJ files
 *.ctxt
@@ -46,6 +47,7 @@ __pycache__/
 .env
 dev.env
 deploy/.env
+deploy/fastgpt/generated/
 /temp/
 /logs/
 /kuzhambu-servers/starter/kuzhambu-admin-starter/logs/

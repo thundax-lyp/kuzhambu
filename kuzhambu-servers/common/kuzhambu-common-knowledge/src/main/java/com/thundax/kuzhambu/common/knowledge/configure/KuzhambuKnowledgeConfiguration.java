@@ -12,6 +12,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.util.StringUtils;
 
 @Configuration
@@ -41,6 +42,7 @@ public class KuzhambuKnowledgeConfiguration {
                         .rootUri(fastGpt.getBaseUrl())
                         .connectTimeout(fastGpt.getTimeout())
                         .readTimeout(fastGpt.getTimeout())
+                        .requestFactory(SimpleClientHttpRequestFactory.class)
                         .build(),
                 objectMappers.getIfAvailable(ObjectMapper::new),
                 fastGpt);

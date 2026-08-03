@@ -3,8 +3,7 @@
 ## Purpose
 
 本文档固定 Classics 发布/下线的跨模块稳定契约。流程实现、租约与恢复机制见
-`docs/30-designs/CLASSICS-PUBLICATION-SPECIAL-DESIGN.md`；执行分期见
-`docs/30-designs/RUNBOOK-CLASSICS-PUBLICATION-REFACTOR.md`。
+`docs/30-designs/CLASSICS-PUBLICATION-SPECIAL-DESIGN.md`。
 
 ## States
 
@@ -74,10 +73,11 @@ flowchart LR
 
 任务 page/detail 至少返回：`id`, `jobType`, `jobStatus`, `jobResultStatus`,
 `failureStep`, `contentType`, `contentId`, `contentTitleSnapshot`,
-`sourceLifecycleStatus`, `targetLifecycleStatus`, `contentVersionId`,
-`contentVersionNo`, `attemptCount`, `maxAttempts`, `nextRetryAt`,
-`esDocumentId`, `fastgptCollectionId`, 两端 cleanup status、`failureReason`,
-`detail`, `requestedAt`, `startedAt`, `finishedAt`。
+`contentDeletedAt`, `sourceLifecycleStatus`, `targetLifecycleStatus`,
+`contentVersionId`, `contentVersionNo`, `attemptCount`, `maxAttempts`,
+`expiresAt`, `nextRetryAt`, `esDocumentId`, `fastgptCollectionId`,
+两端 cleanup status、`failureReason`, `detailJsonSummary`, `requestedAt`,
+`startedAt`, `finishedAt`。
 
 Admin 不提供 cancel、manual retry、milestone advance、job edit 或 manual cleanup。
 
@@ -147,7 +147,7 @@ ES document 与 FastGPT fragments 必须由同一 snapshot 纯函数生成：
 - 独立 `ThreadPoolTaskExecutor`；
 - step 线程预算 30 秒；
 - 外部 HTTP connect timeout 3 秒、read timeout 5 秒；
-- job lease 35 秒，线程池拒绝时写入大值 `expiresAt`，线程开始时改为有限租约；
+- dispatch lease 30 秒，step slice lease 10 分钟，cleanup lease 5 分钟；
 - 当前 step 默认最多 4 次尝试，即首次加 3 次重试；
 - 重试间隔 30 秒。
 
@@ -160,3 +160,23 @@ Portal runtime 不分发、对账或清理任务。五个 Schedule 职责固定�
 5. FastGPT cleanup：只处理 FastGPT cleanup。
 
 Schedule 查询、抢占条件与 terminal reconciliation 以专项设计的 SQL 语义为准。
+
+Admin starter 默认启用 publication runtime，Portal starter 默认关闭。稳定配置项如下：
+
+| Property | Env | Default |
+| --- | --- | --- |
+| `kuzhambu.classics.publication.enabled` | `KUZHAMBU_CLASSICS_PUBLICATION_ENABLED` | admin `true`, portal `false` |
+| `dispatch-fixed-delay` | `KUZHAMBU_CLASSICS_PUBLICATION_DISPATCH_FIXED_DELAY` | `5s` |
+| `success-reconcile-fixed-delay` | `KUZHAMBU_CLASSICS_PUBLICATION_SUCCESS_RECONCILE_FIXED_DELAY` | `30s` |
+| `failure-reconcile-fixed-delay` | `KUZHAMBU_CLASSICS_PUBLICATION_FAILURE_RECONCILE_FIXED_DELAY` | `30s` |
+| `es-cleanup-fixed-delay` | `KUZHAMBU_CLASSICS_PUBLICATION_ES_CLEANUP_FIXED_DELAY` | `60s` |
+| `fastgpt-cleanup-fixed-delay` | `KUZHAMBU_CLASSICS_PUBLICATION_FASTGPT_CLEANUP_FIXED_DELAY` | `60s` |
+| `dispatch-lease` | `KUZHAMBU_CLASSICS_PUBLICATION_DISPATCH_LEASE` | `30s` |
+| `slice-lease` | `KUZHAMBU_CLASSICS_PUBLICATION_SLICE_LEASE` | `10m` |
+| `cleanup-lease` | `KUZHAMBU_CLASSICS_PUBLICATION_CLEANUP_LEASE` | `5m` |
+| `retry-delay` | `KUZHAMBU_CLASSICS_PUBLICATION_RETRY_DELAY` | `30s` |
+| `claim-limit` | `KUZHAMBU_CLASSICS_PUBLICATION_CLAIM_LIMIT` | `20` |
+| `executor-core-size` | `KUZHAMBU_CLASSICS_PUBLICATION_EXECUTOR_CORE_SIZE` | `2` |
+| `executor-max-size` | `KUZHAMBU_CLASSICS_PUBLICATION_EXECUTOR_MAX_SIZE` | `4` |
+| `executor-queue-capacity` | `KUZHAMBU_CLASSICS_PUBLICATION_EXECUTOR_QUEUE_CAPACITY` | `100` |
+| `executor-await-termination` | `KUZHAMBU_CLASSICS_PUBLICATION_EXECUTOR_AWAIT_TERMINATION` | `30s` |

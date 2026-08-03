@@ -5,6 +5,7 @@ FROM ${KUZHAMBU_ELASTICSEARCH_BASE_IMAGE}
 
 ARG KUZHAMBU_ELASTICSEARCH_IK_VERSION
 
-COPY deploy/elasticsearch/elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION}.zip /tmp/analysis-ik.zip
+COPY --chown=elasticsearch:root deploy/elasticsearch/elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION}.zip /tmp/analysis-ik.zip
 
-RUN elasticsearch-plugin install --batch file:///tmp/analysis-ik.zip
+RUN elasticsearch-plugin install --batch file:///tmp/analysis-ik.zip \
+    && rm /tmp/analysis-ik.zip

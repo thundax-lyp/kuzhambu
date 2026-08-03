@@ -4,6 +4,7 @@ logs
 temp
 
 **/.DS_Store
+**/._*
 **/.env
 **/.env.local
 
