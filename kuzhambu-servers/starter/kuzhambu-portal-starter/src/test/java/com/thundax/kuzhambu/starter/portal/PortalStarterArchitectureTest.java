@@ -59,7 +59,7 @@ class PortalStarterArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.system.infra.core.persistence.mapper",
                         "com.thundax.kuzhambu.system.infra.auth.persistence.mapper",
                         "com.thundax.kuzhambu.storage.infra.object.persistence.mapper",
-                        "com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper",
+                        "com.thundax.kuzhambu.classics.infra.publication.persistence.mapper",
                         "com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper",
                         "com.thundax.kuzhambu.knowledge.infra.refinement.persistence.mapper",
                         "com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper",
@@ -79,7 +79,8 @@ class PortalStarterArchitectureTest extends AbstractArchitectureTest {
         Assertions.assertThat(KuzhambuPortalApplication.class.getAnnotation(EnableScheduling.class))
                 .isNull();
         Assertions.assertThat(loadApplicationYaml())
-                .contains("enabled: ${KUZHAMBU_CLASSICS_PUBLICATION_ENABLED:false}");
+                .contains("enabled: ${KUZHAMBU_CLASSICS_PUBLICATION_ENABLED:false}")
+                .contains("rocketmq:", "enabled: false");
     }
 
     private static String loadApplicationYaml() throws IOException {

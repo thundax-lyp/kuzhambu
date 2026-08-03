@@ -2,7 +2,7 @@ name: kuzhambu
 
 services:
   nginx:
-    image: "${KUZHAMBU_NGINX_IMAGE:-kuzhambu/nginx:1.27-alpine}"
+    image: "${KUZHAMBU_NGINX_IMAGE:-nginx:1.27-alpine}"
     depends_on:
       - admin-web
       - portal-web
@@ -18,32 +18,64 @@ services:
       - ./nginx/kuzhambu.conf:/etc/nginx/templates/default.conf.template:ro
 
   admin-web:
-    image: "${KUZHAMBU_ADMIN_WEB_IMAGE:-kuzhambu/admin-web:dev}"
+    image: "${KUZHAMBU_ADMIN_WEB_IMAGE:-${KUZHAMBU_IMAGE_REGISTRY:-kuzhambu}/admin-web:${KUZHAMBU_IMAGE_TAG:-dev}}"
     build:
       context: ..
       dockerfile: kuzhambu-apps/Dockerfile
+      network: ${KUZHAMBU_BUILD_NETWORK:-default}
       args:
         APP_NAME: admin-web
+        KUZHAMBU_WEB_BUILD_IMAGE: ${KUZHAMBU_WEB_BUILD_IMAGE:-node:22-bookworm-slim}
+        KUZHAMBU_WEB_RUNTIME_IMAGE: ${KUZHAMBU_WEB_RUNTIME_IMAGE:-nginx:1.27-alpine}
+        COREPACK_NPM_REGISTRY: ${COREPACK_NPM_REGISTRY:-}
+        NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-}
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        https_proxy: ${https_proxy:-}
+        no_proxy: ${no_proxy:-}
         VITE_ADMIN_WEB_BASE: ${ADMIN_WEB_BASE:-/kuzhambu-admin/}
         VITE_ADMIN_API_BASE_URL: ${ADMIN_API_BASE_URL:-/kuzhambu-admin-api/api}
 
   portal-web:
-    image: "${KUZHAMBU_PORTAL_WEB_IMAGE:-kuzhambu/portal-web:dev}"
+    image: "${KUZHAMBU_PORTAL_WEB_IMAGE:-${KUZHAMBU_IMAGE_REGISTRY:-kuzhambu}/portal-web:${KUZHAMBU_IMAGE_TAG:-dev}}"
     build:
       context: ..
       dockerfile: kuzhambu-apps/Dockerfile
+      network: ${KUZHAMBU_BUILD_NETWORK:-default}
       args:
         APP_NAME: portal-web
+        KUZHAMBU_WEB_BUILD_IMAGE: ${KUZHAMBU_WEB_BUILD_IMAGE:-node:22-bookworm-slim}
+        KUZHAMBU_WEB_RUNTIME_IMAGE: ${KUZHAMBU_WEB_RUNTIME_IMAGE:-nginx:1.27-alpine}
+        COREPACK_NPM_REGISTRY: ${COREPACK_NPM_REGISTRY:-}
+        NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-}
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        https_proxy: ${https_proxy:-}
+        no_proxy: ${no_proxy:-}
         VITE_PORTAL_WEB_BASE: ${PORTAL_WEB_BASE:-/kuzhambu/}
         VITE_PORTAL_API_BASE_URL: ${PORTAL_API_BASE_URL:-/kuzhambu-api/api}
 
   admin-starter:
-    image: "${KUZHAMBU_ADMIN_STARTER_IMAGE:-kuzhambu/admin-starter:dev}"
+    image: "${KUZHAMBU_ADMIN_STARTER_IMAGE:-${KUZHAMBU_IMAGE_REGISTRY:-kuzhambu}/admin-starter:${KUZHAMBU_IMAGE_TAG:-dev}}"
     build:
       context: ..
       dockerfile: kuzhambu-servers/Dockerfile
+      network: ${KUZHAMBU_BUILD_NETWORK:-default}
       args:
         STARTER_MODULE: kuzhambu-admin-starter
+        KUZHAMBU_SERVER_BUILD_IMAGE: ${KUZHAMBU_SERVER_BUILD_IMAGE:-maven:3.9.11-eclipse-temurin-17}
+        KUZHAMBU_SERVER_RUNTIME_IMAGE: ${KUZHAMBU_SERVER_RUNTIME_IMAGE:-eclipse-temurin:17-jre}
+        MAVEN_OPTS: ${MAVEN_OPTS:-}
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        https_proxy: ${https_proxy:-}
+        no_proxy: ${no_proxy:-}
     depends_on:
       - mysql
       - redis
@@ -89,6 +121,8 @@ services:
       KUZHAMBU_BACKUP_ROOT_PATH: ${KUZHAMBU_BACKUP_ROOT_PATH:-/backup/kuzhambu}
       KUZHAMBU_BACKUP_LOCAL_STORAGE_ROOT_PATH: /app/storage/object
       KUZHAMBU_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      KUZHAMBU_DISCOVERY_SEARCH_INDEX_ANALYZER: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_ANALYZER:-ik_max_word}
+      KUZHAMBU_DISCOVERY_SEARCH_SEARCH_ANALYZER: ${KUZHAMBU_DISCOVERY_SEARCH_SEARCH_ANALYZER:-ik_smart}
       KUZHAMBU_KNOWLEDGE_ENABLED: ${KUZHAMBU_KNOWLEDGE_ENABLED:-false}
       KUZHAMBU_KNOWLEDGE_PROVIDER: ${KUZHAMBU_KNOWLEDGE_PROVIDER:-fastgpt}
       KUZHAMBU_KNOWLEDGE_FASTGPT_BASE_URL: ${KUZHAMBU_KNOWLEDGE_FASTGPT_BASE_URL:-}
@@ -109,12 +143,22 @@ services:
       - admin-logs:/app/logs
 
   portal-starter:
-    image: "${KUZHAMBU_PORTAL_STARTER_IMAGE:-kuzhambu/portal-starter:dev}"
+    image: "${KUZHAMBU_PORTAL_STARTER_IMAGE:-${KUZHAMBU_IMAGE_REGISTRY:-kuzhambu}/portal-starter:${KUZHAMBU_IMAGE_TAG:-dev}}"
     build:
       context: ..
       dockerfile: kuzhambu-servers/Dockerfile
+      network: ${KUZHAMBU_BUILD_NETWORK:-default}
       args:
         STARTER_MODULE: kuzhambu-portal-starter
+        KUZHAMBU_SERVER_BUILD_IMAGE: ${KUZHAMBU_SERVER_BUILD_IMAGE:-maven:3.9.11-eclipse-temurin-17}
+        KUZHAMBU_SERVER_RUNTIME_IMAGE: ${KUZHAMBU_SERVER_RUNTIME_IMAGE:-eclipse-temurin:17-jre}
+        MAVEN_OPTS: ${MAVEN_OPTS:-}
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        https_proxy: ${https_proxy:-}
+        no_proxy: ${no_proxy:-}
     depends_on:
       - mysql
       - redis
@@ -156,6 +200,8 @@ services:
       KUZHAMBU_STORAGE_BUCKET_NAME: ${KUZHAMBU_STORAGE_BUCKET_NAME:-local}
       KUZHAMBU_STORAGE_CONTENT_PATH: ${PORTAL_STORAGE_CONTENT_PATH:-/kuzhambu-api/api/storage/object/}
       KUZHAMBU_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      KUZHAMBU_DISCOVERY_SEARCH_INDEX_ANALYZER: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_ANALYZER:-ik_max_word}
+      KUZHAMBU_DISCOVERY_SEARCH_SEARCH_ANALYZER: ${KUZHAMBU_DISCOVERY_SEARCH_SEARCH_ANALYZER:-ik_smart}
       KUZHAMBU_KNOWLEDGE_ENABLED: ${KUZHAMBU_KNOWLEDGE_ENABLED:-false}
       KUZHAMBU_KNOWLEDGE_PROVIDER: ${KUZHAMBU_KNOWLEDGE_PROVIDER:-fastgpt}
       KUZHAMBU_KNOWLEDGE_FASTGPT_BASE_URL: ${KUZHAMBU_KNOWLEDGE_FASTGPT_BASE_URL:-}
@@ -170,10 +216,21 @@ services:
       - portal-logs:/app/logs
 
   workers:
-    image: "${KUZHAMBU_WORKERS_IMAGE:-kuzhambu/workers:dev}"
+    image: "${KUZHAMBU_WORKERS_IMAGE:-${KUZHAMBU_IMAGE_REGISTRY:-kuzhambu}/workers:${KUZHAMBU_IMAGE_TAG:-dev}}"
     build:
       context: ..
       dockerfile: kuzhambu-workers/Dockerfile
+      network: ${KUZHAMBU_BUILD_NETWORK:-default}
+      args:
+        KUZHAMBU_WORKERS_BASE_IMAGE: ${KUZHAMBU_WORKERS_BASE_IMAGE:-python:3.10-slim}
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-}
+        PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST:-}
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        https_proxy: ${https_proxy:-}
+        no_proxy: ${no_proxy:-}
     environment:
       KUZHAMBU_WORKER_ALLOWED_SERVICES: ${KUZHAMBU_WORKER_ALLOWED_SERVICES:-kuzhambu-ai}
       KUZHAMBU_WORKER_INTERNAL_SECRET: ${KUZHAMBU_INTERNAL_SECRET:-change-me}
@@ -183,7 +240,7 @@ services:
       - workers-temp:/tmp/kuzhambu-workers
 
   mysql:
-    image: "${KUZHAMBU_MYSQL_IMAGE:-kuzhambu/mysql:8.4}"
+    image: "${KUZHAMBU_MYSQL_IMAGE:-mysql:${KUZHAMBU_MYSQL_VERSION:-8.4}}"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-kuzhambu}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-kuzhambu}
@@ -193,7 +250,7 @@ services:
       - mysql-data:/var/lib/mysql
 
   redis:
-    image: "${KUZHAMBU_REDIS_IMAGE:-kuzhambu/redis:7.2}"
+    image: "${KUZHAMBU_REDIS_IMAGE:-redis:${KUZHAMBU_REDIS_VERSION:-7.2}}"
     command:
       - redis-server
       - --requirepass
@@ -204,7 +261,21 @@ services:
       - "no"
 
   elasticsearch:
-    image: "${KUZHAMBU_ELASTICSEARCH_IMAGE:-kuzhambu/elasticsearch:8.15.3}"
+    image: "${KUZHAMBU_ELASTICSEARCH_IMAGE:-${KUZHAMBU_IMAGE_REGISTRY:-kuzhambu}/elasticsearch:${KUZHAMBU_ELASTICSEARCH_VERSION:-8.18.8}}"
+    platform: ${KUZHAMBU_ELASTICSEARCH_DOCKER_PLATFORM:-linux/amd64}
+    build:
+      context: ..
+      dockerfile: deploy/elasticsearch/Dockerfile
+      network: ${KUZHAMBU_BUILD_NETWORK:-default}
+      args:
+        KUZHAMBU_ELASTICSEARCH_BASE_IMAGE: ${KUZHAMBU_ELASTICSEARCH_BASE_IMAGE:-kuzhambu/elasticsearch-base:${KUZHAMBU_ELASTICSEARCH_VERSION:-8.18.8}}
+        KUZHAMBU_ELASTICSEARCH_IK_VERSION: ${KUZHAMBU_ELASTICSEARCH_IK_VERSION:-${KUZHAMBU_ELASTICSEARCH_VERSION:-8.18.8}}
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        https_proxy: ${https_proxy:-}
+        no_proxy: ${no_proxy:-}
     environment:
       discovery.type: single-node
       xpack.security.enabled: "false"
@@ -213,11 +284,11 @@ services:
       - elasticsearch-data:/usr/share/elasticsearch/data
 
   rocketmq-namesrv:
-    image: "${KUZHAMBU_ROCKETMQ_IMAGE:-kuzhambu/rocketmq:5.3.0}"
+    image: "${KUZHAMBU_ROCKETMQ_IMAGE:-apache/rocketmq:${KUZHAMBU_ROCKETMQ_VERSION:-5.3.0}}"
     command: sh mqnamesrv
 
   rocketmq-broker:
-    image: "${KUZHAMBU_ROCKETMQ_IMAGE:-kuzhambu/rocketmq:5.3.0}"
+    image: "${KUZHAMBU_ROCKETMQ_IMAGE:-apache/rocketmq:${KUZHAMBU_ROCKETMQ_VERSION:-5.3.0}}"
     command: sh mqbroker -n rocketmq-namesrv:9876
     depends_on:
       - rocketmq-namesrv

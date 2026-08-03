@@ -1,0 +1,22 @@
+# Image Files
+
+This directory stores local Docker image archives produced by `docker save`.
+
+The archives are intentionally ignored by Git because they are large binary delivery files. Keep only the directory contract in the repository.
+
+Use one archive per Docker image so later stages can replace or patch images independently.
+
+Typical files:
+
+```sh
+kuzhambu-admin-web-dev.tar
+kuzhambu-portal-web-dev.tar
+kuzhambu-admin-starter-dev.tar
+kuzhambu-portal-starter-dev.tar
+kuzhambu-workers-dev.tar
+foundation-nginx-1.27-alpine.tar
+foundation-mysql-8.4.tar
+foundation-redis-7.2.tar
+foundation-elasticsearch-8.18.8.tar
+foundation-rocketmq-5.3.0.tar
+```

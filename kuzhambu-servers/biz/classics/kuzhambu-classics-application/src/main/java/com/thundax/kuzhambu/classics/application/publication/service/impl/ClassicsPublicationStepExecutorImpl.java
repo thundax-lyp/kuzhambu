@@ -15,7 +15,7 @@ import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.Classi
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.discovery.facade.DiscoverySearchPublicationFacade;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationReferenceFacadeRequest;
-import java.time.Instant;
+import java.time.Clock;
 import java.util.Objects;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +27,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
     private final DiscoverySearchPublicationFacade searchFacade;
     private final ClassicsPublicationFastGptGateway fastGptGateway;
     private final ClassicsPublicationPayloadAssembler payloadAssembler;
+    private final Clock clock;
     private final ClassicsPublicationSnapshotBindApplicationServiceImpl snapshotBindService;
     private final ClassicsPublicationContentCommitApplicationServiceImpl contentCommitService;
 
@@ -36,6 +37,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
             DiscoverySearchPublicationFacade searchFacade,
             ClassicsPublicationFastGptGateway fastGptGateway,
             ClassicsPublicationPayloadAssembler payloadAssembler,
+            Clock clock,
             ClassicsPublicationSnapshotBindApplicationServiceImpl snapshotBindService,
             ClassicsPublicationContentCommitApplicationServiceImpl contentCommitService) {
         this.jobRepository = jobRepository;
@@ -43,6 +45,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
         this.searchFacade = searchFacade;
         this.fastGptGateway = fastGptGateway;
         this.payloadAssembler = payloadAssembler;
+        this.clock = clock;
         this.snapshotBindService = snapshotBindService;
         this.contentCommitService = contentCommitService;
     }
@@ -122,7 +125,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
         String documentId = documentId(job);
         searchFacade.markOffline(DiscoverySearchPublicationReferenceFacadeRequest.builder()
                 .documentId(documentId)
-                .occurredAt(Instant.now())
+                .occurredAt(clock.instant())
                 .build());
         return advance(job, executionToken, ClassicsPublicationJobStatus.ES_DISABLED, null, null, documentId, null);
     }
@@ -164,12 +167,12 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
                 == 1;
     }
 
-    private static DiscoverySearchPublicationReferenceFacadeRequest reference(ClassicsPublicationJob job) {
+    private DiscoverySearchPublicationReferenceFacadeRequest reference(ClassicsPublicationJob job) {
         return DiscoverySearchPublicationReferenceFacadeRequest.builder()
                 .documentId(documentId(job))
                 .contentVersionId(String.valueOf(job.getContentVersionId()))
                 .contentVersionNo(job.getContentVersionNo())
-                .occurredAt(Instant.now())
+                .occurredAt(clock.instant())
                 .build();
     }
 
@@ -186,9 +189,9 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
                 && Objects.equals(job.getExecutionToken(), executionToken);
     }
 
-    private static void requireRemoteCallWindow(ClassicsPublicationJob job) {
+    private void requireRemoteCallWindow(ClassicsPublicationJob job) {
         if (job.getExpiresAt() != null
-                && !Instant.now().isBefore(job.getExpiresAt().minusSeconds(REMOTE_CALL_SAFETY_SECONDS))) {
+                && !clock.instant().isBefore(job.getExpiresAt().minusSeconds(REMOTE_CALL_SAFETY_SECONDS))) {
             throw new IllegalStateException("Publication slice lease has no remote-call safety window");
         }
     }

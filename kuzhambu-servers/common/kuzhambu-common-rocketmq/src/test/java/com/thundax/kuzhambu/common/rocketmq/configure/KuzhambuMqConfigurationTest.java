@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.common.rocketmq.configure;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -23,6 +24,19 @@ public class KuzhambuMqConfigurationTest {
         contextRunner
                 .withUserConfiguration(RocketMqTemplateConfiguration.class)
                 .run(context -> assertTrue(hasCause(context.getStartupFailure(), IllegalStateException.class)));
+    }
+
+    @Test
+    public void shouldAllowRocketMqToBeDisabledExplicitly() {
+        contextRunner
+                .withUserConfiguration(RocketMqTemplateConfiguration.class)
+                .withPropertyValues("kuzhambu.rocketmq.enabled=false")
+                .run(context -> {
+                    assertNull(context.getStartupFailure());
+                    assertTrue(context.getBeansOfType(KuzhambuMqSender.class).isEmpty());
+                    assertTrue(context.getBeansOfType(KuzhambuMqConfiguration.KuzhambuMqConfigurationValidator.class)
+                            .isEmpty());
+                });
     }
 
     @Test

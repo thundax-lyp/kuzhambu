@@ -119,6 +119,9 @@ kuzhambu:
       portal-web-base-url: ${KUZHAMBU_PORTAL_WEB_BASE_URL:http://localhost:5174}
   discovery:
     search:
+      index:
+        index-analyzer: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_ANALYZER:ik_max_word}
+        search-analyzer: ${KUZHAMBU_DISCOVERY_SEARCH_SEARCH_ANALYZER:ik_smart}
       deleted-cleanup:
         retention-days: ${KUZHAMBU_DISCOVERY_SEARCH_DELETED_CLEANUP_RETENTION_DAYS:7}
         cron: ${KUZHAMBU_DISCOVERY_SEARCH_DELETED_CLEANUP_CRON:0 0 3 * * ?}

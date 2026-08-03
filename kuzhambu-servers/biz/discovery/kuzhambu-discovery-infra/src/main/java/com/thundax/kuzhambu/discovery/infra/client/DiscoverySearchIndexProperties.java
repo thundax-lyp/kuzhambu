@@ -16,4 +16,8 @@ public class DiscoverySearchIndexProperties {
     private int replicaCount = 1;
 
     private int batchSize = 200;
+
+    private String indexAnalyzer = "ik_max_word";
+
+    private String searchAnalyzer = "ik_smart";
 }

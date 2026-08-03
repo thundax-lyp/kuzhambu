@@ -122,6 +122,8 @@ Classics 古籍域承载平台三类古籍知识库内容和 Portal 已发布稿
 - 发布状态机必须至少覆盖正式版本快照生成、ES 准备、FastGPT 准备、ES 就绪、FastGPT enable 和稿件状态回填。
 - 下线状态机必须至少覆盖 ES 删除态写入、FastGPT collection disable 和稿件状态回填；后续物理删除由定时器垃圾同步清理。
 - ES 中的稿件文档必须有独立发布状态，至少支持准备中、就绪和下线删除态；Portal、公开搜索和其他 ES 消费方只能读取 ES 发布状态为就绪的文档。
+- 公开搜索的中文全文字段必须支持可配置中文分词；默认使用 `ik_max_word` 建索引、
+  `ik_smart` 查询，部署 ES 镜像必须内置匹配版本的 `analysis-ik` 插件。
 - FastGPT 发布必须以单个稿件为粒度创建或更新一个 collection，稿件拆分后的多个知识碎片作为该 collection 下的数据片段。
 - FastGPT 发布必须使用 collection enable/disable 能力表达该稿件整体是否可召回：准备阶段写入或更新稿件 collection 后保持 disabled，发布就绪后 enable；不得依赖 metadata 表达准备或就绪状态。
 - FastGPT 稿件 collection 更新必须是全量替换：通过 `forbid = true` disable collection，按 collection 分页列出并逐条删除全部旧碎片，再写入当前正式版本的完整碎片集合；不得仅 upsert 新碎片或依赖旧任务记录的碎片 ID 清理历史数据。

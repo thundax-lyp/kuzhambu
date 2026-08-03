@@ -15,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     "com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.mapper",
     "com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper",
     "com.thundax.kuzhambu.classics.infra.content.persistence.mapper",
-    "com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper",
+    "com.thundax.kuzhambu.classics.infra.publication.persistence.mapper",
     "com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper",
     "com.thundax.kuzhambu.knowledge.infra.refinement.persistence.mapper",
     "com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper",

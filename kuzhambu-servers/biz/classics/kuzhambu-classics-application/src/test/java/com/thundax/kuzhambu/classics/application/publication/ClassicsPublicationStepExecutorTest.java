@@ -29,6 +29,9 @@ import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.Classi
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.discovery.facade.DiscoverySearchPublicationFacade;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationPrepareFacadeRequest;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +40,7 @@ class ClassicsPublicationStepExecutorTest {
     private static final ClassicsPublicationJobId JOB_ID = new ClassicsPublicationJobId(10L);
     private static final ClassicsPublicationExecutionToken TOKEN =
             new ClassicsPublicationExecutionToken("execution-10");
+    private static final Instant NOW = Instant.parse("2026-08-03T02:00:00Z");
 
     private ClassicsPublicationJobRepository jobRepository;
     private ClassicsContentRepository contentRepository;
@@ -58,6 +62,7 @@ class ClassicsPublicationStepExecutorTest {
                 searchFacade,
                 fastGptGateway,
                 payloadAssembler,
+                Clock.fixed(NOW, ZoneOffset.UTC),
                 mock(ClassicsPublicationSnapshotBindApplicationServiceImpl.class),
                 mock(ClassicsPublicationContentCommitApplicationServiceImpl.class));
     }
@@ -131,6 +136,18 @@ class ClassicsPublicationStepExecutorTest {
         verify(fastGptGateway).enable("collection-12");
         verify(searchFacade, never()).prepare(any());
         verify(searchFacade, never()).markReady(any());
+    }
+
+    @Test
+    void shouldRejectRemoteCallWithoutFiveSecondLeaseWindow() {
+        ClassicsPublicationJob job = job(ClassicsPublicationJobStatus.SNAPSHOT_READY);
+        job.setExpiresAt(NOW.plusSeconds(5));
+        when(jobRepository.getById(JOB_ID)).thenReturn(job);
+
+        assertThrows(IllegalStateException.class, () -> executor.execute(JOB_ID, TOKEN));
+
+        verify(searchFacade, never()).prepare(any());
+        verify(contentRepository, never()).getVersionById(any());
     }
 
     @Test

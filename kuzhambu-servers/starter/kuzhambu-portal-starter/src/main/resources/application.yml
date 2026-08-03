@@ -57,6 +57,13 @@ logging:
     com.thundax.kuzhambu: ${KUZHAMBU_APP_LOG_LEVEL:INFO}
 
 kuzhambu:
+  discovery:
+    search:
+      index:
+        index-analyzer: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_ANALYZER:ik_max_word}
+        search-analyzer: ${KUZHAMBU_DISCOVERY_SEARCH_SEARCH_ANALYZER:ik_smart}
+  rocketmq:
+    enabled: false
   classics:
     publication:
       enabled: ${KUZHAMBU_CLASSICS_PUBLICATION_ENABLED:false}
