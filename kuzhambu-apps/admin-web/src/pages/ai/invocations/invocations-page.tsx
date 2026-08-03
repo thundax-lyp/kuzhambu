@@ -14,7 +14,7 @@ import type {
     InvocationLogFilterValues,
     InvocationDateRangeValue,
     InvocationSummaryFilterValues
-} from "./invocation-filter-panel";
+} from "./invocation-filter-values";
 import { InvocationSummaryTab } from "./invocation-summary-tab";
 import * as service from "./invocations-service";
 import type { AiInvocationLogPageQuery, AiInvocationSummaryQuery } from "./invocations-service";
@@ -215,7 +215,6 @@ export const InvocationsPage = () => {
                             label: "统计概览",
                             children: (
                                 <InvocationSummaryTab
-                                    callsForm={callsForm}
                                     capabilityOptions={capabilityOptions}
                                     formatCapability={formatCapability}
                                     summary={summary}
@@ -224,8 +223,6 @@ export const InvocationsPage = () => {
                                     topCapabilities={topCapabilities}
                                     topCapabilityMaxCount={topCapabilityMaxCount}
                                     onRefreshSummary={() => void refreshSummary()}
-                                    onResetCalls={resetCalls}
-                                    onSearchCalls={() => void searchCalls()}
                                 />
                             )
                         },
@@ -235,7 +232,6 @@ export const InvocationsPage = () => {
                             children: (
                                 <InvocationCallsTab
                                     callsForm={callsForm}
-                                    capabilityOptions={capabilityOptions}
                                     currentPageNo={invocationLogQuery.pageNo || DEFAULT_PAGE_NO}
                                     currentPageSize={
                                         invocationLogQuery.pageSize || DEFAULT_PAGE_SIZE
@@ -243,11 +239,8 @@ export const InvocationsPage = () => {
                                     formatCapability={formatCapability}
                                     invocationLogPage={invocationLogPage}
                                     loading={invocationLogPageQuery.isFetching}
-                                    summaryForm={summaryForm}
-                                    summaryInitialValues={summaryInitialValues}
                                     onChange={handleTableChange}
                                     onOpenDetail={setDetailInvocationLog}
-                                    onRefreshSummary={() => void refreshSummary()}
                                     onResetCalls={resetCalls}
                                     onSearchCalls={() => void searchCalls()}
                                 />

@@ -1,15 +1,23 @@
-import { Statistic } from "antd";
+import { DatePicker, Statistic } from "antd";
 import type { FormInstance } from "antd";
-import { KuzhambuCard } from "@/components";
 import {
-    InvocationFilterPanel,
-    type InvocationLogFilterValues,
+    KuzhambuButton,
+    KuzhambuCard,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSelect
+} from "@/components";
+import {
+    INVOCATION_DATE_TIME_FORMAT,
     type InvocationSummaryFilterValues
-} from "../invocation-filter-panel";
+} from "../invocation-filter-values";
 import type { AiInvocationSummaryRecord, AiTopCapabilityRecord } from "../invocations-types";
 
+import "./invocation-summary-tab.css";
+
+const { RangePicker } = DatePicker;
+
 interface InvocationSummaryTabProps {
-    callsForm: FormInstance<InvocationLogFilterValues>;
     capabilityOptions: Array<{ label: string; value: string }>;
     formatCapability: (capability?: string | null) => string;
     summary?: AiInvocationSummaryRecord;
@@ -18,12 +26,9 @@ interface InvocationSummaryTabProps {
     topCapabilities: AiTopCapabilityRecord[];
     topCapabilityMaxCount: number;
     onRefreshSummary: () => void;
-    onResetCalls: () => void;
-    onSearchCalls: () => void;
 }
 
 export const InvocationSummaryTab = ({
-    callsForm,
     capabilityOptions,
     formatCapability,
     summary,
@@ -31,22 +36,49 @@ export const InvocationSummaryTab = ({
     summaryInitialValues,
     topCapabilities,
     topCapabilityMaxCount,
-    onRefreshSummary,
-    onResetCalls,
-    onSearchCalls
+    onRefreshSummary
 }: InvocationSummaryTabProps) => {
     return (
         <>
-            <InvocationFilterPanel
-                callsForm={callsForm}
-                capabilityOptions={capabilityOptions}
-                summaryForm={summaryForm}
-                summaryInitialValues={summaryInitialValues}
-                type="summary"
-                onRefreshSummary={onRefreshSummary}
-                onResetCalls={onResetCalls}
-                onSearchCalls={onSearchCalls}
-            />
+            <KuzhambuCard className="invocations-summary-filter-card">
+                <KuzhambuForm
+                    className="invocations-summary-filter-form"
+                    form={summaryForm}
+                    initialValues={summaryInitialValues}
+                >
+                    <KuzhambuFormItem label="周期" name="period" layoutSize="middle">
+                        <RangePicker
+                            aria-label="周期"
+                            format={INVOCATION_DATE_TIME_FORMAT}
+                            showTime
+                            style={{ width: "100%" }}
+                        />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="统计粒度" name="bucketType" layoutSize="small">
+                        <KuzhambuSelect
+                            className="invocations-summary-filter-control"
+                            options={[
+                                { label: "按天", value: "DAY" },
+                                { label: "按小时", value: "HOUR" }
+                            ]}
+                        />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="能力" name="capability" layoutSize="small">
+                        <KuzhambuSelect
+                            allowClear
+                            className="invocations-summary-filter-control"
+                            options={capabilityOptions}
+                        />
+                    </KuzhambuFormItem>
+                </KuzhambuForm>
+                <KuzhambuButton
+                    testId="ai-invocations-invocations-refresh-button-2"
+                    type="primary"
+                    onClick={onRefreshSummary}
+                >
+                    刷新
+                </KuzhambuButton>
+            </KuzhambuCard>
 
             <div className="invocations-metrics">
                 <KuzhambuCard>
