@@ -1178,7 +1178,25 @@ Smoke evidence:
 
 Stage 6 需要确认 compose 镜像可构建或拉取，并可离线交付。镜像归档只放在
 `deploy/image-files/`，该目录忽略大文件，只提交目录说明。归档固定按镜像拆分为多个
-tar 文件，避免后续只替换一个镜像时必须重新分发合并大包。
+tar 文件，避免后续只替换一个镜像时必须重新分发合并大包。RUNBOOK 和部署文档只记录
+compose 运行时使用的标准镜像引用；制作归档时可以根据构建主机网络情况使用代理、镜像站
+或本地导入，但最终 `docker save` 的镜像名必须与 compose 默认引用一致。
+
+Docker image files 分成两个步骤处理：
+
+1. 制作 image files：在 build host 构建或导入镜像，统一 retag 为 compose 标准引用，
+   再用 `docker save` 按镜像拆分输出到 `deploy/image-files/`。
+2. 发布 image files：把 `deploy/image-files/*.tar` 复制到 deploy host，逐个
+   `docker load`，校准 `.env`，再启动 compose 或执行完整 Docker 冒烟。deploy host
+   不依赖 Docker 仓库访问。
+
+脚本入口固定如下：
+
+- 制作侧：使用本节 compose build、pull/import、`docker save` 命令；取包源由构建机网络决定，
+  不写入提交的 env 或部署命令。
+- 发布侧：使用 `scripts/smoke/docker-load-image-files.sh [deploy/image-files]` 加载归档。
+- 验证侧：使用 `scripts/smoke/docker-full-smoke.sh deploy/.env deploy/fastgpt/.env` 打穿
+  FastGPT 子集群、Kuzhambu compose、数据库初始化和 HTTP readiness。
 
 ```bash
 # From repo root.
@@ -1210,7 +1228,7 @@ docker save mysql:8.4 -o deploy/image-files/foundation-mysql-8.4.tar
 docker save redis:7.2 -o deploy/image-files/foundation-redis-7.2.tar
 docker save kuzhambu/elasticsearch:8.18.8 \
   -o deploy/image-files/foundation-elasticsearch-8.18.8.tar
-docker save apache/rocketmq:5.3.0 -o deploy/image-files/foundation-rocketmq-5.3.0.tar
+docker save apache/rocketmq:5.4.0 -o deploy/image-files/foundation-rocketmq-5.4.0.tar
 ```
 
 如构建主机无法拉取默认 Dockerfile base image，先把可用来源重建或导入为项目自有
@@ -1218,6 +1236,16 @@ docker save apache/rocketmq:5.3.0 -o deploy/image-files/foundation-rocketmq-5.3.
 `KUZHAMBU_SERVER_BUILD_IMAGE`、`KUZHAMBU_SERVER_RUNTIME_IMAGE` 或
 `KUZHAMBU_WORKERS_BASE_IMAGE` 传给 compose；不要在可重复命令或提交的 env 中直接引用
 临时第三方镜像。
+
+完整 Docker 冒烟使用已制作好的镜像归档作为输入：
+
+```bash
+scripts/smoke/docker-full-smoke.sh deploy/.env deploy/fastgpt/.env
+```
+
+该脚本默认先调用 `scripts/smoke/docker-load-image-files.sh`，再启动 FastGPT 子集群和
+Kuzhambu compose 栈。只有在同一台机器同时承担构建职责时，才设置
+`KUZHAMBU_SMOKE_BUILD_IMAGES=true` 让脚本在冒烟中重建业务镜像。
 
 全部 live 和 automated smoke 完成后，在四个运行终端分别发送 `Ctrl-C`，等待 Maven/Vite
 进程退出。不得在 stage 结束或最终答复时遗留 starter、Vite 或测试进程。

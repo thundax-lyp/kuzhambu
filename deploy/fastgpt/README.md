@@ -44,7 +44,7 @@ Then run:
 ```sh
 cd deploy/fastgpt
 ./bootstrap-fastgpt.sh .env
-./smoke-fastgpt.sh .env generated/kuzhambu-fastgpt.env
+../../scripts/smoke/docker-fastgpt-smoke.sh .env generated/kuzhambu-fastgpt.env
 ```
 
 The bootstrap is idempotent. It writes or updates:

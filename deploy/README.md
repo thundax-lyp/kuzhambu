@@ -65,7 +65,7 @@ cd deploy/fastgpt
 cp .env.example .env
 # Fill FASTGPT_BOOTSTRAP_* and FASTGPT_KUZHAMBU_* values in .env.
 ./bootstrap-fastgpt.sh .env
-./smoke-fastgpt.sh .env generated/kuzhambu-fastgpt.env
+../../scripts/smoke/docker-fastgpt-smoke.sh .env generated/kuzhambu-fastgpt.env
 
 cd ..
 docker compose --env-file .env \
@@ -86,17 +86,19 @@ Compose builds project-prefixed business image names by default:
 - `kuzhambu/portal-starter:dev`
 - `kuzhambu/workers:dev`
 
-Foundation images are pulled from their upstream repositories or built as project-owned images:
+Foundation images use standard upstream names or project-owned names:
 
 - `nginx:1.27-alpine`
 - `mysql:8.4`
 - `redis:7.2`
 - `kuzhambu/elasticsearch:8.18.8`
-- `apache/rocketmq:5.3.0`
+- `apache/rocketmq:5.4.0`
 
 Business image names default to `${KUZHAMBU_IMAGE_REGISTRY:-kuzhambu}/*:${KUZHAMBU_IMAGE_TAG:-dev}`. Override one image with the matching `KUZHAMBU_*_IMAGE` variable when a stage needs a different tag.
 
-Foundation image versions default to `KUZHAMBU_MYSQL_VERSION=8.4`, `KUZHAMBU_REDIS_VERSION=7.2`, `KUZHAMBU_ELASTICSEARCH_VERSION=8.18.8`, and `KUZHAMBU_ROCKETMQ_VERSION=5.3.0`. The full image reference can still be overridden with the matching `KUZHAMBU_*_IMAGE` variable. Business images and the project Elasticsearch image are produced by `docker compose --env-file .env build`. Pulled foundation images may be retagged into an offline registry when the target environment cannot access the upstream source.
+Foundation image versions default to `KUZHAMBU_MYSQL_VERSION=8.4`, `KUZHAMBU_REDIS_VERSION=7.2`, `KUZHAMBU_ELASTICSEARCH_VERSION=8.18.8`, and `KUZHAMBU_ROCKETMQ_VERSION=5.4.0`. The full image reference can still be overridden with the matching `KUZHAMBU_*_IMAGE` variable. Business images and the project Elasticsearch image are produced by `docker compose --env-file .env build`.
+
+Documentation records the standard image references that compose must run. Image preparation may use mirrors, proxies, or local imports when a host cannot reach the standard source, but the final loaded or saved image should keep the documented reference unless a deployment intentionally overrides it.
 
 `kuzhambu/elasticsearch:8.18.8` is built from an Elasticsearch `8.18.8` base image and installs the same-version `analysis-ik` plugin. Keep these values aligned:
 
@@ -127,7 +129,18 @@ curl --fail --location \
 
 Discovery search defaults to `ik_max_word` for indexing and `ik_smart` for search; override them with `KUZHAMBU_DISCOVERY_SEARCH_INDEX_ANALYZER` and `KUZHAMBU_DISCOVERY_SEARCH_SEARCH_ANALYZER` only when the target ES image provides compatible analyzers.
 
-Offline Docker image archives belong under `deploy/image-files/`. That directory is ignored except for its README and `.gitignore`; do not commit `docker save` tar files. Save one archive per image. Business archives use names like `kuzhambu-admin-web-dev.tar`; foundation archives use names like `foundation-mysql-8.4.tar`, `foundation-redis-7.2.tar`, `foundation-elasticsearch-8.18.8.tar`, and `foundation-rocketmq-5.3.0.tar`.
+Offline Docker image delivery has two separate steps:
+
+1. Make image files on a build host. Build or import the required images, retag them to the standard compose references above, then save one archive per image under `deploy/image-files/`.
+2. Publish image files to a deploy host. Copy the archives to the deploy host, run `docker load` for each archive, configure `.env`, then start or smoke the compose stack. The deploy host should not depend on Docker registry access.
+
+`deploy/image-files/` is ignored except for its README and `.gitignore`; do not commit `docker save` tar files. Business archives use names like `kuzhambu-admin-web-dev.tar`; foundation archives use names like `foundation-mysql-8.4.tar`, `foundation-redis-7.2.tar`, `foundation-elasticsearch-8.18.8.tar`, and `foundation-rocketmq-5.4.0.tar`.
+
+Script entry points:
+
+- Build host image preparation uses the compose build and `docker save` commands in this README. Keep source download choices outside committed env files and repeatable deploy commands.
+- Deploy host image loading uses `scripts/smoke/docker-load-image-files.sh [deploy/image-files]`.
+- Full Docker smoke uses `scripts/smoke/docker-full-smoke.sh deploy/.env deploy/fastgpt/.env`; it calls the image loading script before starting the Kuzhambu compose stack. It does not rebuild Kuzhambu images by default. Set `KUZHAMBU_SMOKE_BUILD_IMAGES=true` only when the smoke target is also the build host; that mode rebuilds the Kuzhambu web, starter, workers and Elasticsearch images before startup.
 
 Dockerfile base images are configurable because CI and deployment hosts may have different registry access. These base images are build inputs, not release artifacts. Defaults are `node:22-bookworm-slim`, `nginx:1.27-alpine`, `maven:3.9.11-eclipse-temurin-17`, `eclipse-temurin:17-jre`, and `python:3.10-slim`. Override `KUZHAMBU_WEB_BUILD_IMAGE`, `KUZHAMBU_WEB_RUNTIME_IMAGE`, `KUZHAMBU_SERVER_BUILD_IMAGE`, `KUZHAMBU_SERVER_RUNTIME_IMAGE`, or `KUZHAMBU_WORKERS_BASE_IMAGE` without changing Dockerfiles.
 
