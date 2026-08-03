@@ -1,5 +1,8 @@
 import { DatePicker, Statistic } from "antd";
-import type { FormInstance } from "antd";
+import { Form } from "antd";
+import dayjs from "dayjs";
+import type { Dayjs } from "dayjs";
+import { useMemo } from "react";
 import {
     KuzhambuButton,
     KuzhambuCard,
@@ -7,37 +10,53 @@ import {
     KuzhambuFormItem,
     KuzhambuSelect
 } from "@/components";
-import {
-    INVOCATION_DATE_TIME_FORMAT,
-    type InvocationSummaryFilterValues
-} from "../invocation-filter-values";
+import type { AiInvocationSummaryQuery } from "../invocations-service";
 import type { AiInvocationSummaryRecord, AiTopCapabilityRecord } from "../invocations-types";
 
 import "./invocation-summary-tab.css";
 
 const { RangePicker } = DatePicker;
 
+const INVOCATION_DATE_TIME_FORMAT = "YYYYMMDD HH:mm";
+
+type InvocationDateRangeValue = [Dayjs | null, Dayjs | null] | null;
+
+type InvocationSummaryFilterValues = AiInvocationSummaryQuery & {
+    period?: InvocationDateRangeValue;
+};
+
 interface InvocationSummaryTabProps {
     capabilityOptions: Array<{ label: string; value: string }>;
     formatCapability: (capability?: string | null) => string;
     summary?: AiInvocationSummaryRecord;
-    summaryForm: FormInstance<InvocationSummaryFilterValues>;
-    summaryInitialValues: InvocationSummaryFilterValues;
-    topCapabilities: AiTopCapabilityRecord[];
-    topCapabilityMaxCount: number;
-    onRefreshSummary: () => void;
+    onRefreshSummary: (values: InvocationSummaryFilterValues) => void;
 }
 
 export const InvocationSummaryTab = ({
     capabilityOptions,
     formatCapability,
     summary,
-    summaryForm,
-    summaryInitialValues,
-    topCapabilities,
-    topCapabilityMaxCount,
     onRefreshSummary
 }: InvocationSummaryTabProps) => {
+    const [summaryForm] = Form.useForm<InvocationSummaryFilterValues>();
+    const summaryInitialValues = useMemo<InvocationSummaryFilterValues>(
+        () => ({
+            period: [dayjs().subtract(7, "day"), dayjs()],
+            bucketType: "DAY"
+        }),
+        []
+    );
+    const topCapabilities: AiTopCapabilityRecord[] = summary?.topCapabilities || [];
+    const topCapabilityMaxCount = Math.max(
+        ...topCapabilities.map((record) => record.invocationCount),
+        1
+    );
+
+    const refreshSummary = async () => {
+        const values = await summaryForm.validateFields();
+        onRefreshSummary(values);
+    };
+
     return (
         <>
             <KuzhambuCard className="invocations-summary-filter-card">
@@ -74,7 +93,7 @@ export const InvocationSummaryTab = ({
                 <KuzhambuButton
                     testId="ai-invocations-invocations-refresh-button-2"
                     type="primary"
-                    onClick={onRefreshSummary}
+                    onClick={() => void refreshSummary()}
                 >
                     刷新
                 </KuzhambuButton>

@@ -1,8 +1,8 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { App, Form, Tooltip } from "antd";
-import type { TablePaginationConfig } from "antd/es/table";
+import { App, Tooltip } from "antd";
 import dayjs from "dayjs";
+import type { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuPage, KuzhambuTabs, KuzhambuButton } from "@/components";
@@ -10,11 +10,6 @@ import { KuzhambuPage, KuzhambuTabs, KuzhambuButton } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { InvocationCallsTab } from "./invocation-calls-tab";
 import { InvocationDetailDrawer } from "./invocation-detail-drawer";
-import type {
-    InvocationLogFilterValues,
-    InvocationDateRangeValue,
-    InvocationSummaryFilterValues
-} from "./invocation-filter-values";
 import { InvocationSummaryTab } from "./invocation-summary-tab";
 import * as service from "./invocations-service";
 import type { AiInvocationLogPageQuery, AiInvocationSummaryQuery } from "./invocations-service";
@@ -39,15 +34,17 @@ const CAPABILITY_LABELS: Record<string, string> = {
     platform_version_summary: "版本摘要"
 };
 
-const defaultPeriod: InvocationDateRangeValue = [dayjs().subtract(7, "day"), dayjs()];
+type InvocationDateRangeValue = [Dayjs | null, Dayjs | null] | null;
 
-const rangeToIso = (range?: InvocationDateRangeValue) => ({
-    start: range?.[0]?.toISOString() || null,
-    end: range?.[1]?.toISOString() || null
-});
+type InvocationSummaryFilterValues = AiInvocationSummaryQuery & {
+    period?: InvocationDateRangeValue;
+};
 
 const buildSummaryQuery = (values: InvocationSummaryFilterValues): AiInvocationSummaryQuery => {
-    const range = rangeToIso(values.period);
+    const range = {
+        start: values.period?.[0]?.toISOString() || null,
+        end: values.period?.[1]?.toISOString() || null
+    };
     return {
         periodStart: range.start,
         periodEnd: range.end,
@@ -56,31 +53,14 @@ const buildSummaryQuery = (values: InvocationSummaryFilterValues): AiInvocationS
     };
 };
 
-const buildInvocationLogQuery = (
-    values: InvocationLogFilterValues,
-    pageNo: number,
-    pageSize: number
-): AiInvocationLogPageQuery => {
-    const range = rangeToIso(values.requestedAt);
-    return {
-        status: values.status || null,
-        requestedAtStart: range.start,
-        requestedAtEnd: range.end,
-        pageNo,
-        pageSize
-    };
-};
-
 export const InvocationsPage = () => {
     const { message } = App.useApp();
-    const [summaryForm] = Form.useForm<InvocationSummaryFilterValues>();
-    const [callsForm] = Form.useForm<InvocationLogFilterValues>();
     const canViewInvocation = hasPermission("ai:invocation:view");
     const [detailInvocationLog, setDetailInvocationLog] = useState<AiInvocationLogRecord | null>(
         null
     );
     const [summaryQuery, setSummaryQuery] = useState<AiInvocationSummaryQuery>(() =>
-        buildSummaryQuery({ period: defaultPeriod, bucketType: "DAY" })
+        buildSummaryQuery({ period: [dayjs().subtract(7, "day"), dayjs()], bucketType: "DAY" })
     );
     const [invocationLogQuery, setInvocationLogQuery] = useState<AiInvocationLogPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
@@ -147,42 +127,12 @@ export const InvocationsPage = () => {
         }
     }, [invocationLogPageQuery.error, invocationLogPageQuery.isError, message]);
 
-    const refreshSummary = async () => {
-        const values = await summaryForm.validateFields();
+    const refreshSummary = (values: InvocationSummaryFilterValues) => {
         setSummaryQuery(buildSummaryQuery(values));
-    };
-
-    const searchCalls = async (
-        pageNo = DEFAULT_PAGE_NO,
-        pageSize = invocationLogQuery.pageSize || DEFAULT_PAGE_SIZE
-    ) => {
-        const values = await callsForm.validateFields();
-        setInvocationLogQuery(buildInvocationLogQuery(values, pageNo, pageSize));
-    };
-
-    const resetCalls = () => {
-        callsForm.resetFields();
-        setInvocationLogQuery({ pageNo: DEFAULT_PAGE_NO, pageSize: DEFAULT_PAGE_SIZE });
-    };
-
-    const handleTableChange = (pagination: TablePaginationConfig) => {
-        const nextPageNo = pagination.current || DEFAULT_PAGE_NO;
-        const nextPageSize = pagination.pageSize || DEFAULT_PAGE_SIZE;
-        void searchCalls(nextPageNo, nextPageSize);
     };
 
     const summary = invocationSummaryQuery.data;
     const invocationLogPage = invocationLogPageQuery.data;
-
-    const topCapabilities = summary?.topCapabilities || [];
-    const topCapabilityMaxCount = Math.max(
-        ...topCapabilities.map((record) => record.invocationCount),
-        1
-    );
-    const summaryInitialValues: InvocationSummaryFilterValues = {
-        period: defaultPeriod,
-        bucketType: "DAY"
-    };
 
     return (
         <>
@@ -218,11 +168,7 @@ export const InvocationsPage = () => {
                                     capabilityOptions={capabilityOptions}
                                     formatCapability={formatCapability}
                                     summary={summary}
-                                    summaryForm={summaryForm}
-                                    summaryInitialValues={summaryInitialValues}
-                                    topCapabilities={topCapabilities}
-                                    topCapabilityMaxCount={topCapabilityMaxCount}
-                                    onRefreshSummary={() => void refreshSummary()}
+                                    onRefreshSummary={refreshSummary}
                                 />
                             )
                         },
@@ -231,18 +177,11 @@ export const InvocationsPage = () => {
                             label: "调用记录",
                             children: (
                                 <InvocationCallsTab
-                                    callsForm={callsForm}
-                                    currentPageNo={invocationLogQuery.pageNo || DEFAULT_PAGE_NO}
-                                    currentPageSize={
-                                        invocationLogQuery.pageSize || DEFAULT_PAGE_SIZE
-                                    }
                                     formatCapability={formatCapability}
                                     invocationLogPage={invocationLogPage}
                                     loading={invocationLogPageQuery.isFetching}
-                                    onChange={handleTableChange}
                                     onOpenDetail={setDetailInvocationLog}
-                                    onResetCalls={resetCalls}
-                                    onSearchCalls={() => void searchCalls()}
+                                    onSearchCalls={setInvocationLogQuery}
                                 />
                             )
                         }
