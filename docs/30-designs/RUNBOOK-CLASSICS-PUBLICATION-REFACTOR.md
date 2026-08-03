@@ -820,7 +820,7 @@ flowchart TD
 | 3. Runtime and Admin | `COMPLETE` | 100-180 | full Java and admin-web checks |
 | 4. Portal cutover and sharing frontend removal | `COMPLETE` | 50-100 | full Java/frontend checks and sharing residue scans |
 | 5. Publication visibility and legacy MQ removal | `COMPLETE` | 90-170 | full Java/frontend checks and legacy residue scans |
-| 6. Database reset and smoke | `ACTIVE` | 20-60 | full checks plus runtime smoke |
+| 6. Database reset and smoke | `PARTIAL` | 20-60 | full checks passed; runtime smoke still open |
 
 文件数是基于当前扫描的估计，不是硬上限。每个 stage 内按 work package 和可独立理解、
 可验证的工程判断推进；stage 结束时只设置一个独立编译、测试检查点。
@@ -907,7 +907,7 @@ Status: COMPLETE
 
 Status: COMPLETE
 
-- Delivery PR: `#197` (`draft`)
+- Delivery PR: `#197` (`merge`)
 - Functional commit range: `932453204^..e2b0c75f6`
 - 删除三类 Classics 稿件 publication visibility 全栈字段、query、mutation 和
   Admin/Portal 展示入口。
@@ -923,11 +923,28 @@ Status: COMPLETE
 
 ### Stage 6: Reset database, smoke and close
 
-Status: ACTIVE
+Status: PARTIAL
 
 Entry:
 
 - Stage 1-5 全部 COMPLETE。
+
+Delivered baseline:
+
+- Delivery PR: `#198` (`merge`).
+- CI checks: governance、backend、frontend、workers passed；database check skipped because
+  PR 未改 `db/`。
+- Automated runtime recovery smoke 已进入 `ClassicsPublicationRuntimeSmokeIT`。
+- Discovery analyzer 配置、ES `8.18.8` + `analysis-ik` 镜像构建和离线镜像归档已完成。
+- 证据已写入 `docs/40-readiness/CLASSICS-PUBLICATION-EVIDENCE.md`。
+
+Remaining closeout before deleting this RUNBOOK:
+
+- 数据库重建和表/seed 断言；
+- `scripts/verify-classics.sh`；
+- 10 个 live happy-path smoke；
+- 真实 ES/FastGPT publish/offline smoke；
+- 完成证据补入 readiness 后删除本 RUNBOOK。
 - 工作区干净。
 - Java和前端完整门禁已通过。
 - 没有 live sharing、visibility publication 或 legacy MQ 残留。
@@ -1166,6 +1183,21 @@ tar 文件，避免后续只替换一个镜像时必须重新分发合并大包�
 ```bash
 # From repo root.
 docker compose --env-file deploy/.env.example -f deploy/docker-compose.yml config >/tmp/kuzhambu-compose-config.yml
+
+# Elasticsearch is built from a project-owned ES base image plus a local IK package.
+# If Docker daemon cannot reach Elastic directly, pull through the local proxy with crane first.
+HTTP_PROXY=http://127.0.0.1:1082 HTTPS_PROXY=http://127.0.0.1:1082 \
+  crane pull --platform linux/amd64 \
+  "container-registry-test.elastic.co/elasticsearch/elasticsearch:${KUZHAMBU_ELASTICSEARCH_VERSION:-8.18.8}" \
+  "/tmp/elasticsearch-${KUZHAMBU_ELASTICSEARCH_VERSION:-8.18.8}.tar"
+docker load -i "/tmp/elasticsearch-${KUZHAMBU_ELASTICSEARCH_VERSION:-8.18.8}.tar"
+docker tag \
+  "container-registry-test.elastic.co/elasticsearch/elasticsearch:${KUZHAMBU_ELASTICSEARCH_VERSION:-8.18.8}" \
+  "kuzhambu/elasticsearch-base:${KUZHAMBU_ELASTICSEARCH_VERSION:-8.18.8}"
+curl --fail --location \
+  --output "deploy/elasticsearch/elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION:-8.18.8}.zip" \
+  "https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION:-8.18.8}.zip"
+
 docker compose --env-file deploy/.env.example -f deploy/docker-compose.yml build
 docker compose --env-file deploy/.env.example -f deploy/docker-compose.yml pull \
   nginx mysql redis rocketmq-namesrv

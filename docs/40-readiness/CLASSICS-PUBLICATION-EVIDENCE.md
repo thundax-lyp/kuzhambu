@@ -43,7 +43,7 @@ publication job 的状态、租约、条件更新和清理持久化协议。
 
 ## Stage 5: Visibility And Legacy MQ Removal
 
-Status: DELIVERED_PENDING_MERGE
+Status: DELIVERED
 
 ### Scope
 
@@ -80,6 +80,46 @@ The admin-web full Vitest failure was not reproduced by focused rerun of the exa
 
 ### Delivery State
 
-- Delivery PR: `#197` (`draft`).
+- Delivery PR: `#197` (`merge`)。
 - RUNBOOK Stage 5 has been compressed to `COMPLETE`.
-- Remaining Stage 6 work: database reset, runtime smoke, final RUNBOOK deletion.
+- Stage 6 remaining work is tracked in the next section.
+
+## Stage 6: Smoke Closeout Baseline
+
+Status: PARTIAL_DELIVERED
+
+### Scope
+
+- Delivery PR: `#198` (`merge`)。
+- Functional commits: `fb5e75c57215a92d5781a91e3b23d06fe40cbd65` ..
+  `a0ea3797993f50706e5427e2596726ab0bd4bf42`。
+
+Stage 6 已补齐发布运行时恢复自动化覆盖、Portal 无用 RocketMQ 装配关闭、Discovery 中文
+搜索 analyzer 配置、部署镜像构建参数和 Elasticsearch `8.18.8` + `analysis-ik`
+镜像制品准备。
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| PR `#198` `Verify Governance` | PASS |
+| PR `#198` `Verify Backend` | PASS |
+| PR `#198` `Verify Frontend` | PASS |
+| PR `#198` `Verify Python Workers` | PASS |
+| PR `#198` `Verify Database` | SKIPPED；PR 未改 `db/` |
+| `mvn -pl biz/discovery/kuzhambu-discovery-infra -Dtest=ElasticsearchSearchIndexGatewayTest,DiscoverySearchIndexConfigurationTest test` | PASS |
+| remote compose config | PASS；ES rendered as `kuzhambu/elasticsearch:8.18.8`, base `kuzhambu/elasticsearch-base:8.18.8`, platform `linux/amd64` |
+| ES base image pull | PASS；`container-registry-test.elastic.co/elasticsearch/elasticsearch:8.18.8` pulled by `crane` through local proxy, loaded and retagged as `kuzhambu/elasticsearch-base:8.18.8` |
+| final ES image build | PASS；`kuzhambu/elasticsearch:8.18.8` built with local IK zip; `elasticsearch-plugin list` returned `analysis-ik` |
+| final ES archive | PASS；saved as ignored local artifact `deploy/image-files/foundation-elasticsearch-8.18.8.tar` |
+
+### Remaining Runtime Closure
+
+The temporary RUNBOOK remains because the original Stage 6 exit criteria are not fully evidenced here.
+The following items still need a real runtime closeout before deleting the RUNBOOK:
+
+- database reset and table/seed assertions;
+- `scripts/verify-classics.sh`;
+- live happy-path smoke against the rebuilt deployment;
+- real ES/FastGPT publication and offline smoke;
+- final RUNBOOK deletion after evidence is complete.

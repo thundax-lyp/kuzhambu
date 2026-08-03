@@ -69,7 +69,7 @@ Compose builds project-prefixed business image names by default:
 - `kuzhambu/portal-starter:dev`
 - `kuzhambu/workers:dev`
 
-Foundation images are pulled from their upstream repositories by default:
+Foundation images are pulled from their upstream repositories or built as project-owned images:
 
 - `nginx:1.27-alpine`
 - `mysql:8.4`
@@ -87,9 +87,26 @@ Foundation image versions default to `KUZHAMBU_MYSQL_VERSION=8.4`, `KUZHAMBU_RED
 - `KUZHAMBU_ELASTICSEARCH_IK_VERSION=8.18.8`
 - `KUZHAMBU_ELASTICSEARCH_DOCKER_PLATFORM=linux/amd64`
 
-When the Docker daemon cannot pull Elastic images directly, pull `container-registry-test.elastic.co/elasticsearch/elasticsearch:${KUZHAMBU_ELASTICSEARCH_VERSION}` with `crane` through the local proxy, load it, and retag it as `kuzhambu/elasticsearch-base:${KUZHAMBU_ELASTICSEARCH_VERSION}`. Compose uses that project-owned base image by default so the actual ES build does not depend on Docker daemon registry access.
+When the Docker daemon cannot pull Elastic images directly, pull `container-registry-test.elastic.co/elasticsearch/elasticsearch:${KUZHAMBU_ELASTICSEARCH_VERSION}` with `crane` through the local proxy, load it, and retag it as `kuzhambu/elasticsearch-base:${KUZHAMBU_ELASTICSEARCH_VERSION}`. Compose uses that project-owned base image by default so the actual ES build does not depend on Docker daemon registry access:
 
-Before building the final ES image, download `elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION}.zip` into `deploy/elasticsearch/`; the plugin archive is a local build input and must not be committed. The canonical IK download URL is `https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION}.zip`.
+```sh
+HTTP_PROXY=http://127.0.0.1:1082 HTTPS_PROXY=http://127.0.0.1:1082 \
+  crane pull --platform linux/amd64 \
+  "container-registry-test.elastic.co/elasticsearch/elasticsearch:${KUZHAMBU_ELASTICSEARCH_VERSION}" \
+  "/tmp/elasticsearch-${KUZHAMBU_ELASTICSEARCH_VERSION}.tar"
+docker load -i "/tmp/elasticsearch-${KUZHAMBU_ELASTICSEARCH_VERSION}.tar"
+docker tag \
+  "container-registry-test.elastic.co/elasticsearch/elasticsearch:${KUZHAMBU_ELASTICSEARCH_VERSION}" \
+  "kuzhambu/elasticsearch-base:${KUZHAMBU_ELASTICSEARCH_VERSION}"
+```
+
+Before building the final ES image, download `elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION}.zip` into `deploy/elasticsearch/`; the plugin archive is a local build input and must not be committed. The canonical IK download URL is `https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION}.zip`:
+
+```sh
+curl --fail --location \
+  --output "deploy/elasticsearch/elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION}.zip" \
+  "https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-${KUZHAMBU_ELASTICSEARCH_IK_VERSION}.zip"
+```
 
 Discovery search defaults to `ik_max_word` for indexing and `ik_smart` for search; override them with `KUZHAMBU_DISCOVERY_SEARCH_INDEX_ANALYZER` and `KUZHAMBU_DISCOVERY_SEARCH_SEARCH_ANALYZER` only when the target ES image provides compatible analyzers.
 
