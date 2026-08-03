@@ -1,6 +1,7 @@
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { KuzhambuButton, KuzhambuTag } from "@/components";
+import { readPublicationJobStatusLabel } from "@/pages/classics/publication-jobs/publication-job-labels";
 import type { ClassicsPublicationJobRecord } from "@/pages/classics/publication-jobs/publication-jobs-types";
 
 const JOB_TYPE_LABELS = { PUBLISH: "发布", OFFLINE: "下线" } as const;
@@ -38,7 +39,14 @@ export const createPublicationJobTableColumns = ({
             <KuzhambuTag type={RESULT_TYPES[value]}>{RESULT_LABELS[value]}</KuzhambuTag>
         )
     },
-    { title: "里程碑", dataIndex: "jobStatus", width: 150 },
+    {
+        title: "里程碑",
+        dataIndex: "jobStatus",
+        width: 160,
+        render: (value: ClassicsPublicationJobRecord["jobStatus"]) => (
+            <KuzhambuTag type="info">{readPublicationJobStatusLabel(value)}</KuzhambuTag>
+        )
+    },
     {
         title: "尝试次数",
         key: "attempts",

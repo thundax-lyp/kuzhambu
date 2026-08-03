@@ -1,6 +1,7 @@
 import { Descriptions } from "antd";
 import dayjs from "dayjs";
-import { KuzhambuDrawer } from "@/components";
+import { KuzhambuDrawer, KuzhambuTag } from "@/components";
+import { readPublicationJobStatusLabel } from "@/pages/classics/publication-jobs/publication-job-labels";
 import type { ClassicsPublicationJobRecord } from "@/pages/classics/publication-jobs/publication-jobs-types";
 
 const formatTime = (value?: string | null) =>
@@ -39,7 +40,11 @@ export const PublicationJobDetailDrawer = ({
                 </Descriptions.Item>
                 <Descriptions.Item label="任务动作">{job.jobType}</Descriptions.Item>
                 <Descriptions.Item label="任务结果">{job.jobResultStatus}</Descriptions.Item>
-                <Descriptions.Item label="当前里程碑">{job.jobStatus}</Descriptions.Item>
+                <Descriptions.Item label="当前里程碑">
+                    <KuzhambuTag type="info">
+                        {readPublicationJobStatusLabel(job.jobStatus)}
+                    </KuzhambuTag>
+                </Descriptions.Item>
                 <Descriptions.Item label="失败步骤">{job.failureStep || "-"}</Descriptions.Item>
                 <Descriptions.Item label="生命周期">
                     {job.sourceLifecycleStatus} → {job.targetLifecycleStatus}
