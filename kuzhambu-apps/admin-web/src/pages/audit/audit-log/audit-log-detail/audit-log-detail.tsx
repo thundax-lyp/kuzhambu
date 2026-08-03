@@ -8,7 +8,9 @@ import type {
     AuditLogDetailRecord,
     AuditSnapshotFieldRecord,
     AuditSnapshotRecord
-} from "./audit-log-types";
+} from "../audit-log-types";
+
+import "./audit-log-detail.css";
 
 const { Paragraph, Text } = Typography;
 
