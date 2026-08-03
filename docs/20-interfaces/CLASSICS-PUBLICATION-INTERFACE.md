@@ -3,8 +3,7 @@
 ## Purpose
 
 本文档固定 Classics 发布/下线的跨模块稳定契约。流程实现、租约与恢复机制见
-`docs/30-designs/CLASSICS-PUBLICATION-SPECIAL-DESIGN.md`；执行分期见
-`docs/30-designs/RUNBOOK-CLASSICS-PUBLICATION-REFACTOR.md`。
+`docs/30-designs/CLASSICS-PUBLICATION-SPECIAL-DESIGN.md`。
 
 ## States
 

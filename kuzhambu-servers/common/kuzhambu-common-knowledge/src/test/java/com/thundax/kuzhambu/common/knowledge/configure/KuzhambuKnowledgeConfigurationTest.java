@@ -7,9 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
 import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseListRequest;
+import com.thundax.kuzhambu.common.knowledge.support.FastGptKnowledgeBaseClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestTemplate;
 
 public class KuzhambuKnowledgeConfigurationTest {
 
@@ -37,6 +41,22 @@ public class KuzhambuKnowledgeConfigurationTest {
                         "kuzhambu.knowledge.fastgpt.app-id=app-1",
                         "kuzhambu.knowledge.fastgpt.knowledge-base-id=6a4f51e5ef72393d430a8e31")
                 .run(context -> assertTrue(context.getBean(KnowledgeBaseClient.class) != null));
+    }
+
+    @Test
+    public void shouldUseSimpleRequestFactoryForFastGptClient() {
+        contextRunner
+                .withPropertyValues(
+                        "kuzhambu.knowledge.enabled=true",
+                        "kuzhambu.knowledge.fastgpt.api-key=fastgpt-test",
+                        "kuzhambu.knowledge.fastgpt.app-id=app-1",
+                        "kuzhambu.knowledge.fastgpt.knowledge-base-id=6a4f51e5ef72393d430a8e31")
+                .run(context -> {
+                    FastGptKnowledgeBaseClient client =
+                            (FastGptKnowledgeBaseClient) context.getBean(KnowledgeBaseClient.class);
+                    RestTemplate restTemplate = (RestTemplate) ReflectionTestUtils.getField(client, "restOperations");
+                    assertTrue(restTemplate.getRequestFactory() instanceof SimpleClientHttpRequestFactory);
+                });
     }
 
     @Test

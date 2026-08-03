@@ -14,6 +14,7 @@ NETWORK_NAME="${KUZHAMBU_SMOKE_NETWORK:-kuzhambu-smoke-net}"
 COMPOSE_OVERRIDE="${KUZHAMBU_SMOKE_COMPOSE_OVERRIDE:-/tmp/kuzhambu-smoke-compose.yml}"
 FASTGPT_COMPOSE_OVERRIDE="${FASTGPT_SMOKE_COMPOSE_OVERRIDE:-/tmp/kuzhambu-fastgpt-smoke.yml}"
 BUILD_IMAGES="${KUZHAMBU_SMOKE_BUILD_IMAGES:-}"
+LOAD_IMAGES="${KUZHAMBU_SMOKE_LOAD_IMAGES:-}"
 IMAGE_FILES_DIR="${KUZHAMBU_IMAGE_FILES_DIR:-}"
 
 if [[ ! -f "${KUZHAMBU_ENV_FILE}" ]]; then
@@ -78,6 +79,7 @@ env_value() {
 }
 
 BUILD_IMAGES="${BUILD_IMAGES:-$(env_value "${KUZHAMBU_ENV_FILE}" KUZHAMBU_SMOKE_BUILD_IMAGES false)}"
+LOAD_IMAGES="${LOAD_IMAGES:-$(env_value "${KUZHAMBU_ENV_FILE}" KUZHAMBU_SMOKE_LOAD_IMAGES true)}"
 IMAGE_FILES_DIR="${IMAGE_FILES_DIR:-$(env_value "${KUZHAMBU_ENV_FILE}" KUZHAMBU_IMAGE_FILES_DIR "${DEPLOY_DIR}/image-files")}"
 
 wait_mysql() {
@@ -158,8 +160,12 @@ write_fastgpt_override
 mkdir -p "${FASTGPT_DIR}/generated"
 touch "${FASTGPT_DIR}/generated/kuzhambu-fastgpt.env"
 
-step "loading Kuzhambu image archives"
-"${SCRIPT_DIR}/docker-load-image-files.sh" "${IMAGE_FILES_DIR}"
+if [[ "${LOAD_IMAGES}" == "true" ]]; then
+    step "loading Kuzhambu image archives"
+    "${SCRIPT_DIR}/docker-load-image-files.sh" "${IMAGE_FILES_DIR}"
+else
+    step "skipping Kuzhambu image archive loading"
+fi
 
 step "resetting smoke projects"
 compose down -v --remove-orphans >/dev/null 2>&1 || true

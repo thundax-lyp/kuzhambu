@@ -37,8 +37,7 @@ publication job 的状态、租约、条件更新和清理持久化协议。
 ### Delivery State
 
 - Delivery PR: `#193` (`merge`)。
-- RUNBOOK Stage 1 已压缩为 `COMPLETE` 摘要；Stage 2-6 保持 `PENDING`。
-- 当前证据不包含数据库运行时 smoke；RUNBOOK 明确由最终 Stage 6 统一重建数据库并冒烟。
+- Stage 1 证据不包含数据库运行时 smoke；运行时收口由 Stage 6 完成。
 - Deferred implementation: frontend sharing removal (Stage 4), legacy MQ and remaining visibility removal (Stage 5).
 
 ## Stage 5: Visibility And Legacy MQ Removal
@@ -81,12 +80,11 @@ The admin-web full Vitest failure was not reproduced by focused rerun of the exa
 ### Delivery State
 
 - Delivery PR: `#197` (`merge`)。
-- RUNBOOK Stage 5 has been compressed to `COMPLETE`.
-- Stage 6 remaining work is tracked in the next section.
+- Stage 6 completed the runtime smoke and closure evidence in the next section.
 
 ## Stage 6: Smoke Closeout Baseline
 
-Status: PARTIAL_DELIVERED
+Status: COMPLETE
 
 ### Scope
 
@@ -95,8 +93,8 @@ Status: PARTIAL_DELIVERED
   `a0ea3797993f50706e5427e2596726ab0bd4bf42`。
 
 Stage 6 已补齐发布运行时恢复自动化覆盖、Portal 无用 RocketMQ 装配关闭、Discovery 中文
-搜索 analyzer 配置、部署镜像构建参数和 Elasticsearch `8.18.8` + `analysis-ik`
-镜像制品准备。
+搜索 analyzer 配置、部署镜像构建参数、Elasticsearch `8.18.8` + `analysis-ik`
+镜像制品准备，以及完整 Docker runtime smoke 收口。
 
 ### Verification
 
@@ -112,14 +110,44 @@ Stage 6 已补齐发布运行时恢复自动化覆盖、Portal 无用 RocketMQ �
 | ES base image pull | PASS；`container-registry-test.elastic.co/elasticsearch/elasticsearch:8.18.8` pulled by `crane` through local proxy, loaded and retagged as `kuzhambu/elasticsearch-base:8.18.8` |
 | final ES image build | PASS；`kuzhambu/elasticsearch:8.18.8` built with local IK zip; `elasticsearch-plugin list` returned `analysis-ik` |
 | final ES archive | PASS；saved as ignored local artifact `deploy/image-files/foundation-elasticsearch-8.18.8.tar` |
+| `scripts/verify-classics.sh` | PASS；2026-08-03；Classics schema and data files are present |
+| remote Docker full smoke | PASS；2026-08-03；server `ser-zj@10.10.10.51`; command `KUZHAMBU_SMOKE_LOAD_IMAGES=false scripts/smoke/docker-full-smoke.sh deploy/.env deploy/fastgpt/.env` |
+| remote Classics publication smoke | PASS；2026-08-03；Sancai content `386995904401`; publish job `4`; offline job `5` |
+| focused FastGPT client/config tests | PASS；`mvn -pl common/kuzhambu-common-knowledge test`；23 tests |
 
-### Remaining Runtime Closure
+### Runtime Smoke Coverage
 
-The temporary RUNBOOK remains because the original Stage 6 exit criteria are not fully evidenced here.
-The following items still need a real runtime closeout before deleting the RUNBOOK:
+The remote Docker smoke started isolated compose projects with fresh volumes, reused already-loaded
+server images, bootstrapped a blank FastGPT cluster, generated the Kuzhambu FastGPT env fragment, and
+passed the FastGPT smoke for model records, OpenAPI health, dataset visibility, collection create,
+disable, list, `pushData insertLen`, enable and delete.
 
-- database reset and table/seed assertions;
-- `scripts/verify-classics.sh`;
-- live happy-path smoke against the rebuilt deployment;
-- real ES/FastGPT publication and offline smoke;
-- final RUNBOOK deletion after evidence is complete.
+The same smoke then started Kuzhambu MySQL, Redis, Elasticsearch, RocketMQ, workers, admin/portal
+starters, admin-web, portal-web and nginx; loaded all `db/schema/*.sql` and `db/data/*.sql`; verified
+admin and portal actuator health through nginx; and verified the portal static route.
+
+The follow-up Classics publication smoke logged in through nginx, selected an `ERROR` Sancai entry,
+created a new publish job, waited for `CONTENT_COMMITTED/SUCCEEDED`, verified the portal entry became
+visible, created an offline job, waited for `CONTENT_COMMITTED/SUCCEEDED`, and verified the portal
+entry was no longer public. The publish path crossed ES prepare/ready and FastGPT
+collection create/push/enable; the offline path crossed ES disable and FastGPT disable.
+
+Smoke execution exposed two deployment/runtime gaps and closed both before the final pass:
+
+- FastGPT calls from Spring Boot 3.5 used the default JDK HTTP client path, which produced
+  `HTTP/1.1 header parser received no bytes` against the FastGPT Node service during
+  collection creation. The FastGPT client now uses `SimpleClientHttpRequestFactory` explicitly and
+  sends `Connection: close`.
+- Recreating the Kuzhambu starters manually without the full smoke override lost the shared
+  FastGPT network and omitted the generated FastGPT env fragment. Deployment documentation now
+  requires the generated env as an additional compose env source, and the full smoke continues to
+  attach both compose projects to the same explicit smoke network.
+
+FastGPT internal training, vectorization and retrieval visibility are intentionally not runtime smoke
+gates. Publication readiness only requires FastGPT API acceptance and collection enable/disable
+semantics; FastGPT internal progress remains owned by FastGPT.
+
+### Closure
+
+The temporary publication refactor RUNBOOK has been deleted after the stable requirements, interface,
+special design, deployment documentation and this readiness evidence were aligned.

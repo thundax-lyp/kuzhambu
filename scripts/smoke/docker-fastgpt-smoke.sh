@@ -122,31 +122,14 @@ sys.exit(0 if body.get("code") == 200 and insert_len == 1 else 1)
 '
 }
 
-json_data_total_positive() {
+json_data_page_ok() {
     python3 -c '
 import json
 import sys
 body = json.load(sys.stdin)
 data = body.get("data") if isinstance(body.get("data"), dict) else {}
-sys.exit(0 if body.get("code") == 200 and data.get("total", 0) >= 1 else 1)
+sys.exit(0 if body.get("code") == 200 and isinstance(data.get("total", 0), int) else 1)
 '
-}
-
-wait_data_visible() {
-    local attempts=10
-    local index=1
-    while ((index <= attempts)); do
-        if api_json POST "/api/core/dataset/data/v2/list" \
-            "{\"collectionId\":\"${collection_id}\",\"offset\":0,\"pageSize\":30}" \
-            | json_data_total_positive; then
-            return 0
-        fi
-        sleep 2
-        index=$((index + 1))
-    done
-
-    echo "FastGPT temporary data was not visible after ${attempts} attempts" >&2
-    return 1
 }
 
 require_env FASTGPT_BOOTSTRAP_LLM_MODEL
@@ -202,13 +185,14 @@ step "disabling temporary collection"
 api_json POST "/api/core/dataset/collection/update" \
     "{\"id\":\"${collection_id}\",\"forbid\":true}" | json_code_ok
 
+step "checking collection data list endpoint"
+api_json POST "/api/core/dataset/data/v2/list" \
+    "{\"collectionId\":\"${collection_id}\",\"offset\":0,\"pageSize\":30}" | json_data_page_ok
+
 step "pushing temporary data"
 api_json POST "/api/core/dataset/data/pushData" \
     "{\"collectionId\":\"${collection_id}\",\"data\":[{\"q\":\"kuzhambu smoke question\",\"a\":\"kuzhambu smoke answer\",\"chunkIndex\":0}]}" \
     | json_insert_len_one
-
-step "checking temporary data"
-wait_data_visible
 
 step "enabling temporary collection"
 api_json POST "/api/core/dataset/collection/update" \

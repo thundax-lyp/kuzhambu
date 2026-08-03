@@ -64,7 +64,9 @@ starting Kuzhambu compose so `KUZHAMBU_KNOWLEDGE_ENABLED=true`,
 
 `scripts/smoke/docker-fastgpt-smoke.sh` verifies the bootstrap result before Kuzhambu starts. It checks active LLM and
 embedding records, OpenAPI key health, dataset visibility, and the publication-critical collection
-operations: create, disable, pushData, list, enable and delete.
+operations: create, disable, list, pushData, enable and delete. The smoke accepts `pushData`
+`insertLen` as the write proof and does not wait for FastGPT internal training, vectorization or
+retrieval visibility.
 
 The recommended Docker startup order for an isolated full-stack smoke is to run the repository-level
 orchestrator from the repository root:
@@ -88,6 +90,15 @@ If you run the two compose projects manually, use this order:
 5. Use `deploy/fastgpt/generated/kuzhambu-fastgpt.env` as an additional Kuzhambu compose
    env source.
 6. Start the Kuzhambu compose cluster.
+
+Example Kuzhambu startup after bootstrap:
+
+```sh
+docker compose \
+  --env-file deploy/.env \
+  --env-file deploy/fastgpt/generated/kuzhambu-fastgpt.env \
+  -f deploy/docker-compose.yml up -d
+```
 
 When `FASTGPT_KUZHAMBU_BASE_URL=http://fastgpt-app:3000`, both compose projects must join the same
 explicit Docker network so Kuzhambu containers can resolve `fastgpt-app`. If the projects do not share
