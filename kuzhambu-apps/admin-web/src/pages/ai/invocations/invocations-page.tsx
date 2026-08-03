@@ -1,21 +1,21 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { App, Form, Statistic, Tooltip } from "antd";
+import { App, Form, Tooltip } from "antd";
 import type { TablePaginationConfig } from "antd/es/table";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuPage, KuzhambuTabs, KuzhambuButton, KuzhambuCard } from "@/components";
+import { KuzhambuPage, KuzhambuTabs, KuzhambuButton } from "@/components";
 
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import { InvocationCallsTab } from "./invocation-calls-tab";
 import { InvocationDetailDrawer } from "./invocation-detail-drawer";
-import {
-    InvocationFilterPanel,
-    type InvocationLogFilterValues,
-    type InvocationDateRangeValue,
-    type InvocationSummaryFilterValues
+import type {
+    InvocationLogFilterValues,
+    InvocationDateRangeValue,
+    InvocationSummaryFilterValues
 } from "./invocation-filter-panel";
-import { InvocationTable } from "./invocation-table";
+import { InvocationSummaryTab } from "./invocation-summary-tab";
 import * as service from "./invocations-service";
 import type { AiInvocationLogPageQuery, AiInvocationSummaryQuery } from "./invocations-service";
 import type { AiInvocationLogRecord } from "./invocations-types";
@@ -214,118 +214,43 @@ export const InvocationsPage = () => {
                             key: "summary",
                             label: "统计概览",
                             children: (
-                                <>
-                                    <InvocationFilterPanel
-                                        callsForm={callsForm}
-                                        capabilityOptions={capabilityOptions}
-                                        summaryForm={summaryForm}
-                                        summaryInitialValues={summaryInitialValues}
-                                        type="summary"
-                                        onRefreshSummary={() => void refreshSummary()}
-                                        onResetCalls={resetCalls}
-                                        onSearchCalls={() => void searchCalls()}
-                                    />
-
-                                    <div className="invocations-metrics">
-                                        <KuzhambuCard>
-                                            <Statistic
-                                                title="调用次数"
-                                                value={summary?.invocationCount || 0}
-                                            />
-                                        </KuzhambuCard>
-                                        <KuzhambuCard>
-                                            <Statistic
-                                                title="成功调用次数"
-                                                value={summary?.succeededInvocationCount || 0}
-                                            />
-                                        </KuzhambuCard>
-                                        <KuzhambuCard>
-                                            <Statistic
-                                                title="失败调用次数"
-                                                value={summary?.failedInvocationCount || 0}
-                                            />
-                                        </KuzhambuCard>
-                                        <KuzhambuCard>
-                                            <Statistic
-                                                title="平均耗时毫秒"
-                                                value={summary?.avgLatencyMs || 0}
-                                            />
-                                        </KuzhambuCard>
-                                    </div>
-
-                                    <KuzhambuCard
-                                        className="invocations-section-card"
-                                        title="能力排行"
-                                    >
-                                        <div
-                                            aria-label="AI 能力排行"
-                                            className="invocations-capability-bars"
-                                        >
-                                            {topCapabilities.length > 0 ? (
-                                                topCapabilities.map((record) => (
-                                                    <div
-                                                        className="invocations-capability-bar-row"
-                                                        key={record.capability}
-                                                    >
-                                                        <div className="invocations-capability-bar-label">
-                                                            {formatCapability(record.capability)}
-                                                        </div>
-                                                        <div className="invocations-capability-bar-track">
-                                                            <div
-                                                                className="invocations-capability-bar-fill"
-                                                                style={{
-                                                                    width: `${Math.max(
-                                                                        (record.invocationCount /
-                                                                            topCapabilityMaxCount) *
-                                                                            100,
-                                                                        4
-                                                                    )}%`
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <div className="invocations-capability-bar-value">
-                                                            {record.invocationCount}
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="invocations-capability-bar-empty">
-                                                    暂无能力排行
-                                                </div>
-                                            )}
-                                        </div>
-                                    </KuzhambuCard>
-                                </>
+                                <InvocationSummaryTab
+                                    callsForm={callsForm}
+                                    capabilityOptions={capabilityOptions}
+                                    formatCapability={formatCapability}
+                                    summary={summary}
+                                    summaryForm={summaryForm}
+                                    summaryInitialValues={summaryInitialValues}
+                                    topCapabilities={topCapabilities}
+                                    topCapabilityMaxCount={topCapabilityMaxCount}
+                                    onRefreshSummary={() => void refreshSummary()}
+                                    onResetCalls={resetCalls}
+                                    onSearchCalls={() => void searchCalls()}
+                                />
                             )
                         },
                         {
                             key: "calls",
                             label: "调用记录",
                             children: (
-                                <KuzhambuCard className="invocations-section-card">
-                                    <InvocationFilterPanel
-                                        callsForm={callsForm}
-                                        capabilityOptions={capabilityOptions}
-                                        summaryForm={summaryForm}
-                                        summaryInitialValues={summaryInitialValues}
-                                        type="calls"
-                                        onRefreshSummary={() => void refreshSummary()}
-                                        onResetCalls={resetCalls}
-                                        onSearchCalls={() => void searchCalls()}
-                                    />
-
-                                    <InvocationTable
-                                        invocationLogPage={invocationLogPage}
-                                        currentPageNo={invocationLogQuery.pageNo || DEFAULT_PAGE_NO}
-                                        currentPageSize={
-                                            invocationLogQuery.pageSize || DEFAULT_PAGE_SIZE
-                                        }
-                                        formatCapability={formatCapability}
-                                        loading={invocationLogPageQuery.isFetching}
-                                        onChange={handleTableChange}
-                                        onOpenDetail={setDetailInvocationLog}
-                                    />
-                                </KuzhambuCard>
+                                <InvocationCallsTab
+                                    callsForm={callsForm}
+                                    capabilityOptions={capabilityOptions}
+                                    currentPageNo={invocationLogQuery.pageNo || DEFAULT_PAGE_NO}
+                                    currentPageSize={
+                                        invocationLogQuery.pageSize || DEFAULT_PAGE_SIZE
+                                    }
+                                    formatCapability={formatCapability}
+                                    invocationLogPage={invocationLogPage}
+                                    loading={invocationLogPageQuery.isFetching}
+                                    summaryForm={summaryForm}
+                                    summaryInitialValues={summaryInitialValues}
+                                    onChange={handleTableChange}
+                                    onOpenDetail={setDetailInvocationLog}
+                                    onRefreshSummary={() => void refreshSummary()}
+                                    onResetCalls={resetCalls}
+                                    onSearchCalls={() => void searchCalls()}
+                                />
                             )
                         }
                     ]}
