@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { InvocationsPage } from "./invocations-page";
 import * as service from "./invocations-service";
 
@@ -46,15 +45,14 @@ const invocationLog = {
 const renderPage = () =>
     render(
         <App>
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <InvocationsPage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         </App>
     );
 
 describe("InvocationsPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         replacePermissions(["ai:invocation:view"]);
         vi.mocked(service.listInvocationCapabilities).mockResolvedValue([
             {
@@ -88,7 +86,6 @@ describe("InvocationsPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.clearAllMocks();
     });
 

@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
-import { queryClient } from "@/query/query-client";
 import { PublicationJobsPage } from "./publication-jobs-page";
 
 const job = {
@@ -37,7 +36,6 @@ const apiResponse = (data: unknown) =>
 
 describe("PublicationJobsPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
             "kuzhambu.admin.accessTokenExpireAt",
@@ -70,11 +68,11 @@ describe("PublicationJobsPage", () => {
     it("shows a read-only task list and loads details on demand", async () => {
         const user = userEvent.setup({ delay: null });
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <PublicationJobsPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         expect(await screen.findByText("天地")).toBeInTheDocument();

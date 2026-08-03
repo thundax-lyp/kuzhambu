@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { App as AntdApp } from "antd";
 import type { ReactNode } from "react";
 import App from "./app";
@@ -11,7 +11,6 @@ import { StorageObjectPage } from "./pages/storage/storage-object/storage-object
 import { DepartmentPage } from "./pages/system/department/department-page";
 import { DictionaryPage } from "./pages/system/dictionary/dictionary-page";
 import { UserPage } from "./pages/system/user/user-page";
-import { queryClient } from "./query/query-client";
 import { getCurrentUserInfo, listCurrentUserMenus } from "./service/current-user-service";
 
 vi.mock("sm-crypto", () => ({
@@ -22,21 +21,20 @@ vi.mock("sm-crypto", () => ({
 
 describe("App", () => {
     const renderWithQueryClient = (node: ReactNode) => {
-        render(<QueryClientProvider client={queryClient}>{node}</QueryClientProvider>);
+        render(<AdminQueryProvider>{node}</AdminQueryProvider>);
     };
 
     const renderWithQueryClientAndApp = (node: ReactNode) => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>{node}</AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
     };
 
     beforeEach(() => {
         localStorage.clear();
         clearPermissions();
-        queryClient.clear();
         window.history.pushState({}, "", "/");
     });
 

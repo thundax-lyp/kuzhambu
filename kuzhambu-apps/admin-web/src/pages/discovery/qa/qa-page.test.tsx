@@ -1,9 +1,8 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { queryClient } from "@/query/query-client";
 import { QaPage } from "./qa-page";
 
 const mocks = vi.hoisted(() => ({
@@ -69,7 +68,7 @@ vi.mock("./qa-service", () => mocks);
 
 const renderPage = (initialEntry = "/discovery/qa") => {
     return render(
-        <QueryClientProvider client={queryClient}>
+        <AdminQueryProvider>
             <AntdApp>
                 <MemoryRouter initialEntries={[initialEntry]}>
                     <Routes>
@@ -77,13 +76,12 @@ const renderPage = (initialEntry = "/discovery/qa") => {
                     </Routes>
                 </MemoryRouter>
             </AntdApp>
-        </QueryClientProvider>
+        </AdminQueryProvider>
     );
 };
 
 describe("QaPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         Object.values(mocks).forEach((mock) => mock.mockClear());
         mocks.createQaSession.mockImplementation(async () => ({
             contextMode: "GENERAL",
@@ -95,7 +93,6 @@ describe("QaPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.restoreAllMocks();
     });
 

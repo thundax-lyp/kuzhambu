@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { ActionStatusPage } from "./action-status-page";
 import * as service from "./action-status-service";
 
@@ -25,15 +24,14 @@ const statuses = [
 const renderPage = () =>
     render(
         <App>
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <ActionStatusPage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         </App>
     );
 
 describe("ActionStatusPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         replacePermissions(["ai:config:view", "ai:config:edit"]);
         vi.mocked(service.listActionCapabilities).mockResolvedValue([
             {
@@ -55,7 +53,6 @@ describe("ActionStatusPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.clearAllMocks();
     });
 

@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
-import { queryClient } from "@/query/query-client";
 import { SearchStatisticsPage } from "./search-statistics-page";
 
 const mocks = vi.hoisted(() => ({
@@ -65,7 +64,6 @@ vi.mock("./search-statistics-service", () => mocks);
 
 describe("SearchStatisticsPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         mocks.getSearchStatisticsSummary.mockClear();
         mocks.getSearchEventDetail.mockClear();
         mocks.pageSearchEvents.mockClear();
@@ -74,17 +72,16 @@ describe("SearchStatisticsPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.restoreAllMocks();
     });
 
     it("renders page shell", async () => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <SearchStatisticsPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         expect(await screen.findByRole("heading", { name: "检索统计" })).toBeInTheDocument();
@@ -110,11 +107,11 @@ describe("SearchStatisticsPage", () => {
     it("switches statistics panels with segmented control", async () => {
         const user = userEvent.setup();
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <SearchStatisticsPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         await user.click(screen.getByText("检索记录"));
@@ -144,11 +141,11 @@ describe("SearchStatisticsPage", () => {
     it("loads analysis summary on refresh", async () => {
         const user = userEvent.setup();
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <SearchStatisticsPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         expect(screen.getAllByLabelText("统计时间范围")).toHaveLength(2);
@@ -170,11 +167,11 @@ describe("SearchStatisticsPage", () => {
     it("loads records through filter form and opens row detail inline", async () => {
         const user = userEvent.setup();
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <SearchStatisticsPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         await user.click(screen.getByText("检索记录"));

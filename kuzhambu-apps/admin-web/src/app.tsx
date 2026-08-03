@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp, ConfigProvider, theme as antdTheme } from "antd";
 import zhCN from "antd/locale/zh_CN";
 import { useEffect, useState } from "react";
-import { queryClient } from "./query/query-client";
+import { AdminQueryProvider } from "./query/query-client";
 import { AppRouter } from "./router";
 import { getStoredTheme, subscribeAdminThemeChange } from "./theme/theme-storage";
 
@@ -45,11 +44,11 @@ const App = () => {
                 }
             }}
         >
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <AppRouter />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         </ConfigProvider>
     );
 };
