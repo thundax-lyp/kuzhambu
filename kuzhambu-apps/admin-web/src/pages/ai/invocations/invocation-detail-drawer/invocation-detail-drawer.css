@@ -1,0 +1,11 @@
+.invocations-warnings {
+    max-height: 220px;
+    overflow: auto;
+    padding: 12px;
+    margin: 0;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    background: #f7f7f7;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
