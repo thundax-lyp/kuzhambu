@@ -4,6 +4,8 @@ import { KuzhambuDrawer, KuzhambuTag } from "@/components";
 import { readPublicationJobStatusLabel } from "@/pages/classics/publication-jobs/publication-job-labels";
 import type { ClassicsPublicationJobRecord } from "@/pages/classics/publication-jobs/publication-jobs-types";
 
+import "./publication-job-detail-drawer.css";
+
 const formatTime = (value?: string | null) =>
     value ? dayjs(value).format("YYYY-MM-DD HH:mm:ss") : "-";
 
