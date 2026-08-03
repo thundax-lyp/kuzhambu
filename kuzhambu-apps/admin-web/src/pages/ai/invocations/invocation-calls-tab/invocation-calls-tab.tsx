@@ -10,6 +10,8 @@ import {
 import { InvocationTable } from "../invocation-table";
 import type { AiInvocationLogRecord } from "../invocations-types";
 
+import "./invocation-calls-tab.css";
+
 interface InvocationCallsTabProps {
     callsForm: FormInstance<InvocationLogFilterValues>;
     capabilityOptions: Array<{ label: string; value: string }>;

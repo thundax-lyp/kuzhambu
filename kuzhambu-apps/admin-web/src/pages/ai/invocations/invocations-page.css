@@ -22,14 +22,6 @@
     margin-bottom: 16px;
 }
 
-.invocations-table {
-    margin-top: 16px;
-}
-
-.invocations-nowrap-column {
-    white-space: nowrap;
-}
-
 .invocations-capability-bars {
     display: flex;
     flex-direction: column;
