@@ -58,6 +58,23 @@ docker compose --env-file .env up --build
 ## External Knowledge Base
 
 FastGPT is intentionally kept in a separate compose project because its dependency stack is large. See `deploy/fastgpt/README.md`.
+For a Docker-only full-stack smoke, start and bootstrap FastGPT first, then start Kuzhambu:
+
+```sh
+cd deploy/fastgpt
+cp .env.example .env
+# Fill FASTGPT_BOOTSTRAP_* and FASTGPT_KUZHAMBU_* values in .env.
+./bootstrap-fastgpt.sh .env
+./smoke-fastgpt.sh .env generated/kuzhambu-fastgpt.env
+
+cd ..
+docker compose --env-file .env \
+  --env-file fastgpt/generated/kuzhambu-fastgpt.env \
+  -f docker-compose.yml up -d
+```
+
+FastGPT and Kuzhambu must keep separate MySQL/Mongo/Redis/ES/Pgvector/MinIO volumes and
+service containers. They may share a Docker network or public URL only for HTTP integration.
 
 ## Images
 

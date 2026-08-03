@@ -46,6 +46,7 @@ __pycache__/
 .env
 dev.env
 deploy/.env
+deploy/fastgpt/generated/
 /temp/
 /logs/
 /kuzhambu-servers/starter/kuzhambu-admin-starter/logs/

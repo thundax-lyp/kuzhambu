@@ -16,7 +16,65 @@ Default public port:
 
 MinIO and MCP services are internal-only by default. Do not expose MinIO directly unless a later integration explicitly needs browser-facing object URLs.
 
-After first startup, log in to FastGPT with user `root` and `FASTGPT_DEFAULT_ROOT_PSW`, then configure at least the language model and vector model.
+For a standalone manual environment, log in to FastGPT with user `root` and
+`FASTGPT_DEFAULT_ROOT_PSW`, then configure at least the language model and vector model.
+
+For a Kuzhambu smoke or release environment, do not rely on manual FastGPT setup. Enable bootstrap
+in `.env` and provide the LLM, embedding, OpenAPI key, dataset name and app name settings:
+
+```sh
+FASTGPT_BOOTSTRAP_ENABLED=true
+FASTGPT_BOOTSTRAP_LLM_MODEL=<llm-model>
+FASTGPT_BOOTSTRAP_LLM_BASE_URL=<openai-compatible-base-url>
+FASTGPT_BOOTSTRAP_LLM_API_KEY=<llm-api-key>
+FASTGPT_BOOTSTRAP_EMBEDDING_MODEL=<embedding-model>
+FASTGPT_BOOTSTRAP_EMBEDDING_BASE_URL=<openai-compatible-base-url>
+FASTGPT_BOOTSTRAP_EMBEDDING_API_KEY=<embedding-api-key>
+FASTGPT_KUZHAMBU_OPENAPI_KEY=<fastgpt-openapi-key-for-kuzhambu>
+FASTGPT_KUZHAMBU_DATASET_NAME=kuzhambu
+FASTGPT_KUZHAMBU_APP_NAME=kuzhambu-qa
+FASTGPT_KUZHAMBU_BASE_URL=http://fastgpt-app:3000
+```
+
+`.env` 会被 bootstrap 和 smoke 脚本用 shell 读取；包含空格、`$` 或其他 shell 特殊字符的值
+必须加引号。
+
+Then run:
+
+```sh
+cd deploy/fastgpt
+./bootstrap-fastgpt.sh .env
+./smoke-fastgpt.sh .env generated/kuzhambu-fastgpt.env
+```
+
+The bootstrap is idempotent. It writes or updates:
+
+- FastGPT `system_models` records for LLM and embedding.
+- One OpenAPI key for Kuzhambu publication and QA integration.
+- One dataset for Kuzhambu publication fragments.
+- One app entry for Kuzhambu QA routing.
+
+`FASTGPT_KUZHAMBU_APP_ID` and `FASTGPT_KUZHAMBU_DATASET_ID` are optional. If omitted,
+bootstrap creates or reuses records by `FASTGPT_KUZHAMBU_APP_NAME` and
+`FASTGPT_KUZHAMBU_DATASET_NAME`, then emits the actual dynamic IDs to
+`deploy/fastgpt/generated/kuzhambu-fastgpt.env`. Include that generated env fragment when
+starting Kuzhambu compose so `KUZHAMBU_KNOWLEDGE_ENABLED=true`,
+`KUZHAMBU_KNOWLEDGE_FASTGPT_APPID`, and
+`KUZHAMBU_KNOWLEDGE_FASTGPT_KNOWLEDGE_BASE_ID` match the running FastGPT cluster.
+
+`smoke-fastgpt.sh` verifies the bootstrap result before Kuzhambu starts. It checks active LLM and
+embedding records, OpenAPI key health, dataset visibility, and the publication-critical collection
+operations: create, disable, pushData, list, enable and delete.
+
+The Docker startup order for an isolated full-stack smoke is:
+
+1. Start the blank FastGPT compose cluster.
+2. Run `deploy/fastgpt/bootstrap-fastgpt.sh` to configure LLM, embedding, OpenAPI key,
+   dataset and app.
+3. Run `deploy/fastgpt/smoke-fastgpt.sh` against the generated env.
+4. Use `deploy/fastgpt/generated/kuzhambu-fastgpt.env` as an additional Kuzhambu compose
+   env source.
+5. Start the Kuzhambu compose cluster.
 
 ## API Endpoints
 
@@ -42,8 +100,8 @@ http://localhost:13000/api/core/dataset
 
 - Change all `FASTGPT_*_TOKEN`, `FASTGPT_*_KEY`, passwords, and `FASTGPT_DEFAULT_ROOT_PSW` before shared or production deployment.
 - `FASTGPT_STORAGE_EXTERNAL_ENDPOINT` defaults to the internal MinIO service URL. If browser-facing file URLs are required later, expose object storage deliberately through a reverse proxy and set this to that public URL.
-- Keep FastGPT backup, restore, image upgrade, and data volume operations separate from the main kuzhambu compose stack.
-- If FastGPT needs to call kuzhambu APIs later, connect the two projects through an explicit public URL or a deliberately shared Docker network rather than relying on implicit compose project networking.
+- Keep FastGPT Mongo, Redis, Pgvector, MinIO, backup, restore, image upgrade, and data volume operations separate from the main Kuzhambu compose stack. FastGPT and Kuzhambu may share a Docker network for HTTP calls, but must not share base service containers or volumes.
+- If FastGPT and Kuzhambu run as separate compose projects, connect them through an explicit shared Docker network or public URL. For Docker-only smoke, use `FASTGPT_KUZHAMBU_BASE_URL=http://fastgpt-app:3000` from the shared network and keep the generated `KUZHAMBU_KNOWLEDGE_*` env fragment outside Git.
 
 ## Stop
 
