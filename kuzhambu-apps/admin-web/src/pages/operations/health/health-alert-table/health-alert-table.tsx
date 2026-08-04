@@ -1,7 +1,8 @@
 import { Typography } from "antd";
 import { KuzhambuButton, KuzhambuSpace, KuzhambuTag } from "@/components";
 
-import type { OperationsHealthAlertRecord } from "./health-types";
+import type { OperationsHealthAlertRecord } from "@/pages/operations/health/health-types";
+import "./health-alert-table.css";
 
 const { Text } = Typography;
 

@@ -4,7 +4,10 @@ import type { ColumnsType } from "antd/es/table";
 import { KuzhambuButton, KuzhambuSpace, KuzhambuTag } from "@/components";
 
 import { DEFAULT_PAGE_SIZE } from "@/types/page";
-import type { OperationsBackupRecord, OperationsBackupType } from "./backup-restore-types";
+import type {
+    OperationsBackupRecord,
+    OperationsBackupType
+} from "@/pages/operations/backup-restore/backup-restore-types";
 
 const { Text } = Typography;
 

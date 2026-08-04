@@ -19,10 +19,7 @@ const LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS = new Set([
     "knowledge/quality-report",
     "knowledge/refinement",
     "knowledge/taxonomy",
-    "operations/backup-restore",
     "operations/dashboard",
-    "operations/health",
-    "storage/storage-object",
     "system/user"
 ]);
 

@@ -1,5 +1,5 @@
 import { Progress, Typography } from "antd";
-import { StorageUploadTaskRecord } from "./storage-object-types";
+import { StorageUploadTaskRecord } from "@/pages/storage/storage-object/storage-object-types";
 import { KuzhambuButton } from "@/components";
 import "./storage-upload-task-card.css";
 
