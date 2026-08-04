@@ -76,7 +76,7 @@ describe("PublicationJobsPage", () => {
         );
 
         expect(await screen.findByText("天地")).toBeInTheDocument();
-        expect(screen.getByText("搜索索引已预备")).toHaveClass("kuzhambu-tag", "kuzhambu-tag-info");
+        expect(screen.getByText("搜索索引已写入")).toHaveClass("kuzhambu-tag", "kuzhambu-tag-info");
         expect(
             screen.queryByRole("button", { name: /重试|取消|清理|编辑/ })
         ).not.toBeInTheDocument();
@@ -84,7 +84,7 @@ describe("PublicationJobsPage", () => {
         await user.click(screen.getByRole("button", { name: "查看" }));
 
         expect(await screen.findByText("ES probe failed")).toBeInTheDocument();
-        expect(screen.getAllByText("搜索索引已预备")).toHaveLength(2);
+        expect(screen.getAllByText("搜索索引已写入")).toHaveLength(2);
         await waitFor(() => {
             expect(globalThis.fetch).toHaveBeenCalledTimes(2);
         });

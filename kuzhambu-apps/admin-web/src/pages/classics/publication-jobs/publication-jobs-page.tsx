@@ -1,10 +1,12 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
+import type { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
 import { useMemo, useState } from "react";
-import { KuzhambuButton, KuzhambuListPage } from "@/components";
+import { KuzhambuButton, KuzhambuListPage, KuzhambuTag } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { PublicationJobDetailDrawer } from "./publication-job-detail-drawer";
-import { createPublicationJobTableColumns } from "./publication-job-table";
+import { readPublicationJobStatusLabel } from "./publication-job-labels";
 import * as service from "./publication-jobs-service";
 import type { ClassicsPublicationJobQuery } from "./publication-jobs-service";
 import type { ClassicsPublicationJobRecord } from "./publication-jobs-types";
@@ -12,6 +14,11 @@ import type { ClassicsPublicationJobRecord } from "./publication-jobs-types";
 import "./publication-jobs-page.css";
 
 const normalizeKeyword = (value: string) => value.trim() || undefined;
+const JOB_TYPE_LABELS = { PUBLISH: "发布", OFFLINE: "下线" } as const;
+const RESULT_LABELS = { RUNNING: "执行中", FAILED: "失败", SUCCEEDED: "成功" } as const;
+const RESULT_TYPES = { RUNNING: "info", FAILED: "danger", SUCCEEDED: "success" } as const;
+const formatTime = (value?: string | null) =>
+    value ? dayjs(value).format("YYYY-MM-DD HH:mm:ss") : "-";
 
 export const PublicationJobsPage = () => {
     const [searchText, setSearchText] = useState("");
@@ -33,11 +40,64 @@ export const PublicationJobsPage = () => {
     });
     const pageResult = publicationJobPageQuery.data;
     const records = useMemo(() => pageResult?.records || [], [pageResult?.records]);
-    const columns = useMemo(
-        () =>
-            createPublicationJobTableColumns({
-                onView: (job: ClassicsPublicationJobRecord) => setDetailJobId(job.id)
-            }),
+    const columns = useMemo<ColumnsType<ClassicsPublicationJobRecord>>(
+        () => [
+            { title: "任务", dataIndex: "id", width: 60 },
+            {
+                title: "稿件",
+                key: "content",
+                width: 120,
+                render: (_, job) =>
+                    job.contentTitleSnapshot || `${job.contentType} #${job.contentId}`
+            },
+            {
+                title: "动作",
+                dataIndex: "jobType",
+                width: 80,
+                render: (value: ClassicsPublicationJobRecord["jobType"]) => JOB_TYPE_LABELS[value]
+            },
+            {
+                title: "结果",
+                dataIndex: "jobResultStatus",
+                width: 60,
+                render: (value: ClassicsPublicationJobRecord["jobResultStatus"]) => (
+                    <KuzhambuTag type={RESULT_TYPES[value]}>{RESULT_LABELS[value]}</KuzhambuTag>
+                )
+            },
+            {
+                title: "里程碑",
+                dataIndex: "jobStatus",
+                width: 80,
+                render: (value: ClassicsPublicationJobRecord["jobStatus"]) => (
+                    <KuzhambuTag type="info">{readPublicationJobStatusLabel(value)}</KuzhambuTag>
+                )
+            },
+            {
+                title: "尝试次数",
+                key: "attempts",
+                width: 60,
+                render: (_, job) => `${job.attemptCount}/${job.maxAttempts}`
+            },
+            {
+                title: "请求时间",
+                dataIndex: "requestedAt",
+                width: 80,
+                render: formatTime
+            },
+            {
+                key: "actions",
+                fixed: "right",
+                render: (_, job) => (
+                    <KuzhambuButton
+                        testId="classics-publication-jobs-view-button"
+                        type="link"
+                        onClick={() => setDetailJobId(job.id)}
+                    >
+                        查看
+                    </KuzhambuButton>
+                )
+            }
+        ],
         []
     );
 
