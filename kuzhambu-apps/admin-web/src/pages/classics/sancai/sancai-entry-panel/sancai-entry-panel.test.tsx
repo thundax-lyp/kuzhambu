@@ -1113,6 +1113,10 @@ describe("SancaiEntryPanel batch operations", () => {
         const command = vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0];
         expect(JSON.parse(command?.inputPayloadJson || "{}")).toMatchObject({
             capability: "summary",
+            contentType: "SANCAI_ENTRY",
+            document: "编辑后的天地原文\n\n译文\n\n天地摘要",
+            bodyText: "编辑后的天地原文",
+            existingSummary: "天地摘要",
             originalText: "编辑后的天地原文",
             translationText: "译文"
         });

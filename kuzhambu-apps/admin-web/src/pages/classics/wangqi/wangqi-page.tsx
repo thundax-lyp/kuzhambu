@@ -132,9 +132,13 @@ const buildInputPayloadJson = (
     context: RefinementTaskContext = {}
 ) => {
     return JSON.stringify({
+        contentType: "WANGQI_DOCUMENT",
+        document: document.content || null,
         title: document.title || null,
         summary: document.summary || null,
         content: document.content || null,
+        bodyText: document.content || null,
+        existingSummary: document.summary || null,
         contentFormat: document.contentFormat || null,
         existingQaPairs: context.existingQaPairs || [],
         existingTags: context.existingTags || []

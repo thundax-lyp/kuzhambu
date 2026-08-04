@@ -159,10 +159,16 @@ const buildInputPayloadJson = (
     generationParamsJson?: string | null,
     sourceImageStorageObjectId?: string | null
 ) => {
+    const document = [entry.originalText, entry.translationText, entry.summary]
+        .filter((value): value is string => Boolean(value?.trim()))
+        .join("\n\n");
     const payload = {
         capability,
         contentId: entry.id,
         contentType: "SANCAI_ENTRY",
+        document,
+        bodyText: entry.originalText,
+        existingSummary: entry.summary,
         objectId,
         originalText: entry.originalText,
         sourceText: entry.originalText,
