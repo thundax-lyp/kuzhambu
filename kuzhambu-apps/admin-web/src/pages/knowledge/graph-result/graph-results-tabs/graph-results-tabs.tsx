@@ -1,16 +1,16 @@
 import { Empty, Tabs, Typography } from "antd";
 import { KuzhambuAlert, KuzhambuSpace, KuzhambuCard } from "@/components";
 
-import { GraphEntityDetail } from "../graph-entity-detail";
-import { GraphEntityTable } from "../graph-entity-table";
-import { GraphLineageNodeDetail } from "../graph-lineage-node-detail";
-import { GraphLineageNodeTable } from "../graph-lineage-node-table";
-import { GraphLineageRelationDetail } from "../graph-lineage-relation-detail";
-import { GraphLineageRelationTable } from "../graph-lineage-relation-table";
-import { GraphRelationDetail } from "../graph-relation-detail";
-import { GraphRelationTable } from "../graph-relation-table";
-import { GraphVersionDetail } from "../graph-version-detail";
-import { GraphVersionTable } from "../graph-version-table";
+import { GraphEntityDetail } from "./graph-entity-detail";
+import { GraphEntityTable } from "./graph-entity-table";
+import { GraphLineageNodeDetail } from "./graph-lineage-node-detail";
+import { GraphLineageNodeTable } from "./graph-lineage-node-table";
+import { GraphLineageRelationDetail } from "./graph-lineage-relation-detail";
+import { GraphLineageRelationTable } from "./graph-lineage-relation-table";
+import { GraphRelationDetail } from "./graph-relation-detail";
+import { GraphRelationTable } from "./graph-relation-table";
+import { GraphVersionDetail } from "./graph-version-detail";
+import { GraphVersionTable } from "./graph-version-table";
 import type { GraphResultsTabKey } from "../hooks/use-graph-results-query-state";
 import type {
     GraphEntityRecord,

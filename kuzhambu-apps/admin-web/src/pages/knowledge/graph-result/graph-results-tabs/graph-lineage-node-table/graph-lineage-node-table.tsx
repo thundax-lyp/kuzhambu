@@ -2,12 +2,12 @@ import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
 import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
-import type { GraphEntityRecord } from "../graph-result-types";
+import type { GraphLineageNodeRecord } from "@/pages/knowledge/graph-result/graph-result-types";
 
-interface GraphEntityTableProps {
-    entities: GraphEntityRecord[];
+interface GraphLineageNodeTableProps {
     loading?: boolean;
-    onOpenDetail: (entity: GraphEntityRecord) => void;
+    nodes: GraphLineageNodeRecord[];
+    onOpenDetail: (node: GraphLineageNodeRecord) => void;
 }
 
 const readStatusColor = (status?: string | null) => {
@@ -21,15 +21,16 @@ const readStatusColor = (status?: string | null) => {
     }
 };
 
-export const GraphEntityTable = ({
-    entities,
+export const GraphLineageNodeTable = ({
     loading = false,
+    nodes,
     onOpenDetail
-}: GraphEntityTableProps) => {
-    const columns: ColumnsType<GraphEntityRecord> = [
-        { dataIndex: "entityId", key: "entityId", title: "实体号" },
+}: GraphLineageNodeTableProps) => {
+    const columns: ColumnsType<GraphLineageNodeRecord> = [
+        { dataIndex: "nodeId", key: "nodeId", title: "节点号" },
         { dataIndex: "name", key: "name", title: "名称" },
-        { dataIndex: "entityType", key: "entityType", title: "类型" },
+        { dataIndex: "nodeType", key: "nodeType", title: "类型" },
+        { dataIndex: "generation", key: "generation", title: "世代" },
         {
             dataIndex: "confirmationStatus",
             key: "confirmationStatus",
@@ -38,14 +39,13 @@ export const GraphEntityTable = ({
             ),
             title: "确认状态"
         },
-        { dataIndex: "latestVersionId", key: "latestVersionId", title: "版本号" },
         {
             key: "actions",
-            render: (_, entity) => (
+            render: (_, node) => (
                 <KuzhambuSpaceCompact>
                     <KuzhambuButton
-                        testId="knowledge-graph-results-graph-entity-view-detail-button"
-                        onClick={() => onOpenDetail(entity)}
+                        testId="knowledge-graph-results-graph-lineage-node-view-detail-button"
+                        onClick={() => onOpenDetail(node)}
                     >
                         查看详情
                     </KuzhambuButton>
@@ -56,13 +56,13 @@ export const GraphEntityTable = ({
     ];
 
     return (
-        <Table<GraphEntityRecord>
-            aria-label="知识正式实体表格"
+        <Table<GraphLineageNodeRecord>
+            aria-label="知识正式世系节点表格"
             columns={columns}
-            dataSource={entities}
+            dataSource={nodes}
             loading={loading}
             pagination={false}
-            rowKey={(entity) => normalizeId(entity.entityId)}
+            rowKey={(node) => normalizeId(node.nodeId)}
         />
     );
 };

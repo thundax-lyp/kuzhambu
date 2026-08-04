@@ -2,7 +2,7 @@ import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
 import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
-import type { GraphLineageRelationRecord } from "../graph-result-types";
+import type { GraphLineageRelationRecord } from "@/pages/knowledge/graph-result/graph-result-types";
 
 interface GraphLineageRelationTableProps {
     loading?: boolean;

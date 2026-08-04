@@ -1,6 +1,6 @@
 import { Descriptions, Empty, Typography } from "antd";
 
-import type { GraphWorkbenchCandidateRecord } from "../graph-extraction-types";
+import type { GraphWorkbenchCandidateRecord } from "@/pages/knowledge/graph-extraction/graph-extraction-types";
 import { KuzhambuCard } from "@/components";
 
 interface GraphExtractionCandidatePreviewProps {

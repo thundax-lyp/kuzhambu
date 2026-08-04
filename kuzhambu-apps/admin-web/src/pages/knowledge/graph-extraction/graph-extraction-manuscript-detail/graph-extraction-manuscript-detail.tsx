@@ -8,7 +8,7 @@ import type {
     GraphWorkbenchManuscriptRecord,
     GraphWorkbenchStatus
 } from "../graph-extraction-types";
-import { GraphExtractionCandidatePreview } from "../graph-extraction-candidate-preview";
+import { GraphExtractionCandidatePreview } from "./graph-extraction-candidate-preview";
 
 interface GraphExtractionManuscriptDetailProps {
     applying?: boolean;

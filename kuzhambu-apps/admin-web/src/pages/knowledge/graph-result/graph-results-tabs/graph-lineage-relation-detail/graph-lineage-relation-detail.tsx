@@ -1,6 +1,6 @@
 import { Descriptions } from "antd";
 import { KuzhambuDrawer } from "@/components";
-import type { GraphLineageRelationRecord } from "../graph-result-types";
+import type { GraphLineageRelationRecord } from "@/pages/knowledge/graph-result/graph-result-types";
 
 interface GraphLineageRelationDetailProps {
     loading?: boolean;
