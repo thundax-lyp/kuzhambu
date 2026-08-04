@@ -37,6 +37,8 @@ const SCHEMA_FILES = [
   "operations.sql",
 ].map((name) => resolve(repoRoot, "db/schema", name));
 
+const SEED_SQL_DIR = resolve(repoRoot, "build/seed-sql");
+
 const DATA_FILES = [
   "system.sql",
   "storage.sql",
@@ -45,7 +47,7 @@ const DATA_FILES = [
   "knowledge.sql",
   "discovery.sql",
   "operations.sql",
-].map((name) => resolve(repoRoot, "db/data", name));
+].map((name) => resolve(SEED_SQL_DIR, name));
 
 const main = async () => {
   const options = parseArgs(process.argv.slice(2));
@@ -132,7 +134,7 @@ const parseArgs = (args) => {
     throw new Error("--jobs must be an integer between 1 and 16");
   }
   if (options.includeTest) {
-    options.dataFiles.push(resolve(repoRoot, "db/data/test.sql"));
+    options.dataFiles.push(resolve(SEED_SQL_DIR, "test.sql"));
   }
   return options;
 };
@@ -153,7 +155,7 @@ const printUsage = () => {
 Options:
   --env <file>       Env file. Defaults to repo-root dev.env.
   --rebuild          Drop and recreate project tables before importing.
-  --include-test     Import db/data/test.sql after base seed data.
+  --include-test     Import generated test seed SQL after base seed data.
   --jobs <n>         Parallel table import workers. Defaults to 4.
   -h, --help         Show help.`);
 };

@@ -6,6 +6,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 ENV_FILE="${REPO_ROOT}/dev.env"
 GENERATE=true
+INCLUDE_TEST=false
 NODE_ARGS=()
 
 usage() {
@@ -24,6 +25,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         --skip-generate)
             GENERATE=false
+            shift
+            ;;
+        --include-test)
+            INCLUDE_TEST=true
+            NODE_ARGS+=("$1")
             shift
             ;;
         -h|--help)
@@ -53,9 +59,15 @@ fi
 
 if [[ "${GENERATE}" == "true" ]]; then
     node "${SCRIPT_DIR}/seed/generate-system-sql.mjs"
+    node "${SCRIPT_DIR}/seed/generate-storage-sql.mjs"
     node "${SCRIPT_DIR}/seed/generate-ai-sql.mjs"
     node "${SCRIPT_DIR}/seed/generate-sancai-knowledge-sql.mjs"
     node "${SCRIPT_DIR}/seed/generate-classics-sql.mjs"
+    node "${SCRIPT_DIR}/seed/generate-discovery-sql.mjs"
+    node "${SCRIPT_DIR}/seed/generate-operations-sql.mjs"
+    if [[ "${INCLUDE_TEST}" == "true" ]]; then
+        node "${SCRIPT_DIR}/seed/generate-test-sql.mjs"
+    fi
 fi
 
 echo "Importing seed data with env: ${ENV_FILE}"

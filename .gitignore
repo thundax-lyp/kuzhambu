@@ -49,6 +49,7 @@ dev.env
 deploy/.env
 deploy/fastgpt/generated/
 /temp/
+/build/
 /logs/
 /kuzhambu-servers/starter/kuzhambu-admin-starter/logs/
 /kuzhambu-servers/starter/kuzhambu-portal-starter/logs/

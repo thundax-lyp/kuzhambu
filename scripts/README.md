@@ -9,13 +9,14 @@ This directory stores repository-level automation entry points. Keep scripts her
 
 ## Data Generation
 
-- `import-seed-data.sh`: stable external seed import entry. It defaults to repo-root `dev.env`, regenerates seed SQL products from JSON sources, imports schema and seed data into MySQL through `scripts/seed/import-to-database.mjs`, and supports `--rebuild`, table-batch transactions, `--jobs 4`, and `--include-test`.
+- `import-seed-data.sh`: stable external seed import entry. It defaults to repo-root `dev.env`, regenerates temporary seed SQL products under `build/seed-sql/` from JSON sources, imports schema and seed data into MySQL through `scripts/seed/import-to-database.mjs`, and supports `--rebuild`, table-batch transactions, `--jobs 4`, and `--include-test`.
 - `package.json`: independent Node package for repository scripts. It is not part of `kuzhambu-apps` pnpm workspace; install script dependencies with `pnpm --dir scripts install`.
 - `seed/import-to-database.mjs`: internal DB importer used by `import-seed-data.sh`.
-- `seed/generate-system-sql.mjs`: regenerates `db/data/system.sql` from `db/data-source/system.json`.
-- `seed/generate-ai-sql.mjs`: regenerates `db/data/ai.sql` from `db/data-source/ai-prompts/`.
-- `seed/generate-classics-sql.mjs`: regenerates `db/data/classics.sql` from Sancai, Wangqi and Ming JSON sources.
-- `seed/generate-sancai-knowledge-sql.mjs`: regenerates `db/data/knowledge.sql` from Sancai tag and manuscript sources.
+- `seed/generate-system-sql.mjs`: regenerates `build/seed-sql/system.sql` from `db/data-source/system.json`.
+- `seed/generate-ai-sql.mjs`: regenerates `build/seed-sql/ai.sql` from `db/data-source/ai-prompts/`.
+- `seed/generate-classics-sql.mjs`: regenerates `build/seed-sql/classics.sql` from Sancai, Wangqi and Ming JSON sources.
+- `seed/generate-sancai-knowledge-sql.mjs`: regenerates `build/seed-sql/knowledge.sql` from Sancai tag and manuscript sources.
+- `seed/generate-test-sql.mjs`: regenerates `build/seed-sql/test.sql` from `db/data-source/test/` when `--include-test` is used.
 - `seed/collect-ming-customs-source.mjs`: collects and normalizes Ming customs source data into `db/data-source/ming-customs.json`.
 
 ## Docker Smoke

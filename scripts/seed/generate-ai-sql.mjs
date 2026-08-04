@@ -1,10 +1,10 @@
-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "../..");
 const sourceRoot = resolve(repoRoot, "db/data-source/ai-prompts");
-const outputPath = resolve(repoRoot, "db/data/ai.sql");
+const outputPath = resolve(repoRoot, "build/seed-sql/ai.sql");
 const REGISTERED_AT = "2026-02-27 04:00:00.000";
 const MYSQL_EPOCH_SHANGHAI = "1970-01-01 08:00:00.000000";
 const main = () => {
@@ -13,11 +13,12 @@ const main = () => {
     if (process.argv.includes("--check")) {
         const current = readFileSync(outputPath, "utf8");
         if (current !== sql) {
-            console.error("db/data/ai.sql is out of date. Run: node scripts/seed/generate-ai-sql.mjs");
+            console.error("build/seed-sql/ai.sql is out of date. Run: node scripts/seed/generate-ai-sql.mjs");
             process.exit(1);
         }
         return;
     }
+    mkdirSync(dirname(outputPath), { recursive: true });
     writeFileSync(outputPath, sql);
 };
 const readPromptSeeds = (root) => {

@@ -1,10 +1,10 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "../..");
 const sourcePath = resolve(repoRoot, "db/data-source/system.json");
-const outputPath = resolve(repoRoot, "db/data/system.sql");
+const outputPath = resolve(repoRoot, "build/seed-sql/system.sql");
 const DEFAULT_PASSWORD = "Q1w2e3r$";
 const main = () => {
     const seed = JSON.parse(readFileSync(sourcePath, "utf8"));
@@ -12,11 +12,12 @@ const main = () => {
     if (process.argv.includes("--check")) {
         const current = readFileSync(outputPath, "utf8");
         if (current !== sql) {
-            console.error("db/data/system.sql is out of date. Run: node scripts/seed/generate-system-sql.mjs");
+            console.error("build/seed-sql/system.sql is out of date. Run: node scripts/seed/generate-system-sql.mjs");
             process.exit(1);
         }
         return;
     }
+    mkdirSync(dirname(outputPath), { recursive: true });
     writeFileSync(outputPath, sql);
 };
 const generate = (seed) => {

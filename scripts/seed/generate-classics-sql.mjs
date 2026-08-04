@@ -8,7 +8,7 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "../..");
 
 const DEFAULT_SOURCE = resolve(repoRoot, "db/data-source/sancai-manuscripts.json");
-const DEFAULT_OUTPUT = resolve(repoRoot, "db/data/classics.sql");
+const DEFAULT_OUTPUT = resolve(repoRoot, "build/seed-sql/classics.sql");
 const DEFAULT_TAG_SEED = resolve(repoRoot, "db/data-source/sancai-tags.json");
 const WANGQI_SOURCE = resolve(repoRoot, "db/data-source/wangqi-documents-full.json");
 const MING_SOURCE = resolve(repoRoot, "db/data-source/ming-customs.json");
@@ -19,13 +19,13 @@ const usage = () => {
 
 Defaults:
   source_json    db/data-source/sancai-manuscripts.json
-  output_sql     db/data/classics.sql
+  output_sql     build/seed-sql/classics.sql
   tag_seed_json  db/data-source/sancai-tags.json
 
 Examples:
   scripts/seed/generate-classics-sql.mjs
-  scripts/seed/generate-classics-sql.mjs db/data-source/sancai-manuscripts.json db/data/classics.sql
-  scripts/seed/generate-classics-sql.mjs db/data-source/sancai-manuscripts.json db/data/classics.sql db/data-source/sancai-tags.json`);
+  scripts/seed/generate-classics-sql.mjs db/data-source/sancai-manuscripts.json build/seed-sql/classics.sql
+  scripts/seed/generate-classics-sql.mjs db/data-source/sancai-manuscripts.json build/seed-sql/classics.sql db/data-source/sancai-tags.json`);
 };
 
 const main = () => {

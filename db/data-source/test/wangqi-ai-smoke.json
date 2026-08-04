@@ -1,0 +1,136 @@
+{
+  "schema": "kuzhambu_test_wangqi_ai_smoke_seed",
+  "idRange": {
+    "start": 990000000001,
+    "end": 990000000099,
+    "nextAutoIncrement": 990000000100
+  },
+  "document": {
+    "id": 990000000001,
+    "title": "测试：王圻 AI 精修样例",
+    "summary": "王圻归里后整理文献，并以梅花源为地方水利与文献整理的观察对象。",
+    "contentFormat": "MARKDOWN",
+    "content": "## 王圻 AI 精修样例\n\n王圻归里后继续整理文献，关注地方水利、乡里治理与文献编纂。梅花源引水绕村，既关乎农田灌溉，也成为其晚年生活与著述的空间线索。",
+    "documentTime": -12117888343000,
+    "lifecycleStatus": "DRAFT",
+    "transitionStatus": "NONE",
+    "versionedAt": "2026-07-20 12:00:00.000",
+    "contentUpdatedAt": "2026-07-20 12:00:00.000",
+    "version": {
+      "id": 990000000001,
+      "versionNo": 1,
+      "snapshot": {
+        "title": "测试：王圻 AI 精修样例",
+        "summary": "王圻归里后整理文献，并以梅花源为地方水利与文献整理的观察对象。",
+        "contentFormat": "MARKDOWN",
+        "lifecycleStatus": "DRAFT"
+      },
+      "changeType": "TEST_SEED",
+      "changeSummary": "测试数据：王圻 AI 精修样例初始版本"
+    },
+    "event": {
+      "id": 990000000001,
+      "title": "测试事件：王圻归里整理文献",
+      "occurredAt": -12117888343000,
+      "occurredLabel": "万历十四年",
+      "summary": "王圻归里后继续整理文献，并关注乡里水利与地方治理。",
+      "priority": 990000001
+    },
+    "tags": [
+      {
+        "id": 990000000001,
+        "name": "水利",
+        "source": "MANUAL",
+        "status": "ACTIVE",
+        "priority": 990000011
+      },
+      {
+        "id": 990000000002,
+        "name": "文献整理",
+        "source": "MANUAL",
+        "status": "ACTIVE",
+        "priority": 990000012
+      }
+    ],
+    "qaPairs": [
+      {
+        "id": 990000000001,
+        "question": "王圻归里后主要关注哪些事项？",
+        "answer": "王圻归里后继续整理文献，并关注地方水利、乡里治理与文献编纂。",
+        "source": "MANUAL",
+        "priority": 990000021
+      }
+    ]
+  },
+  "aiRuns": [
+    {
+      "id": 990000000001,
+      "scope": "classics",
+      "capability": "classics_summary",
+      "contentType": "WANGQI_DOCUMENT",
+      "contentId": 990000000001,
+      "status": "SUCCEEDED",
+      "requestedAt": "2026-07-20 12:01:00.000",
+      "completedAt": "2026-07-20 12:01:01.000",
+      "modelId": 2,
+      "modelName": "CTYUN-bot-DeepSeek-V3.2-pro",
+      "promptVersionId": 1,
+      "requestId": "test-wangqi-summary-request",
+      "traceId": "test-wangqi-summary-trace",
+      "latencyMs": 860,
+      "inputTokens": 620,
+      "outputTokens": 128,
+      "resultFormat": "TEXT",
+      "resultPayload": "王圻归里后整理文献，关注梅花源水利、乡里治理和文献编纂之间的关联。"
+    },
+    {
+      "id": 990000000002,
+      "scope": "classics",
+      "capability": "classics_tags",
+      "contentType": "WANGQI_DOCUMENT",
+      "contentId": 990000000001,
+      "status": "SUCCEEDED",
+      "requestedAt": "2026-07-20 12:02:00.000",
+      "completedAt": "2026-07-20 12:02:01.000",
+      "modelId": 2,
+      "modelName": "CTYUN-bot-DeepSeek-V3.2-pro",
+      "promptVersionId": 2,
+      "requestId": "test-wangqi-tags-request",
+      "traceId": "test-wangqi-tags-trace",
+      "latencyMs": 920,
+      "inputTokens": 680,
+      "outputTokens": 96,
+      "resultFormat": "STRUCTURED",
+      "resultPayload": {
+        "tags": ["地方水利", "梅花源", "文献编纂"]
+      }
+    },
+    {
+      "id": 990000000003,
+      "scope": "classics",
+      "capability": "classics_qa",
+      "contentType": "WANGQI_DOCUMENT",
+      "contentId": 990000000001,
+      "status": "SUCCEEDED",
+      "requestedAt": "2026-07-20 12:03:00.000",
+      "completedAt": "2026-07-20 12:03:01.000",
+      "modelId": 2,
+      "modelName": "CTYUN-bot-DeepSeek-V3.2-pro",
+      "promptVersionId": 3,
+      "requestId": "test-wangqi-qa-request",
+      "traceId": "test-wangqi-qa-trace",
+      "latencyMs": 980,
+      "inputTokens": 720,
+      "outputTokens": 156,
+      "resultFormat": "STRUCTURED",
+      "resultPayload": {
+        "qaPairs": [
+          {
+            "question": "梅花源在样例文档中有什么意义？",
+            "answer": "梅花源既关乎农田灌溉，也作为王圻晚年生活与著述的空间线索。"
+          }
+        ]
+      }
+    }
+  ]
+}

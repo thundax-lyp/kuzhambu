@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,7 +11,7 @@ const manuscriptSourcePath = resolve(
   repoRoot,
   "db/data-source/sancai-manuscripts.json",
 );
-const outputPath = resolve(repoRoot, "db/data/knowledge.sql");
+const outputPath = resolve(repoRoot, "build/seed-sql/knowledge.sql");
 const THEME_CATEGORY_ID = 4;
 const MYSQL_EPOCH_SHANGHAI = "1970-01-01 08:00:00.000000";
 
@@ -26,13 +26,14 @@ const main = () => {
     const current = readFileSync(outputPath, "utf8");
     if (current !== sql) {
       console.error(
-        "db/data/knowledge.sql is out of date. Run: node scripts/seed/generate-sancai-knowledge-sql.mjs",
+        "build/seed-sql/knowledge.sql is out of date. Run: node scripts/seed/generate-sancai-knowledge-sql.mjs",
       );
       process.exit(1);
     }
     return;
   }
 
+  mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, sql);
 };
 

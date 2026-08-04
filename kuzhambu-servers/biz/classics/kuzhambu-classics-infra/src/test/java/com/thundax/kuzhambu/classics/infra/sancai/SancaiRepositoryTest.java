@@ -20,7 +20,9 @@ class SancaiRepositoryTest {
     @Test
     void schemaAndDataShouldContainSancaiTablesAndSeedData() {
         assertTrue(existsInKnownRoots("db/schema/classics.sql"));
-        assertTrue(existsInKnownRoots("db/data/classics.sql"));
+        assertTrue(existsInKnownRoots("db/data-source/sancai-manuscripts.json"));
+        assertTrue(existsInKnownRoots("db/data-source/sancai-tags.json"));
+        assertTrue(existsInKnownRoots("scripts/seed/generate-classics-sql.mjs"));
     }
 
     @Test

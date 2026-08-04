@@ -123,7 +123,7 @@ passed the FastGPT smoke for model records, OpenAPI health, dataset visibility, 
 disable, list, `pushData insertLen`, enable and delete.
 
 The same smoke then started Kuzhambu MySQL, Redis, Elasticsearch, RocketMQ, workers, admin/portal
-starters, admin-web, portal-web and nginx; loaded all `db/schema/*.sql` and `db/data/*.sql`; verified
+starters, admin-web, portal-web and nginx; loaded all `db/schema/*.sql` and generated `build/seed-sql/*.sql`; verified
 admin and portal actuator health through nginx; and verified the portal static route.
 
 The follow-up Classics publication smoke logged in through nginx, selected an `ERROR` Sancai entry,
