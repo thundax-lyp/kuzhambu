@@ -82,7 +82,9 @@
 ### Placement
 
 - `ADMIN_WEB_PATH_PAGE_SHAPE`：页面放在 `src/pages/<module>/<domain>/<domain>-page.tsx`。
-- `ADMIN_WEB_PATH_PAGE_COMPONENTS`：页面私有组件放在同页面域 `components/`。
+- `ADMIN_WEB_PATH_PAGE_DOMAIN_SINGULAR`：页面域 `<domain>` 默认使用单数业务对象名；以 `s` 结尾的固定术语必须显式登记例外。尚未迁移的复数页面域只允许通过 `check-page-boundaries.mjs` 中的存量豁免继续存在，迁移完成后必须删除对应豁免。
+- `ADMIN_WEB_PATH_PAGE_NO_COMPONENTS_BUCKET`：页面域下禁止新增 `components/` 桶目录。尚未迁移的页面域只允许通过 `check-page-boundaries.mjs` 中的存量豁免继续存在，迁移完成后必须删除对应豁免。
+- `ADMIN_WEB_PATH_PAGE_COMPONENT_DIRECTORY`：页面私有组件直接目录化为 `src/pages/<module>/<domain>/<component>/<component>.tsx`；页面域根目录只保留页面入口及页面级 service、types、constants、样式和测试等边界文件。
 - `ADMIN_WEB_PATH_PAGE_SERVICE`：页面 service 放在同页面域 `<domain>-service.ts`；模块内复用的共享 service 放在 `src/pages/<module>/common/*-service.ts`。
 - `ADMIN_WEB_PATH_AUTH`：认证、token、权限持久化放在 `src/auth/`。
 - `ADMIN_WEB_PATH_ROUTER`：路由放在 `src/router/`。

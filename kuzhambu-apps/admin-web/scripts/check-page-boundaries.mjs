@@ -1,0 +1,121 @@
+import console from "node:console";
+import { readdirSync, statSync } from "node:fs";
+import { join, relative, resolve, sep } from "node:path";
+import process from "node:process";
+
+const pagesRoot = resolve(process.argv[2] ?? "src/pages");
+
+// Remove entries as the corresponding page domains are migrated during UX/UI work.
+const LEGACY_NON_SINGULAR_PAGE_DOMAINS = new Set([
+    "ai/action-status",
+    "ai/ai-models",
+    "ai/business-configs",
+    "ai/capability-mappings",
+    "ai/invocations",
+    "ai/prompts",
+    "classics/ming-customs",
+    "classics/publication-jobs",
+    "discovery/search-statistics",
+    "knowledge/graph-results",
+    "operations/reports",
+    "operations/tasks"
+]);
+
+// These domains still contain a components bucket or root-level private component files.
+const LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS = new Set([
+    "ai/ai-models",
+    "ai/business-configs",
+    "ai/capability-mappings",
+    "ai/invocations",
+    "ai/prompts",
+    "audit/audit-log",
+    "classics/ming-customs",
+    "classics/publication-jobs",
+    "classics/sancai",
+    "classics/wangqi",
+    "discovery/qa",
+    "discovery/qa-console",
+    "discovery/search",
+    "discovery/search-statistics",
+    "knowledge/graph-extraction",
+    "knowledge/graph-results",
+    "knowledge/lineage",
+    "knowledge/quality-report",
+    "knowledge/refinement",
+    "knowledge/taxonomy",
+    "operations/backup-restore",
+    "operations/dashboard",
+    "operations/health",
+    "storage/storage-object",
+    "system/department",
+    "system/dictionary",
+    "system/menu",
+    "system/user"
+]);
+
+const normalizePath = (path) => path.split(sep).join("/");
+const isDirectory = (path) => statSync(path).isDirectory();
+const readDirectories = (path) =>
+    readdirSync(path)
+        .map((name) => join(path, name))
+        .filter(isDirectory);
+const errors = [];
+
+for (const modulePath of readDirectories(pagesRoot)) {
+    for (const domainPath of readDirectories(modulePath)) {
+        const moduleName = relative(pagesRoot, modulePath);
+        const domainName = relative(modulePath, domainPath);
+        const domainKey = normalizePath(join(moduleName, domainName));
+        const domainEntries = readdirSync(domainPath);
+        const pageFileName = `${domainName}-page.tsx`;
+
+        if (!domainEntries.includes(pageFileName)) {
+            continue;
+        }
+
+        if (domainName.endsWith("s") && !LEGACY_NON_SINGULAR_PAGE_DOMAINS.has(domainKey)) {
+            errors.push(
+                `ADMIN_WEB_PATH_PAGE_DOMAIN_SINGULAR: ${domainKey} must use a singular page-domain name or be explicitly registered as a fixed-term exception.`
+            );
+        }
+
+        if (LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS.has(domainKey)) {
+            continue;
+        }
+
+        if (domainEntries.includes("components")) {
+            errors.push(
+                `ADMIN_WEB_PATH_PAGE_NO_COMPONENTS_BUCKET: ${domainKey}/components is forbidden; place each private component in ${domainKey}/<component>/<component>.tsx.`
+            );
+        }
+
+        for (const entry of domainEntries) {
+            const entryPath = join(domainPath, entry);
+            if (
+                entry.endsWith(".tsx") &&
+                entry !== pageFileName &&
+                entry !== `${domainName}-page.test.tsx`
+            ) {
+                errors.push(
+                    `ADMIN_WEB_PATH_PAGE_COMPONENT_DIRECTORY: ${domainKey}/${entry} must move to ${domainKey}/${entry.replace(/\.tsx$/, "")}/${entry}.`
+                );
+            }
+
+            if (
+                isDirectory(entryPath) &&
+                entry !== "hooks" &&
+                entry !== "components" &&
+                !readdirSync(entryPath).includes(`${entry}.tsx`)
+            ) {
+                errors.push(
+                    `ADMIN_WEB_PATH_PAGE_COMPONENT_DIRECTORY: ${domainKey}/${entry} must contain its entry component ${entry}.tsx.`
+                );
+            }
+        }
+    }
+}
+
+if (errors.length > 0) {
+    console.error(errors.join("\n"));
+    process.exitCode = 1;
+}

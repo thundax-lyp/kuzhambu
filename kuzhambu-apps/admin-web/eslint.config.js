@@ -2155,6 +2155,7 @@ export default tseslint.config(
                 { type: "shared-component", pattern: "src/components/*", mode: "full" },
                 { type: "page", pattern: "src/pages/*/*/*-page.tsx", mode: "full" },
                 { type: "page-component", pattern: "src/pages/*/*/components/*", mode: "full" },
+                { type: "page-component", pattern: "src/pages/*/*/*/*", mode: "full" },
                 { type: "page-service", pattern: "src/pages/*/*/*-service.ts", mode: "full" },
                 { type: "query", pattern: "src/query/*", mode: "full" },
                 { type: "router", pattern: "src/router/*", mode: "full" },
