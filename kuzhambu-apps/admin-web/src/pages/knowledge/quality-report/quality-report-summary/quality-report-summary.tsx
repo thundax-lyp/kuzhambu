@@ -1,5 +1,5 @@
 import { Col, Row, Statistic } from "antd";
-import type { QualityReportRecord } from "./quality-report-types";
+import type { QualityReportRecord } from "../quality-report-types";
 import { KuzhambuCard } from "@/components";
 
 interface QualityReportSummaryProps {

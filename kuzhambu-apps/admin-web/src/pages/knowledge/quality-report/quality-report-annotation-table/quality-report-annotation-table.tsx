@@ -1,7 +1,7 @@
 import { Table, Tag } from "antd";
 import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
-import type { QualityReportAnnotationRecord } from "./quality-report-types";
+import type { QualityReportAnnotationRecord } from "../quality-report-types";
 
 interface QualityReportAnnotationTableProps {
     annotations: QualityReportAnnotationRecord[];

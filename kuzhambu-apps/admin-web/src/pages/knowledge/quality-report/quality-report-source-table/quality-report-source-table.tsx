@@ -3,7 +3,7 @@ import { Table, Tag, Tooltip } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
 import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
-import type { QualityReportSourceDetailRecord } from "./quality-report-types";
+import type { QualityReportSourceDetailRecord } from "../quality-report-types";
 
 interface QualityReportSourceTableProps {
     canReextract?: boolean;

@@ -7,8 +7,6 @@ const pagesRoot = resolve(process.argv[2] ?? "src/pages");
 
 // These domains still contain a components bucket or root-level private component files.
 const LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS = new Set([
-    "knowledge/lineage",
-    "knowledge/quality-report",
     "knowledge/refinement",
     "knowledge/taxonomy",
     "operations/dashboard",

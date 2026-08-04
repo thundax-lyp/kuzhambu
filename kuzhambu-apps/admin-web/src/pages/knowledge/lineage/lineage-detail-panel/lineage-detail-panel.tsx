@@ -3,7 +3,7 @@ import type {
     LineageNodeRecord,
     LineageRelationRecord,
     LineageSourceRefRecord
-} from "./lineage-types";
+} from "../lineage-types";
 
 interface LineageDetailPanelProps {
     node?: LineageNodeRecord | null;

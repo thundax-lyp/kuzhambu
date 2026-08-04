@@ -1,7 +1,7 @@
 import { Table, Tag } from "antd";
 import { isSameId, normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
-import type { LineageNodeRecord } from "./lineage-types";
+import type { LineageNodeRecord } from "../lineage-types";
 
 interface LineageNodeTableProps {
     loading?: boolean;

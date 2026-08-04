@@ -2,7 +2,7 @@ import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
 import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
-import type { QualityReportRecord } from "./quality-report-types";
+import type { QualityReportRecord } from "../quality-report-types";
 
 interface QualityReportHistoryTableProps {
     loading?: boolean;

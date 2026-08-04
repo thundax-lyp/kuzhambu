@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { LineageCanvas } from "./lineage-canvas";
-import type { LineageNodeRecord, LineageRelationRecord } from "./lineage-types";
+import type { LineageNodeRecord, LineageRelationRecord } from "../lineage-types";
 
 const nodes: LineageNodeRecord[] = [
     {
