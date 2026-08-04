@@ -9,10 +9,6 @@ const pagesRoot = resolve(process.argv[2] ?? "src/pages");
 const LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS = new Set([
     "classics/sancai",
     "classics/wangqi",
-    "discovery/qa",
-    "discovery/qa-console",
-    "discovery/search",
-    "discovery/search-statistic",
     "knowledge/graph-extraction",
     "knowledge/graph-result",
     "knowledge/lineage",

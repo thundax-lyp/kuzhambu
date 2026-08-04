@@ -1,6 +1,9 @@
 import { Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { KnowledgeSyncItemPageRecord, KnowledgeSyncItemRecord } from "./qa-console-types";
+import type {
+    KnowledgeSyncItemPageRecord,
+    KnowledgeSyncItemRecord
+} from "@/pages/discovery/qa-console/qa-console-types";
 import { KuzhambuButton, KuzhambuSelect, KuzhambuSpace, KuzhambuCard } from "@/components";
 
 const { Text } = Typography;

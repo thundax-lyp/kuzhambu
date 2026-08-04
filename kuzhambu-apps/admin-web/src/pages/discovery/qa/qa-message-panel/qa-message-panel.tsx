@@ -5,7 +5,10 @@ import { forwardRef, useMemo, type ComponentProps, type ElementRef, type ReactNo
 import { KuzhambuSpace } from "@/components";
 import ancientReaderAvatar from "@/assets/ancient-reader-avatar-face.jpg";
 import ancientScholarAvatar from "@/assets/ancient-scholar-avatar-face.jpg";
-import type { DiscoveryQaSessionRecord, DiscoveryQaSourceRecord } from "./qa-types";
+import type {
+    DiscoveryQaSessionRecord,
+    DiscoveryQaSourceRecord
+} from "@/pages/discovery/qa/qa-types";
 
 const { Text, Title } = Typography;
 

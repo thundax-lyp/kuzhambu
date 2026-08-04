@@ -1,7 +1,7 @@
 import { CloseOutlined } from "@ant-design/icons";
 import { Empty } from "antd";
 import { KuzhambuButton } from "@/components";
-import type { DiscoveryQaSessionRecord } from "./qa-types";
+import type { DiscoveryQaSessionRecord } from "@/pages/discovery/qa/qa-types";
 
 const toSessionId = (value?: string | null) => {
     return typeof value === "string" && value.trim().length ? value : null;

@@ -1,7 +1,7 @@
 import { Typography } from "antd";
 import { KuzhambuSpace } from "@/components";
-import { SearchKeywordTable } from "./search-keyword-table";
-import type { SearchKeywordBarItem } from "./search-keyword-table";
+import { SearchKeywordTable } from "@/pages/discovery/search-statistic/search-keyword-table";
+import type { SearchKeywordBarItem } from "@/pages/discovery/search-statistic/search-keyword-table";
 
 const { Text } = Typography;
 

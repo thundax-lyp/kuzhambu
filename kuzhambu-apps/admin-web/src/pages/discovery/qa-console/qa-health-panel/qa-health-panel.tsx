@@ -1,7 +1,7 @@
 import { Descriptions } from "antd";
 import { KuzhambuButton, KuzhambuSpace, KuzhambuCard } from "@/components";
 
-import type { KnowledgeHealthRecord } from "./qa-console-types";
+import type { KnowledgeHealthRecord } from "@/pages/discovery/qa-console/qa-console-types";
 
 const formatTime = (value?: number | string | null) => {
     if (value === null || value === undefined || value === "") {
