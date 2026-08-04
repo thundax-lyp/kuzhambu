@@ -5,29 +5,19 @@ import process from "node:process";
 
 const pagesRoot = resolve(process.argv[2] ?? "src/pages");
 
-// Remove entries as the corresponding page domains are migrated during UX/UI work.
-const LEGACY_NON_SINGULAR_PAGE_DOMAINS = new Set([
-    "classics/ming-customs",
-    "classics/publication-jobs",
-    "discovery/search-statistics",
-    "knowledge/graph-results",
-    "operations/reports",
-    "operations/tasks"
-]);
-
 // These domains still contain a components bucket or root-level private component files.
 const LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS = new Set([
     "audit/audit-log",
-    "classics/ming-customs",
-    "classics/publication-jobs",
+    "classics/ming-custom",
+    "classics/publication-job",
     "classics/sancai",
     "classics/wangqi",
     "discovery/qa",
     "discovery/qa-console",
     "discovery/search",
-    "discovery/search-statistics",
+    "discovery/search-statistic",
     "knowledge/graph-extraction",
-    "knowledge/graph-results",
+    "knowledge/graph-result",
     "knowledge/lineage",
     "knowledge/quality-report",
     "knowledge/refinement",
@@ -71,9 +61,9 @@ for (const modulePath of readDirectories(pagesRoot)) {
             );
         }
 
-        if (domainName.endsWith("s") && !LEGACY_NON_SINGULAR_PAGE_DOMAINS.has(domainKey)) {
+        if (domainName.endsWith("s")) {
             errors.push(
-                `ADMIN_WEB_PATH_PAGE_DOMAIN_SINGULAR: ${domainKey} must use a singular page-domain name or be explicitly registered as a fixed-term exception.`
+                `ADMIN_WEB_PATH_PAGE_DOMAIN_SINGULAR: ${domainKey} must use a singular page-domain name.`
             );
         }
 

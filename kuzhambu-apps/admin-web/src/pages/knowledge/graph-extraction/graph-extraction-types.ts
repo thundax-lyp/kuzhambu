@@ -1,4 +1,4 @@
-import type { GraphVersionRecord } from "@/pages/knowledge/graph-results/graph-results-types";
+import type { GraphVersionRecord } from "@/pages/knowledge/graph-result/graph-result-types";
 import type { QualitySummaryRecord } from "@/pages/knowledge/refinement/refinement-types";
 
 export type GraphExtractionTaskType = "RELATION" | "GRAPH" | "LINEAGE" | string;
