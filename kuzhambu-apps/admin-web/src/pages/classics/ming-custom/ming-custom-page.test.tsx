@@ -517,6 +517,14 @@ describe("MingCustomPage", () => {
             expect(payload).not.toHaveProperty("requestedBy");
             expect(payload.requestId).toContain(`ming-customs-${payload.capability}-request`);
             expect(payload.traceId).toContain(`ming-customs-${payload.capability}-trace`);
+            expect(JSON.parse(payload.inputPayloadJson)).toMatchObject({
+                contentType: "MING_CUSTOMS",
+                document: "正旦朝贺。\n\n## 正旦",
+                categoryPath: "RITUAL / 岁时礼仪 / 正旦",
+                originalText: "正旦朝贺。",
+                bodyText: "## 正旦",
+                existingSummary: "记录明代正旦朝贺与家族拜礼。"
+            });
         });
     }, 30000);
 

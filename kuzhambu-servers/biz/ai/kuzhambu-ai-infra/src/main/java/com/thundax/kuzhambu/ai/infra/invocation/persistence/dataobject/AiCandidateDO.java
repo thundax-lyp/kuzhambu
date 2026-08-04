@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @TableName("ai_candidate")
 public class AiCandidateDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private Long callId;

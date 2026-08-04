@@ -18,7 +18,7 @@ cp .env.example dev.env
 
 ## 默认账号来源
 
-默认账号来自 [`db/data/system.sql`](../../../db/data/system.sql)：
+默认账号来自 [`db/data-source/system.json`](../../../db/data-source/system.json)，导入时会生成到 `build/seed-sql/system.sql`：
 
 - `admin` / `admin`
 - `developer` / `Q1w2e3r$`
@@ -27,7 +27,7 @@ cp .env.example dev.env
 
 - `system_auth_principal_identity.identity_value` 是登录名。
 - `system_auth_principal_credential.credential_value` 是密码凭据；`{noop}admin` 表示本地明文占位密码为 `admin`。
-- `system.sql` 中注释已说明这些都是占位凭据，生产使用前必须轮换。
+- 这些都是本地占位凭据，生产使用前必须轮换。
 - 优先使用 `developer` 做日常调试；需要全量后台权限时再使用 `admin`。
 
 ## 从 dev.env 查询账号

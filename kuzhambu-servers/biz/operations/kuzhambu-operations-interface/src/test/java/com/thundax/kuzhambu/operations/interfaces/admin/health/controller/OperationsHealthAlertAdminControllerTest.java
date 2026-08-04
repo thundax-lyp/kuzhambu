@@ -128,10 +128,8 @@ class OperationsHealthAlertAdminControllerTest {
     @Test
     void seedDataShouldIncludeHealthAlertViewAndManagePermissions() throws IOException {
         Path repoRoot = findRepoRoot();
-        String systemSql = Files.readString(repoRoot.resolve("db/data/system.sql"));
         String systemJson = Files.readString(repoRoot.resolve("db/data-source/system.json"));
         for (String permission : List.of("operations:health:view", "operations:health:manage")) {
-            assertTrue(systemSql.contains(permission), () -> "system.sql missing " + permission);
             assertTrue(systemJson.contains(permission), () -> "system.json missing " + permission);
         }
     }
@@ -139,8 +137,7 @@ class OperationsHealthAlertAdminControllerTest {
     private Path findRepoRoot() {
         Path currentPath = Path.of(System.getProperty("user.dir")).toAbsolutePath();
         while (currentPath != null) {
-            if (Files.exists(currentPath.resolve("db/data/system.sql"))
-                    && Files.exists(currentPath.resolve("db/data-source/system.json"))) {
+            if (Files.exists(currentPath.resolve("db/data-source/system.json"))) {
                 return currentPath;
             }
             currentPath = currentPath.getParent();

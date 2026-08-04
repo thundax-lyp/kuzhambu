@@ -1,7 +1,5 @@
 {
-  "templateId": 930118,
-  "promptVersionId": 940118,
-  "variableIdStart": 961901,
+  "priority": 18,
   "capability": "classics_translate_batch_item",
   "suite": "classics-default-v1",
   "name": "古籍批量翻译项提示词",
@@ -13,28 +11,26 @@
     {
       "name": "contentType",
       "required": true,
-      "description": "内容类型",
-      "priority": 961901
+      "description": "内容类型"
     },
     {
       "name": "title",
       "required": false,
-      "description": "条目标题",
-      "priority": 961902
+      "description": "条目标题"
     },
     {
       "name": "contextPath",
       "required": false,
-      "description": "卷册或上下文路径",
-      "priority": 961903
+      "description": "卷册或上下文路径"
     },
     {
       "name": "sourceText",
       "required": true,
-      "description": "待翻译原文",
-      "priority": 961904
+      "description": "待翻译原文"
     }
   ],
-  "outputSchema": { "type": "text" },
+  "outputSchema": {
+    "type": "text"
+  },
   "changeSummary": "Initial classics default batch translate item prompt."
 }

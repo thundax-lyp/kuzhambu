@@ -1,7 +1,5 @@
 {
-  "templateId": 930107,
-  "promptVersionId": 940107,
-  "variableIdStart": 960501,
+  "priority": 7,
   "capability": "classics_image_describe",
   "suite": "classics-default-v1",
   "name": "古籍图片理解提示词",
@@ -13,22 +11,21 @@
     {
       "name": "title",
       "required": false,
-      "description": "图像或条目标题",
-      "priority": 960501
+      "description": "图像或条目标题"
     },
     {
       "name": "contextText",
       "required": false,
-      "description": "相关文字上下文",
-      "priority": 960502
+      "description": "相关文字上下文"
     },
     {
       "name": "imageDescription",
       "required": false,
-      "description": "模型或人工提供的图像描述",
-      "priority": 960503
+      "description": "模型或人工提供的图像描述"
     }
   ],
-  "outputSchema": { "type": "text" },
+  "outputSchema": {
+    "type": "text"
+  },
   "changeSummary": "Initial classics default image analysis prompt."
 }

@@ -1,23 +1,18 @@
 #!/usr/bin/env node
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(scriptDir, "..");
+const repoRoot = resolve(scriptDir, "../..");
 const tagSourcePath = resolve(repoRoot, "db/data-source/sancai-tags.json");
 const manuscriptSourcePath = resolve(
   repoRoot,
   "db/data-source/sancai-manuscripts.json",
 );
-const outputPath = resolve(repoRoot, "db/data/knowledge.sql");
-const GENERATED_REF_BASE = 531000;
-const SANCAI_ENTRY_ID_BASE = 300000000000;
-const STABLE_ID_MODULO = 900000000;
-const ENTRY_DUPLICATE_SLOT_SIZE = 100;
-const THEME_CATEGORY_ID = 1004;
-const SPECIAL_TAG_IDS = new Map([["世系图", 500001]]);
+const outputPath = resolve(repoRoot, "build/seed-sql/knowledge.sql");
+const THEME_CATEGORY_ID = 4;
 const MYSQL_EPOCH_SHANGHAI = "1970-01-01 08:00:00.000000";
 
 const main = () => {
@@ -31,13 +26,14 @@ const main = () => {
     const current = readFileSync(outputPath, "utf8");
     if (current !== sql) {
       console.error(
-        "db/data/knowledge.sql is out of date. Run: node scripts/generate-sancai-knowledge-data-sql.mjs",
+        "build/seed-sql/knowledge.sql is out of date. Run: node scripts/seed/generate-sancai-knowledge-sql.mjs",
       );
       process.exit(1);
     }
     return;
   }
 
+  mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, sql);
 };
 
@@ -85,23 +81,11 @@ const validateSeed = (seed) => {
 };
 
 const validateManuscripts = (manuscripts) => {
-  const entryIds = new Map();
-  const entryKeyCounts = new Map();
   manuscripts.forEach((entry, index) => {
     requireNonBlank(entry.category, `manuscript ${index + 1} category`);
     requireNonBlank(entry.volume, `manuscript ${index + 1} volume`);
     requireNonBlank(entry.title, `manuscript ${index + 1} title`);
     requireNonBlank(entry.content, `manuscript ${index + 1} content`);
-    const entryKey = buildEntryKey(entry);
-    const occurrence = (entryKeyCounts.get(entryKey) ?? 0) + 1;
-    entryKeyCounts.set(entryKey, occurrence);
-    const entryId = buildEntryId(entry, occurrence);
-    if (entryIds.has(entryId)) {
-      throw new Error(
-        `Duplicate generated manuscript id ${entryId}: "${entryKey}" conflicts with "${entryIds.get(entryId)}"`,
-      );
-    }
-    entryIds.set(entryId, entryKey);
     if (!Array.isArray(entry.tags)) {
       throw new Error(`Invalid tags for manuscript ${index + 1}`);
     }
@@ -116,39 +100,19 @@ const validateManuscripts = (manuscripts) => {
 };
 
 const buildTagIds = (tags) => {
-  const tagIds = new Map(SPECIAL_TAG_IDS);
-  const usedIds = new Map([...SPECIAL_TAG_IDS].map(([name, id]) => [id, name]));
-  for (const tag of tags) {
-    if (SPECIAL_TAG_IDS.has(tag.name)) {
-      continue;
-    }
-    const tagId = buildTagId(tag.name);
-    const conflictingName = usedIds.get(tagId);
-    if (conflictingName) {
-      throw new Error(
-        `Duplicate generated tag id ${tagId}: "${tag.name}" conflicts with "${conflictingName}"`,
-      );
-    }
-    tagIds.set(tag.name, tagId);
-    usedIds.set(tagId, tag.name);
-  }
-  return tagIds;
+  return new Map(tags.map((tag, index) => [tag.name, index + 1]));
 };
 
 const buildRefs = (manuscripts, tagIds) => {
   const refs = [];
   let refIndex = 1;
-  const entryKeyCounts = new Map();
-  manuscripts.forEach((entry) => {
-    const entryKey = buildEntryKey(entry);
-    const occurrence = (entryKeyCounts.get(entryKey) ?? 0) + 1;
-    entryKeyCounts.set(entryKey, occurrence);
+  manuscripts.forEach((entry, entryIndex) => {
     for (const tag of entry.tags) {
       refs.push({
-        refId: GENERATED_REF_BASE + refIndex++,
+        refId: refIndex++,
         tagId: requireLookup(tagIds, tag, "tag"),
         contentType: "SANCAI_ENTRY",
-        contentId: buildEntryId(entry, occurrence),
+        contentId: entryIndex + 1,
         contentTitle: entry.title,
       });
     }
@@ -174,10 +138,10 @@ const appendTagCategorySql = (lines) => {
   lines.push(") VALUES");
   lines.push(
     [
-      row([1001, "人物", "人物类别", 10, "ENABLED"]),
-      row([1002, "地点", "地理地点", 20, "ENABLED"]),
-      row([1003, "时代", "历史时代", 30, "ENABLED"]),
-      row([1004, "主题", "主题分类", 40, "ENABLED"]),
+      row([1, "人物", "人物类别", 1, "ENABLED"]),
+      row([2, "地点", "地理地点", 2, "ENABLED"]),
+      row([3, "时代", "历史时代", 3, "ENABLED"]),
+      row([4, "主题", "主题分类", 4, "ENABLED"]),
     ].join(",\n"),
   );
   lines.push("ON DUPLICATE KEY UPDATE");
@@ -250,7 +214,7 @@ const appendTagAliasSql = (lines, aliases, tagIds) => {
     aliases
       .map((alias, index) =>
         row([
-          510000 + index + 1,
+          index + 1,
           requireLookup(tagIds, alias.target, "tag"),
           alias.name,
           alias.source,
@@ -360,23 +324,5 @@ const assertUnique = (values, field) => {
     seen.add(value);
   }
 };
-
-const stableHash = (value) => {
-  let hash = 7;
-  for (const codePoint of String(value).trim()) {
-    hash = (hash * 131 + codePoint.codePointAt(0)) % STABLE_ID_MODULO;
-  }
-  return hash;
-};
-
-const buildTagId = (tagName) => 501000 + stableHash(tagName);
-
-const buildEntryKey = (entry) =>
-  `${entry.category}\u0000${entry.volume}\u0000${entry.title}\u0000${entry.content}`;
-
-const buildEntryId = (entry, occurrence = 1) =>
-  SANCAI_ENTRY_ID_BASE +
-  stableHash(buildEntryKey(entry)) * ENTRY_DUPLICATE_SLOT_SIZE +
-  occurrence;
 
 main();

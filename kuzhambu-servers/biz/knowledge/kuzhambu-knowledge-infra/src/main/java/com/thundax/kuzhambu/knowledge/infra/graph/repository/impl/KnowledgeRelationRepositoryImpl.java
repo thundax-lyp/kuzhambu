@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Repository;
 public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationRepository {
 
     private final KnowledgeRelationMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public KnowledgeRelationRepositoryImpl(KnowledgeRelationMapper mapper) {
         this.mapper = mapper;
@@ -82,9 +80,6 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
     public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {
         for (KnowledgeRelation relation : relations == null ? List.<KnowledgeRelation>of() : relations) {
             KnowledgeRelationDO dataObject = KnowledgeRelationPersistenceAssembler.toObject(relation);
-            if (dataObject.getId() == null) {
-                dataObject.setId(idGenerator.nextId().value());
-            }
             int updated = mapper.update(
                     null,
                     new UpdateWrapper<KnowledgeRelationDO>()

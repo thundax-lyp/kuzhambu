@@ -61,7 +61,7 @@ FastGPT is intentionally kept in a separate compose project because its dependen
 For a Docker-only full-stack smoke, use the smoke orchestrator from the repository root:
 
 ```sh
-scripts/smoke/docker-full-smoke.sh deploy/.env deploy/fastgpt/.env
+scripts/smoke/full-smoke.sh deploy/.env deploy/fastgpt/.env
 ```
 
 FastGPT and Kuzhambu must keep separate MySQL/Mongo/Redis/ES/Pgvector/MinIO volumes and
@@ -135,8 +135,8 @@ Offline Docker image delivery has two separate steps:
 Script entry points:
 
 - Build host image preparation uses `docker compose build` and `docker save`. Keep source download choices outside committed env files and repeatable deploy commands.
-- Deploy host image loading uses `scripts/smoke/docker-load-image-files.sh [deploy/image-files]`.
-- Full Docker smoke uses `scripts/smoke/docker-full-smoke.sh deploy/.env deploy/fastgpt/.env`; it calls the image loading script before starting the Kuzhambu compose stack by default. Set `KUZHAMBU_SMOKE_LOAD_IMAGES=false` only when the smoke target already has every required image loaded. It does not rebuild Kuzhambu images by default. Set `KUZHAMBU_SMOKE_BUILD_IMAGES=true` only when the smoke target is also the build host; that mode rebuilds the Kuzhambu web, starter, workers and Elasticsearch images before startup.
+- Deploy host image loading uses `scripts/smoke/load-image-files.sh [deploy/image-files]`.
+- Full Docker smoke uses `scripts/smoke/full-smoke.sh deploy/.env deploy/fastgpt/.env`; it calls the image loading script before starting the Kuzhambu compose stack by default. Set `KUZHAMBU_SMOKE_LOAD_IMAGES=false` only when the smoke target already has every required image loaded. It does not rebuild Kuzhambu images by default. Set `KUZHAMBU_SMOKE_BUILD_IMAGES=true` only when the smoke target is also the build host; that mode rebuilds the Kuzhambu web, starter, workers and Elasticsearch images before startup.
 
 Build host image preparation:
 
@@ -166,7 +166,7 @@ docker save apache/rocketmq:5.4.0 -o image-files/foundation-rocketmq-5.4.0.tar
 Deploy host image publication:
 
 ```sh
-scripts/smoke/docker-load-image-files.sh deploy/image-files
+scripts/smoke/load-image-files.sh deploy/image-files
 docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
 ```
 
@@ -182,7 +182,7 @@ docker compose \
 Smoke on a host that already has all required images:
 
 ```sh
-KUZHAMBU_SMOKE_LOAD_IMAGES=false scripts/smoke/docker-full-smoke.sh deploy/.env deploy/fastgpt/.env
+KUZHAMBU_SMOKE_LOAD_IMAGES=false scripts/smoke/full-smoke.sh deploy/.env deploy/fastgpt/.env
 ```
 
 Dockerfile base images are configurable because CI and deployment hosts may have different registry access. These base images are build inputs, not release artifacts. Defaults are `node:22-bookworm-slim`, `nginx:1.27-alpine`, `maven:3.9.11-eclipse-temurin-17`, `eclipse-temurin:17-jre`, and `python:3.10-slim`. Override `KUZHAMBU_WEB_BUILD_IMAGE`, `KUZHAMBU_WEB_RUNTIME_IMAGE`, `KUZHAMBU_SERVER_BUILD_IMAGE`, `KUZHAMBU_SERVER_RUNTIME_IMAGE`, or `KUZHAMBU_WORKERS_BASE_IMAGE` without changing Dockerfiles.

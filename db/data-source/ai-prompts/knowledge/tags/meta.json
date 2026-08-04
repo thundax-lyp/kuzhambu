@@ -1,7 +1,5 @@
 {
-  "templateId": 930115,
-  "promptVersionId": 940115,
-  "variableIdStart": 961601,
+  "priority": 15,
   "capability": "knowledge_tags",
   "suite": "knowledge-default-v1",
   "name": "知识标签抽取提示词",
@@ -13,29 +11,38 @@
     {
       "name": "sourceTitle",
       "required": false,
-      "description": "来源标题",
-      "priority": 961601
+      "description": "来源标题"
     },
     {
       "name": "sourceText",
       "required": true,
-      "description": "待抽取标签的文本",
-      "priority": 961602
+      "description": "待抽取标签的文本"
     },
     {
       "name": "maxTags",
       "required": false,
-      "description": "最大标签数量",
-      "priority": 961603
+      "description": "最大标签数量"
     }
   ],
   "outputSchema": {
     "type": "object",
     "properties": {
-      "tags": { "type": "array", "items": { "type": "string" } },
-      "warnings": { "type": "array", "items": { "type": "string" } }
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "warnings": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
     },
-    "required": ["tags"]
+    "required": [
+      "tags"
+    ]
   },
   "changeSummary": "Initial knowledge default tags prompt."
 }

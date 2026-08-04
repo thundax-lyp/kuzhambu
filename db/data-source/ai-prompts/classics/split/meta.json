@@ -1,7 +1,5 @@
 {
-  "templateId": 930111,
-  "promptVersionId": 940111,
-  "variableIdStart": 961201,
+  "priority": 11,
   "capability": "classics_split",
   "suite": "classics-default-v1",
   "name": "古籍条目拆分提示词",
@@ -13,26 +11,22 @@
     {
       "name": "title",
       "required": false,
-      "description": "父条目标题",
-      "priority": 961201
+      "description": "父条目标题"
     },
     {
       "name": "sourceText",
       "required": true,
-      "description": "待拆分的原文或正文",
-      "priority": 961202
+      "description": "待拆分的原文或正文"
     },
     {
       "name": "translationText",
       "required": false,
-      "description": "已有译文",
-      "priority": 961203
+      "description": "已有译文"
     },
     {
       "name": "splitHint",
       "required": false,
-      "description": "拆分粒度或人工提示",
-      "priority": 961204
+      "description": "拆分粒度或人工提示"
     }
   ],
   "outputSchema": {
@@ -43,15 +37,26 @@
         "items": {
           "type": "object",
           "properties": {
-            "title": { "type": "string" },
-            "originalText": { "type": "string" },
-            "translationText": { "type": "string" }
+            "title": {
+              "type": "string"
+            },
+            "originalText": {
+              "type": "string"
+            },
+            "translationText": {
+              "type": "string"
+            }
           },
-          "required": ["title", "originalText"]
+          "required": [
+            "title",
+            "originalText"
+          ]
         }
       }
     },
-    "required": ["entries"]
+    "required": [
+      "entries"
+    ]
   },
   "changeSummary": "Initial classics default split prompt."
 }

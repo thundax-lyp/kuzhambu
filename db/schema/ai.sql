@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS `ai_invocation_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI调用结构化日志表，记录每次worker调用的请求、模型、结果、成本和错误，用于审计、排查和报表';
 
 CREATE TABLE IF NOT EXISTS `ai_candidate` (
-    `id` bigint NOT NULL COMMENT 'AI候选结果业务ID，对外作为candidateId使用',
+    `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'AI候选结果数据库主键，对外作为candidateId使用',
     `call_id` bigint DEFAULT NULL COMMENT '生成该候选结果的AI调用日志业务ID，对应ai_invocation_log.call_id',
     `batch_id` bigint DEFAULT NULL COMMENT '批量任务业务ID，对应ai_batch_job.id，单次候选为空',
     `capability` varchar(64) NOT NULL COMMENT '生成该候选结果使用的AI业务能力',
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `ai_candidate` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI候选结果表';
 
 CREATE TABLE IF NOT EXISTS `ai_batch_job` (
-    `id` bigint NOT NULL COMMENT 'AI批量任务业务ID，对外作为batchId使用',
+    `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'AI批量任务数据库主键，对外作为batchId使用',
     `scope` varchar(32) DEFAULT NULL COMMENT '批量任务所属业务域或运行范围',
     `capability` varchar(64) NOT NULL COMMENT '批量任务处理的AI业务能力',
     `content_type` varchar(32) NOT NULL COMMENT '批量任务处理的业务内容类型',

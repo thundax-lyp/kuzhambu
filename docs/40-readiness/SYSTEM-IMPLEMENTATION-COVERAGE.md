@@ -15,7 +15,7 @@
 - 审计日志和认证事件已支持分页、筛选、详情、对象视图和字段级变更输出。
 - Portal 不提供通用审计查询入口，符合当前边界。
 - Classics 内容域 view/edit/export 权限和 publication job 查看权限已完成后端运行态和 Admin Web 控件消费。
-- `db/data-source/system.json` 与 `db/data/system.sql` 已通过生成一致性校验。
+- `db/data-source/system.json` 可通过生成器生成 `build/seed-sql/system.sql` 临时导入产物。
 
 ## Open Items
 

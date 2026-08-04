@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.system.infra.auth.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalCredentialIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalIdentityIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Repository;
 public class PrincipalCredentialRepositoryImpl implements PrincipalCredentialRepository {
 
     private final PrincipalCredentialMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public PrincipalCredentialRepositoryImpl(PrincipalCredentialMapper mapper) {
         this.mapper = mapper;
@@ -65,7 +63,6 @@ public class PrincipalCredentialRepositoryImpl implements PrincipalCredentialRep
     @Override
     public PrincipalCredentialId insert(PrincipalCredential principalCredential) {
         PrincipalCredentialDO dataObject = PrincipalCredentialPersistenceAssembler.toObject(principalCredential);
-        dataObject.setId(idGenerator.nextId().value());
         mapper.insert(dataObject);
         return PrincipalCredentialIdCodec.toDomain(dataObject.getId());
     }

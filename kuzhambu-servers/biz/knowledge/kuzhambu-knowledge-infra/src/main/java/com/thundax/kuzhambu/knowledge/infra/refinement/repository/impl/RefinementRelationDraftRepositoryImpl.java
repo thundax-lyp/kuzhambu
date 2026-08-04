@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.knowledge.infra.refinement.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementRelationDraft;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementRelationDraftRepository;
 import com.thundax.kuzhambu.knowledge.infra.refinement.persistence.assembler.RefinementRelationDraftPersistenceAssembler;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Repository;
 public class RefinementRelationDraftRepositoryImpl implements RefinementRelationDraftRepository {
 
     private final RefinementRelationDraftMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public RefinementRelationDraftRepositoryImpl(RefinementRelationDraftMapper mapper) {
         this.mapper = mapper;
@@ -34,9 +32,6 @@ public class RefinementRelationDraftRepositoryImpl implements RefinementRelation
     public void saveOrUpdateBatch(List<RefinementRelationDraft> drafts) {
         for (RefinementRelationDraft draft : drafts == null ? List.<RefinementRelationDraft>of() : drafts) {
             RefinementRelationDraftDO dataObject = RefinementRelationDraftPersistenceAssembler.toObject(draft);
-            if (dataObject.getId() == null) {
-                dataObject.setId(idGenerator.nextId().value());
-            }
             if (dataObject.getDraftId() == null) {
                 dataObject.setDraftId(dataObject.getId());
             }

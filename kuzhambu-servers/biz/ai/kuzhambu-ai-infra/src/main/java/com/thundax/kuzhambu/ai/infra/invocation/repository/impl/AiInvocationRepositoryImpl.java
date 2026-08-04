@@ -184,9 +184,6 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     @Override
     public AiCandidateId insertCandidate(AiCandidate candidate) {
         AiCandidateDO dataObject = toCandidateObject(candidate);
-        if (dataObject.getId() == null) {
-            dataObject.setId(nextId());
-        }
         if (dataObject.getRequestedAt() == null) {
             dataObject.setRequestedAt(Instant.now());
         }

@@ -1,7 +1,5 @@
 {
-  "templateId": 930109,
-  "promptVersionId": 940109,
-  "variableIdStart": 960701,
+  "priority": 9,
   "capability": "classics_image_prompt_fusion",
   "suite": "classics-default-v1",
   "name": "古籍图文融合提示词",
@@ -13,28 +11,26 @@
     {
       "name": "title",
       "required": false,
-      "description": "条目标题",
-      "priority": 960701
+      "description": "条目标题"
     },
     {
       "name": "sourceText",
       "required": false,
-      "description": "原文",
-      "priority": 960702
+      "description": "原文"
     },
     {
       "name": "translationText",
       "required": false,
-      "description": "译文",
-      "priority": 960703
+      "description": "译文"
     },
     {
       "name": "imageAnalysis",
       "required": false,
-      "description": "图片理解结果",
-      "priority": 960704
+      "description": "图片理解结果"
     }
   ],
-  "outputSchema": { "type": "text" },
+  "outputSchema": {
+    "type": "text"
+  },
   "changeSummary": "Initial classics default visual fusion prompt."
 }

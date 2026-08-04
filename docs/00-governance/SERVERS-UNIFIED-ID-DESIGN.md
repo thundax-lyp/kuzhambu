@@ -13,7 +13,7 @@
 
 ## Core Distinction
 
-- `Database Primary Key`：数据库内部主键，默认 `bigint id`。
+- `Database Primary Key`：数据库内部主键，默认 `bigint id AUTO_INCREMENT`，由数据库发号。
 - `Domain Identifier`：Java 里的强类型领域标识，例如 `UserId`、`RoleId`。
 - `Business No`：业务单号，例如后续可能出现的任务编号、导入批次号。
 - `Random Token`：独立随机访问凭证，例如下载凭证、access token、refresh token。
@@ -41,6 +41,9 @@
 ## Hard Rules
 
 - 统一业务对象对外标识采用 ULID。
+- 数据库内部主键不得默认使用 Snowflake。除非有明确跨库、跨节点、离线预生成或外部系统同步原因，运行时写库路径不得在代码里手动 `setId(nextId())`。
+- 物理主键已是 `AUTO_INCREMENT` 的表，DO 必须使用 `@TableId(type = IdType.AUTO)`，Repository 不得在 insert 前生成主键。
+- 需要对外稳定暴露的业务号、任务号、token、trace/call 关联号必须与数据库物理主键分开建模；如果临时复用主键对外返回，HTTP/前端协议必须按字符串处理，不能按 JavaScript number 处理。
 - 统一 ID 采用“单值包装 + 强类型”模型。
 - `BaseId<T>` 必须不可变。
 - 具体 ID 构造器负责校验和规范化底层值；`valueobject` 下的 `*Id` 不得声明 `static` 方法。

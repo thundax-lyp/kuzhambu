@@ -836,6 +836,10 @@ describe("WangqiPage", () => {
         expect(taskPayload?.promptMessagesJson).toContain("已有标签：史部");
         expect(taskPayload?.promptVariablesJson).toContain('"existingTags":["史部"]');
         expect(taskPayload?.inputPayloadJson).toContain('"existingTags":["史部"]');
+        expect(taskPayload?.inputPayloadJson).toContain('"contentType":"WANGQI_DOCUMENT"');
+        expect(taskPayload?.inputPayloadJson).toContain('"document":"## 王圻"');
+        expect(taskPayload?.inputPayloadJson).toContain('"bodyText":"## 王圻"');
+        expect(taskPayload?.inputPayloadJson).toContain('"existingSummary":"记录王圻古籍条目。"');
         await waitFor(() =>
             expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({ taskId: "9200" })
         );

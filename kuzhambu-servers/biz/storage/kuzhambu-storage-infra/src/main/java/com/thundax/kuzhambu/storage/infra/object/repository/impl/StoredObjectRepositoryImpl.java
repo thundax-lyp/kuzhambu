@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.domain.object.codec.StorageMimeTypeCodec;
@@ -40,7 +39,6 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
     private final StoredObjectMapper mapper;
     private final StoredObjectReferenceMapper businessMapper;
     private final StorageCacheSupport cacheSupport;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public StoredObjectRepositoryImpl(
             StoredObjectMapper mapper, StoredObjectReferenceMapper businessMapper, StorageCacheSupport cacheSupport) {
@@ -146,7 +144,6 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
     @Override
     public StoredObjectId insert(StoredObject entity) {
         StoredObjectDO dataObject = StoragePersistenceAssembler.toObject(entity);
-        dataObject.setId(idGenerator.nextId().value());
         if (dataObject.getStoredAt() == null) {
             dataObject.setStoredAt(Instant.now());
         }

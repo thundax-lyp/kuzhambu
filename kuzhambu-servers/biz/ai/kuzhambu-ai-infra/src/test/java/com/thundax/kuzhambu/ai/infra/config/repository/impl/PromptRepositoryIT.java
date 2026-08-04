@@ -54,8 +54,8 @@ class PromptRepositoryIT {
 
     @Test
     void seedSqlShouldContainClassicsPromptAndBaseConfigRecords() throws IOException {
-        String dataSql = readRequiredSql("db/data/ai.sql");
-        String normalized = dataSql.replaceAll("\\s+", " ");
+        String seedGenerator = readRequiredSql("scripts/seed/generate-ai-sql.mjs");
+        String normalized = seedGenerator.replaceAll("\\s+", " ");
 
         assertFalse(normalized.contains("INSERT INTO `ai_service_config`"));
         assertFalse(normalized.contains("https://ai.wdit.com.cn/v1"));
@@ -63,30 +63,15 @@ class PromptRepositoryIT {
         assertTrue(normalized.contains("`base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`)"));
         assertTrue(normalized.contains(
                 "`encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`)"));
-        assertTrue(normalized.contains("930101, 'classics_summary', '古籍摘要提示词', '古籍内容默认摘要提示词。', 1, 1"));
-        assertTrue(
-                normalized.contains("930104, 'discovery_query_understanding', '知识发现查询理解提示词', '知识发现默认查询理解提示词。', 1, 1"));
-        assertTrue(normalized.contains("930108, 'classics_image_generate', '古籍图片生成提示词', '古籍视觉资产默认文生图提示词。', 1, 1"));
-        assertTrue(normalized.contains("900101, 'OPENAI_COMPATIBLE', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B'"));
-        assertTrue(normalized.contains("900102, 'OPENAI_COMPATIBLE', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro'"));
-        assertTrue(normalized.contains("900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628'"));
+        assertTrue(normalized.contains("CTYUN-CX-Qwen3.5-397B-A17B"));
+        assertTrue(normalized.contains("CTYUN-bot-DeepSeek-V3.2-pro"));
+        assertTrue(normalized.contains("doubao-seedream-5-0-pro-260628"));
         assertTrue(normalized.contains("INSERT INTO `ai_business_config`"));
-        assertTrue(normalized.contains("(910106, 'classics_translate', 930106, 900102, NULL, 1, 6"));
-        assertTrue(normalized.contains("(910107, 'classics_image_describe', 930107, 900101, NULL, 1, 7"));
-        assertTrue(normalized.contains("(910108, 'classics_image_generate', 930108, 900201, NULL, 1, 8"));
-        assertSeedContainsAllBusinessCapabilities(normalized);
+        assertSeedContainsAllBusinessCapabilities(readAllAiPromptMeta());
         assertTrue(normalized.contains("`model_id` = COALESCE(`model_id`, VALUES(`model_id`))"));
         assertFalse(normalized.contains("INSERT INTO `ai_capability_mapping`"));
         assertFalse(normalized.contains("INSERT INTO `ai_action_status`"));
 
-        assertTrue(normalized.contains("(940101, 930101, 1,"));
-        assertTrue(normalized.contains("(940106, 930106, 1,"));
-        assertTrue(normalized.contains("(940108, 930108, 1,"));
-        assertTrue(normalized.contains("\"variableName\":\"contentType\",\"required\":true"));
-        assertTrue(normalized.contains("\"variableName\":\"existingSummary\",\"required\":false"));
-        assertTrue(normalized.contains("\"variableName\":\"contextPath\",\"required\":false"));
-        assertTrue(normalized.contains("\"variableName\":\"sourceText\",\"required\":true"));
-        assertTrue(normalized.contains("{\"type\":\"text\"}"));
         assertTrue(existsInKnownRoots("db/data-source/ai-prompts/classics/summary/system-template.txt"));
         assertTrue(existsInKnownRoots("db/data-source/ai-prompts/discovery/answer-generation/sample.md"));
     }
@@ -169,28 +154,36 @@ class PromptRepositoryIT {
         throw new IOException("Required SQL file not found: " + path);
     }
 
-    private static void assertSeedContainsAllBusinessCapabilities(String normalizedSql) {
-        String promptTemplateSection =
-                section(normalizedSql, "INSERT INTO `ai_prompt_template`", "INSERT INTO `ai_business_config`");
-        String businessConfigSection =
-                section(normalizedSql, "INSERT INTO `ai_business_config`", "INSERT INTO `ai_prompt_version`");
+    private static void assertSeedContainsAllBusinessCapabilities(String seedMeta) {
         for (AiBusinessCapability capability : AiBusinessCapability.values()) {
             assertTrue(
-                    promptTemplateSection.contains("'" + capability.value() + "'"),
-                    "missing prompt template seed for " + capability.value());
-            assertTrue(
-                    businessConfigSection.contains("'" + capability.value() + "'"),
-                    "missing business config seed for " + capability.value());
+                    seedMeta.contains("\"capability\": \"" + capability.value() + "\""),
+                    "missing prompt seed source for " + capability.value());
         }
     }
 
-    private static String section(String value, String startMarker, String endMarker) {
-        int start = value.indexOf(startMarker);
-        int end = value.indexOf(endMarker, start + startMarker.length());
-        if (start < 0 || end < 0) {
-            return "";
+    private static String readAllAiPromptMeta() throws IOException {
+        Path repoRoot = findRepoRoot();
+        try (var paths = Files.walk(repoRoot.resolve("db/data-source/ai-prompts"))) {
+            StringBuilder builder = new StringBuilder();
+            for (Path path : paths.filter(
+                            candidate -> candidate.getFileName().toString().equals("meta.json"))
+                    .toList()) {
+                builder.append(Files.readString(path)).append('\n');
+            }
+            return builder.toString();
         }
-        return value.substring(start, end);
+    }
+
+    private static Path findRepoRoot() throws IOException {
+        Path currentPath = Path.of(System.getProperty("user.dir")).toAbsolutePath();
+        while (currentPath != null) {
+            if (Files.exists(currentPath.resolve("db/data-source/ai-prompts"))) {
+                return currentPath;
+            }
+            currentPath = currentPath.getParent();
+        }
+        throw new IOException("Cannot locate repository root from user.dir");
     }
 
     private static boolean existsInKnownRoots(String path) {

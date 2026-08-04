@@ -1,7 +1,5 @@
 {
-  "templateId": 930114,
-  "promptVersionId": 940114,
-  "variableIdStart": 961501,
+  "priority": 14,
   "capability": "knowledge_lineage_extract",
   "suite": "knowledge-default-v1",
   "name": "世系图抽取提示词",
@@ -13,31 +11,51 @@
     {
       "name": "sourceTitle",
       "required": false,
-      "description": "来源标题",
-      "priority": 961501
+      "description": "来源标题"
     },
     {
       "name": "sourceText",
       "required": true,
-      "description": "待抽取世系的文本",
-      "priority": 961502
+      "description": "待抽取世系的文本"
     },
     {
       "name": "lineageHint",
       "required": false,
-      "description": "世系范围或人工提示",
-      "priority": 961503
+      "description": "世系范围或人工提示"
     }
   ],
   "outputSchema": {
     "type": "object",
     "properties": {
-      "nodes": { "type": "array", "items": { "type": "object" } },
-      "relations": { "type": "array", "items": { "type": "object" } },
-      "sourceSnippets": { "type": "array", "items": { "type": "object" } },
-      "warnings": { "type": "array", "items": { "type": "string" } }
+      "nodes": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "relations": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "sourceSnippets": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "warnings": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
     },
-    "required": ["nodes", "relations"]
+    "required": [
+      "nodes",
+      "relations"
+    ]
   },
   "changeSummary": "Initial knowledge default lineage extraction prompt."
 }

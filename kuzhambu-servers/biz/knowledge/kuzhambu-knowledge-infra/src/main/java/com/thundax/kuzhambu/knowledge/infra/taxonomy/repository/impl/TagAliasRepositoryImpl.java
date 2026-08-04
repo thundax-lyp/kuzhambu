@@ -55,9 +55,6 @@ public class TagAliasRepositoryImpl implements TagAliasRepository {
     @Override
     public TagAliasId insert(TagAlias entity) {
         TagAliasDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
-        if (dataObject.getId() == null) {
-            dataObject.setId(idGenerator.nextId().value());
-        }
         if (dataObject.getAliasId() == null) {
             dataObject.setAliasId(idGenerator.nextId().value());
         }

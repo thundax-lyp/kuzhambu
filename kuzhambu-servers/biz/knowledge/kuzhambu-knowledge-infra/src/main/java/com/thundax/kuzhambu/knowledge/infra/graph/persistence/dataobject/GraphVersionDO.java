@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @TableName("knowledge_graph_version")
 public class GraphVersionDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private Long taskId;

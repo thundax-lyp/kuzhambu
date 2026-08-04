@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementTask;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.valueobject.RefinementTaskId;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Repository;
 public class RefinementTaskRepositoryImpl implements RefinementTaskRepository {
 
     private final RefinementTaskMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public RefinementTaskRepositoryImpl(RefinementTaskMapper mapper) {
         this.mapper = mapper;
@@ -85,9 +83,6 @@ public class RefinementTaskRepositoryImpl implements RefinementTaskRepository {
     @Override
     public Long save(RefinementTask entity) {
         RefinementTaskDO dataObject = RefinementTaskPersistenceAssembler.toObject(entity);
-        if (dataObject.getId() == null) {
-            dataObject.setId(idGenerator.nextId().value());
-        }
         if (dataObject.getRefinementTaskId() == null) {
             dataObject.setRefinementTaskId(dataObject.getId());
         }

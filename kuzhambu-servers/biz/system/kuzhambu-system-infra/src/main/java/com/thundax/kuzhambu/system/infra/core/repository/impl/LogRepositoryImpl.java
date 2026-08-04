@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.system.infra.core.repository.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Repository;
 public class LogRepositoryImpl implements LogRepository {
 
     private final LogMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public LogRepositoryImpl(LogMapper mapper) {
         this.mapper = mapper;
@@ -78,7 +76,6 @@ public class LogRepositoryImpl implements LogRepository {
     @Override
     public LogId insert(Log entity) {
         LogDO dataObject = LogPersistenceAssembler.toObject(entity);
-        dataObject.setId(idGenerator.nextId().value());
         mapper.insert(dataObject);
         return LogIdCodec.toDomain(dataObject.getId());
     }
@@ -97,7 +94,6 @@ public class LogRepositoryImpl implements LogRepository {
     public List<LogId> batchInsert(List<Log> list) {
         List<LogId> idList = new ArrayList<>();
         for (LogDO dataObject : LogPersistenceAssembler.toObjectList(list)) {
-            dataObject.setId(idGenerator.nextId().value());
             mapper.insert(dataObject);
             idList.add(LogIdCodec.toDomain(dataObject.getId()));
         }

@@ -25,7 +25,7 @@
 ## Validation Evidence
 
 - Operations 报表、cleanup、health、backup/restore 和 dashboard 已存在 application / interface / admin-web 定向测试。
-- `db/data-source/system.json` 与 `db/data/system.sql` 已对齐 Operations 菜单与权限。
+- `db/data-source/system.json` 已对齐 Operations 菜单与权限，导入时生成到 `build/seed-sql/system.sql`。
 - `.env.example`、`deploy/.env.example` 和 admin-starter 配置已同步 Operations 运行时变量。
 
 ## Requirement Coverage Matrix

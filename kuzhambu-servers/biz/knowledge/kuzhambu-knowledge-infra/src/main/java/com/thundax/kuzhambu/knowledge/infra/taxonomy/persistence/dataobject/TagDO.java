@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @TableName("knowledge_tag")
 public class TagDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private Long tagId;

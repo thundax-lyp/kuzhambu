@@ -139,23 +139,17 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
     void systemSeedShouldExposeOperationsHealthPageMenu() throws IOException {
         Path repoRoot = findRepoRoot();
         String systemJson = Files.readString(repoRoot.resolve("db/data-source/system.json"));
-        String systemSql = Files.readString(repoRoot.resolve("db/data/system.sql"));
 
         Assertions.assertThat(systemJson)
                 .contains("\"name\": \"健康检查\"")
                 .contains("\"operations:health:view\"")
                 .contains("\"url\": \"/operations/health\"");
-        Assertions.assertThat(systemSql)
-                .contains("'健康检查'")
-                .contains("'operations:health:view'")
-                .contains("'/operations/health'");
     }
 
     @Test
     void systemSeedShouldExposeAiGovernanceMenus() throws IOException {
         Path repoRoot = findRepoRoot();
         String systemJson = Files.readString(repoRoot.resolve("db/data-source/system.json"));
-        String systemSql = Files.readString(repoRoot.resolve("db/data/system.sql"));
 
         Assertions.assertThat(systemJson)
                 .contains("\"url\": \"/ai/models\"")
@@ -165,14 +159,6 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                 .doesNotContain("\"url\": \"/ai/action-status\"")
                 .doesNotContain("\"url\": \"/ai/services\"")
                 .doesNotContain("\"url\": \"/ai/capability-mappings\"");
-        Assertions.assertThat(systemSql)
-                .contains("'/ai/models'")
-                .contains("'/ai/prompts'")
-                .contains("'/ai/business-configs'")
-                .contains("'/ai/invocations'")
-                .doesNotContain("'/ai/action-status'")
-                .doesNotContain("'/ai/services'")
-                .doesNotContain("'/ai/capability-mappings'");
     }
 
     private String loadApplicationYaml() throws IOException {
@@ -185,8 +171,7 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
     private Path findRepoRoot() {
         Path currentPath = Path.of(System.getProperty("user.dir")).toAbsolutePath();
         while (currentPath != null) {
-            if (Files.exists(currentPath.resolve("db/data-source/system.json"))
-                    && Files.exists(currentPath.resolve("db/data/system.sql"))) {
+            if (Files.exists(currentPath.resolve("db/data-source/system.json"))) {
                 return currentPath;
             }
             currentPath = currentPath.getParent();

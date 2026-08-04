@@ -81,14 +81,26 @@ const buildPromptMessagesJson = (
 };
 
 const buildInputPayloadJson = (entry: MingCustomsRecord) => {
+    const document = [entry.originalExcerpts, entry.content]
+        .filter((value): value is string => Boolean(value?.trim()))
+        .join("\n\n");
+    const categoryPath = [entry.category, entry.chapter, entry.section]
+        .filter((value): value is string => Boolean(value?.trim()))
+        .join(" / ");
     return JSON.stringify({
+        contentType: "MING_CUSTOMS",
+        document,
         title: entry.title || null,
         category: entry.category || null,
+        categoryPath,
         chapter: entry.chapter || null,
         section: entry.section || null,
         summary: entry.summary || null,
+        existingSummary: entry.summary || null,
         originalExcerpts: entry.originalExcerpts || null,
+        originalText: entry.originalExcerpts || null,
         content: entry.content || null,
+        bodyText: entry.content || null,
         contentFormat: entry.contentFormat || null
     });
 };

@@ -56,7 +56,7 @@ class AiBusinessInvokeConfigResolverTest {
         assertThat(command.getModelId().value()).isEqualTo(2001L);
         assertThat(command.getServiceRole()).isEqualTo("PRIMARY");
         assertThat(command.getModelName().value()).isEqualTo("gpt-4o");
-        assertThat(command.getPromptVersionId().value()).isEqualTo(940106L);
+        assertThat(command.getPromptVersionId().value()).isEqualTo(6L);
         assertThat(command.getOutputSchemaJson()).isEqualTo("{\"type\":\"text\"}");
         assertThat(messages.get(1).get("content").asText())
                 .contains("SANCAI_ENTRY")
@@ -82,7 +82,7 @@ class AiBusinessInvokeConfigResolverTest {
 
         assertThatThrownBy(() -> resolver.resolve(command()))
                 .isInstanceOf(BizException.class)
-                .hasMessageContaining("AI business config prompt template is disabled or mismatched: 930106");
+                .hasMessageContaining("AI business config prompt template is disabled or mismatched: 6");
     }
 
     @Test
@@ -90,12 +90,11 @@ class AiBusinessInvokeConfigResolverTest {
         AiBusinessInvokeConfigResolver resolver = newResolver(
                 promptRepository(List.of(variable("contentType", true), variable("sourceText", true)), null, false));
         AiInvokeCommand command = command();
-        command.setPromptVersionId(
-                new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(940106L));
+        command.setPromptVersionId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(6L));
 
         assertThatThrownBy(() -> resolver.validatePromptVersionEnabled(command))
                 .isInstanceOf(BizException.class)
-                .hasMessageContaining("AI business config prompt template is disabled or mismatched: 930106");
+                .hasMessageContaining("AI business config prompt template is disabled or mismatched: 6");
     }
 
     @Test
@@ -159,7 +158,7 @@ class AiBusinessInvokeConfigResolverTest {
     private static PromptVariable variable(String name, boolean required) {
         PromptVariable variable = new PromptVariable();
         variable.setId(new PromptVariableId(1L));
-        variable.setTemplateId(new PromptTemplateId(930106L));
+        variable.setTemplateId(new PromptTemplateId(6L));
         variable.setVariableName(name);
         variable.setRequired(required);
         return variable;
@@ -211,7 +210,7 @@ class AiBusinessInvokeConfigResolverTest {
             @Override
             public PromptVersion getCurrentVersion(PromptTemplateId templateId) {
                 PromptVersion version = new PromptVersion();
-                version.setId(new PromptVersionId(940106L));
+                version.setId(new PromptVersionId(6L));
                 version.setTemplateId(templateId);
                 version.setMessageTemplatesJson(
                         """
@@ -227,7 +226,7 @@ class AiBusinessInvokeConfigResolverTest {
 
             @Override
             public PromptVersion getVersion(PromptVersionId versionId) {
-                PromptVersion version = getCurrentVersion(new PromptTemplateId(930106L));
+                PromptVersion version = getCurrentVersion(new PromptTemplateId(6L));
                 version.setId(versionId);
                 return version;
             }
@@ -295,7 +294,7 @@ class AiBusinessInvokeConfigResolverTest {
             return new AiBusinessConfig(
                     null,
                     AiBusinessCapability.CLASSICS_SUMMARY,
-                    new PromptTemplateId(930106L),
+                    new PromptTemplateId(6L),
                     new AiModelId(2001L),
                     "{\"temperature\":0.7}",
                     true,

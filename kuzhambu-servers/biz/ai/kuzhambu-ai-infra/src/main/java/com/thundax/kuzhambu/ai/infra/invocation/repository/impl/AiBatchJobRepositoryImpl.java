@@ -12,7 +12,6 @@ import com.thundax.kuzhambu.ai.domain.invocation.repository.AiBatchJobRepository
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.assembler.AiBatchJobPersistenceAssembler;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiBatchJobDO;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper.AiBatchJobMapper;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Repository;
 public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
 
     private final AiBatchJobMapper aiBatchJobMapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public AiBatchJobRepositoryImpl(AiBatchJobMapper aiBatchJobMapper) {
         this.aiBatchJobMapper = aiBatchJobMapper;
@@ -37,9 +35,6 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
     @Override
     public AiBatchJobId insert(AiBatchJob batchJob) {
         AiBatchJobDO dataObject = AiBatchJobPersistenceAssembler.toObject(batchJob);
-        if (dataObject.getId() == null) {
-            dataObject.setId(nextId());
-        }
         if (dataObject.getRequestedAt() == null) {
             dataObject.setRequestedAt(Instant.now());
         }
@@ -179,10 +174,6 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
 
     private int pageSize(AiBatchJobQuery query) {
         return query == null || query.getPageSize() <= 0 ? 10 : query.getPageSize();
-    }
-
-    private Long nextId() {
-        return idGenerator.nextId().value();
     }
 
     private List<String> capabilityValues(List<AiBusinessCapability> capabilities) {

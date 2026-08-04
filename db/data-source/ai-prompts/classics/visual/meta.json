@@ -1,7 +1,5 @@
 {
-  "templateId": 930110,
-  "promptVersionId": 940110,
-  "variableIdStart": 960801,
+  "priority": 10,
   "capability": "classics_visual_describe",
   "suite": "classics-default-v1",
   "name": "古籍视觉描述提示词",
@@ -13,22 +11,21 @@
     {
       "name": "title",
       "required": false,
-      "description": "条目标题",
-      "priority": 960801
+      "description": "条目标题"
     },
     {
       "name": "fusionText",
       "required": false,
-      "description": "融合说明",
-      "priority": 960802
+      "description": "融合说明"
     },
     {
       "name": "styleGuide",
       "required": false,
-      "description": "视觉风格约束",
-      "priority": 960803
+      "description": "视觉风格约束"
     }
   ],
-  "outputSchema": { "type": "text" },
+  "outputSchema": {
+    "type": "text"
+  },
   "changeSummary": "Initial classics default visual description prompt."
 }

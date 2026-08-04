@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @TableName("knowledge_graph_extraction_task")
 public class GraphExtractionTaskDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private Long batchJobId;

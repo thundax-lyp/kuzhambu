@@ -1,7 +1,5 @@
 {
-  "templateId": 930108,
-  "promptVersionId": 940108,
-  "variableIdStart": 960601,
+  "priority": 8,
   "capability": "classics_image_generate",
   "suite": "classics-default-v1",
   "name": "古籍图片生成提示词",
@@ -13,22 +11,21 @@
     {
       "name": "title",
       "required": false,
-      "description": "条目标题",
-      "priority": 960601
+      "description": "条目标题"
     },
     {
       "name": "sourceText",
       "required": false,
-      "description": "原文或说明",
-      "priority": 960602
+      "description": "原文或说明"
     },
     {
       "name": "styleGuide",
       "required": false,
-      "description": "视觉风格约束",
-      "priority": 960603
+      "description": "视觉风格约束"
     }
   ],
-  "outputSchema": { "type": "text" },
+  "outputSchema": {
+    "type": "text"
+  },
   "changeSummary": "Initial classics default image generation prompt."
 }

@@ -53,9 +53,6 @@ public class TagCategoryRepositoryImpl implements TagCategoryRepository {
     @Override
     public TagCategoryId insert(TagCategory entity) {
         TagCategoryDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
-        if (dataObject.getId() == null) {
-            dataObject.setId(idGenerator.nextId().value());
-        }
         if (dataObject.getCategoryId() == null) {
             dataObject.setCategoryId(idGenerator.nextId().value());
         }

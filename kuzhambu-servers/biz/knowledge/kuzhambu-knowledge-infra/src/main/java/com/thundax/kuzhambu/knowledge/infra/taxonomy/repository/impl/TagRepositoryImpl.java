@@ -108,9 +108,6 @@ public class TagRepositoryImpl implements TagRepository {
     public TagId insert(Tag entity) {
         TagDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
         dataObject.setSource(normalizeSourceValue(dataObject.getSource()));
-        if (dataObject.getId() == null) {
-            dataObject.setId(idGenerator.nextId().value());
-        }
         if (dataObject.getTagId() == null) {
             dataObject.setTagId(idGenerator.nextId().value());
         }

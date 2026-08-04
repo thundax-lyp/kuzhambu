@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Repository;
 public class KnowledgeLineageRelationRepositoryImpl implements KnowledgeLineageRelationRepository {
 
     private final KnowledgeLineageRelationMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public KnowledgeLineageRelationRepositoryImpl(KnowledgeLineageRelationMapper mapper) {
         this.mapper = mapper;
@@ -71,9 +69,6 @@ public class KnowledgeLineageRelationRepositoryImpl implements KnowledgeLineageR
     public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {
         for (KnowledgeLineageRelation relation : relations == null ? List.<KnowledgeLineageRelation>of() : relations) {
             KnowledgeLineageRelationDO dataObject = KnowledgeLineageRelationPersistenceAssembler.toObject(relation);
-            if (dataObject.getId() == null) {
-                dataObject.setId(idGenerator.nextId().value());
-            }
             int updated = mapper.update(
                     null,
                     new UpdateWrapper<KnowledgeLineageRelationDO>()
