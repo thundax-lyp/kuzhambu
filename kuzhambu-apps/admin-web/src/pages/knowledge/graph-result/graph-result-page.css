@@ -1,0 +1,32 @@
+.knowledge-graph-result-page {
+    width: 100%;
+}
+
+.knowledge-graph-results-layout {
+    width: 100%;
+}
+
+.knowledge-graph-results-banner {
+    border-radius: 16px;
+}
+
+.knowledge-graph-results-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.knowledge-graph-results-helper {
+    margin-bottom: 0;
+    color: var(--ant-color-text-description);
+}
+
+.knowledge-graph-results-shell {
+    border-radius: 20px;
+    box-shadow: 0 18px 40px rgb(15 23 42 / 8%);
+}
+
+.knowledge-graph-results-shell .ant-tabs-nav {
+    margin-bottom: 20px;
+}

@@ -1,0 +1,25 @@
+.ming-customs-edit-drawer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ming-customs-edit-drawer-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 14px;
+    background: rgba(148, 111, 67, 0.06);
+    border: 1px solid rgba(148, 111, 67, 0.16);
+    border-radius: 8px;
+}
+
+.ming-customs-edit-drawer-preview-content {
+    min-height: 72px;
+}
+
+html[data-theme="dark"] .ming-customs-edit-drawer-preview {
+    background: rgba(205, 167, 112, 0.1);
+    border-color: rgba(205, 167, 112, 0.24);
+}

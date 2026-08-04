@@ -1,0 +1,15 @@
+.invocation-calls-filter-form {
+    row-gap: 12px;
+}
+
+.invocation-calls-filter-control {
+    min-width: 160px;
+}
+
+.invocation-table {
+    margin-top: 16px;
+}
+
+.invocation-nowrap-column {
+    white-space: nowrap;
+}

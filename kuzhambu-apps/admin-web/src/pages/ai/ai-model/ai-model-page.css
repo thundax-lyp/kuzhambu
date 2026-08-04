@@ -1,0 +1,24 @@
+.ai-model-page {
+    min-height: 100%;
+}
+
+.ai-model-table {
+    width: 100%;
+}
+
+.ai-model-capabilities {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+}
+
+.ai-model-table .ai-model-center-column {
+    text-align: center;
+}
+
+.ai-model-center-column-title {
+    display: block;
+    width: 100%;
+    text-align: center;
+}

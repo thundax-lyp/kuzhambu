@@ -35,7 +35,7 @@ import type {
 import { isSameId } from "@/types/id";
 import { WangqiDocumentTable } from "./wangqi-document-table";
 import { WangqiExportActions } from "./wangqi-export-actions";
-import { WangqiDocumentEditDrawer } from "./components/wangqi-document-edit-drawer";
+import { WangqiDocumentEditDrawer } from "./wangqi-document-edit-drawer";
 import type { WangqiQaTaskPair } from "./wangqi-qa-ai-modal";
 import { WangqiRefinementActions } from "./wangqi-refinement-actions";
 import { WangqiStorageFilePanel } from "./wangqi-storage-file-panel";

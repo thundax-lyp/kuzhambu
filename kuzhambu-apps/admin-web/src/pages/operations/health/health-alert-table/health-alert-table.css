@@ -1,0 +1,20 @@
+.operations-health-alert-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.operations-health-alert-table th,
+.operations-health-alert-table td {
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+    border: 1px solid var(--line-color, #d9d9d9);
+}
+
+@media (max-width: 1100px) {
+    .operations-health-alert-table th,
+    .operations-health-alert-table td {
+        padding: 6px 8px;
+        word-break: break-word;
+    }
+}

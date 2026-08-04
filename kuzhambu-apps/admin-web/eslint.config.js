@@ -991,10 +991,16 @@ const localRules = {
                         const importPath = node.source.value;
                         const pageDomainRoot = readPageDomainRoot(normalizedFilePath);
                         const pageModuleRoot = readPageModuleRoot(normalizedFilePath);
+                        const pageDomainRelativePath = pageDomainRoot
+                            ? normalizedFilePath.split(pageDomainRoot)[1]
+                            : undefined;
+                        const isPageComponentFile =
+                            pageDomainRelativePath?.includes("/") &&
+                            !pageDomainRelativePath.startsWith("hooks/");
 
                         if (
                             !pageDomainRoot ||
-                            !normalizedFilePath.includes(`${pageDomainRoot}components/`) ||
+                            !isPageComponentFile ||
                             typeof importPath !== "string"
                         ) {
                             return;
@@ -2154,7 +2160,7 @@ export default tseslint.config(
                 { type: "layout", pattern: "src/layouts/*", mode: "full" },
                 { type: "shared-component", pattern: "src/components/*", mode: "full" },
                 { type: "page", pattern: "src/pages/*/*/*-page.tsx", mode: "full" },
-                { type: "page-component", pattern: "src/pages/*/*/components/*", mode: "full" },
+                { type: "page-component", pattern: "src/pages/*/*/**", mode: "full" },
                 { type: "page-service", pattern: "src/pages/*/*/*-service.ts", mode: "full" },
                 { type: "query", pattern: "src/query/*", mode: "full" },
                 { type: "router", pattern: "src/router/*", mode: "full" },

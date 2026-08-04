@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-const SOURCE_ROOT = path.resolve("src");
+const SOURCE_ROOT = path.resolve(process.argv[2] ?? "src");
 const GLOBAL_PAGE_TYPE_FILE = path.join(SOURCE_ROOT, "types", "page.ts").split(path.sep).join("/");
 const DECLARATION_PATTERN = /\bexport\s+(?:interface|type|class|enum)\s+([A-Za-z0-9_]+)/g;
 const SERVICE_INPUT_TYPE_PATTERN = /(?:Command|Query)$/;
@@ -32,11 +32,20 @@ const normalizePath = (filePath) => filePath.split(path.sep).join("/");
 
 const getLineNumber = (content, index) => content.slice(0, index).split(/\r?\n/).length;
 
-const isAllowedFormValuesFile = (filePath) => {
+const isAllowedFormValuesFile = (filePath, content) => {
     const normalizedFilePath = normalizePath(filePath);
+    const fileName = path.basename(filePath);
+    const formComponentFileName = fileName.replace(/-form-values\.ts$/, ".tsx");
+    const isPageComponentFormValuesFile =
+        normalizedFilePath.includes("/pages/") &&
+        ((normalizedFilePath.endsWith(".tsx") &&
+            /\b(?:KuzhambuForm|Form\.useForm)\b/.test(content)) ||
+            (fileName.endsWith("-form-values.ts") &&
+                fs.existsSync(path.join(path.dirname(filePath), formComponentFileName))));
     return (
-        normalizedFilePath.includes("/components/") &&
-        (normalizedFilePath.endsWith(".tsx") || normalizedFilePath.endsWith("-form-values.ts"))
+        isPageComponentFormValuesFile ||
+        (normalizedFilePath.includes("/components/") &&
+            (normalizedFilePath.endsWith(".tsx") || normalizedFilePath.endsWith("-form-values.ts")))
     );
 };
 
@@ -112,7 +121,10 @@ sourceFiles.forEach((filePath) => {
             );
         }
 
-        if (FORM_VALUES_TYPE_PATTERN.test(declarationName) && !isAllowedFormValuesFile(filePath)) {
+        if (
+            FORM_VALUES_TYPE_PATTERN.test(declarationName) &&
+            !isAllowedFormValuesFile(filePath, content)
+        ) {
             violations.push(
                 `${normalizedFilePath}: ADMIN_WEB_NAME_FORM_VALUES_LOCATION ${declarationName} must live with the form component.`
             );

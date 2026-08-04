@@ -66,9 +66,9 @@ Evidence files: `/tmp/kz-ai-acceptance-local/01-model-before.json`, `/tmp/kz-ai-
 | `latencyMs` | `2` |
 | `checkedAt` | `2026-07-09T05:36:08.189Z` |
 
-## Business Configuration And Action Status
+## Business Configuration
 
-Evidence files: `/tmp/kz-ai-acceptance-local/02-business-config-get.json`, `/tmp/kz-ai-acceptance-local/02-action-status-get.json`, `/tmp/kz-ai-acceptance-local/02-business-config-negative.txt`.
+Evidence files: `/tmp/kz-ai-acceptance-local/02-business-config-get.json`, `/tmp/kz-ai-acceptance-local/02-business-config-negative.txt`.
 
 | Field | Evidence |
 | --- | --- |
@@ -78,8 +78,6 @@ Evidence files: `/tmp/kz-ai-acceptance-local/02-business-config-get.json`, `/tmp
 | `modelId` | `900102` |
 | `enabled` | `true` |
 | `configuredAt` | `2026-07-09T05:44:06.776Z` |
-| `available` | `true` |
-| `checkedAt` | `2026-07-09T05:44:07.597Z` |
 
 Negative model-capability evidence was captured by attempting to bind a model that lacks the required target capability tag. The request failed as expected; the failure text is stored only in local evidence and does not contain secrets.
 
@@ -172,7 +170,6 @@ Evidence files:
 - `/tmp/kz-ai-acceptance-local/04-models-check-row-scoped.png`
 - `/tmp/kz-ai-acceptance-local/04-business-configs-select-summary.png`
 - `/tmp/kz-ai-acceptance-local/04-prompts-summary-query-validate.png`
-- `/tmp/kz-ai-acceptance-local/04-action-status-summary-refresh.png`
 - `/tmp/kz-ai-acceptance-local/05-sancai-summary-task-drawer.png`
 - `/tmp/kz-ai-acceptance-local/05-invocations-page-inspect.png`
 
@@ -184,7 +181,6 @@ UI acceptance covered:
 | `/ai/models` | model list filter, model row check action, check history drawer |
 | `/ai/business-configs` | capability/model/prompt selects, config readback, invalid model capability failure |
 | `/ai/prompts` | template query, version display, variable validation success and required-variable failure |
-| `/ai/action-status` | scope/capability filter, refresh action, `available=true` readback |
 | `/classics/sancai` | tree selection for volume, entry panel, summary refinement action, task drawer, `SUCCEEDED` status |
 | `/ai/invocations` | summary metrics, capability ranking, invocation log table, exact `callIdText`, detail action |
 
@@ -197,7 +193,6 @@ The AI governance runtime acceptance loop is evidenced end to end:
 - Service config is readable and saveable.
 - PRIMARY model detection writes a successful check record.
 - `classics + summary` business configuration is enabled.
-- Action status refresh reports the capability available.
 - Prompt variables pass complete validation and fail missing-required validation.
 - A real Sancai summary refinement task completes through Java `WorkerAiClient` to workers.
 - Task, invocation log, candidate, invocation summary, and Admin UI can be correlated by `requestId`, `traceId`, `taskId`, `callId`, and `candidateId`.

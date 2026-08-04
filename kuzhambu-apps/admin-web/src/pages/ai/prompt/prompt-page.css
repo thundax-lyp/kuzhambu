@@ -1,0 +1,17 @@
+.prompt-page {
+    min-height: 100%;
+}
+
+.prompt-table {
+    width: 100%;
+}
+
+.prompt-table .ant-table-thead > tr > th {
+    text-align: center;
+}
+
+.prompt-capability-tags {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}

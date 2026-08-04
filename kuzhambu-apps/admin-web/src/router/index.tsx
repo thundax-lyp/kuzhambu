@@ -1,31 +1,31 @@
 import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "../layouts/admin-layout";
-import { InvocationsPage } from "../pages/ai/invocations/invocations-page";
-import { AiModelsPage } from "../pages/ai/ai-models/ai-models-page";
-import { BusinessConfigsPage } from "../pages/ai/business-configs/business-configs-page";
-import { PromptsPage } from "../pages/ai/prompts/prompts-page";
+import { InvocationPage } from "../pages/ai/invocation/invocation-page";
+import { AiModelPage } from "../pages/ai/ai-model/ai-model-page";
+import { BusinessConfigPage } from "../pages/ai/business-config/business-config-page";
+import { PromptPage } from "../pages/ai/prompt/prompt-page";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
 import { QaPage } from "../pages/discovery/qa/qa-page";
 import { QaConsolePage } from "../pages/discovery/qa-console/qa-console-page";
 import { SearchPage } from "../pages/discovery/search/search-page";
-import { SearchStatisticsPage } from "../pages/discovery/search-statistics/search-statistics-page";
-import { MingCustomsPage } from "../pages/classics/ming-customs/ming-customs-page";
+import { SearchStatisticPage } from "../pages/discovery/search-statistic/search-statistic-page";
+import { MingCustomPage } from "../pages/classics/ming-custom/ming-custom-page";
 import { SancaiPage } from "../pages/classics/sancai/sancai-page";
 import { SancaiVisualPage } from "../pages/classics/sancai-visual/sancai-visual-page";
 import { WangqiPage } from "../pages/classics/wangqi/wangqi-page";
-import { PublicationJobsPage } from "../pages/classics/publication-jobs/publication-jobs-page";
+import { PublicationJobPage } from "../pages/classics/publication-job/publication-job-page";
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
 import { GraphExtractionPage } from "../pages/knowledge/graph-extraction/graph-extraction-page";
 import { LineagePage } from "../pages/knowledge/lineage/lineage-page";
-import { GraphResultsPage } from "../pages/knowledge/graph-results/graph-results-page";
+import { GraphResultPage } from "../pages/knowledge/graph-result/graph-result-page";
 import { QualityReportPage } from "../pages/knowledge/quality-report/quality-report-page";
 import { BackupRestorePage } from "../pages/operations/backup-restore/backup-restore-page";
 import { CleanupPage } from "../pages/operations/cleanup/cleanup-page";
 import { OperationsDashboardPage } from "../pages/operations/dashboard/dashboard-page";
 import { OperationsHealthPage } from "../pages/operations/health/health-page";
-import { OperationsReportsPage } from "../pages/operations/reports/reports-page";
-import { OperationsTasksPage } from "../pages/operations/tasks/tasks-page";
+import { OperationsReportPage } from "../pages/operations/report/report-page";
+import { OperationsTaskPage } from "../pages/operations/task/task-page";
 import { RefinementPage } from "../pages/knowledge/refinement/refinement-page";
 import { TaxonomyPage } from "../pages/knowledge/taxonomy/taxonomy-page";
 import { StorageObjectPage } from "../pages/storage/storage-object/storage-object-page";
@@ -97,19 +97,19 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "ai/models",
-                            element: <AiModelsPage />
+                            element: <AiModelPage />
                         },
                         {
                             path: "ai/prompts",
-                            element: <PromptsPage />
+                            element: <PromptPage />
                         },
                         {
                             path: "ai/business-configs",
-                            element: <BusinessConfigsPage />
+                            element: <BusinessConfigPage />
                         },
                         {
                             path: "ai/invocations",
-                            element: <InvocationsPage />
+                            element: <InvocationPage />
                         },
                         {
                             path: "classics/sancai",
@@ -121,7 +121,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "classics/ming-customs",
-                            element: <MingCustomsPage />
+                            element: <MingCustomPage />
                         },
                         {
                             path: "classics/wangqi",
@@ -129,7 +129,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "classics/publication-jobs",
-                            element: <PublicationJobsPage />
+                            element: <PublicationJobPage />
                         },
                         {
                             path: "knowledge/graph",
@@ -141,7 +141,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "knowledge/graph-results",
-                            element: <GraphResultsPage />
+                            element: <GraphResultPage />
                         },
                         {
                             path: "knowledge/lineage",
@@ -177,7 +177,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "discovery/search-statistics",
-                            element: <SearchStatisticsPage />
+                            element: <SearchStatisticPage />
                         },
                         {
                             path: "operations/dashboard",
@@ -189,11 +189,11 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "operations/tasks",
-                            element: <OperationsTasksPage />
+                            element: <OperationsTaskPage />
                         },
                         {
                             path: "operations/reports",
-                            element: <OperationsReportsPage />
+                            element: <OperationsReportPage />
                         },
                         {
                             path: "operations/backup-restore",
