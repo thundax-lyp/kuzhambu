@@ -1,12 +1,12 @@
 import { Descriptions } from "antd";
 import { KuzhambuDrawer } from "@/components";
-import type { GraphRelationRecord } from "./graph-result-types";
+import type { GraphLineageRelationRecord } from "../graph-result-types";
 
-interface GraphRelationDetailProps {
+interface GraphLineageRelationDetailProps {
     loading?: boolean;
     onClose: () => void;
     open: boolean;
-    relation?: GraphRelationRecord | null;
+    relation?: GraphLineageRelationRecord | null;
 }
 
 const formatTimestamp = (value?: number | null) => {
@@ -17,16 +17,16 @@ const formatTimestamp = (value?: number | null) => {
     return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("zh-CN", { hour12: false });
 };
 
-export const GraphRelationDetail = ({
+export const GraphLineageRelationDetail = ({
     loading = false,
     onClose,
     open,
     relation
-}: GraphRelationDetailProps) => {
+}: GraphLineageRelationDetailProps) => {
     return (
         <KuzhambuDrawer
-            testId="knowledge-graph-results-graph-relation-detail-drawer"
-            title="正式关系详情"
+            testId="knowledge-graph-results-graph-lineage-relation-detail-drawer"
+            title="正式世系关系详情"
             open={open}
             size="middle"
             loading={loading}
@@ -35,8 +35,8 @@ export const GraphRelationDetail = ({
             <Descriptions column={1} bordered size="small">
                 <Descriptions.Item label="关系号">{relation?.relationId || "-"}</Descriptions.Item>
                 <Descriptions.Item label="业务键">{relation?.relationKey || "-"}</Descriptions.Item>
-                <Descriptions.Item label="源实体">{relation?.sourceName || "-"}</Descriptions.Item>
-                <Descriptions.Item label="目标实体">
+                <Descriptions.Item label="源节点">{relation?.sourceName || "-"}</Descriptions.Item>
+                <Descriptions.Item label="目标节点">
                     {relation?.targetName || "-"}
                 </Descriptions.Item>
                 <Descriptions.Item label="关系类型">

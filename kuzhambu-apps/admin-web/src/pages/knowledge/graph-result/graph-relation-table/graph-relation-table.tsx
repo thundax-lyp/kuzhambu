@@ -2,12 +2,12 @@ import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
 import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
-import type { GraphEntityRecord } from "./graph-result-types";
+import type { GraphRelationRecord } from "../graph-result-types";
 
-interface GraphEntityTableProps {
-    entities: GraphEntityRecord[];
+interface GraphRelationTableProps {
     loading?: boolean;
-    onOpenDetail: (entity: GraphEntityRecord) => void;
+    onOpenDetail: (relation: GraphRelationRecord) => void;
+    relations: GraphRelationRecord[];
 }
 
 const readStatusColor = (status?: string | null) => {
@@ -21,15 +21,16 @@ const readStatusColor = (status?: string | null) => {
     }
 };
 
-export const GraphEntityTable = ({
-    entities,
+export const GraphRelationTable = ({
     loading = false,
-    onOpenDetail
-}: GraphEntityTableProps) => {
-    const columns: ColumnsType<GraphEntityRecord> = [
-        { dataIndex: "entityId", key: "entityId", title: "实体号" },
-        { dataIndex: "name", key: "name", title: "名称" },
-        { dataIndex: "entityType", key: "entityType", title: "类型" },
+    onOpenDetail,
+    relations
+}: GraphRelationTableProps) => {
+    const columns: ColumnsType<GraphRelationRecord> = [
+        { dataIndex: "relationId", key: "relationId", title: "关系号" },
+        { dataIndex: "sourceName", key: "sourceName", title: "源实体" },
+        { dataIndex: "targetName", key: "targetName", title: "目标实体" },
+        { dataIndex: "relationType", key: "relationType", title: "关系类型" },
         {
             dataIndex: "confirmationStatus",
             key: "confirmationStatus",
@@ -38,14 +39,13 @@ export const GraphEntityTable = ({
             ),
             title: "确认状态"
         },
-        { dataIndex: "latestVersionId", key: "latestVersionId", title: "版本号" },
         {
             key: "actions",
-            render: (_, entity) => (
+            render: (_, relation) => (
                 <KuzhambuSpaceCompact>
                     <KuzhambuButton
-                        testId="knowledge-graph-results-graph-entity-view-detail-button"
-                        onClick={() => onOpenDetail(entity)}
+                        testId="knowledge-graph-results-graph-relation-view-detail-button"
+                        onClick={() => onOpenDetail(relation)}
                     >
                         查看详情
                     </KuzhambuButton>
@@ -56,13 +56,13 @@ export const GraphEntityTable = ({
     ];
 
     return (
-        <Table<GraphEntityRecord>
-            aria-label="知识正式实体表格"
+        <Table<GraphRelationRecord>
+            aria-label="知识正式关系表格"
             columns={columns}
-            dataSource={entities}
+            dataSource={relations}
             loading={loading}
             pagination={false}
-            rowKey={(entity) => normalizeId(entity.entityId)}
+            rowKey={(relation) => normalizeId(relation.relationId)}
         />
     );
 };

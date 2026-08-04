@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { KuzhambuSpace, KuzhambuCard } from "@/components";
 
-import type { GraphWorkbenchManuscriptNode, GraphWorkbenchStatus } from "./graph-extraction-types";
+import type { GraphWorkbenchManuscriptNode, GraphWorkbenchStatus } from "../graph-extraction-types";
 
 interface GraphExtractionManuscriptTreeProps {
     loading?: boolean;

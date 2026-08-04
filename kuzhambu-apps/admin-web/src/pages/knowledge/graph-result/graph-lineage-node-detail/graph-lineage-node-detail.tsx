@@ -1,6 +1,6 @@
 import { Descriptions } from "antd";
 import { KuzhambuDrawer } from "@/components";
-import type { GraphLineageNodeRecord } from "./graph-result-types";
+import type { GraphLineageNodeRecord } from "../graph-result-types";
 
 interface GraphLineageNodeDetailProps {
     loading?: boolean;

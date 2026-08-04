@@ -1,6 +1,6 @@
 import { Descriptions } from "antd";
 import { KuzhambuDrawer } from "@/components";
-import type { GraphExtractionTaskRecord } from "./graph-extraction-types";
+import type { GraphExtractionTaskRecord } from "../graph-extraction-types";
 
 interface GraphExtractionTaskDetailProps {
     applying?: boolean;

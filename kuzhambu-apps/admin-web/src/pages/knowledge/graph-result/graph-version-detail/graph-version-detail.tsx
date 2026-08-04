@@ -1,6 +1,6 @@
 import { Descriptions } from "antd";
 import { KuzhambuDrawer } from "@/components";
-import type { GraphVersionRecord } from "./graph-result-types";
+import type { GraphVersionRecord } from "../graph-result-types";
 
 interface GraphVersionDetailProps {
     loading?: boolean;

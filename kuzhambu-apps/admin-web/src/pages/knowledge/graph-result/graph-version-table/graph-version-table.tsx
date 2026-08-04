@@ -2,7 +2,7 @@ import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
 import { isSameId, normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
-import type { GraphVersionRecord } from "./graph-result-types";
+import type { GraphVersionRecord } from "../graph-result-types";
 
 interface GraphVersionTableProps {
     canOpenRefinement?: boolean;

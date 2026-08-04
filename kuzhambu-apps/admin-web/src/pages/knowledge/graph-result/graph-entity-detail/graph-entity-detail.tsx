@@ -1,6 +1,6 @@
 import { Descriptions } from "antd";
 import { KuzhambuDrawer } from "@/components";
-import type { GraphEntityRecord } from "./graph-result-types";
+import type { GraphEntityRecord } from "../graph-result-types";
 
 interface GraphEntityDetailProps {
     entity?: GraphEntityRecord | null;
