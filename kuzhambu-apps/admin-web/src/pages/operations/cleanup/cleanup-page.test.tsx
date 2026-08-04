@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import * as service from "./cleanup-service";
 import { CleanupPage } from "./cleanup-page";
 
@@ -79,7 +78,6 @@ const openSelectAndChoose = async (label: string, optionText: string) => {
 
 describe("CleanupPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         confirmDanger.mockReset();
         replacePermissions(["operations:cleanup:view", "operations:cleanup:execute"]);
         vi.mocked(service.pageCleanups).mockResolvedValue({
@@ -109,15 +107,14 @@ describe("CleanupPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.clearAllMocks();
     });
 
     it("renders page shell", async () => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <CleanupPage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         expect(await screen.findByRole("heading", { name: "清理任务台账" })).toBeInTheDocument();
@@ -155,9 +152,9 @@ describe("CleanupPage", () => {
         });
 
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <CleanupPage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         expect(await screen.findByText("系统自动")).toBeInTheDocument();
@@ -174,9 +171,9 @@ describe("CleanupPage", () => {
 
     it("opens manual compensation confirmation from cleanup type select", async () => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <CleanupPage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         await openSelectAndChoose("执行清理类型", "过期健康检查");
@@ -232,9 +229,9 @@ describe("CleanupPage", () => {
         });
 
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <CleanupPage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         expect(await screen.findByText("object delete denied")).toBeInTheDocument();

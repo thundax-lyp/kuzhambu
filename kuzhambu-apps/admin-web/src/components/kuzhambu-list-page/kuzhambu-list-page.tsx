@@ -11,15 +11,7 @@ import type {
     KuzhambuTableBatchActionBarProps,
     KuzhambuTableProps
 } from "@/components/kuzhambu-table";
-import { KuzhambuListPageTableArea } from "./kuzhambu-list-page-table-area";
 import "./kuzhambu-list-page.css";
-
-export interface KuzhambuListPageFilterState {
-    closeFilter: () => void;
-    filterOpen: boolean;
-    openFilter: () => void;
-    toggleFilter: () => void;
-}
 
 export type KuzhambuListPageFilterField = KuzhambuFilterPanelField;
 
@@ -31,33 +23,24 @@ export interface KuzhambuListPageProps<RecordType extends object = object> exten
     batchClassName?: string;
     addText?: ReactNode;
     content?: ReactNode;
-    defaultFilterOpen?: boolean;
     enableAdd?: boolean;
     description?: ReactNode;
     enableFilter?: boolean;
     enableSearch?: boolean;
     filterActive?: boolean;
-    filter?: ReactNode | ((filterState: KuzhambuListPageFilterState) => ReactNode);
-    filterClassName?: string;
     filterFields?: KuzhambuListPageFilterField[];
     filterText?: ReactNode;
-    filterOpen?: boolean;
     onAdd?: () => void;
     onFilterApply?: () => void;
-    onFilterOpenChange?: (open: boolean) => void;
     onFilterReset?: () => void;
     onSearchChange?: (value: string) => void;
-    pageActions?: ReactNode | ((filterState: KuzhambuListPageFilterState) => ReactNode);
+    pageActions?: ReactNode;
     pageClassName?: string;
     searchPlaceholder?: string;
     searchShortcut?: ReactNode;
     searchValue?: string;
     selectedCount?: number;
     subjectName?: string;
-    tableAside?: ReactNode;
-    tableAsideClassName?: string;
-    tableAreaClassName?: string;
-    tableAsidePlacement?: "left" | "right";
     title: ReactNode;
 }
 
@@ -70,20 +53,15 @@ export const KuzhambuListPage = <RecordType extends object = object>({
     batchClassName,
     addText,
     content,
-    defaultFilterOpen = false,
     enableAdd = false,
     description,
     enableFilter = false,
     enableSearch = false,
     filterActive = false,
-    filter,
-    filterClassName,
     filterFields,
     filterText = "筛选",
-    filterOpen,
     onAdd,
     onFilterApply,
-    onFilterOpenChange,
     onFilterReset,
     onSearchChange,
     pageActions,
@@ -93,30 +71,11 @@ export const KuzhambuListPage = <RecordType extends object = object>({
     searchValue = "",
     selectedCount = 0,
     subjectName,
-    tableAside,
-    tableAsideClassName,
-    tableAreaClassName,
-    tableAsidePlacement = "right",
     title,
     ...tableProps
 }: KuzhambuListPageProps<RecordType>) => {
-    const [internalFilterOpen, setInternalFilterOpen] = useState(defaultFilterOpen);
-    const actualFilterOpen = enableFilter ? (filterOpen ?? internalFilterOpen) : false;
-    const setFilterOpen = (open: boolean) => {
-        if (filterOpen === undefined) {
-            setInternalFilterOpen(open);
-        }
-        onFilterOpenChange?.(open);
-    };
-    const filterState: KuzhambuListPageFilterState = {
-        closeFilter: () => setFilterOpen(false),
-        filterOpen: actualFilterOpen,
-        openFilter: () => setFilterOpen(true),
-        toggleFilter: () => setFilterOpen(!actualFilterOpen)
-    };
-    const resolvedPageActions =
-        typeof pageActions === "function" ? pageActions(filterState) : pageActions;
-    const resolvedFilter = typeof filter === "function" ? filter(filterState) : filter;
+    const [internalFilterOpen, setInternalFilterOpen] = useState(false);
+    const actualFilterOpen = enableFilter && internalFilterOpen;
     const resolvedSearchPlaceholder =
         searchPlaceholder ?? (subjectName ? `搜索${subjectName}...` : "搜索...");
     const resolvedSearchAriaLabel = subjectName ? `搜索${subjectName}` : "搜索列表";
@@ -163,12 +122,12 @@ export const KuzhambuListPage = <RecordType extends object = object>({
                     }
                     icon={<FilterOutlined />}
                     aria-expanded={actualFilterOpen}
-                    onClick={filterState.toggleFilter}
+                    onClick={() => setInternalFilterOpen(!actualFilterOpen)}
                 >
                     {filterText}
                 </Button>
             ) : null}
-            {resolvedPageActions}
+            {pageActions}
             {enableAdd && resolvedAddText ? (
                 <Button type="primary" icon={<PlusOutlined />} onClick={onAdd}>
                     {resolvedAddText}
@@ -176,49 +135,13 @@ export const KuzhambuListPage = <RecordType extends object = object>({
             ) : null}
         </KuzhambuSpace>
     );
-    const renderBody = () => {
-        if (content && tableAside) {
-            return (
-                <KuzhambuListPageTableArea
-                    aside={tableAside}
-                    asideClassName={tableAsideClassName}
-                    areaClassName={tableAreaClassName}
-                    placement={tableAsidePlacement}
-                >
-                    {content}
-                </KuzhambuListPageTableArea>
-            );
-        }
-
-        if (content) {
-            return content;
-        }
-
-        if (tableAside) {
-            return (
-                <KuzhambuListPageTableArea
-                    aside={tableAside}
-                    asideClassName={tableAsideClassName}
-                    areaClassName={tableAreaClassName}
-                    placement={tableAsidePlacement}
-                >
-                    <KuzhambuTable<RecordType>
-                        {...tableProps}
-                        ariaLabel={resolvedTableAriaLabel}
-                        batchActionBar={tableBatchActionBar}
-                    />
-                </KuzhambuListPageTableArea>
-            );
-        }
-
-        return (
-            <KuzhambuTable<RecordType>
-                {...tableProps}
-                ariaLabel={resolvedTableAriaLabel}
-                batchActionBar={tableBatchActionBar}
-            />
-        );
-    };
+    const body = content ?? (
+        <KuzhambuTable<RecordType>
+            {...tableProps}
+            ariaLabel={resolvedTableAriaLabel}
+            batchActionBar={tableBatchActionBar}
+        />
+    );
 
     return (
         <KuzhambuPage
@@ -227,23 +150,20 @@ export const KuzhambuListPage = <RecordType extends object = object>({
             description={description}
             title={title}
         >
-            {enableFilter && (resolvedFilter || filterFields?.length) ? (
+            {enableFilter && filterFields?.length ? (
                 <KuzhambuFilterPanel
                     open={actualFilterOpen}
-                    className={filterClassName}
                     fields={filterFields}
                     resetDisabled={!filterActive}
                     onApply={() => {
                         onFilterApply?.();
-                        filterState.closeFilter();
+                        setInternalFilterOpen(false);
                     }}
                     onReset={onFilterReset}
-                >
-                    {resolvedFilter}
-                </KuzhambuFilterPanel>
+                />
             ) : null}
 
-            {renderBody()}
+            {body}
         </KuzhambuPage>
     );
 };

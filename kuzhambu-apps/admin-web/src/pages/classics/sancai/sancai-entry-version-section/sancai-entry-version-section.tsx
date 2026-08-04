@@ -10,6 +10,7 @@ interface SancaiEntryVersionSectionProps {
     isCreating: boolean;
     listLoading: boolean;
     resetting: boolean;
+    readOnly?: boolean;
     selectedVersion: SancaiContentVersionRecord | null;
     versions: SancaiContentVersionRecord[];
     onResetVersion: (version: SancaiContentVersionRecord) => void;
@@ -22,6 +23,7 @@ export const SancaiEntryVersionSection = ({
     isCreating,
     listLoading,
     resetting,
+    readOnly = false,
     selectedVersion,
     versions,
     onResetVersion,
@@ -37,6 +39,7 @@ export const SancaiEntryVersionSection = ({
             detailLoading={detailLoading}
             listLoading={listLoading}
             resetting={resetting}
+            readOnly={readOnly}
             selectedVersion={selectedVersion}
             versions={versions}
             onSelectVersion={onSelectVersion}

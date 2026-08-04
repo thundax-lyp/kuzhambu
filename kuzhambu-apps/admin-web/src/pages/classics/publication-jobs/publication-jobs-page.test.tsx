@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
-import { queryClient } from "@/query/query-client";
 import { PublicationJobsPage } from "./publication-jobs-page";
 
 const job = {
@@ -37,7 +36,6 @@ const apiResponse = (data: unknown) =>
 
 describe("PublicationJobsPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
             "kuzhambu.admin.accessTokenExpireAt",
@@ -70,14 +68,18 @@ describe("PublicationJobsPage", () => {
     it("shows a read-only task list and loads details on demand", async () => {
         const user = userEvent.setup({ delay: null });
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <PublicationJobsPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
-        expect(await screen.findByText("天地")).toBeInTheDocument();
+        expect(await screen.findByText("三才图会｜天地")).toBeInTheDocument();
+        expect(screen.queryByText("9007199254740993")).not.toBeInTheDocument();
+        expect(screen.getAllByRole("checkbox")).toHaveLength(2);
+        expect(screen.getByText("发布")).toHaveClass("kuzhambu-tag", "kuzhambu-tag-accent");
+        expect(screen.getByText("搜索索引已写入")).toHaveClass("kuzhambu-tag", "kuzhambu-tag-info");
         expect(
             screen.queryByRole("button", { name: /重试|取消|清理|编辑/ })
         ).not.toBeInTheDocument();
@@ -85,6 +87,7 @@ describe("PublicationJobsPage", () => {
         await user.click(screen.getByRole("button", { name: "查看" }));
 
         expect(await screen.findByText("ES probe failed")).toBeInTheDocument();
+        expect(screen.getAllByText("搜索索引已写入")).toHaveLength(2);
         await waitFor(() => {
             expect(globalThis.fetch).toHaveBeenCalledTimes(2);
         });

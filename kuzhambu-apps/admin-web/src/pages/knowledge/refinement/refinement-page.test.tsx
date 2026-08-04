@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { App as AntdApp } from "antd";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { RefinementPage } from "./refinement-page";
 import * as service from "./refinement-service";
 
@@ -157,7 +156,6 @@ vi.mock("@/service/current-user-service", () => ({
 describe("RefinementPage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        queryClient.clear();
         window.history.pushState({}, "", "/");
         replacePermissions(["knowledge:refinement:view", "knowledge:refinement:edit"]);
     });
@@ -165,17 +163,16 @@ describe("RefinementPage", () => {
     afterEach(() => {
         vi.restoreAllMocks();
         window.history.pushState({}, "", "/");
-        queryClient.clear();
         cleanup();
     });
 
     it("renders page shell", async () => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <RefinementPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         expect(await screen.findByRole("heading", { name: "知识图谱工作台" })).toBeInTheDocument();
@@ -185,11 +182,11 @@ describe("RefinementPage", () => {
 
     it("shows graph follow-up actions after applying refinement", async () => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <RefinementPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         fireEvent.click(await screen.findByRole("button", { name: "SANCAI_ENTRY" }));
@@ -222,11 +219,11 @@ describe("RefinementPage", () => {
         window.history.pushState({}, "", "/knowledge/refinement?graphVersionId=71");
 
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <RefinementPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         await waitFor(() => {
@@ -243,11 +240,11 @@ describe("RefinementPage", () => {
         window.history.pushState({}, "", "/knowledge/refinement?graphVersionId=abc");
 
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <RefinementPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         expect(await screen.findByRole("heading", { name: "知识图谱工作台" })).toBeInTheDocument();

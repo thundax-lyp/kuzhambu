@@ -126,6 +126,9 @@ export const SancaiEntryPanel = ({
         retry: false
     });
     const selectedEntry = isCreating ? undefined : (detailQuery.data ?? editingEntry ?? undefined);
+    const isSelectedEntryReadOnly = Boolean(
+        selectedEntry?.transitionStatus && selectedEntry.transitionStatus !== "NONE"
+    );
     const selectedEntryId = selectedEntry?.id ?? null;
     const selectedEntryVolume = useMemo(
         () => volumes.find((volume) => isSameId(volume.id, selectedEntry?.volumeId)) ?? null,
@@ -671,6 +674,7 @@ export const SancaiEntryPanel = ({
                 initialVolumeId={volumeId}
                 mode={isCreating ? "create" : "edit"}
                 open={isModelOpen && !isLoading}
+                readOnly={isSelectedEntryReadOnly}
                 volumes={volumes}
                 onCancel={closeModel}
                 onSubmit={submitEntry}
@@ -694,6 +698,7 @@ export const SancaiEntryPanel = ({
                             contentId={selectedEntry.id}
                             contentType="SANCAI_ENTRY"
                             panelTitle="三才图会问答对治理"
+                            readOnly={isSelectedEntryReadOnly}
                             onChanged={invalidateSancaiContentGovernance}
                         />
                     ) : null
@@ -732,6 +737,7 @@ export const SancaiEntryPanel = ({
                                     contentId={selectedEntry.id}
                                     contentType="SANCAI_ENTRY"
                                     panelTitle="标签"
+                                    readOnly={isSelectedEntryReadOnly}
                                     toolbarExtra={
                                         <ClassicsContentTagAiPanel
                                             canApplyCandidate={canApplyAiCandidateTags}
@@ -764,6 +770,7 @@ export const SancaiEntryPanel = ({
                         detailLoading={versionDetailQuery.isLoading}
                         isCreating={isCreating}
                         listLoading={versionsQuery.isLoading}
+                        readOnly={isSelectedEntryReadOnly}
                         resetting={resetVersionMutation.isPending}
                         selectedVersion={selectedVersion}
                         versions={versions}

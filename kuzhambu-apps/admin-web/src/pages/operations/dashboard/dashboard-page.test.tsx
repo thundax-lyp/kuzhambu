@@ -1,10 +1,9 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { App } from "antd";
 import type { ReactNode } from "react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { OperationsDashboardPage } from "./dashboard-page";
 import * as service from "./dashboard-service";
 
@@ -40,7 +39,6 @@ vi.mock("@/components/kuzhambu-drawer", () => {
 
 describe("OperationsDashboardPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         replacePermissions(["operations:dashboard:view"]);
         vi.mocked(service.getDashboardOverview).mockResolvedValue({
             periodStart: "2026-07-01T00:00:00+08:00",
@@ -127,7 +125,6 @@ describe("OperationsDashboardPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.clearAllMocks();
     });
 
@@ -517,7 +514,7 @@ const renderPage = () => {
 
     return render(
         <MemoryRouter>
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <App>
                     <Routes>
                         <Route
@@ -531,7 +528,7 @@ const renderPage = () => {
                         />
                     </Routes>
                 </App>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         </MemoryRouter>
     );
 };

@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { OperationsTasksPage } from "./tasks-page";
 import * as service from "./tasks-service";
 
@@ -35,7 +34,6 @@ vi.mock("@/components/kuzhambu-drawer", () => {
 
 describe("OperationsTasksPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         replacePermissions(["operations:task:view"]);
         vi.mocked(service.pageTasks).mockResolvedValue({
             pageNo: 1,
@@ -61,16 +59,15 @@ describe("OperationsTasksPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.clearAllMocks();
     });
 
     it("renders page shell", async () => {
         render(
             <MemoryRouter>
-                <QueryClientProvider client={queryClient}>
+                <AdminQueryProvider>
                     <OperationsTasksPage />
-                </QueryClientProvider>
+                </AdminQueryProvider>
             </MemoryRouter>
         );
 
@@ -117,9 +114,9 @@ describe("OperationsTasksPage", () => {
 
         render(
             <MemoryRouter>
-                <QueryClientProvider client={queryClient}>
+                <AdminQueryProvider>
                     <OperationsTasksPage />
-                </QueryClientProvider>
+                </AdminQueryProvider>
             </MemoryRouter>
         );
 

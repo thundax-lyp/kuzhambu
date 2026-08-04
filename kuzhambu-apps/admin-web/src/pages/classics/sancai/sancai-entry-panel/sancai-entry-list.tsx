@@ -4,14 +4,12 @@ import { hasPermission } from "@/auth/permission-storage";
 import { isSameId } from "@/types/id";
 import {
     KuzhambuAlert,
-    KuzhambuButton,
     KuzhambuTable,
     type KuzhambuTableProps,
     type KuzhambuTableSortPosition,
     KuzhambuSpace
 } from "@/components";
 
-import { ClassicsPublicationErrorAlert } from "@/pages/classics/common/classics-publication-error-alert";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import type {
     SancaiEntryRecord,
@@ -163,27 +161,16 @@ export const SancaiEntryList = ({
                 const title = readTitle(entry, "条目");
                 return (
                     <div className="sancai-entry-title-cell">
-                        {isPublicationTransitionActive(entry) ? (
-                            <KuzhambuButton
-                                type="link"
-                                aria-label={`打开条目 ${title}`}
-                                testId={`sancai-entry-${entry.id}-title-button`}
-                                disabled
-                            >
-                                {title}
-                            </KuzhambuButton>
-                        ) : (
-                            <a
-                                href="#"
-                                aria-label={`打开条目 ${title}`}
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    onView(entry);
-                                }}
-                            >
-                                {title}
-                            </a>
-                        )}
+                        <a
+                            href="#"
+                            aria-label={`打开条目 ${title}`}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                onView(entry);
+                            }}
+                        >
+                            {title}
+                        </a>
                     </div>
                 );
             }
@@ -229,7 +216,6 @@ export const SancaiEntryList = ({
                         text: viewOrEditText,
                         ariaLabel: `${viewOrEditText} ${readTitle(entry, "条目")}`,
                         testId: `sancai-entry-${entry.id}-view-button`,
-                        disabled: isTransitionActive,
                         onClick: () => onView(entry)
                     },
                     {
@@ -277,7 +263,6 @@ export const SancaiEntryList = ({
 
     return (
         <div className="sancai-entry-table-wrap">
-            <ClassicsPublicationErrorAlert items={entries} />
             {publicationBatchResult ? (
                 <KuzhambuAlert
                     showIcon

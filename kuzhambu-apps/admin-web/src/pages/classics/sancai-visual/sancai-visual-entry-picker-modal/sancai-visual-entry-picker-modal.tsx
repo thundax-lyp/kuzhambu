@@ -4,6 +4,8 @@ import { KuzhambuAlert, KuzhambuButton, KuzhambuModal } from "@/components";
 import { useSancaiVisualEntryPickerState } from "@/pages/classics/sancai-visual/hooks/use-sancai-visual-entry-picker-state";
 import type { SancaiEntryRecord } from "@/pages/classics/sancai-visual/sancai-visual-types";
 
+import "./sancai-visual-entry-picker-modal.css";
+
 const { Text } = Typography;
 
 interface SancaiVisualEntryPickerModalProps {

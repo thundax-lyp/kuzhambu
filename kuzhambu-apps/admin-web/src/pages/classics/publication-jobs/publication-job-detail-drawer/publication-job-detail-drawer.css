@@ -1,0 +1,7 @@
+.publication-jobs-detail-summary {
+    max-height: 240px;
+    margin: 0;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}

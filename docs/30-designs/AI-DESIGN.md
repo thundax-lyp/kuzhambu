@@ -18,7 +18,7 @@ kuzhambu-servers/biz/ai/
 
 ## Business Boundary
 
-AI 拥有模型、能力映射、提示词、调用记录、候选结果和 AI 执行任务。AI 不拥有正式古籍内容、标签治理、图谱结果或问答会话。
+AI 拥有模型、业务配置路由、提示词、调用记录、候选结果和 AI 执行任务。AI 不拥有正式古籍内容、标签治理、图谱结果或问答会话。
 
 Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics、Knowledge 和 Discovery 不得直接绕过 AI 域调用 workers 的 AI 接口。
 
@@ -129,7 +129,7 @@ Knowledge 抽取协作语义：
 调用流程：
 
 1. 业务域通过 AI application 发起能力调用，并传入业务上下文快照。
-2. AI application 校验 AI 功能动作、模型能力映射和当前生效提示词。
+2. AI application 校验 AI 功能动作、业务配置路由、模型能力和当前生效提示词。
 3. AI application 校验变量并渲染 messages，或构造经校验的 prompt 模板和变量。
 4. AI application 创建调用记录或批量任务记录。
 5. AI infra 通过 `WorkerAiClient` 调用 workers。

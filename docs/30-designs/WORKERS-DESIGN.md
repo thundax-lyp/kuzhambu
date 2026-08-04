@@ -95,7 +95,7 @@ Workers 只接受 Java servers 发起的内部调用。
 | System | 不可以 | 不可以 |
 | Admin Web / Portal Web | 不可以 | 不可以 |
 
-AI 能力必须经由 AI 域治理入口。凡是涉及模型、提示词、能力映射、用量统计、候选结果或 AI 失败分类的调用，都不得绕过 AI 域。
+AI 能力必须经由 AI 域治理入口。凡是涉及模型、提示词、业务配置路由、用量统计、候选结果或 AI 失败分类的调用，都不得绕过 AI 域。
 
 Workers 的 AI 对外接口统一为 `/internal/ai/invoke` 和 `/internal/ai/stream`。真实业务不得在 workers 增加按业务或 usecase 命名的 AI 路径；业务类型识别、业务配置选择、提示词模板渲染、模型配置、辅助参数、权限、审计和任务台账均由 Java AI 域完成。
 

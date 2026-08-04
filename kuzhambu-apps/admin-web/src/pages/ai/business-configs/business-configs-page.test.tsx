@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { BusinessConfigsPage } from "./business-configs-page";
 import * as service from "./business-configs-service";
 
@@ -107,15 +106,14 @@ const configs = [
 const renderPage = () =>
     render(
         <App>
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <BusinessConfigsPage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         </App>
     );
 
 describe("BusinessConfigsPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         replacePermissions(["ai:config:view", "ai:config:edit"]);
         vi.mocked(service.listBusinessConfigCapabilities).mockResolvedValue(capabilities);
         vi.mocked(service.listBusinessConfigModels).mockResolvedValue(models);
@@ -128,7 +126,6 @@ describe("BusinessConfigsPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.clearAllMocks();
     });
 

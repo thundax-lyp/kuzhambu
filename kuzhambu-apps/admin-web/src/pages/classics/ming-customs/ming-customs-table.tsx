@@ -7,7 +7,6 @@ import {
     type KuzhambuTableProps,
     KuzhambuTag
 } from "@/components";
-import { ClassicsPublicationErrorAlert } from "@/pages/classics/common/classics-publication-error-alert";
 
 import type { MingCustomsPublicationBatchRecord, MingCustomsRecord } from "./ming-customs-types";
 
@@ -180,7 +179,6 @@ export const MingCustomsTable = ({
 
     return (
         <>
-            <ClassicsPublicationErrorAlert items={dataSource} />
             {publicationBatchResult ? (
                 <KuzhambuAlert
                     showIcon

@@ -27,6 +27,7 @@ interface ClassicsContentQaPanelProps {
     contentType: ClassicsContentType;
     onChanged?: () => void;
     panelTitle?: string;
+    readOnly?: boolean;
 }
 
 interface QaEditorValues {
@@ -55,7 +56,8 @@ export const ClassicsContentQaPanel = ({
     contentId,
     contentType,
     onChanged,
-    panelTitle
+    panelTitle,
+    readOnly = false
 }: ClassicsContentQaPanelProps) => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
@@ -249,16 +251,18 @@ export const ClassicsContentQaPanel = ({
     return (
         <KuzhambuCard size="small" title={panelTitle || "问答对治理"}>
             <KuzhambuSpace orientation="vertical" size={16}>
-                <div>
-                    <KuzhambuButton
-                        testId="classics-common-classics-content-qa-action-button"
-                        icon={<PlusOutlined />}
-                        type="primary"
-                        onClick={openCreate}
-                    >
-                        新增问答对
-                    </KuzhambuButton>
-                </div>
+                {!readOnly ? (
+                    <div>
+                        <KuzhambuButton
+                            testId="classics-common-classics-content-qa-action-button"
+                            icon={<PlusOutlined />}
+                            type="primary"
+                            onClick={openCreate}
+                        >
+                            新增问答对
+                        </KuzhambuButton>
+                    </div>
+                ) : null}
 
                 <KuzhambuTable
                     ariaLabel="问答对列表"
@@ -281,33 +285,40 @@ export const ClassicsContentQaPanel = ({
                             width: 110,
                             render: (_value, pair) => readSourceLabel(pair.source)
                         },
-                        {
-                            key: "actions",
-                            title: "操作",
-                            width: 180,
-                            render: (_value, pair) => (
-                                <KuzhambuSpace size="small" orientation="horizontal">
-                                    <KuzhambuButton
-                                        testId={`classics-common-classics-content-qa-edit-${pair.id}-button`}
-                                        icon={<EditOutlined />}
-                                        size="small"
-                                        onClick={() => openEdit(pair)}
-                                    >
-                                        编辑
-                                    </KuzhambuButton>
-                                    <KuzhambuButton
-                                        testId={`classics-common-classics-content-qa-delete-${pair.id}-button`}
-                                        danger
-                                        icon={<DeleteOutlined />}
-                                        loading={deleteMutation.isPending}
-                                        size="small"
-                                        onClick={() => deleteQaPair(pair)}
-                                    >
-                                        删除
-                                    </KuzhambuButton>
-                                </KuzhambuSpace>
-                            )
-                        }
+                        ...(!readOnly
+                            ? [
+                                  {
+                                      key: "actions",
+                                      title: "操作",
+                                      width: 180,
+                                      render: (
+                                          _value: unknown,
+                                          pair: ClassicsContentQaPairRecord
+                                      ) => (
+                                          <KuzhambuSpace size="small" orientation="horizontal">
+                                              <KuzhambuButton
+                                                  testId={`classics-common-classics-content-qa-edit-${pair.id}-button`}
+                                                  icon={<EditOutlined />}
+                                                  size="small"
+                                                  onClick={() => openEdit(pair)}
+                                              >
+                                                  编辑
+                                              </KuzhambuButton>
+                                              <KuzhambuButton
+                                                  testId={`classics-common-classics-content-qa-delete-${pair.id}-button`}
+                                                  danger
+                                                  icon={<DeleteOutlined />}
+                                                  loading={deleteMutation.isPending}
+                                                  size="small"
+                                                  onClick={() => deleteQaPair(pair)}
+                                              >
+                                                  删除
+                                              </KuzhambuButton>
+                                          </KuzhambuSpace>
+                                      )
+                                  }
+                              ]
+                            : [])
                     ]}
                     rowKey="id"
                     loading={qaPairsQuery.isLoading}
@@ -319,8 +330,8 @@ export const ClassicsContentQaPanel = ({
                         )
                     }}
                     pagination={false}
-                    sortable
-                    onSort={submitSort}
+                    sortable={!readOnly}
+                    onSort={readOnly ? undefined : submitSort}
                 />
 
                 <KuzhambuModal

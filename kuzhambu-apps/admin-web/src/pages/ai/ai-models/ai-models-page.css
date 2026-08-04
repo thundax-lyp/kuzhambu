@@ -22,13 +22,3 @@
     width: 100%;
     text-align: center;
 }
-
-.ai-models-form {
-    padding-top: 4px;
-}
-
-.ai-models-drawer-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-}
