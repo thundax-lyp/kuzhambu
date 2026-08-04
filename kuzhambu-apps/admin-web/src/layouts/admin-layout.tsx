@@ -69,7 +69,6 @@ const menuIconMap: Record<string, ReactNode> = {
     "ai-capability": <SafetyCertificateOutlined />,
     "ai-prompt": <BookOutlined />,
     "ai-invocation": <AuditOutlined />,
-    "ai-action-status": <SafetyCertificateOutlined />,
     classics: <BookOutlined />,
     book: <BookOutlined />,
     sancai: <BookOutlined />,

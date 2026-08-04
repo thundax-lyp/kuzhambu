@@ -7,10 +7,8 @@ const pagesRoot = resolve(process.argv[2] ?? "src/pages");
 
 // Remove entries as the corresponding page domains are migrated during UX/UI work.
 const LEGACY_NON_SINGULAR_PAGE_DOMAINS = new Set([
-    "ai/action-status",
     "ai/ai-models",
     "ai/business-configs",
-    "ai/capability-mappings",
     "ai/invocations",
     "ai/prompts",
     "classics/ming-customs",
@@ -25,7 +23,6 @@ const LEGACY_NON_SINGULAR_PAGE_DOMAINS = new Set([
 const LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS = new Set([
     "ai/ai-models",
     "ai/business-configs",
-    "ai/capability-mappings",
     "ai/invocations",
     "ai/prompts",
     "audit/audit-log",
