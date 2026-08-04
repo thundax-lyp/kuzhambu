@@ -66,13 +66,13 @@ Evidence files: `/tmp/kz-ai-acceptance-local/01-model-before.json`, `/tmp/kz-ai-
 | `latencyMs` | `2` |
 | `checkedAt` | `2026-07-09T05:36:08.189Z` |
 
-## Capability Mapping And Action Status
+## Business Configuration And Action Status
 
-Evidence files: `/tmp/kz-ai-acceptance-local/02-mapping-get.json`, `/tmp/kz-ai-acceptance-local/02-action-status-get.json`, `/tmp/kz-ai-acceptance-local/02-mapping-negative.txt`.
+Evidence files: `/tmp/kz-ai-acceptance-local/02-business-config-get.json`, `/tmp/kz-ai-acceptance-local/02-action-status-get.json`, `/tmp/kz-ai-acceptance-local/02-business-config-negative.txt`.
 
 | Field | Evidence |
 | --- | --- |
-| `mappingId` | `910101` |
+| `businessConfigId` | `910101` |
 | `scope` | `classics` |
 | `capability` | `summary` |
 | `modelId` | `900102` |
@@ -81,7 +81,7 @@ Evidence files: `/tmp/kz-ai-acceptance-local/02-mapping-get.json`, `/tmp/kz-ai-a
 | `available` | `true` |
 | `checkedAt` | `2026-07-09T05:44:07.597Z` |
 
-Negative capability-tag evidence was captured by attempting to bind a model that lacks the required target capability tag. The request failed as expected; the failure text is stored only in local evidence and does not contain secrets.
+Negative model-capability evidence was captured by attempting to bind a model that lacks the required target capability tag. The request failed as expected; the failure text is stored only in local evidence and does not contain secrets.
 
 ## Prompt Variable Validation
 
@@ -170,7 +170,7 @@ Evidence files:
 - `/tmp/kz-ai-acceptance-local/04-services-edit-primary.png`
 - `/tmp/kz-ai-acceptance-local/04-models-check-history.png`
 - `/tmp/kz-ai-acceptance-local/04-models-check-row-scoped.png`
-- `/tmp/kz-ai-acceptance-local/04-mappings-select-summary.png`
+- `/tmp/kz-ai-acceptance-local/04-business-configs-select-summary.png`
 - `/tmp/kz-ai-acceptance-local/04-prompts-summary-query-validate.png`
 - `/tmp/kz-ai-acceptance-local/04-action-status-summary-refresh.png`
 - `/tmp/kz-ai-acceptance-local/05-sancai-summary-task-drawer.png`
@@ -182,7 +182,7 @@ UI acceptance covered:
 | --- | --- |
 | `/ai/services` | service role tabs, PRIMARY edit drawer, save/readback, status display |
 | `/ai/models` | model list filter, model row check action, check history drawer |
-| `/ai/capability-mappings` | scope/capability selects, mapping readback, invalid mapping failure |
+| `/ai/business-configs` | capability/model/prompt selects, config readback, invalid model capability failure |
 | `/ai/prompts` | template query, version display, variable validation success and required-variable failure |
 | `/ai/action-status` | scope/capability filter, refresh action, `available=true` readback |
 | `/classics/sancai` | tree selection for volume, entry panel, summary refinement action, task drawer, `SUCCEEDED` status |
@@ -196,7 +196,7 @@ The AI governance runtime acceptance loop is evidenced end to end:
 
 - Service config is readable and saveable.
 - PRIMARY model detection writes a successful check record.
-- `classics + summary` capability mapping is enabled.
+- `classics + summary` business configuration is enabled.
 - Action status refresh reports the capability available.
 - Prompt variables pass complete validation and fail missing-required validation.
 - A real Sancai summary refinement task completes through Java `WorkerAiClient` to workers.

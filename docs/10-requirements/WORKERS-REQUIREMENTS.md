@@ -31,7 +31,7 @@ Workers 是无状态执行器，负责 AI 编排执行、流式输出转发、�
 - 业务 ID 生成。
 - 用户认证、权限判断和菜单权限。
 - 业务审计。
-- AI 模型、能力映射、提示词版本和候选结果持久化。
+- AI 模型、业务配置、提示词版本和候选结果持久化。
 - Classics、Knowledge、Discovery、Operations、Storage 或 System 业务表写入。
 - Storage 文件对象创建、引用建立、删除和分片上传状态流转。
 
@@ -160,7 +160,7 @@ Workers 不拥有异步任务状态。异步流程由 Java servers 编排，Work
 
 1. Java servers 校验用户权限、业务状态和操作参数。
 2. Java servers 创建业务任务、候选记录或导出记录。
-3. Java servers 读取提示词、模型能力映射和内容快照。
+3. Java servers 读取提示词、AI 业务配置和内容快照。
 4. Java servers 调用 Workers 同步接口或 stream 接口。
 5. Workers 通过 LangGraph 执行单元能力，并返回最终结果或流事件。
 6. Java servers 记录调用结果、失败原因、用量和任务进度。
@@ -190,13 +190,13 @@ Workers 不拥有异步任务状态。异步流程由 Java servers 编排，Work
 | System | 不可以 | 不可以 |
 | Admin Web / Portal Web | 不可以 | 不可以 |
 
-凡是需要模型、提示词、AI 能力映射、用量统计、候选结果或 AI 失败分类的能力，必须经由 AI 域调用 workers。凡是纯文件渲染、格式加工或报表生成能力，可以由拥有对应业务事实的业务域直接调用 render workers。
+凡是需要模型、提示词、AI 业务配置、用量统计、候选结果或 AI 失败分类的能力，必须经由 AI 域调用 workers。凡是纯文件渲染、格式加工或报表生成能力，可以由拥有对应业务事实的业务域直接调用 render workers。
 
 ### AI
 
 AI 域是所有 AI 能力调用的治理入口。
 
-- AI 域负责模型配置、主备服务选择、能力映射、提示词版本、变量校验、功能动作状态、调用记录、候选结果和成本统计。
+- AI 域负责模型配置、主备服务选择、业务配置路由、提示词版本、变量校验、功能动作状态、调用记录、候选结果和成本统计。
 - Workers 负责根据 AI 域提供的模型配置和提示词执行 LangGraph。
 - 其他业务域不得直接绕过 AI 域调用 workers 的 AI 接口。
 - AI 语义失败不得由 Workers 自动无限重试。

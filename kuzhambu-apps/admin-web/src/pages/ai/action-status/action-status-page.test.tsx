@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { ActionStatusPage } from "./action-status-page";
 import * as service from "./action-status-service";
 
@@ -17,7 +16,7 @@ const statuses = [
         scope: "classics",
         capability: "summary",
         available: false,
-        unavailableReason: "No enabled capability mapping",
+        unavailableReason: "No enabled business configuration",
         checkedAt: "2026-07-01T00:00:00.000Z"
     }
 ];
@@ -25,15 +24,14 @@ const statuses = [
 const renderPage = () =>
     render(
         <App>
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <ActionStatusPage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         </App>
     );
 
 describe("ActionStatusPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         replacePermissions(["ai:config:view", "ai:config:edit"]);
         vi.mocked(service.listActionCapabilities).mockResolvedValue([
             {
@@ -55,7 +53,6 @@ describe("ActionStatusPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.clearAllMocks();
     });
 
@@ -65,7 +62,7 @@ describe("ActionStatusPage", () => {
         expect(await screen.findByRole("heading", { name: "AI 动作状态" })).toBeInTheDocument();
         expect(await screen.findByText("summary")).toBeInTheDocument();
         expect(screen.getByText("不可用")).toBeInTheDocument();
-        expect(screen.getByText("No enabled capability mapping")).toBeInTheDocument();
+        expect(screen.getByText("No enabled business configuration")).toBeInTheDocument();
     });
 
     it("refreshes one action status", async () => {

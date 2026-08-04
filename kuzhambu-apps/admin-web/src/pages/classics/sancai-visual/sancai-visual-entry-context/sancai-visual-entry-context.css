@@ -1,0 +1,30 @@
+.sancai-visual-entry-context {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+    padding: 16px 18px;
+    background: var(--sancai-panel);
+    border: 1px solid var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-visual-entry-context > div {
+    min-width: 0;
+}
+
+.sancai-visual-entry-summary {
+    margin: 8px 0 0;
+}
+
+@media (max-width: 700px) {
+    .sancai-visual-entry-context {
+        display: grid;
+        padding: 14px;
+    }
+
+    .sancai-visual-entry-context .ant-btn {
+        justify-self: start;
+    }
+}

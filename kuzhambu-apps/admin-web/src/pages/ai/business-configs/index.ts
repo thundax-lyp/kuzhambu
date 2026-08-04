@@ -1,1 +1,1 @@
-export { BusinessConfigEditDrawer } from "./components/business-config-edit-drawer/business-config-edit-drawer";
+export { BusinessConfigsPage } from "./business-configs-page";

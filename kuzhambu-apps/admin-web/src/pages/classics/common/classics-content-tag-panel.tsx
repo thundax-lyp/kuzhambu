@@ -24,6 +24,7 @@ interface ClassicsContentTagPanelProps {
     contentType: ClassicsContentType;
     onChanged?: () => void;
     panelTitle?: string;
+    readOnly?: boolean;
     showHeader?: boolean;
     toolbarExtra?: ReactNode;
 }
@@ -65,6 +66,7 @@ export const ClassicsContentTagPanel = ({
     contentType,
     onChanged,
     panelTitle,
+    readOnly = false,
     showHeader = true,
     toolbarExtra
 }: ClassicsContentTagPanelProps) => {
@@ -232,18 +234,20 @@ export const ClassicsContentTagPanel = ({
     const cardTitle = showHeader ? panelTitle || "内容标签" : undefined;
     const actionButtons = (
         <KuzhambuSpace wrap size={8}>
-            {toolbarExtra}
-            <KuzhambuButton
-                testId="classics-common-classics-content-tag-open-add-button"
-                icon={<PlusOutlined />}
-                type="primary"
-                onClick={() => {
-                    resetTagPicker();
-                    setAddModalOpen(true);
-                }}
-            >
-                添加
-            </KuzhambuButton>
+            {!readOnly ? toolbarExtra : null}
+            {!readOnly ? (
+                <KuzhambuButton
+                    testId="classics-common-classics-content-tag-open-add-button"
+                    icon={<PlusOutlined />}
+                    type="primary"
+                    onClick={() => {
+                        resetTagPicker();
+                        setAddModalOpen(true);
+                    }}
+                >
+                    添加
+                </KuzhambuButton>
+            ) : null}
         </KuzhambuSpace>
     );
 
@@ -261,7 +265,7 @@ export const ClassicsContentTagPanel = ({
                             return (
                                 <KuzhambuTag
                                     key={tag.id ?? `${tagName}-${tag.source ?? ""}`}
-                                    closable={Boolean(tag.id)}
+                                    closable={!readOnly && Boolean(tag.id)}
                                     type={readSourceType(tag.source)}
                                     onClose={(event) => {
                                         event.preventDefault();

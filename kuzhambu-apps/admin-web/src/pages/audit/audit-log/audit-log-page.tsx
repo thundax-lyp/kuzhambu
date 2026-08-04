@@ -1,6 +1,11 @@
-import { ClockCircleOutlined, ReloadOutlined } from "@ant-design/icons";
+import {
+    ClockCircleOutlined,
+    GlobalOutlined,
+    IdcardOutlined,
+    ReloadOutlined
+} from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Avatar, Empty, Tag, Typography } from "antd";
+import { Avatar, Empty, Input, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
@@ -10,13 +15,14 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import {
     KuzhambuButton,
     KuzhambuListPage,
+    KuzhambuSelect,
     KuzhambuSpace,
     KuzhambuTag,
-    type KuzhambuTableProps
+    type KuzhambuListPageFilterField,
+    type KuzhambuTableProps,
+    type OptionsRecord
 } from "@/components";
 import { AuditLogDetail } from "./audit-log-detail";
-import { createAuditLogFilterFields } from "./audit-log-filter";
-import type { AuditLogFilters } from "./audit-log-filter";
 import * as service from "./audit-log-service";
 import type { AuditLogPageQuery } from "./audit-log-service";
 import type { AuditLogRecord } from "./audit-log-types";
@@ -35,6 +41,19 @@ const DEFAULT_COLUMN_WIDTHS = {
 };
 
 const ADMIN_OPERATOR_TYPE = "USER";
+
+interface AuditLogFilters {
+    objectType: string;
+    objectId: string;
+    action: string;
+    operatorType: string;
+    operatorId: string;
+    source: string;
+    requestId: string;
+    beginDate: string;
+    endDate: string;
+}
+
 const DEFAULT_AUDIT_LOG_FILTERS: AuditLogFilters = {
     objectType: "ALL",
     objectId: "",
@@ -55,6 +74,14 @@ const normalizeSearch = (value?: string | null) => {
 const readSelectValue = (value: string) => {
     return value === "ALL" ? undefined : value;
 };
+
+const optionItems = (options?: OptionsRecord[string]) => [
+    { value: "ALL", label: "全部" },
+    ...(options || []).map((option) => ({
+        value: option.value,
+        label: option.label || option.value
+    }))
+];
 
 const formatDateTime = (value?: string | null) => {
     if (!value) {
@@ -161,6 +188,121 @@ export const AuditLogPage = () => {
     const currentPageNo = auditLogPage?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = auditLogPage?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
     const auditOptions = auditOptionsQuery.data;
+    const filterFields = useMemo<KuzhambuListPageFilterField[]>(() => {
+        const updateFilters = (values: Partial<AuditLogFilters>) => {
+            setFilters((currentFilters) => ({ ...currentFilters, ...values }));
+        };
+        const loading = auditOptionsQuery.isFetching;
+
+        return [
+            {
+                name: "objectType",
+                label: "对象类型",
+                render: () => (
+                    <KuzhambuSelect
+                        value={filters.objectType}
+                        options={optionItems(auditOptions?.objectTypes)}
+                        loading={loading}
+                        onChange={(objectType) => updateFilters({ objectType })}
+                    />
+                )
+            },
+            {
+                name: "action",
+                label: "动作",
+                render: () => (
+                    <KuzhambuSelect
+                        value={filters.action}
+                        options={optionItems(auditOptions?.actions)}
+                        loading={loading}
+                        onChange={(action) => updateFilters({ action })}
+                    />
+                )
+            },
+            {
+                name: "operatorType",
+                label: "操作者类型",
+                render: () => (
+                    <KuzhambuSelect
+                        value={filters.operatorType}
+                        options={optionItems(auditOptions?.operatorTypes)}
+                        loading={loading}
+                        onChange={(operatorType) => updateFilters({ operatorType })}
+                    />
+                )
+            },
+            {
+                name: "objectId",
+                label: "对象 ID",
+                render: () => (
+                    <Input
+                        allowClear
+                        prefix={<IdcardOutlined />}
+                        value={filters.objectId}
+                        onChange={(event) => updateFilters({ objectId: event.target.value })}
+                    />
+                )
+            },
+            {
+                name: "operatorId",
+                label: "操作者 ID",
+                render: () => (
+                    <Input
+                        allowClear
+                        value={filters.operatorId}
+                        onChange={(event) => updateFilters({ operatorId: event.target.value })}
+                    />
+                )
+            },
+            {
+                name: "source",
+                label: "来源",
+                render: () => (
+                    <Input
+                        allowClear
+                        prefix={<GlobalOutlined />}
+                        value={filters.source}
+                        onChange={(event) => updateFilters({ source: event.target.value })}
+                    />
+                )
+            },
+            {
+                name: "requestId",
+                label: "请求 ID",
+                render: () => (
+                    <Input
+                        allowClear
+                        value={filters.requestId}
+                        onChange={(event) => updateFilters({ requestId: event.target.value })}
+                    />
+                )
+            },
+            {
+                name: "beginDate",
+                label: "开始时间",
+                render: () => (
+                    <Input
+                        allowClear
+                        placeholder="2026-05-19 00:00:00"
+                        value={filters.beginDate}
+                        onChange={(event) => updateFilters({ beginDate: event.target.value })}
+                    />
+                )
+            },
+            {
+                name: "endDate",
+                label: "结束时间",
+                render: () => (
+                    <Input
+                        allowClear
+                        placeholder="2026-05-19 23:59:59"
+                        value={filters.endDate}
+                        onChange={(event) => updateFilters({ endDate: event.target.value })}
+                    />
+                )
+            }
+        ];
+    }, [auditOptions, auditOptionsQuery.isFetching, filters]);
 
     if (!canViewAuditLog) {
         return <Empty description="缺少 audit:view 权限" />;
@@ -308,12 +450,7 @@ export const AuditLogPage = () => {
                 searchPlaceholder="搜索对象 ID..."
                 onSearchChange={searchObjectId}
                 filterActive={hasActiveFilters}
-                filterFields={createAuditLogFilterFields({
-                    auditOptions,
-                    filters,
-                    loading: auditOptionsQuery.isFetching,
-                    onChange: setFilters
-                })}
+                filterFields={filterFields}
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 pageActions={

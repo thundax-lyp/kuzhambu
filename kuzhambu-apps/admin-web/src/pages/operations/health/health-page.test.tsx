@@ -1,9 +1,8 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { OperationsHealthPage } from "./health-page";
 import * as service from "./health-service";
 
@@ -25,15 +24,14 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
 const renderPage = () =>
     render(
         <App>
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <OperationsHealthPage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         </App>
     );
 
 describe("OperationsHealthPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         replacePermissions(["operations:health:view", "operations:health:manage"]);
         vi.mocked(service.getOperationsHealthPage).mockResolvedValue({
             pageNo: 1,
@@ -88,7 +86,6 @@ describe("OperationsHealthPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.clearAllMocks();
     });
 
@@ -211,7 +208,6 @@ describe("OperationsHealthPage", () => {
         expect(await screen.findByText("暂无健康记录")).toBeInTheDocument();
         unmount();
         cleanup();
-        queryClient.clear();
 
         vi.mocked(service.getOperationsHealthPage).mockRejectedValueOnce(new Error("boom"));
         renderPage();
@@ -251,7 +247,6 @@ describe("OperationsHealthPage", () => {
             ]
         });
         cleanup();
-        queryClient.clear();
         renderPage();
         await screen.findByText("empty-detail");
         await userEvent.click(screen.getByRole("button", { name: "详情" }));
@@ -313,7 +308,6 @@ describe("OperationsHealthPage", () => {
         expect(screen.getByText("关联告警 #9101")).toBeInTheDocument();
         unmount();
         cleanup();
-        queryClient.clear();
 
         vi.mocked(service.getOperationsHealthAlerts).mockRejectedValueOnce(new Error("alert boom"));
         renderPage();

@@ -3,6 +3,8 @@ import { Tag, Typography } from "antd";
 import { KuzhambuButton, KuzhambuSpace } from "@/components";
 import type { SancaiEntryRecord } from "@/pages/classics/sancai-visual/sancai-visual-types";
 
+import "./sancai-visual-entry-context.css";
+
 const { Paragraph, Text } = Typography;
 
 const readEntryTitle = (entry: SancaiEntryRecord | null | undefined) => {

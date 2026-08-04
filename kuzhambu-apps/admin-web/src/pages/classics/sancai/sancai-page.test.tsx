@@ -1,9 +1,8 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { SancaiEntryList } from "./sancai-entry-panel/sancai-entry-list";
 import { SancaiPage } from "./sancai-page";
 import type { SancaiEntryRecord } from "./sancai-types";
@@ -228,7 +227,7 @@ const buildEntry = (id: string, title: string): SancaiEntryRecord =>
 
 const renderEntryList = (entries: SancaiEntryRecord[]) =>
     render(
-        <QueryClientProvider client={queryClient}>
+        <AdminQueryProvider>
             <AntdApp>
                 <SancaiEntryList
                     entries={entries}
@@ -245,12 +244,11 @@ const renderEntryList = (entries: SancaiEntryRecord[]) =>
                     onView={vi.fn()}
                 />
             </AntdApp>
-        </QueryClientProvider>
+        </AdminQueryProvider>
     );
 
 describe("SancaiPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         mockCategories = [{ categoryType: "FORMAL", id: "2", title: "天文" }];
         mockVolumes = [{ categoryId: "2", id: "101", title: "天文卷一", volumeType: "MAIN" }];
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
@@ -265,7 +263,6 @@ describe("SancaiPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         localStorage.clear();
         clearPermissions();
         vi.restoreAllMocks();
@@ -273,11 +270,11 @@ describe("SancaiPage", () => {
 
     it("renders page and category tree content", async () => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <SancaiPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         expect(await screen.findByRole("heading", { name: "三才图会" })).toBeInTheDocument();
@@ -296,11 +293,11 @@ describe("SancaiPage", () => {
         ];
 
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <SancaiPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         await user.click(await screen.findByRole("link", { name: "打开门类 天文" }));
@@ -343,7 +340,7 @@ describe("SancaiPage", () => {
         expect(screen.getByRole("button", { name: "批量发布" })).not.toBeDisabled();
 
         rerender(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <SancaiEntryList
                         entries={secondPageEntries}
@@ -360,7 +357,7 @@ describe("SancaiPage", () => {
                         onView={vi.fn()}
                     />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         await waitFor(() => {

@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { BackupRestorePage } from "./backup-restore-page";
 import * as service from "./backup-restore-service";
 
@@ -136,7 +135,6 @@ vi.mock("./backup-restore-service", () => ({
 
 describe("BackupRestorePage", () => {
     beforeEach(() => {
-        queryClient.clear();
         replacePermissions([
             "operations:backup:view",
             "operations:backup:execute",
@@ -211,15 +209,14 @@ describe("BackupRestorePage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.clearAllMocks();
     });
 
     it("renders page shell", async () => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <BackupRestorePage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         expect(await screen.findByRole("heading", { name: "备份与恢复" })).toBeInTheDocument();
@@ -232,9 +229,9 @@ describe("BackupRestorePage", () => {
 
     it("filters restore ledger by drill mode", async () => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <BackupRestorePage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         fireEvent.change(await screen.findByLabelText("恢复模式"), {
@@ -250,9 +247,9 @@ describe("BackupRestorePage", () => {
 
     it("confirms drill and real restore with explicit modes", async () => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <BackupRestorePage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         fireEvent.click((await screen.findByText("演练")).closest("button") as HTMLButtonElement);
@@ -284,9 +281,9 @@ describe("BackupRestorePage", () => {
 
     it("shows restore detail mode and write block times", async () => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <BackupRestorePage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         const detailButtons = await screen.findAllByText("查看");
@@ -349,9 +346,9 @@ describe("BackupRestorePage", () => {
         });
 
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <BackupRestorePage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         expect(await screen.findAllByText("storage unavailable")).not.toHaveLength(0);

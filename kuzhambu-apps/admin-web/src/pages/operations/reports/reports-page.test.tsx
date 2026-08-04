@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { OperationsReportsPage } from "./reports-page";
 import * as service from "./reports-service";
 
@@ -38,16 +37,15 @@ vi.mock("@/components/kuzhambu-drawer", () => {
 const renderPage = () => {
     render(
         <MemoryRouter>
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <OperationsReportsPage />
-            </QueryClientProvider>
+            </AdminQueryProvider>
         </MemoryRouter>
     );
 };
 
 describe("OperationsReportsPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         replacePermissions(["operations:report:view", "operations:report:generate"]);
         vi.mocked(service.generateReport).mockResolvedValue({
             reportId: "9003",
@@ -105,7 +103,6 @@ describe("OperationsReportsPage", () => {
     afterEach(() => {
         vi.useRealTimers();
         cleanup();
-        queryClient.clear();
         vi.clearAllMocks();
     });
 

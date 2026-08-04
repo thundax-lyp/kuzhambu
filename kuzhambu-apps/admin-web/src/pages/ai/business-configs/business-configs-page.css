@@ -23,34 +23,3 @@
 .business-configs-center-column {
     text-align: center;
 }
-
-.business-configs-form {
-    display: grid;
-    gap: 12px;
-    padding-top: 4px;
-}
-
-.business-configs-edit-drawer .ant-drawer-body {
-    max-width: 960px;
-    width: 100%;
-    margin: 0 auto;
-}
-
-.business-configs-form-item-compact .ant-form-item-control {
-    max-width: 520px;
-}
-
-.business-configs-form-item-status .ant-form-item-control {
-    max-width: 180px;
-}
-
-.business-configs-form-item-json .ant-form-item-control {
-    max-width: 720px;
-}
-
-.business-configs-form-item-json textarea {
-    font-family:
-        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-        monospace;
-    line-height: 1.6;
-}

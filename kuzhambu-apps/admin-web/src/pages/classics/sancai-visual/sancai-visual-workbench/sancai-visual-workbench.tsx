@@ -8,6 +8,8 @@ import type {
 import { SancaiEntryVisualSection } from "../sancai-entry-visual-section";
 import { SancaiVisualEntryContext } from "../sancai-visual-entry-context";
 
+import "./sancai-visual-workbench.css";
+
 interface SancaiVisualWorkbenchProps {
     entry: SancaiEntryRecord | null;
     isUpdatingVisualAsset: boolean;

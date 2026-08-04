@@ -1,9 +1,8 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import * as service from "./taxonomy-service";
 import { TaxonomyPage } from "./taxonomy-page";
 
@@ -142,23 +141,21 @@ vi.mock("./taxonomy-service", () => ({
 
 describe("TaxonomyPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         replacePermissions(["knowledge:taxonomy:view", "knowledge:taxonomy:edit"]);
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
-        queryClient.clear();
         cleanup();
     });
 
     it("renders tags governance tab", async () => {
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <TaxonomyPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         await userEvent.click(screen.getByRole("tab", { name: "统一标签" }));
@@ -174,11 +171,11 @@ describe("TaxonomyPage", () => {
     it("extracts and applies AI tag candidates", async () => {
         const user = userEvent.setup();
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <TaxonomyPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         await user.click(screen.getByRole("tab", { name: "统一标签" }));
@@ -243,11 +240,11 @@ describe("TaxonomyPage", () => {
         const user = userEvent.setup();
         vi.mocked(service.requestTagExtraction).mockClear();
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <TaxonomyPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         await user.click(screen.getByRole("tab", { name: "统一标签" }));
@@ -271,11 +268,11 @@ describe("TaxonomyPage", () => {
             "ai:prompt:view"
         ]);
         render(
-            <QueryClientProvider client={queryClient}>
+            <AdminQueryProvider>
                 <AntdApp>
                     <TaxonomyPage />
                 </AntdApp>
-            </QueryClientProvider>
+            </AdminQueryProvider>
         );
 
         await user.click(screen.getByRole("tab", { name: "统一标签" }));

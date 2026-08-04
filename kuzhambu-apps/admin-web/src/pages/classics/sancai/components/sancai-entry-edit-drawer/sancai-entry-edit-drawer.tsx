@@ -29,6 +29,7 @@ interface SancaiEntryEditDrawerProps {
     isSubmitting: boolean;
     mode?: "create" | "edit";
     open: boolean;
+    readOnly?: boolean;
     onCancel: () => void;
     onSubmit: (values: SancaiEntryFormValues) => void;
     onCreateTranslationTask?: (draft: SancaiEntryFormValues) => void;
@@ -51,6 +52,7 @@ export const SancaiEntryEditDrawer = ({
     isSubmitting,
     mode = "edit",
     open,
+    readOnly = false,
     onCancel,
     onSubmit,
     onCreateTranslationTask,
@@ -89,6 +91,7 @@ export const SancaiEntryEditDrawer = ({
             isCreatingSummaryTask={isCreatingSummaryTask}
             isCreatingTranslationTask={isCreatingTranslationTask}
             mode={mode}
+            readOnly={readOnly}
             summaryTasks={summaryTasks}
             translationTasks={translationTasks}
             value={entryDraft}
@@ -166,24 +169,34 @@ export const SancaiEntryEditDrawer = ({
             segmentedClassName="sancai-entry-edit-drawer-header-sections"
             showSegmented={mode === "edit"}
             testId="classics-sancai-sancai-entry-editor-drawer"
-            title={mode === "create" ? "新增条目" : "编辑条目"}
+            title={mode === "create" ? "新增条目" : readOnly ? "查看条目" : "编辑条目"}
             open={open}
             size="large"
             destroyOnHidden
-            footerActions={[
-                {
-                    testId: "classics-sancai-sancai-entry-cancel-button",
-                    title: "取消",
-                    action: onCancel
-                },
-                {
-                    testId: "classics-sancai-sancai-entry-create-button",
-                    title: "保存",
-                    type: "primary",
-                    loading: isSubmitting,
-                    action: submitForm
-                }
-            ]}
+            footerActions={
+                readOnly
+                    ? [
+                          {
+                              testId: "classics-sancai-sancai-entry-cancel-button",
+                              title: "关闭",
+                              action: onCancel
+                          }
+                      ]
+                    : [
+                          {
+                              testId: "classics-sancai-sancai-entry-cancel-button",
+                              title: "取消",
+                              action: onCancel
+                          },
+                          {
+                              testId: "classics-sancai-sancai-entry-create-button",
+                              title: "保存",
+                              type: "primary",
+                              loading: isSubmitting,
+                              action: submitForm
+                          }
+                      ]
+            }
             onClose={onCancel}
             onSectionChange={setActiveSection}
         />

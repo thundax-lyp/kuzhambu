@@ -15,7 +15,7 @@
 - Classics 已接入文本精修、标签、问答、三才视觉资产、批量视觉处理和流式过程展示。
 - Knowledge 已接入标签抽取、关系抽取、知识图谱抽取和世系抽取。
 - Discovery 已接入查询理解、查询改写、回答生成和流式回答，并在 QA trace 展示 AI 调用状态。
-- Admin Web 已完成 7 个 AI 治理页面：服务配置、模型配置、能力映射、提示词、业务配置、调用统计、动作状态。
+- Admin Web 已完成 6 个 AI 治理页面：服务配置、模型配置、提示词、业务配置、调用统计、动作状态。
 - Java AI 调用入口已改为按业务配置解析提示词模板、当前版本和模型配置，再调用 Workers 统一 AI 执行入口。
 
 ## Open Items
@@ -38,7 +38,6 @@
 | --- | --- | --- |
 | 服务配置 | `/ai/services` | 已完成 |
 | 模型配置 | `/ai/models` | 已完成 |
-| 能力映射 | `/ai/capability-mappings` | 已完成 |
 | 提示词 | `/ai/prompts` | 已完成 |
 | 业务配置 | `/ai/business-configs` | 已完成 |
 | 调用统计 | `/ai/invocations` | 已完成 |
