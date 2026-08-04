@@ -20,11 +20,11 @@ import {
     normalizeJsonText,
     readApiSourceMeta,
     readCapabilityMeta
-} from "./ai-models-options";
-import * as service from "./ai-models-service";
-import type { AiModelChangeCommand, AiModelListQuery } from "./ai-models-service";
-import type { AiModelRecord } from "./ai-models-types";
-import "./ai-models-page.css";
+} from "./ai-model-constants";
+import * as service from "./ai-model-service";
+import type { AiModelChangeCommand, AiModelListQuery } from "./ai-model-service";
+import type { AiModelRecord } from "./ai-model-types";
+import "./ai-model-page.css";
 
 const { Text } = Typography;
 
@@ -76,10 +76,10 @@ const formatDateTime = (value?: string | null) => {
 };
 
 const centerColumnTitle = (title: string) => (
-    <span className="ai-models-center-column-title">{title}</span>
+    <span className="ai-model-center-column-title">{title}</span>
 );
 
-export const AiModelsPage = () => {
+export const AiModelPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
@@ -96,7 +96,7 @@ export const AiModelsPage = () => {
         Boolean(filters.apiSource) || filters.enabled !== DEFAULT_MODEL_FILTERS.enabled;
 
     const aiModelListQuery = useQuery({
-        queryKey: ["ai", "ai-models", query],
+        queryKey: ["ai", "ai-model", query],
         queryFn: () => service.listAiModels(query),
         enabled: canViewConfig,
         retry: false
@@ -117,7 +117,7 @@ export const AiModelsPage = () => {
     }, [aiModelListQuery.data, searchText]);
 
     const invalidateModels = async () => {
-        await queryClient.invalidateQueries({ queryKey: ["ai", "ai-models"] });
+        await queryClient.invalidateQueries({ queryKey: ["ai", "ai-model"] });
     };
 
     const createMutation = useMutation({
@@ -284,7 +284,7 @@ export const AiModelsPage = () => {
             dataIndex: "apiSource",
             key: "apiSource",
             align: "center",
-            className: "ai-models-center-column",
+            className: "ai-model-center-column",
             width: DEFAULT_COLUMN_WIDTHS.apiSource,
             render: (apiSource: string) => {
                 const apiSourceMeta = readApiSourceMeta(apiSource);
@@ -296,10 +296,10 @@ export const AiModelsPage = () => {
             dataIndex: "capabilities",
             key: "capabilities",
             align: "center",
-            className: "ai-models-center-column",
+            className: "ai-model-center-column",
             width: DEFAULT_COLUMN_WIDTHS.capabilities,
             render: (tags: string[] = []) => (
-                <div className="ai-models-capabilities">
+                <div className="ai-model-capabilities">
                     {tags.map((tag) => {
                         const capabilityMeta = readCapabilityMeta(tag);
                         return (
@@ -316,7 +316,7 @@ export const AiModelsPage = () => {
             dataIndex: "enabled",
             key: "enabled",
             align: "center",
-            className: "ai-models-center-column",
+            className: "ai-model-center-column",
             width: DEFAULT_COLUMN_WIDTHS.enabled,
             render: (enabled: boolean, record) => (
                 <KuzhambuSwitch
@@ -334,7 +334,7 @@ export const AiModelsPage = () => {
             dataIndex: "registeredAt",
             key: "registeredAt",
             align: "center",
-            className: "ai-models-center-column",
+            className: "ai-model-center-column",
             width: DEFAULT_COLUMN_WIDTHS.registeredAt,
             render: formatDateTime
         },
@@ -364,7 +364,7 @@ export const AiModelsPage = () => {
     return (
         <>
             <KuzhambuListPage<AiModelRecord>
-                pageClassName="ai-models-page"
+                pageClassName="ai-model-page"
                 title="模型管理"
                 description="维护 AI 模型、供应商、能力和调用参数。"
                 subjectName="模型"
@@ -423,7 +423,7 @@ export const AiModelsPage = () => {
                 onFilterReset={resetFilters}
                 pageActions={
                     <KuzhambuButton
-                        testId="ai-models-refresh-button"
+                        testId="ai-model-refresh-button"
                         icon={<ReloadOutlined />}
                         loading={aiModelListQuery.isFetching}
                         onClick={() => void aiModelListQuery.refetch()}
@@ -434,7 +434,7 @@ export const AiModelsPage = () => {
                 batchActions={
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
-                            testId="ai-models-enable-button"
+                            testId="ai-model-enable-button"
                             disabled={!canEditConfig || !hasSelectedModels}
                             loading={updateModelMutation.isPending}
                             onClick={() => void batchUpdateEnabled(true)}
@@ -442,7 +442,7 @@ export const AiModelsPage = () => {
                             启用
                         </KuzhambuButton>
                         <KuzhambuButton
-                            testId="ai-models-disable-button"
+                            testId="ai-model-disable-button"
                             disabled={!canEditConfig || !hasSelectedModels}
                             loading={updateModelMutation.isPending}
                             onClick={() => void batchUpdateEnabled(false)}
@@ -450,7 +450,7 @@ export const AiModelsPage = () => {
                             禁用
                         </KuzhambuButton>
                         <KuzhambuButton
-                            testId="ai-models-batch-delete-button"
+                            testId="ai-model-batch-delete-button"
                             danger
                             icon={<DeleteOutlined />}
                             disabled={!canEditConfig || !hasSelectedModels}
@@ -461,11 +461,11 @@ export const AiModelsPage = () => {
                         </KuzhambuButton>
                     </KuzhambuSpace>
                 }
-                batchClassName="ai-models-table-toolbar"
+                batchClassName="ai-model-table-toolbar"
                 selectedCount={selectedRowKeys.length}
                 ariaLabel="模型列表"
                 rowKey="id"
-                className="ai-models-table"
+                className="ai-model-table"
                 columns={columns}
                 dataSource={filteredModels}
                 loading={aiModelListQuery.isFetching}

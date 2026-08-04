@@ -1,8 +1,8 @@
 import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "../layouts/admin-layout";
 import { InvocationsPage } from "../pages/ai/invocations/invocations-page";
-import { AiModelsPage } from "../pages/ai/ai-models/ai-models-page";
-import { BusinessConfigsPage } from "../pages/ai/business-configs/business-configs-page";
+import { AiModelPage } from "../pages/ai/ai-model/ai-model-page";
+import { BusinessConfigPage } from "../pages/ai/business-config/business-config-page";
 import { PromptsPage } from "../pages/ai/prompts/prompts-page";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
@@ -97,7 +97,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "ai/models",
-                            element: <AiModelsPage />
+                            element: <AiModelPage />
                         },
                         {
                             path: "ai/prompts",
@@ -105,7 +105,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "ai/business-configs",
-                            element: <BusinessConfigsPage />
+                            element: <BusinessConfigPage />
                         },
                         {
                             path: "ai/invocations",

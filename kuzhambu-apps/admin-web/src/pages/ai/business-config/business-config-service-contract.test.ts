@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as service from "./business-configs-service";
+import * as service from "./business-config-service";
 
 const API_PREFIX = "http://localhost:20010";
 const DEV_PROXY_PREFIX = "/kuzhambu-admin-api/api";

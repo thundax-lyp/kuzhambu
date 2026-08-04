@@ -1,6 +1,6 @@
 import { postJson } from "@/api/http";
 import { normalizeId } from "@/types/id";
-import type { AiModelRecord } from "./ai-models-types";
+import type { AiModelRecord } from "./ai-model-types";
 
 export interface AiModelListQuery {
     apiSource?: string | null;

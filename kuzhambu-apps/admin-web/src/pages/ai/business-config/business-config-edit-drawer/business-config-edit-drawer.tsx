@@ -10,13 +10,13 @@ import {
     KuzhambuSwitch
 } from "@/components";
 
-import type { AiBusinessConfigChangeCommand } from "@/pages/ai/business-configs/business-configs-service";
+import type { AiBusinessConfigChangeCommand } from "@/pages/ai/business-config/business-config-service";
 import type {
     AiBusinessConfigCapabilityRecord,
     AiBusinessConfigModelRecord,
     AiBusinessConfigPromptRecord,
     AiBusinessConfigRecord
-} from "@/pages/ai/business-configs/business-configs-types";
+} from "@/pages/ai/business-config/business-config-types";
 import "./business-config-edit-drawer.css";
 
 type BusinessConfigFormValues = AiBusinessConfigChangeCommand;
@@ -158,7 +158,7 @@ export const BusinessConfigEditDrawer = ({
 
     return (
         <KuzhambuDrawer
-            testId="ai-business-configs-business-config-edit-drawer"
+            testId="ai-business-config-business-config-edit-drawer"
             className="business-config-edit-drawer"
             open={open}
             title={config ? "编辑业务配置" : "新增业务配置"}
@@ -166,12 +166,12 @@ export const BusinessConfigEditDrawer = ({
             onClose={onClose}
             footerActions={[
                 {
-                    testId: "ai-business-configs-business-config-cancel-button",
+                    testId: "ai-business-config-business-config-cancel-button",
                     title: "取消",
                     action: onClose
                 },
                 {
-                    testId: "ai-business-configs-business-config-save-button",
+                    testId: "ai-business-config-business-config-save-button",
                     title: "保存",
                     type: "primary",
                     disabled: !canEdit,

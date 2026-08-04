@@ -2,10 +2,10 @@ import { AdminQueryProvider } from "@/query/query-client";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
-import { BusinessConfigsPage } from "./business-configs-page";
-import * as service from "./business-configs-service";
+import { BusinessConfigPage } from "./business-config-page";
+import * as service from "./business-config-service";
 
-vi.mock("./business-configs-service", () => ({
+vi.mock("./business-config-service", () => ({
     changeBusinessConfig: vi.fn(),
     createBusinessConfig: vi.fn(),
     deleteBusinessConfig: vi.fn(),
@@ -107,12 +107,12 @@ const renderPage = () =>
     render(
         <App>
             <AdminQueryProvider>
-                <BusinessConfigsPage />
+                <BusinessConfigPage />
             </AdminQueryProvider>
         </App>
     );
 
-describe("BusinessConfigsPage", () => {
+describe("BusinessConfigPage", () => {
     beforeEach(() => {
         replacePermissions(["ai:config:view", "ai:config:edit"]);
         vi.mocked(service.listBusinessConfigCapabilities).mockResolvedValue(capabilities);

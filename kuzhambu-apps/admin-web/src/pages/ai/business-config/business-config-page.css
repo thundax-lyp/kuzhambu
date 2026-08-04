@@ -1,25 +1,25 @@
-.business-configs-page {
+.business-config-page {
     min-height: 100%;
 }
 
-.business-configs-cell-title {
+.business-config-cell-title {
     display: grid;
     gap: 2px;
     min-width: 0;
 }
 
-.business-configs-tag-list {
+.business-config-tag-list {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
     justify-content: center;
 }
 
-.business-configs-center-column-title {
+.business-config-center-column-title {
     display: block;
     text-align: center;
 }
 
-.business-configs-center-column {
+.business-config-center-column {
     text-align: center;
 }

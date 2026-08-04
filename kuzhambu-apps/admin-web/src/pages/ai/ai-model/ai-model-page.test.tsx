@@ -2,10 +2,10 @@ import { AdminQueryProvider } from "@/query/query-client";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
-import { AiModelsPage } from "./ai-models-page";
-import * as service from "./ai-models-service";
+import { AiModelPage } from "./ai-model-page";
+import * as service from "./ai-model-service";
 
-vi.mock("./ai-models-service", () => ({
+vi.mock("./ai-model-service", () => ({
     changeAiModel: vi.fn(),
     createAiModel: vi.fn(),
     deleteAiModel: vi.fn(),
@@ -57,12 +57,12 @@ const renderPage = () =>
     render(
         <App>
             <AdminQueryProvider>
-                <AiModelsPage />
+                <AiModelPage />
             </AdminQueryProvider>
         </App>
     );
 
-describe("AiModelsPage", () => {
+describe("AiModelPage", () => {
     beforeEach(() => {
         replacePermissions(["ai:config:view", "ai:config:edit"]);
         vi.mocked(service.listAiModels).mockResolvedValue(models);
@@ -127,7 +127,7 @@ describe("AiModelsPage", () => {
         });
         expect(screen.queryByText("GPT 4o")).not.toBeInTheDocument();
 
-        fireEvent.click(screen.getByTestId("ai-models-disable-button"));
+        fireEvent.click(screen.getByTestId("ai-model-disable-button"));
 
         await waitFor(() => {
             expect(service.changeAiModel).toHaveBeenCalledWith(

@@ -7,8 +7,6 @@ const pagesRoot = resolve(process.argv[2] ?? "src/pages");
 
 // Remove entries as the corresponding page domains are migrated during UX/UI work.
 const LEGACY_NON_SINGULAR_PAGE_DOMAINS = new Set([
-    "ai/ai-models",
-    "ai/business-configs",
     "ai/invocations",
     "ai/prompts",
     "classics/ming-customs",
@@ -21,8 +19,6 @@ const LEGACY_NON_SINGULAR_PAGE_DOMAINS = new Set([
 
 // These domains still contain a components bucket or root-level private component files.
 const LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS = new Set([
-    "ai/ai-models",
-    "ai/business-configs",
     "ai/invocations",
     "ai/prompts",
     "audit/audit-log",
@@ -65,9 +61,18 @@ for (const modulePath of readDirectories(pagesRoot)) {
         const domainKey = normalizePath(join(moduleName, domainName));
         const domainEntries = readdirSync(domainPath);
         const pageFileName = `${domainName}-page.tsx`;
+        const pageEntries = domainEntries.filter(
+            (entry) => entry.endsWith("-page.tsx") && !entry.endsWith("-page.test.tsx")
+        );
+
+        if (pageEntries.length === 0) {
+            continue;
+        }
 
         if (!domainEntries.includes(pageFileName)) {
-            continue;
+            errors.push(
+                `ADMIN_WEB_PATH_PAGE_SHAPE: ${domainKey} must contain its page entry ${pageFileName}; found ${pageEntries.join(", ")}.`
+            );
         }
 
         if (domainName.endsWith("s") && !LEGACY_NON_SINGULAR_PAGE_DOMAINS.has(domainKey)) {

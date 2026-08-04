@@ -16,18 +16,18 @@ import {
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 
 import { BusinessConfigEditDrawer } from "./business-config-edit-drawer";
-import * as service from "./business-configs-service";
+import * as service from "./business-config-service";
 import type {
     AiBusinessConfigChangeCommand,
     AiBusinessConfigQuery
-} from "./business-configs-service";
+} from "./business-config-service";
 import type {
     AiBusinessConfigCapabilityRecord,
     AiBusinessConfigModelRecord,
     AiBusinessConfigPromptRecord,
     AiBusinessConfigRecord
-} from "./business-configs-types";
-import "./business-configs-page.css";
+} from "./business-config-types";
+import "./business-config-page.css";
 
 const { Text } = Typography;
 
@@ -73,7 +73,7 @@ const formatDate = (value?: string | null) => {
 };
 
 const centerColumnTitle = (title: string) => (
-    <span className="business-configs-center-column-title">{title}</span>
+    <span className="business-config-center-column-title">{title}</span>
 );
 
 const toEnabledQueryValue = (enabled: BusinessConfigFilters["enabled"]) => {
@@ -151,7 +151,7 @@ const normalizeJsonText = (value?: string | null) => {
     return trimmed ? trimmed : "{}";
 };
 
-export const BusinessConfigsPage = () => {
+export const BusinessConfigPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
@@ -166,28 +166,28 @@ export const BusinessConfigsPage = () => {
         Boolean(filters.capability) || filters.enabled !== DEFAULT_BUSINESS_CONFIG_FILTERS.enabled;
 
     const businessConfigCapabilitiesQuery = useQuery({
-        queryKey: ["ai", "business-configs", "capabilities"],
+        queryKey: ["ai", "business-config", "capabilities"],
         queryFn: service.listBusinessConfigCapabilities,
         enabled: canViewConfig,
         retry: false
     });
 
     const businessConfigModelsQuery = useQuery({
-        queryKey: ["ai", "business-configs", "models"],
+        queryKey: ["ai", "business-config", "models"],
         queryFn: service.listBusinessConfigModels,
         enabled: canViewConfig,
         retry: false
     });
 
     const businessConfigPromptsQuery = useQuery({
-        queryKey: ["ai", "business-configs", "prompts"],
+        queryKey: ["ai", "business-config", "prompts"],
         queryFn: service.listBusinessConfigPrompts,
         enabled: canViewConfig,
         retry: false
     });
 
     const businessConfigListQuery = useQuery({
-        queryKey: ["ai", "business-configs", "list", query],
+        queryKey: ["ai", "business-config", "list", query],
         queryFn: () => service.listBusinessConfigs(query),
         enabled: canViewConfig,
         retry: false
@@ -252,7 +252,7 @@ export const BusinessConfigsPage = () => {
     }, [searchText, tableData]);
 
     const invalidateBusinessConfigs = async () => {
-        await queryClient.invalidateQueries({ queryKey: ["ai", "business-configs"] });
+        await queryClient.invalidateQueries({ queryKey: ["ai", "business-config"] });
     };
 
     const createMutation = useMutation({
@@ -376,7 +376,7 @@ export const BusinessConfigsPage = () => {
             render: (capability: string, record) => {
                 const domainTag = readCapabilityDomainTag(capability);
                 return (
-                    <div className="business-configs-cell-title">
+                    <div className="business-config-cell-title">
                         <Text strong ellipsis title={record.capabilityName}>
                             {record.capabilityName}
                         </Text>
@@ -416,7 +416,7 @@ export const BusinessConfigsPage = () => {
             dataIndex: "enabled",
             key: "enabled",
             align: "center",
-            className: "business-configs-center-column",
+            className: "business-config-center-column",
             width: DEFAULT_COLUMN_WIDTHS.enabled,
             render: (enabled: boolean | null | undefined, record) => (
                 <KuzhambuSwitch
@@ -434,7 +434,7 @@ export const BusinessConfigsPage = () => {
             dataIndex: "configuredAt",
             key: "configuredAt",
             align: "center",
-            className: "business-configs-center-column",
+            className: "business-config-center-column",
             width: DEFAULT_COLUMN_WIDTHS.configuredAt,
             render: formatDate
         },
@@ -464,7 +464,7 @@ export const BusinessConfigsPage = () => {
     return (
         <>
             <KuzhambuListPage<BusinessConfigTableRow>
-                pageClassName="business-configs-page"
+                pageClassName="business-config-page"
                 title="业务配置"
                 description="绑定业务能力、提示词模板和模型，统一控制业务 AI 调用配置"
                 subjectName="业务配置"
@@ -514,7 +514,7 @@ export const BusinessConfigsPage = () => {
                 pageActions={
                     <KuzhambuSpace>
                         <KuzhambuButton
-                            testId="ai-business-configs-refresh-button"
+                            testId="ai-business-config-refresh-button"
                             icon={<ReloadOutlined />}
                             loading={
                                 businessConfigListQuery.isFetching ||
@@ -527,7 +527,7 @@ export const BusinessConfigsPage = () => {
                             刷新
                         </KuzhambuButton>
                         <KuzhambuButton
-                            testId="ai-business-configs-create-button"
+                            testId="ai-business-config-create-button"
                             type="primary"
                             disabled={!canEditConfig}
                             onClick={openCreateBusinessConfigDrawer}

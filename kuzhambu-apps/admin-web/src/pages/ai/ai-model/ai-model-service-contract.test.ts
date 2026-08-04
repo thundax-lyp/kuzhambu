@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as service from "./ai-models-service";
+import * as service from "./ai-model-service";
 
 interface CapturedCall {
     body: unknown;

@@ -5,7 +5,7 @@ import type {
     AiBusinessConfigModelRecord,
     AiBusinessConfigPromptRecord,
     AiBusinessConfigRecord
-} from "./business-configs-types";
+} from "./business-config-types";
 
 export interface AiBusinessConfigQuery {
     capability?: string | null;

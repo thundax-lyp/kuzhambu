@@ -8,8 +8,8 @@ import {
     KuzhambuSelect
 } from "@/components";
 
-import type { AiModelChangeCommand } from "../ai-models-service";
-import type { AiModelRecord } from "../ai-models-types";
+import type { AiModelChangeCommand } from "../ai-model-service";
+import type { AiModelRecord } from "../ai-model-types";
 
 import {
     API_SOURCE_OPTIONS,
@@ -18,7 +18,7 @@ import {
     normalizeJsonText,
     readApiSourceMeta,
     readCapabilityMeta
-} from "../ai-models-options";
+} from "../ai-model-constants";
 import "./ai-model-edit-drawer.css";
 
 type AiModelFormValues = AiModelChangeCommand;
@@ -142,15 +142,15 @@ const AiModelEditDrawerForm = ({
 
     return (
         <KuzhambuDrawer
-            testId="ai-ai-models-ai-model-edit-drawer"
+            testId="ai-ai-model-ai-model-edit-drawer"
             open={open}
             title={model ? "编辑模型" : "新增模型"}
             size="large"
             onClose={onClose}
             footerActions={[
-                { testId: "ai-models-cancel-button", title: "取消", action: onClose },
+                { testId: "ai-model-cancel-button", title: "取消", action: onClose },
                 {
-                    testId: "ai-models-save-button",
+                    testId: "ai-model-save-button",
                     title: "保存",
                     type: "primary",
                     disabled: !canEdit,
