@@ -75,7 +75,10 @@ describe("PublicationJobsPage", () => {
             </AdminQueryProvider>
         );
 
-        expect(await screen.findByText("天地")).toBeInTheDocument();
+        expect(await screen.findByText("三才图会｜天地")).toBeInTheDocument();
+        expect(screen.queryByText("9007199254740993")).not.toBeInTheDocument();
+        expect(screen.getAllByRole("checkbox")).toHaveLength(2);
+        expect(screen.getByText("发布")).toHaveClass("kuzhambu-tag", "kuzhambu-tag-accent");
         expect(screen.getByText("搜索索引已写入")).toHaveClass("kuzhambu-tag", "kuzhambu-tag-info");
         expect(
             screen.queryByRole("button", { name: /重试|取消|清理|编辑/ })

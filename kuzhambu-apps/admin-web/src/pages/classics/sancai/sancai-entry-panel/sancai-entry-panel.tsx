@@ -127,7 +127,7 @@ export const SancaiEntryPanel = ({
     });
     const selectedEntry = isCreating ? undefined : (detailQuery.data ?? editingEntry ?? undefined);
     const isSelectedEntryReadOnly = Boolean(
-        editingEntry?.transitionStatus && editingEntry.transitionStatus !== "NONE"
+        selectedEntry?.transitionStatus && selectedEntry.transitionStatus !== "NONE"
     );
     const selectedEntryId = selectedEntry?.id ?? null;
     const selectedEntryVolume = useMemo(
@@ -698,6 +698,7 @@ export const SancaiEntryPanel = ({
                             contentId={selectedEntry.id}
                             contentType="SANCAI_ENTRY"
                             panelTitle="三才图会问答对治理"
+                            readOnly={isSelectedEntryReadOnly}
                             onChanged={invalidateSancaiContentGovernance}
                         />
                     ) : null
@@ -736,6 +737,7 @@ export const SancaiEntryPanel = ({
                                     contentId={selectedEntry.id}
                                     contentType="SANCAI_ENTRY"
                                     panelTitle="标签"
+                                    readOnly={isSelectedEntryReadOnly}
                                     toolbarExtra={
                                         <ClassicsContentTagAiPanel
                                             canApplyCandidate={canApplyAiCandidateTags}
@@ -768,6 +770,7 @@ export const SancaiEntryPanel = ({
                         detailLoading={versionDetailQuery.isLoading}
                         isCreating={isCreating}
                         listLoading={versionsQuery.isLoading}
+                        readOnly={isSelectedEntryReadOnly}
                         resetting={resetVersionMutation.isPending}
                         selectedVersion={selectedVersion}
                         versions={versions}

@@ -774,6 +774,10 @@ describe("SancaiEntryPanel batch operations", () => {
                 entry.id === "3001" ? { ...entry, transitionStatus: "PUBLISHING" } : entry
             )
         );
+        vi.mocked(entryService.get).mockResolvedValueOnce({
+            ...(await entryService.get("3001")),
+            transitionStatus: "PUBLISHING"
+        });
 
         renderEntryPanel();
 
@@ -788,6 +792,21 @@ describe("SancaiEntryPanel batch operations", () => {
         expect(await screen.findByText("查看条目")).toBeInTheDocument();
         expect(
             screen.queryByTestId("classics-sancai-sancai-entry-create-button")
+        ).not.toBeInTheDocument();
+        expect(screen.getByText("标签")).toBeVisible();
+        expect(screen.getByText("问答")).toBeVisible();
+        expect(screen.getByText("版本")).toBeVisible();
+
+        await user.click(screen.getByText("标签"));
+        expect(await screen.findByText("三才")).toBeVisible();
+        expect(
+            screen.queryByTestId("classics-common-classics-content-tag-open-add-button")
+        ).not.toBeInTheDocument();
+
+        await user.click(screen.getByText("问答"));
+        expect(await screen.findByText("天地为何不变？")).toBeVisible();
+        expect(
+            screen.queryByTestId("classics-common-classics-content-qa-action-button")
         ).not.toBeInTheDocument();
     }, 30000);
 

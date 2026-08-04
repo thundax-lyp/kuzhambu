@@ -125,7 +125,7 @@ export const SancaiEntryEditDrawer = ({
             content: tagContent || (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
             ),
-            visible: mode === "edit" && !readOnly
+            visible: mode === "edit"
         },
         {
             label: "问答",
@@ -133,7 +133,7 @@ export const SancaiEntryEditDrawer = ({
             content: qaContent || (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无问答" />
             ),
-            visible: mode === "edit" && !readOnly
+            visible: mode === "edit"
         },
         {
             label: "版本",
@@ -141,7 +141,7 @@ export const SancaiEntryEditDrawer = ({
             content: versionContent || (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无版本" />
             ),
-            visible: mode === "edit" && !readOnly
+            visible: mode === "edit"
         }
     ] satisfies Array<{
         content: ReactNode;
@@ -167,7 +167,7 @@ export const SancaiEntryEditDrawer = ({
             sectionClassName="sancai-entry-edit-drawer-section"
             sections={sections}
             segmentedClassName="sancai-entry-edit-drawer-header-sections"
-            showSegmented={mode === "edit" && !readOnly}
+            showSegmented={mode === "edit"}
             testId="classics-sancai-sancai-entry-editor-drawer"
             title={mode === "create" ? "新增条目" : readOnly ? "查看条目" : "编辑条目"}
             open={open}

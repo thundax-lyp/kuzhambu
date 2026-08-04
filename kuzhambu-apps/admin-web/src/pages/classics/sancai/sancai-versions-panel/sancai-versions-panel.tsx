@@ -78,6 +78,7 @@ interface SancaiVersionsPanelProps {
     detailLoading?: boolean;
     listLoading?: boolean;
     resetting?: boolean;
+    readOnly?: boolean;
     selectedVersion?: SancaiContentVersionRecord | null;
     versions: SancaiContentVersionRecord[];
     onResetVersion: (version: SancaiContentVersionRecord) => void;
@@ -89,6 +90,7 @@ export const SancaiVersionsPanel = ({
     detailLoading = false,
     listLoading = false,
     resetting = false,
+    readOnly = false,
     selectedVersion,
     versions,
     onResetVersion,
@@ -199,15 +201,17 @@ export const SancaiVersionsPanel = ({
                                     title="版本快照为空或无法解析"
                                 />
                             )}
-                            <KuzhambuButton
-                                testId="classics-sancai-sancai-version-history-action-button-2"
-                                danger
-                                loading={resetting}
-                                disabled={!snapshot}
-                                onClick={() => onResetVersion(selectedVersion)}
-                            >
-                                恢复此版本
-                            </KuzhambuButton>
+                            {!readOnly ? (
+                                <KuzhambuButton
+                                    testId="classics-sancai-sancai-version-history-action-button-2"
+                                    danger
+                                    loading={resetting}
+                                    disabled={!snapshot}
+                                    onClick={() => onResetVersion(selectedVersion)}
+                                >
+                                    恢复此版本
+                                </KuzhambuButton>
+                            ) : null}
                         </KuzhambuSpace>
                     ) : (
                         <Empty
