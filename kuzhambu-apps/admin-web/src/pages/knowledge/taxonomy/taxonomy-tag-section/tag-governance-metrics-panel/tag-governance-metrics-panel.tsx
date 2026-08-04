@@ -7,7 +7,7 @@ import {
     KuzhambuCard
 } from "@/components";
 
-import type { TagGovernanceMetricsRecord } from "../taxonomy-types";
+import type { TagGovernanceMetricsRecord } from "@/pages/knowledge/taxonomy/taxonomy-types";
 
 const { Paragraph, Text } = Typography;
 

@@ -9,7 +9,7 @@ import {
     KuzhambuSpace
 } from "@/components";
 
-import { TagAliasList } from "../tag-alias-list";
+import { TagAliasList } from "./tag-alias-list";
 import type {
     TagAliasCreateCommand,
     TagAliasRemoveCommand,

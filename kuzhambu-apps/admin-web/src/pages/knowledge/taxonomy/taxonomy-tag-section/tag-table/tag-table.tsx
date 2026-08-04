@@ -11,8 +11,8 @@ import {
     KuzhambuButton
 } from "@/components";
 
-import type { TagPageQuery, TagStatusCommand } from "../taxonomy-service";
-import type { TagRecord } from "../taxonomy-types";
+import type { TagPageQuery, TagStatusCommand } from "@/pages/knowledge/taxonomy/taxonomy-service";
+import type { TagRecord } from "@/pages/knowledge/taxonomy/taxonomy-types";
 
 const { Text } = Typography;
 

@@ -15,7 +15,7 @@ import { isPositiveDecimalId } from "@/types/id";
 
 import type { TagCandidateApplyCommand, TagExtractionCommand } from "../taxonomy-service";
 import type { TagExtractionCandidateRecord, TagExtractionResultRecord } from "../taxonomy-types";
-import { TagExtractionCandidateTable } from "../tag-extraction-candidate-table";
+import { TagExtractionCandidateTable } from "./tag-extraction-candidate-table";
 
 const { TextArea } = Input;
 

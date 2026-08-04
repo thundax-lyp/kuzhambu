@@ -2,11 +2,14 @@ import { Empty, Popconfirm, Typography } from "antd";
 import { useMemo } from "react";
 import { KuzhambuList, KuzhambuListItem, KuzhambuSpace, KuzhambuButton } from "@/components";
 
-import type { TagAliasCreateCommand, TagAliasRemoveCommand } from "../taxonomy-service";
-import type { TagAliasRecord } from "../taxonomy-types";
+import type {
+    TagAliasCreateCommand,
+    TagAliasRemoveCommand
+} from "@/pages/knowledge/taxonomy/taxonomy-service";
+import type { TagAliasRecord } from "@/pages/knowledge/taxonomy/taxonomy-types";
 
-import { TagAliasCreateField } from "../tag-alias-create-field";
-import type { TagAliasCreateFormValues } from "../tag-alias-create-field";
+import { TagAliasCreateField } from "./tag-alias-create-field";
+import type { TagAliasCreateFormValues } from "./tag-alias-create-field";
 
 const { Text } = Typography;
 

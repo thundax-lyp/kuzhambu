@@ -1,4 +1,4 @@
-import { CategoryTable } from "../category-table";
+import { CategoryTable } from "./category-table";
 import type { TagCategoryPageQuery, TagCategoryStatusCommand } from "../taxonomy-service";
 import type { TagCategoryRecord } from "../taxonomy-types";
 

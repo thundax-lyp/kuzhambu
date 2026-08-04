@@ -1,5 +1,5 @@
 import type { Key } from "react";
-import { TagReviewTable } from "../tag-review-table";
+import { TagReviewTable } from "./tag-review-table";
 import type { TagReviewPageQuery } from "../taxonomy-service";
 import type { TagRecord } from "../taxonomy-types";
 

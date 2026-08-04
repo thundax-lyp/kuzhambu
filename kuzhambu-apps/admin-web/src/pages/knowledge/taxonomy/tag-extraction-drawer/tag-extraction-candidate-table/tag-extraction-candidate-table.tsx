@@ -1,7 +1,7 @@
 import { Table } from "antd";
 import type { TableProps } from "antd";
 import type { Key } from "react";
-import type { TagExtractionCandidateRecord } from "../taxonomy-types";
+import type { TagExtractionCandidateRecord } from "@/pages/knowledge/taxonomy/taxonomy-types";
 
 interface TagExtractionCandidateTableProps {
     candidates: TagExtractionCandidateRecord[];

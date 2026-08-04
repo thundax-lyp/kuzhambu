@@ -11,13 +11,13 @@ import {
 } from "@/components";
 import { normalizeId } from "@/types/id";
 
-import type { TagMergeCommand } from "../taxonomy-service";
+import type { TagMergeCommand } from "@/pages/knowledge/taxonomy/taxonomy-service";
 import type {
     TagAliasRecord,
     TagContentRefRecord,
     TagMergePreviewRecord,
     TagRecord
-} from "../taxonomy-types";
+} from "@/pages/knowledge/taxonomy/taxonomy-types";
 
 const { Paragraph, Text, Title } = Typography;
 

@@ -7,8 +7,11 @@ import {
     KuzhambuButton
 } from "@/components";
 
-import type { TagCategoryPageQuery, TagCategoryStatusCommand } from "../taxonomy-service";
-import type { TagCategoryRecord } from "../taxonomy-types";
+import type {
+    TagCategoryPageQuery,
+    TagCategoryStatusCommand
+} from "@/pages/knowledge/taxonomy/taxonomy-service";
+import type { TagCategoryRecord } from "@/pages/knowledge/taxonomy/taxonomy-types";
 
 const DEFAULT_COLUMN_WIDTHS = {
     name: 220,
