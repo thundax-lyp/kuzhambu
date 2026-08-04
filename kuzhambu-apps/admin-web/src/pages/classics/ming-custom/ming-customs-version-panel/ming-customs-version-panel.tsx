@@ -1,5 +1,8 @@
-import { MingCustomsVersionHistoryPanel } from "./ming-customs-version-history-panel";
-import type { MingCustomsContentVersionRecord, MingCustomsRecord } from "./ming-custom-types";
+import { MingCustomsVersionHistoryPanel } from "@/pages/classics/ming-custom/ming-customs-version-history-panel";
+import type {
+    MingCustomsContentVersionRecord,
+    MingCustomsRecord
+} from "@/pages/classics/ming-custom/ming-custom-types";
 
 interface MingCustomsVersionPanelProps {
     currentEntry: MingCustomsRecord;

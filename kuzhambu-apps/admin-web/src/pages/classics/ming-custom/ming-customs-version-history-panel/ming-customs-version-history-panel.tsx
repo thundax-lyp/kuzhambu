@@ -12,7 +12,8 @@ import type {
     MingCustomsContentVersionRecord,
     MingCustomsRecord,
     MingCustomsVersionSnapshot
-} from "./ming-custom-types";
+} from "@/pages/classics/ming-custom/ming-custom-types";
+import "./ming-customs-version-history-panel.css";
 
 const { Text } = Typography;
 

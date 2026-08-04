@@ -7,7 +7,7 @@ import type {
     AiRefinementTaskCapability,
     AiRefinementTaskRecord
 } from "@/pages/classics/common/ai-refinement-task-types";
-import type { MingCustomsRecord } from "./ming-custom-types";
+import type { MingCustomsRecord } from "@/pages/classics/ming-custom/ming-custom-types";
 
 interface MingCustomsAiActionsProps {
     creatingRefinementCapability: AiRefinementTaskCapability | null;

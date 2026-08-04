@@ -9,18 +9,55 @@ import {
     KuzhambuRichContentViewer,
     KuzhambuSelect
 } from "@/components";
-
-import type { DictItem } from "@/types/dict";
-import {
-    toMingCustomsCommand,
-    toMingCustomsFormValues,
-    type MingCustomsFormValues
-} from "./ming-customs-form-values";
 import type { MingCustomsCommand } from "@/pages/classics/ming-custom/ming-custom-service";
 import type { MingCustomsRecord } from "@/pages/classics/ming-custom/ming-custom-types";
+import type { DictItem } from "@/types/dict";
+import "./ming-customs-edit-drawer.css";
 
 const { Text } = Typography;
 const { TextArea } = Input;
+
+interface MingCustomsFormValues {
+    category: string;
+    chapter: string;
+    content: string;
+    contentFormat: string;
+    originalExcerpts: string;
+    section: string;
+    summary: string;
+    title: string;
+}
+
+const normalizeText = (value?: string | null) => {
+    const normalizedValue = value?.trim();
+    return normalizedValue || undefined;
+};
+
+const toMingCustomsFormValues = (record?: MingCustomsRecord | null): MingCustomsFormValues => ({
+    category: record?.category || "",
+    chapter: record?.chapter || "",
+    content: record?.content || "",
+    contentFormat: record?.contentFormat || "MARKDOWN",
+    originalExcerpts: record?.originalExcerpts || "",
+    section: record?.section || "",
+    summary: record?.summary || "",
+    title: record?.title || ""
+});
+
+const toMingCustomsCommand = (
+    values: MingCustomsFormValues,
+    record?: MingCustomsRecord | null
+): MingCustomsCommand => ({
+    id: record?.id,
+    title: normalizeText(values.title),
+    category: normalizeText(values.category),
+    chapter: normalizeText(values.chapter),
+    section: normalizeText(values.section),
+    summary: normalizeText(values.summary),
+    contentFormat: normalizeText(values.contentFormat) || "MARKDOWN",
+    content: normalizeText(values.content),
+    originalExcerpts: normalizeText(values.originalExcerpts)
+});
 
 interface MingCustomsEditDrawerProps {
     categoryOptions: DictItem[];

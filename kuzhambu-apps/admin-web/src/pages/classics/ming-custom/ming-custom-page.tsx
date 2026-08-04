@@ -14,7 +14,7 @@ import type {
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
 import { MingCustomsAiActions } from "./ming-customs-ai-actions";
-import { MingCustomsEditDrawer } from "./components/ming-customs-edit-drawer/ming-customs-edit-drawer";
+import { MingCustomsEditDrawer } from "./ming-customs-edit-drawer";
 import { MingCustomsExportActions } from "./ming-customs-export-actions";
 import { MingCustomsTable } from "./ming-customs-table";
 import {

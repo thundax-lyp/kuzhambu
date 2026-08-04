@@ -8,7 +8,11 @@ import {
     KuzhambuTag
 } from "@/components";
 
-import type { MingCustomsPublicationBatchRecord, MingCustomsRecord } from "./ming-custom-types";
+import type {
+    MingCustomsPublicationBatchRecord,
+    MingCustomsRecord
+} from "@/pages/classics/ming-custom/ming-custom-types";
+import "./ming-customs-table.css";
 
 const { Text } = Typography;
 

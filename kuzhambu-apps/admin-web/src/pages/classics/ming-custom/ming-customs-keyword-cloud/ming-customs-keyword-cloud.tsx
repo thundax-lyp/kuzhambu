@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { TagsOutlined } from "@ant-design/icons";
 import { Badge, Empty } from "antd";
 import { KuzhambuDrawer, KuzhambuButton } from "@/components";
-import * as service from "./ming-custom-service";
-import type { MingCustomsTagCloudItem } from "./ming-custom-types";
+import * as service from "@/pages/classics/ming-custom/ming-custom-service";
+import type { MingCustomsTagCloudItem } from "@/pages/classics/ming-custom/ming-custom-types";
+import "./ming-customs-keyword-cloud.css";
 
 interface MingCustomsTagCloudProps {
     category?: string | null;

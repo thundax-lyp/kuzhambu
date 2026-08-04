@@ -9,9 +9,12 @@ import {
     KuzhambuSpace
 } from "@/components";
 
-import { MingCustomsTagCloud } from "./ming-customs-keyword-cloud";
-import type { MingCustomsQuery } from "./ming-custom-service";
-import type { MingCustomsRecord, MingCustomsTagCloudItem } from "./ming-custom-types";
+import { MingCustomsTagCloud } from "@/pages/classics/ming-custom/ming-customs-keyword-cloud";
+import type { MingCustomsQuery } from "@/pages/classics/ming-custom/ming-custom-service";
+import type {
+    MingCustomsRecord,
+    MingCustomsTagCloudItem
+} from "@/pages/classics/ming-custom/ming-custom-types";
 
 export type MingCustomsSortDirectionFilter = "ASC" | "DESC";
 
