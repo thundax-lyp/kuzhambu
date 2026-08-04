@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @TableName("knowledge_relation")
 public class KnowledgeRelationDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private String relationKey;

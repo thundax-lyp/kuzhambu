@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @TableName("knowledge_tag_alias")
 public class TagAliasDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private Long aliasId;

@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionBatchJobIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Repository;
 public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRepository {
 
     private final GraphExtractionTaskMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public GraphExtractionTaskRepositoryImpl(GraphExtractionTaskMapper mapper) {
         this.mapper = mapper;
@@ -41,9 +39,6 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     @Override
     public GraphExtractionTaskId save(GraphExtractionTask entity) {
         GraphExtractionTaskDO dataObject = KnowledgeGraphPersistenceAssembler.toObject(entity);
-        if (dataObject.getId() == null) {
-            dataObject.setId(idGenerator.nextId().value());
-        }
         mapper.insert(dataObject);
         return GraphExtractionTaskIdCodec.toDomain(dataObject.getId());
     }

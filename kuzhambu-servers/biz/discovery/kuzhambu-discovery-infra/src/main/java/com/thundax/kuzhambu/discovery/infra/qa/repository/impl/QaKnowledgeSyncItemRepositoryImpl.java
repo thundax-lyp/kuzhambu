@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.discovery.domain.qa.codec.QaStringValueCodec;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncItem;
 import com.thundax.kuzhambu.discovery.domain.qa.model.valueobject.KnowledgeSourceId;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Repository;
 public class QaKnowledgeSyncItemRepositoryImpl implements QaKnowledgeSyncItemRepository {
 
     private final QaKnowledgeSyncItemMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public QaKnowledgeSyncItemRepositoryImpl(QaKnowledgeSyncItemMapper mapper) {
         this.mapper = mapper;
@@ -49,8 +47,6 @@ public class QaKnowledgeSyncItemRepositoryImpl implements QaKnowledgeSyncItemRep
     @Override
     public KnowledgeSourceId save(QaKnowledgeSyncItem entity) {
         QaKnowledgeSyncItemDO dataObject = toObject(entity);
-        long nextId = idGenerator.nextId().value();
-        dataObject.setId(nextId);
         mapper.insert(dataObject);
         return entity.getSourceId();
     }

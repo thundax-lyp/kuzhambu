@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @TableName("knowledge_lineage_relation")
 public class KnowledgeLineageRelationDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private String relationKey;

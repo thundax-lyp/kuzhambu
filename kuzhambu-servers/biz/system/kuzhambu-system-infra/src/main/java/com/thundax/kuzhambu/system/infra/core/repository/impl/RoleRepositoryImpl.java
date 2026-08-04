@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
@@ -38,7 +37,6 @@ public class RoleRepositoryImpl implements RoleRepository {
     private final UserRoleMapper userRoleMapper;
     private final RoleCacheSupport cacheSupport;
     private final UserCacheSupport userCacheSupport;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public RoleRepositoryImpl(
             RoleMapper mapper,
@@ -129,7 +127,6 @@ public class RoleRepositoryImpl implements RoleRepository {
     @Override
     public RoleId insert(Role entity) {
         RoleDO dataObject = RolePersistenceAssembler.toObject(entity);
-        dataObject.setId(idGenerator.nextId().value());
         mapper.insert(dataObject);
         cacheSupport.removeById(dataObject.getId());
         return RoleIdCodec.toDomain(dataObject.getId());

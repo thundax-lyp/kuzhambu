@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.knowledge.infra.refinement.repository.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityReport;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityReportIssue;
@@ -29,7 +28,6 @@ public class QualityReportRepositoryImpl implements QualityReportRepository {
     private final QualityReportMapper reportMapper;
     private final QualityReportIssueMapper issueMapper;
     private final QualityReportSourceDetailMapper sourceDetailMapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public QualityReportRepositoryImpl(
             QualityReportMapper reportMapper,
@@ -107,9 +105,6 @@ public class QualityReportRepositoryImpl implements QualityReportRepository {
     }
 
     private void ensureReportIds(QualityReportDO reportDataObject) {
-        if (reportDataObject.getId() == null) {
-            reportDataObject.setId(idGenerator.nextId().value());
-        }
         if (reportDataObject.getReportId() == null) {
             reportDataObject.setReportId(reportDataObject.getId());
         }
@@ -121,9 +116,6 @@ public class QualityReportRepositoryImpl implements QualityReportRepository {
         }
         for (QualityReportIssue issue : issues) {
             QualityReportIssueDO dataObject = QualityReportIssuePersistenceAssembler.toObject(issue);
-            if (dataObject.getId() == null) {
-                dataObject.setId(idGenerator.nextId().value());
-            }
             if (dataObject.getIssueId() == null) {
                 dataObject.setIssueId(dataObject.getId());
             }
@@ -139,9 +131,6 @@ public class QualityReportRepositoryImpl implements QualityReportRepository {
         for (QualityReportSourceDetail sourceDetail : sourceDetails) {
             QualityReportSourceDetailDO dataObject =
                     QualityReportSourceDetailPersistenceAssembler.toObject(sourceDetail);
-            if (dataObject.getId() == null) {
-                dataObject.setId(idGenerator.nextId().value());
-            }
             if (dataObject.getDetailId() == null) {
                 dataObject.setDetailId(dataObject.getId());
             }

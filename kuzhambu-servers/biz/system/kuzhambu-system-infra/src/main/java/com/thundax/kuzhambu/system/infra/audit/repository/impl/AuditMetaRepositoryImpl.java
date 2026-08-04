@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.system.infra.audit.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditMetaIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditMetaId;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Repository;
 public class AuditMetaRepositoryImpl implements AuditMetaRepository {
 
     private final AuditMetaMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public AuditMetaRepositoryImpl(AuditMetaMapper mapper) {
         this.mapper = mapper;
@@ -37,7 +35,6 @@ public class AuditMetaRepositoryImpl implements AuditMetaRepository {
     @Override
     public AuditMetaId insert(AuditMeta meta) {
         AuditMetaDO dataObject = AuditMetaPersistenceAssembler.toObject(meta);
-        dataObject.setId(idGenerator.nextId().value());
         if (dataObject.getLastLogId() == null) {
             dataObject.setLastLogId(0L);
         }

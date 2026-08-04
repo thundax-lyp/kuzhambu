@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -112,7 +112,7 @@ class KnowledgeRelationRepositoryTest {
 
         ArgumentCaptor<KnowledgeRelationDO> captor = ArgumentCaptor.forClass(KnowledgeRelationDO.class);
         verify(mapper).insert(captor.capture());
-        assertNotNull(captor.getValue().getId());
+        assertNull(captor.getValue().getId());
         assertEquals("renwu:huangdi->fuxi:ancestor", captor.getValue().getRelationKey());
     }
 }

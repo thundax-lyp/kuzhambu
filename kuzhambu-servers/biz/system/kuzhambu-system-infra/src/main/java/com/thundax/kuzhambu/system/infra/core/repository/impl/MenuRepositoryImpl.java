@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
@@ -32,7 +31,6 @@ public class MenuRepositoryImpl implements MenuRepository {
     private final MenuMapper mapper;
     private final MenuRoleMapper menuRoleMapper;
     private final MenuCacheSupport cacheSupport;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public MenuRepositoryImpl(MenuMapper mapper, MenuRoleMapper menuRoleMapper, MenuCacheSupport cacheSupport) {
         this.mapper = mapper;
@@ -86,7 +84,6 @@ public class MenuRepositoryImpl implements MenuRepository {
     @Override
     public MenuId insert(Menu entity) {
         MenuDO dataObject = MenuPersistenceAssembler.toObject(entity);
-        dataObject.setId(idGenerator.nextId().value());
         Integer newPosition = allocateInsertPosition(dataObject);
         entity.setParentId(MenuIdCodec.toDomain(dataObject.getParentId()));
         dataObject.setLft(newPosition);

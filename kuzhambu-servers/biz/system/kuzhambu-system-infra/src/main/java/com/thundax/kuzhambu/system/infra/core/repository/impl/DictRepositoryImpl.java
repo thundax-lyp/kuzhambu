@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.system.infra.core.repository.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
@@ -26,7 +25,6 @@ public class DictRepositoryImpl implements DictRepository {
 
     private final DictMapper mapper;
     private final DictCacheSupport cacheSupport;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public DictRepositoryImpl(DictMapper mapper, DictCacheSupport cacheSupport) {
         this.mapper = mapper;
@@ -111,7 +109,6 @@ public class DictRepositoryImpl implements DictRepository {
     @Override
     public DictId insert(Dict entity) {
         DictDO dataObject = DictPersistenceAssembler.toObject(entity);
-        dataObject.setId(idGenerator.nextId().value());
         mapper.insert(dataObject);
         cacheSupport.putById(DictPersistenceAssembler.toDomain(dataObject));
         return DictIdCodec.toDomain(dataObject.getId());

@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.knowledge.infra.graph.repository.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionAiCandidateIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionSourceContentIdCodec;
@@ -27,7 +26,6 @@ import org.springframework.stereotype.Repository;
 public class GraphVersionRepositoryImpl implements GraphVersionRepository {
 
     private final GraphVersionMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public GraphVersionRepositoryImpl(GraphVersionMapper mapper) {
         this.mapper = mapper;
@@ -119,9 +117,6 @@ public class GraphVersionRepositoryImpl implements GraphVersionRepository {
     @Override
     public GraphVersionId save(GraphVersion entity) {
         GraphVersionDO dataObject = GraphVersionPersistenceAssembler.toObject(entity);
-        if (dataObject.getId() == null) {
-            dataObject.setId(idGenerator.nextId().value());
-        }
         mapper.insert(dataObject);
         return GraphVersionIdCodec.toDomain(dataObject.getId());
     }

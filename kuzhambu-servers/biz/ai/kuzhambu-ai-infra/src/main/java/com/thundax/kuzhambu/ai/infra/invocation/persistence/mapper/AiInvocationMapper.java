@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiInvocat
 import java.util.List;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
@@ -198,14 +199,15 @@ public interface AiInvocationMapper extends BaseMapper<AiInvocationLogDO> {
     @Insert(
             """
             insert into ai_candidate
-                (id, call_id, batch_id, capability, content_type, content_id, object_id,
+                (call_id, batch_id, capability, content_type, content_id, object_id,
                  artifact_reference_json, result_format, result_payload, status, prompt_version_id, model_name,
                  failure_stage, error_type, error_message, requested_at, applied_at, rejected_at)
             values
-                (#{id}, #{callId}, #{batchId}, #{capability}, #{contentType}, #{contentId}, #{objectId},
+                (#{callId}, #{batchId}, #{capability}, #{contentType}, #{contentId}, #{objectId},
                  #{artifactReferenceJson}, #{resultFormat}, #{resultPayload}, #{status}, #{promptVersionId}, #{modelName},
                  #{failureStage}, #{errorType}, #{errorMessage}, #{requestedAt}, #{appliedAt}, #{rejectedAt})
             """)
+    @Options(useGeneratedKeys = true, keyProperty = "id")
     int insertCandidate(AiCandidateDO dataObject);
 
     @Update(

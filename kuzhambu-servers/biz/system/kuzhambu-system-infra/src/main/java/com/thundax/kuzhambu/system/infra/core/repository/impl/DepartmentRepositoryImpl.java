@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
@@ -29,7 +28,6 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
 
     private final DepartmentMapper mapper;
     private final DepartmentCacheSupport cacheSupport;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public DepartmentRepositoryImpl(DepartmentMapper mapper, DepartmentCacheSupport cacheSupport) {
         this.mapper = mapper;
@@ -82,7 +80,6 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
     @Override
     public DepartmentId insert(Department entity) {
         DepartmentDO dataObject = DepartmentPersistenceAssembler.toObject(entity);
-        dataObject.setId(idGenerator.nextId().value());
         Integer newPosition = allocateInsertPosition(dataObject);
         entity.setParentId(DepartmentIdCodec.toDomain(dataObject.getParentId()));
         dataObject.setLft(newPosition);

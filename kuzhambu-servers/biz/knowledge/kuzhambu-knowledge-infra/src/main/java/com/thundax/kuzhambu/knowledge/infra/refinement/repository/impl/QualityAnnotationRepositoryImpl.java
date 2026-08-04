@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.knowledge.infra.refinement.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityAnnotation;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.QualityAnnotationRepository;
 import com.thundax.kuzhambu.knowledge.infra.refinement.persistence.assembler.QualityAnnotationPersistenceAssembler;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Repository;
 public class QualityAnnotationRepositoryImpl implements QualityAnnotationRepository {
 
     private final QualityAnnotationMapper mapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public QualityAnnotationRepositoryImpl(QualityAnnotationMapper mapper) {
         this.mapper = mapper;
@@ -45,9 +43,6 @@ public class QualityAnnotationRepositoryImpl implements QualityAnnotationReposit
     @Override
     public void saveOrUpdate(QualityAnnotation annotation) {
         QualityAnnotationDO dataObject = QualityAnnotationPersistenceAssembler.toObject(annotation);
-        if (dataObject.getId() == null) {
-            dataObject.setId(idGenerator.nextId().value());
-        }
         if (dataObject.getAnnotationId() == null) {
             dataObject.setAnnotationId(dataObject.getId());
         }

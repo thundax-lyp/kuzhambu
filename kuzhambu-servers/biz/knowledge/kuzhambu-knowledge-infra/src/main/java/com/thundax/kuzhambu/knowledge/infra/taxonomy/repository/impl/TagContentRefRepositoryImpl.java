@@ -62,9 +62,6 @@ public class TagContentRefRepositoryImpl implements TagContentRefRepository {
     @Override
     public TagContentRefId insert(TagContentRef entity) {
         TagContentRefDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
-        if (dataObject.getId() == null) {
-            dataObject.setId(idGenerator.nextId().value());
-        }
         if (dataObject.getRefId() == null) {
             dataObject.setRefId(idGenerator.nextId().value());
         }

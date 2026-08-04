@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @TableName("discovery_qa_knowledge_sync_item")
 public class QaKnowledgeSyncItemDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private String sourceId;

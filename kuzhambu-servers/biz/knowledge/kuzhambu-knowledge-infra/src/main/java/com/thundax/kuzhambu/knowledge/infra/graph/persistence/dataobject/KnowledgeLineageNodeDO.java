@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @TableName("knowledge_lineage_node")
 public class KnowledgeLineageNodeDO {
 
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private String nodeKey;

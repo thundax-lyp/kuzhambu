@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.storage.infra.object.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartPartNumberCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadPartIdCodec;
@@ -29,7 +28,6 @@ public class MultipartUploadRepositoryImpl implements MultipartUploadRepository 
 
     private final MultipartUploadSessionMapper sessionMapper;
     private final MultipartUploadPartMapper partMapper;
-    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public MultipartUploadRepositoryImpl(
             MultipartUploadSessionMapper sessionMapper, MultipartUploadPartMapper partMapper) {
@@ -40,7 +38,6 @@ public class MultipartUploadRepositoryImpl implements MultipartUploadRepository 
     @Override
     public MultipartUploadSessionId insertMultipartSession(MultipartUploadSession session) {
         MultipartUploadSessionDO dataObject = StoragePersistenceAssembler.toMultipartSessionObject(session);
-        dataObject.setId(idGenerator.nextId().value());
         sessionMapper.insert(dataObject);
         return MultipartUploadSessionIdCodec.toDomain(dataObject.getId());
     }
@@ -89,7 +86,6 @@ public class MultipartUploadRepositoryImpl implements MultipartUploadRepository 
     @Override
     public MultipartUploadPartId insertMultipartPart(MultipartUploadPart part) {
         MultipartUploadPartDO dataObject = StoragePersistenceAssembler.toMultipartPartObject(part);
-        dataObject.setId(idGenerator.nextId().value());
         partMapper.insert(dataObject);
         return MultipartUploadPartIdCodec.toDomain(dataObject.getId());
     }
