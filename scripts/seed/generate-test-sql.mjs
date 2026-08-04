@@ -134,20 +134,20 @@ const appendDocumentSql = (lines, document) => {
     "    (" +
       [
         document.id,
-        sqlText(document.title),
-        sqlText(document.summary),
-        sqlText(document.contentFormat),
-        sqlText(document.content),
+        document.title,
+        document.summary,
+        document.contentFormat,
+        document.content,
         document.documentTime,
-        "NULL",
-        sqlText(document.lifecycleStatus),
-        sqlText(document.transitionStatus),
-        "NULL",
+        null,
+        document.lifecycleStatus,
+        document.transitionStatus,
+        null,
         document.version.id,
         document.version.versionNo,
         epochMillis(document.versionedAt),
         epochMillis(document.contentUpdatedAt),
-      ].join(", ") +
+      ].map(sqlValue).join(", ") +
       ")",
     "ON DUPLICATE KEY UPDATE",
     "    `title` = VALUES(`title`),",
@@ -177,12 +177,12 @@ const appendDocumentEventSql = (lines, document) => {
       [
         event.id,
         document.id,
-        sqlText(event.title),
+        event.title,
         event.occurredAt,
-        sqlText(event.occurredLabel),
-        sqlText(event.summary),
+        event.occurredLabel,
+        event.summary,
         event.priority,
-      ].join(", ") +
+      ].map(sqlValue).join(", ") +
       ")",
     "ON DUPLICATE KEY UPDATE",
     "    `document_id` = VALUES(`document_id`),",
@@ -205,14 +205,14 @@ const appendContentVersionSql = (lines, document) => {
     "    (" +
       [
         version.id,
-        sqlText("WANGQI_DOCUMENT"),
+        "WANGQI_DOCUMENT",
         document.id,
         version.versionNo,
         epochMillis(document.versionedAt),
-        sqlText(JSON.stringify(version.snapshot)),
-        sqlText(version.changeType),
-        sqlText(version.changeSummary),
-      ].join(", ") +
+        JSON.stringify(version.snapshot),
+        version.changeType,
+        version.changeSummary,
+      ].map(sqlValue).join(", ") +
       ")",
     "ON DUPLICATE KEY UPDATE",
     "    `version_no` = VALUES(`version_no`),",
