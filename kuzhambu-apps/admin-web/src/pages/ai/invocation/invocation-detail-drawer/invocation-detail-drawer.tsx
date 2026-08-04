@@ -1,6 +1,6 @@
 import { Descriptions } from "antd";
 import { KuzhambuDrawer } from "@/components";
-import type { AiInvocationLogRecord } from "../invocations-types";
+import type { AiInvocationLogRecord } from "@/pages/ai/invocation/invocation-types";
 
 import "./invocation-detail-drawer.css";
 
@@ -24,7 +24,7 @@ interface InvocationDetailDrawerProps {
 export const InvocationDetailDrawer = ({ call, open, onClose }: InvocationDetailDrawerProps) => {
     return (
         <KuzhambuDrawer
-            testId="ai-invocations-invocation-detail-drawer"
+            testId="ai-invocation-invocation-detail-drawer"
             aria-label="AI 调用详情"
             destroyOnHidden
             open={open}
@@ -62,7 +62,7 @@ export const InvocationDetailDrawer = ({ call, open, onClose }: InvocationDetail
                         {call.errorMessage || "-"}
                     </Descriptions.Item>
                     <Descriptions.Item label="警告 JSON">
-                        <pre className="invocations-warnings">
+                        <pre className="invocation-warnings">
                             {formatWarnings(call.warningsJson)}
                         </pre>
                     </Descriptions.Item>

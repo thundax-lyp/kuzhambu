@@ -11,11 +11,11 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { InvocationCallsTab } from "./invocation-calls-tab";
 import { InvocationDetailDrawer } from "./invocation-detail-drawer";
 import { InvocationSummaryTab } from "./invocation-summary-tab";
-import * as service from "./invocations-service";
-import type { AiInvocationLogPageQuery, AiInvocationSummaryQuery } from "./invocations-service";
-import type { AiInvocationLogRecord } from "./invocations-types";
+import * as service from "./invocation-service";
+import type { AiInvocationLogPageQuery, AiInvocationSummaryQuery } from "./invocation-service";
+import type { AiInvocationLogRecord } from "./invocation-types";
 
-import "./invocations-page.css";
+import "./invocation-page.css";
 
 const CAPABILITY_LABELS: Record<string, string> = {
     classics_summary: "古籍摘要",
@@ -53,7 +53,7 @@ const buildSummaryQuery = (values: InvocationSummaryFilterValues): AiInvocationS
     };
 };
 
-export const InvocationsPage = () => {
+export const InvocationPage = () => {
     const { message } = App.useApp();
     const canViewInvocation = hasPermission("ai:invocation:view");
     const [detailInvocationLog, setDetailInvocationLog] = useState<AiInvocationLogRecord | null>(
@@ -68,21 +68,21 @@ export const InvocationsPage = () => {
     });
 
     const invocationCapabilitiesQuery = useQuery({
-        queryKey: ["ai", "invocations", "capabilities"],
+        queryKey: ["ai", "invocation", "capabilities"],
         queryFn: service.listInvocationCapabilities,
         enabled: canViewInvocation,
         retry: false
     });
 
     const invocationSummaryQuery = useQuery({
-        queryKey: ["ai", "invocations", "summary", summaryQuery],
+        queryKey: ["ai", "invocation", "summary", summaryQuery],
         queryFn: () => service.getInvocationSummary(summaryQuery),
         enabled: canViewInvocation,
         retry: false
     });
 
     const invocationLogPageQuery = useQuery({
-        queryKey: ["ai", "invocations", "calls", invocationLogQuery],
+        queryKey: ["ai", "invocation", "calls", invocationLogQuery],
         queryFn: () => service.pageInvocationLogs(invocationLogQuery),
         enabled: canViewInvocation,
         retry: false
@@ -137,13 +137,13 @@ export const InvocationsPage = () => {
     return (
         <>
             <KuzhambuPage
-                className="invocations-page"
+                className="invocation-page"
                 title="调用统计"
                 description="查看调用指标、能力排行、调用记录和详情"
                 actions={
                     <Tooltip title="刷新">
                         <KuzhambuButton
-                            testId="ai-invocations-invocations-refresh-button"
+                            testId="ai-invocation-invocation-refresh-button"
                             icon={<ReloadOutlined />}
                             loading={
                                 invocationSummaryQuery.isFetching ||
@@ -158,7 +158,7 @@ export const InvocationsPage = () => {
                 }
             >
                 <KuzhambuTabs
-                    testId="ai-invocations-invocations-tabs"
+                    testId="ai-invocation-invocation-tabs"
                     items={[
                         {
                             key: "summary",

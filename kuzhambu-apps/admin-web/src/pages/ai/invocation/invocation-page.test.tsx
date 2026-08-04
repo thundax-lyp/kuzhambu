@@ -2,10 +2,10 @@ import { AdminQueryProvider } from "@/query/query-client";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
-import { InvocationsPage } from "./invocations-page";
-import * as service from "./invocations-service";
+import { InvocationPage } from "./invocation-page";
+import * as service from "./invocation-service";
 
-vi.mock("./invocations-service", () => ({
+vi.mock("./invocation-service", () => ({
     getInvocationSummary: vi.fn(),
     listInvocationCapabilities: vi.fn(),
     pageInvocationLogs: vi.fn()
@@ -46,12 +46,12 @@ const renderPage = () =>
     render(
         <App>
             <AdminQueryProvider>
-                <InvocationsPage />
+                <InvocationPage />
             </AdminQueryProvider>
         </App>
     );
 
-describe("InvocationsPage", () => {
+describe("InvocationPage", () => {
     beforeEach(() => {
         replacePermissions(["ai:invocation:view"]);
         vi.mocked(service.listInvocationCapabilities).mockResolvedValue([

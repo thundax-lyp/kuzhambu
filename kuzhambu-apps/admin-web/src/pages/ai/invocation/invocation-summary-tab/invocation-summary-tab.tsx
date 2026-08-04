@@ -10,8 +10,11 @@ import {
     KuzhambuFormItem,
     KuzhambuSelect
 } from "@/components";
-import type { AiInvocationSummaryQuery } from "../invocations-service";
-import type { AiInvocationSummaryRecord, AiTopCapabilityRecord } from "../invocations-types";
+import type { AiInvocationSummaryQuery } from "@/pages/ai/invocation/invocation-service";
+import type {
+    AiInvocationSummaryRecord,
+    AiTopCapabilityRecord
+} from "@/pages/ai/invocation/invocation-types";
 
 import "./invocation-summary-tab.css";
 
@@ -59,9 +62,9 @@ export const InvocationSummaryTab = ({
 
     return (
         <>
-            <KuzhambuCard className="invocations-summary-filter-card">
+            <KuzhambuCard className="invocation-summary-filter-card">
                 <KuzhambuForm
-                    className="invocations-summary-filter-form"
+                    className="invocation-summary-filter-form"
                     form={summaryForm}
                     initialValues={summaryInitialValues}
                 >
@@ -75,7 +78,7 @@ export const InvocationSummaryTab = ({
                     </KuzhambuFormItem>
                     <KuzhambuFormItem label="统计粒度" name="bucketType" layoutSize="small">
                         <KuzhambuSelect
-                            className="invocations-summary-filter-control"
+                            className="invocation-summary-filter-control"
                             options={[
                                 { label: "按天", value: "DAY" },
                                 { label: "按小时", value: "HOUR" }
@@ -85,13 +88,13 @@ export const InvocationSummaryTab = ({
                     <KuzhambuFormItem label="能力" name="capability" layoutSize="small">
                         <KuzhambuSelect
                             allowClear
-                            className="invocations-summary-filter-control"
+                            className="invocation-summary-filter-control"
                             options={capabilityOptions}
                         />
                     </KuzhambuFormItem>
                 </KuzhambuForm>
                 <KuzhambuButton
-                    testId="ai-invocations-invocations-refresh-button-2"
+                    testId="ai-invocation-invocation-refresh-button-2"
                     type="primary"
                     onClick={() => void refreshSummary()}
                 >
@@ -99,7 +102,7 @@ export const InvocationSummaryTab = ({
                 </KuzhambuButton>
             </KuzhambuCard>
 
-            <div className="invocations-metrics">
+            <div className="invocation-metrics">
                 <KuzhambuCard>
                     <Statistic title="调用次数" value={summary?.invocationCount || 0} />
                 </KuzhambuCard>
@@ -117,17 +120,17 @@ export const InvocationSummaryTab = ({
                 </KuzhambuCard>
             </div>
 
-            <KuzhambuCard className="invocations-section-card" title="能力排行">
-                <div aria-label="AI 能力排行" className="invocations-capability-bars">
+            <KuzhambuCard className="invocation-section-card" title="能力排行">
+                <div aria-label="AI 能力排行" className="invocation-capability-bars">
                     {topCapabilities.length > 0 ? (
                         topCapabilities.map((record) => (
-                            <div className="invocations-capability-bar-row" key={record.capability}>
-                                <div className="invocations-capability-bar-label">
+                            <div className="invocation-capability-bar-row" key={record.capability}>
+                                <div className="invocation-capability-bar-label">
                                     {formatCapability(record.capability)}
                                 </div>
-                                <div className="invocations-capability-bar-track">
+                                <div className="invocation-capability-bar-track">
                                     <div
-                                        className="invocations-capability-bar-fill"
+                                        className="invocation-capability-bar-fill"
                                         style={{
                                             width: `${Math.max(
                                                 (record.invocationCount / topCapabilityMaxCount) *
@@ -137,13 +140,13 @@ export const InvocationSummaryTab = ({
                                         }}
                                     />
                                 </div>
-                                <div className="invocations-capability-bar-value">
+                                <div className="invocation-capability-bar-value">
                                     {record.invocationCount}
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <div className="invocations-capability-bar-empty">暂无能力排行</div>
+                        <div className="invocation-capability-bar-empty">暂无能力排行</div>
                     )}
                 </div>
             </KuzhambuCard>

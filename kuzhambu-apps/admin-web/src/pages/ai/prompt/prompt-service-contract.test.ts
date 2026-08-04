@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as service from "./prompts-service";
+import * as service from "./prompt-service";
 
 interface CapturedCall {
     body: unknown;
@@ -51,7 +51,7 @@ const installFetchRecorder = (responseByPath: Map<string, unknown>) => {
     });
 };
 
-describe("prompts service ID contracts", () => {
+describe("prompt service ID contracts", () => {
     beforeEach(() => {
         capturedCalls.length = 0;
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");

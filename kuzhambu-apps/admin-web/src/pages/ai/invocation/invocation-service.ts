@@ -4,7 +4,7 @@ import type {
     AiInvocationLogRecord,
     AiInvocationSummaryRecord,
     AiInvocationCapabilityRecord
-} from "./invocations-types";
+} from "./invocation-types";
 
 export interface AiInvocationSummaryQuery {
     periodStart?: string | null;

@@ -14,8 +14,8 @@ import {
 } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/types/page";
 import type { Page } from "@/types/page";
-import type { AiInvocationLogPageQuery } from "../invocations-service";
-import type { AiInvocationLogRecord } from "../invocations-types";
+import type { AiInvocationLogPageQuery } from "@/pages/ai/invocation/invocation-service";
+import type { AiInvocationLogRecord } from "@/pages/ai/invocation/invocation-types";
 
 import "./invocation-calls-tab.css";
 
@@ -145,7 +145,7 @@ export const InvocationCallsTab = ({
             title: "请求时间",
             dataIndex: "requestedAt",
             key: "requestedAt",
-            className: "invocations-nowrap-column",
+            className: "invocation-nowrap-column",
             render: formatDateTime
         }
     ];
@@ -171,12 +171,12 @@ export const InvocationCallsTab = ({
     };
 
     return (
-        <KuzhambuCard className="invocations-section-card">
-            <KuzhambuForm className="invocations-calls-filter-form" form={callsForm}>
+        <KuzhambuCard className="invocation-section-card">
+            <KuzhambuForm className="invocation-calls-filter-form" form={callsForm}>
                 <KuzhambuFormItem label="状态" name="status" layoutSize="small">
                     <KuzhambuSelect
                         allowClear
-                        className="invocations-calls-filter-control"
+                        className="invocation-calls-filter-control"
                         options={STATUS_OPTIONS}
                     />
                 </KuzhambuFormItem>
@@ -191,16 +191,13 @@ export const InvocationCallsTab = ({
             </KuzhambuForm>
             <KuzhambuSpace>
                 <KuzhambuButton
-                    testId="ai-invocations-invocations-query-button"
+                    testId="ai-invocation-invocation-query-button"
                     type="primary"
                     onClick={() => void searchCalls()}
                 >
                     查询
                 </KuzhambuButton>
-                <KuzhambuButton
-                    testId="ai-invocations-invocations-reset-button"
-                    onClick={resetCalls}
-                >
+                <KuzhambuButton testId="ai-invocation-invocation-reset-button" onClick={resetCalls}>
                     重置
                 </KuzhambuButton>
             </KuzhambuSpace>
@@ -208,7 +205,7 @@ export const InvocationCallsTab = ({
             <Table<AiInvocationLogRecord>
                 aria-label="AI 调用记录"
                 rowKey={readCallId}
-                className="invocations-table"
+                className="invocation-table"
                 columns={invocationLogColumns}
                 dataSource={invocationLogPage?.records || []}
                 loading={loading}

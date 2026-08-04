@@ -5,7 +5,7 @@ import type {
     AiPromptTemplateRecord,
     AiPromptVariableRecord,
     AiPromptVersionRecord
-} from "./prompts-types";
+} from "./prompt-types";
 
 export interface AiPromptTemplateQuery {
     capability?: string | null;

@@ -3,18 +3,18 @@ import type { Key } from "react";
 import { App } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { PromptsPageContent } from "./prompts-page-content";
+import { PromptPageContent } from "./prompt-page-content/prompt-page-content";
 import {
     DEFAULT_PROMPT_FILTERS,
     readCapabilityLabel,
     readPromptDisplayName,
     readTemplateRowKey
-} from "./prompts-page-content-support";
-import type { PromptFilters } from "./prompts-page-content-support";
-import * as service from "./prompts-service";
-import type { AiPromptTemplateQuery } from "./prompts-service";
-import type { AiPromptTemplateRecord } from "./prompts-types";
-import "./prompts-page.css";
+} from "./prompt-page-content-support";
+import type { PromptFilters } from "./prompt-page-content-support";
+import * as service from "./prompt-service";
+import type { AiPromptTemplateQuery } from "./prompt-service";
+import type { AiPromptTemplateRecord } from "./prompt-types";
+import "./prompt-page.css";
 
 const toEnabledQueryValue = (enabled: PromptFilters["enabled"]) => {
     if (enabled === "ENABLED") {
@@ -51,7 +51,7 @@ const variablesToJson = (
     );
 };
 
-export const PromptsPage = () => {
+export const PromptPage = () => {
     const { message: messageApi, modal } = App.useApp();
     const queryClient = useQueryClient();
     const canViewPrompt = hasPermission("ai:prompt:view") || hasPermission("ai:prompt:edit");
@@ -62,19 +62,19 @@ export const PromptsPage = () => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const [editingTemplate, setEditingTemplate] = useState<AiPromptTemplateRecord | null>(null);
     const [promptEditDrawerOpen, setPromptEditDrawerOpen] = useState(false);
-    const hasSelectedPrompts = selectedRowKeys.length > 0;
+    const hasSelectedPrompt = selectedRowKeys.length > 0;
     const hasActiveFilters =
         Boolean(filters.capability) || filters.enabled !== DEFAULT_PROMPT_FILTERS.enabled;
 
     const promptCapabilitiesQuery = useQuery({
-        queryKey: ["ai", "prompts", "capabilities"],
+        queryKey: ["ai", "prompt", "capabilities"],
         queryFn: service.listPromptCapabilities,
         enabled: canViewPrompt,
         retry: false
     });
 
     const promptTemplatePageQuery = useQuery({
-        queryKey: ["ai", "prompts", "templates", query],
+        queryKey: ["ai", "prompt", "templates", query],
         queryFn: () => service.listPromptTemplates(query),
         enabled: canViewPrompt,
         retry: false
@@ -110,7 +110,7 @@ export const PromptsPage = () => {
             });
         },
         onSuccess: async () => {
-            await invalidatePrompts();
+            await invalidatePrompt();
             messageApi.success("提示词状态已更新");
         },
         onError: (error) => {
@@ -142,7 +142,7 @@ export const PromptsPage = () => {
             });
         },
         onSuccess: async () => {
-            await invalidatePrompts();
+            await invalidatePrompt();
             messageApi.success("提示词模板已删除");
         },
         onError: (error) => {
@@ -195,8 +195,8 @@ export const PromptsPage = () => {
         }
     }, [messageApi, promptTemplatePageQuery.error, promptTemplatePageQuery.isError]);
 
-    const invalidatePrompts = async () => {
-        await queryClient.invalidateQueries({ queryKey: ["ai", "prompts"] });
+    const invalidatePrompt = async () => {
+        await queryClient.invalidateQueries({ queryKey: ["ai", "prompt"] });
     };
 
     const changeSearchText = (value: string) => {
@@ -236,7 +236,7 @@ export const PromptsPage = () => {
     const handleSaved = () => {
         setPromptEditDrawerOpen(false);
         setEditingTemplate(null);
-        void invalidatePrompts();
+        void invalidatePrompt();
     };
 
     const changeEnabled = (template: AiPromptTemplateRecord, enabled: boolean) => {
@@ -264,7 +264,7 @@ export const PromptsPage = () => {
     };
 
     const batchChangeEnabled = async (enabled: boolean) => {
-        if (!canEditPrompt || !hasSelectedPrompts) {
+        if (!canEditPrompt || !hasSelectedPrompt) {
             return;
         }
         await Promise.all(
@@ -276,7 +276,7 @@ export const PromptsPage = () => {
     };
 
     const batchDeleteTemplates = () => {
-        if (!canEditPrompt || !hasSelectedPrompts) {
+        if (!canEditPrompt || !hasSelectedPrompt) {
             return;
         }
         modal.confirm({
@@ -295,8 +295,8 @@ export const PromptsPage = () => {
     };
 
     return (
-        <div className="prompts-page-root">
-            <PromptsPageContent
+        <div className="prompt-page-root">
+            <PromptPageContent
                 canEditPrompt={canEditPrompt}
                 capabilityByCode={capabilityByCode}
                 capabilityOptions={capabilityOptions}
@@ -304,7 +304,7 @@ export const PromptsPage = () => {
                 editingTemplate={editingTemplate}
                 filterActive={hasActiveFilters}
                 filters={filters}
-                hasSelectedPrompts={hasSelectedPrompts}
+                hasSelectedPrompt={hasSelectedPrompt}
                 loading={promptTemplatePageQuery.isFetching}
                 promptCapabilitiesLoading={promptCapabilitiesQuery.isFetching}
                 promptEditDrawerOpen={promptEditDrawerOpen}
@@ -324,7 +324,7 @@ export const PromptsPage = () => {
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 onFiltersChange={setFilters}
-                onRefresh={() => void invalidatePrompts()}
+                onRefresh={() => void invalidatePrompt()}
                 onSaved={handleSaved}
                 onSearchChange={changeSearchText}
                 onSelectedRowKeysChange={setSelectedRowKeys}

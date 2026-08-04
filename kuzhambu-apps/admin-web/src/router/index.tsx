@@ -1,9 +1,9 @@
 import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "../layouts/admin-layout";
-import { InvocationsPage } from "../pages/ai/invocations/invocations-page";
+import { InvocationPage } from "../pages/ai/invocation/invocation-page";
 import { AiModelPage } from "../pages/ai/ai-model/ai-model-page";
 import { BusinessConfigPage } from "../pages/ai/business-config/business-config-page";
-import { PromptsPage } from "../pages/ai/prompts/prompts-page";
+import { PromptPage } from "../pages/ai/prompt/prompt-page";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
 import { QaPage } from "../pages/discovery/qa/qa-page";
@@ -101,7 +101,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "ai/prompts",
-                            element: <PromptsPage />
+                            element: <PromptPage />
                         },
                         {
                             path: "ai/business-configs",
@@ -109,7 +109,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "ai/invocations",
-                            element: <InvocationsPage />
+                            element: <InvocationPage />
                         },
                         {
                             path: "classics/sancai",

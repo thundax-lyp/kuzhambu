@@ -17,15 +17,21 @@ import {
     type KuzhambuTableProps
 } from "@/components";
 
-import type { AiPromptCapabilityRecord, AiPromptTemplateRecord } from "./prompts-types";
+import type {
+    AiPromptCapabilityRecord,
+    AiPromptTemplateRecord
+} from "@/pages/ai/prompt/prompt-types";
 import {
     readCapabilityDomainTag,
     readCapabilityLabel,
     readPromptDisplayName,
     readTemplateRowKey
-} from "./prompts-page-content-support";
-import type { PromptCapabilityOption, PromptFilters } from "./prompts-page-content-support";
-import { PromptEditDrawer } from "./prompt-edit-drawer";
+} from "@/pages/ai/prompt/prompt-page-content-support";
+import type {
+    PromptCapabilityOption,
+    PromptFilters
+} from "@/pages/ai/prompt/prompt-page-content-support";
+import { PromptEditDrawer } from "@/pages/ai/prompt/prompt-edit-drawer/prompt-edit-drawer";
 
 const { Text } = Typography;
 
@@ -51,7 +57,7 @@ const formatDate = (value?: string | null) => {
     return `${date.getFullYear()}-${month}-${day}`;
 };
 
-interface PromptsPageContentProps {
+interface PromptPageContentProps {
     canEditPrompt: boolean;
     capabilityByCode: Map<string, AiPromptCapabilityRecord>;
     capabilityOptions: PromptCapabilityOption[];
@@ -59,7 +65,7 @@ interface PromptsPageContentProps {
     editingTemplate: AiPromptTemplateRecord | null;
     filterActive: boolean;
     filters: PromptFilters;
-    hasSelectedPrompts: boolean;
+    hasSelectedPrompt: boolean;
     loading: boolean;
     promptCapabilitiesLoading: boolean;
     promptEditDrawerOpen: boolean;
@@ -85,7 +91,7 @@ interface PromptsPageContentProps {
     onSelectedRowKeysChange: (selectedRowKeys: Key[]) => void;
 }
 
-export const PromptsPageContent = ({
+export const PromptPageContent = ({
     canEditPrompt,
     capabilityByCode,
     capabilityOptions,
@@ -93,7 +99,7 @@ export const PromptsPageContent = ({
     editingTemplate,
     filterActive,
     filters,
-    hasSelectedPrompts,
+    hasSelectedPrompt,
     loading,
     promptCapabilitiesLoading,
     promptEditDrawerOpen,
@@ -117,7 +123,7 @@ export const PromptsPageContent = ({
     onSaved,
     onSearchChange,
     onSelectedRowKeysChange
-}: PromptsPageContentProps) => {
+}: PromptPageContentProps) => {
     const columns: KuzhambuTableProps<AiPromptTemplateRecord>["columns"] = [
         {
             title: "模板名称",
@@ -141,7 +147,7 @@ export const PromptsPageContent = ({
             render: (capability?: string | null) => {
                 const domainTag = readCapabilityDomainTag(capability);
                 return (
-                    <span className="prompts-capability-tags">
+                    <span className="prompt-capability-tags">
                         <KuzhambuTag type={domainTag.type}>{domainTag.label}</KuzhambuTag>
                         <KuzhambuTag type="neutral">
                             {readCapabilityLabel(
@@ -220,7 +226,7 @@ export const PromptsPageContent = ({
     return (
         <>
             <KuzhambuListPage<AiPromptTemplateRecord>
-                pageClassName="prompts-page"
+                pageClassName="prompt-page"
                 title="提示词管理"
                 description="维护 AI 提示词模板、变量、版本对比和回滚。"
                 subjectName="提示词"
@@ -277,28 +283,28 @@ export const PromptsPageContent = ({
                 batchActions={
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
-                            testId="ai-prompts-prompts-enable-button"
+                            testId="ai-prompt-prompt-enable-button"
                             icon={<CheckCircleOutlined />}
-                            disabled={!canEditPrompt || !hasSelectedPrompts}
+                            disabled={!canEditPrompt || !hasSelectedPrompt}
                             loading={updatePromptStatusPending}
                             onClick={onBatchEnable}
                         >
                             启用
                         </KuzhambuButton>
                         <KuzhambuButton
-                            testId="ai-prompts-prompts-disable-button"
+                            testId="ai-prompt-prompt-disable-button"
                             icon={<StopOutlined />}
-                            disabled={!canEditPrompt || !hasSelectedPrompts}
+                            disabled={!canEditPrompt || !hasSelectedPrompt}
                             loading={updatePromptStatusPending}
                             onClick={onBatchDisable}
                         >
                             禁用
                         </KuzhambuButton>
                         <KuzhambuButton
-                            testId="ai-prompts-prompts-batch-delete-button"
+                            testId="ai-prompt-prompt-batch-delete-button"
                             danger
                             icon={<DeleteOutlined />}
-                            disabled={!canEditPrompt || !hasSelectedPrompts}
+                            disabled={!canEditPrompt || !hasSelectedPrompt}
                             loading={deletePending}
                             onClick={onBatchDelete}
                         >
@@ -309,7 +315,7 @@ export const PromptsPageContent = ({
                 pageActions={
                     <>
                         <KuzhambuButton
-                            testId="ai-prompts-prompts-refresh-button"
+                            testId="ai-prompt-prompt-refresh-button"
                             icon={<ReloadOutlined />}
                             loading={loading}
                             onClick={onRefresh}
@@ -317,7 +323,7 @@ export const PromptsPageContent = ({
                             刷新
                         </KuzhambuButton>
                         <KuzhambuButton
-                            testId="ai-prompts-prompts-create-button"
+                            testId="ai-prompt-prompt-create-button"
                             type="primary"
                             icon={<PlusOutlined />}
                             disabled={!canEditPrompt}
@@ -328,7 +334,7 @@ export const PromptsPageContent = ({
                     </>
                 }
                 rowKey={readTemplateRowKey}
-                className="prompts-table"
+                className="prompt-table"
                 columns={columns}
                 dataSource={records}
                 loading={loading}

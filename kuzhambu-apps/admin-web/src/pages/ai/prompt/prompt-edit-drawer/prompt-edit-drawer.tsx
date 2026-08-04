@@ -30,16 +30,16 @@ import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/us
 import {
     findUnsupportedPromptVariableNames,
     getPromptCapabilityVariables
-} from "./prompt-capability-variables";
-import type { PromptCapabilityVariableDefinition } from "./prompt-capability-variables";
-import type { AiPromptTemplateChangeCommand } from "./prompts-service";
-import * as service from "./prompts-service";
+} from "@/pages/ai/prompt/prompt-capability-variables";
+import type { PromptCapabilityVariableDefinition } from "@/pages/ai/prompt/prompt-capability-variables";
+import type { AiPromptTemplateChangeCommand } from "@/pages/ai/prompt/prompt-service";
+import * as service from "@/pages/ai/prompt/prompt-service";
 
 import type {
     AiPromptTemplateRecord,
     AiPromptVariableRecord,
     AiPromptVersionRecord
-} from "./prompts-types";
+} from "@/pages/ai/prompt/prompt-types";
 
 type PromptFormValues = Omit<AiPromptTemplateChangeCommand, "variables" | "enabled"> & {
     outputStructure?: PromptOutputStructure | null;
@@ -305,7 +305,7 @@ const PromptMarkdownEditor = ({
                         <div className="prompt-markdown-editor-actions">
                             <KuzhambuSpaceCompact>
                                 <KuzhambuButton
-                                    testId="ai-prompts-prompts-add-message-button"
+                                    testId="ai-prompt-prompt-add-message-button"
                                     icon={<PlusOutlined />}
                                     onClick={() => {
                                         const nextMessages = [...messages];
@@ -319,7 +319,7 @@ const PromptMarkdownEditor = ({
                                     添加消息
                                 </KuzhambuButton>
                                 <KuzhambuButton
-                                    testId="ai-prompts-prompts-remove-message-button"
+                                    testId="ai-prompt-prompt-remove-message-button"
                                     icon={<DeleteOutlined />}
                                     disabled={messages.length <= 1}
                                     onClick={() => {
@@ -363,21 +363,21 @@ export const PromptEditDrawer = ({
     const templateId = template?.id || null;
 
     const currentVersionQuery = useQuery({
-        queryKey: ["ai", "prompts", "current-version", templateId],
+        queryKey: ["ai", "prompt", "current-version", templateId],
         queryFn: () => service.getCurrentPromptVersion(templateId || ""),
         enabled: open && Boolean(templateId),
         retry: false
     });
 
     const versionsQuery = useQuery({
-        queryKey: ["ai", "prompts", "versions", templateId],
+        queryKey: ["ai", "prompt", "versions", templateId],
         queryFn: () => service.listPromptVersions(templateId || ""),
         enabled: open && Boolean(templateId),
         retry: false
     });
 
     const variablesQuery = useQuery({
-        queryKey: ["ai", "prompts", "variables", templateId],
+        queryKey: ["ai", "prompt", "variables", templateId],
         queryFn: () => service.listPromptVariables(templateId || ""),
         enabled: open && Boolean(templateId),
         retry: false
@@ -447,7 +447,7 @@ export const PromptEditDrawer = ({
     const changeMutation = useMutation({
         mutationFn: service.changePromptTemplate,
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["ai", "prompts"] });
+            await queryClient.invalidateQueries({ queryKey: ["ai", "prompt"] });
             message.success("提示词模板已保存");
             onSaved();
         },
@@ -477,7 +477,7 @@ export const PromptEditDrawer = ({
     const rollbackMutation = useMutation({
         mutationFn: service.changePromptVersionRollback,
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["ai", "prompts"] });
+            await queryClient.invalidateQueries({ queryKey: ["ai", "prompt"] });
             message.success("提示词版本已回滚");
         },
         onError: (error) => {
@@ -626,7 +626,7 @@ export const PromptEditDrawer = ({
                         text: "查看",
                         ariaLabel: `查看版本 ${record.versionNo ?? "-"}`,
                         icon: <EyeOutlined />,
-                        testId: "ai-prompts-prompts-view-button",
+                        testId: "ai-prompt-prompt-view-button",
                         onClick: () => setViewVersion(record)
                     },
                     {
@@ -635,7 +635,7 @@ export const PromptEditDrawer = ({
                         ariaLabel: `对比版本 ${record.versionNo ?? "-"}`,
                         disabled: !template?.currentVersionNo,
                         icon: <BranchesOutlined />,
-                        testId: "ai-prompts-prompts-compare-button",
+                        testId: "ai-prompt-prompt-compare-button",
                         onClick: () => void compareWithCurrent(record)
                     },
                     {
@@ -644,7 +644,7 @@ export const PromptEditDrawer = ({
                         ariaLabel: `回滚版本 ${record.versionNo ?? "-"}`,
                         disabled: !canEdit || current,
                         icon: <RetweetOutlined />,
-                        testId: "ai-prompts-prompts-rollback-button",
+                        testId: "ai-prompt-prompt-rollback-button",
                         type: "warning",
                         onClick: () => confirmRollbackVersion(record)
                     }
@@ -656,16 +656,16 @@ export const PromptEditDrawer = ({
     return (
         <>
             <KuzhambuDrawer
-                testId="ai-prompts-prompt-editor-1-drawer"
+                testId="ai-prompt-prompt-editor-1-drawer"
                 className="prompt-edit-drawer"
                 open={open}
                 title={template ? "编辑提示词" : "新建提示词"}
                 size="large"
                 onClose={closeDrawer}
                 footerActions={[
-                    { testId: "ai-prompts-prompts-cancel-button", title: "取消", action: onClose },
+                    { testId: "ai-prompt-prompt-cancel-button", title: "取消", action: onClose },
                     {
-                        testId: "ai-prompts-prompts-save-new-version-button",
+                        testId: "ai-prompt-prompt-save-new-version-button",
                         title: template ? "保存新版本" : "创建模板",
                         type: "primary",
                         disabled: !canEdit,
@@ -678,7 +678,7 @@ export const PromptEditDrawer = ({
                     form={form}
                     colon={false}
                     component="div"
-                    className="prompts-editor-form"
+                    className="prompt-editor-form"
                 >
                     <KuzhambuFormHiddenItem name="id">
                         <Input />
@@ -687,7 +687,7 @@ export const PromptEditDrawer = ({
                         label="模板名称"
                         name="name"
                         layoutSize="middle"
-                        className="prompts-editor-item-compact"
+                        className="prompt-editor-item-compact"
                         rules={[{ required: true, message: "请输入模板名称" }]}
                     >
                         <Input />
@@ -696,7 +696,7 @@ export const PromptEditDrawer = ({
                         label="能力"
                         name="capability"
                         layoutSize="middle"
-                        className="prompts-editor-item-compact"
+                        className="prompt-editor-item-compact"
                         rules={[{ required: true, message: "请选择能力" }]}
                     >
                         <KuzhambuSelect
@@ -708,10 +708,10 @@ export const PromptEditDrawer = ({
                     <KuzhambuFormItem
                         label="变量"
                         layoutSize="middle"
-                        className="prompts-editor-item-compact"
+                        className="prompt-editor-item-compact"
                     >
                         <KuzhambuButton
-                            testId="ai-prompts-prompts-view-variables-button"
+                            testId="ai-prompt-prompt-view-variables-button"
                             disabled={allowedVariableNames.length === 0}
                             onClick={() => setVariableModalOpen(true)}
                         >
@@ -723,7 +723,7 @@ export const PromptEditDrawer = ({
                         name="status"
                         layoutSize="middle"
                         valuePropName="checked"
-                        className="prompts-editor-item-status"
+                        className="prompt-editor-item-status"
                     >
                         <KuzhambuSwitch
                             checkedChildren="启用"
@@ -735,7 +735,7 @@ export const PromptEditDrawer = ({
                         label="说明"
                         name="description"
                         layoutSize="large"
-                        className="prompts-editor-item-full prompts-editor-item-top"
+                        className="prompt-editor-item-full prompt-editor-item-top"
                     >
                         <Input.TextArea rows={2} />
                     </KuzhambuFormItem>
@@ -743,7 +743,7 @@ export const PromptEditDrawer = ({
                         label="正文"
                         name="messageTemplatesJson"
                         layoutSize="large"
-                        className="prompts-editor-item-top"
+                        className="prompt-editor-item-top"
                         rules={[
                             { required: true, message: "请输入正文" },
                             { validator: (_, value) => assertJsonText(value, EMPTY_JSON_ARRAY) }
@@ -763,7 +763,7 @@ export const PromptEditDrawer = ({
                         label="输出格式"
                         name="outputStructure"
                         layoutSize="small"
-                        className="prompts-editor-item-compact"
+                        className="prompt-editor-item-compact"
                     >
                         <KuzhambuSelect
                             aria-label="输出格式"
@@ -794,18 +794,18 @@ export const PromptEditDrawer = ({
                         label="变更说明"
                         name="changeSummary"
                         layoutSize="middle"
-                        className="prompts-editor-item-wide"
+                        className="prompt-editor-item-wide"
                     >
                         <Input />
                     </KuzhambuFormItem>
                     <KuzhambuFormItem
                         label="辅助操作"
                         layoutSize="large"
-                        className="prompts-editor-item-wide"
+                        className="prompt-editor-item-wide"
                     >
                         <KuzhambuSpace wrap>
                             <KuzhambuButton
-                                testId="ai-prompts-prompts-validate-variables-button"
+                                testId="ai-prompt-prompt-validate-variables-button"
                                 icon={<CheckCircleOutlined />}
                                 disabled={!currentTemplateId}
                                 loading={validateMutation.isPending}
@@ -817,7 +817,7 @@ export const PromptEditDrawer = ({
                     </KuzhambuFormItem>
                 </KuzhambuForm>
                 {template ? (
-                    <div className="prompts-version-section">
+                    <div className="prompt-version-section">
                         <Typography.Title level={5}>版本</Typography.Title>
                         <KuzhambuTable<AiPromptVersionRecord>
                             ariaLabel="提示词版本列表"
@@ -835,7 +835,7 @@ export const PromptEditDrawer = ({
             </KuzhambuDrawer>
 
             <KuzhambuModal
-                testId="ai-prompts-prompt-variables-modal"
+                testId="ai-prompt-prompt-variables-modal"
                 open={variableModalOpen}
                 title="能力变量"
                 footer={null}
@@ -853,7 +853,7 @@ export const PromptEditDrawer = ({
             </KuzhambuModal>
 
             <KuzhambuDrawer
-                testId="ai-prompts-prompt-editor-2-drawer"
+                testId="ai-prompt-prompt-editor-2-drawer"
                 open={Boolean(viewVersion)}
                 title={viewVersion ? versionTitle(viewVersion) : "版本详情"}
                 size="large"
@@ -863,13 +863,13 @@ export const PromptEditDrawer = ({
             </KuzhambuDrawer>
 
             <KuzhambuDrawer
-                testId="ai-prompts-prompt-editor-3-drawer"
+                testId="ai-prompt-prompt-editor-3-drawer"
                 open={compareVersions.length > 0}
                 title="版本对比"
                 size="large"
                 onClose={() => setCompareVersions([])}
             >
-                <div className="prompts-compare-grid">
+                <div className="prompt-compare-grid">
                     {compareVersions.map((version) => (
                         <VersionDetail key={version.versionNo} version={version} />
                     ))}
@@ -880,7 +880,7 @@ export const PromptEditDrawer = ({
 };
 
 const VersionDetail = ({ version }: { version: AiPromptVersionRecord }) => (
-    <div className="prompts-version-detail">
+    <div className="prompt-version-detail">
         <Typography.Title level={5}>{versionTitle(version)}</Typography.Title>
         <Typography.Text strong>消息模板 JSON</Typography.Text>
         <pre>{formatJsonText(version.messageTemplatesJson, EMPTY_JSON_ARRAY)}</pre>

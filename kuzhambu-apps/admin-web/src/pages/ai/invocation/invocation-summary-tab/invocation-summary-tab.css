@@ -1,36 +1,36 @@
-.invocations-summary-filter-card {
+.invocation-summary-filter-card {
     margin-bottom: 16px;
 }
 
-.invocations-summary-filter-form {
+.invocation-summary-filter-form {
     row-gap: 12px;
 }
 
-.invocations-summary-filter-control {
+.invocation-summary-filter-control {
     min-width: 160px;
 }
 
-.invocations-metrics {
+.invocation-metrics {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
     margin-bottom: 16px;
 }
 
-.invocations-capability-bars {
+.invocation-capability-bars {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.invocations-capability-bar-row {
+.invocation-capability-bar-row {
     display: grid;
     grid-template-columns: minmax(120px, 220px) minmax(160px, 1fr) 48px;
     align-items: center;
     gap: 12px;
 }
 
-.invocations-capability-bar-label {
+.invocation-capability-bar-label {
     overflow: hidden;
     color: #1f1f1f;
     font-size: 14px;
@@ -38,47 +38,47 @@
     white-space: nowrap;
 }
 
-.invocations-capability-bar-track {
+.invocation-capability-bar-track {
     height: 12px;
     overflow: hidden;
     border-radius: 999px;
     background: #f0f0f0;
 }
 
-.invocations-capability-bar-fill {
+.invocation-capability-bar-fill {
     height: 100%;
     border-radius: inherit;
     background: #1677ff;
 }
 
-.invocations-capability-bar-value {
+.invocation-capability-bar-value {
     color: #595959;
     font-variant-numeric: tabular-nums;
     text-align: right;
 }
 
-.invocations-capability-bar-empty {
+.invocation-capability-bar-empty {
     padding: 20px 0;
     color: #8c8c8c;
     text-align: center;
 }
 
 @media (max-width: 1200px) {
-    .invocations-metrics {
+    .invocation-metrics {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 760px) {
-    .invocations-metrics {
+    .invocation-metrics {
         grid-template-columns: 1fr;
     }
 
-    .invocations-capability-bar-row {
+    .invocation-capability-bar-row {
         grid-template-columns: 1fr 48px;
     }
 
-    .invocations-capability-bar-track {
+    .invocation-capability-bar-track {
         grid-column: 1 / -1;
         grid-row: 2;
     }
