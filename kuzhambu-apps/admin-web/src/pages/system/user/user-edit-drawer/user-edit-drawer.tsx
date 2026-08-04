@@ -9,7 +9,7 @@ import type {
 } from "@/pages/system/user/user-types";
 import type { CurrentUserRecord } from "@/service/current-user-types";
 import type { OptionsRecord } from "@/types/options";
-import type { UserFormValues } from "./user-form-values";
+import type { UserFormValues } from "./user-edit-drawer-form-values";
 import { UserAvatarField } from "./user-avatar-field";
 import "./user-edit-drawer.css";
 import {

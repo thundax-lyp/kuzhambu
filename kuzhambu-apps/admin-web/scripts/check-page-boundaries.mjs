@@ -4,9 +4,8 @@ import { join, relative, resolve, sep } from "node:path";
 import process from "node:process";
 
 const pagesRoot = resolve(process.argv[2] ?? "src/pages");
-
-// These domains still contain a components bucket or root-level private component files.
-const LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS = new Set(["system/user"]);
+const SHARED_PAGE_DOMAIN_NAMES = new Set(["common"]);
+const SINGULAR_DOMAIN_SUFFIX_EXEMPTIONS = new Set(["status"]);
 
 const normalizePath = (path) => path.split(sep).join("/");
 const isDirectory = (path) => statSync(path).isDirectory();
@@ -15,6 +14,34 @@ const readDirectories = (path) =>
         .map((name) => join(path, name))
         .filter(isDirectory);
 const errors = [];
+
+const validateComponentDirectory = (componentPath, domainKey, relativeComponentPath) => {
+    const componentName = relativeComponentPath.split("/").at(-1);
+    const componentEntries = readdirSync(componentPath);
+
+    if (!componentEntries.includes(`${componentName}.tsx`)) {
+        errors.push(
+            `ADMIN_WEB_PATH_PAGE_COMPONENT_DIRECTORY: ${domainKey}/${relativeComponentPath} must contain its entry component ${componentName}.tsx.`
+        );
+    }
+    if (!componentEntries.includes("index.ts")) {
+        errors.push(
+            `ADMIN_WEB_PATH_PAGE_COMPONENT_DIRECTORY: ${domainKey}/${relativeComponentPath} must contain index.ts.`
+        );
+    }
+
+    for (const childPath of readDirectories(componentPath)) {
+        const childName = relative(componentPath, childPath);
+        if (childName === "hooks") {
+            continue;
+        }
+        validateComponentDirectory(
+            childPath,
+            domainKey,
+            normalizePath(join(relativeComponentPath, childName))
+        );
+    }
+};
 
 for (const modulePath of readDirectories(pagesRoot)) {
     for (const domainPath of readDirectories(modulePath)) {
@@ -27,7 +54,7 @@ for (const modulePath of readDirectories(pagesRoot)) {
             (entry) => entry.endsWith("-page.tsx") && !entry.endsWith("-page.test.tsx")
         );
 
-        if (pageEntries.length === 0) {
+        if (SHARED_PAGE_DOMAIN_NAMES.has(domainName)) {
             continue;
         }
 
@@ -37,14 +64,10 @@ for (const modulePath of readDirectories(pagesRoot)) {
             );
         }
 
-        if (domainName.endsWith("s")) {
+        if (domainName.endsWith("s") && !SINGULAR_DOMAIN_SUFFIX_EXEMPTIONS.has(domainName)) {
             errors.push(
                 `ADMIN_WEB_PATH_PAGE_DOMAIN_SINGULAR: ${domainKey} must use a singular page-domain name.`
             );
-        }
-
-        if (LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS.has(domainKey)) {
-            continue;
         }
 
         if (domainEntries.includes("components")) {
@@ -65,15 +88,8 @@ for (const modulePath of readDirectories(pagesRoot)) {
                 );
             }
 
-            if (
-                isDirectory(entryPath) &&
-                entry !== "hooks" &&
-                entry !== "components" &&
-                !readdirSync(entryPath).includes(`${entry}.tsx`)
-            ) {
-                errors.push(
-                    `ADMIN_WEB_PATH_PAGE_COMPONENT_DIRECTORY: ${domainKey}/${entry} must contain its entry component ${entry}.tsx.`
-                );
+            if (isDirectory(entryPath) && entry !== "hooks" && entry !== "components") {
+                validateComponentDirectory(entryPath, domainKey, entry);
             }
         }
     }

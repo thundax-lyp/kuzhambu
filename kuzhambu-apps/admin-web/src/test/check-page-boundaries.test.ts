@@ -53,4 +53,50 @@ describe("check-page-boundaries", () => {
             rmSync(fixtureRoot, { recursive: true, force: true });
         }
     });
+
+    it("rejects a non-shared domain without a page entry", () => {
+        const fixtureRoot = createFixture();
+        try {
+            const domainPath = join(fixtureRoot, "demo", "article");
+            mkdirSync(domainPath, { recursive: true });
+            writeFileSync(join(domainPath, "article.tsx"), "export {};\n");
+
+            expect(runGate(fixtureRoot).output).toContain("ADMIN_WEB_PATH_PAGE_SHAPE");
+        } finally {
+            rmSync(fixtureRoot, { recursive: true, force: true });
+        }
+    });
+
+    it("allows an explicitly registered singular domain ending in s", () => {
+        const fixtureRoot = createFixture();
+        try {
+            const domainPath = join(fixtureRoot, "demo", "status");
+            mkdirSync(domainPath, { recursive: true });
+            writeFileSync(join(domainPath, "status-page.tsx"), "export {};\n");
+
+            expect(runGate(fixtureRoot)).toEqual({ exitCode: 0, output: "" });
+        } finally {
+            rmSync(fixtureRoot, { recursive: true, force: true });
+        }
+    });
+
+    it("rejects a malformed nested child component", () => {
+        const fixtureRoot = createFixture();
+        try {
+            const domainPath = join(fixtureRoot, "demo", "article");
+            const childPath = join(domainPath, "article-panel", "article-action");
+            mkdirSync(childPath, { recursive: true });
+            writeFileSync(join(domainPath, "article-page.tsx"), "export {};\n");
+            writeFileSync(join(domainPath, "article-panel", "article-panel.tsx"), "export {};\n");
+            writeFileSync(join(domainPath, "article-panel", "index.ts"), "export {};\n");
+            writeFileSync(join(childPath, "wrong.tsx"), "export {};\n");
+
+            const result = runGate(fixtureRoot);
+            expect(result.output).toContain("article-action.tsx");
+            expect(result.output).toContain("article-panel/article-action");
+            expect(result.output).toContain("index.ts");
+        } finally {
+            rmSync(fixtureRoot, { recursive: true, force: true });
+        }
+    });
 });

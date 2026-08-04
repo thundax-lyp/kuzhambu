@@ -9,8 +9,8 @@ import {
 } from "@/components";
 
 import type { CurrentUserRecord } from "@/service/current-user-types";
-import type { UserRecord } from "./user-types";
-import { UserAvatar } from "./user-avatar";
+import type { UserRecord } from "../user-types";
+import { UserAvatar } from "../user-avatar";
 
 const { Text } = Typography;
 
