@@ -16,6 +16,8 @@ FASTGPT_COMPOSE_OVERRIDE="${FASTGPT_SMOKE_COMPOSE_OVERRIDE:-/tmp/kuzhambu-fastgp
 BUILD_IMAGES="${KUZHAMBU_SMOKE_BUILD_IMAGES:-}"
 LOAD_IMAGES="${KUZHAMBU_SMOKE_LOAD_IMAGES:-}"
 IMAGE_FILES_DIR="${KUZHAMBU_IMAGE_FILES_DIR:-}"
+SMOKE_MYSQL_PORT="${KUZHAMBU_SMOKE_MYSQL_PORT:-33306}"
+SEED_ENV_FILE="${KUZHAMBU_SMOKE_SEED_ENV_FILE:-/tmp/kuzhambu-smoke-seed.env}"
 
 if [[ ! -f "${KUZHAMBU_ENV_FILE}" ]]; then
     echo "Missing Kuzhambu env file: ${KUZHAMBU_ENV_FILE}" >&2
@@ -28,7 +30,7 @@ if [[ ! -f "${FASTGPT_ENV_FILE}" ]]; then
 fi
 
 step() {
-    echo "[docker-full-smoke] $*"
+    echo "[full-smoke] $*"
 }
 
 compose() {
@@ -117,24 +119,35 @@ wait_elasticsearch() {
     return 1
 }
 
-load_mysql_sql() {
-    local sql_file="$1"
-    local root_password
-    local database
-    root_password="$(env_value "${KUZHAMBU_ENV_FILE}" MYSQL_ROOT_PASSWORD kuzhambu)"
-    database="$(env_value "${KUZHAMBU_ENV_FILE}" MYSQL_DATABASE kuzhambu)"
-    compose exec -T mysql mysql \
-        -uroot "-p${root_password}" \
-        "${database}" < "${sql_file}"
-}
-
 write_kuzhambu_override() {
     cat > "${COMPOSE_OVERRIDE}" <<YAML
+services:
+  mysql:
+    ports:
+      - "127.0.0.1:${SMOKE_MYSQL_PORT}:3306"
+
 networks:
   default:
     name: ${NETWORK_NAME}
     external: true
 YAML
+}
+
+write_seed_env() {
+    local database
+    local username
+    local password
+    database="$(env_value "${KUZHAMBU_ENV_FILE}" MYSQL_DATABASE kuzhambu)"
+    username="$(env_value "${KUZHAMBU_ENV_FILE}" MYSQL_USERNAME kuzhambu)"
+    password="$(env_value "${KUZHAMBU_ENV_FILE}" MYSQL_PASSWORD kuzhambu)"
+    cp "${KUZHAMBU_ENV_FILE}" "${SEED_ENV_FILE}"
+    cat >> "${SEED_ENV_FILE}" <<ENV
+
+KUZHAMBU_DB_DRIVER=com.mysql.cj.jdbc.Driver
+KUZHAMBU_DB_URL=jdbc:mysql://127.0.0.1:${SMOKE_MYSQL_PORT}/${database}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+KUZHAMBU_DB_USERNAME=${username}
+KUZHAMBU_DB_PASSWORD=${password}
+ENV
 }
 
 write_fastgpt_override() {
@@ -162,7 +175,7 @@ touch "${FASTGPT_DIR}/generated/kuzhambu-fastgpt.env"
 
 if [[ "${LOAD_IMAGES}" == "true" ]]; then
     step "loading Kuzhambu image archives"
-    "${SCRIPT_DIR}/docker-load-image-files.sh" "${IMAGE_FILES_DIR}"
+    "${SCRIPT_DIR}/load-image-files.sh" "${IMAGE_FILES_DIR}"
 else
     step "skipping Kuzhambu image archive loading"
 fi
@@ -177,7 +190,7 @@ FASTGPT_COMPOSE_PROJECT_NAME="${FASTGPT_PROJECT}" \
 
 step "smoking FastGPT"
 FASTGPT_COMPOSE_PROJECT_NAME="${FASTGPT_PROJECT}" \
-    "${SCRIPT_DIR}/docker-fastgpt-smoke.sh" "${FASTGPT_ENV_FILE}" \
+    "${SCRIPT_DIR}/fastgpt-smoke.sh" "${FASTGPT_ENV_FILE}" \
     "${FASTGPT_DIR}/generated/kuzhambu-fastgpt.env" \
     "${FASTGPT_COMPOSE_OVERRIDE}"
 
@@ -193,15 +206,12 @@ compose up -d mysql redis elasticsearch rocketmq-namesrv rocketmq-broker workers
 wait_mysql
 wait_elasticsearch
 
-step "loading database schema"
-for sql_file in "${REPO_ROOT}"/db/schema/*.sql; do
-    load_mysql_sql "${sql_file}"
-done
-
-step "loading seed data"
-for sql_file in "${REPO_ROOT}"/db/data/*.sql; do
-    load_mysql_sql "${sql_file}"
-done
+step "importing database schema and seed data"
+write_seed_env
+"${REPO_ROOT}/scripts/import-seed-data.sh" \
+    --env "${SEED_ENV_FILE}" \
+    --rebuild \
+    --include-test
 
 step "starting Kuzhambu application"
 compose up -d admin-starter portal-starter admin-web portal-web nginx

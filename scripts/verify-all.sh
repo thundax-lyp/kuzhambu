@@ -38,6 +38,21 @@ if find "${ROOT_DIR}/docs" -name '*.md' -print | grep -q ' '; then
     exit 1
 fi
 
+echo "Verify repository scripts"
+while IFS= read -r script_path; do
+    relative_path="${script_path#"${ROOT_DIR}/"}"
+    case "${relative_path}" in
+        scripts/README.md|scripts/package.json|scripts/pnpm-lock.yaml|*.sh|*.mjs)
+            ;;
+        *)
+            echo "Scripts directory only allows .mjs/.sh script files: ${relative_path}" >&2
+            exit 1
+            ;;
+    esac
+done < <(find "${ROOT_DIR}/scripts" \
+    -path "${ROOT_DIR}/scripts/node_modules" -prune -o \
+    -type f -print)
+
 echo "Verify backend Maven skeleton"
 "${ROOT_DIR}/scripts/verify-classics.sh"
 JAVA_SPEC_VERSION="$(java -XshowSettings:properties -version 2>&1 | awk -F '= ' '/java.specification.version/ {print $2; exit}')"

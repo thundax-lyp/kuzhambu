@@ -25,7 +25,7 @@
 
 ## Validation Evidence
 
-- 2026-07-09：`node scripts/generate-system-data-sql.ts --check` 通过。
+- 2026-07-09：`node scripts/seed/generate-system-sql.mjs --check` 通过。
 - 2026-07-09：`cd kuzhambu-servers && mvn spotless:check checkstyle:check test` 通过。
 - 2026-07-09：`cd kuzhambu-apps && pnpm run format:check && pnpm run lint && pnpm run build && pnpm run test` 通过。
 - 2026-07-09：`cd kuzhambu-workers && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check . && .venv/bin/python -m pytest -p no:capture` 通过。

@@ -51,7 +51,7 @@ foundation-rocketmq-5.4.0.tar
 From the repository root on a deploy host:
 
 ```sh
-scripts/smoke/docker-load-image-files.sh deploy/image-files
+scripts/smoke/load-image-files.sh deploy/image-files
 ```
 
 The script fails if the directory is missing or contains no `*.tar` archives.

@@ -1,0 +1,13 @@
+{
+  "name": "kuzhambu-scripts",
+  "version": "0.0.1-dev",
+  "private": true,
+  "packageManager": "pnpm@10.7.0",
+  "type": "module",
+  "scripts": {
+    "import:seed": "bash import-seed-data.sh"
+  },
+  "dependencies": {
+    "mysql2": "3.23.2"
+  }
+}

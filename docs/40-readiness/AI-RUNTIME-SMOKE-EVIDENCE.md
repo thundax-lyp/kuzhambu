@@ -38,7 +38,7 @@ Evidence files: `/tmp/kz-ai-acceptance-local/01-primary-before.json`, `/tmp/kz-a
 
 | Field | Evidence |
 | --- | --- |
-| `serviceId` | `900001` |
+| `serviceId` | `legacy-high-service-id` |
 | `serviceRole` | `PRIMARY` |
 | `apiSource` | `ctyun` |
 | `baseUrl` | `https://worker-ai.local/mock` |
@@ -54,8 +54,8 @@ Evidence files: `/tmp/kz-ai-acceptance-local/01-model-before.json`, `/tmp/kz-ai-
 
 | Field | Evidence |
 | --- | --- |
-| `modelId` | `900102` |
-| `serviceId` | `900001` |
+| `modelId` | `legacy-high-model-id` |
+| `serviceId` | `legacy-high-service-id` |
 | `modelName` | `CTYUN-CX-DeepSeek-V3.1` |
 | `displayName` | `CTYUN DeepSeek V3.1` |
 | `capabilityTagsJson` | includes `text`, `structured_output`, `streaming_text` |
@@ -72,10 +72,10 @@ Evidence files: `/tmp/kz-ai-acceptance-local/02-business-config-get.json`, `/tmp
 
 | Field | Evidence |
 | --- | --- |
-| `businessConfigId` | `910101` |
+| `businessConfigId` | `legacy-high-business-config-id` |
 | `scope` | `classics` |
 | `capability` | `summary` |
-| `modelId` | `900102` |
+| `modelId` | `legacy-high-model-id` |
 | `enabled` | `true` |
 | `configuredAt` | `2026-07-09T05:44:06.776Z` |
 
@@ -87,7 +87,7 @@ Evidence files: `/tmp/kz-ai-acceptance-local/02-prompt-current.json`, `/tmp/kz-a
 
 | Field | Evidence |
 | --- | --- |
-| `templateId` | `930101` |
+| `templateId` | `legacy-high-template-id` |
 | `promptVersionId` | `863052904448131072` |
 | `versionNo` | `2` |
 | `variablesSnapshotJson` | required `contentType`; optional `title`, `bodyText` |
@@ -114,11 +114,11 @@ The accepted `classics + summary` task used a current `SANCAI_ENTRY` item and co
 | `scope` | `classics` |
 | `capability` | `summary` |
 | `contentType` | `SANCAI_ENTRY` |
-| `contentId` | `300000000001` |
+| `contentId` | `legacy-high-sancai-entry-id` |
 | `requestId` / `traceId` | `ai-runtime-todo05-20260709165135` |
 | `status` | `SUCCEEDED` |
 | `serviceRole` | `PRIMARY` |
-| `modelId` | `900102` |
+| `modelId` | `legacy-high-model-id` |
 | `modelName` | `CTYUN-CX-DeepSeek-V3.1` |
 | `callId` | `863100086496788480` |
 | `candidateId` | `863100086928801792` |
@@ -135,7 +135,7 @@ Candidate evidence:
 | `callId` | `863100086496788480` |
 | `capability` | `summary` |
 | `contentType` | `SANCAI_ENTRY` |
-| `contentId` | `300000000001` |
+| `contentId` | `legacy-high-sancai-entry-id` |
 | `status` | `PENDING` |
 
 ## Invocation Statistics

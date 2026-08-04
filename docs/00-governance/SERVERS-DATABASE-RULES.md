@@ -10,7 +10,7 @@
 - 存储引擎固定使用 InnoDB。
 - 字符集固定使用 `utf8mb4`。
 - 绝对时间点字段统一使用 `BIGINT` 存储 Unix epoch milliseconds。
-- 数据库内部主键默认使用 `bigint`。
+- 数据库内部主键默认使用 `bigint NOT NULL AUTO_INCREMENT`，运行时写库由数据库发号，Java 代码不得为普通物理主键手动生成 Snowflake。
 - 布尔字段统一使用 `tinyint(1)`。
 - 金额字段统一使用 `decimal(18,2)`。
 - 枚举字段统一使用 `varchar`。
@@ -28,30 +28,31 @@
 
 ## SQL Files
 
-- 当前阶段固定采用重建式初始化：先删除目标库中本项目业务表，再执行 `db/schema/` 下的业务域建表脚本，最后执行 `db/data/` 下的初始化数据脚本。
-- 本地开发、联调和 E2E 冒烟需要额外数据时，在基础数据导入后再执行 `db/data/test.sql`。
-- 当前阶段不得新增 Flyway、Liquibase 或手写 migration 脚本；表结构变更必须直接更新对应业务域的 `db/schema/*.sql`，初始化数据变更必须直接更新对应业务域的 `db/data/*.sql`。
+- 当前阶段固定使用统一 seed 导入入口：执行 `scripts/import-seed-data.sh`，默认读取仓库根目录 `dev.env`，先从 `db/data-source/` 生成导入产物，再写入目标数据库。
+- `scripts/import-seed-data.sh --rebuild` 会先删除目标库中本项目业务表，再执行 `db/schema/` 下的业务域建表脚本，并按表级批次事务导入 seed 数据。
+- `scripts/import-seed-data.sh` 默认不导入 `db/data/test.sql`；本地联调、E2E 冒烟或 Docker smoke 需要测试数据时必须显式传入 `--include-test`。
+- 当前阶段不得新增 Flyway、Liquibase 或手写 migration 脚本；表结构变更必须直接更新对应业务域的 `db/schema/*.sql`，初始化数据变更必须先更新 `db/data-source/` 下结构化源，再生成对应 `db/data/*.sql` 导入产物。
 - 只有项目进入需要保留历史数据的迁移阶段，并由治理文档明确调整规则后，才允许引入增量迁移目录和迁移脚本。
 - 业务域 schema 文件固定放在 `db/schema/`。
-- 业务域初始化数据文件固定放在 `db/data/`。
-- 复杂初始化数据允许在 `db/data-source/` 维护结构化源文件，再由仓库级脚本生成 `db/data/` 下的 SQL 产物。
+- 业务域初始化数据真相源固定放在 `db/data-source/`；`db/data/` 下的 SQL 是从结构化 seed 生成的导入产物，不作为人工手改入口。
+- 复杂初始化数据必须在 `db/data-source/` 维护结构化源文件，再由仓库级脚本或统一导入器生成 `db/data/` 下的 SQL 产物。
 - 初始化数据中的人类可读时间字面量按 `Asia/Shanghai` 展示时间解释；写入绝对时间点字段时必须由生成脚本或统一 SQL 表达式转换为 Unix epoch milliseconds。
-- 有 JSON 源文件的初始化数据必须先改 `db/data-source/` 下源文件和对应 JSON-to-SQL 生成脚本，再重新生成并提交 `db/data/` 下 SQL 产物；不得只手工修改生成后的 SQL。
-- 当前 system 初始化数据源为 `db/data-source/system.json`，生成脚本为 `scripts/generate-system-data-sql.ts`。
+- 有 JSON 源文件的初始化数据必须先改 `db/data-source/` 下源文件和对应生成脚本，再通过 `scripts/import-seed-data.sh` 或生成脚本重新生成 `db/data/` 下 SQL 产物；不得只手工修改生成后的 SQL。
+- 当前 system 初始化数据源为 `db/data-source/system.json`，生成脚本为 `scripts/seed/generate-system-sql.mjs`。
 - 修改 system 初始化数据时必须先改 JSON 源，再重新生成并提交 `db/data/system.sql`。
 - system 初始化数据的自增主键由生成脚本按表从 1 顺序分配；SQL 产物必须在显式插入后追加 `ALTER TABLE ... AUTO_INCREMENT = max(id) + 1`。
-- 当前 AI 默认提示词数据源为 `db/data-source/ai-prompts/`，生成脚本为 `scripts/generate-ai-data-sql.ts`。
+- 当前 AI 默认提示词数据源为 `db/data-source/ai-prompts/`，生成脚本为 `scripts/seed/generate-ai-sql.mjs`。
 - 修改 AI 默认提示词时必须先改对应提示词目录下的 `meta.json`、`system-template.txt` 或 `user-template.txt`，再重新生成并提交 `db/data/ai.sql`。
 - AI 默认提示词目录允许维护 `sample.md` 作为人工运行样例；`sample.md` 不进入 SQL 产物。
-- 当前三才图会稿件初始化数据源为 `db/data-source/sancai-manuscripts.json`，生成脚本为 `scripts/classics-json-to-sql.sh`；该源文件只保存分类、卷、标题、正文、译文、摘要、`lifecycleStatus`、标签名和问答，不保存数据库 ID、排序值、过程状态、当前发布任务引用或导入快照字段，不得从运行库反向导出 JSON 作为新真相源。
-- 王圻文档和明代习俗初始化数据源分别为 `db/data-source/wangqi-documents-full.json`、`db/data-source/ming-customs.json`，同样由 `scripts/classics-json-to-sql.sh` 生成 `db/data/classics.sql`；明代习俗源由 `scripts/collect-ming-customs.mjs` 从 `https://ptrmt-beta.aisn.tech/sancai/ming/customs` 采集和规范化。生命周期字段统一命名为 `lifecycleStatus`，过程状态和当前发布任务引用由生成器初始化，不写入 JSON 源。
+- 当前三才图会稿件初始化数据源为 `db/data-source/sancai-manuscripts.json`，生成脚本为 `scripts/seed/generate-classics-sql.mjs`；该源文件只保存分类、卷、标题、正文、译文、摘要、`lifecycleStatus`、标签名和问答，不保存数据库 ID、排序值、过程状态、当前发布任务引用或导入快照字段，不得从运行库反向导出 JSON 作为新真相源。
+- 王圻文档和明代习俗初始化数据源分别为 `db/data-source/wangqi-documents-full.json`、`db/data-source/ming-customs.json`，同样由 `scripts/seed/generate-classics-sql.mjs` 生成 `db/data/classics.sql`；明代习俗源由 `scripts/seed/collect-ming-customs-source.mjs` 从 `https://ptrmt-beta.aisn.tech/sancai/ming/customs` 采集和规范化。生命周期字段统一命名为 `lifecycleStatus`，过程状态和当前发布任务引用由生成器初始化，不写入 JSON 源。
 - Classics 初始化 JSON 中的稿件生命周期必须为 `DRAFT`。`PUBLISHED` 同时要求 ES 和 FastGPT 端侧对象就绪，只能由运行时发布任务产生，不得由种子 SQL 直接写入。
-- 当前三才图会标签初始化数据源为 `db/data-source/sancai-tags.json`，生成脚本为 `scripts/generate-sancai-knowledge-data-sql.mjs`；该源文件只保存标签名、别名、分类和审核语义，不保存 `tag_id`、`alias_id`、`content_id` 或内容引用 ID。
-- 修改三才图会稿件、标签库、标签别名或稿件标签绑定时必须先改 `db/data-source/` 下对应 JSON 源，再重新生成并提交 `db/data/classics.sql` 和/或 `db/data/knowledge.sql`；`scripts/classics-json-to-sql.sh` 必须从 `db/data-source/sancai-tags.json` 解析 `classics_content_tag.tag_id`。
+- 当前三才图会标签初始化数据源为 `db/data-source/sancai-tags.json`，生成脚本为 `scripts/seed/generate-sancai-knowledge-sql.mjs`；该源文件只保存标签名、别名、分类和审核语义，不保存 `tag_id`、`alias_id`、`content_id` 或内容引用 ID。
+- 修改三才图会稿件、标签库、标签别名或稿件标签绑定时必须先改 `db/data-source/` 下对应 JSON 源，再重新生成并提交 `db/data/classics.sql` 和/或 `db/data/knowledge.sql`；`scripts/seed/generate-classics-sql.mjs` 必须从 `db/data-source/sancai-tags.json` 解析 `classics_content_tag.tag_id`。
 - 当前 schema 文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
-- 当前初始化数据文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
+- 当前 seed 导入产物文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
 - SQL 文件名必须与业务域名称保持一致。
-- `db/data/test.sql` 只保存本地开发、联调和 E2E 冒烟需要的测试数据，不属于生产初始化数据；导入前必须确认目标库是 dev/test 环境。
+- `db/data/test.sql` 只保存本地开发、联调和 E2E 冒烟需要的测试数据，不属于生产初始化数据；导入前必须确认目标库是 dev/test 环境，并通过 `--include-test` 显式启用。
 - `db/data/test.sql` 必须幂等，使用明确测试 ID 范围清理后再插入，测试 ID 默认保留 `990000000000` 以上区间，避免与基础种子和人工业务数据冲突。
 - 设计阶段允许随业务域归并同步重命名表名、索引名和初始化数据引用。
 

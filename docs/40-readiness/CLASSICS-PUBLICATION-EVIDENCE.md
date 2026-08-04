@@ -111,7 +111,7 @@ Stage 6 已补齐发布运行时恢复自动化覆盖、Portal 无用 RocketMQ �
 | final ES image build | PASS；`kuzhambu/elasticsearch:8.18.8` built with local IK zip; `elasticsearch-plugin list` returned `analysis-ik` |
 | final ES archive | PASS；saved as ignored local artifact `deploy/image-files/foundation-elasticsearch-8.18.8.tar` |
 | `scripts/verify-classics.sh` | PASS；2026-08-03；Classics schema and data files are present |
-| remote Docker full smoke | PASS；2026-08-03；server `ser-zj@10.10.10.51`; command `KUZHAMBU_SMOKE_LOAD_IMAGES=false scripts/smoke/docker-full-smoke.sh deploy/.env deploy/fastgpt/.env` |
+| remote Docker full smoke | PASS；2026-08-03；server `ser-zj@10.10.10.51`; command `KUZHAMBU_SMOKE_LOAD_IMAGES=false scripts/smoke/full-smoke.sh deploy/.env deploy/fastgpt/.env` |
 | remote Classics publication smoke | PASS；2026-08-03；Sancai content `386995904401`; publish job `4`; offline job `5` |
 | focused FastGPT client/config tests | PASS；`mvn -pl common/kuzhambu-common-knowledge test`；23 tests |
 

@@ -20,7 +20,7 @@ if (( ${#archives[@]} == 0 )); then
 fi
 
 for archive in "${archives[@]}"; do
-    echo "[docker-load-image-files] loading $(basename "${archive}")"
+    echo "[load-image-files] loading $(basename "${archive}")"
     docker load -i "${archive}" >/dev/null
 done
 

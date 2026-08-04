@@ -2,4 +2,4 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-exec "${REPO_ROOT}/scripts/smoke/docker-fastgpt-smoke.sh" "$@"
+exec "${REPO_ROOT}/scripts/smoke/fastgpt-smoke.sh" "$@"
