@@ -2,7 +2,10 @@ import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { KuzhambuButton } from "@/components";
 import { normalizeId } from "@/types/id";
-import type { QualityAnnotationTarget, RefinementLineageNodeRecord } from "../refinement-types";
+import type {
+    QualityAnnotationTarget,
+    RefinementLineageNodeRecord
+} from "@/pages/knowledge/refinement/refinement-types";
 
 interface RefinementLineageNodeTableProps {
     canEdit: boolean;

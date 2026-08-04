@@ -2,13 +2,13 @@ import { Col, Empty, Row, Typography } from "antd";
 import { KuzhambuSegmentedDrawer, KuzhambuSpace, KuzhambuCard } from "@/components";
 import type { KuzhambuSegmentedDrawerSection } from "@/components";
 
-import { RefinementApplyResultPanel } from "../refinement-apply-result-panel";
-import { RefinementEntityTable } from "../refinement-entity-table";
-import { RefinementLineageNodeTable } from "../refinement-lineage-node-table";
-import { RefinementLineageRelationTable } from "../refinement-lineage-relation-table";
-import { RefinementProgressSummaryPanel } from "../refinement-progress-summary";
-import { RefinementQualityAnnotationTable } from "../refinement-quality-annotation-table";
-import { RefinementRelationTable } from "../refinement-relation-table";
+import { RefinementApplyResultPanel } from "./refinement-apply-result-panel";
+import { RefinementEntityTable } from "./refinement-entity-table";
+import { RefinementLineageNodeTable } from "./refinement-lineage-node-table";
+import { RefinementLineageRelationTable } from "./refinement-lineage-relation-table";
+import { RefinementProgressSummaryPanel } from "./refinement-progress-summary";
+import { RefinementQualityAnnotationTable } from "./refinement-quality-annotation-table";
+import { RefinementRelationTable } from "./refinement-relation-table";
 import type { RefinementWorkbenchSection } from "../hooks/use-refinement-workbench";
 import type {
     QualityAnnotationRecord,

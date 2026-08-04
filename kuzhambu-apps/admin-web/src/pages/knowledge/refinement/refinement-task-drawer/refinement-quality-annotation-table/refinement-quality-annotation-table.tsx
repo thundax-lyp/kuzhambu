@@ -1,7 +1,7 @@
 import { Table, Tag } from "antd";
 import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
-import type { QualityAnnotationRecord } from "../refinement-types";
+import type { QualityAnnotationRecord } from "@/pages/knowledge/refinement/refinement-types";
 import { KuzhambuButton } from "@/components";
 
 interface RefinementQualityAnnotationTableProps {

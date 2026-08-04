@@ -2,7 +2,7 @@ import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
 import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
-import type { RefinementRelationRecord } from "../refinement-types";
+import type { RefinementRelationRecord } from "@/pages/knowledge/refinement/refinement-types";
 
 interface RefinementRelationTableProps {
     canEdit?: boolean;

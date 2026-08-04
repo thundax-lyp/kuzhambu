@@ -1,5 +1,5 @@
 import { Col, Row, Statistic } from "antd";
-import type { RefinementProgressSummary } from "../refinement-types";
+import type { RefinementProgressSummary } from "@/pages/knowledge/refinement/refinement-types";
 import { KuzhambuCard } from "@/components";
 
 interface RefinementProgressSummaryProps {
