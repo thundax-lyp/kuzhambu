@@ -8,8 +8,9 @@ import {
     KuzhambuFormPlaceholderItem
 } from "@/components";
 
-import type { DictSaveCommand } from "./dictionary-service";
-import type { DictRecord } from "./dictionary-types";
+import type { DictSaveCommand } from "@/pages/system/dictionary/dictionary-service";
+import type { DictRecord } from "@/pages/system/dictionary/dictionary-types";
+import "./dictionary-edit-drawer.css";
 
 const { TextArea } = Input;
 

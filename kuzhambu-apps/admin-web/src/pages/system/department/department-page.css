@@ -106,16 +106,6 @@ html[data-theme="dark"] .department-page {
     cursor: grab;
 }
 
-.department-edit-drawer-form {
-    padding-top: 6px;
-}
-
-.department-edit-drawer-footer {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
 .department-empty-icon {
     font-size: 28px;
 }

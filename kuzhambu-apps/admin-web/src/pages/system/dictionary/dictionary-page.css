@@ -134,13 +134,3 @@ html[data-theme="dark"] .dictionary-page {
     border: 1px solid var(--dictionary-code-line);
     border-radius: 6px;
 }
-
-.dictionary-edit-drawer-form {
-    padding-top: 6px;
-}
-
-.dictionary-edit-drawer-footer {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}

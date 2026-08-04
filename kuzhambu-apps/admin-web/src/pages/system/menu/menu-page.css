@@ -98,20 +98,6 @@ html[data-theme="dark"] .menu-page {
     cursor: grab;
 }
 
-.menu-edit-drawer-form {
-    padding-top: 6px;
-}
-
-.menu-rank-input {
-    width: 100%;
-}
-
-.menu-edit-drawer-footer {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
 .menu-empty-icon {
     font-size: 28px;
 }

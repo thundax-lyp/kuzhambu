@@ -23,9 +23,6 @@ const LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS = new Set([
     "operations/dashboard",
     "operations/health",
     "storage/storage-object",
-    "system/department",
-    "system/dictionary",
-    "system/menu",
     "system/user"
 ]);
 

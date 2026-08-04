@@ -8,8 +8,9 @@ import {
     KuzhambuFormPlaceholderItem,
     KuzhambuSelect
 } from "@/components";
-import type { DepartmentSaveCommand } from "./department-service";
-import type { DepartmentNode } from "./department-types";
+import type { DepartmentSaveCommand } from "@/pages/system/department/department-service";
+import type { DepartmentNode } from "@/pages/system/department/department-types";
+import "./department-edit-drawer.css";
 
 const { TextArea } = Input;
 
