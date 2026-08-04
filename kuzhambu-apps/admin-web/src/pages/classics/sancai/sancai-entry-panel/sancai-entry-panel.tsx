@@ -16,10 +16,10 @@ import { ClassicsContentTagAiPanel } from "@/pages/classics/common/classics-cont
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/ai-candidate-batch-drawer";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import { SancaiEntryList, type SancaiPublicationAction } from "./sancai-entry-list";
-import { SancaiEntryEditDrawer } from "../sancai-entry-edit-drawer";
-import { SancaiEntryExportActions } from "../sancai-entry-export-actions";
-import { SancaiEntryVersionSection } from "../sancai-entry-version-section";
-import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-edit-drawer/sancai-entry-edit-drawer-form-values";
+import { SancaiEntryEditDrawer } from "./sancai-entry-edit-drawer";
+import { SancaiEntryExportActions } from "./sancai-entry-export-actions";
+import { SancaiEntryVersionSection } from "./sancai-entry-version-section";
+import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-edit-drawer-form-values";
 import { useSancaiEntryPanelState } from "@/pages/classics/sancai/hooks/use-sancai-entry-panel-state";
 import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import type {

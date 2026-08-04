@@ -9,7 +9,7 @@ import * as aiCandidateService from "@/pages/classics/common/ai-candidate-servic
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
-import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-edit-drawer/sancai-entry-edit-drawer-form-values";
+import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-edit-drawer-form-values";
 import { SancaiEntrySummaryModal } from "./sancai-entry-summary-modal";
 import "./sancai-entry-summary-text-field.css";
 
