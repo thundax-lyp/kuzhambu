@@ -1,7 +1,7 @@
 import { Typography } from "antd";
 import { KuzhambuButton, KuzhambuTable, type KuzhambuTableProps, KuzhambuTag } from "@/components";
 
-import type { WangqiDocumentRecord } from "./wangqi-types";
+import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
 
 const { Text } = Typography;
 

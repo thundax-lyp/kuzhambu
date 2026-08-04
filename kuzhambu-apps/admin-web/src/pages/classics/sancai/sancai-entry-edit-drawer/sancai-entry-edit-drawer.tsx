@@ -8,7 +8,10 @@ import { useSancaiEntryVisualPreviewState } from "@/pages/classics/common/hooks/
 
 import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
 import { openSancaiEntryPreviewWindow } from "./sancai-entry-preview-window";
-import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-entry-form-values";
+import {
+    toEntryFormValues,
+    type SancaiEntryFormValues
+} from "./sancai-entry-edit-drawer-form-values";
 import type { SancaiEntryRecord } from "@/pages/classics/sancai/sancai-types";
 import "./sancai-entry-edit-drawer.css";
 

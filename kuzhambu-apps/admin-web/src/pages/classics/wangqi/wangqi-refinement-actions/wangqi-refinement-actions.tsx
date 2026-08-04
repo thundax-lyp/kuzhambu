@@ -8,10 +8,10 @@ import type {
 } from "@/pages/classics/common/ai-refinement-task-types";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/classics-content-tag-panel";
-import type { WangqiQaTaskPair } from "./wangqi-qa-ai-modal";
-import { WangqiQaAiModal } from "./wangqi-qa-ai-modal";
-import { WangqiTagAiModal } from "./wangqi-tag-ai-modal";
-import type { WangqiDocumentRecord } from "./wangqi-types";
+import type { WangqiQaTaskPair } from "@/pages/classics/wangqi/wangqi-qa-ai-modal";
+import { WangqiQaAiModal } from "@/pages/classics/wangqi/wangqi-qa-ai-modal";
+import { WangqiTagAiModal } from "@/pages/classics/wangqi/wangqi-tag-ai-modal";
+import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
 import "./wangqi-refinement-actions.css";
 
 interface WangqiRefinementActionsProps {

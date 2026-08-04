@@ -27,7 +27,7 @@ import {
     type KuzhambuSyncTaskModalState
 } from "@/components";
 
-import { WangqiDocumentSummaryField } from "./wangqi-document-basic-section/wangqi-document-summary-field";
+import { WangqiDocumentSummaryField } from "./wangqi-document-summary-field";
 import { WangqiDocumentQaSection } from "./wangqi-document-qa-section";
 import { WangqiDocumentSourceSection } from "./wangqi-document-source-section";
 import { WangqiDocumentTagsSection } from "./wangqi-document-tags-section";
@@ -36,14 +36,13 @@ import {
     toWangqiDocumentCommand,
     toWangqiDocumentFormValues,
     type WangqiDocumentFormValues
-} from "./wangqi-document-form-values";
+} from "./wangqi-document-edit-drawer-form-values";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { WangqiDocumentCommand } from "@/pages/classics/wangqi/wangqi-service";
 import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
-import "./wangqi-document-basic-section/wangqi-document-basic-section.css";
 import "./wangqi-document-edit-drawer.css";
 
 const { TextArea } = Input;

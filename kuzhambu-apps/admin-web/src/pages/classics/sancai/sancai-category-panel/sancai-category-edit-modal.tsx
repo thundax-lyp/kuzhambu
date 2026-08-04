@@ -8,7 +8,10 @@ import {
 } from "@/components";
 
 import type { DictItem } from "@/types/dict";
-import { toCategoryFormValues, type SancaiCategoryFormValues } from "./sancai-category-form-values";
+import {
+    toCategoryFormValues,
+    type SancaiCategoryFormValues
+} from "./sancai-category-edit-modal-form-values";
 import type { SancaiCategoryRecord } from "@/pages/classics/sancai/sancai-types";
 
 interface SancaiCategoryEditDrawerModalProps {

@@ -10,7 +10,7 @@ import {
 
 import type { DictItem } from "@/types/dict";
 import { SancaiCategoryEditDrawerModal } from "./sancai-category-edit-modal";
-import type { SancaiCategoryFormValues } from "./sancai-category-form-values";
+import type { SancaiCategoryFormValues } from "./sancai-category-edit-modal-form-values";
 import * as categoryService from "@/pages/classics/sancai/sancai-category-service";
 import type { SancaiCategoryRecord } from "@/pages/classics/sancai/sancai-types";
 import "./sancai-category-panel.css";

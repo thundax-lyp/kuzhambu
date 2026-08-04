@@ -9,7 +9,10 @@ import {
 } from "@/components";
 
 import type { DictItem } from "@/types/dict";
-import { toVolumeFormValues, type SancaiVolumeFormValues } from "./sancai-volume-form-values";
+import {
+    toVolumeFormValues,
+    type SancaiVolumeFormValues
+} from "./sancai-volume-edit-modal-form-values";
 import type {
     SancaiCategoryRecord,
     SancaiVolumeRecord

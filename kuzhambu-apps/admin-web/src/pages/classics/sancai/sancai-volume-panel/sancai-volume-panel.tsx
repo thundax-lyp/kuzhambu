@@ -5,7 +5,7 @@ import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/us
 import { type KuzhambuTableSortPosition } from "@/components";
 import type { DictItem } from "@/types/dict";
 import { isSameId } from "@/types/id";
-import type { SancaiVolumeFormValues } from "./sancai-volume-form-values";
+import type { SancaiVolumeFormValues } from "./sancai-volume-edit-modal-form-values";
 import { SancaiVolumeList } from "./sancai-volume-list";
 import { SancaiVolumeEditModal } from "./sancai-volume-edit-modal";
 import * as volumeService from "@/pages/classics/sancai/sancai-volume-service";

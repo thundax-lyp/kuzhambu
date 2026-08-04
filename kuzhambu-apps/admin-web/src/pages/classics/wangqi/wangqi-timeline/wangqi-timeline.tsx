@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ClockCircleOutlined } from "@ant-design/icons";
 import { Empty, Timeline, Typography } from "antd";
 import { KuzhambuDrawer, KuzhambuButton } from "@/components";
-import type { WangqiDocumentRecord } from "./wangqi-types";
+import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
 
 const { Text } = Typography;
 

@@ -34,9 +34,16 @@ const getLineNumber = (content, index) => content.slice(0, index).split(/\r?\n/)
 
 const isAllowedFormValuesFile = (filePath) => {
     const normalizedFilePath = normalizePath(filePath);
+    const fileName = path.basename(filePath);
+    const formComponentFileName = fileName.replace(/-form-values\.ts$/, ".tsx");
+    const isPageComponentFormValuesFile =
+        normalizedFilePath.includes("/pages/") &&
+        fileName.endsWith("-form-values.ts") &&
+        fs.existsSync(path.join(path.dirname(filePath), formComponentFileName));
     return (
-        normalizedFilePath.includes("/components/") &&
-        (normalizedFilePath.endsWith(".tsx") || normalizedFilePath.endsWith("-form-values.ts"))
+        isPageComponentFormValuesFile ||
+        (normalizedFilePath.includes("/components/") &&
+            (normalizedFilePath.endsWith(".tsx") || normalizedFilePath.endsWith("-form-values.ts")))
     );
 };
 

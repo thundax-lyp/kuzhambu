@@ -17,9 +17,9 @@ import {
 } from "@/components";
 
 import { SancaiCatalogTreePanel } from "./sancai-catalog-tree-panel";
-import { SancaiCategoryPanel } from "./components/sancai-category-panel";
+import { SancaiCategoryPanel } from "./sancai-category-panel";
 import { SancaiEntryPanel } from "./sancai-entry-panel";
-import { SancaiVolumePanel } from "./components/sancai-volume-panel";
+import { SancaiVolumePanel } from "./sancai-volume-panel";
 import { useSancaiCatalogState } from "./hooks/use-sancai-catalog-state";
 
 import "./sancai-page.css";
