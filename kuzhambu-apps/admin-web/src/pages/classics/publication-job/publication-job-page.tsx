@@ -7,7 +7,7 @@ import { useMemo, useState } from "react";
 import { KuzhambuButton, KuzhambuListPage, KuzhambuTag } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { PublicationJobDetailDrawer } from "./publication-job-detail-drawer";
-import { readPublicationJobStatusLabel } from "./publication-job-labels";
+import { readPublicationJobStatusLabel } from "./publication-job-constants";
 import * as service from "./publication-job-service";
 import type { ClassicsPublicationJobQuery } from "./publication-job-service";
 import type { ClassicsPublicationJobRecord } from "./publication-job-types";

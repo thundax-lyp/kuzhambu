@@ -1,7 +1,7 @@
 import { Descriptions } from "antd";
 import dayjs from "dayjs";
 import { KuzhambuDrawer, KuzhambuTag } from "@/components";
-import { readPublicationJobStatusLabel } from "@/pages/classics/publication-job/publication-job-labels";
+import { readPublicationJobStatusLabel } from "@/pages/classics/publication-job/publication-job-constants";
 import type { ClassicsPublicationJobRecord } from "@/pages/classics/publication-job/publication-job-types";
 
 import "./publication-job-detail-drawer.css";
