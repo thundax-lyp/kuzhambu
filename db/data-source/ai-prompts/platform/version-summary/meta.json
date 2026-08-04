@@ -1,7 +1,5 @@
 {
-  "templateId": 930117,
-  "promptVersionId": 940117,
-  "variableIdStart": 961801,
+  "priority": 17,
   "capability": "platform_version_summary",
   "suite": "platform-default-v1",
   "name": "提示词版本摘要提示词",
@@ -13,20 +11,17 @@
     {
       "name": "previousTemplate",
       "required": false,
-      "description": "上一版本提示词",
-      "priority": 961801
+      "description": "上一版本提示词"
     },
     {
       "name": "currentTemplate",
       "required": true,
-      "description": "当前版本提示词",
-      "priority": 961802
+      "description": "当前版本提示词"
     },
     {
       "name": "changeSummary",
       "required": false,
-      "description": "人工变更摘要",
-      "priority": 961803
+      "description": "人工变更摘要"
     }
   ],
   "outputSchema": {

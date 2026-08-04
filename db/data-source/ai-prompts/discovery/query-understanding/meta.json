@@ -1,7 +1,5 @@
 {
-  "templateId": 930104,
-  "promptVersionId": 940104,
-  "variableIdStart": 961001,
+  "priority": 4,
   "capability": "discovery_query_understanding",
   "suite": "discovery-default-v1",
   "name": "知识发现查询理解提示词",
@@ -13,23 +11,32 @@
     {
       "name": "query",
       "required": true,
-      "description": "用户原始查询",
-      "priority": 961001
+      "description": "用户原始查询"
     },
     {
       "name": "availableScopes",
       "required": false,
-      "description": "可用检索范围",
-      "priority": 961002
+      "description": "可用检索范围"
     }
   ],
   "outputSchema": {
     "type": "object",
     "properties": {
-      "normalizedQueryText": { "type": "string" },
-      "rewrittenQueryText": { "type": "string" },
-      "recognizedEntities": { "type": "array", "items": { "type": "string" } },
-      "intentType": { "type": "string" }
+      "normalizedQueryText": {
+        "type": "string"
+      },
+      "rewrittenQueryText": {
+        "type": "string"
+      },
+      "recognizedEntities": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "intentType": {
+        "type": "string"
+      }
     },
     "required": [
       "normalizedQueryText",

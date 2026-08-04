@@ -123,7 +123,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         assertEquals(capturedCommand, businessResolver.capturedCommand());
         assertEquals(2001L, capturedCommand.getModelId().value());
         assertEquals("gpt-4o", capturedCommand.getModelName().value());
-        assertEquals(940106L, capturedCommand.getPromptVersionId().value());
+        assertEquals(6L, capturedCommand.getPromptVersionId().value());
         assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.getPromptMessagesJson());
     }
 
@@ -211,8 +211,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
             command.setServiceRole("PRIMARY");
             command.setModelId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(2001L));
             command.setModelName(com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("gpt-4o"));
-            command.setPromptVersionId(
-                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(940106L));
+            command.setPromptVersionId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(6L));
             command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"rendered\"}]");
             command.setPromptVariablesJson("{\"text\":\"hello\"}");
         }

@@ -63,25 +63,24 @@ class PromptRepositoryIT {
         assertTrue(normalized.contains("`base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`)"));
         assertTrue(normalized.contains(
                 "`encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`)"));
-        assertTrue(normalized.contains("930101, 'classics_summary', '古籍摘要提示词', '古籍内容默认摘要提示词。', 1, 1"));
-        assertTrue(
-                normalized.contains("930104, 'discovery_query_understanding', '知识发现查询理解提示词', '知识发现默认查询理解提示词。', 1, 1"));
-        assertTrue(normalized.contains("930108, 'classics_image_generate', '古籍图片生成提示词', '古籍视觉资产默认文生图提示词。', 1, 1"));
-        assertTrue(normalized.contains("900101, 'OPENAI_COMPATIBLE', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B'"));
-        assertTrue(normalized.contains("900102, 'OPENAI_COMPATIBLE', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro'"));
-        assertTrue(normalized.contains("900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628'"));
+        assertTrue(normalized.contains("1, 'classics_summary', '古籍摘要提示词', '古籍内容默认摘要提示词。', 1, 1"));
+        assertTrue(normalized.contains("4, 'discovery_query_understanding', '知识发现查询理解提示词', '知识发现默认查询理解提示词。', 1, 1"));
+        assertTrue(normalized.contains("8, 'classics_image_generate', '古籍图片生成提示词', '古籍视觉资产默认文生图提示词。', 1, 1"));
+        assertTrue(normalized.contains("1, 'OPENAI_COMPATIBLE', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B'"));
+        assertTrue(normalized.contains("2, 'OPENAI_COMPATIBLE', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro'"));
+        assertTrue(normalized.contains("3, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628'"));
         assertTrue(normalized.contains("INSERT INTO `ai_business_config`"));
-        assertTrue(normalized.contains("(910106, 'classics_translate', 930106, 900102, NULL, 1, 6"));
-        assertTrue(normalized.contains("(910107, 'classics_image_describe', 930107, 900101, NULL, 1, 7"));
-        assertTrue(normalized.contains("(910108, 'classics_image_generate', 930108, 900201, NULL, 1, 8"));
+        assertTrue(normalized.contains("(6, 'classics_translate', 6, 2, NULL, 1, 6"));
+        assertTrue(normalized.contains("(7, 'classics_image_describe', 7, 1, NULL, 1, 7"));
+        assertTrue(normalized.contains("(8, 'classics_image_generate', 8, 3, NULL, 1, 8"));
         assertSeedContainsAllBusinessCapabilities(normalized);
         assertTrue(normalized.contains("`model_id` = COALESCE(`model_id`, VALUES(`model_id`))"));
         assertFalse(normalized.contains("INSERT INTO `ai_capability_mapping`"));
         assertFalse(normalized.contains("INSERT INTO `ai_action_status`"));
 
-        assertTrue(normalized.contains("(940101, 930101, 1,"));
-        assertTrue(normalized.contains("(940106, 930106, 1,"));
-        assertTrue(normalized.contains("(940108, 930108, 1,"));
+        assertTrue(normalized.contains("(1, 1, 1,"));
+        assertTrue(normalized.contains("(6, 6, 1,"));
+        assertTrue(normalized.contains("(8, 8, 1,"));
         assertTrue(normalized.contains("\"variableName\":\"contentType\",\"required\":true"));
         assertTrue(normalized.contains("\"variableName\":\"existingSummary\",\"required\":false"));
         assertTrue(normalized.contains("\"variableName\":\"contextPath\",\"required\":false"));

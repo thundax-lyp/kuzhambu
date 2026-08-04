@@ -180,21 +180,21 @@ INSERT INTO `ai_invocation_log` (
 ) VALUES
     (
         990000000001, 990000000001, 990000000001, 'classics', 'classics_summary', 'WANGQI_DOCUMENT', 990000000001, NULL,
-        NULL, 'PRIMARY', 900102, 'CTYUN-bot-DeepSeek-V3.2-pro', 940101, 'test-wangqi-summary-request', 'test-wangqi-summary-trace',
+        NULL, 'PRIMARY', 2, 'CTYUN-bot-DeepSeek-V3.2-pro', 1, 'test-wangqi-summary-request', 'test-wangqi-summary-trace',
         'SUCCEEDED', 0, 0, 0, 860, 620, 128,
         0.000000, NULL, 'TEXT', '王圻归里后整理文献，关注梅花源水利、乡里治理和文献编纂之间的关联。', NULL,
         NULL, NULL, NULL, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:01:00.000000') DIV 1000, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:01:01.000000') DIV 1000
     ),
     (
         990000000002, 990000000002, 990000000002, 'classics', 'classics_tags', 'WANGQI_DOCUMENT', 990000000001, NULL,
-        NULL, 'PRIMARY', 900102, 'CTYUN-bot-DeepSeek-V3.2-pro', 940102, 'test-wangqi-tags-request', 'test-wangqi-tags-trace',
+        NULL, 'PRIMARY', 2, 'CTYUN-bot-DeepSeek-V3.2-pro', 2, 'test-wangqi-tags-request', 'test-wangqi-tags-trace',
         'SUCCEEDED', 0, 0, 0, 920, 680, 96,
         0.000000, NULL, 'STRUCTURED', '{"tags":["地方水利","梅花源","文献编纂"]}', NULL,
         NULL, NULL, NULL, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:02:00.000000') DIV 1000, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:02:01.000000') DIV 1000
     ),
     (
         990000000003, 990000000003, 990000000003, 'classics', 'classics_qa', 'WANGQI_DOCUMENT', 990000000001, NULL,
-        NULL, 'PRIMARY', 900102, 'CTYUN-bot-DeepSeek-V3.2-pro', 940103, 'test-wangqi-qa-request', 'test-wangqi-qa-trace',
+        NULL, 'PRIMARY', 2, 'CTYUN-bot-DeepSeek-V3.2-pro', 3, 'test-wangqi-qa-request', 'test-wangqi-qa-trace',
         'SUCCEEDED', 0, 0, 0, 980, 720, 156,
         0.000000, NULL, 'STRUCTURED', '{"qaPairs":[{"question":"梅花源在样例文档中有什么意义？","answer":"梅花源既关乎农田灌溉，也作为王圻晚年生活与著述的空间线索。"}]}', NULL,
         NULL, NULL, NULL, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:03:00.000000') DIV 1000, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:03:01.000000') DIV 1000
@@ -221,17 +221,17 @@ INSERT INTO `ai_candidate` (
     (
         990000000001, 990000000001, 990000000001, 'classics_summary', 'WANGQI_DOCUMENT', 990000000001, NULL,
         'TEXT', '王圻归里后整理文献，关注梅花源水利、乡里治理和文献编纂之间的关联。', 'PENDING', NULL, NULL,
-        940101, 'CTYUN-bot-DeepSeek-V3.2-pro', NULL, NULL, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:01:01.000000') DIV 1000, NULL, NULL
+        1, 'CTYUN-bot-DeepSeek-V3.2-pro', NULL, NULL, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:01:01.000000') DIV 1000, NULL, NULL
     ),
     (
         990000000002, 990000000002, 990000000002, 'classics_tags', 'WANGQI_DOCUMENT', 990000000001, NULL,
         'STRUCTURED', '{"tags":["地方水利","梅花源","文献编纂"]}', 'PENDING', NULL, NULL,
-        940102, 'CTYUN-bot-DeepSeek-V3.2-pro', NULL, NULL, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:02:01.000000') DIV 1000, NULL, NULL
+        2, 'CTYUN-bot-DeepSeek-V3.2-pro', NULL, NULL, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:02:01.000000') DIV 1000, NULL, NULL
     ),
     (
         990000000003, 990000000003, 990000000003, 'classics_qa', 'WANGQI_DOCUMENT', 990000000001, NULL,
         'STRUCTURED', '{"qaPairs":[{"question":"梅花源在样例文档中有什么意义？","answer":"梅花源既关乎农田灌溉，也作为王圻晚年生活与著述的空间线索。"}]}', 'PENDING', NULL, NULL,
-        940103, 'CTYUN-bot-DeepSeek-V3.2-pro', NULL, NULL, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:03:01.000000') DIV 1000, NULL, NULL
+        3, 'CTYUN-bot-DeepSeek-V3.2-pro', NULL, NULL, TIMESTAMPDIFF(MICROSECOND, '1970-01-01 08:00:00.000000', '2026-07-20 12:03:01.000000') DIV 1000, NULL, NULL
     )
 ON DUPLICATE KEY UPDATE
     `call_id` = VALUES(`call_id`),

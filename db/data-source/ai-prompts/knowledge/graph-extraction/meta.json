@@ -1,7 +1,5 @@
 {
-  "templateId": 930113,
-  "promptVersionId": 940113,
-  "variableIdStart": 961401,
+  "priority": 13,
   "capability": "knowledge_graph_extract",
   "suite": "knowledge-default-v1",
   "name": "知识图谱抽取提示词",
@@ -13,31 +11,51 @@
     {
       "name": "sourceTitle",
       "required": false,
-      "description": "来源标题",
-      "priority": 961401
+      "description": "来源标题"
     },
     {
       "name": "sourceText",
       "required": true,
-      "description": "待抽取图谱的文本",
-      "priority": 961402
+      "description": "待抽取图谱的文本"
     },
     {
       "name": "entryRefs",
       "required": false,
-      "description": "相关条目引用",
-      "priority": 961403
+      "description": "相关条目引用"
     }
   ],
   "outputSchema": {
     "type": "object",
     "properties": {
-      "entities": { "type": "array", "items": { "type": "object" } },
-      "relations": { "type": "array", "items": { "type": "object" } },
-      "entryRefs": { "type": "array", "items": { "type": "object" } },
-      "warnings": { "type": "array", "items": { "type": "string" } }
+      "entities": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "relations": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "entryRefs": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "warnings": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
     },
-    "required": ["entities", "relations"]
+    "required": [
+      "entities",
+      "relations"
+    ]
   },
   "changeSummary": "Initial knowledge default graph extraction prompt."
 }

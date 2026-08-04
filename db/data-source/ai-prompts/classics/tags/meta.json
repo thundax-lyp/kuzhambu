@@ -1,7 +1,5 @@
 {
-  "templateId": 930102,
-  "promptVersionId": 940102,
-  "variableIdStart": 960301,
+  "priority": 2,
   "capability": "classics_tags",
   "suite": "classics-default-v1",
   "name": "古籍标签提取提示词",
@@ -13,20 +11,17 @@
     {
       "name": "title",
       "required": false,
-      "description": "标题",
-      "priority": 960301
+      "description": "标题"
     },
     {
       "name": "categoryPath",
       "required": false,
-      "description": "分类路径",
-      "priority": 960302
+      "description": "分类路径"
     },
     {
       "name": "document",
       "required": true,
-      "description": "待抽取标签的内容",
-      "priority": 960303
+      "description": "待抽取标签的内容"
     }
   ],
   "outputSchema": {
@@ -34,12 +29,16 @@
     "properties": {
       "tags": {
         "type": "array",
-        "items": { "type": "string" },
+        "items": {
+          "type": "string"
+        },
         "minItems": 3,
         "maxItems": 8
       }
     },
-    "required": ["tags"]
+    "required": [
+      "tags"
+    ]
   },
   "changeSummary": "Initial classics default tags prompt."
 }
