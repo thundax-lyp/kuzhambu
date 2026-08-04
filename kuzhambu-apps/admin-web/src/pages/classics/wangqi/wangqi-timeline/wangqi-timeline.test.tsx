@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { WangqiTimeline } from "./wangqi-timeline";
-import type { WangqiDocumentRecord } from "./wangqi-types";
+import type { WangqiDocumentRecord } from "../wangqi-types";
 
 type MockTimelineProps = Pick<TimelineProps, "className" | "items" | "mode">;
 
