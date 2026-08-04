@@ -6,12 +6,7 @@ import process from "node:process";
 const pagesRoot = resolve(process.argv[2] ?? "src/pages");
 
 // These domains still contain a components bucket or root-level private component files.
-const LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS = new Set([
-    "knowledge/refinement",
-    "knowledge/taxonomy",
-    "operations/dashboard",
-    "system/user"
-]);
+const LEGACY_PAGE_COMPONENT_LAYOUT_EXEMPTIONS = new Set(["operations/dashboard", "system/user"]);
 
 const normalizePath = (path) => path.split(sep).join("/");
 const isDirectory = (path) => statSync(path).isDirectory();
