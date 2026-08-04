@@ -40,6 +40,7 @@ import type {
     AiPromptVariableRecord,
     AiPromptVersionRecord
 } from "@/pages/ai/prompt/prompt-types";
+import "./prompt-edit-drawer.css";
 
 type PromptFormValues = Omit<AiPromptTemplateChangeCommand, "variables" | "enabled"> & {
     outputStructure?: PromptOutputStructure | null;

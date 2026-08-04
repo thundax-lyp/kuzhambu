@@ -1,20 +1,61 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+    CheckCircleOutlined,
+    DeleteOutlined,
+    PlusOutlined,
+    ReloadOutlined,
+    StopOutlined
+} from "@ant-design/icons";
 import type { Key } from "react";
-import { App } from "antd";
+import { App, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { PromptPageContent } from "./prompt-page-content/prompt-page-content";
+import {
+    KuzhambuButton,
+    KuzhambuListPage,
+    KuzhambuSelect,
+    KuzhambuSpace,
+    KuzhambuSwitch,
+    KuzhambuTag,
+    type KuzhambuTableProps
+} from "@/components";
+import { PromptEditDrawer } from "./prompt-edit-drawer";
 import {
     DEFAULT_PROMPT_FILTERS,
+    readCapabilityDomainTag,
     readCapabilityLabel,
     readPromptDisplayName,
     readTemplateRowKey
-} from "./prompt-page-content-support";
-import type { PromptFilters } from "./prompt-page-content-support";
+} from "./prompt-constants";
+import type { PromptFilters } from "./prompt-constants";
 import * as service from "./prompt-service";
 import type { AiPromptTemplateQuery } from "./prompt-service";
 import type { AiPromptTemplateRecord } from "./prompt-types";
 import "./prompt-page.css";
+
+const { Text } = Typography;
+
+const DEFAULT_COLUMN_WIDTHS = {
+    name: 220,
+    capability: 200,
+    enabled: 112,
+    registeredAt: 120,
+    description: 360
+};
+
+const formatDate = (value?: string | null) => {
+    if (!value) {
+        return "-";
+    }
+    const timestamp = Date.parse(value);
+    if (Number.isNaN(timestamp)) {
+        return value;
+    }
+    const date = new Date(timestamp);
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${date.getFullYear()}-${month}-${day}`;
+};
 
 const toEnabledQueryValue = (enabled: PromptFilters["enabled"]) => {
     if (enabled === "ENABLED") {
@@ -294,41 +335,243 @@ export const PromptPage = () => {
         });
     };
 
+    const columns: KuzhambuTableProps<AiPromptTemplateRecord>["columns"] = [
+        {
+            title: "模板名称",
+            dataIndex: "name",
+            key: "name",
+            width: DEFAULT_COLUMN_WIDTHS.name,
+            render: (_, template) => (
+                <Text strong>
+                    {readPromptDisplayName(
+                        template,
+                        capabilityByCode.get(template.capability || "")?.name
+                    )}
+                </Text>
+            )
+        },
+        {
+            title: "能力",
+            dataIndex: "capability",
+            key: "capability",
+            width: DEFAULT_COLUMN_WIDTHS.capability,
+            render: (capability?: string | null) => {
+                const domainTag = readCapabilityDomainTag(capability);
+                return (
+                    <span className="prompt-capability-tags">
+                        <KuzhambuTag type={domainTag.type}>{domainTag.label}</KuzhambuTag>
+                        <KuzhambuTag type="neutral">
+                            {readCapabilityLabel(
+                                capability,
+                                capabilityByCode.get(capability || "")?.name
+                            )}
+                        </KuzhambuTag>
+                    </span>
+                );
+            }
+        },
+        {
+            title: "状态",
+            dataIndex: "enabled",
+            key: "enabled",
+            width: DEFAULT_COLUMN_WIDTHS.enabled,
+            align: "center",
+            render: (enabled: boolean | null | undefined, template) => (
+                <KuzhambuSwitch
+                    checked={enabled !== false}
+                    checkedChildren="启用"
+                    unCheckedChildren="禁用"
+                    aria-label={`切换 ${readPromptDisplayName(
+                        template,
+                        capabilityByCode.get(template.capability || "")?.name
+                    )} 状态，当前${enabled === false ? "禁用" : "启用"}`}
+                    disabled={!canEditPrompt || updatePromptStatusMutation.isPending}
+                    onChange={(checked) => changeEnabled(template, checked)}
+                />
+            )
+        },
+        {
+            title: "日期",
+            dataIndex: "registeredAt",
+            key: "registeredAt",
+            width: DEFAULT_COLUMN_WIDTHS.registeredAt,
+            align: "center",
+            render: formatDate
+        },
+        {
+            title: "说明",
+            dataIndex: "description",
+            key: "description",
+            width: DEFAULT_COLUMN_WIDTHS.description,
+            ellipsis: true,
+            render: (description?: string | null) => description || "-"
+        },
+        {
+            key: "actions",
+            options: (template) => [
+                {
+                    key: "edit",
+                    text: "编辑",
+                    ariaLabel: `编辑 ${readPromptDisplayName(
+                        template,
+                        capabilityByCode.get(template.capability || "")?.name
+                    )}`,
+                    disabled: !canEditPrompt,
+                    onClick: () => openEditPromptDrawer(template)
+                },
+                {
+                    key: "delete",
+                    text: "删除",
+                    type: "danger",
+                    ariaLabel: `删除 ${readPromptDisplayName(
+                        template,
+                        capabilityByCode.get(template.capability || "")?.name
+                    )}`,
+                    disabled: !canEditPrompt || deleteMutation.isPending,
+                    onClick: () => deleteTemplate(template)
+                }
+            ]
+        }
+    ];
+
     return (
-        <div className="prompt-page-root">
-            <PromptPageContent
-                canEditPrompt={canEditPrompt}
-                capabilityByCode={capabilityByCode}
-                capabilityOptions={capabilityOptions}
-                deletePending={deleteMutation.isPending}
-                editingTemplate={editingTemplate}
+        <>
+            <KuzhambuListPage<AiPromptTemplateRecord>
+                pageClassName="prompt-page"
+                title="提示词管理"
+                description="维护 AI 提示词模板、变量、版本对比和回滚。"
+                subjectName="提示词"
+                enableFilter
+                enableSearch
+                searchShortcut="⌘K"
+                searchValue={searchText}
+                onSearchChange={changeSearchText}
                 filterActive={hasActiveFilters}
-                filters={filters}
-                hasSelectedPrompt={hasSelectedPrompt}
-                loading={promptTemplatePageQuery.isFetching}
-                promptCapabilitiesLoading={promptCapabilitiesQuery.isFetching}
-                promptEditDrawerOpen={promptEditDrawerOpen}
-                promptTemplateLoadError={promptTemplatePageQuery.isError}
-                records={filteredTemplates}
-                searchText={searchText}
-                selectedRowKeys={selectedRowKeys}
-                updatePromptStatusPending={updatePromptStatusMutation.isPending}
-                onBatchDelete={batchDeleteTemplates}
-                onBatchDisable={() => void batchChangeEnabled(false)}
-                onBatchEnable={() => void batchChangeEnabled(true)}
-                onChangeEnabled={changeEnabled}
-                onClosePromptEditDrawer={closePromptEditDrawer}
-                onCreatePrompt={openCreatePromptDrawer}
-                onDeletePrompt={deleteTemplate}
-                onEditPrompt={openEditPromptDrawer}
+                filterFields={[
+                    {
+                        name: "capability",
+                        label: "能力",
+                        render: () => (
+                            <KuzhambuSelect
+                                allowClear
+                                placeholder="全部"
+                                value={filters.capability || undefined}
+                                options={capabilityOptions}
+                                loading={promptCapabilitiesQuery.isFetching}
+                                onChange={(capability) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        capability: capability || null
+                                    }))
+                                }
+                            />
+                        )
+                    },
+                    {
+                        name: "enabled",
+                        label: "状态",
+                        render: () => (
+                            <KuzhambuSelect
+                                value={filters.enabled}
+                                options={[
+                                    { label: "全部", value: "ALL" },
+                                    { label: "启用", value: "ENABLED" },
+                                    { label: "禁用", value: "DISABLED" }
+                                ]}
+                                onChange={(enabled) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        enabled
+                                    }))
+                                }
+                            />
+                        )
+                    }
+                ]}
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
-                onFiltersChange={setFilters}
-                onRefresh={() => void invalidatePrompt()}
-                onSaved={handleSaved}
-                onSearchChange={changeSearchText}
-                onSelectedRowKeysChange={setSelectedRowKeys}
+                selectedCount={selectedRowKeys.length}
+                batchActions={
+                    <KuzhambuSpace wrap>
+                        <KuzhambuButton
+                            testId="ai-prompt-prompt-enable-button"
+                            icon={<CheckCircleOutlined />}
+                            disabled={!canEditPrompt || !hasSelectedPrompt}
+                            loading={updatePromptStatusMutation.isPending}
+                            onClick={() => void batchChangeEnabled(true)}
+                        >
+                            启用
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            testId="ai-prompt-prompt-disable-button"
+                            icon={<StopOutlined />}
+                            disabled={!canEditPrompt || !hasSelectedPrompt}
+                            loading={updatePromptStatusMutation.isPending}
+                            onClick={() => void batchChangeEnabled(false)}
+                        >
+                            禁用
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            testId="ai-prompt-prompt-batch-delete-button"
+                            danger
+                            icon={<DeleteOutlined />}
+                            disabled={!canEditPrompt || !hasSelectedPrompt}
+                            loading={deleteMutation.isPending}
+                            onClick={batchDeleteTemplates}
+                        >
+                            批量删除
+                        </KuzhambuButton>
+                    </KuzhambuSpace>
+                }
+                pageActions={
+                    <>
+                        <KuzhambuButton
+                            testId="ai-prompt-prompt-refresh-button"
+                            icon={<ReloadOutlined />}
+                            loading={promptTemplatePageQuery.isFetching}
+                            onClick={() => void invalidatePrompt()}
+                        >
+                            刷新
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            testId="ai-prompt-prompt-create-button"
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            disabled={!canEditPrompt}
+                            onClick={openCreatePromptDrawer}
+                        >
+                            新建
+                        </KuzhambuButton>
+                    </>
+                }
+                rowKey={readTemplateRowKey}
+                className="prompt-table"
+                columns={columns}
+                dataSource={filteredTemplates}
+                loading={promptTemplatePageQuery.isFetching}
+                pagination={false}
+                scroll={{ x: 968 }}
+                rowSelection={{
+                    selectedRowKeys,
+                    onChange: setSelectedRowKeys,
+                    getCheckboxProps: () => ({ disabled: !canEditPrompt })
+                }}
+                locale={{
+                    emptyText: promptTemplatePageQuery.isError
+                        ? "提示词模板加载失败，请确认权限和接口状态。"
+                        : "暂无提示词模板"
+                }}
             />
-        </div>
+
+            <PromptEditDrawer
+                key={promptEditDrawerOpen ? editingTemplate?.id || "create" : "closed"}
+                canEdit={canEditPrompt}
+                capabilityOptions={capabilityOptions}
+                open={promptEditDrawerOpen}
+                template={editingTemplate}
+                onClose={closePromptEditDrawer}
+                onSaved={handleSaved}
+            />
+        </>
     );
 };
