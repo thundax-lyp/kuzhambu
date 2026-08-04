@@ -4,8 +4,7 @@ This directory stores repository-level automation entry points. Keep scripts her
 
 ## Verification
 
-- `verify-all.sh`: local aggregate verification entry. It checks governance files, delegates Classics verification, then runs backend, frontend manifest and worker manifest checks.
-- `verify-classics.sh`: Classics schema, generated SQL and JSON source consistency checks.
+- `verify-all.sh`: local aggregate verification entry. It checks governance files, then runs backend, frontend manifest and worker manifest checks.
 
 ## Data Generation
 

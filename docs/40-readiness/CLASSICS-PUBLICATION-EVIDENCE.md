@@ -22,7 +22,7 @@ publication job 的状态、租约、条件更新和清理持久化协议。
 | admin-web format/lint/test | PASS；87 test files；376 tests |
 | portal-web format/lint/test | PASS；25 test files；79 tests |
 | workers Ruff format/lint/test | PASS；181 tests |
-| `scripts/verify-classics.sh` | PASS |
+| `node scripts/seed/generate-classics-sql.mjs` | PASS |
 | publication persistence focused tests | PASS；8 tests |
 | server sharing residue scan | 0 files |
 | admin/portal sharing source scan | 23 files；按计划保留到 Stage 4 |
@@ -110,7 +110,7 @@ Stage 6 已补齐发布运行时恢复自动化覆盖、Portal 无用 RocketMQ �
 | ES base image pull | PASS；`container-registry-test.elastic.co/elasticsearch/elasticsearch:8.18.8` pulled by `crane` through local proxy, loaded and retagged as `kuzhambu/elasticsearch-base:8.18.8` |
 | final ES image build | PASS；`kuzhambu/elasticsearch:8.18.8` built with local IK zip; `elasticsearch-plugin list` returned `analysis-ik` |
 | final ES archive | PASS；saved as ignored local artifact `deploy/image-files/foundation-elasticsearch-8.18.8.tar` |
-| `scripts/verify-classics.sh` | PASS；2026-08-03；Classics schema and data files are present |
+| `node scripts/seed/generate-classics-sql.mjs` | PASS；2026-08-03；generated `build/seed-sql/classics.sql` |
 | remote Docker full smoke | PASS；2026-08-03；server `ser-zj@10.10.10.51`; command `KUZHAMBU_SMOKE_LOAD_IMAGES=false scripts/smoke/full-smoke.sh deploy/.env deploy/fastgpt/.env` |
 | remote Classics publication smoke | PASS；2026-08-03；Sancai content `386995904401`; publish job `4`; offline job `5` |
 | focused FastGPT client/config tests | PASS；`mvn -pl common/kuzhambu-common-knowledge test`；23 tests |

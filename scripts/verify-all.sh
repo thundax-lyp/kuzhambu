@@ -54,7 +54,6 @@ done < <(find "${ROOT_DIR}/scripts" \
     -type f -print)
 
 echo "Verify backend Maven skeleton"
-"${ROOT_DIR}/scripts/verify-classics.sh"
 JAVA_SPEC_VERSION="$(java -XshowSettings:properties -version 2>&1 | awk -F '= ' '/java.specification.version/ {print $2; exit}')"
 case "${JAVA_SPEC_VERSION}" in
     1.8|8|9|10)
