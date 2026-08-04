@@ -452,10 +452,21 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: Verify Classics SQL seed
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+
+            - name: Verify Classics generated seed SQL
               run: |
+                  if test -f scripts/seed/generate-classics-sql.mjs; then
+                    node scripts/seed/generate-classics-sql.mjs db/data-source/sancai-manuscripts.json build/seed-sql/classics.sql db/data-source/sancai-tags.json
+                    CLASSICS_SQL=build/seed-sql/classics.sql
+                  else
+                    CLASSICS_SQL=db/data/classics.sql
+                  fi
                   test -f db/schema/classics.sql
-                  test -f db/data/classics.sql
+                  test -f "$CLASSICS_SQL"
                   grep -q 'CREATE TABLE IF NOT EXISTS `classics_sancai_category`' db/schema/classics.sql
                   grep -q 'CREATE TABLE IF NOT EXISTS `classics_sancai_volume`' db/schema/classics.sql
                   grep -q 'CREATE TABLE IF NOT EXISTS `classics_sancai_entry`' db/schema/classics.sql
@@ -463,5 +474,5 @@ jobs:
                   grep -q 'CREATE TABLE IF NOT EXISTS `classics_ming_customs_entry`' db/schema/classics.sql
                   grep -q 'CREATE TABLE IF NOT EXISTS `classics_publication_job`' db/schema/classics.sql
                   ! grep -q 'CREATE TABLE IF NOT EXISTS `classics_share_link`' db/schema/classics.sql
-                  grep -q 'INSERT INTO `classics_sancai_category`' db/data/classics.sql
-                  grep -q 'INSERT INTO `classics_sancai_entry`' db/data/classics.sql
+                  grep -q 'INSERT INTO `classics_sancai_category`' "$CLASSICS_SQL"
+                  grep -q 'INSERT INTO `classics_sancai_entry`' "$CLASSICS_SQL"
