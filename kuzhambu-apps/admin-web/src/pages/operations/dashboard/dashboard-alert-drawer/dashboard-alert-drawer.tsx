@@ -8,7 +8,7 @@ import {
     KuzhambuCard
 } from "@/components";
 
-import type { OperationsHealthAlertRecord } from "./dashboard-types";
+import type { OperationsHealthAlertRecord } from "../dashboard-types";
 
 const { Text } = Typography;
 
