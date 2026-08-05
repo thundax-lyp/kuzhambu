@@ -16,7 +16,7 @@ import type {
 } from "./taxonomy-types";
 
 const API_PREFIX = "/knowledge/taxonomy";
-const TAG_EXTRACTION_CAPABILITY = "knowledge_tags";
+const TAG_EXTRACTION_CAPABILITY = "KNOWLEDGE_TAG_EXTRACT";
 
 export interface TagCategoryPageQuery {
     pageNo?: number;

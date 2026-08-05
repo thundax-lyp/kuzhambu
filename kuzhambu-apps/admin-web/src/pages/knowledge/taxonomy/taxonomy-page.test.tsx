@@ -127,7 +127,7 @@ vi.mock("./taxonomy-service", () => ({
             id: "301",
             templateId: "201",
             templateName: "知识标签提取",
-            capability: "knowledge_tags",
+            capability: "KNOWLEDGE_TAG_EXTRACT",
             versionNo: 3
         }
     ]),

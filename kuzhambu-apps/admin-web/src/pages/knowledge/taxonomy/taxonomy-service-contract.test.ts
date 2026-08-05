@@ -183,7 +183,7 @@ describe("taxonomy service merge contracts", () => {
                 [
                     {
                         id: 201,
-                        capability: "knowledge_tags",
+                        capability: "KNOWLEDGE_TAG_EXTRACT",
                         name: "知识标签提取",
                         currentVersionNo: 3
                     }
@@ -234,7 +234,7 @@ describe("taxonomy service merge contracts", () => {
                 id: "301",
                 templateId: "201",
                 templateName: "知识标签提取",
-                capability: "knowledge_tags",
+                capability: "KNOWLEDGE_TAG_EXTRACT",
                 versionNo: 3,
                 registeredAt: "2026-07-01T00:00:00.000Z"
             }
