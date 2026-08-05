@@ -104,7 +104,7 @@ Place tests under `src/test/` mirroring source structure. Name unit tests with a
 
 Run the narrowest relevant validation available. If no validation exists, document manual checks in the PR.
 
-## Code Review Guidelines
+## Code Review Rules
 
 Review the complete PR diff from its merge base. Judge the final code against the delivery intent, contracts, architecture rules, and surrounding system behavior. Complete all applicable review passes before reporting findings; do not stop after the first issues.
 
@@ -133,6 +133,16 @@ Report all independent, actionable P0-P2 findings in one review, including sever
 - **P3:** maintainability, readability, or local design concern; omit from formal findings.
 
 Put unverified concerns under validation gaps or residual risks, not findings. If there are no findings, state that clearly and list any material gaps or residual risks.
+
+Repository-specific checks:
+
+- **AI business capability values:** Backend business capability codes are Java enum names such as `CLASSICS_TAG_EXTRACT`, not worker canonical values such as `tags`. When capability values are renamed or normalized, review every persistence surface that can store them: seed/config tables, runtime history tables, candidates, invocation logs, batch jobs, frontend request constants, worker-usecase mappings, and docs.
+- **AI worker/backend boundary:** Workers are capability executors and must not parse business JSON protocols. Java backend owns prompt rendering, JSON compatibility extraction, structured output validation, and business protocol parsing before results become successful candidates.
+- **Queued AI task snapshots:** Async or batch AI tasks must execute against the model, prompt version, prompt messages, variables, schema, and params captured at submit time. Execution must not silently re-resolve mutable business config unless the submitted command is missing a snapshot.
+- **Seed/import/deploy compatibility:** `db/data-source/**` is the seed source of truth. Generated SQL under `build/seed-sql/` is temporary and must not be treated as a durable engineering asset. Import or deploy changes that normalize seed/config data must also account for runtime tables that are not rebuilt.
+- **Admin business pages:** First classify a changed page/component as orchestration or capability. Orchestration components should mostly manage layout and high-level composition; capability components should own their own state, service calls, lifecycle, and protocol details. Do not keep child business logic in parent drawers/panels unless there is a real cross-child coordination requirement.
+- **Admin tables:** Table action columns must use the project action structure rather than ad-hoc render output. A table must keep at least one flexible data column without explicit width; checkbox/options columns may specify width.
+- **Frontend reusable components:** Extract common business components only when there are multiple repeated usages under the same business rule. Avoid fragmenting page-local UI into generic components just because two places look similar.
 
 ## Commit & Pull Request Guidelines
 
