@@ -121,7 +121,7 @@ class AiFacadeImplTest {
                 mock(AiCandidateApplicationService.class));
         CreateAiBatchJobFacadeRequest request = CreateAiBatchJobFacadeRequest.builder()
                 .scope("knowledge")
-                .capability("knowledge_graph_extract")
+                .capability("KNOWLEDGE_GRAPH_EXTRACT")
                 .contentType("WANGQI_DOCUMENT")
                 .totalCount(12)
                 .failureSummaryJson("{\"retry\":0}")
@@ -530,7 +530,7 @@ class AiFacadeImplTest {
                 .contentType("CLASSICS_CONTENT")
                 .contentId(902L)
                 .objectId(903L)
-                .capability("knowledge_graph")
+                .capability("KNOWLEDGE_GRAPH_EXTRACT")
                 .build());
 
         assertEquals(901L, response.getCandidateId());

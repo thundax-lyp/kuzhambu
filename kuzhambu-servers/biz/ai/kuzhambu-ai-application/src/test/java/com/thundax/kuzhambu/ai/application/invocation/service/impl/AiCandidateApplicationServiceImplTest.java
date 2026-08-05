@@ -50,14 +50,13 @@ class AiCandidateApplicationServiceImplTest {
 
     @ParameterizedTest
     @CsvSource({
-        "summary, CLASSICS_SUMMARY",
-        "image_analysis, CLASSICS_IMAGE_DESCRIBE",
-        "relation_extraction, KNOWLEDGE_RELATION_EXTRACT",
-        "knowledge_graph, KNOWLEDGE_GRAPH_EXTRACT",
-        "lineage_extraction, KNOWLEDGE_LINEAGE_EXTRACT"
+        "CLASSICS_SUMMARY, CLASSICS_SUMMARY",
+        "CLASSICS_IMAGE_DESCRIBE, CLASSICS_IMAGE_DESCRIBE",
+        "KNOWLEDGE_RELATION_EXTRACT, KNOWLEDGE_RELATION_EXTRACT",
+        "KNOWLEDGE_GRAPH_EXTRACT, KNOWLEDGE_GRAPH_EXTRACT",
+        "KNOWLEDGE_LINEAGE_EXTRACT, KNOWLEDGE_LINEAGE_EXTRACT"
     })
-    void requirePendingForApplyShouldNormalizeLegacyCapability(
-            String legacyCapability, AiBusinessCapability expectedCapability) {
+    void requirePendingForApplyShouldUseCapabilityCode(String capabilityCode, AiBusinessCapability expectedCapability) {
         AiCandidate candidate =
                 candidate(1L, "SANCAI_ENTRY", 2L, expectedCapability.value(), AiCandidateStatus.PENDING);
         AiCandidateApplicationServiceImpl service =
@@ -66,7 +65,7 @@ class AiCandidateApplicationServiceImplTest {
         AiCandidate actual = service.requirePendingForApply(new RequireAiCandidateForApplyQuery(
                 new AiCandidateId(1L),
                 AiContentRef.of("SANCAI_ENTRY", 2L),
-                AiBusinessCapability.fromAlias(legacyCapability),
+                AiBusinessCapability.from(capabilityCode),
                 null));
 
         assertSame(candidate, actual);

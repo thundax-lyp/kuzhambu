@@ -58,8 +58,8 @@ class AiWorkerModelConfigResolverTest {
     void resolveShouldRejectMissingModelId() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("translate"));
+        command.setCapability(com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(
+                AiBusinessCapability.CLASSICS_TRANSLATE.value()));
 
         AiWorkerModelConfigResolver resolver = newResolver(new FakeModelApplicationService());
 
@@ -78,7 +78,7 @@ class AiWorkerModelConfigResolverTest {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
         command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_TRANSLATE"));
 
         AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
 
@@ -97,7 +97,7 @@ class AiWorkerModelConfigResolverTest {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
         command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_TRANSLATE"));
 
         AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
 
@@ -116,7 +116,7 @@ class AiWorkerModelConfigResolverTest {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
         command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_TRANSLATE"));
 
         resolver.resolve(command);
         AiWorkerModelConfigResolver.ResolvedModelConfig resolvedAgain = resolver.resolve(command);

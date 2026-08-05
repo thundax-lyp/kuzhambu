@@ -149,7 +149,7 @@ public class AiFacadeImpl implements AiFacade {
         }
         Long batchId = AiBatchJobIdCodec.toValue(aiBatchJobApplicationService.create(new AiBatchJobCreateCommand(
                 request.getScope(),
-                AiBusinessCapability.fromAlias(request.getCapability()),
+                AiBusinessCapability.from(request.getCapability()),
                 AiContentRef.ofNullable(request.getContentType(), null),
                 request.getTotalCount(),
                 request.getFailureSummaryJson())));
@@ -218,7 +218,7 @@ public class AiFacadeImpl implements AiFacade {
                 aiCandidateApplicationService.requirePendingForApply(new RequireAiCandidateForApplyQuery(
                         AiCandidateIdCodec.toDomain(request.getCandidateId()),
                         AiContentRef.ofNullable(request.getContentType(), request.getContentId()),
-                        AiBusinessCapability.fromAlias(request.getCapability()),
+                        AiBusinessCapability.from(request.getCapability()),
                         AiTargetObjectIdCodec.toDomain(request.getObjectId()))));
     }
 

@@ -81,7 +81,7 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         AiInvokeCommand invokeCommand = new AiInvokeCommand();
         invokeCommand.setScope(SCOPE_DISCOVERY);
         invokeCommand.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias(spec.capability()));
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(spec.capability()));
         invokeCommand.setWorkerCapability(spec.workerCapability());
         invokeCommand.setOperation(spec.operation());
         invokeCommand.setWorkerPath(spec.workerPath());

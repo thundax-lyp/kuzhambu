@@ -20,15 +20,15 @@ import org.springframework.stereotype.Service;
 @BizExceptionBoundary
 public class AiRefinementApplicationServiceImpl implements AiRefinementApplicationService {
 
-    private static final String CAPABILITY_TRANSLATE = "classics_translate";
-    private static final String CAPABILITY_SUMMARY = "classics_summary";
-    private static final String CAPABILITY_TAGS = "classics_tags";
-    private static final String CAPABILITY_QA = "classics_qa";
-    private static final String CAPABILITY_IMAGE_ANALYSIS = "classics_image_describe";
-    private static final String CAPABILITY_FUSION = "classics_image_prompt_fusion";
-    private static final String CAPABILITY_IMAGE_GEN = "classics_image_generate";
-    private static final String CAPABILITY_VISUAL = "classics_visual_describe";
-    private static final String CAPABILITY_SPLIT = "classics_split";
+    private static final String CAPABILITY_TRANSLATE = "CLASSICS_TRANSLATE";
+    private static final String CAPABILITY_SUMMARY = "CLASSICS_SUMMARY";
+    private static final String CAPABILITY_TAGS = "CLASSICS_TAG_EXTRACT";
+    private static final String CAPABILITY_QA = "CLASSICS_QA";
+    private static final String CAPABILITY_IMAGE_ANALYSIS = "CLASSICS_IMAGE_DESCRIBE";
+    private static final String CAPABILITY_FUSION = "CLASSICS_IMAGE_PROMPT_FUSION";
+    private static final String CAPABILITY_IMAGE_GEN = "CLASSICS_IMAGE_GENERATE";
+    private static final String CAPABILITY_VISUAL = "CLASSICS_VISUAL_DESCRIBE";
+    private static final String CAPABILITY_SPLIT = "CLASSICS_SPLIT";
 
     private final AiWorkerInvocationApplicationService invocationApplicationService;
     private final ClassicsAiWorkerUsecaseResolver classicsAiWorkerUsecaseResolver;
@@ -113,12 +113,12 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     }
 
     private AiCandidateResult invokeCandidate(AiRefinementRequestCommand command, String capability) {
-        return invokeCandidate(command, AiBusinessCapability.fromAlias(capability), event -> {});
+        return invokeCandidate(command, AiBusinessCapability.from(capability), event -> {});
     }
 
     private AiCandidateResult invokeCandidate(
             AiRefinementRequestCommand command, String capability, Consumer<AiStreamEventResult> eventConsumer) {
-        return invokeCandidate(command, AiBusinessCapability.fromAlias(capability), eventConsumer);
+        return invokeCandidate(command, AiBusinessCapability.from(capability), eventConsumer);
     }
 
     private AiCandidateResult invokeCandidate(
@@ -144,7 +144,9 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         invokeCommand.setOperation(spec.operation());
         invokeCommand.setWorkerPath(spec.workerPath());
         invokeCommand.setWorkerCapability(spec.workerCapability());
-        enrichBusinessInvokeConfig(invokeCommand);
+        if (!hasResolvedInvokeConfig(invokeCommand)) {
+            enrichBusinessInvokeConfig(invokeCommand);
+        }
         copyResolvedInvokeConfig(command, invokeCommand);
         return invokeCommand;
     }
@@ -184,19 +186,14 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         if (businessInvokeConfigResolver == null || command == null) {
             return;
         }
-        if (hasResolvedInvokeConfig(command)) {
-            return;
-        }
         businessInvokeConfigResolver.resolve(command);
     }
 
     private boolean hasResolvedInvokeConfig(AiInvokeCommand command) {
-        return !isBlank(command.getServiceRole())
+        return command != null
                 && command.getModelId() != null
-                && command.getModelName() != null
                 && command.getPromptVersionId() != null
-                && !isBlank(command.getPromptMessagesJson())
-                && !isBlank(command.getPromptVariablesJson());
+                && !isBlank(command.getPromptMessagesJson());
     }
 
     private void copyResolvedInvokeConfig(AiRefinementRequestCommand command, AiInvokeCommand invokeCommand) {
