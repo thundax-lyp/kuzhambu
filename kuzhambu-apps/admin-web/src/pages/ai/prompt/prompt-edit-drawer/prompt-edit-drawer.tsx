@@ -1,11 +1,4 @@
-import {
-    BranchesOutlined,
-    CheckCircleOutlined,
-    DeleteOutlined,
-    EyeOutlined,
-    PlusOutlined,
-    RetweetOutlined
-} from "@ant-design/icons";
+import { CheckCircleOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Form, Input, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -626,7 +619,6 @@ export const PromptEditDrawer = ({
                         key: "view",
                         text: "查看",
                         ariaLabel: `查看版本 ${record.versionNo ?? "-"}`,
-                        icon: <EyeOutlined />,
                         testId: "ai-prompt-prompt-view-button",
                         onClick: () => setViewVersion(record)
                     },
@@ -635,7 +627,6 @@ export const PromptEditDrawer = ({
                         text: "对比",
                         ariaLabel: `对比版本 ${record.versionNo ?? "-"}`,
                         disabled: !template?.currentVersionNo,
-                        icon: <BranchesOutlined />,
                         testId: "ai-prompt-prompt-compare-button",
                         onClick: () => void compareWithCurrent(record)
                     },
@@ -644,7 +635,6 @@ export const PromptEditDrawer = ({
                         text: "回滚",
                         ariaLabel: `回滚版本 ${record.versionNo ?? "-"}`,
                         disabled: !canEdit || current,
-                        icon: <RetweetOutlined />,
                         testId: "ai-prompt-prompt-rollback-button",
                         type: "warning",
                         onClick: () => confirmRollbackVersion(record)

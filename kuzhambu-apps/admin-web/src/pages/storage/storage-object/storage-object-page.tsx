@@ -1,11 +1,4 @@
-import {
-    DeleteOutlined,
-    DownloadOutlined,
-    EyeOutlined,
-    FileOutlined,
-    ReloadOutlined,
-    UploadOutlined
-} from "@ant-design/icons";
+import { DeleteOutlined, FileOutlined, ReloadOutlined, UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Input, Typography } from "antd";
 import { useMemo, useRef, useState } from "react";
@@ -497,7 +490,6 @@ export const StorageObjectPage = () => {
                               {
                                   key: "preview",
                                   text: "预览",
-                                  icon: <EyeOutlined />,
                                   ariaLabel: `预览 ${filename}`,
                                   onClick: () =>
                                       window.open(previewUrl, "_blank", "noopener,noreferrer")
@@ -509,13 +501,16 @@ export const StorageObjectPage = () => {
                               {
                                   key: "download",
                                   text: "下载",
-                                  icon: <DownloadOutlined />,
                                   ariaLabel: `下载 ${filename}`,
                                   onClick: () =>
                                       window.open(downloadUrl, "_blank", "noopener,noreferrer")
                               }
                           ]
                         : []),
+                    {
+                        key: "delete-divider",
+                        type: "divider"
+                    },
                     {
                         key: "delete",
                         text: "删除",
