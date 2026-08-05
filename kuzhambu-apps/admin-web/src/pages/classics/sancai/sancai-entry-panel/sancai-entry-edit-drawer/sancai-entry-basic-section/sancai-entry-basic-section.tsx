@@ -14,7 +14,6 @@ import {
 import { SancaiEntryImageField } from "./sancai-entry-image-field";
 import { SancaiEntrySummaryTextField } from "./sancai-entry-summary-text-field";
 import { SancaiEntryTranslationTextField } from "./sancai-entry-translation-text-field";
-import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-edit-drawer-form-values";
 import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import type {
@@ -55,35 +54,23 @@ interface SancaiEntryBasicPreviewState {
 interface SancaiEntryBasicSectionProps {
     categoryOptions: Array<{ label: string; value: string }>;
     entryId?: string;
-    isCreatingSummaryTask: boolean;
-    isCreatingTranslationTask: boolean;
     mode: "create" | "edit";
     readOnly: boolean;
-    summaryTasks: AiRefinementTaskRecord[];
-    translationTasks: AiRefinementTaskRecord[];
     value: SancaiEntryFormValues;
     volumes: SancaiVolumeRecord[];
     onChange: (value: SancaiEntryFormValues) => void;
     onPreviewStateChange: (state: SancaiEntryBasicPreviewState) => void;
-    onRequestSummaryTask?: (draft: SancaiEntryFormValues) => void;
-    onRequestTranslationTask?: (draft: SancaiEntryFormValues) => void;
 }
 
 export const SancaiEntryBasicSection = ({
     categoryOptions,
     entryId,
-    isCreatingSummaryTask,
-    isCreatingTranslationTask,
     mode,
     readOnly,
-    summaryTasks,
-    translationTasks,
     value,
     volumes,
     onChange,
-    onPreviewStateChange,
-    onRequestSummaryTask,
-    onRequestTranslationTask
+    onPreviewStateChange
 }: SancaiEntryBasicSectionProps) => {
     const { message: messageApi } = App.useApp();
     const [form] = Form.useForm<SancaiEntryFormValues>();
@@ -294,20 +281,14 @@ export const SancaiEntryBasicSection = ({
                 <SancaiEntryTranslationTextField
                     entryId={entryId}
                     getFormValues={readFormValues}
-                    isCreatingTranslationTask={isCreatingTranslationTask}
                     mode={mode}
-                    translationTasks={translationTasks}
-                    onRequestTranslationTask={onRequestTranslationTask}
                 />
             </KuzhambuFormItem>
             <KuzhambuFormItem name="summary" label="摘要" layoutSize="large">
                 <SancaiEntrySummaryTextField
                     entryId={entryId}
                     getFormValues={readFormValues}
-                    isCreatingSummaryTask={isCreatingSummaryTask}
                     mode={mode}
-                    summaryTasks={summaryTasks}
-                    onRequestSummaryTask={onRequestSummaryTask}
                 />
             </KuzhambuFormItem>
             {entryId ? (

@@ -8,16 +8,67 @@ import { KuzhambuButton, KuzhambuSpace } from "@/components";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
-import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
+import {
+    AI_BUSINESS_CAPABILITY,
+    type AiRefinementTaskRecord
+} from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-edit-drawer-form-values";
 import { SancaiEntryTranslationModal } from "./sancai-entry-translation-modal";
 import "./sancai-entry-translation-text-field.css";
 
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
-const TRANSLATION_CANDIDATE_CAPABILITY = "classics_translate";
+const TRANSLATION_CANDIDATE_CAPABILITY = AI_BUSINESS_CAPABILITY.CLASSICS_TRANSLATE;
+const TRANSLATION_TASK_POLL_INTERVAL_MS = 3000;
+
+type TranslationTaskPage = {
+    items?: AiRefinementTaskRecord[];
+    pageNo?: number;
+    pageSize?: number;
+    total?: number;
+};
 
 const getCandidateStableId = (candidate: AiCandidateRecord) => {
     return candidate.candidateIdText || String(candidate.candidateId);
+};
+
+const isSameTaskRecord = (
+    left: AiRefinementTaskRecord | undefined,
+    right: AiRefinementTaskRecord
+) => {
+    if (!left) {
+        return false;
+    }
+    const leftRecord = left as unknown as Record<string, unknown>;
+    const rightRecord = right as unknown as Record<string, unknown>;
+    const keys = new Set([...Object.keys(leftRecord), ...Object.keys(rightRecord)]);
+    return [...keys].every((key) => leftRecord[key] === rightRecord[key]);
+};
+
+const createEventId = (prefix: string) => {
+    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+        return `${prefix}-${crypto.randomUUID()}`;
+    }
+    return `${prefix}-${Date.now()}`;
+};
+
+const buildTranslationInputPayloadJson = (entryId: string, formValues: SancaiEntryFormValues) => {
+    const document = [formValues.originalText, formValues.translationText, formValues.summary]
+        .filter((value): value is string => Boolean(value?.trim()))
+        .join("\n\n");
+    return JSON.stringify({
+        capability: AI_BUSINESS_CAPABILITY.CLASSICS_TRANSLATE,
+        contentId: entryId,
+        contentType: "SANCAI_ENTRY",
+        document,
+        bodyText: formValues.originalText,
+        existingSummary: formValues.summary,
+        objectId: null,
+        originalText: formValues.originalText,
+        sourceText: formValues.originalText,
+        summary: formValues.summary,
+        title: formValues.title,
+        translationText: formValues.translationText
+    });
 };
 
 const isUsableTranslationCandidate = (candidate?: AiCandidateRecord | null) => {
@@ -42,23 +93,17 @@ const selectLatestTranslationCandidate = (candidates: AiCandidateRecord[] | unde
 interface SancaiEntryTranslationTextFieldProps {
     entryId?: string;
     getFormValues: () => SancaiEntryFormValues;
-    isCreatingTranslationTask?: boolean;
     mode: "create" | "edit";
-    translationTasks?: AiRefinementTaskRecord[];
     value?: string;
     onChange?: (value: string) => void;
-    onRequestTranslationTask?: (draft: SancaiEntryFormValues) => void;
 }
 
 export const SancaiEntryTranslationTextField = ({
     entryId,
     getFormValues,
-    isCreatingTranslationTask = false,
     mode,
-    translationTasks = [],
     value = "",
-    onChange,
-    onRequestTranslationTask
+    onChange
 }: SancaiEntryTranslationTextFieldProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -69,36 +114,79 @@ export const SancaiEntryTranslationTextField = ({
     );
     const [loadedTranslationCandidateSnapshot, setLoadedTranslationCandidateSnapshot] =
         useState<AiCandidateRecord | null>(null);
+    const translationTasksQuery = useQuery({
+        queryKey: ["classics", "sancai", "refinement", "tasks", entryId],
+        queryFn: () =>
+            aiRefinementTaskService.pageTasks({
+                contentType: "SANCAI_ENTRY",
+                contentId: entryId ?? "",
+                pageNo: 1,
+                pageSize: 20
+            }),
+        enabled: mode === "edit" && Boolean(entryId),
+        retry: false,
+        refetchInterval: (query) => {
+            const tasks = query.state.data?.items || [];
+            return tasks.some((task) => task.status === "PENDING" || task.status === "RUNNING")
+                ? TRANSLATION_TASK_POLL_INTERVAL_MS
+                : false;
+        }
+    });
+    const translationTasks = useMemo(
+        () =>
+            (translationTasksQuery.data?.items || []).filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
+                    "translate"
+            ),
+        [translationTasksQuery.data?.items]
+    );
     const syncTranslationTask = useCallback(
         (task: AiRefinementTaskRecord | null) => {
             if (!task || !entryId) {
                 return;
             }
             const normalizedTask = { ...task, capability: "translate" };
-            queryClient.setQueryData<{
-                items?: AiRefinementTaskRecord[];
-                [key: string]: unknown;
-            }>(["classics", "sancai", "refinement", "tasks", entryId], (currentPage) => {
-                if (!currentPage?.items) {
-                    return currentPage;
+            queryClient.setQueryData<TranslationTaskPage>(
+                ["classics", "sancai", "refinement", "tasks", entryId],
+                (currentPage) => {
+                    const items = currentPage?.items || [];
+                    const existingTask = items.find(
+                        (item) => item.taskId === normalizedTask.taskId
+                    );
+                    if (isSameTaskRecord(existingTask, normalizedTask)) {
+                        return currentPage;
+                    }
+                    return {
+                        pageNo: currentPage?.pageNo ?? 1,
+                        pageSize: currentPage?.pageSize ?? Math.max(items.length + 1, 20),
+                        total: existingTask
+                            ? currentPage?.total
+                            : (currentPage?.total ?? items.length) + 1,
+                        items: existingTask
+                            ? items.map((item) =>
+                                  item.taskId === normalizedTask.taskId
+                                      ? { ...item, ...normalizedTask }
+                                      : item
+                              )
+                            : [normalizedTask, ...items]
+                    };
                 }
-                const taskExists = currentPage.items.some(
-                    (item) => item.taskId === normalizedTask.taskId
-                );
-                return {
-                    ...currentPage,
-                    items: taskExists
-                        ? currentPage.items.map((item) =>
-                              item.taskId === normalizedTask.taskId
-                                  ? { ...item, ...normalizedTask }
-                                  : item
-                          )
-                        : [normalizedTask, ...currentPage.items]
-                };
-            });
+            );
         },
         [entryId, queryClient]
     );
+    const createTranslationTaskMutation = useMutation({
+        mutationFn: aiRefinementTaskService.createTask,
+        onSuccess: async (acceptedTask) => {
+            syncTranslationTask(acceptedTask);
+            await translationTasksQuery.refetch();
+            messageApi.success("译文任务已创建");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "AI 精修任务创建失败");
+        }
+    });
     const translationCandidatesQuery = useQuery({
         queryKey: ["ai", "candidates", "SANCAI_ENTRY", entryId, "translate", "modal"],
         queryFn: () =>
@@ -111,7 +199,9 @@ export const SancaiEntryTranslationTextField = ({
         enabled: translationModalOpen && Boolean(entryId),
         retry: false,
         refetchInterval: () => {
-            return isCreatingTranslationTask ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS : false;
+            return createTranslationTaskMutation.isPending
+                ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
+                : false;
         }
     });
     const applyTranslationCandidateMutation = useMutation({
@@ -168,7 +258,8 @@ export const SancaiEntryTranslationTextField = ({
         loadedTranslationCandidateSnapshot,
         translationCandidatesQuery.data
     ]);
-    const isTranslationApplyDisabled = !translationDraft.trim() || isCreatingTranslationTask;
+    const isTranslationApplyDisabled =
+        !translationDraft.trim() || createTranslationTaskMutation.isPending;
     const refetchTranslationCandidates = translationCandidatesQuery.refetch;
     const loadTranslationCandidate = useCallback(
         async (task: AiRefinementTaskRecord | null) => {
@@ -238,6 +329,28 @@ export const SancaiEntryTranslationTextField = ({
     const closeTranslationModal = () => {
         setTranslationModalOpen(false);
     };
+    const requestTranslationTask = () => {
+        if (!entryId) {
+            return false;
+        }
+        const formValues = getFormValues();
+        if (!formValues.originalText?.trim()) {
+            messageApi.warning("请先填写原文");
+            return false;
+        }
+        createTranslationTaskMutation.mutate({
+            capability: AI_BUSINESS_CAPABILITY.CLASSICS_TRANSLATE,
+            scope: "classics",
+            contentType: "SANCAI_ENTRY",
+            contentId: entryId,
+            objectId: null,
+            requestId: createEventId("sancai-translation-task"),
+            traceId: createEventId("sancai-translation-trace"),
+            inputPayloadJson: buildTranslationInputPayloadJson(entryId, formValues),
+            locale: "zh-CN"
+        });
+        return true;
+    };
     const applyTranslationDraft = () => {
         if (!entryId) {
             return;
@@ -248,7 +361,7 @@ export const SancaiEntryTranslationTextField = ({
                 candidateId: getCandidateStableId(loadedTranslationCandidate),
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: "translate",
+                capability: AI_BUSINESS_CAPABILITY.CLASSICS_TRANSLATE,
                 objectId: loadedTranslationCandidate.objectId,
                 resultFormat: loadedTranslationCandidate.resultFormat?.trim() || "TEXT",
                 resultPayload,
@@ -291,14 +404,14 @@ export const SancaiEntryTranslationTextField = ({
                 isAiTextCandidateFetching={translationCandidatesQuery.isFetching}
                 isAiTextCandidateLoadError={translationCandidatesQuery.isError}
                 isApplyingAiText={applyTranslationCandidateMutation.isPending}
-                isCreatingAiTextTask={isCreatingTranslationTask}
+                isCreatingAiTextTask={createTranslationTaskMutation.isPending}
                 open={translationModalOpen}
                 onApply={applyTranslationDraft}
                 onCancel={closeTranslationModal}
                 onFetchResult={loadTranslationCandidate}
                 onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId })}
                 onResultChange={updateTranslationDraftFromCandidate}
-                onRequestTranslationTask={onRequestTranslationTask}
+                onRequestTranslationTask={requestTranslationTask}
                 onTaskChange={handleTranslationTaskChange}
                 onTextDraftChange={setTranslationDraft}
                 translationTasks={translationTasks}

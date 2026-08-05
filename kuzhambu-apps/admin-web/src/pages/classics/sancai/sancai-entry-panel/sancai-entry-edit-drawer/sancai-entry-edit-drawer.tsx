@@ -1,13 +1,16 @@
 import { App, Empty } from "antd";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { KuzhambuSegmentedDrawer, KuzhambuButton } from "@/components";
 
-import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import { useSancaiEntryVisualPreviewState } from "@/pages/classics/common/hooks/use-sancai-entry-visual-preview-state";
+import { isSameId } from "@/types/id";
 
 import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
-import { openSancaiEntryPreviewWindow } from "./sancai-entry-preview-window";
+import { SancaiEntryQaSection } from "./sancai-entry-qa-section";
+import { SancaiEntryTagSection } from "./sancai-entry-tag-section";
+import { SancaiEntryVersionSection } from "./sancai-entry-version-section";
+import { openSancaiEntryPreviewWindow } from "./open-sancai-entry-preview-window";
 import {
     toEntryFormValues,
     type SancaiEntryFormValues
@@ -22,9 +25,6 @@ interface SancaiEntryBasicPreviewState {
 }
 
 interface SancaiEntryEditDrawerProps {
-    qaContent?: ReactNode;
-    tagContent?: ReactNode;
-    versionContent?: ReactNode;
     categoryOptions?: Array<{ label: string; value: string }>;
     entry: SancaiEntryRecord | undefined;
     initialCategoryId?: string | null;
@@ -35,19 +35,11 @@ interface SancaiEntryEditDrawerProps {
     readOnly?: boolean;
     onCancel: () => void;
     onSubmit: (values: SancaiEntryFormValues) => void;
-    onCreateTranslationTask?: (draft: SancaiEntryFormValues) => void;
-    onCreateSummaryTask?: (draft: SancaiEntryFormValues) => void;
-    isCreatingTranslationTask?: boolean;
-    isCreatingSummaryTask?: boolean;
-    translationTasks?: AiRefinementTaskRecord[];
-    summaryTasks?: AiRefinementTaskRecord[];
+    onEntryChanged: () => void | Promise<void>;
     volumes?: Array<{ categoryId?: string | null; id: string; title?: string | null }>;
 }
 
 export const SancaiEntryEditDrawer = ({
-    qaContent,
-    tagContent,
-    versionContent,
     categoryOptions = [],
     entry,
     initialCategoryId = null,
@@ -58,12 +50,7 @@ export const SancaiEntryEditDrawer = ({
     readOnly = false,
     onCancel,
     onSubmit,
-    onCreateTranslationTask,
-    onCreateSummaryTask,
-    isCreatingTranslationTask = false,
-    isCreatingSummaryTask = false,
-    translationTasks = [],
-    summaryTasks = [],
+    onEntryChanged,
     volumes = []
 }: SancaiEntryEditDrawerProps) => {
     const { message: messageApi } = App.useApp();
@@ -74,6 +61,19 @@ export const SancaiEntryEditDrawer = ({
     const [basicPreviewState, setBasicPreviewState] = useState<SancaiEntryBasicPreviewState>({});
     const entryId = mode === "edit" ? entry?.id : undefined;
     const visualPreviewState = useSancaiEntryVisualPreviewState(entryId);
+    const selectedEntryVolume = useMemo(
+        () => volumes.find((volume) => isSameId(volume.id, entry?.volumeId)) ?? null,
+        [entry?.volumeId, volumes]
+    );
+    const selectedEntryCategory = useMemo(
+        () =>
+            categoryOptions.find((category) =>
+                isSameId(category.value, selectedEntryVolume?.categoryId)
+            ) ?? null,
+        [categoryOptions, selectedEntryVolume?.categoryId]
+    );
+    const categoryTitle = selectedEntryCategory?.label?.trim() || "未归类";
+    const volumeTitle = selectedEntryVolume?.title?.trim() || "未选择卷目";
 
     const submitForm = () => {
         if (!entryDraft.volumeId) {
@@ -81,6 +81,9 @@ export const SancaiEntryEditDrawer = ({
             return;
         }
         onSubmit(entryDraft);
+    };
+    const closeDrawer = () => {
+        onCancel();
     };
 
     if (!entry && mode !== "create") {
@@ -91,18 +94,12 @@ export const SancaiEntryEditDrawer = ({
         <SancaiEntryBasicSection
             categoryOptions={categoryOptions}
             entryId={entryId}
-            isCreatingSummaryTask={isCreatingSummaryTask}
-            isCreatingTranslationTask={isCreatingTranslationTask}
             mode={mode}
             readOnly={readOnly}
-            summaryTasks={summaryTasks}
-            translationTasks={translationTasks}
             value={entryDraft}
             volumes={volumes}
             onChange={setEntryDraft}
             onPreviewStateChange={setBasicPreviewState}
-            onRequestSummaryTask={onCreateSummaryTask}
-            onRequestTranslationTask={onCreateTranslationTask}
         />
     );
 
@@ -125,7 +122,15 @@ export const SancaiEntryEditDrawer = ({
         {
             label: "标签",
             value: "tags",
-            content: tagContent || (
+            content: entry ? (
+                <SancaiEntryTagSection
+                    categoryTitle={categoryTitle}
+                    entry={entry}
+                    readOnly={readOnly}
+                    volumeTitle={volumeTitle}
+                    onChanged={onEntryChanged}
+                />
+            ) : (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
             ),
             visible: mode === "edit"
@@ -133,7 +138,15 @@ export const SancaiEntryEditDrawer = ({
         {
             label: "问答",
             value: "qa",
-            content: qaContent || (
+            content: entry ? (
+                <SancaiEntryQaSection
+                    categoryTitle={categoryTitle}
+                    entry={entry}
+                    readOnly={readOnly}
+                    volumeTitle={volumeTitle}
+                    onChanged={onEntryChanged}
+                />
+            ) : (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无问答" />
             ),
             visible: mode === "edit"
@@ -141,7 +154,14 @@ export const SancaiEntryEditDrawer = ({
         {
             label: "版本",
             value: "versions",
-            content: versionContent || (
+            content: entry ? (
+                <SancaiEntryVersionSection
+                    currentEntry={entry}
+                    isCreating={mode === "create"}
+                    readOnly={readOnly}
+                    onChanged={onEntryChanged}
+                />
+            ) : (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无版本" />
             ),
             visible: mode === "edit"
@@ -182,14 +202,14 @@ export const SancaiEntryEditDrawer = ({
                           {
                               testId: "classics-sancai-sancai-entry-cancel-button",
                               title: "关闭",
-                              action: onCancel
+                              action: closeDrawer
                           }
                       ]
                     : [
                           {
                               testId: "classics-sancai-sancai-entry-cancel-button",
                               title: "取消",
-                              action: onCancel
+                              action: closeDrawer
                           },
                           {
                               testId: "classics-sancai-sancai-entry-create-button",
@@ -200,7 +220,7 @@ export const SancaiEntryEditDrawer = ({
                           }
                       ]
             }
-            onClose={onCancel}
+            onClose={closeDrawer}
             onSectionChange={setActiveSection}
         />
     );

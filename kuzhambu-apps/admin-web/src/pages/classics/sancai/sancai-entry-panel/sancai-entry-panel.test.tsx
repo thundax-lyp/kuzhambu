@@ -59,14 +59,14 @@ vi.mock("@/pages/classics/common/classics-content-service", () => ({
 
 const normalizeTaskCapabilityMock = vi.hoisted(() => {
     const aliases: Record<string, string> = {
-        classics_translate: "translate",
-        classics_summary: "summary",
-        classics_tags: "tags",
-        classics_qa: "qa",
-        classics_image_describe: "image_analysis",
-        classics_image_prompt_fusion: "fusion",
-        classics_visual_describe: "visual",
-        classics_image_generate: "image_gen"
+        CLASSICS_TRANSLATE: "translate",
+        CLASSICS_SUMMARY: "summary",
+        CLASSICS_TAG_EXTRACT: "tags",
+        CLASSICS_QA: "qa",
+        CLASSICS_IMAGE_DESCRIBE: "image_analysis",
+        CLASSICS_IMAGE_PROMPT_FUSION: "fusion",
+        CLASSICS_VISUAL_DESCRIBE: "visual",
+        CLASSICS_IMAGE_GENERATE: "image_gen"
     };
     return (capability: string) => aliases[capability] ?? capability;
 });
@@ -92,6 +92,19 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         requestId: "req-stream-1",
         traceId: "trace-stream-1"
     })),
+    getBusinessCapabilityCode: vi.fn((capability: string) => {
+        const codes: Record<string, string> = {
+            translate: "CLASSICS_TRANSLATE",
+            summary: "CLASSICS_SUMMARY",
+            tags: "CLASSICS_TAG_EXTRACT",
+            qa: "CLASSICS_QA",
+            image_analysis: "CLASSICS_IMAGE_DESCRIBE",
+            fusion: "CLASSICS_IMAGE_PROMPT_FUSION",
+            visual: "CLASSICS_VISUAL_DESCRIBE",
+            image_gen: "CLASSICS_IMAGE_GENERATE"
+        };
+        return codes[capability] ?? capability;
+    }),
     pageTasks: vi.fn(async () => ({
         items: [],
         total: 0,
@@ -804,7 +817,7 @@ describe("SancaiEntryPanel batch operations", () => {
         ).not.toBeInTheDocument();
 
         await user.click(screen.getByText("问答"));
-        expect(await screen.findByText("天地为何不变？")).toBeVisible();
+        expect(await screen.findByText("问：天地为何不变？")).toBeVisible();
         expect(
             screen.queryByTestId("classics-common-classics-content-qa-action-button")
         ).not.toBeInTheDocument();
@@ -987,7 +1000,7 @@ describe("SancaiEntryPanel batch operations", () => {
             expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
         });
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toMatchObject({
-            capability: "translate",
+            capability: "CLASSICS_TRANSLATE",
             scope: "classics",
             contentType: "SANCAI_ENTRY",
             contentId: "3001",
@@ -1021,7 +1034,7 @@ describe("SancaiEntryPanel batch operations", () => {
                 {
                     taskId: "8202",
                     status: "RUNNING",
-                    capability: "classics_translate",
+                    capability: "CLASSICS_TRANSLATE",
                     contentType: "SANCAI_ENTRY",
                     contentId: "3001",
                     requestedAt: "2026-06-22T01:00:00.000+08:00"
@@ -1034,7 +1047,7 @@ describe("SancaiEntryPanel batch operations", () => {
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
             taskId: "8202",
             status: "RUNNING",
-            capability: "classics_translate",
+            capability: "CLASSICS_TRANSLATE",
             contentType: "SANCAI_ENTRY",
             contentId: "3001",
             requestedAt: "2026-06-22T01:00:00.000+08:00"
@@ -1067,7 +1080,7 @@ describe("SancaiEntryPanel batch operations", () => {
             expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
         });
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toMatchObject({
-            capability: "summary",
+            capability: "CLASSICS_SUMMARY",
             scope: "classics",
             contentType: "SANCAI_ENTRY",
             contentId: "3001",
@@ -1112,7 +1125,7 @@ describe("SancaiEntryPanel batch operations", () => {
         });
         const command = vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0];
         expect(JSON.parse(command?.inputPayloadJson || "{}")).toMatchObject({
-            capability: "summary",
+            capability: "CLASSICS_SUMMARY",
             contentType: "SANCAI_ENTRY",
             document: "编辑后的天地原文\n\n译文\n\n天地摘要",
             bodyText: "编辑后的天地原文",
@@ -1120,11 +1133,8 @@ describe("SancaiEntryPanel batch operations", () => {
             originalText: "编辑后的天地原文",
             translationText: "译文"
         });
-        const promptMessages = JSON.parse(command?.promptMessagesJson || "[]");
-        expect(JSON.parse(promptMessages[1]?.content || "{}")).toMatchObject({
-            originalText: "编辑后的天地原文",
-            translationText: "译文"
-        });
+        expect(command).not.toHaveProperty("promptMessagesJson");
+        expect(command).not.toHaveProperty("promptVariablesJson");
     }, 30000);
 
     it("applies loaded summary candidate when adopting AI summary draft", async () => {
@@ -1163,7 +1173,7 @@ describe("SancaiEntryPanel batch operations", () => {
             candidateId: "8101",
             contentType: "SANCAI_ENTRY",
             contentId: "3001",
-            capability: "summary",
+            capability: "CLASSICS_SUMMARY",
             objectId: null,
             resultFormat: "TEXT",
             resultPayload: "候选摘要",
@@ -1331,10 +1341,10 @@ describe("SancaiEntryPanel batch operations", () => {
         await openTagSection(user);
         expect((await screen.findAllByText("标签")).length).toBeGreaterThan(0);
         expect(await screen.findByText("门类")).toBeInTheDocument();
-        expect(await screen.findByText("天文")).toBeInTheDocument();
+        expect((await screen.findAllByText("天文")).length).toBeGreaterThan(0);
         expect(await screen.findByText("卷目")).toBeInTheDocument();
         expect((await screen.findAllByText("天文卷一")).length).toBeGreaterThan(0);
-        expect(await screen.findByText("简介/摘要")).toBeInTheDocument();
+        expect((await screen.findAllByText("摘要")).length).toBeGreaterThan(0);
         expect((await screen.findAllByText("天地摘要")).length).toBeGreaterThan(0);
         expect(await screen.findByLabelText("标签列表")).toBeInTheDocument();
         expect(await screen.findByText("AI 生成")).toBeInTheDocument();
@@ -1342,7 +1352,7 @@ describe("SancaiEntryPanel batch operations", () => {
         expect(await screen.findByTestId("classics-content-tag-ai-modal")).toBeInTheDocument();
         expect(
             await screen.findByTestId("classics-content-tag-ai-create-task-button")
-        ).toHaveTextContent("生成标签");
+        ).toHaveTextContent("生成候选标签");
         expect(screen.queryByLabelText("添加标签")).not.toBeInTheDocument();
         await user.click(
             await screen.findByTestId("classics-common-classics-content-tag-open-add-button")
@@ -1358,9 +1368,29 @@ describe("SancaiEntryPanel batch operations", () => {
         expect(await screen.findByText("已选择")).toBeInTheDocument();
         expect(await screen.findByText("选择")).toBeInTheDocument();
         await openQaSection(user);
-        expect(await screen.findByText("三才图会问答对治理")).toBeInTheDocument();
+        expect(await screen.findByText("门类")).toBeInTheDocument();
+        expect(await screen.findByText("卷目")).toBeInTheDocument();
+        expect(await screen.findByText("标题")).toBeInTheDocument();
+        const qaAiButton = await screen.findByTestId("classics-common-content-qa-ai-button");
+        expect(qaAiButton).toHaveTextContent("AI生成");
+        await user.click(qaAiButton);
+        expect(await screen.findByTestId("classics-content-qa-ai-modal")).toBeInTheDocument();
+        expect(
+            await screen.findByTestId("classics-content-qa-ai-create-task-button")
+        ).toHaveTextContent("生成候选问答");
+        expect(await screen.findByTestId("classics-content-qa-ai-close-button")).toHaveTextContent(
+            "关闭"
+        );
+        expect(await screen.findByTestId("classics-content-qa-ai-append-button")).toHaveTextContent(
+            "追加"
+        );
+        expect(
+            await screen.findByTestId("classics-common-classics-content-qa-action-button")
+        ).toHaveTextContent("新增");
+        expect(screen.queryByText("三才图会问答对治理")).not.toBeInTheDocument();
         expect(screen.queryByLabelText("三才图会内容上下文")).not.toBeInTheDocument();
-        expect(await screen.findByText("天地为何不变？")).toBeInTheDocument();
+        expect(await screen.findByText("问：天地为何不变？")).toBeInTheDocument();
+        expect(await screen.findByText("答：因为天地变化永恒。")).toBeInTheDocument();
     });
 
     it("gates tag AI create and candidate actions by permissions", async () => {
@@ -1379,8 +1409,8 @@ describe("SancaiEntryPanel batch operations", () => {
         expect(
             await screen.findByTestId("classics-content-tag-ai-create-task-button")
         ).toBeDisabled();
-        expect(await screen.findByText("新增：天文")).toBeInTheDocument();
-        expect(await screen.findByTestId("classics-content-tag-ai-discard-button")).toBeDisabled();
+        expect((await screen.findAllByText("天文")).length).toBeGreaterThan(0);
+        expect(await screen.findByTestId("classics-content-tag-ai-discard-button")).toBeEnabled();
         expect(await screen.findByTestId("classics-content-tag-ai-append-button")).toBeDisabled();
         expect(await screen.findByTestId("classics-content-tag-ai-cover-button")).toBeDisabled();
     });
@@ -1405,7 +1435,7 @@ describe("SancaiEntryPanel batch operations", () => {
         expect(aiCandidateService.list).not.toHaveBeenCalled();
     });
 
-    it("gates tag AI discard by invocation edit permission", async () => {
+    it("keeps tag AI close action available without invocation edit permission", async () => {
         clearPermissions();
         replacePermissions([
             "classics:sancai:view",
@@ -1423,8 +1453,8 @@ describe("SancaiEntryPanel batch operations", () => {
         await openTagSection(user);
         await user.click(await screen.findByTestId("classics-common-content-tag-ai-button"));
 
-        expect(await screen.findByText("新增：天文")).toBeInTheDocument();
-        expect(await screen.findByTestId("classics-content-tag-ai-discard-button")).toBeDisabled();
+        expect((await screen.findAllByText("天文")).length).toBeGreaterThan(0);
+        expect(await screen.findByTestId("classics-content-tag-ai-discard-button")).toBeEnabled();
         expect(await screen.findByTestId("classics-content-tag-ai-append-button")).toBeEnabled();
         expect(await screen.findByTestId("classics-content-tag-ai-cover-button")).toBeEnabled();
     });
