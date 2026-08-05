@@ -1,6 +1,6 @@
 {
   "priority": 7,
-  "capability": "classics_image_describe",
+  "capability": "CLASSICS_IMAGE_DESCRIBE",
   "suite": "classics-default-v1",
   "name": "古籍图片理解提示词",
   "description": "古籍图像默认解读提示词。",

@@ -1,6 +1,6 @@
 {
   "priority": 6,
-  "capability": "classics_translate",
+  "capability": "CLASSICS_TRANSLATE",
   "suite": "classics-default-v1",
   "name": "古籍翻译提示词",
   "description": "古籍文言文默认现代中文翻译提示词。",

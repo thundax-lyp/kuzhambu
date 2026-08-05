@@ -1,6 +1,6 @@
 {
   "priority": 18,
-  "capability": "classics_translate_batch_item",
+  "capability": "CLASSICS_TRANSLATE_BATCH_ITEM",
   "suite": "classics-default-v1",
   "name": "古籍批量翻译项提示词",
   "description": "古籍批量翻译项默认提示词。",

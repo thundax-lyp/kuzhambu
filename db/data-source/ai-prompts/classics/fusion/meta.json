@@ -1,6 +1,6 @@
 {
   "priority": 9,
-  "capability": "classics_image_prompt_fusion",
+  "capability": "CLASSICS_IMAGE_PROMPT_FUSION",
   "suite": "classics-default-v1",
   "name": "古籍图文融合提示词",
   "description": "古籍图文信息融合默认提示词。",
