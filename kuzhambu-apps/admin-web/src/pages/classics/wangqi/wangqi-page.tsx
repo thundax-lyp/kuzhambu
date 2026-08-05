@@ -62,9 +62,6 @@ const DEFAULT_WANGQI_FILTERS: WangqiFilters = {
 };
 const TASK_POLL_INTERVAL_MS = 3000;
 const EXPORT_PAGE_SIZE = 8;
-const DEFAULT_REFINEMENT_MODEL_ID = "1";
-const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
-const DEFAULT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
 
 const normalizeSearch = (value?: string | null) => {
     const normalizedValue = value?.trim();
@@ -75,63 +72,18 @@ const createEventId = (prefix: string) => {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 };
 
-const WANGQI_REFINEMENT_PROMPT: Record<AiRefinementTaskCapability, string> = {
-    summary: "你是古籍整理助理。请基于输入文稿生成简洁、准确、可直接回填到后台的中文摘要。",
-    tags: '你是古籍标签治理助理。请基于输入文稿、已有摘要和已有标签提取稳定、短小、适合后台统一标签库复用的中文标签。只返回 JSON，格式为 {"tags":["标签"]}，不要解释。',
-    qa: '你是古籍问答治理助理。请基于输入文稿、已有摘要和已有问答生成可用于知识库检索的中文问答对。只返回 JSON，格式为 {"qaPairs":[{"question":"问题","answer":"答案"}]}，不要解释。'
-};
-
 interface RefinementTaskContext {
     existingQaPairs?: WangqiQaTaskPair[];
     existingTags?: string[];
 }
 
-const buildPromptMessagesJson = (
-    document: WangqiDocumentRecord,
-    capability: AiRefinementTaskCapability,
-    context: RefinementTaskContext = {}
-) => {
-    return JSON.stringify([
-        {
-            role: "system",
-            content: WANGQI_REFINEMENT_PROMPT[capability]
-        },
-        {
-            role: "user",
-            content: [
-                `标题：${document.title || "未命名文档"}`,
-                `现有摘要：${document.summary || "暂无"}`,
-                ...(capability === "tags"
-                    ? [
-                          `已有标签：${
-                              context.existingTags?.length
-                                  ? context.existingTags.join("、")
-                                  : "暂无"
-                          }`
-                      ]
-                    : []),
-                ...(capability === "qa"
-                    ? [
-                          `已有问答：${
-                              context.existingQaPairs?.length
-                                  ? context.existingQaPairs
-                                        .map((pair) => `Q：${pair.question} A：${pair.answer}`)
-                                        .join("；")
-                                  : "暂无"
-                          }`
-                      ]
-                    : []),
-                `正文：${document.content || "暂无正文"}`
-            ].join("\n")
-        }
-    ]);
-};
-
 const buildInputPayloadJson = (
     document: WangqiDocumentRecord,
+    capability: string,
     context: RefinementTaskContext = {}
 ) => {
     return JSON.stringify({
+        capability,
         contentType: "WANGQI_DOCUMENT",
         document: document.content || null,
         title: document.title || null,
@@ -545,13 +497,16 @@ export const WangqiPage = () => {
     const createRefinementTaskMutation = useMutation({
         mutationFn: aiRefinementTaskService.createTask,
         onSuccess: async (task, command) => {
-            if (command.capability === "summary") {
+            const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(
+                command.capability
+            );
+            if (normalizedCapability === "summary") {
                 setSummaryTrackingTask(task);
             }
-            if (command.capability === "tags") {
+            if (normalizedCapability === "tags") {
                 setTagTrackingTask(task);
             }
-            if (command.capability === "qa") {
+            if (normalizedCapability === "qa") {
                 setQaTrackingTask(task);
             }
             await invalidateRefinementTasks();
@@ -751,24 +706,15 @@ export const WangqiPage = () => {
             return;
         }
         setCreatingRefinementCapability(capability);
+        const capabilityCode = aiRefinementTaskService.getBusinessCapabilityCode(capability);
         createRefinementTaskMutation.mutate({
-            capability,
+            capability: capabilityCode,
             scope: "classics",
             contentType: "WANGQI_DOCUMENT",
             contentId: document.id,
-            serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
-            modelId: DEFAULT_REFINEMENT_MODEL_ID,
-            modelName: DEFAULT_REFINEMENT_MODEL_NAME,
             requestId: createEventId(`wangqi-${capability}-request`),
             traceId: createEventId(`wangqi-${capability}-trace`),
-            promptMessagesJson: buildPromptMessagesJson(document, capability, context),
-            promptVariablesJson: JSON.stringify({
-                capability,
-                existingQaPairs: context.existingQaPairs || [],
-                existingTags: context.existingTags || [],
-                title: document.title || null
-            }),
-            inputPayloadJson: buildInputPayloadJson(document, context),
+            inputPayloadJson: buildInputPayloadJson(document, capabilityCode, context),
             locale: "zh-CN"
         });
     };

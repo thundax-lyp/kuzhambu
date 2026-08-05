@@ -18,7 +18,10 @@ import * as aiCandidateService from "@/pages/classics/common/ai-candidate-servic
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import { AiCandidatePayloadEditor } from "@/pages/classics/common/ai-candidate-payload-editor";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
-import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
+import {
+    AI_BUSINESS_CAPABILITY,
+    type AiRefinementTaskRecord
+} from "@/pages/classics/common/ai-refinement-task-types";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import type { ClassicsContentQaPairRecord } from "@/pages/classics/common/classics-content-types";
 import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
@@ -342,7 +345,7 @@ export const WangqiQaAiModal = ({
         const candidates = await aiCandidateService.list({
             contentId: document.id,
             contentType: "WANGQI_DOCUMENT",
-            capability: "qa",
+            capability: AI_BUSINESS_CAPABILITY.CLASSICS_QA,
             status: "PENDING"
         });
         return selectLatestQaCandidate(candidates, trackedCandidateId) ?? null;
@@ -387,7 +390,7 @@ export const WangqiQaAiModal = ({
             candidateId: candidate.candidateIdText || normalizeId(candidate.candidateId),
             contentId: document.id,
             contentType: "WANGQI_DOCUMENT",
-            capability: "qa",
+            capability: AI_BUSINESS_CAPABILITY.CLASSICS_QA,
             objectId: candidate.objectId,
             resultFormat: defaultResultFormatForQa(candidate),
             resultPayload: payload,
