@@ -48,16 +48,24 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
     cancelTask: vi.fn(),
     getNormalizedTaskCapability: vi.fn((capability: string) => {
         const aliases: Record<string, string> = {
-            classics_translate: "translate",
-            classics_summary: "summary",
-            classics_tags: "tags",
-            classics_qa: "qa",
-            classics_image_describe: "image_analysis",
-            classics_image_prompt_fusion: "fusion",
-            classics_visual_describe: "visual",
-            classics_image_generate: "image_gen"
+            CLASSICS_TRANSLATE: "translate",
+            CLASSICS_SUMMARY: "summary",
+            CLASSICS_TAG_EXTRACT: "tags",
+            CLASSICS_QA: "qa",
+            CLASSICS_IMAGE_DESCRIBE: "image_analysis",
+            CLASSICS_IMAGE_PROMPT_FUSION: "fusion",
+            CLASSICS_VISUAL_DESCRIBE: "visual",
+            CLASSICS_IMAGE_GENERATE: "image_gen"
         };
         return aliases[capability] ?? capability;
+    }),
+    getBusinessCapabilityCode: vi.fn((capability: string) => {
+        const codes: Record<string, string> = {
+            summary: "CLASSICS_SUMMARY",
+            tags: "CLASSICS_TAG_EXTRACT",
+            qa: "CLASSICS_QA"
+        };
+        return codes[capability] ?? capability;
     })
 }));
 
@@ -501,22 +509,31 @@ describe("MingCustomPage", () => {
         const calls = vi
             .mocked(aiRefinementTaskService.createTask)
             .mock.calls.map(([payload]) => payload);
-        expect(calls.map((payload) => payload.capability)).toEqual(["summary", "tags", "qa"]);
+        expect(calls.map((payload) => payload.capability)).toEqual([
+            "CLASSICS_SUMMARY",
+            "CLASSICS_TAG_EXTRACT",
+            "CLASSICS_QA"
+        ]);
         calls.forEach((payload) => {
             expect(payload).toEqual(
                 expect.objectContaining({
                     scope: "classics",
                     contentType: "MING_CUSTOMS",
                     contentId: "500000000001",
-                    serviceRole: "PRIMARY",
-                    modelId: "1",
-                    modelName: "gpt-5.5",
                     locale: "zh-CN"
                 })
             );
             expect(payload).not.toHaveProperty("requestedBy");
-            expect(payload.requestId).toContain(`ming-customs-${payload.capability}-request`);
-            expect(payload.traceId).toContain(`ming-customs-${payload.capability}-trace`);
+            expect(payload).not.toHaveProperty("serviceRole");
+            expect(payload).not.toHaveProperty("modelId");
+            expect(payload).not.toHaveProperty("modelName");
+            expect(payload).not.toHaveProperty("promptMessagesJson");
+            expect(payload).not.toHaveProperty("promptVariablesJson");
+            const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(
+                payload.capability
+            );
+            expect(payload.requestId).toContain(`ming-customs-${normalizedCapability}-request`);
+            expect(payload.traceId).toContain(`ming-customs-${normalizedCapability}-trace`);
             expect(JSON.parse(payload.inputPayloadJson)).toMatchObject({
                 contentType: "MING_CUSTOMS",
                 document: "正旦朝贺。\n\n## 正旦",
@@ -638,7 +655,7 @@ describe("MingCustomPage", () => {
                         candidateId: "6001",
                         contentType: "MING_CUSTOMS",
                         contentId: "500000000001",
-                        capability: "summary",
+                        capability: "CLASSICS_SUMMARY",
                         objectId: null,
                         resultFormat: "TEXT",
                         resultPayload: "文献摘要候选",
