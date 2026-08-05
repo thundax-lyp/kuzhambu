@@ -172,6 +172,7 @@ const appendBusinessConfigSql = (lines, prompts) => {
     ]))
         .join(",\n"));
     lines.push("ON DUPLICATE KEY UPDATE");
+    lines.push("    `capability` = VALUES(`capability`),");
     lines.push("    `prompt_template_id` = VALUES(`prompt_template_id`),");
     lines.push("    `model_id` = COALESCE(`model_id`, VALUES(`model_id`)),");
     lines.push("    `default_params_json` = VALUES(`default_params_json`),");
@@ -182,9 +183,9 @@ const appendBusinessConfigSql = (lines, prompts) => {
 };
 const modelIdFor = (capability) => {
     switch (capability) {
-        case "classics_image_describe":
+        case "CLASSICS_IMAGE_DESCRIBE":
             return 1;
-        case "classics_image_generate":
+        case "CLASSICS_IMAGE_GENERATE":
             return 3;
         default:
             return 2;

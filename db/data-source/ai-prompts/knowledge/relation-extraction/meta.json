@@ -1,6 +1,6 @@
 {
   "priority": 12,
-  "capability": "knowledge_relation_extract",
+  "capability": "KNOWLEDGE_RELATION_EXTRACT",
   "suite": "knowledge-default-v1",
   "name": "实体关系抽取提示词",
   "description": "实体关系抽取默认提示词。",

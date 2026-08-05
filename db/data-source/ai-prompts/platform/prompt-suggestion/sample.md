@@ -2,7 +2,7 @@
 
 Input variables:
 
-- `targetCapability`: `classics_summary`
+- `targetCapability`: `CLASSICS_SUMMARY`
 - `currentPrompt`: `请摘要。`
 - `variables`: `title, document`
 - `failureSamples`: `输出经常补充背景常识。`

@@ -1,6 +1,6 @@
 {
   "priority": 17,
-  "capability": "platform_version_summary",
+  "capability": "PLATFORM_VERSION_SUMMARY",
   "suite": "platform-default-v1",
   "name": "提示词版本摘要提示词",
   "description": "提示词版本摘要默认提示词。",

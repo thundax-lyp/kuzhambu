@@ -49,6 +49,33 @@ const DATA_FILES = [
   "operations.sql",
 ].map((name) => resolve(SEED_SQL_DIR, name));
 
+const AI_LEGACY_CAPABILITY_CODES = [
+  ["classics_translate", "CLASSICS_TRANSLATE"],
+  ["classics_translate_batch_item", "CLASSICS_TRANSLATE_BATCH_ITEM"],
+  ["classics_summary", "CLASSICS_SUMMARY"],
+  ["classics_tags", "CLASSICS_TAG_EXTRACT"],
+  ["classics_qa", "CLASSICS_QA"],
+  ["classics_split", "CLASSICS_SPLIT"],
+  ["classics_image_describe", "CLASSICS_IMAGE_DESCRIBE"],
+  ["classics_image_prompt_fusion", "CLASSICS_IMAGE_PROMPT_FUSION"],
+  ["classics_visual_describe", "CLASSICS_VISUAL_DESCRIBE"],
+  ["classics_image_generate", "CLASSICS_IMAGE_GENERATE"],
+  ["discovery_query_understanding", "DISCOVERY_QUERY_UNDERSTANDING"],
+  ["discovery_answer_generation", "DISCOVERY_ANSWER_GENERATION"],
+  ["knowledge_graph_extract", "KNOWLEDGE_GRAPH_EXTRACT"],
+  ["knowledge_relation_extract", "KNOWLEDGE_RELATION_EXTRACT"],
+  ["knowledge_lineage_extract", "KNOWLEDGE_LINEAGE_EXTRACT"],
+  ["knowledge_tags", "KNOWLEDGE_TAG_EXTRACT"],
+  ["platform_version_summary", "PLATFORM_VERSION_SUMMARY"],
+  ["prompt_suggestion", "PROMPT_SUGGEST"],
+];
+
+const AI_RUNTIME_CAPABILITY_TABLES = [
+  "ai_invocation_log",
+  "ai_candidate",
+  "ai_batch_job",
+];
+
 const main = async () => {
   const options = parseArgs(process.argv.slice(2));
   if (!existsSync(options.envFile)) {
@@ -79,6 +106,7 @@ const main = async () => {
 
   await withConnection(connectionOptions, async (connection) => {
     await upsertAiRuntimeModels(connection, env);
+    await normalizeAiRuntimeCapabilityCodes(connection);
     await verifySeed(connection);
   });
 
@@ -411,6 +439,29 @@ const upsertAiRuntimeModels = async (connection, env) => {
     throw error;
   }
   console.log(`Applied ${models.length} AI runtime model env overrides.`);
+};
+
+const normalizeAiRuntimeCapabilityCodes = async (connection) => {
+  await connection.beginTransaction();
+  try {
+    let updatedRows = 0;
+    for (const table of AI_RUNTIME_CAPABILITY_TABLES) {
+      for (const [legacyCode, capability] of AI_LEGACY_CAPABILITY_CODES) {
+        const [result] = await connection.execute(
+          `UPDATE \`${table}\` SET capability = ? WHERE capability = ?`,
+          [capability, legacyCode],
+        );
+        updatedRows += Number(result.affectedRows ?? 0);
+      }
+    }
+    await connection.commit();
+    if (updatedRows > 0) {
+      console.log(`Normalized ${updatedRows} AI runtime capability values.`);
+    }
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  }
 };
 
 const aiRuntimeModel = (env, prefix, defaultModelId, fallbackPrefix = null) => {
