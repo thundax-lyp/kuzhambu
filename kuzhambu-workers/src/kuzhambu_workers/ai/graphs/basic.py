@@ -7,10 +7,7 @@ from kuzhambu_workers.ai.openai_compatible import (
     invoke_chat_completion,
     iter_chat_completion_chunks,
 )
-from kuzhambu_workers.ai.structured_output import (
-    parse_structured_output,
-    requires_structured_output,
-)
+from kuzhambu_workers.ai.structured_output import requires_structured_output
 from kuzhambu_workers.core.errors import unsupported_capability
 from kuzhambu_workers.schemas.ai import AiCapability, AiInvokeRequest, ResultFormat
 
@@ -48,17 +45,12 @@ def _execute(state: BasicGraphState) -> BasicGraphState:
 
     model_result = _invoke_chat_completion(request)
     result_format = _result_format(request)
-    payload: str | dict[str, Any] | list[Any] = model_result.content
-    if result_format == ResultFormat.STRUCTURED:
-        payload = parse_structured_output(
-            model_result.content, request.capability, request.outputSchema
-        )
 
     return {
         **state,
         "result": {
             "format": result_format.value,
-            "payload": payload,
+            "payload": model_result.content,
             "usage": model_result.usage.model_dump(mode="json"),
             "rawFinishReason": model_result.raw_finish_reason,
             "providerUsage": model_result.provider_usage,

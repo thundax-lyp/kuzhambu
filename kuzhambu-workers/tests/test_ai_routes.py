@@ -82,7 +82,7 @@ def test_ai_stream_returns_started_and_completed(monkeypatch) -> None:
     assert "hello" in text
 
 
-def test_ai_stream_rejects_invalid_structured_output(monkeypatch) -> None:
+def test_ai_stream_returns_structured_output_as_text_payload(monkeypatch) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
     monkeypatch.setattr(
@@ -118,11 +118,54 @@ def test_ai_stream_rejects_invalid_structured_output(monkeypatch) -> None:
 
     assert response.status_code == 200
     assert "event: started" in response.text
-    assert "event: error" in response.text
-    assert "event: completed" not in response.text
-    assert '"status":"FAILED"' in response.text
-    assert '"failureStage":"WORKER_RESULT"' in response.text
-    assert '"code":"MODEL_OUTPUT_INVALID_JSON"' in response.text
+    assert "event: completed" in response.text
+    assert "event: error" not in response.text
+    assert '"status":"SUCCEEDED"' in response.text
+    assert '"format":"STRUCTURED"' in response.text
+    assert '{\\"answer\\":\\"ok\\"}' in response.text
+
+
+def test_ai_invoke_returns_structured_output_as_text_payload(monkeypatch) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.basic.invoke_chat_completion",
+        lambda request, response_format=None: _model_result(
+            '{"qaPairs":[{"question":"问","answer":"答"}]}'
+        ),
+    )
+    body = _body("qa", operation="CLASSICS_SANCAI_QA")
+    payload = json.loads(body)
+    payload["outputSchema"] = {
+        "type": "object",
+        "properties": {
+            "qaPairs": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "question": {"type": "string"},
+                        "answer": {"type": "string"},
+                    },
+                    "required": ["question", "answer"],
+                },
+            }
+        },
+        "required": ["qaPairs"],
+    }
+    body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode()
+
+    response = TestClient(app).post(
+        "/internal/ai/invoke",
+        content=body,
+        headers=_headers(body, "/internal/ai/invoke"),
+    )
+
+    assert response.status_code == 200
+    response_payload = response.json()
+    assert response_payload["status"] == "SUCCEEDED"
+    assert response_payload["result"]["format"] == "STRUCTURED"
+    assert response_payload["result"]["payload"] == '{"qaPairs":[{"question":"问","answer":"答"}]}'
 
 
 def test_ai_invoke_rejects_bad_signature(monkeypatch) -> None:

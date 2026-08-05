@@ -80,15 +80,6 @@ def model_output_empty(*, detail: dict[str, object] | None = None) -> WorkerErro
     )
 
 
-def model_output_invalid_json(*, detail: dict[str, object] | None = None) -> WorkerError:
-    return WorkerError(
-        WorkerErrorType.OUTPUT_FORMAT_FAILURE,
-        "MODEL_OUTPUT_INVALID_JSON",
-        "模型输出不是合法 JSON 结构。",
-        detail=detail,
-    )
-
-
 def model_stream_chunk_invalid(*, detail: dict[str, object] | None = None) -> WorkerError:
     return WorkerError(
         WorkerErrorType.OUTPUT_FORMAT_FAILURE,
