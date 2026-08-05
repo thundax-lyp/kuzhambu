@@ -1,0 +1,7 @@
+interface:
+  display_name: "Kuzhambu Admin Page Review"
+  short_description: "Review admin page ownership boundaries"
+  default_prompt: "Use $kuzhambu-admin-page-review to review an admin-web src/pages business page by path or component name."
+
+policy:
+  allow_implicit_invocation: false
