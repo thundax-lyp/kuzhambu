@@ -148,7 +148,7 @@
 - `ADMIN_WEB_UI_NO_ANTD_SELECT_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Select`；页面层选择器统一使用 `src/components/kuzhambu-select/` 暴露的 `KuzhambuSelect`。
 - `ADMIN_WEB_FORM_NO_ANTD_FORM_ITEM_IN_PAGES`：`src/pages/**/*.tsx` 禁止直接渲染 AntD `Form.Item`；页面层业务字段使用 `KuzhambuFormItem`，隐藏字段使用 `KuzhambuFormHiddenItem`。
 - `ADMIN_WEB_FORM_ITEM_IN_PAGE_FORM`：`src/pages/**/*.tsx` 中的 `KuzhambuFormItem` 和 `KuzhambuFormHiddenItem` 必须是同文件 `KuzhambuForm` JSX 子树内的子节点；禁止把 `KuzhambuForm` 和其 `KuzhambuFormItem` 拆到不同页面 TSX 文件中组合。
-- `ADMIN_WEB_UI_TABLE_ACTION_COLUMN`：表格操作列使用 `key: "actions"`，优先传 `options`；`render` 只作为复杂逃生口。
+- `ADMIN_WEB_UI_TABLE_ACTION_COLUMN`：`KuzhambuTable` / `KuzhambuListPage` 的表格操作列必须使用 `key: "actions"` + `options` 描述结构化操作；禁止直接在 actions 列使用 `render`；行操作默认不配置 `icon`；删除或危险操作前必须有 divider。
 - `ADMIN_WEB_UI_INTERACTIVE_ACCESSIBLE_NAME`：可机器判断的业务交互控件必须有业务可访问名称。当前门禁覆盖无可见文本的 `Button`、`Input.Search`、`Table` 和 `KuzhambuTable`；名称来自可见文本、`aria-label` 或 `aria-labelledby`，不作为自动化测试稳定锚点。
 
 ### Forbidden Defaults
@@ -314,7 +314,7 @@ Actions
 - 使用危险样式。
 - 要求二次确认。
 
-页面只判断操作语义、顺序、危险级别和是否需要复杂 `render`；展示数量、分隔线、列宽、固定列、移动端下拉和排序拖动入口交给 `KuzhambuTable`。
+页面只判断操作语义、顺序、危险级别和可用性；展示数量、分隔线、列宽、固定列、移动端下拉和排序拖动入口交给 `KuzhambuTable`。如果某列需要复杂自定义内容，它不应声明为 `key: "actions"` 操作列。
 
 #### Form
 
