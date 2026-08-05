@@ -40,7 +40,7 @@ const readMockResponseData = (path: string) => {
         contentId: 3001,
         objectId: 5001,
         candidateIdList: [7001],
-        capability: "summary",
+        capability: "CLASSICS_SUMMARY",
         resultFormat: "TEXT",
         status: "PENDING",
         resultPayload: "ok"
@@ -106,7 +106,7 @@ describe("AI candidate service request contracts", () => {
             contentType: "SANCAI_ENTRY",
             contentId: "3001",
             objectId: "5001",
-            capability: "summary",
+            capability: "CLASSICS_SUMMARY",
             status: "PENDING"
         });
 
@@ -122,7 +122,7 @@ describe("AI candidate service request contracts", () => {
                 contentType: "SANCAI_ENTRY",
                 contentId: "3001",
                 objectId: "5001",
-                capability: "summary",
+                capability: "CLASSICS_SUMMARY",
                 status: "PENDING"
             },
             method: "POST",
@@ -149,7 +149,7 @@ describe("AI candidate service request contracts", () => {
             candidateId: "869897501442834432",
             contentType: "SANCAI_ENTRY",
             contentId: "3001",
-            capability: "summary",
+            capability: "CLASSICS_SUMMARY",
             objectId: "5001",
             resultFormat: "TEXT",
             resultPayload: "new summary",

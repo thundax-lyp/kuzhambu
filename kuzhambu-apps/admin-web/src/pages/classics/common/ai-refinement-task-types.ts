@@ -3,6 +3,17 @@ export type AiRefinementTaskStatus =
 
 export type AiRefinementTaskCapability = "summary" | "tags" | "qa";
 
+export const AI_BUSINESS_CAPABILITY = {
+    CLASSICS_TRANSLATE: "CLASSICS_TRANSLATE",
+    CLASSICS_SUMMARY: "CLASSICS_SUMMARY",
+    CLASSICS_TAG_EXTRACT: "CLASSICS_TAG_EXTRACT",
+    CLASSICS_QA: "CLASSICS_QA",
+    CLASSICS_IMAGE_DESCRIBE: "CLASSICS_IMAGE_DESCRIBE",
+    CLASSICS_IMAGE_PROMPT_FUSION: "CLASSICS_IMAGE_PROMPT_FUSION",
+    CLASSICS_VISUAL_DESCRIBE: "CLASSICS_VISUAL_DESCRIBE",
+    CLASSICS_IMAGE_GENERATE: "CLASSICS_IMAGE_GENERATE"
+} as const;
+
 export interface AiRefinementTaskRecord {
     taskId: string;
     taskIdText?: string | null;
@@ -46,7 +57,7 @@ export interface AiRefinementTaskCreatePayload {
     promptVersionId?: string | null;
     requestId: string;
     traceId: string;
-    promptMessagesJson: string;
+    promptMessagesJson?: string | null;
     promptVariablesJson?: string | null;
     promptHash?: string | null;
     inputPayloadJson: string;

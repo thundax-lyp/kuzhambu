@@ -58,7 +58,7 @@ const installFetchRecorder = () => {
                             candidateId: "7002",
                             contentId: "4002",
                             contentType: "WANGQI_DOCUMENT",
-                            capability: "summary",
+                            capability: "CLASSICS_SUMMARY",
                             failureCode: "INVALID_FORMAT",
                             failureReason: "Payload 不符合结构化摘要约束"
                         }
@@ -69,7 +69,7 @@ const installFetchRecorder = () => {
                             candidateId: "7001",
                             contentId: "4001",
                             contentType: "WANGQI_DOCUMENT",
-                            capability: "summary",
+                            capability: "CLASSICS_SUMMARY",
                             objectId: null,
                             resultId: "9001",
                             status: "APPLIED"
@@ -88,7 +88,7 @@ const installFetchRecorder = () => {
                             candidateId: "8001",
                             contentId: "5001",
                             contentType: "MING_CUSTOMS",
-                            capability: "tags",
+                            capability: "CLASSICS_TAG_EXTRACT",
                             objectId: null,
                             resultId: "8001",
                             status: "REJECTED"
@@ -97,7 +97,7 @@ const installFetchRecorder = () => {
                             candidateId: "8002",
                             contentId: "5002",
                             contentType: "MING_CUSTOMS",
-                            capability: "qa",
+                            capability: "CLASSICS_QA",
                             objectId: "9002",
                             resultId: "8002",
                             status: "REJECTED"
@@ -252,7 +252,7 @@ describe("classics content service request contracts", () => {
                     candidateId: "869897501442834432",
                     contentType: "WANGQI_DOCUMENT",
                     contentId: "4001",
-                    capability: "summary",
+                    capability: "CLASSICS_SUMMARY",
                     objectId: null,
                     resultFormat: "TEXT",
                     resultPayload: "new summary"
@@ -261,7 +261,7 @@ describe("classics content service request contracts", () => {
                     candidateId: "869897501442834433",
                     contentType: "WANGQI_DOCUMENT",
                     contentId: "4002",
-                    capability: "summary",
+                    capability: "CLASSICS_SUMMARY",
                     resultFormat: "TEXT",
                     resultPayload: "bad payload"
                 }
@@ -276,7 +276,7 @@ describe("classics content service request contracts", () => {
             candidateId: "7001",
             contentId: "4001",
             contentType: "WANGQI_DOCUMENT",
-            capability: "summary",
+            capability: "CLASSICS_SUMMARY",
             objectId: null,
             resultId: "9001",
             status: "APPLIED"
@@ -286,7 +286,7 @@ describe("classics content service request contracts", () => {
             candidateId: "7002",
             contentType: "WANGQI_DOCUMENT",
             contentId: "4002",
-            capability: "summary",
+            capability: "CLASSICS_SUMMARY",
             failureCode: "INVALID_FORMAT",
             failureReason: "Payload 不符合结构化摘要约束"
         });
@@ -301,13 +301,13 @@ describe("classics content service request contracts", () => {
                     candidateId: "869897501442834434",
                     contentType: "MING_CUSTOMS",
                     contentId: "5001",
-                    capability: "tags"
+                    capability: "CLASSICS_TAG_EXTRACT"
                 },
                 {
                     candidateId: "869897501442834435",
                     contentType: "MING_CUSTOMS",
                     contentId: "5002",
-                    capability: "qa",
+                    capability: "CLASSICS_QA",
                     objectId: "9002"
                 }
             ]
@@ -321,7 +321,7 @@ describe("classics content service request contracts", () => {
             candidateId: "8001",
             contentId: "5001",
             contentType: "MING_CUSTOMS",
-            capability: "tags",
+            capability: "CLASSICS_TAG_EXTRACT",
             objectId: null,
             resultId: "8001",
             status: "REJECTED"
@@ -330,7 +330,7 @@ describe("classics content service request contracts", () => {
             candidateId: "8002",
             contentId: "5002",
             contentType: "MING_CUSTOMS",
-            capability: "qa",
+            capability: "CLASSICS_QA",
             objectId: "9002",
             resultId: "8002",
             status: "REJECTED"

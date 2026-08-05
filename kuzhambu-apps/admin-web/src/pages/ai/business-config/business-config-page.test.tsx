@@ -56,7 +56,7 @@ vi.mock("@/components/kuzhambu-drawer", () => {
 
 const capabilities = [
     {
-        capability: "classics_summary",
+        capability: "CLASSICS_SUMMARY",
         name: "古籍摘要",
         requiredTags: ["text"],
         outputMode: "TEXT",
@@ -83,7 +83,7 @@ const models = [
 const prompts = [
     {
         id: "800001",
-        capability: "classics_summary",
+        capability: "CLASSICS_SUMMARY",
         name: "古籍摘要提示词",
         enabled: true,
         currentVersionNo: 3,
@@ -94,7 +94,7 @@ const prompts = [
 const configs = [
     {
         id: "700001",
-        capability: "classics_summary",
+        capability: "CLASSICS_SUMMARY",
         promptTemplateId: "800001",
         modelId: "900001",
         defaultParamsJson: '{"temperature":0.2}',
@@ -150,7 +150,7 @@ describe("BusinessConfigPage", () => {
             expect(service.createBusinessConfig).toHaveBeenCalledWith(
                 {
                     id: null,
-                    capability: "classics_summary",
+                    capability: "CLASSICS_SUMMARY",
                     promptTemplateId: "800001",
                     modelId: "900001",
                     defaultParamsJson: "{}",
@@ -175,7 +175,7 @@ describe("BusinessConfigPage", () => {
             expect(service.changeBusinessConfig).toHaveBeenCalledWith(
                 {
                     id: "700001",
-                    capability: "classics_summary",
+                    capability: "CLASSICS_SUMMARY",
                     promptTemplateId: "800001",
                     modelId: "900001",
                     defaultParamsJson: '{"temperature":0.2}',

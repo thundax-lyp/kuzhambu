@@ -98,7 +98,7 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
 
 const template = {
     id: "1001",
-    capability: "classics_summary",
+    capability: "CLASSICS_SUMMARY",
     name: "摘要提示词",
     description: "生成摘要",
     enabled: true,
@@ -168,7 +168,7 @@ describe("PromptPage", () => {
         replacePermissions(["ai:prompt:view", "ai:prompt:edit"]);
         vi.mocked(service.listPromptCapabilities).mockResolvedValue([
             {
-                capability: "classics_summary",
+                capability: "CLASSICS_SUMMARY",
                 name: "古籍摘要",
                 requiredTags: ["chat"],
                 outputMode: "JSON",
@@ -176,7 +176,7 @@ describe("PromptPage", () => {
                 priority: 1
             },
             {
-                capability: "classics_translate",
+                capability: "CLASSICS_TRANSLATE",
                 name: "古籍翻译",
                 requiredTags: ["chat"],
                 outputMode: "TEXT",

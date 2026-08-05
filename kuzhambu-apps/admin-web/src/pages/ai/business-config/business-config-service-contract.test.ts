@@ -62,7 +62,7 @@ describe("business configs service ID contracts", () => {
                     [
                         {
                             id: 700001,
-                            capability: "classics_summary",
+                            capability: "CLASSICS_SUMMARY",
                             promptTemplateId: 800001,
                             modelId: 900001,
                             enabled: true
@@ -87,7 +87,7 @@ describe("business configs service ID contracts", () => {
                     [
                         {
                             id: 800001,
-                            capability: "classics_summary",
+                            capability: "CLASSICS_SUMMARY",
                             name: "古籍摘要提示词",
                             enabled: true
                         }

@@ -89,19 +89,19 @@ const toEnabledQueryValue = (enabled: BusinessConfigFilters["enabled"]) => {
 const readCapabilityDomainTag = (
     capability?: string | null
 ): { label: string; type: KuzhambuTagType } => {
-    if (capability?.startsWith("classics_")) {
+    if (capability?.startsWith("CLASSICS_")) {
         return { label: "古籍", type: "info" };
     }
-    if (capability?.startsWith("discovery_")) {
+    if (capability?.startsWith("DISCOVERY_")) {
         return { label: "发现", type: "accent" };
     }
-    if (capability?.startsWith("knowledge_")) {
+    if (capability?.startsWith("KNOWLEDGE_")) {
         return { label: "知识", type: "success" };
     }
-    if (capability?.startsWith("platform_")) {
+    if (capability?.startsWith("PLATFORM_")) {
         return { label: "平台", type: "warning" };
     }
-    if (capability?.startsWith("prompt_")) {
+    if (capability?.startsWith("PROMPT_")) {
         return { label: "提示词", type: "danger" };
     }
     return { label: "其他", type: "neutral" };
