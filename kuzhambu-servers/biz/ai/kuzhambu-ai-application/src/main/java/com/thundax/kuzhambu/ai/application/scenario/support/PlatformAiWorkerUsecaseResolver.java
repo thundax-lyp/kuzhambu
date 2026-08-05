@@ -10,10 +10,10 @@ public class PlatformAiWorkerUsecaseResolver {
     private static final Map<String, PlatformAiWorkerUsecaseSpec> SUPPORTED_USECASES = Map.of(
             "PLATFORM_PROMPT_SUGGESTION",
             new PlatformAiWorkerUsecaseSpec(
-                    "PLATFORM_PROMPT_SUGGESTION", null, "prompt_suggestion", "prompt_suggestion", true),
+                    "PLATFORM_PROMPT_SUGGESTION", null, "PROMPT_SUGGEST", "prompt_suggestion", true),
             "PLATFORM_VERSION_SUMMARY",
             new PlatformAiWorkerUsecaseSpec(
-                    "PLATFORM_VERSION_SUMMARY", null, "platform_version_summary", "version_summary", false));
+                    "PLATFORM_VERSION_SUMMARY", null, "PLATFORM_VERSION_SUMMARY", "version_summary", false));
 
     public PlatformAiWorkerUsecaseSpec resolve(String usecase) {
         PlatformAiWorkerUsecaseSpec spec = SUPPORTED_USECASES.get(usecase);
