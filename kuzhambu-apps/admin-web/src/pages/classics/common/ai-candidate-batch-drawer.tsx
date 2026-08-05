@@ -273,11 +273,13 @@ export const AiCandidateBatchDrawer = ({
                 const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(
                     candidate.capability
                 );
+                const capabilityCode =
+                    aiRefinementTaskService.getBusinessCapabilityCode(normalizedCapability);
                 const command: AiCandidateApplyCommand = {
                     candidateId: candidate.candidateIdText || String(candidate.candidateId),
                     contentType: candidate.contentType,
                     contentId: normalizeId(candidate.contentId),
-                    capability: normalizedCapability,
+                    capability: capabilityCode,
                     objectId: candidate.objectId,
                     resultFormat:
                         candidate.resultFormat ||
@@ -314,7 +316,11 @@ export const AiCandidateBatchDrawer = ({
                         candidateId: candidate.candidateIdText || String(candidate.candidateId),
                         contentType: candidate.contentType,
                         contentId: normalizeId(candidate.contentId),
-                        capability: candidate.capability,
+                        capability: aiRefinementTaskService.getBusinessCapabilityCode(
+                            aiRefinementTaskService.getNormalizedTaskCapability(
+                                candidate.capability
+                            )
+                        ),
                         objectId: candidate.objectId
                     }))
                 })
