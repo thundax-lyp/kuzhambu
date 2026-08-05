@@ -14,7 +14,12 @@
     --kuzhambu-table-resize-line-active: color-mix(in srgb, var(--accent-blue) 88%, #0f172a);
     position: relative;
     z-index: 1;
+    width: 100%;
     min-width: 0;
+}
+
+.kuzhambu-table {
+    width: 100%;
 }
 
 html[data-theme="dark"] .kuzhambu-table-shell {

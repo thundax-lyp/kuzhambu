@@ -7,7 +7,7 @@
         "dev": "vite --host 0.0.0.0",
         "build": "tsc --noEmit && vite build",
         "preview": "vite preview --host 0.0.0.0",
-        "lint": "eslint . && node scripts/check-css-boundaries.mjs && node scripts/check-type-boundaries.mjs && node scripts/check-page-boundaries.mjs",
+        "lint": "eslint . && node scripts/check-css-boundaries.mjs && node scripts/check-type-boundaries.mjs && node scripts/check-page-boundaries.mjs && node scripts/check-ui-boundaries.mjs",
         "lint:fix": "eslint . --fix",
         "format": "prettier . --write",
         "format:check": "prettier . --check",

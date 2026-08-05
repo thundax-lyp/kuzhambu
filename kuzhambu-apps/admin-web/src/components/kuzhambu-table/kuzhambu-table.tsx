@@ -22,7 +22,7 @@ const DEFAULT_SORT_COLUMN_WIDTH = 28;
 const ACTION_BUTTON_WIDTH = 24;
 const ACTION_BUTTON_SIDE_PADDING = 4;
 const ACTION_CELL_SIDE_PADDING = 0;
-const ACTION_DIVIDER_WIDTH = 12;
+const ACTION_DIVIDER_WIDTH = 14;
 const ACTION_INLINE_LIMIT = 4;
 const ACTION_TEXT_CHAR_WIDTH = 16;
 const ACTION_TITLE_MIN_WIDTH = 54;
@@ -106,15 +106,83 @@ const readNumericWidth = (width: unknown) => {
 };
 
 const sumColumnWidths = <RecordType extends object>(
-    columns: NonNullable<TableProps<RecordType>["columns"]>
+    columns: NonNullable<TableProps<RecordType>["columns"]>,
+    fallbackColumnWidth: number
 ): number => {
     return columns.reduce((total, column) => {
         if ("children" in column && Array.isArray(column.children)) {
-            return total + sumColumnWidths(column.children);
+            return total + sumColumnWidths(column.children, fallbackColumnWidth);
         }
 
-        return total + (readNumericWidth(column.width) ?? 0);
+        return total + (readNumericWidth(column.width) ?? fallbackColumnWidth);
     }, 0);
+};
+
+const collectContentLeafColumns = <RecordType extends object>(
+    columns: KuzhambuTableColumn<RecordType>[],
+    actionColumnKey: Key
+): KuzhambuTableColumn<RecordType>[] => {
+    return columns.flatMap((column) => {
+        if ("children" in column && Array.isArray(column.children)) {
+            return collectContentLeafColumns(
+                column.children as KuzhambuTableColumn<RecordType>[],
+                actionColumnKey
+            );
+        }
+
+        return readColumnKey(column) === actionColumnKey ? [] : [column];
+    });
+};
+
+const clearFirstContentColumnWidth = <RecordType extends object>(
+    columns: KuzhambuTableColumn<RecordType>[],
+    actionColumnKey: Key
+): KuzhambuTableColumn<RecordType>[] => {
+    let cleared = false;
+
+    const clearColumns = (
+        currentColumns: KuzhambuTableColumn<RecordType>[]
+    ): KuzhambuTableColumn<RecordType>[] => {
+        return currentColumns.map((column) => {
+            if ("children" in column && Array.isArray(column.children)) {
+                return {
+                    ...column,
+                    children: clearColumns(column.children as KuzhambuTableColumn<RecordType>[])
+                };
+            }
+
+            if (cleared || readColumnKey(column) === actionColumnKey) {
+                return column;
+            }
+
+            cleared = true;
+            return {
+                ...column,
+                width: undefined
+            };
+        });
+    };
+
+    return clearColumns(columns);
+};
+
+// Admin table layout rule:
+// checkbox/selection columns and action/options columns may be fixed width, but content columns
+// must keep at least one flexible column. If page code gives every content column a width,
+// KuzhambuTable clears the first content column width before normalizing Ant Table columns.
+const ensureFlexibleContentColumn = <RecordType extends object>(
+    columns: KuzhambuTableColumn<RecordType>[],
+    actionColumnKey: Key
+) => {
+    const contentLeafColumns = collectContentLeafColumns(columns, actionColumnKey);
+    if (
+        !contentLeafColumns.length ||
+        contentLeafColumns.some((column) => readNumericWidth(column.width) === undefined)
+    ) {
+        return columns;
+    }
+
+    return clearFirstContentColumnWidth(columns, actionColumnKey);
 };
 
 const callHandler = <EventType,>(
@@ -528,6 +596,8 @@ export const KuzhambuTable = <RecordType extends object = object>({
             return columns;
         }
 
+        const flexibleColumns = ensureFlexibleContentColumn(columns, actionColumnKey);
+
         const normalizeColumns = (
             currentColumns: KuzhambuTableColumn<RecordType>[]
         ): KuzhambuTableColumn<RecordType>[] => {
@@ -548,20 +618,19 @@ export const KuzhambuTable = <RecordType extends object = object>({
                     : (readNumericWidth(column.width) ??
                       calculateColumnActionWidth(actionOptions, column.inlineLimit));
                 const configuredWidth = readNumericWidth(column.width);
-                const baseWidth = isActionColumn
+                const resizedWidth = widthKey ? columnWidths[widthKey] : undefined;
+                const resizeStartWidth = resizedWidth ?? configuredWidth ?? minColumnWidth;
+                const effectiveWidth = isActionColumn
                     ? actionWidth
-                    : (configuredWidth ?? minColumnWidth);
+                    : (resizedWidth ?? configuredWidth);
                 const currentWidth =
-                    widthKey && columnWidths[widthKey] !== undefined
-                        ? columnWidths[widthKey]
-                        : baseWidth;
+                    isActionColumn || effectiveWidth !== undefined ? effectiveWidth : undefined;
                 const plainTitle =
                     typeof column.title === "function" ? undefined : (column.title as ReactNode);
                 const canResize =
                     resizableColumns &&
                     !isActionColumn &&
                     columnKey !== undefined &&
-                    currentWidth !== undefined &&
                     typeof column.title !== "function";
                 const defaultTitle = isActionColumn ? (column.title ?? "操作") : column.title;
                 const titleNode = canResize ? (
@@ -570,7 +639,7 @@ export const KuzhambuTable = <RecordType extends object = object>({
                         <span
                             aria-hidden="true"
                             className="kuzhambu-table-column-resize-handle"
-                            onMouseDown={startResizeColumn(columnKey, currentWidth)}
+                            onMouseDown={startResizeColumn(columnKey, resizeStartWidth)}
                         />
                     </span>
                 ) : (
@@ -595,7 +664,7 @@ export const KuzhambuTable = <RecordType extends object = object>({
             });
         };
 
-        const nextColumns = normalizeColumns(columns);
+        const nextColumns = normalizeColumns(flexibleColumns);
         if (!sortableEnabled) {
             return nextColumns;
         }
@@ -648,9 +717,9 @@ export const KuzhambuTable = <RecordType extends object = object>({
             return scroll?.x;
         }
 
-        const totalWidth = sumColumnWidths(normalizedColumns);
+        const totalWidth = sumColumnWidths(normalizedColumns, minColumnWidth);
         return totalWidth > 0 ? totalWidth : undefined;
-    }, [normalizedColumns, scroll?.x]);
+    }, [minColumnWidth, normalizedColumns, scroll?.x]);
 
     const mergedPagination = useMemo(() => {
         if (pagination === false || !pagination) {
