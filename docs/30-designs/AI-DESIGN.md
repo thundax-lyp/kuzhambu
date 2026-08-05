@@ -187,7 +187,7 @@ Admin Web 交互流程：
    `ai_business_config.capability` 是业务配置的能力归属键，创建后不可在编辑流程中切换；编辑业务配置只允许调整提示词模板、模型、默认参数和启停状态。
 5. AI application 根据 `prompt_template_id` 读取当前 prompt version，把业务参数 JSON 按 `{{variableName}}` 注入提示词模板，生成本次调用的 `promptMessagesJson`、`promptVariablesJson` 和 `promptVersionId`。
 6. AI application 合并模型默认参数和业务配置辅助参数；业务配置参数覆盖模型默认参数。
-7. AI application 保留业务 `capability` 作为业务配置、调用记录和候选归档字段，同时把本次调用映射为 workers canonical `workerCapability`，例如 `classics_summary -> summary`、`knowledge_graph_extract -> knowledge_graph`。
+7. AI application 保留业务 `capability` 作为业务配置、调用记录和候选归档字段，同时把本次调用映射为 workers canonical `workerCapability`，例如 `CLASSICS_SUMMARY -> summary`、`KNOWLEDGE_GRAPH_EXTRACT -> knowledge_graph`。
 8. AI application 以解析后的模型、提示词、参数和 `workerCapability` 开始本次 worker 调用；任务生命周期沿用 `AiBatchJob` 状态规则。
 9. 对同步 capability，AI application 等待 worker JSON 完成，再统一写入：
    - `ai_invocation_log`

@@ -118,6 +118,7 @@
 - `WORKERS_AI_CANONICAL_CAPABILITY`：AI capability 必须来自 canonical capability matrix。
 - `WORKERS_AI_NO_CALLBACK_PROMPT`：Workers 不得根据业务 ID 回调 Java servers 读取模型配置、提示词、候选结果或任务状态。
 - `WORKERS_AI_SERVICE_BOUNDARY`：AI 统一执行接口只允许 AI 域服务身份调用。
+- `WORKERS_AI_NO_BUSINESS_JSON_PROTOCOL`：Workers 不得解析或归一化业务 JSON 协议字段，例如 `tags`、`qaPairs`、`entities`、`relations`；模型输出 JSON 兼容处理和业务 schema 校验必须在 Java backend 的业务能力边界完成。
 
 ### Render
 
@@ -181,6 +182,7 @@
 
 - Prompt、模型配置和业务上下文应由 Java servers 在请求体中提供，Workers 不应隐式假设某个业务域的内部状态。
 - AI graph 应按能力复用基础节点，但不得把业务域确认、候选区、审计或落库语义放入 Workers。
+- 结构化 AI 输出在 workers 中只表达执行结果格式；workers 不应为了某个业务能力解析模型 JSON 内容或补齐业务字段。
 
 ### Render
 
