@@ -1,0 +1,7 @@
+.kuzhambu-expandable-text {
+    margin-bottom: 0;
+    color: var(--kuzhambu-color-text, rgba(0, 0, 0, 0.88));
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}

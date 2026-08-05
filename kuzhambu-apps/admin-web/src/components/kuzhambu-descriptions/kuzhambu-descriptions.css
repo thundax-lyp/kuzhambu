@@ -1,0 +1,13 @@
+.kuzhambu-descriptions {
+    width: 100%;
+    min-width: 0;
+}
+
+.kuzhambu-descriptions .ant-descriptions-view {
+    width: 100%;
+    min-width: 0;
+}
+
+.kuzhambu-descriptions .ant-descriptions-view table {
+    width: 100%;
+}
