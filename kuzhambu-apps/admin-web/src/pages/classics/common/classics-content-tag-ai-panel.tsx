@@ -1,4 +1,4 @@
-import { RobotOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined, PlusOutlined, RobotOutlined, SwapOutlined } from "@ant-design/icons";
 import { App, Empty } from "antd";
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
@@ -18,7 +18,7 @@ import * as aiCandidateService from "./ai-candidate-service";
 import * as contentService from "./classics-content-service";
 import * as aiRefinementTaskService from "./ai-refinement-task-service";
 import type { AiCandidateRecord } from "./ai-candidate-types";
-import type { AiRefinementTaskRecord } from "./ai-refinement-task-types";
+import { AI_BUSINESS_CAPABILITY, type AiRefinementTaskRecord } from "./ai-refinement-task-types";
 import type { ClassicsContentType } from "./classics-content-types";
 
 interface ClassicsContentTagAiPanelProps {
@@ -35,8 +35,6 @@ interface ClassicsContentTagAiPanelProps {
     tagTasks?: AiRefinementTaskRecord[];
 }
 
-const REJECT_ERROR_TYPE = "USER_REJECTED";
-const REJECT_ERROR_MESSAGE = "用户已放弃该 AI 标签候选";
 const TAG_TASK_POLL_INTERVAL_MS = 3000;
 const TAG_TASK_LABEL = "标签";
 const TAG_AI_MODAL_TEST_ID = "classics-content-tag-ai-modal";
@@ -264,7 +262,6 @@ const selectLatestTagCandidate = (
 export const ClassicsContentTagAiPanel = ({
     canApplyCandidate = false,
     canCreateTask = true,
-    canRejectCandidate = false,
     canViewCandidate = false,
     contentId,
     contentType,
@@ -346,7 +343,7 @@ export const ClassicsContentTagAiPanel = ({
             candidateId: getCandidateStableId(candidate),
             contentId,
             contentType,
-            capability: "tags",
+            capability: AI_BUSINESS_CAPABILITY.CLASSICS_TAG_EXTRACT,
             objectId: candidate.objectId,
             resultFormat: candidate.resultFormat || "STRUCTURED",
             resultPayload: JSON.stringify({ tags: appliedTags }),
@@ -370,7 +367,7 @@ export const ClassicsContentTagAiPanel = ({
         const candidates = await aiCandidateService.list({
             contentId,
             contentType,
-            capability: "tags",
+            capability: AI_BUSINESS_CAPABILITY.CLASSICS_TAG_EXTRACT,
             status: "PENDING"
         });
         return selectLatestTagCandidate(candidates, task?.candidateId) ?? null;
@@ -417,26 +414,7 @@ export const ClassicsContentTagAiPanel = ({
         onSettled: () => setHandlingCandidateId(null)
     });
 
-    const discardMutation = useMutation({
-        mutationFn: async (candidate: AiCandidateRecord) => {
-            setHandlingCandidateId(getCandidateStableId(candidate));
-            await aiCandidateService.reject({
-                candidateId: getCandidateStableId(candidate),
-                errorType: REJECT_ERROR_TYPE,
-                errorMessage: REJECT_ERROR_MESSAGE
-            });
-        },
-        onSuccess: async () => {
-            await refresh();
-            messageApi.success("AI 标签候选已放弃");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "放弃 AI 标签失败");
-        },
-        onSettled: () => setHandlingCandidateId(null)
-    });
-    const isCandidateMutationPending =
-        appendMutation.isPending || coverMutation.isPending || discardMutation.isPending;
+    const isCandidateMutationPending = appendMutation.isPending || coverMutation.isPending;
 
     return (
         <>
@@ -451,13 +429,14 @@ export const ClassicsContentTagAiPanel = ({
                 testId={TAG_AI_MODAL_TEST_ID}
                 className="classics-content-tag-ai-modal"
                 open={open}
-                title="AI标签"
+                title="AI 标签"
                 width={880}
                 createIcon={<RobotOutlined />}
                 createTestId="classics-content-tag-ai-create-task-button"
-                createText="生成标签"
+                createText="生成候选标签"
                 createDisabled={!canCreateTask || !canViewCandidate}
                 creating={creatingTask}
+                hideCancel={({ result }) => Boolean(result)}
                 onCancel={() => setOpen(false)}
                 workflow={{
                     ...tagTaskAdapter,
@@ -471,6 +450,60 @@ export const ClassicsContentTagAiPanel = ({
                     trackTask: Boolean(latestTagTask?.taskId)
                 }}
                 renderStatus={renderTagTaskStatus}
+                renderFooterActions={({ creating, result, resultLoading, tracking }) => {
+                    const candidateTags = result ? parseCandidateTags(result.resultPayload) : [];
+                    const loading = result
+                        ? handlingCandidateId === getCandidateStableId(result)
+                        : false;
+                    const isResultBusy = creating || tracking || resultLoading;
+                    const areCandidateActionsDisabled =
+                        !canApplyCandidate ||
+                        !canViewCandidate ||
+                        !candidateTags.length ||
+                        isResultBusy ||
+                        isCandidateMutationPending;
+                    const isCloseDisabled = isResultBusy || isCandidateMutationPending;
+
+                    return (
+                        <>
+                            <KuzhambuButton
+                                testId="classics-content-tag-ai-discard-button"
+                                disabled={isCloseDisabled}
+                                icon={<CloseCircleOutlined />}
+                                onClick={() => setOpen(false)}
+                            >
+                                关闭
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                testId="classics-content-tag-ai-append-button"
+                                disabled={areCandidateActionsDisabled || !result}
+                                icon={<PlusOutlined />}
+                                loading={loading && appendMutation.isPending}
+                                onClick={() => {
+                                    if (result) {
+                                        appendMutation.mutate(result);
+                                    }
+                                }}
+                            >
+                                追加标签
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                testId="classics-content-tag-ai-cover-button"
+                                disabled={areCandidateActionsDisabled || !result}
+                                icon={<SwapOutlined />}
+                                loading={loading && coverMutation.isPending}
+                                type="primary"
+                                onClick={() => {
+                                    if (result) {
+                                        coverMutation.mutate(result);
+                                    }
+                                }}
+                            >
+                                覆盖标签
+                            </KuzhambuButton>
+                        </>
+                    );
+                }}
                 renderBody={({ creating, result, resultLoading, tracking }) => {
                     const candidateTags = result ? parseCandidateTags(result.resultPayload) : [];
                     const candidateKeys = new Set(candidateTags.map(tagKey));
@@ -484,21 +517,7 @@ export const ClassicsContentTagAiPanel = ({
                     const unchangedTagNames = candidateTags.filter((tagName) =>
                         currentKeys.has(tagKey(tagName))
                     );
-                    const loading = result
-                        ? handlingCandidateId === getCandidateStableId(result)
-                        : false;
                     const isResultBusy = creating || tracking || resultLoading;
-                    const areCandidateActionsDisabled =
-                        !canApplyCandidate ||
-                        !canViewCandidate ||
-                        !candidateTags.length ||
-                        isResultBusy ||
-                        isCandidateMutationPending;
-                    const isDiscardDisabled =
-                        !canRejectCandidate ||
-                        !canViewCandidate ||
-                        isResultBusy ||
-                        isCandidateMutationPending;
 
                     return (
                         <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
@@ -527,7 +546,7 @@ export const ClassicsContentTagAiPanel = ({
                                         />
                                     )}
                                 </KuzhambuCard>
-                                <KuzhambuCard size="small" title="AI标签" style={{ minWidth: 0 }}>
+                                <KuzhambuCard size="small" title="候选标签" style={{ minWidth: 0 }}>
                                     {result ? (
                                         <KuzhambuSpace wrap>
                                             {candidateTags.map((tagName) => (
@@ -541,14 +560,14 @@ export const ClassicsContentTagAiPanel = ({
                                             image={Empty.PRESENTED_IMAGE_SIMPLE}
                                             description={
                                                 isResultBusy
-                                                    ? "AI 标签生成中"
-                                                    : "暂无候选标签，可先点击生成标签"
+                                                    ? "正在生成候选标签"
+                                                    : "暂无候选标签，可点击生成"
                                             }
                                         />
                                     )}
                                 </KuzhambuCard>
                             </div>
-                            <KuzhambuCard size="small" title="标签差异" style={{ width: "100%" }}>
+                            <KuzhambuCard size="small" title="变更预览" style={{ width: "100%" }}>
                                 {result ? (
                                     addedTagNames.length ||
                                     removedTagNames.length ||
@@ -557,58 +576,31 @@ export const ClassicsContentTagAiPanel = ({
                                             <KuzhambuSpace wrap>
                                                 {addedTagNames.map((tagName) => (
                                                     <KuzhambuTag key={tagName} type="accent">
-                                                        新增：{tagName}
+                                                        {tagName}
                                                     </KuzhambuTag>
                                                 ))}
                                                 {removedTagNames.map((tagName) => (
                                                     <KuzhambuTag key={tagName} type="warning">
-                                                        覆盖会移除：{tagName}
+                                                        {tagName}
                                                     </KuzhambuTag>
                                                 ))}
                                                 {unchangedTagNames.map((tagName) => (
                                                     <KuzhambuTag key={tagName} type="neutral">
-                                                        已存在：{tagName}
+                                                        {tagName}
                                                     </KuzhambuTag>
                                                 ))}
-                                            </KuzhambuSpace>
-                                            <KuzhambuSpace wrap>
-                                                <KuzhambuButton
-                                                    testId="classics-content-tag-ai-discard-button"
-                                                    disabled={isDiscardDisabled}
-                                                    loading={loading && discardMutation.isPending}
-                                                    onClick={() => discardMutation.mutate(result)}
-                                                >
-                                                    放弃
-                                                </KuzhambuButton>
-                                                <KuzhambuButton
-                                                    testId="classics-content-tag-ai-append-button"
-                                                    disabled={areCandidateActionsDisabled}
-                                                    loading={loading && appendMutation.isPending}
-                                                    onClick={() => appendMutation.mutate(result)}
-                                                >
-                                                    追加
-                                                </KuzhambuButton>
-                                                <KuzhambuButton
-                                                    testId="classics-content-tag-ai-cover-button"
-                                                    disabled={areCandidateActionsDisabled}
-                                                    loading={loading && coverMutation.isPending}
-                                                    type="primary"
-                                                    onClick={() => coverMutation.mutate(result)}
-                                                >
-                                                    覆盖
-                                                </KuzhambuButton>
                                             </KuzhambuSpace>
                                         </KuzhambuSpace>
                                     ) : (
                                         <Empty
                                             image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                            description="当前标签与 AI 标签暂无差异"
+                                            description="候选标签与当前标签一致"
                                         />
                                     )
                                 ) : (
                                     <Empty
                                         image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                        description="暂无可比较的 AI 标签"
+                                        description="生成候选标签后展示变更预览"
                                     />
                                 )}
                             </KuzhambuCard>
