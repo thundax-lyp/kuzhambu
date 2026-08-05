@@ -12,20 +12,20 @@ public class DiscoveryAiWorkerUsecaseResolver {
             new DiscoveryAiWorkerUsecaseSpec(
                     "DISCOVERY_QUERY_UNDERSTANDING",
                     null,
-                    "discovery_query_understanding",
+                    "DISCOVERY_QUERY_UNDERSTANDING",
                     "query_understanding",
                     false),
             "DISCOVERY_QUERY_REWRITE",
             new DiscoveryAiWorkerUsecaseSpec(
-                    "DISCOVERY_QUERY_REWRITE", null, "discovery_query_understanding", "query_understanding", false),
+                    "DISCOVERY_QUERY_REWRITE", null, "DISCOVERY_QUERY_UNDERSTANDING", "query_understanding", false),
             "DISCOVERY_ANSWER_GENERATION",
             new DiscoveryAiWorkerUsecaseSpec(
-                    "DISCOVERY_ANSWER_GENERATION", null, "discovery_answer_generation", "answer_generation", false),
+                    "DISCOVERY_ANSWER_GENERATION", null, "DISCOVERY_ANSWER_GENERATION", "answer_generation", false),
             "DISCOVERY_ANSWER_GENERATION_STREAM",
             new DiscoveryAiWorkerUsecaseSpec(
                     "DISCOVERY_ANSWER_GENERATION_STREAM",
                     null,
-                    "discovery_answer_generation",
+                    "DISCOVERY_ANSWER_GENERATION",
                     "answer_generation",
                     true));
 

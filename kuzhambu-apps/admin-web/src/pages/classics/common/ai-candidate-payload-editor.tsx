@@ -58,7 +58,7 @@ const parseQaPayload = (payload?: string | null): AiCandidateQaPair[] => {
 
     try {
         const parsed = JSON.parse(payload);
-        const qaPairs = Array.isArray(parsed) ? parsed : parsed?.qaPairs;
+        const qaPairs = Array.isArray(parsed) ? parsed : (parsed?.qaPairs ?? parsed?.qa_pairs);
         if (Array.isArray(qaPairs)) {
             return qaPairs.map((pair: { question?: unknown; answer?: unknown }) => ({
                 question: String(pair?.question ?? ""),
@@ -257,8 +257,8 @@ export const AiCandidatePayloadEditor = ({
                         onChange={(event) => updateQaPair(index, "question", event.target.value)}
                     />
                     <Input.TextArea
-                        aria-label={`问答答案 ${index + 1}`}
-                        placeholder="答案"
+                        aria-label={`问答回答 ${index + 1}`}
+                        placeholder="回答"
                         disabled={disabled}
                         autoSize={resolveTextAreaAutoSize({ minRows: 2, maxRows: 4 })}
                         style={{ marginTop: 8 }}

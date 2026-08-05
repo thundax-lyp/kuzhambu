@@ -8,16 +8,67 @@ import { KuzhambuButton, KuzhambuSpace } from "@/components";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
-import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
+import {
+    AI_BUSINESS_CAPABILITY,
+    type AiRefinementTaskRecord
+} from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-edit-drawer-form-values";
 import { SancaiEntrySummaryModal } from "./sancai-entry-summary-modal";
 import "./sancai-entry-summary-text-field.css";
 
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
-const SUMMARY_CANDIDATE_CAPABILITY = "classics_summary";
+const SUMMARY_CANDIDATE_CAPABILITY = AI_BUSINESS_CAPABILITY.CLASSICS_SUMMARY;
+const SUMMARY_TASK_POLL_INTERVAL_MS = 3000;
+
+type SummaryTaskPage = {
+    items?: AiRefinementTaskRecord[];
+    pageNo?: number;
+    pageSize?: number;
+    total?: number;
+};
 
 const getCandidateStableId = (candidate: AiCandidateRecord) => {
     return candidate.candidateIdText || String(candidate.candidateId);
+};
+
+const isSameTaskRecord = (
+    left: AiRefinementTaskRecord | undefined,
+    right: AiRefinementTaskRecord
+) => {
+    if (!left) {
+        return false;
+    }
+    const leftRecord = left as unknown as Record<string, unknown>;
+    const rightRecord = right as unknown as Record<string, unknown>;
+    const keys = new Set([...Object.keys(leftRecord), ...Object.keys(rightRecord)]);
+    return [...keys].every((key) => leftRecord[key] === rightRecord[key]);
+};
+
+const createEventId = (prefix: string) => {
+    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+        return `${prefix}-${crypto.randomUUID()}`;
+    }
+    return `${prefix}-${Date.now()}`;
+};
+
+const buildSummaryInputPayloadJson = (entryId: string, formValues: SancaiEntryFormValues) => {
+    const document = [formValues.originalText, formValues.translationText, formValues.summary]
+        .filter((value): value is string => Boolean(value?.trim()))
+        .join("\n\n");
+    return JSON.stringify({
+        capability: AI_BUSINESS_CAPABILITY.CLASSICS_SUMMARY,
+        contentId: entryId,
+        contentType: "SANCAI_ENTRY",
+        document,
+        bodyText: formValues.originalText,
+        existingSummary: formValues.summary,
+        objectId: null,
+        originalText: formValues.originalText,
+        sourceText: formValues.originalText,
+        summary: formValues.summary,
+        title: formValues.title,
+        translationText: formValues.translationText
+    });
 };
 
 const isUsableSummaryCandidate = (candidate?: AiCandidateRecord | null) => {
@@ -42,23 +93,17 @@ const selectLatestSummaryCandidate = (candidates: AiCandidateRecord[] | undefine
 interface SancaiEntrySummaryTextFieldProps {
     entryId?: string;
     getFormValues: () => SancaiEntryFormValues;
-    isCreatingSummaryTask?: boolean;
     mode: "create" | "edit";
-    summaryTasks?: AiRefinementTaskRecord[];
     value?: string;
     onChange?: (value: string) => void;
-    onRequestSummaryTask?: (draft: SancaiEntryFormValues) => void;
 }
 
 export const SancaiEntrySummaryTextField = ({
     entryId,
     getFormValues,
-    isCreatingSummaryTask = false,
     mode,
-    summaryTasks = [],
     value = "",
-    onChange,
-    onRequestSummaryTask
+    onChange
 }: SancaiEntrySummaryTextFieldProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -67,36 +112,79 @@ export const SancaiEntrySummaryTextField = ({
     const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<string | null>(null);
     const [loadedSummaryCandidateSnapshot, setLoadedSummaryCandidateSnapshot] =
         useState<AiCandidateRecord | null>(null);
+    const summaryTasksQuery = useQuery({
+        queryKey: ["classics", "sancai", "refinement", "tasks", entryId],
+        queryFn: () =>
+            aiRefinementTaskService.pageTasks({
+                contentType: "SANCAI_ENTRY",
+                contentId: entryId ?? "",
+                pageNo: 1,
+                pageSize: 20
+            }),
+        enabled: mode === "edit" && Boolean(entryId),
+        retry: false,
+        refetchInterval: (query) => {
+            const tasks = query.state.data?.items || [];
+            return tasks.some((task) => task.status === "PENDING" || task.status === "RUNNING")
+                ? SUMMARY_TASK_POLL_INTERVAL_MS
+                : false;
+        }
+    });
+    const summaryTasks = useMemo(
+        () =>
+            (summaryTasksQuery.data?.items || []).filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
+                    "summary"
+            ),
+        [summaryTasksQuery.data?.items]
+    );
     const syncSummaryTask = useCallback(
         (task: AiRefinementTaskRecord | null) => {
             if (!task || !entryId) {
                 return;
             }
             const normalizedTask = { ...task, capability: "summary" };
-            queryClient.setQueryData<{
-                items?: AiRefinementTaskRecord[];
-                [key: string]: unknown;
-            }>(["classics", "sancai", "refinement", "tasks", entryId], (currentPage) => {
-                if (!currentPage?.items) {
-                    return currentPage;
+            queryClient.setQueryData<SummaryTaskPage>(
+                ["classics", "sancai", "refinement", "tasks", entryId],
+                (currentPage) => {
+                    const items = currentPage?.items || [];
+                    const existingTask = items.find(
+                        (item) => item.taskId === normalizedTask.taskId
+                    );
+                    if (isSameTaskRecord(existingTask, normalizedTask)) {
+                        return currentPage;
+                    }
+                    return {
+                        pageNo: currentPage?.pageNo ?? 1,
+                        pageSize: currentPage?.pageSize ?? Math.max(items.length + 1, 20),
+                        total: existingTask
+                            ? currentPage?.total
+                            : (currentPage?.total ?? items.length) + 1,
+                        items: existingTask
+                            ? items.map((item) =>
+                                  item.taskId === normalizedTask.taskId
+                                      ? { ...item, ...normalizedTask }
+                                      : item
+                              )
+                            : [normalizedTask, ...items]
+                    };
                 }
-                const taskExists = currentPage.items.some(
-                    (item) => item.taskId === normalizedTask.taskId
-                );
-                return {
-                    ...currentPage,
-                    items: taskExists
-                        ? currentPage.items.map((item) =>
-                              item.taskId === normalizedTask.taskId
-                                  ? { ...item, ...normalizedTask }
-                                  : item
-                          )
-                        : [normalizedTask, ...currentPage.items]
-                };
-            });
+            );
         },
         [entryId, queryClient]
     );
+    const createSummaryTaskMutation = useMutation({
+        mutationFn: aiRefinementTaskService.createTask,
+        onSuccess: async (acceptedTask) => {
+            syncSummaryTask(acceptedTask);
+            await summaryTasksQuery.refetch();
+            messageApi.success("摘要任务已创建");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "AI 精修任务创建失败");
+        }
+    });
     const summaryCandidatesQuery = useQuery({
         queryKey: ["ai", "candidates", "SANCAI_ENTRY", entryId, "summary", "modal"],
         queryFn: () =>
@@ -109,7 +197,7 @@ export const SancaiEntrySummaryTextField = ({
         enabled: summaryModalOpen && Boolean(entryId),
         retry: false,
         refetchInterval: () => {
-            return isCreatingSummaryTask ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS : false;
+            return createSummaryTaskMutation.isPending ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS : false;
         }
     });
     const applySummaryCandidateMutation = useMutation({
@@ -161,7 +249,7 @@ export const SancaiEntrySummaryTextField = ({
             ? loadedSummaryCandidateSnapshot
             : null;
     }, [loadedSummaryCandidateId, loadedSummaryCandidateSnapshot, summaryCandidatesQuery.data]);
-    const isSummaryApplyDisabled = !summaryDraft.trim() || isCreatingSummaryTask;
+    const isSummaryApplyDisabled = !summaryDraft.trim() || createSummaryTaskMutation.isPending;
     const refetchSummaryCandidates = summaryCandidatesQuery.refetch;
     const loadSummaryCandidate = useCallback(
         async (task: AiRefinementTaskRecord | null) => {
@@ -235,16 +323,22 @@ export const SancaiEntrySummaryTextField = ({
         if (!entryId) {
             return false;
         }
-        if (!onRequestSummaryTask) {
-            messageApi.warning("请先保存条目后再使用 AI摘要");
-            return false;
-        }
         const formValues = getFormValues();
         if (!formValues.originalText?.trim()) {
             messageApi.warning("请先填写原文");
             return false;
         }
-        onRequestSummaryTask(formValues);
+        createSummaryTaskMutation.mutate({
+            capability: AI_BUSINESS_CAPABILITY.CLASSICS_SUMMARY,
+            scope: "classics",
+            contentType: "SANCAI_ENTRY",
+            contentId: entryId,
+            objectId: null,
+            requestId: createEventId("sancai-summary-task"),
+            traceId: createEventId("sancai-summary-trace"),
+            inputPayloadJson: buildSummaryInputPayloadJson(entryId, formValues),
+            locale: "zh-CN"
+        });
         return true;
     };
     const applySummaryDraft = () => {
@@ -257,7 +351,7 @@ export const SancaiEntrySummaryTextField = ({
                 candidateId: getCandidateStableId(loadedSummaryCandidate),
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: "summary",
+                capability: AI_BUSINESS_CAPABILITY.CLASSICS_SUMMARY,
                 objectId: loadedSummaryCandidate.objectId,
                 resultFormat: loadedSummaryCandidate.resultFormat?.trim() || "TEXT",
                 resultPayload,
@@ -299,7 +393,7 @@ export const SancaiEntrySummaryTextField = ({
                 isAiTextCandidateFetching={summaryCandidatesQuery.isFetching}
                 isAiTextCandidateLoadError={summaryCandidatesQuery.isError}
                 isApplyingAiText={applySummaryCandidateMutation.isPending}
-                isCreatingAiTextTask={isCreatingSummaryTask}
+                isCreatingAiTextTask={createSummaryTaskMutation.isPending}
                 open={summaryModalOpen}
                 summaryTasks={summaryTasks}
                 onApply={applySummaryDraft}

@@ -9,6 +9,7 @@ import type {
     AiRefinementTaskPageRecord,
     AiRefinementTaskRecord
 } from "./ai-refinement-task-types";
+import { AI_BUSINESS_CAPABILITY } from "./ai-refinement-task-types";
 
 const AI_REFINEMENT_TASK_PATH = "/ai/refinement/task";
 
@@ -31,14 +32,25 @@ interface AiRefinementTaskStreamCommand {
 const RETRYABLE_STATUSES = new Set(["FAILED", "PARTIAL", "CANCELLED"]);
 
 const TASK_CAPABILITY_ALIASES: Record<string, string> = {
-    classics_translate: "translate",
-    classics_summary: "summary",
-    classics_tags: "tags",
-    classics_qa: "qa",
-    classics_image_describe: "image_analysis",
-    classics_image_prompt_fusion: "fusion",
-    classics_visual_describe: "visual",
-    classics_image_generate: "image_gen"
+    [AI_BUSINESS_CAPABILITY.CLASSICS_TRANSLATE]: "translate",
+    [AI_BUSINESS_CAPABILITY.CLASSICS_SUMMARY]: "summary",
+    [AI_BUSINESS_CAPABILITY.CLASSICS_TAG_EXTRACT]: "tags",
+    [AI_BUSINESS_CAPABILITY.CLASSICS_QA]: "qa",
+    [AI_BUSINESS_CAPABILITY.CLASSICS_IMAGE_DESCRIBE]: "image_analysis",
+    [AI_BUSINESS_CAPABILITY.CLASSICS_IMAGE_PROMPT_FUSION]: "fusion",
+    [AI_BUSINESS_CAPABILITY.CLASSICS_VISUAL_DESCRIBE]: "visual",
+    [AI_BUSINESS_CAPABILITY.CLASSICS_IMAGE_GENERATE]: "image_gen"
+};
+
+const BUSINESS_CAPABILITY_CODES: Record<string, string> = {
+    translate: AI_BUSINESS_CAPABILITY.CLASSICS_TRANSLATE,
+    summary: AI_BUSINESS_CAPABILITY.CLASSICS_SUMMARY,
+    tags: AI_BUSINESS_CAPABILITY.CLASSICS_TAG_EXTRACT,
+    qa: AI_BUSINESS_CAPABILITY.CLASSICS_QA,
+    image_analysis: AI_BUSINESS_CAPABILITY.CLASSICS_IMAGE_DESCRIBE,
+    fusion: AI_BUSINESS_CAPABILITY.CLASSICS_IMAGE_PROMPT_FUSION,
+    visual: AI_BUSINESS_CAPABILITY.CLASSICS_VISUAL_DESCRIBE,
+    image_gen: AI_BUSINESS_CAPABILITY.CLASSICS_IMAGE_GENERATE
 };
 
 const CAPABILITY_LABELS: Record<string, string> = {
@@ -115,6 +127,10 @@ const trimFailurePart = (value?: string | null) => {
 
 export const getNormalizedTaskCapability = (capability: string) => {
     return TASK_CAPABILITY_ALIASES[capability] ?? capability;
+};
+
+export const getBusinessCapabilityCode = (capability: string) => {
+    return BUSINESS_CAPABILITY_CODES[capability] ?? capability;
 };
 
 export const getTaskCapabilityLabel = (capability: string) => {

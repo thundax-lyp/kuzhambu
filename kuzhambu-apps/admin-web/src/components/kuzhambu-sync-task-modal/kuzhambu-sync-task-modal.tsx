@@ -106,8 +106,10 @@ export interface KuzhambuSyncTaskModalProps<TTask, TResult> extends Omit<
     createText: ReactNode;
     /** 页面创建任务 mutation 的 pending 状态。 */
     creating?: boolean;
+    hideCancel?: boolean | ((state: KuzhambuSyncTaskModalState<TTask, TResult>) => boolean);
     onCancel: () => void;
     renderBody: (state: KuzhambuSyncTaskModalState<TTask, TResult>) => ReactNode;
+    renderFooterActions?: (state: KuzhambuSyncTaskModalState<TTask, TResult>) => ReactNode;
     renderStatus?: (state: KuzhambuSyncTaskModalState<TTask, TResult>) => ReactNode;
     title: ReactNode;
     workflow: KuzhambuSyncTaskWorkflow<TTask, TResult>;
@@ -193,9 +195,11 @@ export const KuzhambuSyncTaskModal = <TTask, TResult>({
     createText,
     creating = false,
     destroyOnHidden = true,
+    hideCancel,
     onCancel,
     open,
     renderBody,
+    renderFooterActions,
     renderStatus,
     title,
     workflow,
@@ -338,6 +342,8 @@ export const KuzhambuSyncTaskModal = <TTask, TResult>({
             />
         );
     }
+    const shouldHideCancel =
+        typeof hideCancel === "function" ? hideCancel(state) : Boolean(hideCancel);
 
     return (
         <KuzhambuModal
@@ -347,12 +353,15 @@ export const KuzhambuSyncTaskModal = <TTask, TResult>({
             destroyOnHidden={destroyOnHidden}
             footer={
                 <div className="kuzhambu-sync-task-modal-footer">
-                    <KuzhambuButton
-                        testId={cancelTestId || `${modalProps.testId}-cancel-button`}
-                        onClick={onCancel}
-                    >
-                        {cancelText}
-                    </KuzhambuButton>
+                    {shouldHideCancel ? null : (
+                        <KuzhambuButton
+                            testId={cancelTestId || `${modalProps.testId}-cancel-button`}
+                            onClick={onCancel}
+                        >
+                            {cancelText}
+                        </KuzhambuButton>
+                    )}
+                    {renderFooterActions?.(state)}
                     {applyResult ? (
                         <KuzhambuButton
                             testId={applyTestId || `${modalProps.testId}-apply-button`}

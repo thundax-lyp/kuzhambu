@@ -1,6 +1,6 @@
 {
   "priority": 11,
-  "capability": "classics_split",
+  "capability": "CLASSICS_SPLIT",
   "suite": "classics-default-v1",
   "name": "古籍条目拆分提示词",
   "description": "古籍条目拆分默认提示词。",

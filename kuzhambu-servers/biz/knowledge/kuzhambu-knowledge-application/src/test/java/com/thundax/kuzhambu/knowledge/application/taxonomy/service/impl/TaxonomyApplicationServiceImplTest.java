@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -509,7 +510,7 @@ class TaxonomyApplicationServiceImplTest {
                         .callId(501L)
                         .candidateId(601L)
                         .status("SUCCEEDED")
-                        .capability("KNOWLEDGE_TAG_EXTRACTION")
+                        .capability("KNOWLEDGE_TAG_EXTRACT")
                         .resultFormat("STRUCTURED")
                         .resultPayload("{\"tags\":[]}")
                         .build());
@@ -576,7 +577,7 @@ class TaxonomyApplicationServiceImplTest {
                 mock(TagGovernanceMetricsRepository.class));
         AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
                 .candidateId(601L)
-                .capability("KNOWLEDGE_TAG_EXTRACTION")
+                .capability("KNOWLEDGE_TAG_EXTRACT")
                 .contentType("SANCAI_ENTRY")
                 .contentId(1001L)
                 .resultFormat("STRUCTURED")
@@ -599,6 +600,10 @@ class TaxonomyApplicationServiceImplTest {
                 "AI 审核",
                 201L));
 
+        ArgumentCaptor<RequirePendingAiCandidateFacadeRequest> requireCaptor =
+                ArgumentCaptor.forClass(RequirePendingAiCandidateFacadeRequest.class);
+        verify(aiFacade).requirePendingCandidate(requireCaptor.capture());
+        assertEquals("KNOWLEDGE_TAG_EXTRACT", requireCaptor.getValue().getCapability());
         ArgumentCaptor<Tag> tagCaptor = ArgumentCaptor.forClass(Tag.class);
         verify(tagRepository).insert(tagCaptor.capture());
         Tag inserted = tagCaptor.getValue();

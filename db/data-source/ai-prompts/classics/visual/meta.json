@@ -1,6 +1,6 @@
 {
   "priority": 10,
-  "capability": "classics_visual_describe",
+  "capability": "CLASSICS_VISUAL_DESCRIBE",
   "suite": "classics-default-v1",
   "name": "古籍视觉描述提示词",
   "description": "古籍视觉描述默认提示词。",

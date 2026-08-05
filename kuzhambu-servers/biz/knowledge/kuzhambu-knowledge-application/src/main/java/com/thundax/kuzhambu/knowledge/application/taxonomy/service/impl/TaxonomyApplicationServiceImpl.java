@@ -86,6 +86,7 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationService {
 
+    private static final String CAPABILITY_KNOWLEDGE_TAG_EXTRACT = "KNOWLEDGE_TAG_EXTRACT";
     private static final String APPROVE_DECISION = "APPROVE";
     private static final String REJECT_DECISION = "REJECT";
     private static final int TAXONOMY_CONTEXT_PAGE_SIZE = 200;
@@ -663,7 +664,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         if (candidate == null) {
             throw new BizException("AI candidate not found: " + candidateId);
         }
-        if (!"KNOWLEDGE_TAG_EXTRACTION".equals(candidate.getCapability())) {
+        if (!CAPABILITY_KNOWLEDGE_TAG_EXTRACT.equals(candidate.getCapability())) {
             throw new BizException("AI candidate capability mismatch: " + candidate.getCapability());
         }
         AiCandidateFacadeDto pendingCandidate =
@@ -671,7 +672,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .candidateId(candidateId)
                         .contentType(candidate.getContentType())
                         .contentId(candidate.getContentId())
-                        .capability("KNOWLEDGE_TAG_EXTRACTION")
+                        .capability(CAPABILITY_KNOWLEDGE_TAG_EXTRACT)
                         .build());
 
         for (TagCandidateApplyItemCommand item : selectedTags) {

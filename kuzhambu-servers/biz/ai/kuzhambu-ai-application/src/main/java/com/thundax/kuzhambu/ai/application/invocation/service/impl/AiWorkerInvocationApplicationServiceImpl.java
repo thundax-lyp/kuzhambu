@@ -28,6 +28,8 @@ import com.thundax.kuzhambu.storage.facade.response.InitMultipartUploadFacadeRes
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.springframework.stereotype.Service;
@@ -208,6 +210,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         if (isBlank(result.getResultFormat())) {
             result.setResultFormat(defaultResultFormat(command, result));
         }
+        result = validateStructuredResult(command, result);
         if ((result.isSucceeded() || result.getStatus() == AiInvocationStatus.PARTIAL)
                 && !isBlank(result.getArtifactReferenceJson())) {
             return persistArtifactResult(command, result);
@@ -236,6 +239,156 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             return "ARTIFACT";
         }
         return command != null && command.isForceJson() ? "JSON" : "TEXT";
+    }
+
+    private AiInvokeResult validateStructuredResult(AiInvokeCommand command, AiInvokeResult result) {
+        if (command == null
+                || result == null
+                || (!result.isSucceeded() && result.getStatus() != AiInvocationStatus.PARTIAL)
+                || !couldRequireStructuredValidation(command, result)) {
+            return result;
+        }
+        try {
+            JsonNode schema = isBlank(command.getOutputSchemaJson())
+                    ? objectMapper.createObjectNode()
+                    : objectMapper.readTree(command.getOutputSchemaJson());
+            if (!shouldValidateStructuredResult(command, result, schema)) {
+                return result;
+            }
+            JsonNode payload = objectMapper.readTree(extractJsonPayload(result.getResultPayload()));
+            validateBySchema(payload, schema, "payload");
+            result.setResultPayload(objectMapper.writeValueAsString(payload));
+            return result;
+        } catch (JsonProcessingException | IllegalArgumentException ex) {
+            return AiInvokeResult.failed(
+                    command.getRequestId(),
+                    command.getTraceId(),
+                    "OUTPUT_FORMAT_FAILURE",
+                    ex.getMessage(),
+                    "WORKER_RESULT");
+        }
+    }
+
+    private boolean couldRequireStructuredValidation(AiInvokeCommand command, AiInvokeResult result) {
+        return "STRUCTURED".equalsIgnoreCase(result.getResultFormat())
+                || command.isForceJson()
+                || !isBlank(command.getOutputSchemaJson());
+    }
+
+    private boolean shouldValidateStructuredResult(AiInvokeCommand command, AiInvokeResult result, JsonNode schema) {
+        return "STRUCTURED".equalsIgnoreCase(result.getResultFormat())
+                || command.isForceJson()
+                || !"text".equalsIgnoreCase(schema.path("type").asText(""));
+    }
+
+    private String extractJsonPayload(String payload) {
+        if (isBlank(payload)) {
+            throw new IllegalArgumentException("Worker structured output is empty");
+        }
+        String trimmed = stripMarkdownJsonFence(payload.trim());
+        if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+            return trimmed;
+        }
+        int objectStart = trimmed.indexOf('{');
+        int arrayStart = trimmed.indexOf('[');
+        int start = objectStart < 0 ? arrayStart : arrayStart < 0 ? objectStart : Math.min(objectStart, arrayStart);
+        int end = Math.max(trimmed.lastIndexOf('}'), trimmed.lastIndexOf(']'));
+        if (start >= 0 && end > start) {
+            return trimmed.substring(start, end + 1);
+        }
+        throw new IllegalArgumentException("Worker structured output is not JSON");
+    }
+
+    private String stripMarkdownJsonFence(String payload) {
+        if (!payload.startsWith("```")) {
+            return payload;
+        }
+        int firstLineEnd = payload.indexOf('\n');
+        int fenceEnd = payload.lastIndexOf("```");
+        if (firstLineEnd < 0 || fenceEnd <= firstLineEnd) {
+            return payload;
+        }
+        return payload.substring(firstLineEnd + 1, fenceEnd).trim();
+    }
+
+    private void validateBySchema(JsonNode value, JsonNode schema, String path) {
+        if (schema == null || schema.isMissingNode() || schema.isNull()) {
+            return;
+        }
+        String type = schema.path("type").asText("");
+        if ("text".equalsIgnoreCase(type)) {
+            return;
+        }
+        if ("object".equalsIgnoreCase(type)) {
+            validateObject(value, schema, path);
+        } else if ("array".equalsIgnoreCase(type)) {
+            validateArray(value, schema, path);
+        } else if ("string".equalsIgnoreCase(type)) {
+            require(value != null && value.isTextual(), path + " must be a string");
+        } else if ("number".equalsIgnoreCase(type)) {
+            require(value != null && value.isNumber(), path + " must be a number");
+        } else if ("integer".equalsIgnoreCase(type)) {
+            require(value != null && value.isIntegralNumber(), path + " must be an integer");
+        } else if ("boolean".equalsIgnoreCase(type)) {
+            require(value != null && value.isBoolean(), path + " must be a boolean");
+        }
+    }
+
+    private void validateObject(JsonNode value, JsonNode schema, String path) {
+        require(value != null && value.isObject(), path + " must be an object");
+        for (String fieldName : requiredFields(schema)) {
+            require(value.has(fieldName) && !value.get(fieldName).isNull(), path + "." + fieldName + " is required");
+        }
+        JsonNode properties = schema.path("properties");
+        if (!properties.isObject()) {
+            return;
+        }
+        properties.fields().forEachRemaining(entry -> {
+            if (value.has(entry.getKey()) && !value.get(entry.getKey()).isNull()) {
+                validateBySchema(value.get(entry.getKey()), entry.getValue(), path + "." + entry.getKey());
+            }
+        });
+    }
+
+    private void validateArray(JsonNode value, JsonNode schema, String path) {
+        require(value != null && value.isArray(), path + " must be an array");
+        if (schema.has("minItems") && schema.get("minItems").canConvertToInt()) {
+            int minItems = schema.get("minItems").asInt();
+            require(value.size() >= minItems, path + " must contain at least " + minItems + " items");
+        }
+        if (schema.has("maxItems") && schema.get("maxItems").canConvertToInt()) {
+            int maxItems = schema.get("maxItems").asInt();
+            require(value.size() <= maxItems, path + " must contain at most " + maxItems + " items");
+        }
+        JsonNode itemSchema = schema.path("items");
+        if (itemSchema.isMissingNode() || itemSchema.isNull()) {
+            return;
+        }
+        int index = 0;
+        for (JsonNode item : value) {
+            validateBySchema(item, itemSchema, path + "[" + index + "]");
+            index++;
+        }
+    }
+
+    private List<String> requiredFields(JsonNode schema) {
+        JsonNode required = schema.path("required");
+        List<String> fields = new ArrayList<>();
+        if (!required.isArray()) {
+            return fields;
+        }
+        for (JsonNode item : required) {
+            if (item.isTextual()) {
+                fields.add(item.asText());
+            }
+        }
+        return fields;
+    }
+
+    private void require(boolean condition, String message) {
+        if (!condition) {
+            throw new IllegalArgumentException(message);
+        }
     }
 
     private AiInvokeResult persistArtifactResult(AiInvokeCommand command, AiInvokeResult result) {

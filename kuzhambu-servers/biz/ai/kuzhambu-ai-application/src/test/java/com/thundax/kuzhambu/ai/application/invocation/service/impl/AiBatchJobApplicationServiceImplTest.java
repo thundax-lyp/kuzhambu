@@ -27,13 +27,13 @@ import org.junit.jupiter.params.provider.CsvSource;
 public class AiBatchJobApplicationServiceImplTest {
 
     @Test
-    public void createShouldNormalizeLegacyImageAnalysisCapability() {
+    public void createShouldUseImageAnalysisCapabilityCode() {
         FakeRepository repository = new FakeRepository(null);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
 
         service.create(new AiBatchJobCreateCommand(
                 "classics",
-                AiBusinessCapability.fromAlias("image_analysis"),
+                AiBusinessCapability.from(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value()),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 3001L),
                 1,
                 null));
@@ -42,13 +42,13 @@ public class AiBatchJobApplicationServiceImplTest {
     }
 
     @Test
-    public void createShouldNormalizeLegacyVisualCapability() {
+    public void createShouldUseVisualCapabilityCode() {
         FakeRepository repository = new FakeRepository(null);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
 
         service.create(new AiBatchJobCreateCommand(
                 "classics",
-                AiBusinessCapability.fromAlias("visual"),
+                AiBusinessCapability.from(AiBusinessCapability.CLASSICS_VISUAL_DESCRIBE.value()),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 3001L),
                 1,
                 null));
@@ -57,13 +57,13 @@ public class AiBatchJobApplicationServiceImplTest {
     }
 
     @Test
-    public void createShouldNormalizeLegacyFusionCapabilityAndKeepContentId() {
+    public void createShouldUseFusionCapabilityCodeAndKeepContentId() {
         FakeRepository repository = new FakeRepository(null);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
 
         service.create(new AiBatchJobCreateCommand(
                 "classics",
-                AiBusinessCapability.fromAlias("fusion"),
+                AiBusinessCapability.from(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION.value()),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 3001L),
                 1,
                 null));
@@ -74,18 +74,17 @@ public class AiBatchJobApplicationServiceImplTest {
 
     @ParameterizedTest
     @CsvSource({
-        "relation_extraction, KNOWLEDGE_RELATION_EXTRACT",
-        "knowledge_graph, KNOWLEDGE_GRAPH_EXTRACT",
-        "lineage_extraction, KNOWLEDGE_LINEAGE_EXTRACT"
+        "KNOWLEDGE_RELATION_EXTRACT, KNOWLEDGE_RELATION_EXTRACT",
+        "KNOWLEDGE_GRAPH_EXTRACT, KNOWLEDGE_GRAPH_EXTRACT",
+        "KNOWLEDGE_LINEAGE_EXTRACT, KNOWLEDGE_LINEAGE_EXTRACT"
     })
-    public void createShouldNormalizeLegacyKnowledgeCapability(
-            String legacyCapability, AiBusinessCapability expectedCapability) {
+    public void createShouldUseKnowledgeCapabilityCode(String capabilityCode, AiBusinessCapability expectedCapability) {
         FakeRepository repository = new FakeRepository(null);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
 
         service.create(new AiBatchJobCreateCommand(
                 "knowledge",
-                AiBusinessCapability.fromAlias(legacyCapability),
+                AiBusinessCapability.from(capabilityCode),
                 AiContentRef.ofNullable("SANCAI_ENTRY", null),
                 1,
                 null));

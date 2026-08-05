@@ -20,24 +20,24 @@ AI 运行时协议只接收业务调用意图和业务参数快照。模型选�
 
 外部协议中的 `capability` 永远表示 AI 域业务能力编码，例如：
 
-- `classics_translate`
-- `classics_translate_batch_item`
-- `classics_summary`
-- `classics_tags`
-- `classics_qa`
-- `classics_split`
-- `classics_image_describe`
-- `classics_image_prompt_fusion`
-- `classics_visual_describe`
-- `classics_image_generate`
-- `discovery_query_understanding`
-- `discovery_answer_generation`
-- `knowledge_relation_extract`
-- `knowledge_graph_extract`
-- `knowledge_lineage_extract`
-- `knowledge_tags`
-- `prompt_suggestion`
-- `platform_version_summary`
+- `CLASSICS_TRANSLATE`
+- `CLASSICS_TRANSLATE_BATCH_ITEM`
+- `CLASSICS_SUMMARY`
+- `CLASSICS_TAG_EXTRACT`
+- `CLASSICS_QA`
+- `CLASSICS_SPLIT`
+- `CLASSICS_IMAGE_DESCRIBE`
+- `CLASSICS_IMAGE_PROMPT_FUSION`
+- `CLASSICS_VISUAL_DESCRIBE`
+- `CLASSICS_IMAGE_GENERATE`
+- `DISCOVERY_QUERY_UNDERSTANDING`
+- `DISCOVERY_ANSWER_GENERATION`
+- `KNOWLEDGE_RELATION_EXTRACT`
+- `KNOWLEDGE_GRAPH_EXTRACT`
+- `KNOWLEDGE_LINEAGE_EXTRACT`
+- `KNOWLEDGE_TAG_EXTRACT`
+- `PROMPT_SUGGEST`
+- `PLATFORM_VERSION_SUMMARY`
 
 该字段用于：
 
@@ -51,24 +51,24 @@ Workers canonical capability 是 Java AI 域内部传输字段，不进入外部
 
 | 业务 capability | Workers canonical capability |
 | --- | --- |
-| `classics_translate` | `translate` |
-| `classics_translate_batch_item` | `translate` |
-| `classics_summary` | `summary` |
-| `classics_tags` | `tags` |
-| `classics_qa` | `qa` |
-| `classics_split` | `split` |
-| `classics_image_describe` | `image_analysis` |
-| `classics_image_prompt_fusion` | `fusion` |
-| `classics_visual_describe` | `visual` |
-| `classics_image_generate` | `image_gen` |
-| `discovery_query_understanding` | `query_understanding` |
-| `discovery_answer_generation` | `answer_generation` |
-| `knowledge_relation_extract` | `relation_extraction` |
-| `knowledge_graph_extract` | `knowledge_graph` |
-| `knowledge_lineage_extract` | `lineage_extraction` |
-| `knowledge_tags` | `tags` |
-| `prompt_suggestion` | `prompt_suggestion` |
-| `platform_version_summary` | `version_summary` |
+| `CLASSICS_TRANSLATE` | `translate` |
+| `CLASSICS_TRANSLATE_BATCH_ITEM` | `translate` |
+| `CLASSICS_SUMMARY` | `summary` |
+| `CLASSICS_TAG_EXTRACT` | `tags` |
+| `CLASSICS_QA` | `qa` |
+| `CLASSICS_SPLIT` | `split` |
+| `CLASSICS_IMAGE_DESCRIBE` | `image_analysis` |
+| `CLASSICS_IMAGE_PROMPT_FUSION` | `fusion` |
+| `CLASSICS_VISUAL_DESCRIBE` | `visual` |
+| `CLASSICS_IMAGE_GENERATE` | `image_gen` |
+| `DISCOVERY_QUERY_UNDERSTANDING` | `query_understanding` |
+| `DISCOVERY_ANSWER_GENERATION` | `answer_generation` |
+| `KNOWLEDGE_RELATION_EXTRACT` | `relation_extraction` |
+| `KNOWLEDGE_GRAPH_EXTRACT` | `knowledge_graph` |
+| `KNOWLEDGE_LINEAGE_EXTRACT` | `lineage_extraction` |
+| `KNOWLEDGE_TAG_EXTRACT` | `tags` |
+| `PROMPT_SUGGEST` | `prompt_suggestion` |
+| `PLATFORM_VERSION_SUMMARY` | `version_summary` |
 
 ## Frontend Request
 
@@ -84,7 +84,7 @@ Admin Web 默认使用异步任务协议：
 ```json
 {
   "scope": "classics",
-  "capability": "classics_summary",
+  "capability": "CLASSICS_SUMMARY",
   "contentType": "SANCAI_ENTRY",
   "contentId": 300000000001,
   "objectId": null,
@@ -150,8 +150,8 @@ Admin Web 默认使用异步任务协议：
 
 平台 endpoint 自身决定业务 capability：
 
-- `prompt-suggestion` 固定为 `prompt_suggestion`。
-- `version-summary` 固定为 `platform_version_summary`。
+- `prompt-suggestion` 固定为 `PROMPT_SUGGEST`。
+- `version-summary` 固定为 `PLATFORM_VERSION_SUMMARY`。
 
 平台请求默认不传模型和 prompt 字段。AI 域按 endpoint 对应的业务 capability 查找业务配置并渲染 prompt。
 
@@ -174,7 +174,7 @@ Java AI 域对外响应中的 `capability` 固定返回业务 capability，不�
   "callId": 120001,
   "candidateId": 130001,
   "status": "SUCCEEDED",
-  "capability": "classics_summary",
+  "capability": "CLASSICS_SUMMARY",
   "resultFormat": "TEXT",
   "resultPayload": "摘要内容",
   "failureStage": null,

@@ -40,7 +40,7 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         Promise.resolve({
             taskId: "9001",
             status: "PENDING",
-            capability: "classics_summary",
+            capability: "CLASSICS_SUMMARY",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1"
         })
@@ -48,18 +48,26 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
     getTaskFailureText: vi.fn(() => null),
     getNormalizedTaskCapability: vi.fn((capability: string) => {
         const aliases: Record<string, string> = {
-            classics_qa: "qa",
-            classics_summary: "summary",
-            classics_tags: "tags"
+            CLASSICS_QA: "qa",
+            CLASSICS_SUMMARY: "summary",
+            CLASSICS_TAG_EXTRACT: "tags"
         };
         return aliases[capability] ?? capability;
+    }),
+    getBusinessCapabilityCode: vi.fn((capability: string) => {
+        const codes: Record<string, string> = {
+            summary: "CLASSICS_SUMMARY",
+            tags: "CLASSICS_TAG_EXTRACT",
+            qa: "CLASSICS_QA"
+        };
+        return codes[capability] ?? capability;
     }),
     getTaskStableId: vi.fn((taskId: string, taskIdText?: string | null) => taskIdText || taskId),
     getTask: vi.fn(() =>
         Promise.resolve({
             taskId: "9001",
             status: "PENDING",
-            capability: "classics_summary",
+            capability: "CLASSICS_SUMMARY",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1"
         })
@@ -99,7 +107,7 @@ let mockSummaryCandidates = [
         candidateId: "5001",
         contentType: "WANGQI_DOCUMENT",
         contentId: "1",
-        capability: "classics_summary",
+        capability: "CLASSICS_SUMMARY",
         objectId: null,
         resultFormat: "TEXT",
         resultPayload: "文档摘要候选",
@@ -112,7 +120,7 @@ let mockTagCandidates = [
         candidateId: "6001",
         contentType: "WANGQI_DOCUMENT",
         contentId: "1",
-        capability: "classics_tags",
+        capability: "CLASSICS_TAG_EXTRACT",
         objectId: null,
         resultFormat: "STRUCTURED",
         resultPayload: JSON.stringify({ tags: ["经部", "文献"] }),
@@ -136,7 +144,7 @@ let mockQaCandidates = [
         candidateId: "7001",
         contentType: "WANGQI_DOCUMENT",
         contentId: "1",
-        capability: "classics_qa",
+        capability: "CLASSICS_QA",
         objectId: null,
         resultFormat: "STRUCTURED",
         resultPayload: JSON.stringify({
@@ -258,10 +266,10 @@ const installFetchMock = () => {
             return apiResponse(mockQaRecords);
         }
         if (path.endsWith("/ai/invocation/candidate/list")) {
-            if (body?.capability === "tags") {
+            if (body?.capability === "CLASSICS_TAG_EXTRACT") {
                 return apiResponse(mockTagCandidates);
             }
-            if (body?.capability === "qa") {
+            if (body?.capability === "CLASSICS_QA") {
                 return apiResponse(mockQaCandidates);
             }
             return apiResponse(mockSummaryCandidates);
@@ -284,7 +292,7 @@ const installFetchMock = () => {
                         candidateId: "5001",
                         contentId: "1",
                         contentType: "WANGQI_DOCUMENT",
-                        capability: "classics_summary",
+                        capability: "CLASSICS_SUMMARY",
                         objectId: null,
                         resultId: "5001",
                         status: "REJECTED"
@@ -323,7 +331,7 @@ describe("WangqiPage", () => {
                 candidateId: "5001",
                 contentType: "WANGQI_DOCUMENT",
                 contentId: "1",
-                capability: "classics_summary",
+                capability: "CLASSICS_SUMMARY",
                 objectId: null,
                 resultFormat: "TEXT",
                 resultPayload: "文档摘要候选",
@@ -336,7 +344,7 @@ describe("WangqiPage", () => {
                 candidateId: "6001",
                 contentType: "WANGQI_DOCUMENT",
                 contentId: "1",
-                capability: "classics_tags",
+                capability: "CLASSICS_TAG_EXTRACT",
                 objectId: null,
                 resultFormat: "STRUCTURED",
                 resultPayload: JSON.stringify({ tags: ["经部", "文献"] }),
@@ -360,7 +368,7 @@ describe("WangqiPage", () => {
                 candidateId: "7001",
                 contentType: "WANGQI_DOCUMENT",
                 contentId: "1",
-                capability: "classics_qa",
+                capability: "CLASSICS_QA",
                 objectId: null,
                 resultFormat: "STRUCTURED",
                 resultPayload: JSON.stringify({
@@ -532,7 +540,7 @@ describe("WangqiPage", () => {
                         {
                             taskId: "9001",
                             status: "RUNNING",
-                            capability: "classics_summary",
+                            capability: "CLASSICS_SUMMARY",
                             contentType: "WANGQI_DOCUMENT",
                             contentId: "1",
                             requestedAt: "2026-01-01T00:00:00.000+00:00"
@@ -609,7 +617,7 @@ describe("WangqiPage", () => {
                     candidateId: "5002",
                     contentType: "WANGQI_DOCUMENT",
                     contentId: "1",
-                    capability: "classics_summary",
+                    capability: "CLASSICS_SUMMARY",
                     objectId: null,
                     resultFormat: "TEXT",
                     resultPayload: "新生成摘要候选",
@@ -620,7 +628,7 @@ describe("WangqiPage", () => {
             return {
                 taskId: "9100",
                 status: "PENDING",
-                capability: "classics_summary",
+                capability: "CLASSICS_SUMMARY",
                 contentType: "WANGQI_DOCUMENT",
                 contentId: "1"
             };
@@ -628,7 +636,7 @@ describe("WangqiPage", () => {
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
             taskId: "9100",
             status: "SUCCEEDED",
-            capability: "classics_summary",
+            capability: "CLASSICS_SUMMARY",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1",
             candidateId: "5002",
@@ -692,22 +700,31 @@ describe("WangqiPage", () => {
         const calls = vi
             .mocked(aiRefinementTaskService.createTask)
             .mock.calls.map(([payload]) => payload);
-        expect(calls.map((payload) => payload.capability)).toEqual(["summary", "tags", "qa"]);
+        expect(calls.map((payload) => payload.capability)).toEqual([
+            "CLASSICS_SUMMARY",
+            "CLASSICS_TAG_EXTRACT",
+            "CLASSICS_QA"
+        ]);
         calls.forEach((payload) => {
             expect(payload).toEqual(
                 expect.objectContaining({
                     scope: "classics",
                     contentType: "WANGQI_DOCUMENT",
                     contentId: "1",
-                    serviceRole: "PRIMARY",
-                    modelId: "1",
-                    modelName: "gpt-5.5",
                     locale: "zh-CN"
                 })
             );
             expect(payload).not.toHaveProperty("requestedBy");
-            expect(payload.requestId).toContain(`wangqi-${payload.capability}-request`);
-            expect(payload.traceId).toContain(`wangqi-${payload.capability}-trace`);
+            expect(payload).not.toHaveProperty("serviceRole");
+            expect(payload).not.toHaveProperty("modelId");
+            expect(payload).not.toHaveProperty("modelName");
+            expect(payload).not.toHaveProperty("promptMessagesJson");
+            expect(payload).not.toHaveProperty("promptVariablesJson");
+            const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(
+                payload.capability
+            );
+            expect(payload.requestId).toContain(`wangqi-${normalizedCapability}-request`);
+            expect(payload.traceId).toContain(`wangqi-${normalizedCapability}-trace`);
         });
     }, 30000);
 
@@ -717,14 +734,14 @@ describe("WangqiPage", () => {
         vi.mocked(aiRefinementTaskService.createTask).mockResolvedValueOnce({
             taskId: "9300",
             status: "PENDING",
-            capability: "classics_qa",
+            capability: "CLASSICS_QA",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1"
         });
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
             taskId: "9300",
             status: "SUCCEEDED",
-            capability: "classics_qa",
+            capability: "CLASSICS_QA",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1",
             candidateId: "7001",
@@ -754,10 +771,8 @@ describe("WangqiPage", () => {
 
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
         const taskPayload = vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0];
-        expect(taskPayload?.promptMessagesJson).toContain("已有问答：Q：已有问题？ A：已有答案。");
-        expect(taskPayload?.promptVariablesJson).toContain(
-            '"existingQaPairs":[{"question":"已有问题？","answer":"已有答案。"}]'
-        );
+        expect(taskPayload).not.toHaveProperty("promptMessagesJson");
+        expect(taskPayload).not.toHaveProperty("promptVariablesJson");
         expect(taskPayload?.inputPayloadJson).toContain(
             '"existingQaPairs":[{"question":"已有问题？","answer":"已有答案。"}]'
         );
@@ -766,7 +781,7 @@ describe("WangqiPage", () => {
         );
         expect(await screen.findByText("问答任务已完成")).toBeInTheDocument();
         expect(await screen.findByLabelText("问答问题 1")).toHaveValue("王圻是谁？");
-        expect(screen.getByLabelText("问答答案 1")).toHaveValue("王圻是明代学者。");
+        expect(screen.getByLabelText("问答回答 1")).toHaveValue("王圻是明代学者。");
 
         await user.click(screen.getByTestId("classics-wangqi-document-qa-ai-apply-button"));
 
@@ -780,7 +795,7 @@ describe("WangqiPage", () => {
                     candidateId: "7001",
                     contentId: "1",
                     contentType: "WANGQI_DOCUMENT",
-                    capability: "qa",
+                    capability: "CLASSICS_QA",
                     resultFormat: "STRUCTURED",
                     resultPayload: JSON.stringify({
                         qaPairs: [{ question: "王圻是谁？", answer: "王圻是明代学者。" }]
@@ -796,14 +811,14 @@ describe("WangqiPage", () => {
         vi.mocked(aiRefinementTaskService.createTask).mockResolvedValueOnce({
             taskId: "9200",
             status: "PENDING",
-            capability: "classics_tags",
+            capability: "CLASSICS_TAG_EXTRACT",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1"
         });
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
             taskId: "9200",
             status: "SUCCEEDED",
-            capability: "classics_tags",
+            capability: "CLASSICS_TAG_EXTRACT",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1",
             candidateId: "6001",
@@ -833,8 +848,8 @@ describe("WangqiPage", () => {
 
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
         const taskPayload = vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0];
-        expect(taskPayload?.promptMessagesJson).toContain("已有标签：史部");
-        expect(taskPayload?.promptVariablesJson).toContain('"existingTags":["史部"]');
+        expect(taskPayload).not.toHaveProperty("promptMessagesJson");
+        expect(taskPayload).not.toHaveProperty("promptVariablesJson");
         expect(taskPayload?.inputPayloadJson).toContain('"existingTags":["史部"]');
         expect(taskPayload?.inputPayloadJson).toContain('"contentType":"WANGQI_DOCUMENT"');
         expect(taskPayload?.inputPayloadJson).toContain('"document":"## 王圻"');
@@ -859,7 +874,7 @@ describe("WangqiPage", () => {
                     candidateId: "6001",
                     contentId: "1",
                     contentType: "WANGQI_DOCUMENT",
-                    capability: "tags",
+                    capability: "CLASSICS_TAG_EXTRACT",
                     resultFormat: "STRUCTURED",
                     resultPayload: JSON.stringify({ tags: ["经部", "文献"] })
                 })
@@ -1016,7 +1031,7 @@ describe("WangqiPage", () => {
                         candidateId: "5001",
                         contentType: "WANGQI_DOCUMENT",
                         contentId: "1",
-                        capability: "classics_summary",
+                        capability: "CLASSICS_SUMMARY",
                         objectId: null
                     }
                 ]

@@ -40,7 +40,10 @@ import {
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
-import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
+import {
+    AI_BUSINESS_CAPABILITY,
+    type AiRefinementTaskRecord
+} from "@/pages/classics/common/ai-refinement-task-types";
 import type { WangqiDocumentCommand } from "@/pages/classics/wangqi/wangqi-service";
 import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
 import "./wangqi-document-edit-drawer.css";
@@ -476,7 +479,7 @@ export const WangqiDocumentEditDrawer = ({
         const candidates = await aiCandidateService.list({
             contentId: documentId,
             contentType: "WANGQI_DOCUMENT",
-            capability: "summary",
+            capability: AI_BUSINESS_CAPABILITY.CLASSICS_SUMMARY,
             status: "PENDING"
         });
         return selectLatestSummaryCandidate(candidates, trackedCandidateId) ?? null;

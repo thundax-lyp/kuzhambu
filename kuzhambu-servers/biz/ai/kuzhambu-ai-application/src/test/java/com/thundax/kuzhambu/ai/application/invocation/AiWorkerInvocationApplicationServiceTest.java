@@ -155,7 +155,7 @@ class AiWorkerInvocationApplicationServiceTest {
         AiInvokeCommand command = command();
         command.setOperation("CLASSICS_SANCAI_SUMMARY");
         command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_summary"));
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_SUMMARY"));
         command.setWorkerCapability("summary");
         command.setCreateCandidate(true);
 
@@ -386,11 +386,152 @@ class AiWorkerInvocationApplicationServiceTest {
         assertEquals("JSON", repository.savedCandidate.get().getResultFormat());
     }
 
+    @Test
+    void invokeShouldRejectStructuredPayloadWhenRequiredArrayFieldHasWrongType() {
+        RecordingInvocationRepository repository = new RecordingInvocationRepository();
+        AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
+            @Override
+            public AiInvokeResult invoke(AiInvokeCommand command) {
+                AiInvokeResult result = new AiInvokeResult();
+                result.setRequestId(command.getRequestId());
+                result.setTraceId(command.getTraceId());
+                result.setStatus(AiInvocationStatus.SUCCEEDED);
+                result.setCapability(command.getCapability());
+                result.setResultFormat("STRUCTURED");
+                result.setResultPayload("{\"entities\":{\"name\":\"礼\"},\"relations\":[]}");
+                result.setUsage(AiUsageSnapshot.empty());
+                return result;
+            }
+
+            @Override
+            public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+                throw new UnsupportedOperationException("not used");
+            }
+
+            @Override
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
+                throw new UnsupportedOperationException("not used");
+            }
+        };
+        AiWorkerInvocationApplicationServiceImpl service =
+                new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
+
+        AiInvokeCommand command = command();
+        command.setCapability(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT);
+        command.setCreateCandidate(true);
+        command.setForceJson(true);
+        command.setOutputSchemaJson(
+                "{\"type\":\"object\",\"properties\":{\"entities\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"relations\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}}},\"required\":[\"entities\",\"relations\"]}");
+        AiInvokeResult result = service.invoke(command);
+
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
+        assertEquals("OUTPUT_FORMAT_FAILURE", result.getErrorType());
+        assertEquals("WORKER_RESULT", result.getFailureStage());
+        assertEquals(
+                AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
+        assertEquals(
+                "OUTPUT_FORMAT_FAILURE", repository.updatedInvocationLog.get().getErrorType());
+        assertEquals(AiCandidateStatus.REJECTED, repository.savedCandidate.get().getStatus());
+        assertEquals("OUTPUT_FORMAT_FAILURE", repository.savedCandidate.get().getErrorType());
+    }
+
+    @Test
+    void invokeShouldRejectStructuredPayloadWhenArrayHasTooFewItems() {
+        RecordingInvocationRepository repository = new RecordingInvocationRepository();
+        AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
+            @Override
+            public AiInvokeResult invoke(AiInvokeCommand command) {
+                AiInvokeResult result = new AiInvokeResult();
+                result.setRequestId(command.getRequestId());
+                result.setTraceId(command.getTraceId());
+                result.setStatus(AiInvocationStatus.SUCCEEDED);
+                result.setCapability(command.getCapability());
+                result.setResultFormat("STRUCTURED");
+                result.setResultPayload("{\"tags\":[]}");
+                result.setUsage(AiUsageSnapshot.empty());
+                return result;
+            }
+
+            @Override
+            public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+                throw new UnsupportedOperationException("not used");
+            }
+
+            @Override
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
+                throw new UnsupportedOperationException("not used");
+            }
+        };
+        AiWorkerInvocationApplicationServiceImpl service =
+                new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
+
+        AiInvokeCommand command = command();
+        command.setCapability(AiBusinessCapability.CLASSICS_TAG_EXTRACT);
+        command.setCreateCandidate(true);
+        command.setForceJson(true);
+        command.setOutputSchemaJson(
+                "{\"type\":\"object\",\"properties\":{\"tags\":{\"type\":\"array\",\"minItems\":3,\"maxItems\":8,\"items\":{\"type\":\"object\"}}},\"required\":[\"tags\"]}");
+        AiInvokeResult result = service.invoke(command);
+
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
+        assertEquals("OUTPUT_FORMAT_FAILURE", result.getErrorType());
+        assertEquals("WORKER_RESULT", result.getFailureStage());
+        assertEquals(
+                AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
+        assertEquals(AiCandidateStatus.REJECTED, repository.savedCandidate.get().getStatus());
+    }
+
+    @Test
+    void invokeShouldRejectStructuredPayloadWhenArrayHasTooManyItems() {
+        RecordingInvocationRepository repository = new RecordingInvocationRepository();
+        AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
+            @Override
+            public AiInvokeResult invoke(AiInvokeCommand command) {
+                AiInvokeResult result = new AiInvokeResult();
+                result.setRequestId(command.getRequestId());
+                result.setTraceId(command.getTraceId());
+                result.setStatus(AiInvocationStatus.SUCCEEDED);
+                result.setCapability(command.getCapability());
+                result.setResultFormat("STRUCTURED");
+                result.setResultPayload("{\"qaPairs\":[{},{},{},{},{},{}]}");
+                result.setUsage(AiUsageSnapshot.empty());
+                return result;
+            }
+
+            @Override
+            public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+                throw new UnsupportedOperationException("not used");
+            }
+
+            @Override
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
+                throw new UnsupportedOperationException("not used");
+            }
+        };
+        AiWorkerInvocationApplicationServiceImpl service =
+                new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
+
+        AiInvokeCommand command = command();
+        command.setCapability(AiBusinessCapability.CLASSICS_QA);
+        command.setCreateCandidate(true);
+        command.setForceJson(true);
+        command.setOutputSchemaJson(
+                "{\"type\":\"object\",\"properties\":{\"qaPairs\":{\"type\":\"array\",\"minItems\":3,\"maxItems\":5,\"items\":{\"type\":\"object\"}}},\"required\":[\"qaPairs\"]}");
+        AiInvokeResult result = service.invoke(command);
+
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
+        assertEquals("OUTPUT_FORMAT_FAILURE", result.getErrorType());
+        assertEquals("WORKER_RESULT", result.getFailureStage());
+        assertEquals(
+                AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
+        assertEquals(AiCandidateStatus.REJECTED, repository.savedCandidate.get().getStatus());
+    }
+
     private AiInvokeCommand command() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
         command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_TRANSLATE"));
         command.setOperation("translate");
         command.setContentRef(
                 com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("entry", 10L));

@@ -74,7 +74,7 @@ describe("prompt service ID contracts", () => {
                     [
                         {
                             id: 1001,
-                            capability: "classics_summary",
+                            capability: "CLASSICS_SUMMARY",
                             name: "摘要提示词",
                             enabled: true,
                             currentVersionNo: 2

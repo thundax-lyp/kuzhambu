@@ -166,7 +166,7 @@ public class AiRefinementTaskController {
             @Valid @RequestBody AiRefinementRequests.BatchCreateRequest request) {
         AiBatchJobCreateCommand command = new AiBatchJobCreateCommand();
         command.setScope(request.getScope());
-        command.setCapability(AiBusinessCapability.fromAlias(request.getCapability()));
+        command.setCapability(AiBusinessCapability.from(request.getCapability()));
         command.setContentRef(AiContentRef.ofNullable(request.getContentType(), null));
         command.setTotalCount(request.getTotalCount());
         command.setFailureSummaryJson(request.getFailureSummaryJson());

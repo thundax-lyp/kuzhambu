@@ -100,6 +100,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -144,6 +145,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private static final String FAILURE_CONTENT_NOT_FOUND = "CONTENT_NOT_FOUND";
     private static final String FAILURE_VALIDATION_FAILED = "VALIDATION_FAILED";
     private static final String FAILURE_UNKNOWN = "UNKNOWN_FAILURE";
+
+    private static final String AI_CAPABILITY_CLASSICS_TRANSLATE = "CLASSICS_TRANSLATE";
+    private static final String AI_CAPABILITY_CLASSICS_SUMMARY = "CLASSICS_SUMMARY";
+    private static final String AI_CAPABILITY_CLASSICS_TAGS = "CLASSICS_TAG_EXTRACT";
+    private static final String AI_CAPABILITY_CLASSICS_QA = "CLASSICS_QA";
+    private static final String AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE = "CLASSICS_IMAGE_DESCRIBE";
+    private static final String AI_CAPABILITY_CLASSICS_IMAGE_PROMPT_FUSION = "CLASSICS_IMAGE_PROMPT_FUSION";
+    private static final String AI_CAPABILITY_CLASSICS_VISUAL_DESCRIBE = "CLASSICS_VISUAL_DESCRIBE";
+    private static final String AI_CAPABILITY_CLASSICS_IMAGE_GENERATE = "CLASSICS_IMAGE_GENERATE";
 
     private static final String APPLIED_STATUS = "APPLIED";
     private static final String REJECTED_STATUS = "REJECTED";
@@ -450,13 +460,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (entry == null) {
                 throw new BizException("三才内容不存在: " + contentId.value());
             }
-            if ("image_analysis".equals(capability)) {
+            if (AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE.equals(capability)) {
                 applySancaiImageAnalysisCandidate(contentId, command);
-            } else if ("visual".equals(capability)) {
+            } else if (AI_CAPABILITY_CLASSICS_VISUAL_DESCRIBE.equals(capability)) {
                 applySancaiVisualDescriptionCandidate(contentId, command);
-            } else if ("fusion".equals(capability)) {
+            } else if (AI_CAPABILITY_CLASSICS_IMAGE_PROMPT_FUSION.equals(capability)) {
                 applySancaiFusionCandidate(contentId, command);
-            } else if ("image_gen".equals(capability)) {
+            } else if (AI_CAPABILITY_CLASSICS_IMAGE_GENERATE.equals(capability)) {
                 SancaiVisualAsset generatedAsset = applySancaiImageGenCandidate(contentId, command);
                 markAiCandidateApplied(command);
                 return new AiCandidateApplyContentResult(
@@ -466,20 +476,17 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                                 ? null
                                 : generatedAsset.getId().value(),
                         generatedAsset.getVersionNo());
-            } else if ("translate".equals(capability)) {
+            } else if (AI_CAPABILITY_CLASSICS_TRANSLATE.equals(capability)) {
                 entry.setTranslationText(aiCandidatePayloadParser.parseText(command.getResultPayload()));
                 entry.setTranslationStatus(SancaiEntryTranslationStatus.READY);
                 touchContentUpdatedAt(ClassicsContentType.SANCAI_ENTRY, entry);
                 ensureUpdate(repository.updateSancaiEntryAiFields(entry), "更新三才内容失败");
-            } else if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
+            } else if (isSummaryTagsOrQaCapability(capability)) {
                 applySummaryTagsAndQaFromAiCandidate(contentType, entry, capability, command, "更新三才内容失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
-            if (!"image_analysis".equals(capability)
-                    && !"visual".equals(capability)
-                    && !"fusion".equals(capability)
-                    && !"image_gen".equals(capability)) {
+            if (!isVisualAssetCapability(capability)) {
                 content = entry;
             }
         } else if (contentType == ClassicsContentType.WANGQI_DOCUMENT) {
@@ -487,7 +494,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (document == null) {
                 throw new BizException("王圻文档不存在: " + contentId.value());
             }
-            if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
+            if (isSummaryTagsOrQaCapability(capability)) {
                 applySummaryTagsAndQaFromAiCandidate(contentType, document, capability, command, "更新王圻文档失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
@@ -498,7 +505,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (entry == null) {
                 throw new BizException("明代习俗不存在: " + contentId.value());
             }
-            if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
+            if (isSummaryTagsOrQaCapability(capability)) {
                 applySummaryTagsAndQaFromAiCandidate(contentType, entry, capability, command, "更新明代习俗失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
@@ -509,10 +516,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         }
 
         if (content == null) {
-            if ("image_analysis".equals(capability)
-                    || "visual".equals(capability)
-                    || "fusion".equals(capability)
-                    || "image_gen".equals(capability)) {
+            if (isVisualAssetCapability(capability)) {
                 markAiCandidateApplied(command);
                 return new AiCandidateApplyContentResult(contentType, contentId.value(), null, null);
             }
@@ -882,12 +886,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             }
         }
 
-        if ("tags".equals(capability)) {
+        if (AI_CAPABILITY_CLASSICS_TAGS.equals(capability)) {
             if (tags == null || tags.isEmpty()) {
                 throw new BizException("AI候选标签为空");
             }
             applyTags(contentType, content, tags, command);
-        } else if ("qa".equals(capability)) {
+        } else if (AI_CAPABILITY_CLASSICS_QA.equals(capability)) {
             if (qaPairs == null || qaPairs.isEmpty()) {
                 throw new BizException("AI候选问答为空");
             }
@@ -947,16 +951,29 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             return changeSummary;
         }
         return switch (capability) {
-            case "image_analysis" -> "AI 应用：图片理解";
-            case "image_gen" -> "AI 应用：生图";
-            case "visual" -> "AI 应用：视觉描述";
-            case "fusion" -> "AI 应用：信息融合";
-            case "translate" -> "AI 应用：译文";
-            case "summary" -> "AI 应用：摘要";
-            case "tags" -> "AI 应用：标签";
-            case "qa" -> "AI 应用：问答对";
+            case AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE -> "AI 应用：图片理解";
+            case AI_CAPABILITY_CLASSICS_IMAGE_GENERATE -> "AI 应用：生图";
+            case AI_CAPABILITY_CLASSICS_VISUAL_DESCRIBE -> "AI 应用：视觉描述";
+            case AI_CAPABILITY_CLASSICS_IMAGE_PROMPT_FUSION -> "AI 应用：信息融合";
+            case AI_CAPABILITY_CLASSICS_TRANSLATE -> "AI 应用：译文";
+            case AI_CAPABILITY_CLASSICS_SUMMARY -> "AI 应用：摘要";
+            case AI_CAPABILITY_CLASSICS_TAGS -> "AI 应用：标签";
+            case AI_CAPABILITY_CLASSICS_QA -> "AI 应用：问答对";
             default -> throw new BizException("不支持的 AI 候选能力: " + capability);
         };
+    }
+
+    private boolean isSummaryTagsOrQaCapability(String capability) {
+        return AI_CAPABILITY_CLASSICS_SUMMARY.equals(capability)
+                || AI_CAPABILITY_CLASSICS_TAGS.equals(capability)
+                || AI_CAPABILITY_CLASSICS_QA.equals(capability);
+    }
+
+    private boolean isVisualAssetCapability(String capability) {
+        return AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE.equals(capability)
+                || AI_CAPABILITY_CLASSICS_VISUAL_DESCRIBE.equals(capability)
+                || AI_CAPABILITY_CLASSICS_IMAGE_PROMPT_FUSION.equals(capability)
+                || AI_CAPABILITY_CLASSICS_IMAGE_GENERATE.equals(capability);
     }
 
     private void applyTags(
@@ -1031,20 +1048,32 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (qaPairs == null || qaPairs.isEmpty()) {
             throw new BizException("AI候选问答为空");
         }
-        repository.deleteAiQaPairs(contentType.value(), contentId);
+        Set<String> existingQaPairKeys =
+                repository.listQaPairs(contentType.value(), contentId, SortDirection.ASC).stream()
+                        .filter(Objects::nonNull)
+                        .map(pair -> qaPairKey(pair.getQuestion(), pair.getAnswer()))
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
         for (AiCandidateQaPairPayload pair : qaPairs) {
             if (pair == null || StringUtils.isBlank(pair.getQuestion()) || StringUtils.isBlank(pair.getAnswer())) {
                 continue;
             }
+            String question = pair.getQuestion().trim();
+            String answer = pair.getAnswer().trim();
+            if (!existingQaPairKeys.add(qaPairKey(question, answer))) {
+                continue;
+            }
             insertQaPairWithoutVersion(new ContentQaPairCommand(
-                    null,
-                    contentType,
-                    contentId.value(),
-                    pair.getQuestion(),
-                    pair.getAnswer(),
-                    ClassicsContentSource.AI));
+                    null, contentType, contentId.value(), question, answer, ClassicsContentSource.AI));
         }
         touchContentUpdatedAt(contentType, content);
+    }
+
+    private String qaPairKey(String question, String answer) {
+        if (StringUtils.isBlank(question) || StringUtils.isBlank(answer)) {
+            return null;
+        }
+        return question.trim().toLowerCase() + "\n" + answer.trim().toLowerCase();
     }
 
     private ClassicsContentTagId insertTagWithoutVersion(ContentTagCommand command) {

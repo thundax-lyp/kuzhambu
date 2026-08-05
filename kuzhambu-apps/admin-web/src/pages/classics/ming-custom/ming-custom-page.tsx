@@ -35,9 +35,6 @@ import "./ming-custom-page.css";
 
 const EXPORT_PAGE_SIZE = 8;
 const TASK_POLL_INTERVAL_MS = 3000;
-const DEFAULT_REFINEMENT_MODEL_ID = "1";
-const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
-const DEFAULT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
 
 const readTitle = (record?: MingCustomsRecord | null) => {
     return record?.title?.trim() || `明代习俗 ${record?.id ?? "未命名"}`;
@@ -47,40 +44,12 @@ const createEventId = (prefix: string) => {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 };
 
-const MING_CUSTOMS_REFINEMENT_PROMPT: Record<AiRefinementTaskCapability, string> = {
-    summary: "你是明代风俗整理助理。请基于输入条目提炼准确、紧凑、便于后台回填的中文摘要。",
-    tags: "你是明代风俗标签治理助理。请基于输入条目提取稳定、短小、适合后台统一标签库复用的中文标签。",
-    qa: "你是明代风俗问答治理助理。请基于输入条目生成可用于知识库检索的中文问答对。"
-};
-
 const DEFAULT_MING_CUSTOMS_FILTERS: MingCustomsFilters = {
     category: "",
     sortDirection: "DESC"
 };
 
-const buildPromptMessagesJson = (
-    entry: MingCustomsRecord,
-    capability: AiRefinementTaskCapability
-) => {
-    return JSON.stringify([
-        {
-            role: "system",
-            content: MING_CUSTOMS_REFINEMENT_PROMPT[capability]
-        },
-        {
-            role: "user",
-            content: [
-                `标题：${readTitle(entry)}`,
-                `分类：${entry.category || "未分类"}`,
-                `现有摘要：${entry.summary || "暂无"}`,
-                `原文摘录：${entry.originalExcerpts || "暂无"}`,
-                `正文：${entry.content || "暂无正文"}`
-            ].join("\n")
-        }
-    ]);
-};
-
-const buildInputPayloadJson = (entry: MingCustomsRecord) => {
+const buildInputPayloadJson = (entry: MingCustomsRecord, capability: string) => {
     const document = [entry.originalExcerpts, entry.content]
         .filter((value): value is string => Boolean(value?.trim()))
         .join("\n\n");
@@ -88,6 +57,7 @@ const buildInputPayloadJson = (entry: MingCustomsRecord) => {
         .filter((value): value is string => Boolean(value?.trim()))
         .join(" / ");
     return JSON.stringify({
+        capability,
         contentType: "MING_CUSTOMS",
         document,
         title: entry.title || null,
@@ -635,19 +605,15 @@ export const MingCustomPage = () => {
             return;
         }
         setCreatingRefinementCapability(capability);
+        const capabilityCode = aiRefinementTaskService.getBusinessCapabilityCode(capability);
         createRefinementTaskMutation.mutate({
-            capability,
+            capability: capabilityCode,
             scope: "classics",
             contentType: "MING_CUSTOMS",
             contentId: entry.id,
-            serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
-            modelId: DEFAULT_REFINEMENT_MODEL_ID,
-            modelName: DEFAULT_REFINEMENT_MODEL_NAME,
             requestId: createEventId(`ming-customs-${capability}-request`),
             traceId: createEventId(`ming-customs-${capability}-trace`),
-            promptMessagesJson: buildPromptMessagesJson(entry, capability),
-            promptVariablesJson: JSON.stringify({ capability, title: entry.title || null }),
-            inputPayloadJson: buildInputPayloadJson(entry),
+            inputPayloadJson: buildInputPayloadJson(entry, capabilityCode),
             locale: "zh-CN"
         });
     };

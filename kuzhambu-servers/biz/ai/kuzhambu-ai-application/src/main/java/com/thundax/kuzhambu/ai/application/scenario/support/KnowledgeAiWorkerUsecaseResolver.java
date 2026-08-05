@@ -10,15 +10,15 @@ public class KnowledgeAiWorkerUsecaseResolver {
     private static final Map<String, KnowledgeAiWorkerUsecaseSpec> SUPPORTED_USECASES = Map.of(
             "RELATION",
             new KnowledgeAiWorkerUsecaseSpec(
-                    "KNOWLEDGE_RELATION_EXTRACTION", null, "knowledge_relation_extract", "relation_extraction"),
+                    "KNOWLEDGE_RELATION_EXTRACTION", null, "KNOWLEDGE_RELATION_EXTRACT", "relation_extraction"),
             "GRAPH",
             new KnowledgeAiWorkerUsecaseSpec(
-                    "KNOWLEDGE_GRAPH_EXTRACTION", null, "knowledge_graph_extract", "knowledge_graph"),
+                    "KNOWLEDGE_GRAPH_EXTRACTION", null, "KNOWLEDGE_GRAPH_EXTRACT", "knowledge_graph"),
             "LINEAGE",
             new KnowledgeAiWorkerUsecaseSpec(
-                    "KNOWLEDGE_LINEAGE_EXTRACTION", null, "knowledge_lineage_extract", "lineage_extraction"),
+                    "KNOWLEDGE_LINEAGE_EXTRACTION", null, "KNOWLEDGE_LINEAGE_EXTRACT", "lineage_extraction"),
             "TAG",
-            new KnowledgeAiWorkerUsecaseSpec("KNOWLEDGE_TAG_EXTRACTION", null, "knowledge_tags", "tags"));
+            new KnowledgeAiWorkerUsecaseSpec("KNOWLEDGE_TAG_EXTRACTION", null, "KNOWLEDGE_TAG_EXTRACT", "tags"));
 
     public KnowledgeAiWorkerUsecaseSpec resolve(String taskType) {
         KnowledgeAiWorkerUsecaseSpec spec = SUPPORTED_USECASES.get(taskType);

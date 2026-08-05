@@ -18,20 +18,19 @@ import type { AiInvocationLogRecord } from "./invocation-types";
 import "./invocation-page.css";
 
 const CAPABILITY_LABELS: Record<string, string> = {
-    classics_summary: "古籍摘要",
-    classics_tags: "古籍标签",
-    classics_tagging: "古籍标签",
-    classics_qa: "古籍问答",
-    classics_translate: "古籍翻译",
-    classics_image_describe: "古籍图片理解",
-    classics_image_generate: "古籍图片生成",
-    classics_image_prompt_fusion: "古籍图文融合",
-    classics_visual_describe: "古籍视觉描述",
-    discovery_query_understanding: "查询理解",
-    discovery_answer_generation: "回答生成",
-    knowledge_graph_extract: "知识图谱抽取",
-    platform_prompt_optimize: "提示词优化",
-    platform_version_summary: "版本摘要"
+    CLASSICS_SUMMARY: "古籍摘要",
+    CLASSICS_TAG_EXTRACT: "古籍标签",
+    CLASSICS_QA: "古籍问答",
+    CLASSICS_TRANSLATE: "古籍翻译",
+    CLASSICS_IMAGE_DESCRIBE: "古籍图片理解",
+    CLASSICS_IMAGE_GENERATE: "古籍图片生成",
+    CLASSICS_IMAGE_PROMPT_FUSION: "古籍图文融合",
+    CLASSICS_VISUAL_DESCRIBE: "古籍视觉描述",
+    DISCOVERY_QUERY_UNDERSTANDING: "查询理解",
+    DISCOVERY_ANSWER_GENERATION: "回答生成",
+    KNOWLEDGE_GRAPH_EXTRACT: "知识图谱抽取",
+    PROMPT_SUGGEST: "提示词优化",
+    PLATFORM_VERSION_SUMMARY: "版本摘要"
 };
 
 type InvocationDateRangeValue = [Dayjs | null, Dayjs | null] | null;

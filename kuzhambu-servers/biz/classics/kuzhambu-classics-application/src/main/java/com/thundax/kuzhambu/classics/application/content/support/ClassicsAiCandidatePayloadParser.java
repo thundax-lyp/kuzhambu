@@ -10,8 +10,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ClassicsAiCandidatePayloadParser {
+
+    private static final Pattern JSON_CODE_FENCE_PATTERN = Pattern.compile(
+            "^```[ \\t]*(?:json)?[ \\t]*(?:\\r?\\n)?(?<body>.*?)(?:\\r?\\n)?```[ \\t]*$",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private final ObjectMapper objectMapper;
 
@@ -101,7 +107,7 @@ public class ClassicsAiCandidatePayloadParser {
         }
         List<AiCandidateQaPairPayload> pairs = new ArrayList<>();
         if (root.isObject()) {
-            JsonNode pairsNode = ((ObjectNode) root).get("qaPairs");
+            JsonNode pairsNode = firstPresent((ObjectNode) root, "qaPairs", "qa_pairs");
             if (pairsNode instanceof ArrayNode) {
                 collectQaPairs(pairsNode, pairs);
             }
@@ -130,13 +136,32 @@ public class ClassicsAiCandidatePayloadParser {
 
     private JsonNode parseJson(String resultPayload, boolean required) {
         try {
-            return objectMapper.readTree(resultPayload);
+            return objectMapper.readTree(normalizeJsonText(resultPayload));
         } catch (Exception ex) {
             if (!required) {
                 return null;
             }
             throw new BizException("AI候选内容不是合法JSON");
         }
+    }
+
+    private String normalizeJsonText(String resultPayload) {
+        String trimmedPayload = resultPayload == null ? "" : resultPayload.trim();
+        Matcher matcher = JSON_CODE_FENCE_PATTERN.matcher(trimmedPayload);
+        if (!matcher.matches()) {
+            return trimmedPayload;
+        }
+        return matcher.group("body").trim();
+    }
+
+    private JsonNode firstPresent(ObjectNode root, String... fieldNames) {
+        for (String fieldName : fieldNames) {
+            JsonNode node = root.get(fieldName);
+            if (node != null && !node.isMissingNode() && !node.isNull()) {
+                return node;
+            }
+        }
+        return null;
     }
 
     private void collectQaPairs(JsonNode pairsNode, List<AiCandidateQaPairPayload> pairs) {

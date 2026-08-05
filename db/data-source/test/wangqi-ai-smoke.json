@@ -66,7 +66,7 @@
     {
       "id": 990000000001,
       "scope": "classics",
-      "capability": "classics_summary",
+      "capability": "CLASSICS_SUMMARY",
       "contentType": "WANGQI_DOCUMENT",
       "contentId": 990000000001,
       "status": "SUCCEEDED",
@@ -86,7 +86,7 @@
     {
       "id": 990000000002,
       "scope": "classics",
-      "capability": "classics_tags",
+      "capability": "CLASSICS_TAG_EXTRACT",
       "contentType": "WANGQI_DOCUMENT",
       "contentId": 990000000001,
       "status": "SUCCEEDED",
@@ -108,7 +108,7 @@
     {
       "id": 990000000003,
       "scope": "classics",
-      "capability": "classics_qa",
+      "capability": "CLASSICS_QA",
       "contentType": "WANGQI_DOCUMENT",
       "contentId": 990000000001,
       "status": "SUCCEEDED",

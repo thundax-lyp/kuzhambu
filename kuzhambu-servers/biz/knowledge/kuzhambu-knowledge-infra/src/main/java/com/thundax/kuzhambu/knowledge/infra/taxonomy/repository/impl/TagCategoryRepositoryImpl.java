@@ -107,9 +107,11 @@ public class TagCategoryRepositoryImpl implements TagCategoryRepository {
 
     private QueryWrapper<TagCategoryDO> buildQueryWrapper(String name, TagCategoryStatus status) {
         QueryWrapper<TagCategoryDO> wrapper = new QueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(name), "name", name)
-                .eq(status != null, "status", status.value())
-                .orderByAsc("category_id");
+        wrapper.eq(StringUtils.isNotBlank(name), "name", name);
+        if (status != null) {
+            wrapper.eq("status", status.value());
+        }
+        wrapper.orderByAsc("category_id");
         return wrapper;
     }
 

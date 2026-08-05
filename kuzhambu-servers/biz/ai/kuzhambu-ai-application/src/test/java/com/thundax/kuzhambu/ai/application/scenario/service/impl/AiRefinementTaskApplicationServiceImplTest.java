@@ -100,7 +100,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 null));
         AiRefinementTaskApplicationServiceImpl service =
                 new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
-        SubmitAiRefinementTaskCommand command = command("translate");
+        SubmitAiRefinementTaskCommand command = command(AiBusinessCapability.CLASSICS_TRANSLATE.value());
 
         service.submit(command);
 
@@ -123,7 +123,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 null));
         AiRefinementTaskApplicationServiceImpl service =
                 new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
-        SubmitAiRefinementTaskCommand command = command("fusion");
+        SubmitAiRefinementTaskCommand command = command(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION.value());
 
         service.submit(command);
 
@@ -322,7 +322,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
-                AiBusinessCapability.fromAlias("classics_summary"),
+                AiBusinessCapability.from("CLASSICS_SUMMARY"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
                 1,
                 null));
@@ -341,19 +341,19 @@ class AiRefinementTaskApplicationServiceImplTest {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         Long firstBatchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
-                AiBusinessCapability.fromAlias("classics_summary"),
+                AiBusinessCapability.from("CLASSICS_SUMMARY"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
                 1,
                 null));
         Long secondBatchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
-                AiBusinessCapability.fromAlias("classics_tags"),
+                AiBusinessCapability.from("CLASSICS_TAG_EXTRACT"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
                 1,
                 null));
         batchJobService.create(new AiBatchJobCreateCommand(
                 "knowledge",
-                AiBusinessCapability.fromAlias("knowledge_graph_extract"),
+                AiBusinessCapability.from("KNOWLEDGE_GRAPH_EXTRACT"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
                 1,
                 null));
@@ -377,7 +377,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "knowledge",
-                AiBusinessCapability.fromAlias("knowledge_graph_extract"),
+                AiBusinessCapability.from("KNOWLEDGE_GRAPH_EXTRACT"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
                 1,
                 null));
@@ -394,7 +394,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "knowledge",
-                AiBusinessCapability.fromAlias("knowledge_graph_extract"),
+                AiBusinessCapability.from("KNOWLEDGE_GRAPH_EXTRACT"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
                 1,
                 null));
@@ -412,7 +412,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
-                AiBusinessCapability.fromAlias("classics_summary"),
+                AiBusinessCapability.from("CLASSICS_SUMMARY"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", null),
                 2,
                 null));
@@ -437,7 +437,7 @@ class AiRefinementTaskApplicationServiceImplTest {
 
     private SubmitAiRefinementTaskCommand command(String capability) {
         SubmitAiRefinementTaskCommand command = new SubmitAiRefinementTaskCommand();
-        command.setCapability(AiBusinessCapability.fromAlias(capability));
+        command.setCapability(AiBusinessCapability.from(capability));
         command.setScope("classics");
         command.setOperation(capability);
         command.setContentRef(AiContentRef.ofNullable("SANCAI_ENTRY", 10L));

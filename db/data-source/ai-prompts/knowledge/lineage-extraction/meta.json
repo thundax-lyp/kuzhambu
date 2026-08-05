@@ -1,6 +1,6 @@
 {
   "priority": 14,
-  "capability": "knowledge_lineage_extract",
+  "capability": "KNOWLEDGE_LINEAGE_EXTRACT",
   "suite": "knowledge-default-v1",
   "name": "世系图抽取提示词",
   "description": "世系图抽取默认提示词。",

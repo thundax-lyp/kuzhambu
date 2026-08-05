@@ -3,5 +3,5 @@
 内容：
 {{document}}
 
-请生成 3 到 5 个问答对，返回 JSON：
-{"qa_pairs":[{"question":"问题","answer":"答案"}]}
+请生成 3 到 5 个问答对，只返回以下格式的原始 JSON：
+{"qaPairs":[{"question":"问题","answer":"答案"}]}

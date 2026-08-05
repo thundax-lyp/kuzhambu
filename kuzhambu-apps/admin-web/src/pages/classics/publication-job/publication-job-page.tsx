@@ -1,10 +1,14 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import type { ColumnsType } from "antd/es/table";
 import type { Key } from "react";
 import dayjs from "dayjs";
 import { useMemo, useState } from "react";
-import { KuzhambuButton, KuzhambuListPage, KuzhambuTag } from "@/components";
+import {
+    KuzhambuButton,
+    KuzhambuListPage,
+    type KuzhambuTableProps,
+    KuzhambuTag
+} from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { PublicationJobDetailDrawer } from "./publication-job-detail-drawer";
 import { readPublicationJobStatusLabel } from "./publication-job-constants";
@@ -47,7 +51,7 @@ export const PublicationJobPage = () => {
     });
     const pageResult = publicationJobPageQuery.data;
     const records = useMemo(() => pageResult?.records || [], [pageResult?.records]);
-    const columns = useMemo<ColumnsType<ClassicsPublicationJobRecord>>(
+    const columns = useMemo<KuzhambuTableProps<ClassicsPublicationJobRecord>["columns"]>(
         () => [
             {
                 title: "稿件",
@@ -95,15 +99,14 @@ export const PublicationJobPage = () => {
             {
                 key: "actions",
                 fixed: "right",
-                render: (_, job) => (
-                    <KuzhambuButton
-                        testId="classics-publication-jobs-view-button"
-                        type="link"
-                        onClick={() => setDetailJobId(job.id)}
-                    >
-                        查看
-                    </KuzhambuButton>
-                )
+                options: (job) => [
+                    {
+                        key: "view",
+                        text: "查看",
+                        testId: "classics-publication-jobs-view-button",
+                        onClick: () => setDetailJobId(job.id)
+                    }
+                ]
             }
         ],
         []

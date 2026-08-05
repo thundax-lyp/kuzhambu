@@ -96,10 +96,10 @@ class PromptRepositoryIT {
         verify(mapper).insert(templateCaptor.capture());
         PromptTemplateDO savedTemplate = templateCaptor.getValue();
         assertEquals(4001L, templateId.value());
-        assertEquals("classics_translate", savedTemplate.getCapability());
+        assertEquals("CLASSICS_TRANSLATE", savedTemplate.getCapability());
         assertEquals(true, savedTemplate.getEnabled());
 
-        when(mapper.selectTemplateByCapability("classics_translate")).thenReturn(savedTemplate);
+        when(mapper.selectTemplateByCapability("CLASSICS_TRANSLATE")).thenReturn(savedTemplate);
         PromptTemplate loadedTemplate = repository.get(AiBusinessCapability.CLASSICS_TRANSLATE);
 
         assertEquals("Classics translate", loadedTemplate.getName());

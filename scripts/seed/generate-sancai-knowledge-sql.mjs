@@ -13,6 +13,7 @@ const manuscriptSourcePath = resolve(
 );
 const outputPath = resolve(repoRoot, "build/seed-sql/knowledge.sql");
 const THEME_CATEGORY_ID = 4;
+const DEFAULT_AI_CATEGORY_ID = 1999;
 const MYSQL_EPOCH_SHANGHAI = "1970-01-01 08:00:00.000000";
 
 const main = () => {
@@ -142,6 +143,13 @@ const appendTagCategorySql = (lines) => {
       row([2, "地点", "地理地点", 2, "ENABLED"]),
       row([3, "时代", "历史时代", 3, "ENABLED"]),
       row([4, "主题", "主题分类", 4, "ENABLED"]),
+      row([
+        DEFAULT_AI_CATEGORY_ID,
+        "AI候选",
+        "AI 生成标签默认分类",
+        DEFAULT_AI_CATEGORY_ID,
+        "ENABLED",
+      ]),
     ].join(",\n"),
   );
   lines.push("ON DUPLICATE KEY UPDATE");
@@ -175,7 +183,7 @@ const appendTagSql = (lines, tags, tagIds) => {
           THEME_CATEGORY_ID,
           tag.description,
           tag.status,
-          tag.source,
+          normalizeTagSource(tag.source),
           tag.reviewStatus,
           tag.reviewNote,
           epochMillis(tag.createdAt),
@@ -217,7 +225,7 @@ const appendTagAliasSql = (lines, aliases, tagIds) => {
           index + 1,
           requireLookup(tagIds, alias.target, "tag"),
           alias.name,
-          alias.source,
+          normalizeTagSource(alias.source),
         ]),
       )
       .join(",\n"),
@@ -277,6 +285,11 @@ const sqlValue = (value) => {
     return value.rawSql;
   }
   return `'${String(value).replace(/'/g, "''")}'`;
+};
+
+const normalizeTagSource = (source) => {
+  const value = String(source ?? "MANUAL").trim().toUpperCase();
+  return value === "SEED" ? "MANUAL" : value;
 };
 
 const epochMillis = (displayTime) => ({

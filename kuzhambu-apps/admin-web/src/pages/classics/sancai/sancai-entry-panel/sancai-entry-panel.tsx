@@ -1,30 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App } from "antd";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { type KuzhambuTableSortPosition, KuzhambuAlert } from "@/components";
 
 import { hasPermission } from "@/auth/permission-storage";
 import { isSameId } from "@/types/id";
-import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
-import { ClassicsContentQaPanel } from "@/pages/classics/common/classics-content-qa-panel";
-import { ClassicsContentTagPanel } from "@/pages/classics/common/classics-content-tag-panel";
-import { ClassicsContentTagAiPanel } from "@/pages/classics/common/classics-content-tag-ai-panel";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/ai-candidate-batch-drawer";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import { SancaiEntryList, type SancaiPublicationAction } from "./sancai-entry-list";
 import { SancaiEntryEditDrawer } from "./sancai-entry-edit-drawer";
 import { SancaiEntryExportActions } from "./sancai-entry-export-actions";
-import { SancaiEntryVersionSection } from "./sancai-entry-version-section";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-edit-drawer-form-values";
-import { useSancaiEntryPanelState } from "@/pages/classics/sancai/hooks/use-sancai-entry-panel-state";
 import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import type {
     SancaiCategoryRecord,
-    SancaiContentVersionRecord,
     SancaiEntryRecord,
     SancaiPublicationBatchRecord,
     SancaiVolumeRecord
@@ -33,14 +26,9 @@ import type {
 import "./sancai-entry-panel.css";
 
 const EXPORT_PAGE_SIZE = 8;
-const TASK_POLL_INTERVAL_MS = 3000;
 
 const readEntryTitle = (entry: SancaiEntryRecord) => {
     return entry.title?.trim() || `条目 ${entry.id}`;
-};
-
-const readEntrySummary = (entry: SancaiEntryRecord) => {
-    return entry.summary?.trim() || entry.originalText?.trim() || "暂无简介/摘要";
 };
 
 interface SancaiEntryPanelProps {
@@ -70,14 +58,13 @@ export const SancaiEntryPanel = ({
     volumes,
     onExportJobsDrawerOpenChange
 }: SancaiEntryPanelProps) => {
-    const { message: messageApi, modal: modalApi } = App.useApp();
+    const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const [isCreating, setIsCreating] = useState(defaultCreateOpen);
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
-    const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
     const [batchCandidateContentIds, setBatchCandidateContentIds] = useState<string[]>([]);
     const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<string, string>>(
         {}
@@ -86,7 +73,6 @@ export const SancaiEntryPanel = ({
     const [publicationBatchResult, setPublicationBatchResult] =
         useState<SancaiPublicationBatchRecord | null>(null);
     const [internalExportJobsDrawerOpen, setInternalExportJobsDrawerOpen] = useState(false);
-    const tagPanelRef = useRef<HTMLDivElement | null>(null);
     const categoryOptions = useMemo(
         () =>
             categories.map((category) => ({
@@ -130,71 +116,11 @@ export const SancaiEntryPanel = ({
         selectedEntry?.transitionStatus && selectedEntry.transitionStatus !== "NONE"
     );
     const selectedEntryId = selectedEntry?.id ?? null;
-    const selectedEntryVolume = useMemo(
-        () => volumes.find((volume) => isSameId(volume.id, selectedEntry?.volumeId)) ?? null,
-        [selectedEntry?.volumeId, volumes]
-    );
-    const selectedEntryCategory = useMemo(
-        () =>
-            categories.find((category) => isSameId(category.id, selectedEntryVolume?.categoryId)) ??
-            null,
-        [categories, selectedEntryVolume?.categoryId]
-    );
-    const versionsQuery = useQuery({
-        queryKey: ["classics", "sancai", "entries", "versions", selectedEntry?.id],
-        queryFn: () => entryService.listVersions(selectedEntry?.id ?? ""),
-        enabled: isModelOpen && !isCreating && Boolean(selectedEntry?.id),
-        retry: false
-    });
-    const versionDetailQuery = useQuery({
-        queryKey: [
-            "classics",
-            "sancai",
-            "entries",
-            "version",
-            selectedEntry?.id,
-            selectedVersionId
-        ],
-        queryFn: () => entryService.getVersion(selectedEntry?.id ?? "", selectedVersionId ?? ""),
-        enabled: isModelOpen && Boolean(selectedEntry?.id && selectedVersionId),
-        retry: false
-    });
-    const versions = versionsQuery.data || [];
-    const selectedVersion =
-        versionDetailQuery.data ||
-        versions.find((version) => isSameId(version.id, selectedVersionId)) ||
-        null;
     const canEditEntries = hasClassicsContentPermission("SANCAI_ENTRY", "edit", hasPermission);
     const canManageGeneratedArtifacts = hasClassicsContentPermission(
         "SANCAI_ENTRY",
         "export",
         hasPermission
-    );
-    const canCreateAiRefinementTask = hasPermission("ai:refinement:edit");
-    const canViewAiCandidates = hasPermission("ai:invocation:view");
-    const canRejectAiCandidates = hasPermission("ai:invocation:edit");
-    const canApplyAiCandidateTags = hasPermission("classics:content:edit");
-    const refinementTasksQuery = useQuery({
-        queryKey: ["classics", "sancai", "refinement", "tasks", selectedEntry?.id],
-        queryFn: () =>
-            aiRefinementTaskService.pageTasks({
-                contentType: "SANCAI_ENTRY",
-                contentId: selectedEntry?.id ?? "",
-                pageNo: 1,
-                pageSize: 20
-            }),
-        enabled: isModelOpen && Boolean(selectedEntry?.id),
-        retry: false,
-        refetchInterval: (query) => {
-            const tasks = query.state.data?.items || [];
-            return tasks.some((task) => task.status === "PENDING" || task.status === "RUNNING")
-                ? TASK_POLL_INTERVAL_MS
-                : false;
-        }
-    });
-    const refinementTasks = useMemo(
-        () => refinementTasksQuery.data?.items || [],
-        [refinementTasksQuery.data?.items]
     );
     const exportsQuery = useQuery({
         queryKey: ["classics", "sancai", "exports", "jobs"],
@@ -242,26 +168,19 @@ export const SancaiEntryPanel = ({
         },
         [invalidateEntries, isCreating, isModelOpen, queryClient, selectedEntry?.id]
     );
-    const invalidateRefinementTasks = useCallback(async () => {
-        await queryClient.invalidateQueries({
-            queryKey: ["classics", "sancai", "refinement", "tasks", selectedEntry?.id]
-        });
-    }, [queryClient, selectedEntry?.id]);
-    const {
-        creatingRefinementCapability,
-        invalidateSancaiContentGovernance,
-        refreshSancaiEntryDetail,
-        createRefinementTask,
-        resetHandledSucceededTaskIds
-    } = useSancaiEntryPanelState({
-        queryClient,
-        messageApi,
-        selectedEntry,
-        selectedEntryId,
-        refinementTasks,
-        invalidateEntries,
-        invalidateRefinementTasks
-    });
+    const refreshSancaiEntryDetail = useCallback(async () => {
+        if (!selectedEntryId) {
+            return;
+        }
+        await Promise.all([
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "sancai", "entries", "detail", selectedEntryId]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "sancai", "entries", "versions", selectedEntryId]
+            })
+        ]);
+    }, [queryClient, selectedEntryId]);
     const invalidateExportJobs = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "exports", "jobs"]
@@ -304,7 +223,6 @@ export const SancaiEntryPanel = ({
             setIsCreating(false);
             setIsModelOpen(false);
             setEditingEntry(null);
-            setSelectedVersionId(null);
             messageApi.success("三才图会条目已新增");
         },
         onError: (error) => {
@@ -317,7 +235,6 @@ export const SancaiEntryPanel = ({
             await invalidateEntries();
             setIsModelOpen(false);
             setEditingEntry(null);
-            setSelectedVersionId(null);
             messageApi.success("三才图会条目已保存，归属卷已更新");
         },
         onError: (error) => {
@@ -329,7 +246,6 @@ export const SancaiEntryPanel = ({
         onSuccess: async () => {
             await invalidateEntries();
             setEditingEntry(null);
-            setSelectedVersionId(null);
             messageApi.success("三才图会条目已删除");
         },
         onError: (error) => {
@@ -389,21 +305,6 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "批量发布状态变更失败");
         }
     });
-    const resetVersionMutation = useMutation({
-        mutationFn: ({ entryId, versionId }: { entryId: string; versionId: string }) =>
-            entryService.resetVersion(entryId, versionId),
-        onSuccess: async () => {
-            setSelectedVersionId(null);
-            await invalidateEntries();
-            modalApi.success({
-                title: "三才图会版本已恢复",
-                content: "已生成新的正式版本，并已将条目移动到恢复快照所在卷目的末尾。"
-            });
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "版本恢复失败");
-        }
-    });
     const exportEntryMutation = useMutation({
         mutationFn: (entry: SancaiEntryRecord) => {
             const title = `${readEntryTitle(entry)} 导出`;
@@ -439,15 +340,12 @@ export const SancaiEntryPanel = ({
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
         setEditingEntry(entry);
-        setSelectedVersionId(null);
         setIsModelOpen(true);
     };
 
     const closeModel = () => {
         setIsCreating(false);
         setEditingEntry(null);
-        setSelectedVersionId(null);
-        resetHandledSucceededTaskIds();
         setIsModelOpen(false);
     };
 
@@ -559,22 +457,6 @@ export const SancaiEntryPanel = ({
             }
         });
     };
-    const resetVersion = (version: SancaiContentVersionRecord) => {
-        if (!selectedEntry?.id) {
-            return;
-        }
-        confirm.danger({
-            title: "恢复三才图会版本",
-            message: `确认恢复版本 ${version.versionNo ?? version.id}？`,
-            description: "恢复后会产生新的正式版本，并刷新条目详情、列表和版本历史。",
-            okText: "恢复",
-            onConfirm: () =>
-                resetVersionMutation.mutateAsync({
-                    entryId: selectedEntry.id,
-                    versionId: version.id
-                })
-        });
-    };
     const sortEntry = (
         sourceEntry: SancaiEntryRecord,
         targetEntry: SancaiEntryRecord,
@@ -678,106 +560,7 @@ export const SancaiEntryPanel = ({
                 volumes={volumes}
                 onCancel={closeModel}
                 onSubmit={submitEntry}
-                onCreateTranslationTask={(draft) => createRefinementTask("translate", null, draft)}
-                onCreateSummaryTask={(draft) => createRefinementTask("summary", null, draft)}
-                isCreatingTranslationTask={creatingRefinementCapability === "translate"}
-                isCreatingSummaryTask={creatingRefinementCapability === "summary"}
-                translationTasks={refinementTasks.filter(
-                    (task) =>
-                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
-                        "translate"
-                )}
-                summaryTasks={refinementTasks.filter(
-                    (task) =>
-                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
-                        "summary"
-                )}
-                qaContent={
-                    !isCreating && selectedEntry ? (
-                        <ClassicsContentQaPanel
-                            contentId={selectedEntry.id}
-                            contentType="SANCAI_ENTRY"
-                            panelTitle="三才图会问答对治理"
-                            readOnly={isSelectedEntryReadOnly}
-                            onChanged={invalidateSancaiContentGovernance}
-                        />
-                    ) : null
-                }
-                tagContent={
-                    !isCreating && selectedEntry ? (
-                        <div
-                            ref={tagPanelRef}
-                            className="sancai-candidate-panel-anchor"
-                            tabIndex={-1}
-                        >
-                            <div className="sancai-tag-section">
-                                <section className="sancai-detail-card sancai-tag-section-basic">
-                                    <div className="sancai-tag-section-meta-item">
-                                        <span>门类</span>
-                                        <strong>
-                                            {selectedEntryCategory?.title?.trim() || "未归类"}
-                                        </strong>
-                                    </div>
-                                    <div className="sancai-tag-section-meta-item">
-                                        <span>卷目</span>
-                                        <strong>
-                                            {selectedEntryVolume?.title?.trim() || "未选择卷目"}
-                                        </strong>
-                                    </div>
-                                    <div className="sancai-tag-section-meta-item">
-                                        <span>标题</span>
-                                        <strong>{readEntryTitle(selectedEntry)}</strong>
-                                    </div>
-                                </section>
-                                <section className="sancai-detail-card sancai-tag-section-summary">
-                                    <span>简介/摘要</span>
-                                    <p>{readEntrySummary(selectedEntry)}</p>
-                                </section>
-                                <ClassicsContentTagPanel
-                                    contentId={selectedEntry.id}
-                                    contentType="SANCAI_ENTRY"
-                                    panelTitle="标签"
-                                    readOnly={isSelectedEntryReadOnly}
-                                    toolbarExtra={
-                                        <ClassicsContentTagAiPanel
-                                            canApplyCandidate={canApplyAiCandidateTags}
-                                            canCreateTask={canCreateAiRefinementTask}
-                                            canRejectCandidate={canRejectAiCandidates}
-                                            canViewCandidate={canViewAiCandidates}
-                                            contentId={selectedEntry.id}
-                                            contentType="SANCAI_ENTRY"
-                                            creatingTask={creatingRefinementCapability === "tags"}
-                                            tagTasks={refinementTasks.filter(
-                                                (task) =>
-                                                    aiRefinementTaskService.getNormalizedTaskCapability(
-                                                        task.capability
-                                                    ) === "tags"
-                                            )}
-                                            onChanged={invalidateSancaiContentGovernance}
-                                            onCreateTask={() => createRefinementTask("tags", null)}
-                                            onTaskChange={invalidateRefinementTasks}
-                                        />
-                                    }
-                                    onChanged={invalidateSancaiContentGovernance}
-                                />
-                            </div>
-                        </div>
-                    ) : null
-                }
-                versionContent={
-                    <SancaiEntryVersionSection
-                        currentEntry={selectedEntry}
-                        detailLoading={versionDetailQuery.isLoading}
-                        isCreating={isCreating}
-                        listLoading={versionsQuery.isLoading}
-                        readOnly={isSelectedEntryReadOnly}
-                        resetting={resetVersionMutation.isPending}
-                        selectedVersion={selectedVersion}
-                        versions={versions}
-                        onSelectVersion={(version) => setSelectedVersionId(version.id)}
-                        onResetVersion={resetVersion}
-                    />
-                }
+                onEntryChanged={invalidateEntries}
             />
         </>
     );

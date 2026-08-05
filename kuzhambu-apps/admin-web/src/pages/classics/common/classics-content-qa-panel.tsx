@@ -1,26 +1,23 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Empty, Form, Input } from "antd";
+import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
+import { App, Empty, Typography } from "antd";
 import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-    KuzhambuForm,
-    KuzhambuFormItem,
-    KuzhambuModal,
-    KuzhambuSpace,
-    KuzhambuTable,
-    type KuzhambuTableSortPosition,
     KuzhambuButton,
-    KuzhambuSelect,
-    KuzhambuCard
+    KuzhambuExpandableText,
+    KuzhambuSpace,
+    KuzhambuSpaceCompact,
+    KuzhambuTable,
+    KuzhambuTag,
+    type KuzhambuTagType
 } from "@/components";
 
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { ClassicsContentQaEditorModal } from "./classics-content-qa-editor-modal";
 import * as contentService from "./classics-content-service";
 import type { ClassicsContentQaPairRecord, ClassicsContentType } from "./classics-content-types";
-import {
-    type ClassicsContentQaPairCommand,
-    type ClassicsContentQaPairSortCommand
-} from "./classics-content-service";
+import { type ClassicsContentQaPairCommand } from "./classics-content-service";
 
 interface ClassicsContentQaPanelProps {
     contentId: string;
@@ -28,27 +25,33 @@ interface ClassicsContentQaPanelProps {
     onChanged?: () => void;
     panelTitle?: string;
     readOnly?: boolean;
+    toolbarExtra?: ReactNode;
 }
 
-interface QaEditorValues {
-    contentId: string;
-    contentType: ClassicsContentType;
-    id?: string | null;
-    question: string;
-    answer: string;
-    source: string;
-}
+const QA_TABLE_PAGE_SIZE = 10;
 
 const readSourceLabel = (source?: string | null) => {
     switch (source) {
         case "AI":
             return "AI";
         case "AI_EXTRACTED":
-            return "AI 提取";
+            return "AI";
         case "MANUAL":
-            return "手工";
+            return "人工";
         default:
             return source || "—";
+    }
+};
+
+const readSourceTagType = (source?: string | null): KuzhambuTagType => {
+    switch (source) {
+        case "AI":
+        case "AI_EXTRACTED":
+            return "accent";
+        case "MANUAL":
+            return "neutral";
+        default:
+            return "info";
     }
 };
 
@@ -56,8 +59,8 @@ export const ClassicsContentQaPanel = ({
     contentId,
     contentType,
     onChanged,
-    panelTitle,
-    readOnly = false
+    readOnly = false,
+    toolbarExtra
 }: ClassicsContentQaPanelProps) => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
@@ -66,7 +69,6 @@ export const ClassicsContentQaPanel = ({
     const [editingQaPair, setEditingQaPair] = useState<ClassicsContentQaPairRecord | undefined>(
         undefined
     );
-    const [form] = Form.useForm<QaEditorValues>();
 
     const queryKey = ["classics", "content", "qa-pairs", contentType, contentId] as const;
 
@@ -118,22 +120,10 @@ export const ClassicsContentQaPanel = ({
         onSuccess: async () => {
             await notifyChanged();
             setIsEditorOpen(false);
-            messageApi.success("问答对已更新");
+            messageApi.success("问答已更新");
         },
         onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "更新问答对失败");
-        }
-    });
-
-    const sortMutation = useMutation({
-        mutationFn: (request: ClassicsContentQaPairSortCommand) =>
-            contentService.sortQaPairs(request),
-        onSuccess: async () => {
-            await notifyChanged();
-            messageApi.success("问答对顺序已保存");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "排序失败");
+            messageApi.error(error instanceof Error ? error.message : "更新问答失败");
         }
     });
 
@@ -151,37 +141,21 @@ export const ClassicsContentQaPanel = ({
     const openCreate = () => {
         setEditingQaPair(undefined);
         setIsEditorOpen(true);
-        form.setFieldsValue({
-            contentId,
-            contentType,
-            source: "MANUAL",
-            question: "",
-            answer: ""
-        });
     };
 
     const openEdit = (qaPair: ClassicsContentQaPairRecord) => {
         setEditingQaPair(qaPair);
         setIsEditorOpen(true);
-        form.setFieldsValue({
-            contentId,
-            contentType,
-            id: qaPair.id,
-            question: qaPair.question || "",
-            answer: qaPair.answer || "",
-            source: qaPair.source || "MANUAL"
-        });
     };
 
-    const submitQaPair = async () => {
-        const formValues = await form.validateFields();
+    const submitQaPair = async (values: { answer: string; question: string }) => {
         const command: ClassicsContentQaPairCommand = {
             contentId,
             contentType,
             id: editingQaPair?.id,
-            question: formValues.question.trim(),
-            answer: formValues.answer.trim(),
-            source: formValues.source || "MANUAL"
+            question: values.question,
+            answer: values.answer,
+            source: "MANUAL"
         };
 
         if (editingQaPair) {
@@ -192,42 +166,9 @@ export const ClassicsContentQaPanel = ({
         await addMutation.mutateAsync(command);
     };
 
-    const submitSort = (
-        sourcePair: ClassicsContentQaPairRecord,
-        targetPair: ClassicsContentQaPairRecord,
-        position: KuzhambuTableSortPosition
-    ) => {
-        if (!sourcePair.id || !targetPair.id || sourcePair.id === targetPair.id) {
-            return;
-        }
-
-        const filtered = [...qaPairs];
-        const sourcePairId = String(sourcePair.id);
-        const targetPairId = String(targetPair.id);
-        const sourceIndex = filtered.findIndex((pair) => String(pair.id) === sourcePairId);
-        const targetIndex = filtered.findIndex((pair) => String(pair.id) === targetPairId);
-        if (sourceIndex < 0 || targetIndex < 0) {
-            return;
-        }
-
-        const sorted = [...filtered];
-        const [sourceItem] = sorted.splice(sourceIndex, 1);
-        const insertIndex = position === "before" ? targetIndex : targetIndex + 1;
-        sorted.splice(insertIndex, 0, sourceItem);
-
-        sortMutation.mutate({
-            orderedIds: sorted
-                .map((pair) => pair.id)
-                .filter((id) => id != null && String(id).length > 0)
-                .map(String),
-            sortDirection: "ASC"
-        });
-    };
-
     const closeEditor = () => {
         setIsEditorOpen(false);
         setEditingQaPair(undefined);
-        form.resetFields();
     };
 
     const deleteQaPair = (qaPair: ClassicsContentQaPairRecord) => {
@@ -249,147 +190,114 @@ export const ClassicsContentQaPanel = ({
     }
 
     return (
-        <KuzhambuCard size="small" title={panelTitle || "问答对治理"}>
-            <KuzhambuSpace orientation="vertical" size={16}>
-                {!readOnly ? (
-                    <div>
+        <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
+            {!readOnly ? (
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <KuzhambuSpaceCompact>
+                        {toolbarExtra}
                         <KuzhambuButton
                             testId="classics-common-classics-content-qa-action-button"
                             icon={<PlusOutlined />}
-                            type="primary"
+                            type={toolbarExtra ? "default" : "primary"}
                             onClick={openCreate}
                         >
-                            新增问答对
+                            新增
                         </KuzhambuButton>
-                    </div>
-                ) : null}
+                        <KuzhambuButton
+                            testId="classics-common-classics-content-qa-refresh-button"
+                            icon={<ReloadOutlined />}
+                            loading={qaPairsQuery.isFetching}
+                            onClick={refreshQaPairs}
+                        >
+                            刷新
+                        </KuzhambuButton>
+                    </KuzhambuSpaceCompact>
+                </div>
+            ) : null}
 
-                <KuzhambuTable
-                    ariaLabel="问答对列表"
-                    dataSource={qaPairs}
-                    columns={[
-                        {
-                            key: "question",
-                            title: "问题",
-                            width: 220,
-                            render: (_value, pair) => pair.question || "-"
-                        },
-                        {
-                            key: "answer",
-                            title: "答案",
-                            render: (_value, pair) => pair.answer || "-"
-                        },
-                        {
-                            key: "source",
-                            title: "来源",
-                            width: 110,
-                            render: (_value, pair) => readSourceLabel(pair.source)
-                        },
-                        ...(!readOnly
-                            ? [
-                                  {
-                                      key: "actions",
-                                      title: "操作",
-                                      width: 180,
-                                      render: (
-                                          _value: unknown,
-                                          pair: ClassicsContentQaPairRecord
-                                      ) => (
-                                          <KuzhambuSpace size="small" orientation="horizontal">
-                                              <KuzhambuButton
-                                                  testId={`classics-common-classics-content-qa-edit-${pair.id}-button`}
-                                                  icon={<EditOutlined />}
-                                                  size="small"
-                                                  onClick={() => openEdit(pair)}
-                                              >
-                                                  编辑
-                                              </KuzhambuButton>
-                                              <KuzhambuButton
-                                                  testId={`classics-common-classics-content-qa-delete-${pair.id}-button`}
-                                                  danger
-                                                  icon={<DeleteOutlined />}
-                                                  loading={deleteMutation.isPending}
-                                                  size="small"
-                                                  onClick={() => deleteQaPair(pair)}
-                                              >
-                                                  删除
-                                              </KuzhambuButton>
-                                          </KuzhambuSpace>
-                                      )
-                                  }
-                              ]
-                            : [])
-                    ]}
-                    rowKey="id"
-                    loading={qaPairsQuery.isLoading}
-                    locale={{
-                        emptyText: qaPairsQuery.isFetching ? (
-                            "加载中"
-                        ) : (
-                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无问答对" />
+            <KuzhambuTable
+                ariaLabel="问答对列表"
+                dataSource={qaPairs}
+                columns={[
+                    {
+                        key: "qa",
+                        title: "内容",
+                        render: (_value, pair) => (
+                            <KuzhambuSpace
+                                orientation="vertical"
+                                size={6}
+                                style={{ width: "100%" }}
+                            >
+                                <Typography.Text
+                                    strong
+                                >{`问：${pair.question || "-"}`}</Typography.Text>
+                                <div style={{ color: "rgba(0, 0, 0, 0.65)" }}>
+                                    <KuzhambuExpandableText
+                                        content={`答：${pair.answer || "-"}`}
+                                        collapsedRows={2}
+                                    />
+                                </div>
+                            </KuzhambuSpace>
                         )
-                    }}
-                    pagination={false}
-                    sortable={!readOnly}
-                    onSort={readOnly ? undefined : submitSort}
-                />
+                    },
+                    {
+                        key: "source",
+                        title: "来源",
+                        width: 96,
+                        render: (_value, pair) => (
+                            <KuzhambuTag type={readSourceTagType(pair.source)}>
+                                {readSourceLabel(pair.source)}
+                            </KuzhambuTag>
+                        )
+                    },
+                    {
+                        key: "actions",
+                        title: "操作",
+                        options: (pair) => [
+                            {
+                                key: "edit",
+                                text: "编辑",
+                                disabled: readOnly,
+                                testId: `classics-common-classics-content-qa-edit-${pair.id}-button`,
+                                onClick: () => openEdit(pair)
+                            },
+                            {
+                                key: "delete-divider",
+                                type: "divider"
+                            },
+                            {
+                                key: "delete",
+                                text: "删除",
+                                type: "danger",
+                                disabled: readOnly || deleteMutation.isPending,
+                                testId: `classics-common-classics-content-qa-delete-${pair.id}-button`,
+                                onClick: () => deleteQaPair(pair)
+                            }
+                        ]
+                    }
+                ]}
+                rowKey="id"
+                loading={qaPairsQuery.isLoading}
+                locale={{
+                    emptyText: qaPairsQuery.isFetching ? (
+                        "加载中"
+                    ) : (
+                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无问答对" />
+                    )
+                }}
+                minColumnWidth={120}
+                pagination={{
+                    pageSize: QA_TABLE_PAGE_SIZE
+                }}
+            />
 
-                <KuzhambuModal
-                    testId="classics-content-qa-editor-modal"
-                    destroyOnHidden
-                    okButtonProps={{
-                        loading: addMutation.isPending || updateMutation.isPending
-                    }}
-                    open={isEditorOpen}
-                    title={editingQaPair ? "编辑问答对" : "新增问答对"}
-                    onCancel={closeEditor}
-                    onOk={submitQaPair}
-                >
-                    <KuzhambuForm
-                        form={form}
-                        initialValues={{
-                            contentId,
-                            contentType,
-                            source: "MANUAL"
-                        }}
-                        labelWrap
-                    >
-                        <KuzhambuFormItem
-                            label="问题"
-                            name="question"
-                            layoutSize="large"
-                            rules={[{ required: true, message: "请输入问题" }]}
-                        >
-                            <Input.TextArea
-                                aria-label="问答问题"
-                                rows={3}
-                                placeholder="请输入问题"
-                            />
-                        </KuzhambuFormItem>
-                        <KuzhambuFormItem
-                            label="答案"
-                            name="answer"
-                            layoutSize="large"
-                            rules={[{ required: true, message: "请输入答案" }]}
-                        >
-                            <Input.TextArea
-                                aria-label="问答答案"
-                                rows={4}
-                                placeholder="请输入答案"
-                            />
-                        </KuzhambuFormItem>
-                        <KuzhambuFormItem label="来源" name="source" layoutSize="large">
-                            <KuzhambuSelect
-                                aria-label="问答来源"
-                                options={[
-                                    { label: "手工", value: "MANUAL" },
-                                    { label: "AI 提取", value: "AI_EXTRACTED" }
-                                ]}
-                            />
-                        </KuzhambuFormItem>
-                    </KuzhambuForm>
-                </KuzhambuModal>
-            </KuzhambuSpace>
-        </KuzhambuCard>
+            <ClassicsContentQaEditorModal
+                confirmLoading={addMutation.isPending || updateMutation.isPending}
+                open={isEditorOpen}
+                qaPair={editingQaPair}
+                onCancel={closeEditor}
+                onSubmit={submitQaPair}
+            />
+        </KuzhambuSpace>
     );
 };

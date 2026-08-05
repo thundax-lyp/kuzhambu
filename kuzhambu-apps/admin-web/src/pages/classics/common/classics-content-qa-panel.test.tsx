@@ -12,37 +12,68 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
 }));
 
 vi.mock("@/components/kuzhambu-table", () => {
+    interface TableAction {
+        disabled?: boolean;
+        key: string;
+        onClick: (record: unknown) => void;
+        testId?: string;
+        text: string;
+    }
+
     const kuzhambuTableMock = ({
         ariaLabel,
         columns,
         dataSource,
-        onSort
+        pagination
     }: {
         ariaLabel?: string;
         columns?: Array<{
             key?: string;
+            options?: TableAction[] | ((record: unknown) => TableAction[]);
             render?: (value: unknown, record: unknown) => JSX.Element;
+            title?: string;
         }>;
         dataSource?: unknown[];
-        onSort?: (source: unknown, target: unknown, position: "before" | "after") => void;
+        pagination?: { pageSize?: number } | false;
     }) => {
-        const actionColumn = columns?.find((column) => column.key === "actions");
         const rows = Array.isArray(dataSource) ? dataSource : [];
-
-        const triggerSort = () => {
-            if (!onSort || rows.length < 2) {
-                return;
-            }
-            onSort(rows[0], rows[1], "before");
-        };
 
         return (
             <div aria-label={ariaLabel}>
-                <button aria-label="模拟排序" onClick={triggerSort}>
-                    排序
-                </button>
+                {pagination && (
+                    <div data-testid="mock-table-pagination">pageSize:{pagination.pageSize}</div>
+                )}
+                <div>
+                    {columns?.map((column) => (
+                        <span key={column.key}>{column.title}</span>
+                    ))}
+                </div>
                 {rows.map((row, index) => (
-                    <div key={index}>{actionColumn?.render?.(undefined, row)}</div>
+                    <div key={index}>
+                        {columns?.map((column) => {
+                            const actions =
+                                typeof column.options === "function"
+                                    ? column.options(row)
+                                    : column.options;
+
+                            return (
+                                <div key={column.key}>
+                                    {column.render?.(undefined, row)}
+                                    {actions?.map((action) => (
+                                        <button
+                                            data-testid={action.testId}
+                                            disabled={action.disabled}
+                                            key={action.key}
+                                            type="button"
+                                            onClick={() => action.onClick(row)}
+                                        >
+                                            {action.text}
+                                        </button>
+                                    ))}
+                                </div>
+                            );
+                        })}
+                    </div>
                 ))}
             </div>
         );
@@ -137,10 +168,6 @@ const installFetchMock = () => {
             return apiResponse(true);
         }
 
-        if (path.endsWith("/classics/content/qa-pairs/sort")) {
-            return apiResponse(true);
-        }
-
         return apiResponse(true);
     });
 };
@@ -190,11 +217,11 @@ describe("ClassicsContentQaPanel", () => {
         await user.click(
             await screen.findByTestId("classics-common-classics-content-qa-action-button")
         );
-        const dialog = screen.getByRole("dialog", { name: "新增问答对" });
+        const dialog = screen.getByRole("dialog", { name: "新增问答" });
         expect(await within(dialog).findByRole("button", { name: "OK" })).toBeInTheDocument();
 
         await user.type(within(dialog).getByLabelText("问答问题"), "新问题");
-        await user.type(within(dialog).getByLabelText("问答答案"), "新答案");
+        await user.type(within(dialog).getByLabelText("问答回答"), "新答案");
         await user.click(within(dialog).getByRole("button", { name: "OK" }));
 
         await waitFor(() => {
@@ -235,9 +262,9 @@ describe("ClassicsContentQaPanel", () => {
         );
         await user.click(editButton);
 
-        const editDialog = screen.getByRole("dialog", { name: "编辑问答对" });
-        await user.clear(within(editDialog).getByLabelText("问答答案"));
-        await user.type(within(editDialog).getByLabelText("问答答案"), "已修订答案");
+        const editDialog = screen.getByRole("dialog", { name: "编辑问答" });
+        await user.clear(within(editDialog).getByLabelText("问答回答"));
+        await user.type(within(editDialog).getByLabelText("问答回答"), "已修订答案");
         await user.click(within(editDialog).getByRole("button", { name: "OK" }));
 
         await waitFor(() => {
@@ -284,37 +311,22 @@ describe("ClassicsContentQaPanel", () => {
         });
     }, 30000);
 
-    it("sorts qa pairs and sends sort api without version confirmation", async () => {
-        const user = userEvent.setup();
+    it("renders merged qa column, source tag text and pagination", async () => {
         const queryClient = createTestQueryClient();
-        const onChanged = vi.fn();
 
         render(
             <QueryClientProvider client={queryClient}>
                 <AntdApp>
-                    <ClassicsContentQaPanel
-                        contentId="4001"
-                        contentType="WANGQI_DOCUMENT"
-                        onChanged={onChanged}
-                    />
+                    <ClassicsContentQaPanel contentId="4001" contentType="WANGQI_DOCUMENT" />
                 </AntdApp>
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByRole("button", { name: "模拟排序" }));
-
-        await waitFor(() => {
-            expect(capturedCalls).toContainEqual(
-                expect.objectContaining({
-                    method: "POST",
-                    path: "/classics/content/qa-pairs/sort",
-                    body: {
-                        orderedIds: ["10002", "10001"],
-                        sortDirection: "ASC"
-                    }
-                })
-            );
-            expect(onChanged).toHaveBeenCalled();
-        });
-    }, 30000);
+        expect(await screen.findByText("内容")).toBeInTheDocument();
+        expect(screen.getByText("来源")).toBeInTheDocument();
+        expect(await screen.findByText("问：已有问题")).toBeInTheDocument();
+        expect(await screen.findByText("答：已有答案")).toBeInTheDocument();
+        expect(screen.getAllByText("人工").length).toBeGreaterThan(0);
+        expect(screen.getByTestId("mock-table-pagination")).toHaveTextContent("pageSize:10");
+    });
 });

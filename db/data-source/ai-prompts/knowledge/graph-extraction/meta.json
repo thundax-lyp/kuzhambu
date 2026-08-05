@@ -1,6 +1,6 @@
 {
   "priority": 13,
-  "capability": "knowledge_graph_extract",
+  "capability": "KNOWLEDGE_GRAPH_EXTRACT",
   "suite": "knowledge-default-v1",
   "name": "知识图谱抽取提示词",
   "description": "知识图谱抽取默认提示词。",

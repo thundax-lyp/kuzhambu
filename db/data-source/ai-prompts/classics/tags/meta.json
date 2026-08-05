@@ -1,6 +1,6 @@
 {
   "priority": 2,
-  "capability": "classics_tags",
+  "capability": "CLASSICS_TAG_EXTRACT",
   "suite": "classics-default-v1",
   "name": "古籍标签提取提示词",
   "description": "古籍内容默认标签抽取提示词。",

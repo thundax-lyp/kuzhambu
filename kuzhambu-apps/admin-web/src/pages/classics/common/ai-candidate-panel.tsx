@@ -191,11 +191,13 @@ export const AiCandidatePanel = ({
         const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(
             candidate.capability
         );
+        const capabilityCode =
+            aiRefinementTaskService.getBusinessCapabilityCode(normalizedCapability);
         applyMutation.mutate({
             candidateId: getCandidateStableId(candidate),
             contentId,
             contentType,
-            capability: normalizedCapability,
+            capability: capabilityCode,
             objectId: candidate.objectId,
             resultFormat:
                 candidate.resultFormat?.trim() ||

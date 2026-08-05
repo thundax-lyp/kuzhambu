@@ -73,7 +73,7 @@ const installFetchRecorder = () => {
                 data: {
                     taskId: "7001",
                     status: "PENDING",
-                    capability: "summary",
+                    capability: "CLASSICS_SUMMARY",
                     contentType: "SANCAI_ENTRY",
                     contentId: "3001",
                     requestedAt: "2026-07-01T12:00:00Z",
@@ -111,7 +111,7 @@ describe("AI refinement task service request contracts", () => {
 
     it("creates task by invoking refinement task add api", async () => {
         const command: AiRefinementTaskCreateCommand = {
-            capability: "summary",
+            capability: "CLASSICS_SUMMARY",
             scope: "classics",
             contentType: "SANCAI_ENTRY",
             contentId: "3001",
@@ -244,7 +244,7 @@ describe("AI refinement task service request contracts", () => {
 
     it("pages tasks with polling filters", async () => {
         await aiRefinementTaskService.pageTasks({
-            capability: "summary",
+            capability: "CLASSICS_SUMMARY",
             status: "RUNNING",
             contentType: "SANCAI_ENTRY",
             contentId: "3001",
@@ -254,7 +254,7 @@ describe("AI refinement task service request contracts", () => {
 
         expect(capturedCalls.at(-1)).toEqual({
             body: {
-                capability: "summary",
+                capability: "CLASSICS_SUMMARY",
                 status: "RUNNING",
                 contentType: "SANCAI_ENTRY",
                 contentId: "3001",

@@ -1,6 +1,6 @@
 {
   "priority": 8,
-  "capability": "classics_image_generate",
+  "capability": "CLASSICS_IMAGE_GENERATE",
   "suite": "classics-default-v1",
   "name": "古籍图片生成提示词",
   "description": "古籍视觉资产默认文生图提示词。",

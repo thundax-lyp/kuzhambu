@@ -26,15 +26,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class AiRefinementController {
 
-    private static final String CAPABILITY_TRANSLATE = "classics_translate";
-    private static final String CAPABILITY_SUMMARY = "classics_summary";
-    private static final String CAPABILITY_TAGS = "classics_tags";
-    private static final String CAPABILITY_QA = "classics_qa";
-    private static final String CAPABILITY_IMAGE_ANALYSIS = "classics_image_describe";
-    private static final String CAPABILITY_FUSION = "classics_image_prompt_fusion";
-    private static final String CAPABILITY_VISUAL = "classics_visual_describe";
-    private static final String CAPABILITY_IMAGE_GEN = "classics_image_generate";
-    private static final String CAPABILITY_SPLIT = "classics_split";
+    private static final String CAPABILITY_TRANSLATE = "CLASSICS_TRANSLATE";
+    private static final String CAPABILITY_SUMMARY = "CLASSICS_SUMMARY";
+    private static final String CAPABILITY_TAGS = "CLASSICS_TAG_EXTRACT";
+    private static final String CAPABILITY_QA = "CLASSICS_QA";
+    private static final String CAPABILITY_IMAGE_ANALYSIS = "CLASSICS_IMAGE_DESCRIBE";
+    private static final String CAPABILITY_FUSION = "CLASSICS_IMAGE_PROMPT_FUSION";
+    private static final String CAPABILITY_VISUAL = "CLASSICS_VISUAL_DESCRIBE";
+    private static final String CAPABILITY_IMAGE_GEN = "CLASSICS_IMAGE_GENERATE";
+    private static final String CAPABILITY_SPLIT = "CLASSICS_SPLIT";
 
     private final AiRefinementApplicationService refinementService;
 

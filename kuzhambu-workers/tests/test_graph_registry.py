@@ -34,17 +34,17 @@ def test_registry_invokes_text_graph_for_classics_translate(monkeypatch) -> None
 
 
 @pytest.mark.parametrize(
-    ("capability", "expected_keys"),
+    ("capability", "expected_payload"),
     [
-        ("relation_extraction", {"entities", "relations", "sourceSnippets", "warnings"}),
-        ("knowledge_graph", {"entities", "relations", "entryRefs", "warnings"}),
-        ("lineage_extraction", {"nodes", "relations", "sourceSnippets", "warnings"}),
+        ("relation_extraction", '{"entities":[],"relations":[],"sourceSnippets":[],"warnings":[]}'),
+        ("knowledge_graph", '{"entities":[],"relations":[],"entryRefs":[],"warnings":[]}'),
+        ("lineage_extraction", '{"nodes":[],"relations":[],"sourceSnippets":[],"warnings":[]}'),
     ],
 )
-def test_registry_returns_stable_payload_shape_for_knowledge_capabilities(
+def test_registry_returns_structured_payload_as_raw_text(
     monkeypatch,
     capability: str,
-    expected_keys: set[str],
+    expected_payload: str,
 ) -> None:
     monkeypatch.setattr(
         "kuzhambu_workers.ai.graphs.basic.invoke_chat_completion",
@@ -56,7 +56,7 @@ def test_registry_returns_stable_payload_shape_for_knowledge_capabilities(
     result = registry.invoke(request)
 
     assert result["format"] == "STRUCTURED"
-    assert set(result["payload"]) == expected_keys
+    assert result["payload"] == expected_payload
 
 
 def test_registry_rejects_unregistered_capability() -> None:

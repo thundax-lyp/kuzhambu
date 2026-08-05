@@ -163,6 +163,8 @@ OpenAI-compatible 响应使用 OpenAI chat completion、`data: ...` chunk 或 im
 
 统一 AI 执行接口不承载业务权限、业务写入、用例级审计或稳定业务结果语义。业务语义通过 `scope`、`operation`、`prompt`、`input.payload` 和 `outputSchema` 随请求传入，由 Java AI 域负责解释和归档。请求体 `capability` 是 workers canonical capability，只用于选择 worker graph；Java AI 域对前端、facade、调用记录、候选结果和任务台账返回的 capability 仍是业务 capability。
 
+Workers 不解析业务 JSON 协议，不判断 `tags`、`qaPairs`、`entities`、`relations` 等业务字段，也不做业务 schema 归一化。即使请求要求结构化输出，workers 也只负责把模型原始文本作为执行结果返回，并可携带 `STRUCTURED` 结果格式标记。模型输出中的 JSON 兼容处理（例如完整包裹的 ` ```json ... ``` `）和业务协议解析必须由 Java backend 在对应业务能力边界完成。
+
 Discovery `answer_generation` capability 可以在 `input.payload` 接收单文档问答上下文：
 
 - `contextMode`：单文档追问时固定为 `SINGLE_DOCUMENT`。
@@ -319,7 +321,7 @@ Health 接口不得检查数据库、Redis 或 MQ。
 - `traceId`：跨服务链路标识。
 - `callerDomain`：固定为调用来源域，AI 域调用时使用 `AI`。
 - `operation`：AI 域侧业务动作，用于日志和排查。
-- `capability`：workers canonical capability，必须来自 workers capability matrix，例如 `summary`、`image_analysis`、`answer_generation`。不得传 `classics_summary`、`knowledge_graph_extract` 等业务 capability。
+- `capability`：workers canonical capability，必须来自 workers capability matrix，例如 `summary`、`image_analysis`、`answer_generation`。不得传 `CLASSICS_SUMMARY`、`KNOWLEDGE_GRAPH_EXTRACT` 等业务 capability。
 - `scope`：知识库或业务范围，例如 `SANCAI`、`WANGQI`、`MING_CUSTOMS`、`DISCOVERY`、`KNOWLEDGE`。
 - `modelConfig`：AI 域选择后的模型服务配置。workers 只使用，不持久化。
 - `prompt.messages`：AI 域渲染后的最终 messages，workers 必须优先使用该字段。

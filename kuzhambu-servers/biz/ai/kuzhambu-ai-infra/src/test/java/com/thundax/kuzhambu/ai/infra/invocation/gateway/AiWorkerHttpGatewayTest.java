@@ -494,7 +494,7 @@ class AiWorkerHttpGatewayTest {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
         command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_summary"));
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_SUMMARY"));
         command.setWorkerCapability("summary");
         command.setOperation("translate");
         command.setContentRef(

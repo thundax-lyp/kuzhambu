@@ -1,6 +1,6 @@
 {
   "priority": 3,
-  "capability": "classics_qa",
+  "capability": "CLASSICS_QA",
   "suite": "classics-default-v1",
   "name": "古籍问答生成提示词",
   "description": "古籍内容默认问答生成提示词。",
@@ -22,7 +22,7 @@
   "outputSchema": {
     "type": "object",
     "properties": {
-      "qa_pairs": {
+      "qaPairs": {
         "type": "array",
         "items": {
           "type": "object",
@@ -44,8 +44,8 @@
       }
     },
     "required": [
-      "qa_pairs"
+      "qaPairs"
     ]
   },
-  "changeSummary": "Initial classics default QA prompt."
+  "changeSummary": "Use camelCase qaPairs output and strict raw JSON protocol."
 }

@@ -1,6 +1,6 @@
 {
   "priority": 5,
-  "capability": "discovery_answer_generation",
+  "capability": "DISCOVERY_ANSWER_GENERATION",
   "suite": "discovery-default-v1",
   "name": "知识发现回答生成提示词",
   "description": "知识发现默认来源融合回答提示词。",

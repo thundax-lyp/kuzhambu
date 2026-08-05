@@ -734,7 +734,7 @@ class ClassicsContentApplicationServiceImplTest {
         AiFacade aiFacade = mock(AiFacade.class);
         AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
                 .candidateId(7001L)
-                .capability("summary")
+                .capability("CLASSICS_SUMMARY")
                 .contentType(ClassicsContentType.SANCAI_ENTRY.value())
                 .contentId(102L)
                 .status("PENDING")
@@ -745,7 +745,7 @@ class ClassicsContentApplicationServiceImplTest {
                 service(repository, null, null, null, null, null, aiFacade, null, null);
 
         service.applyAiCandidate(new AiCandidateApplyContentCommand(
-                7001L, ClassicsContentType.SANCAI_ENTRY, 102L, null, "summary", "TEXT", "AI摘要", null, null));
+                7001L, ClassicsContentType.SANCAI_ENTRY, 102L, null, "CLASSICS_SUMMARY", "TEXT", "AI摘要", null, null));
 
         assertEquals("AI摘要", repository.sancaiEntryForAiApply.getSummary());
         assertEquals(1, repository.sancaiEntryVersionMarker.getCurrentVersionNo());

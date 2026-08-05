@@ -1,6 +1,6 @@
 {
   "priority": 1,
-  "capability": "classics_summary",
+  "capability": "CLASSICS_SUMMARY",
   "suite": "classics-default-v1",
   "name": "古籍摘要提示词",
   "description": "古籍内容默认摘要提示词。",

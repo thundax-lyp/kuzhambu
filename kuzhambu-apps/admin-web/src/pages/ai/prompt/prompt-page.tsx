@@ -420,6 +420,10 @@ export const PromptPage = () => {
                     onClick: () => openEditPromptDrawer(template)
                 },
                 {
+                    key: "delete-divider",
+                    type: "divider"
+                },
+                {
                     key: "delete",
                     text: "删除",
                     type: "danger",

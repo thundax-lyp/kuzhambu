@@ -110,7 +110,7 @@ describe("AiCandidateBatchDrawer", () => {
                         candidateId: "7001",
                         contentType: "SANCAI_ENTRY",
                         contentId: "3001",
-                        capability: "summary",
+                        capability: "CLASSICS_SUMMARY",
                         objectId: null,
                         resultFormat: "TEXT",
                         resultPayload: "摘要候选",
@@ -150,7 +150,7 @@ describe("AiCandidateBatchDrawer", () => {
         expect(await screen.findByText(/已选内容\s*2\s*个/)).toBeInTheDocument();
         expect(await screen.findByText("天地")).toBeInTheDocument();
         expect(await screen.findByText("地理")).toBeInTheDocument();
-        expect(await screen.findByText("summary")).toBeInTheDocument();
+        expect(await screen.findByText("CLASSICS_SUMMARY")).toBeInTheDocument();
         expect(await screen.findByText("image_analysis")).toBeInTheDocument();
         expect(screen.queryByText("qa")).not.toBeInTheDocument();
         expect(await screen.findByText("9002")).toBeInTheDocument();
@@ -176,7 +176,7 @@ describe("AiCandidateBatchDrawer", () => {
                         candidateId: "7101",
                         contentType: "SANCAI_ENTRY",
                         contentId: "3001",
-                        capability: "summary",
+                        capability: "CLASSICS_SUMMARY",
                         objectId: null,
                         resultFormat: "TEXT",
                         resultPayload: "",
@@ -220,7 +220,7 @@ describe("AiCandidateBatchDrawer", () => {
                         candidateId: "7201",
                         contentType: "SANCAI_ENTRY",
                         contentId: "3001",
-                        capability: "summary",
+                        capability: "CLASSICS_SUMMARY",
                         resultPayload: "初稿",
                         resultFormat: "TEXT",
                         status: "PENDING"
@@ -231,7 +231,7 @@ describe("AiCandidateBatchDrawer", () => {
                         candidateId: "7202",
                         contentType: "SANCAI_ENTRY",
                         contentId: "3002",
-                        capability: "summary",
+                        capability: "CLASSICS_SUMMARY",
                         resultPayload: "再次提交",
                         resultFormat: "TEXT",
                         status: "PENDING"
@@ -307,7 +307,7 @@ describe("AiCandidateBatchDrawer", () => {
                         candidateId: "7201",
                         contentType: "SANCAI_ENTRY",
                         contentId: "3001",
-                        capability: "summary",
+                        capability: "CLASSICS_SUMMARY",
                         objectId: undefined,
                         resultFormat: "TEXT",
                         resultPayload: "初稿",
@@ -317,7 +317,7 @@ describe("AiCandidateBatchDrawer", () => {
                         candidateId: "7202",
                         contentType: "SANCAI_ENTRY",
                         contentId: "3002",
-                        capability: "summary",
+                        capability: "CLASSICS_SUMMARY",
                         objectId: undefined,
                         resultFormat: "TEXT",
                         resultPayload: "再次提交",
@@ -404,7 +404,7 @@ describe("AiCandidateBatchDrawer", () => {
                         candidateId: "7301",
                         contentType: "SANCAI_ENTRY",
                         contentId: "3001",
-                        capability: "summary",
+                        capability: "CLASSICS_SUMMARY",
                         objectId: "6001"
                     }
                 ]

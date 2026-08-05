@@ -36,7 +36,7 @@ class PlatformAiControllerTest {
         assertEquals("prompt", service.lastMethod);
         assertEquals("req-1", service.lastCommand.getRequestId().value());
         assertEquals("trace-1", service.lastCommand.getTraceId().value());
-        assertEquals("prompt_suggestion", response.getCapability());
+        assertEquals("PROMPT_SUGGEST", response.getCapability());
         assertEquals(102L, response.getCandidateId());
     }
 
@@ -48,7 +48,7 @@ class PlatformAiControllerTest {
         InvokeResponse response = controller.summarizeVersion(request());
 
         assertEquals("summary", service.lastMethod);
-        assertEquals("platform_version_summary", response.getCapability());
+        assertEquals("PLATFORM_VERSION_SUMMARY", response.getCapability());
     }
 
     @Test
@@ -93,14 +93,14 @@ class PlatformAiControllerTest {
         public AiInvokeResult buildPromptSuggestion(PlatformAiInvokeCommand command) {
             lastMethod = "prompt";
             lastCommand = command;
-            return result("prompt_suggestion", 102L);
+            return result("PROMPT_SUGGEST", 102L);
         }
 
         @Override
         public AiInvokeResult summarizeVersion(PlatformAiInvokeCommand command) {
             lastMethod = "summary";
             lastCommand = command;
-            return result("platform_version_summary", null);
+            return result("PLATFORM_VERSION_SUMMARY", null);
         }
 
         private AiInvokeResult result(String capability, Long candidateId) {
@@ -115,7 +115,7 @@ class PlatformAiControllerTest {
             result.setTraceId(new com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId("trace-1"));
             result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
             result.setCapability(
-                    com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias(capability));
+                    com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(capability));
             result.setResultFormat("TEXT");
             result.setResultPayload("ok");
             return result;

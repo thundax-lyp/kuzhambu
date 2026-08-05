@@ -1,6 +1,6 @@
 {
   "priority": 15,
-  "capability": "knowledge_tags",
+  "capability": "KNOWLEDGE_TAG_EXTRACT",
   "suite": "knowledge-default-v1",
   "name": "知识标签抽取提示词",
   "description": "知识标签抽取默认提示词。",
