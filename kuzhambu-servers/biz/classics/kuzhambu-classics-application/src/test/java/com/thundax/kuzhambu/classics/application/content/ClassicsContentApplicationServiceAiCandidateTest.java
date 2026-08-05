@@ -73,6 +73,15 @@ import org.junit.jupiter.api.Test;
 
 class ClassicsContentApplicationServiceAiCandidateTest {
 
+    private static final String AI_CAPABILITY_CLASSICS_TRANSLATE = "CLASSICS_TRANSLATE";
+    private static final String AI_CAPABILITY_CLASSICS_SUMMARY = "CLASSICS_SUMMARY";
+    private static final String AI_CAPABILITY_CLASSICS_TAGS = "CLASSICS_TAG_EXTRACT";
+    private static final String AI_CAPABILITY_CLASSICS_QA = "CLASSICS_QA";
+    private static final String AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE = "CLASSICS_IMAGE_DESCRIBE";
+    private static final String AI_CAPABILITY_CLASSICS_IMAGE_PROMPT_FUSION = "CLASSICS_IMAGE_PROMPT_FUSION";
+    private static final String AI_CAPABILITY_CLASSICS_VISUAL_DESCRIBE = "CLASSICS_VISUAL_DESCRIBE";
+    private static final String AI_CAPABILITY_CLASSICS_IMAGE_GENERATE = "CLASSICS_IMAGE_GENERATE";
+
     @Test
     void applyAiCandidateShouldCheckPublicationStateBeforeCallingAiFacade() {
         FakeRepository repository = new FakeRepository();
@@ -88,8 +97,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         assertThrows(
                 BizException.class,
-                () -> service.applyAiCandidate(
-                        applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary", "摘要")));
+                () -> service.applyAiCandidate(applyCommand(
+                        11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_SUMMARY, "摘要")));
 
         verify(aiFacade, never()).requirePendingCandidate(any());
     }
@@ -108,7 +117,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     assertEquals(11L, request.getCandidateId());
                     assertEquals("SANCAI_ENTRY", request.getContentType());
                     assertEquals(11L, request.getContentId());
-                    assertEquals("translate", request.getCapability());
+                    assertEquals(AI_CAPABILITY_CLASSICS_TRANSLATE, request.getCapability());
                     return pendingCandidate();
                 },
                 request -> {
@@ -119,8 +128,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 });
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
-        AiCandidateApplyContentCommand command =
-                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "translate", "new translation");
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_TRANSLATE, "new translation");
 
         AiCandidateApplyContentResult result = service.applyAiCandidate(command);
 
@@ -150,7 +159,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     assertEquals(11L, request.getCandidateId());
                     assertEquals("SANCAI_ENTRY", request.getContentType());
                     assertEquals(11L, request.getContentId());
-                    assertEquals("summary", request.getCapability());
+                    assertEquals(AI_CAPABILITY_CLASSICS_SUMMARY, request.getCapability());
                     return pendingCandidate();
                 },
                 request -> {
@@ -163,7 +172,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command =
-                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary", "new summary");
+                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_SUMMARY, "new summary");
 
         AiCandidateApplyContentResult result = service.applyAiCandidate(command);
 
@@ -198,7 +207,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     assertEquals(11L, request.getCandidateId());
                     assertEquals("SANCAI_ENTRY", request.getContentType());
                     assertEquals(11L, request.getContentId());
-                    assertEquals("image_analysis", request.getCapability());
+                    assertEquals(AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE, request.getCapability());
                     return pendingCandidate();
                 },
                 request -> {
@@ -209,8 +218,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 });
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
-        AiCandidateApplyContentCommand command =
-                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "分析结果", 111L);
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE, "分析结果", 111L);
 
         AiCandidateApplyContentResult result = service.applyAiCandidate(command);
 
@@ -249,7 +258,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     assertEquals(11L, request.getCandidateId());
                     assertEquals("SANCAI_ENTRY", request.getContentType());
                     assertEquals(11L, request.getContentId());
-                    assertEquals("visual", request.getCapability());
+                    assertEquals(AI_CAPABILITY_CLASSICS_VISUAL_DESCRIBE, request.getCapability());
                     return pendingCandidate();
                 },
                 request -> {
@@ -260,8 +269,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 });
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
-        AiCandidateApplyContentCommand command =
-                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "visual", "视觉描述", 111L);
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_VISUAL_DESCRIBE, "视觉描述", 111L);
 
         AiCandidateApplyContentResult result = service.applyAiCandidate(command);
 
@@ -300,7 +309,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     assertEquals(11L, request.getCandidateId());
                     assertEquals("SANCAI_ENTRY", request.getContentType());
                     assertEquals(11L, request.getContentId());
-                    assertEquals("fusion", request.getCapability());
+                    assertEquals(AI_CAPABILITY_CLASSICS_IMAGE_PROMPT_FUSION, request.getCapability());
                     return pendingCandidate();
                 },
                 request -> {
@@ -311,8 +320,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 });
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
-        AiCandidateApplyContentCommand command =
-                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "fusion", "融合说明", 111L);
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_IMAGE_PROMPT_FUSION, "融合说明", 111L);
 
         AiCandidateApplyContentResult result = service.applyAiCandidate(command);
 
@@ -357,7 +366,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     assertEquals(11L, request.getCandidateId());
                     assertEquals("SANCAI_ENTRY", request.getContentType());
                     assertEquals(11L, request.getContentId());
-                    assertEquals("image_gen", request.getCapability());
+                    assertEquals(AI_CAPABILITY_CLASSICS_IMAGE_GENERATE, request.getCapability());
                     return pendingCandidate();
                 },
                 request -> {
@@ -373,7 +382,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 11L,
                 ClassicsContentType.SANCAI_ENTRY,
                 11L,
-                "image_gen",
+                AI_CAPABILITY_CLASSICS_IMAGE_GENERATE,
                 "{\"storageObjectId\":7101,\"contentType\":\"image/png\"}",
                 111L);
 
@@ -412,7 +421,12 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
         AiCandidateApplyContentCommand command = applyCommand(
-                11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_gen", "{\"contentType\":\"image/png\"}", 111L);
+                11L,
+                ClassicsContentType.SANCAI_ENTRY,
+                11L,
+                AI_CAPABILITY_CLASSICS_IMAGE_GENERATE,
+                "{\"contentType\":\"image/png\"}",
+                111L);
 
         BizException exception = assertThrows(BizException.class, () -> service.applyAiCandidate(command));
 
@@ -435,8 +449,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         });
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
-        AiCandidateApplyContentCommand command =
-                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "分析结果", null);
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE, "分析结果", null);
 
         BizException exception = assertThrows(BizException.class, () -> service.applyAiCandidate(command));
         assertEquals("三才视觉资产候选应用参数不完整", exception.getMessage());
@@ -465,8 +479,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         });
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
-        AiCandidateApplyContentCommand command =
-                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "分析结果", 112L);
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE, "分析结果", 112L);
 
         BizException exception = assertThrows(BizException.class, () -> service.applyAiCandidate(command));
         assertEquals("三才视觉资产不存在: 112", exception.getMessage());
@@ -495,7 +509,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     assertEquals(22L, request.getCandidateId());
                     assertEquals("WANGQI_DOCUMENT", request.getContentType());
                     assertEquals(22L, request.getContentId());
-                    assertEquals("summary", request.getCapability());
+                    assertEquals(AI_CAPABILITY_CLASSICS_SUMMARY, request.getCapability());
                     return pendingCandidate();
                 },
                 request -> {
@@ -506,8 +520,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 });
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
-        AiCandidateApplyContentCommand command =
-                applyCommand(22L, ClassicsContentType.WANGQI_DOCUMENT, 22L, "summary", "new summary");
+        AiCandidateApplyContentCommand command = applyCommand(
+                22L, ClassicsContentType.WANGQI_DOCUMENT, 22L, AI_CAPABILITY_CLASSICS_SUMMARY, "new summary");
 
         AiCandidateApplyContentResult result = service.applyAiCandidate(command);
 
@@ -536,7 +550,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     assertEquals(33L, request.getCandidateId());
                     assertEquals("MING_CUSTOMS", request.getContentType());
                     assertEquals(33L, request.getContentId());
-                    assertEquals("summary", request.getCapability());
+                    assertEquals(AI_CAPABILITY_CLASSICS_SUMMARY, request.getCapability());
                     return pendingCandidate();
                 },
                 request -> {
@@ -548,7 +562,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command =
-                applyCommand(33L, ClassicsContentType.MING_CUSTOMS, 33L, "summary", "new summary");
+                applyCommand(33L, ClassicsContentType.MING_CUSTOMS, 33L, AI_CAPABILITY_CLASSICS_SUMMARY, "new summary");
 
         AiCandidateApplyContentResult result = service.applyAiCandidate(command);
 
@@ -578,7 +592,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     assertEquals(11L, request.getCandidateId());
                     assertEquals("SANCAI_ENTRY", request.getContentType());
                     assertEquals(11L, request.getContentId());
-                    assertEquals("tags", request.getCapability());
+                    assertEquals(AI_CAPABILITY_CLASSICS_TAGS, request.getCapability());
                     return pendingCandidate();
                 },
                 request -> candidateApplied());
@@ -588,7 +602,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 11L,
                 ClassicsContentType.SANCAI_ENTRY,
                 11L,
-                "tags",
+                AI_CAPABILITY_CLASSICS_TAGS,
                 "{\"tags\":[\"ai-one\",\"ai-two\",\"ai-one\",\"\"]}");
 
         AiCandidateApplyContentResult result = service.applyAiCandidate(command);
@@ -626,7 +640,11 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> candidateApplied());
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command = applyCommand(
-                11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"old-ai-tag\",\"new-ai-tag\"]}");
+                11L,
+                ClassicsContentType.SANCAI_ENTRY,
+                11L,
+                AI_CAPABILITY_CLASSICS_TAGS,
+                "{\"tags\":[\"old-ai-tag\",\"new-ai-tag\"]}");
         command.setTagApplyMode("APPEND");
 
         service.applyAiCandidate(command);
@@ -657,8 +675,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> candidateApplied());
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
-        AiCandidateApplyContentCommand command =
-                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"old-ai-tag\"]}");
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_TAGS, "{\"tags\":[\"old-ai-tag\"]}");
         command.setTagApplyMode("APPEND");
 
         service.applyAiCandidate(command);
@@ -687,7 +705,11 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> candidateApplied());
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command = applyCommand(
-                11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"new-one\",\"new-two\"]}");
+                11L,
+                ClassicsContentType.SANCAI_ENTRY,
+                11L,
+                AI_CAPABILITY_CLASSICS_TAGS,
+                "{\"tags\":[\"new-one\",\"new-two\"]}");
         command.setTagApplyMode("COVER");
 
         service.applyAiCandidate(command);
@@ -732,8 +754,12 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 null,
                 mock(ClassicsPublicationWriteGuard.class));
 
-        service.applyAiCandidate(
-                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"ai-one\",\"ai-two\"]}"));
+        service.applyAiCandidate(applyCommand(
+                11L,
+                ClassicsContentType.SANCAI_ENTRY,
+                11L,
+                AI_CAPABILITY_CLASSICS_TAGS,
+                "{\"tags\":[\"ai-one\",\"ai-two\"]}"));
 
         verify(tagBindingSupport).removeTagRef(oldAiTag);
         verify(tagBindingSupport, times(2)).bindAiTag(any(ContentTagCommand.class), any());
@@ -758,7 +784,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     assertEquals(22L, request.getCandidateId());
                     assertEquals("WANGQI_DOCUMENT", request.getContentType());
                     assertEquals(22L, request.getContentId());
-                    assertEquals("summary", request.getCapability());
+                    assertEquals(AI_CAPABILITY_CLASSICS_SUMMARY, request.getCapability());
                     return pendingCandidate();
                 },
                 request -> {
@@ -775,7 +801,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 22L,
                 ClassicsContentType.WANGQI_DOCUMENT,
                 22L,
-                "summary",
+                AI_CAPABILITY_CLASSICS_SUMMARY,
                 "{\"summary\":\"ok-summary\",\"tags\":[\"t1\",\"t2\"],\"qaPairs\":[{\"question\":\"q1\",\"answer\":\"a1\"}]}");
 
         AiCandidateApplyContentResult result = service.applyAiCandidate(command);
@@ -794,7 +820,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     }
 
     @Test
-    void applyAiCandidateQaShouldOnlyReplaceAiQaPairsAndCreateAiAppliedVersion() {
+    void applyAiCandidateQaShouldAppendMissingQaPairsAndCreateAiAppliedVersion() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(11L));
@@ -807,7 +833,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     assertEquals(11L, request.getCandidateId());
                     assertEquals("SANCAI_ENTRY", request.getContentType());
                     assertEquals(11L, request.getContentId());
-                    assertEquals("qa", request.getCapability());
+                    assertEquals("CLASSICS_QA", request.getCapability());
                     return pendingCandidate();
                 },
                 request -> candidateApplied());
@@ -817,8 +843,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 11L,
                 ClassicsContentType.SANCAI_ENTRY,
                 11L,
-                "qa",
-                "{\"qaPairs\":[{\"question\":\"q1\",\"answer\":\"a\"},{\"question\":\"q2\",\"answer\":\"b\"},{\"question\":\"q1\",\"answer\":\"a\"}]}");
+                "CLASSICS_QA",
+                "{\"qaPairs\":[{\"question\":\"old-q\",\"answer\":\"old-a\"},{\"question\":\"q1\",\"answer\":\"a\"},{\"question\":\"q2\",\"answer\":\"b\"},{\"question\":\"q1\",\"answer\":\"a\"}]}");
 
         AiCandidateApplyContentResult result = service.applyAiCandidate(command);
 
@@ -826,16 +852,16 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(11L, result.getContentId());
         assertEquals(ClassicsContentChangeType.AI_APPLIED, repository.lastInsertedVersion.getChangeType());
         assertEquals("AI 应用：问答对", repository.lastInsertedVersion.getChangeSummary());
-        assertEquals(1, repository.deleteAiQaPairsCount);
+        assertEquals(0, repository.deleteAiQaPairsCount);
         assertEquals(2, repository.insertQaPairCount);
-        assertEquals(3, repository.qaPairs.size());
+        assertEquals(4, repository.qaPairs.size());
         assertEquals(
                 1,
                 repository.qaPairs.stream()
                         .filter(pair -> pair.getSource() == ClassicsContentSource.MANUAL)
                         .count());
         assertEquals(
-                2,
+                3,
                 repository.qaPairs.stream()
                         .filter(pair -> pair.getSource() == ClassicsContentSource.AI)
                         .count());
@@ -863,7 +889,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command =
-                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary", "new summary");
+                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_SUMMARY, "new summary");
 
         assertThrows(DomainException.class, () -> service.applyAiCandidate(command));
 
@@ -887,7 +913,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     if (request.getCandidateId().equals(11L)
                             || request.getCandidateId().equals(33L)) {
                         assertEquals("SANCAI_ENTRY", request.getContentType());
-                        assertEquals("summary", request.getCapability());
+                        assertEquals(AI_CAPABILITY_CLASSICS_SUMMARY, request.getCapability());
                         if (request.getCandidateId().equals(33L)) {
                             throw new DomainException(
                                     "AI-INVOCATION-409",
@@ -916,9 +942,20 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         try {
             ClassicsBatchOperationResult result =
                     service.applyAiCandidates(new AiCandidateBatchApplyContentCommand(List.of(
-                            applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary", "ok"),
-                            applyCommand(22L, ClassicsContentType.WANGQI_DOCUMENT, 22L, "summary", "ok"),
-                            applyCommand(33L, ClassicsContentType.SANCAI_ENTRY, 33L, "summary", "ok"))));
+                            applyCommand(
+                                    11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_SUMMARY, "ok"),
+                            applyCommand(
+                                    22L,
+                                    ClassicsContentType.WANGQI_DOCUMENT,
+                                    22L,
+                                    AI_CAPABILITY_CLASSICS_SUMMARY,
+                                    "ok"),
+                            applyCommand(
+                                    33L,
+                                    ClassicsContentType.SANCAI_ENTRY,
+                                    33L,
+                                    AI_CAPABILITY_CLASSICS_SUMMARY,
+                                    "ok"))));
 
             assertEquals(1, result.getSuccessCount());
             assertEquals(2, result.getFailureCount());
@@ -974,8 +1011,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         try {
             ClassicsBatchOperationResult result = service.rejectAiCandidates(new AiCandidateBatchRejectContentCommand(
                     List.of(
-                            rejectItem(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary"),
-                            rejectItem(12L, ClassicsContentType.SANCAI_ENTRY, 12L, "summary")),
+                            rejectItem(11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_SUMMARY),
+                            rejectItem(12L, ClassicsContentType.SANCAI_ENTRY, 12L, AI_CAPABILITY_CLASSICS_SUMMARY)),
                     null,
                     null));
 
@@ -1015,7 +1052,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         setPermissions(Set.of("classics:sancai:edit"));
         try {
             service.rejectAiCandidates(new AiCandidateBatchRejectContentCommand(
-                    List.of(rejectItem(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary")), null, null));
+                    List.of(rejectItem(11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_SUMMARY)),
+                    null,
+                    null));
             assertEquals(0, repository.insertVersionCount);
             assertEquals(0, repository.updateSancaiEntryAiCount);
         } finally {
@@ -1060,8 +1099,20 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         try {
             ClassicsBatchOperationResult result =
                     service.applyAiCandidates(new AiCandidateBatchApplyContentCommand(List.of(
-                            applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "text", 111L),
-                            applyCommand(22L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "text", 999L))));
+                            applyCommand(
+                                    11L,
+                                    ClassicsContentType.SANCAI_ENTRY,
+                                    11L,
+                                    AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE,
+                                    "text",
+                                    111L),
+                            applyCommand(
+                                    22L,
+                                    ClassicsContentType.SANCAI_ENTRY,
+                                    11L,
+                                    AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE,
+                                    "text",
+                                    999L))));
 
             assertEquals(1, result.getSuccessCount());
             assertEquals(1, result.getFailureCount());
@@ -1114,7 +1165,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 .candidateId(candidateId)
                 .contentType("SANCAI_ENTRY")
                 .contentId(candidateId)
-                .capability("summary")
+                .capability(AI_CAPABILITY_CLASSICS_SUMMARY)
                 .status("PENDING")
                 .build();
     }
@@ -1125,7 +1176,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 .contentType("SANCAI_ENTRY")
                 .contentId(11L)
                 .objectId(objectId)
-                .capability("image_analysis")
+                .capability(AI_CAPABILITY_CLASSICS_IMAGE_DESCRIBE)
                 .status("PENDING")
                 .build();
     }
