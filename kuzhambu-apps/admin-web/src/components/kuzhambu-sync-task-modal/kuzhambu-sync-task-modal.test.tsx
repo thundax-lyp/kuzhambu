@@ -137,6 +137,51 @@ describe("KuzhambuSyncTaskModal", () => {
         expect(onApply).toHaveBeenCalledWith("候选结果");
     });
 
+    it("renders business footer actions with modal state", async () => {
+        renderWithQueryClient(
+            <KuzhambuSyncTaskModal<DemoTask, string>
+                open
+                createText="启动"
+                testId="sync-task-modal-demo"
+                title="任务"
+                onCancel={vi.fn()}
+                workflow={{
+                    ...adapter,
+                    task: { id: "1", status: "SUCCEEDED" },
+                    createTask: vi.fn(),
+                    fetchResult: async () => "候选结果"
+                }}
+                renderBody={() => "任务内容"}
+                renderFooterActions={({ result }) => <button>{result || "等待结果"}</button>}
+            />
+        );
+
+        expect(await screen.findByRole("button", { name: "候选结果" })).toBeInTheDocument();
+    });
+
+    it("can hide the generic cancel action from modal state", async () => {
+        renderWithQueryClient(
+            <KuzhambuSyncTaskModal<DemoTask, string>
+                open
+                createText="启动"
+                testId="sync-task-modal-demo"
+                title="任务"
+                onCancel={vi.fn()}
+                workflow={{
+                    ...adapter,
+                    task: { id: "1", status: "SUCCEEDED" },
+                    createTask: vi.fn(),
+                    fetchResult: async () => "候选结果"
+                }}
+                hideCancel={({ result }) => Boolean(result)}
+                renderBody={({ result }) => result || "任务内容"}
+            />
+        );
+
+        expect(await screen.findByText("候选结果")).toBeInTheDocument();
+        expect(screen.queryByTestId("sync-task-modal-demo-cancel-button")).not.toBeInTheDocument();
+    });
+
     it("labels result loading failures separately from task status failures", async () => {
         renderWithQueryClient(
             <KuzhambuSyncTaskModal<DemoTask, string>
