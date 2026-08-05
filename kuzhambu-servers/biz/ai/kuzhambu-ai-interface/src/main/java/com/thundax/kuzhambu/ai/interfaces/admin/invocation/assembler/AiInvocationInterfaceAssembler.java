@@ -37,7 +37,7 @@ public final class AiInvocationInterfaceAssembler {
     public static AiBatchJobCreateCommand toCreateCommand(AiInvocationRequests.BatchCreateRequest request) {
         AiBatchJobCreateCommand command = new AiBatchJobCreateCommand();
         command.setScope(request.getScope());
-        command.setCapability(AiBusinessCapability.fromAlias(request.getCapability()));
+        command.setCapability(AiBusinessCapability.from(request.getCapability()));
         command.setContentRef(AiContentRef.ofNullable(request.getContentType(), null));
         command.setTotalCount(request.getTotalCount());
         command.setFailureSummaryJson(request.getFailureSummaryJson());

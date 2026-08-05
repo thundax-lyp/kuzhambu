@@ -96,7 +96,7 @@ class AiRefinementTaskControllerTest {
                 new FakeTaskApplicationService(), new NoOpBatchJobService(), DIRECT_EXECUTOR);
 
         AiRefinementRequests.RefinementRequest addRequest = new AiRefinementRequests.RefinementRequest();
-        addRequest.setCapability("summary");
+        addRequest.setCapability("CLASSICS_SUMMARY");
         addRequest.setScope("classics");
         addRequest.setContentType("SANCAI_ENTRY");
         addRequest.setContentId(101L);
@@ -248,7 +248,7 @@ class AiRefinementTaskControllerTest {
 
         @Override
         public AiRefinementTaskResult get(GetAiRefinementTaskQuery query) {
-            return task("SUCCEEDED", "summary", 9001L, 9002L);
+            return task("SUCCEEDED", "CLASSICS_SUMMARY", 9001L, 9002L);
         }
 
         @Override
@@ -270,14 +270,14 @@ class AiRefinementTaskControllerTest {
 
         @Override
         public AiRefinementTaskResult cancel(CancelAiRefinementTaskCommand command) {
-            return task("CANCELLED", "summary", null, null);
+            return task("CANCELLED", "CLASSICS_SUMMARY", null, null);
         }
 
         private AiRefinementTaskResult task(String status, String capability, Long callId, Long candidateId) {
             return new AiRefinementTaskResult(
                     new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(7001L),
                     "classics",
-                    com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias(capability),
+                    com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(capability),
                     com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
                             "SANCAI_ENTRY", 101L),
                     null,

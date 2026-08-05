@@ -78,6 +78,9 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class KnowledgeGraphExtractionApplicationServiceImpl implements KnowledgeGraphExtractionApplicationService {
 
+    private static final String CAPABILITY_KNOWLEDGE_RELATION_EXTRACT = "KNOWLEDGE_RELATION_EXTRACT";
+    private static final String CAPABILITY_KNOWLEDGE_GRAPH_EXTRACT = "KNOWLEDGE_GRAPH_EXTRACT";
+    private static final String CAPABILITY_KNOWLEDGE_LINEAGE_EXTRACT = "KNOWLEDGE_LINEAGE_EXTRACT";
     private static final String TASK_TYPE_RELATION = "RELATION";
     private static final String TASK_TYPE_GRAPH = "GRAPH";
     private static final String TASK_TYPE_LINEAGE = "LINEAGE";
@@ -1187,9 +1190,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     private String resolveCapability(String taskType) {
         return switch (taskType) {
-            case TASK_TYPE_RELATION -> "relation_extraction";
-            case TASK_TYPE_GRAPH -> "knowledge_graph";
-            case TASK_TYPE_LINEAGE -> "lineage_extraction";
+            case TASK_TYPE_RELATION -> CAPABILITY_KNOWLEDGE_RELATION_EXTRACT;
+            case TASK_TYPE_GRAPH -> CAPABILITY_KNOWLEDGE_GRAPH_EXTRACT;
+            case TASK_TYPE_LINEAGE -> CAPABILITY_KNOWLEDGE_LINEAGE_EXTRACT;
             default -> throw new BizException("Unsupported knowledge graph extraction task type: " + taskType);
         };
     }

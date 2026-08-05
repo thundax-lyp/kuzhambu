@@ -215,7 +215,7 @@ public class AiInvocationController {
     }
 
     private AiBusinessCapability toCapability(String value) {
-        return isBlank(value) ? null : AiBusinessCapability.fromAlias(value);
+        return isBlank(value) ? null : AiBusinessCapability.from(value);
     }
 
     private AiInvocationStatus toInvocationStatus(String value) {

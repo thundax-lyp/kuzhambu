@@ -215,6 +215,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         assertEquals(2, batchService.recordSuccessCalls);
         assertEquals(0, batchService.recordFailureCalls);
         assertEquals(2, batchService.lastResult.getSuccessCount());
+        assertEquals("KNOWLEDGE_RELATION_EXTRACT", batchService.lastResult.getCapability());
         assertEquals("RELATION", aiService.lastTaskType);
     }
 
@@ -295,7 +296,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         finishedChild.setStatus(GraphExtractionTaskStatus.SUCCEEDED);
         repository.tasks.add(finishedChild);
         FakeAiBatchJobApplicationService batchService = new FakeAiBatchJobApplicationService();
-        batchService.create(new AiBatchJobCreateCommand("{}", "relation_extraction", "SANCAI_ENTRY", null, 2, null));
+        batchService.create(
+                new AiBatchJobCreateCommand("{}", "KNOWLEDGE_RELATION_EXTRACT", "SANCAI_ENTRY", null, 2, null));
         batchService.recordSuccess(1001L);
         KnowledgeGraphExtractionApplicationServiceImpl service = service(
                 repository,
@@ -917,7 +919,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         aiInvocationRepository.candidate.setCandidateId(902L);
         aiInvocationRepository.candidate.setContentType("SANCAI_ENTRY");
         aiInvocationRepository.candidate.setContentId(1L);
-        aiInvocationRepository.candidate.setCapability("knowledge_graph");
+        aiInvocationRepository.candidate.setCapability("KNOWLEDGE_GRAPH_EXTRACT");
         aiInvocationRepository.candidate.setResultFormat("STRUCTURED");
         aiInvocationRepository.candidate.setResultPayload("{\"entities\":[],\"relations\":[],\"entryRefs\":[]}");
         FakeCandidateApplySupport candidateApplySupport = new FakeCandidateApplySupport();

@@ -207,7 +207,7 @@ public final class AiRefinementInterfaceAssembler {
     }
 
     private static AiBusinessCapability toCapability(String capability) {
-        return capability == null || capability.trim().isEmpty() ? null : AiBusinessCapability.fromAlias(capability);
+        return capability == null || capability.trim().isEmpty() ? null : AiBusinessCapability.from(capability);
     }
 
     private static AiBatchJobStatus toTaskStatus(String status) {

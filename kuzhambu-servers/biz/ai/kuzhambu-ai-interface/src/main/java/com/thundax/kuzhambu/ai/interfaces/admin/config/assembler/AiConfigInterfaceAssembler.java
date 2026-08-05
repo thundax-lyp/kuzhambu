@@ -164,7 +164,7 @@ public final class AiConfigInterfaceAssembler {
         }
         return AiConfigResponses.CapabilityResponse.builder()
                 .capability(capability.value())
-                .name(capability.displayName())
+                .name(capability.value())
                 .requiredTags(Collections.emptyList())
                 .requiredModelCapabilities(capability.requiredModelCapabilities().stream()
                         .map(AiModelCapability::value)

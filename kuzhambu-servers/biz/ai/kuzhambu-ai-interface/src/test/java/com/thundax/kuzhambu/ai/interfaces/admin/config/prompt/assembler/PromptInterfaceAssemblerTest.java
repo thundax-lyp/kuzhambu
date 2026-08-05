@@ -22,7 +22,7 @@ class PromptInterfaceAssemblerTest {
     void shouldConvertTemplateIdentityAndCapabilityToDomainTypes() {
         PromptRequests.TemplateSaveRequest request = new PromptRequests.TemplateSaveRequest();
         request.setId(1001L);
-        request.setCapability("classics_summary");
+        request.setCapability("CLASSICS_SUMMARY");
 
         PromptTemplateSaveCommand command = PromptInterfaceAssembler.toSaveCommand(request);
 
@@ -35,7 +35,7 @@ class PromptInterfaceAssemblerTest {
         PromptRequests.TemplateIdRequest idRequest = new PromptRequests.TemplateIdRequest();
         idRequest.setId(1001L);
         PromptRequests.TemplateQueryRequest queryRequest = new PromptRequests.TemplateQueryRequest();
-        queryRequest.setCapability("classics_summary");
+        queryRequest.setCapability("CLASSICS_SUMMARY");
         queryRequest.setEnabled(true);
         PromptRequests.VersionRollbackRequest rollbackRequest = new PromptRequests.VersionRollbackRequest();
         rollbackRequest.setId(1001L);

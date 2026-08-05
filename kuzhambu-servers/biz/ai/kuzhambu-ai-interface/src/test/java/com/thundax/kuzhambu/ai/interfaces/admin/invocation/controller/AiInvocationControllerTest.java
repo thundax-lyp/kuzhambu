@@ -140,7 +140,7 @@ class AiInvocationControllerTest {
         request.setContentType("ENTRY");
         request.setContentId(9001L);
         request.setObjectId(10001L);
-        request.setCapability("summary");
+        request.setCapability("CLASSICS_SUMMARY");
         request.setStatus("PENDING");
 
         assertTrue(controller.listCandidates(request).isEmpty());
@@ -180,7 +180,7 @@ class AiInvocationControllerTest {
 
         InvocationLogPageRequest request = new InvocationLogPageRequest();
         request.setScope("classics");
-        request.setCapability("summary");
+        request.setCapability("CLASSICS_SUMMARY");
         request.setContentType("ENTRY");
         request.setContentId(1001L);
         request.setStatus("FAILED");
@@ -222,7 +222,7 @@ class AiInvocationControllerTest {
 
         InvocationSummaryRequest request = new InvocationSummaryRequest();
         request.setScope("classics");
-        request.setCapability("summary");
+        request.setCapability("CLASSICS_SUMMARY");
         request.setServiceRole("PRIMARY");
         request.setPeriodStart(Instant.parse("2026-07-01T00:00:00Z"));
         request.setPeriodEnd(Instant.parse("2026-07-02T00:00:00Z"));
