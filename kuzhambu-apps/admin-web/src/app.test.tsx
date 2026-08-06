@@ -507,6 +507,7 @@ describe("App", () => {
             "kuzhambu.admin.permissions",
             JSON.stringify(["sys:dict:view", "sys:dict:edit"])
         );
+        replacePermissions(["sys:dict:view", "sys:dict:edit"]);
         vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
             const url = String(input);
             if (url.endsWith("/sys/dict/page")) {
