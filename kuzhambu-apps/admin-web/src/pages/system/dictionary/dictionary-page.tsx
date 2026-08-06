@@ -1,7 +1,7 @@
 import { BookOutlined, DeleteOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Input, Typography } from "antd";
-import { useMemo, useState } from "react";
+import { App, Empty, Input, Typography } from "antd";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -39,6 +39,8 @@ const DEFAULT_DICTIONARY_FILTERS: DictionaryFilters = {
     type: ""
 };
 
+const SEARCH_DEBOUNCE_MS = 250;
+
 const normalizeSearch = (value?: string | null) => {
     const normalizedValue = value?.trim();
     return normalizedValue || undefined;
@@ -48,7 +50,9 @@ export const DictionaryPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
+    const canViewDictionary = hasPermission("sys:dict:view") || hasPermission("sys:dict:edit");
     const canEditDictionary = hasPermission("sys:dict:edit");
+    const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [query, setQuery] = useState<DictPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
@@ -64,6 +68,7 @@ export const DictionaryPage = () => {
     const dictionaryPageQuery = useQuery({
         queryKey: ["dictionary", "page", query],
         queryFn: () => dictionaryService.page(query),
+        enabled: canViewDictionary,
         retry: false
     });
     const dictionaryPage = dictionaryPageQuery.data;
@@ -116,8 +121,25 @@ export const DictionaryPage = () => {
 
     const searchDictionaries = (value: string) => {
         setSearchText(value);
-        updateQuery({ label: normalizeSearch(value) });
+        if (searchTimerRef.current) {
+            clearTimeout(searchTimerRef.current);
+        }
+        searchTimerRef.current = setTimeout(() => {
+            updateQuery({ label: normalizeSearch(value) });
+        }, SEARCH_DEBOUNCE_MS);
     };
+
+    useEffect(() => {
+        return () => {
+            if (searchTimerRef.current) {
+                clearTimeout(searchTimerRef.current);
+            }
+        };
+    }, []);
+
+    if (!canViewDictionary) {
+        return <Empty description="缺少 sys:dict:view 权限" />;
+    }
 
     const applyFilters = () => {
         updateQuery({
@@ -281,7 +303,14 @@ export const DictionaryPage = () => {
                     <KuzhambuButton
                         testId="system-dictionary-dictionary-refresh-button"
                         icon={<ReloadOutlined />}
-                        onClick={() => dictionaryPageQuery.refetch()}
+                        loading={dictionaryPageQuery.isFetching}
+                        disabled={!canViewDictionary}
+                        onClick={() => {
+                            if (!canViewDictionary) {
+                                return;
+                            }
+                            void dictionaryPageQuery.refetch();
+                        }}
                     >
                         刷新
                     </KuzhambuButton>
