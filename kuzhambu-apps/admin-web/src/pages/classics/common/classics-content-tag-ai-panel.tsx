@@ -16,6 +16,7 @@ import {
 
 import * as aiCandidateService from "./ai-candidate-service";
 import * as contentService from "./classics-content-service";
+import { selectLatestTagCandidate } from "./classics-content-ai-candidate-selectors";
 import * as aiRefinementTaskService from "./ai-refinement-task-service";
 import type { AiCandidateRecord } from "./ai-candidate-types";
 import { AI_BUSINESS_CAPABILITY, type AiRefinementTaskRecord } from "./ai-refinement-task-types";
@@ -328,37 +329,6 @@ const renderTagTaskStatus = ({
             {resultAlert}
         </>
     ) : null;
-};
-
-const selectLatestTagCandidate = (
-    candidates: AiCandidateRecord[] | undefined,
-    trackedCandidateId?: string | null
-) => {
-    const normalizedTrackedCandidateId = String(trackedCandidateId ?? "").trim();
-    return [...(candidates || [])]
-        .filter(
-            (candidate) =>
-                candidate.status === "PENDING" &&
-                aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) ===
-                    "tags" &&
-                (!normalizedTrackedCandidateId ||
-                    String(candidate.candidateId) === normalizedTrackedCandidateId ||
-                    candidate.candidateIdText === normalizedTrackedCandidateId) &&
-                typeof candidate.resultPayload === "string" &&
-                candidate.resultPayload.trim().length > 0
-        )
-        .sort((left, right) =>
-            aiRefinementTaskService.sortNewestByRequestedAtThenId({
-                left: {
-                    id: left.candidateIdText || left.candidateId,
-                    requestedAt: left.requestedAt
-                },
-                right: {
-                    id: right.candidateIdText || right.candidateId,
-                    requestedAt: right.requestedAt
-                }
-            })
-        )[0];
 };
 
 export const ClassicsContentTagAiPanel = ({

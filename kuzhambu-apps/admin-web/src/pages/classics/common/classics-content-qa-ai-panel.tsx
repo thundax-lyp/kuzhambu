@@ -12,10 +12,11 @@ import {
     type KuzhambuSyncTaskAdapter,
     type KuzhambuSyncTaskModalState
 } from "@/components";
-import { isSameId, normalizeId } from "@/types/id";
+import { normalizeId } from "@/types/id";
 
 import * as aiCandidateService from "./ai-candidate-service";
 import type { AiCandidateRecord } from "./ai-candidate-types";
+import { selectLatestQaCandidate } from "./classics-content-ai-candidate-selectors";
 import * as aiRefinementTaskService from "./ai-refinement-task-service";
 import * as contentService from "./classics-content-service";
 import { AI_BUSINESS_CAPABILITY, type AiRefinementTaskRecord } from "./ai-refinement-task-types";
@@ -132,6 +133,10 @@ const isQaTaskCompleted = (task?: AiRefinementTaskRecord | null) => {
 const getTaskCandidateId = (task?: AiRefinementTaskRecord | null) =>
     task?.candidateIdText ?? task?.candidateId;
 
+const getCandidateStableId = (candidate: AiCandidateRecord) => {
+    return candidate.candidateIdText || normalizeId(candidate.candidateId);
+};
+
 const readTaskMessage = (task?: AiRefinementTaskRecord | null) => {
     if (!task) {
         return undefined;
@@ -143,37 +148,6 @@ const readTaskMessage = (task?: AiRefinementTaskRecord | null) => {
             task.errorMessage
         ) || undefined
     );
-};
-
-const selectLatestQaCandidate = (
-    candidates: AiCandidateRecord[] | undefined,
-    trackedCandidateId?: string | null
-) => {
-    const normalizedTrackedCandidateId = normalizeId(trackedCandidateId);
-    return [...(candidates || [])]
-        .filter(
-            (candidate) =>
-                candidate.status === "PENDING" &&
-                aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) ===
-                    "qa" &&
-                (!normalizedTrackedCandidateId ||
-                    isSameId(candidate.candidateId, normalizedTrackedCandidateId) ||
-                    isSameId(candidate.candidateIdText, normalizedTrackedCandidateId)) &&
-                typeof candidate.resultPayload === "string" &&
-                candidate.resultPayload.trim().length > 0
-        )
-        .sort((left, right) =>
-            aiRefinementTaskService.sortNewestByRequestedAtThenId({
-                left: {
-                    id: left.candidateIdText || left.candidateId,
-                    requestedAt: left.requestedAt
-                },
-                right: {
-                    id: right.candidateIdText || right.candidateId,
-                    requestedAt: right.requestedAt
-                }
-            })
-        )[0];
 };
 
 const qaTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
@@ -275,10 +249,6 @@ const renderQaTaskStatus = ({
 
 const defaultResultFormatForQa = (candidate?: AiCandidateRecord) => {
     return candidate?.resultFormat?.trim() || "STRUCTURED";
-};
-
-const getCandidateStableId = (candidate: AiCandidateRecord) => {
-    return candidate.candidateIdText || normalizeId(candidate.candidateId);
 };
 
 let candidateQaRowSequence = 0;
