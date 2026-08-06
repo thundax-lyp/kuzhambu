@@ -10,6 +10,7 @@ import { AuditLogPage } from "./pages/audit/audit-log/audit-log-page";
 import { StorageObjectPage } from "./pages/storage/storage-object/storage-object-page";
 import { DepartmentPage } from "./pages/system/department/department-page";
 import { DictionaryPage } from "./pages/system/dictionary/dictionary-page";
+import { MenuPage } from "./pages/system/menu/menu-page";
 import { UserPage } from "./pages/system/user/user-page";
 import { getCurrentUserInfo, listCurrentUserMenus } from "./service/current-user-service";
 
@@ -481,12 +482,54 @@ describe("App", () => {
         expect((await screen.findAllByText("总部")).length).toBeGreaterThan(0);
     }, 30000);
 
+    it("blocks department list page without view permission", async () => {
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.permissions", JSON.stringify([]));
+        replacePermissions([]);
+
+        vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+            const url = String(input);
+            return Promise.resolve(
+                new Response(JSON.stringify({ code: "COMMON-00004", message: `mocked ${url}` }), {
+                    headers: { "Content-Type": "application/json" },
+                    status: 404
+                })
+            );
+        });
+
+        renderWithQueryClientAndApp(<DepartmentPage />);
+
+        expect(await screen.findByText("缺少 sys:department:view 权限")).toBeInTheDocument();
+    }, 30000);
+
+    it("blocks menu page without super permission", async () => {
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.permissions", JSON.stringify(["sys:menu:view"]));
+        replacePermissions(["sys:menu:view"]);
+
+        vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+            const url = String(input);
+            return Promise.resolve(
+                new Response(JSON.stringify({ code: "COMMON-00004", message: `mocked ${url}` }), {
+                    headers: { "Content-Type": "application/json" },
+                    status: 404
+                })
+            );
+        });
+
+        renderWithQueryClientAndApp(<MenuPage />);
+
+        expect(await screen.findByText("缺少 super 权限")).toBeInTheDocument();
+        expect(globalThis.fetch).not.toHaveBeenCalled();
+    }, 30000);
+
     it("renders and filters the dictionary page", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
             "kuzhambu.admin.permissions",
             JSON.stringify(["sys:dict:view", "sys:dict:edit"])
         );
+        replacePermissions(["sys:dict:view", "sys:dict:edit"]);
         vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
             const url = String(input);
             if (url.endsWith("/sys/dict/page")) {

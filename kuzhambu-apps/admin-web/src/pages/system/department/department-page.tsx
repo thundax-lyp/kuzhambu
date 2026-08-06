@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Tag, Typography } from "antd";
+import { App, Empty, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -90,9 +90,11 @@ export const DepartmentPage = () => {
     const [departmentEditDrawerOpen, setDepartmentEditDrawerOpen] = useState(false);
     const [expandedRowKeys, setExpandedRowKeys] = useState<Key[] | null>(null);
     const canEditDepartment = hasPermission("sys:department:edit");
+    const canViewDepartment = hasPermission("sys:department:view") || canEditDepartment;
     const departmentTreeQuery = useQuery({
         queryKey: ["department", "list"],
         queryFn: () => service.listDepartments(),
+        enabled: canViewDepartment,
         retry: false
     });
     const departments = useMemo(() => departmentTreeQuery.data || [], [departmentTreeQuery.data]);
@@ -322,6 +324,10 @@ export const DepartmentPage = () => {
         }
     ];
 
+    if (!canViewDepartment) {
+        return <Empty description="缺少 sys:department:view 权限" />;
+    }
+
     return (
         <>
             <KuzhambuListPage<DepartmentTableNode>
@@ -333,8 +339,14 @@ export const DepartmentPage = () => {
                     <>
                         <KuzhambuButton
                             testId="system-department-department-refresh-button"
+                            disabled={!canViewDepartment}
                             icon={<ReloadOutlined />}
-                            onClick={() => departmentTreeQuery.refetch()}
+                            onClick={() => {
+                                if (!canViewDepartment) {
+                                    return;
+                                }
+                                void departmentTreeQuery.refetch();
+                            }}
                         >
                             刷新
                         </KuzhambuButton>
