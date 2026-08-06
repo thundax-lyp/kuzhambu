@@ -1,19 +1,13 @@
 import { ReloadOutlined } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
-import { App, Tooltip } from "antd";
-import dayjs from "dayjs";
-import type { Dayjs } from "dayjs";
-import { useEffect, useMemo, useState } from "react";
+import { useIsFetching, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Tooltip } from "antd";
+import { useMemo } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuPage, KuzhambuTabs, KuzhambuButton } from "@/components";
+import { KuzhambuAlert, KuzhambuButton, KuzhambuPage, KuzhambuTabs } from "@/components";
 
-import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { InvocationCallsTab } from "./invocation-calls-tab";
-import { InvocationDetailDrawer } from "./invocation-detail-drawer";
 import { InvocationSummaryTab } from "./invocation-summary-tab";
 import * as service from "./invocation-service";
-import type { AiInvocationLogPageQuery, AiInvocationSummaryQuery } from "./invocation-service";
-import type { AiInvocationLogRecord } from "./invocation-types";
 
 import "./invocation-page.css";
 
@@ -33,56 +27,14 @@ const CAPABILITY_LABELS: Record<string, string> = {
     PLATFORM_VERSION_SUMMARY: "版本摘要"
 };
 
-type InvocationDateRangeValue = [Dayjs | null, Dayjs | null] | null;
-
-type InvocationSummaryFilterValues = AiInvocationSummaryQuery & {
-    period?: InvocationDateRangeValue;
-};
-
-const buildSummaryQuery = (values: InvocationSummaryFilterValues): AiInvocationSummaryQuery => {
-    const range = {
-        start: values.period?.[0]?.toISOString() || null,
-        end: values.period?.[1]?.toISOString() || null
-    };
-    return {
-        periodStart: range.start,
-        periodEnd: range.end,
-        bucketType: values.bucketType || "DAY",
-        capability: values.capability || null
-    };
-};
-
 export const InvocationPage = () => {
-    const { message } = App.useApp();
+    const queryClient = useQueryClient();
     const canViewInvocation = hasPermission("ai:invocation:view");
-    const [detailInvocationLog, setDetailInvocationLog] = useState<AiInvocationLogRecord | null>(
-        null
-    );
-    const [summaryQuery, setSummaryQuery] = useState<AiInvocationSummaryQuery>(() =>
-        buildSummaryQuery({ period: [dayjs().subtract(7, "day"), dayjs()], bucketType: "DAY" })
-    );
-    const [invocationLogQuery, setInvocationLogQuery] = useState<AiInvocationLogPageQuery>({
-        pageNo: DEFAULT_PAGE_NO,
-        pageSize: DEFAULT_PAGE_SIZE
-    });
+    const invocationFetchingCount = useIsFetching({ queryKey: ["ai", "invocation"] });
 
     const invocationCapabilitiesQuery = useQuery({
         queryKey: ["ai", "invocation", "capabilities"],
         queryFn: service.listInvocationCapabilities,
-        enabled: canViewInvocation,
-        retry: false
-    });
-
-    const invocationSummaryQuery = useQuery({
-        queryKey: ["ai", "invocation", "summary", summaryQuery],
-        queryFn: () => service.getInvocationSummary(summaryQuery),
-        enabled: canViewInvocation,
-        retry: false
-    });
-
-    const invocationLogPageQuery = useQuery({
-        queryKey: ["ai", "invocation", "calls", invocationLogQuery],
-        queryFn: () => service.pageInvocationLogs(invocationLogQuery),
         enabled: canViewInvocation,
         retry: false
     });
@@ -112,26 +64,9 @@ export const InvocationPage = () => {
         return capabilityLabelMap[capability] || capability;
     };
 
-    useEffect(() => {
-        if (invocationSummaryQuery.isError) {
-            const error = invocationSummaryQuery.error;
-            message.error(error instanceof Error ? error.message : "调用统计加载失败");
-        }
-    }, [message, invocationSummaryQuery.error, invocationSummaryQuery.isError]);
-
-    useEffect(() => {
-        if (invocationLogPageQuery.isError) {
-            const error = invocationLogPageQuery.error;
-            message.error(error instanceof Error ? error.message : "调用记录加载失败");
-        }
-    }, [invocationLogPageQuery.error, invocationLogPageQuery.isError, message]);
-
-    const refreshSummary = (values: InvocationSummaryFilterValues) => {
-        setSummaryQuery(buildSummaryQuery(values));
+    const refreshInvocationPage = () => {
+        void queryClient.invalidateQueries({ queryKey: ["ai", "invocation"] });
     };
-
-    const summary = invocationSummaryQuery.data;
-    const invocationLogPage = invocationLogPageQuery.data;
 
     return (
         <>
@@ -144,18 +79,30 @@ export const InvocationPage = () => {
                         <KuzhambuButton
                             testId="ai-invocation-invocation-refresh-button"
                             icon={<ReloadOutlined />}
-                            loading={
-                                invocationSummaryQuery.isFetching ||
-                                invocationLogPageQuery.isFetching
-                            }
-                            onClick={() => {
-                                void invocationSummaryQuery.refetch();
-                                void invocationLogPageQuery.refetch();
-                            }}
+                            ariaLabel="刷新调用统计"
+                            loading={invocationFetchingCount > 0}
+                            onClick={refreshInvocationPage}
                         />
                     </Tooltip>
                 }
             >
+                {invocationCapabilitiesQuery.isError ? (
+                    <KuzhambuAlert
+                        showIcon
+                        type="warning"
+                        title="能力名称加载失败"
+                        description="能力筛选和调用记录将暂时显示能力编码。"
+                        action={
+                            <KuzhambuButton
+                                ariaLabel="重试加载能力名称"
+                                testId="ai-invocation-capabilities-retry-button"
+                                onClick={() => void invocationCapabilitiesQuery.refetch()}
+                            >
+                                重试
+                            </KuzhambuButton>
+                        }
+                    />
+                ) : null}
                 <KuzhambuTabs
                     testId="ai-invocation-invocation-tabs"
                     items={[
@@ -165,9 +112,8 @@ export const InvocationPage = () => {
                             children: (
                                 <InvocationSummaryTab
                                     capabilityOptions={capabilityOptions}
+                                    canViewInvocation={canViewInvocation}
                                     formatCapability={formatCapability}
-                                    summary={summary}
-                                    onRefreshSummary={refreshSummary}
                                 />
                             )
                         },
@@ -177,21 +123,13 @@ export const InvocationPage = () => {
                             children: (
                                 <InvocationCallsTab
                                     formatCapability={formatCapability}
-                                    invocationLogPage={invocationLogPage}
-                                    loading={invocationLogPageQuery.isFetching}
-                                    onOpenDetail={setDetailInvocationLog}
-                                    onSearchCalls={setInvocationLogQuery}
+                                    canViewInvocation={canViewInvocation}
                                 />
                             )
                         }
                     ]}
                 />
             </KuzhambuPage>
-            <InvocationDetailDrawer
-                call={detailInvocationLog}
-                open={Boolean(detailInvocationLog)}
-                onClose={() => setDetailInvocationLog(null)}
-            />
         </>
     );
 };

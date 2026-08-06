@@ -12,6 +12,7 @@ export interface AiBusinessConfigCapabilityRecord {
     capability: string;
     name: string;
     requiredTags: string[];
+    requiredModelCapabilities: string[];
     outputMode: string;
     enabled: boolean;
     priority: number;

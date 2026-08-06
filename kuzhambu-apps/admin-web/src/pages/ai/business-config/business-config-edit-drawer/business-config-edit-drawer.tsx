@@ -78,6 +78,8 @@ export const BusinessConfigEditDrawer = ({
     const [form] = Form.useForm<BusinessConfigFormValues>();
     const isEditingConfig = Boolean(config);
     const selectedCapability = Form.useWatch("capability", form);
+    const selectedPromptTemplateId = Form.useWatch("promptTemplateId", form);
+    const selectedModelId = Form.useWatch("modelId", form);
     const selectedCapabilityRecord = useMemo(() => {
         return capabilities.find((capability) => capability.capability === selectedCapability);
     }, [capabilities, selectedCapability]);
@@ -105,10 +107,12 @@ export const BusinessConfigEditDrawer = ({
     }, [capabilityNameByCode, prompts, selectedCapability]);
 
     const modelOptions = useMemo(() => {
-        const requiredTags = selectedCapabilityRecord?.requiredTags || [];
+        const requiredModelCapabilities = selectedCapabilityRecord?.requiredModelCapabilities || [];
         return models
             .filter((model) => {
-                const isCompatible = requiredTags.every((tag) => model.capabilities.includes(tag));
+                const isCompatible = requiredModelCapabilities.every((capability) =>
+                    model.capabilities.includes(capability)
+                );
                 return isCompatible || model.id === config?.modelId;
             })
             .map((model) => ({
@@ -116,6 +120,13 @@ export const BusinessConfigEditDrawer = ({
                 value: model.id
             }));
     }, [config?.modelId, models, selectedCapabilityRecord]);
+    const areCreateDefaultsReady =
+        isEditingConfig ||
+        Boolean(
+            selectedCapabilityRecord &&
+            promptOptions.some((option) => option.value === selectedPromptTemplateId) &&
+            modelOptions.some((option) => option.value === selectedModelId)
+        );
 
     useEffect(() => {
         if (!open) {
@@ -148,7 +159,7 @@ export const BusinessConfigEditDrawer = ({
     }, [capabilityOptions, config, form, open]);
 
     useEffect(() => {
-        if (!open || config) {
+        if (!open || config || !selectedCapability) {
             return;
         }
         const currentPromptId = form.getFieldValue("promptTemplateId");
@@ -156,10 +167,10 @@ export const BusinessConfigEditDrawer = ({
         if (!hasPromptOption) {
             form.setFieldValue("promptTemplateId", promptOptions[0]?.value);
         }
-    }, [config, form, open, promptOptions]);
+    }, [config, form, open, promptOptions, selectedCapability]);
 
     useEffect(() => {
-        if (!open || config) {
+        if (!open || config || !selectedCapabilityRecord) {
             return;
         }
         const currentModelId = form.getFieldValue("modelId");
@@ -167,7 +178,7 @@ export const BusinessConfigEditDrawer = ({
         if (!hasModelOption) {
             form.setFieldValue("modelId", modelOptions[0]?.value);
         }
-    }, [config, form, modelOptions, open]);
+    }, [config, form, modelOptions, open, selectedCapabilityRecord]);
 
     const submitBusinessConfig = async () => {
         const values = await form.validateFields();
@@ -199,7 +210,7 @@ export const BusinessConfigEditDrawer = ({
                     testId: "ai-business-config-business-config-save-button",
                     title: "保存",
                     type: "primary",
-                    disabled: !canEdit,
+                    disabled: !canEdit || !areCreateDefaultsReady,
                     loading: saving,
                     action: () => void submitBusinessConfig()
                 }

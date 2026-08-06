@@ -1,7 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import { Form, Input, Switch, TreeSelect } from "antd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { App, Form, Input, Switch, TreeSelect } from "antd";
 import type { TreeSelectProps } from "antd";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { sm2 } from "sm-crypto";
+import { createLoginForm } from "@/auth/auth-service";
 import type {
     UserDepartmentNode,
     UserRecord,
@@ -9,10 +11,13 @@ import type {
 } from "@/pages/system/user/user-types";
 import type { CurrentUserRecord } from "@/service/current-user-types";
 import type { OptionsRecord } from "@/types/options";
+import type { Page } from "@/types/page";
+import type { SaveCommand } from "@/pages/system/user/user-service";
 import type { UserFormValues } from "./user-edit-drawer-form-values";
 import { UserAvatarField } from "./user-avatar-field";
 import "./user-edit-drawer.css";
 import {
+    KuzhambuAlert,
     KuzhambuButton,
     KuzhambuDrawer,
     KuzhambuForm,
@@ -25,18 +30,49 @@ import * as service from "@/pages/system/user/user-service";
 
 interface UserEditDrawerProps {
     open?: boolean;
-    title: string;
-    saveText: string;
     user?: UserRecord | null;
     currentUser?: CurrentUserRecord | null;
     departments?: UserDepartmentNode[];
     rankOptions?: OptionsRecord[string];
-    saving?: boolean;
     onClose: () => void;
-    onSave?: (form: UserFormValues) => void;
-    onCreate?: (form: UserFormValues) => void;
-    onAvatarUpload?: (file: File) => Promise<unknown> | void;
 }
+
+const normalizeSearch = (value?: string | null) => {
+    const normalizedValue = value?.trim();
+    return normalizedValue || undefined;
+};
+
+const toSaveCommand = (user: UserRecord, form: UserFormValues): SaveCommand => ({
+    id: user.id,
+    remarks: user.remarks,
+    loginName: normalizeSearch(form.loginName),
+    ranks: form.ranks,
+    name: normalizeSearch(form.name),
+    email: normalizeSearch(form.email),
+    mobile: normalizeSearch(form.mobile),
+    admin: form.admin,
+    enable: form.enable,
+    department: form.departmentId ? { id: form.departmentId } : null,
+    roles: form.roleIds.map((roleId) => ({ id: roleId }))
+});
+
+const toCreateSaveCommand = (
+    form: UserFormValues,
+    encryptedPassword: string,
+    token: string
+): SaveCommand => ({
+    loginName: normalizeSearch(form.loginName),
+    loginPass: encryptedPassword,
+    token,
+    ranks: form.ranks,
+    name: normalizeSearch(form.name),
+    email: normalizeSearch(form.email),
+    mobile: normalizeSearch(form.mobile),
+    admin: form.admin,
+    enable: form.enable,
+    department: form.departmentId ? { id: form.departmentId } : null,
+    roles: form.roleIds.map((roleId) => ({ id: roleId }))
+});
 
 const readRoleIds = (roles?: UserRoleRecord[] | null) => {
     return (roles || []).map((role) => role.id);
@@ -157,21 +193,19 @@ const readFormResetKey = (
 
 export const UserEditDrawer = ({
     open,
-    title,
-    saveText,
     user,
     currentUser,
     departments = [],
     rankOptions = [],
-    saving,
-    onClose,
-    onSave,
-    onCreate,
-    onAvatarUpload
+    onClose
 }: UserEditDrawerProps) => {
+    const { message: messageApi } = App.useApp();
+    const queryClient = useQueryClient();
     const editing = Boolean(user?.id);
     const visible = Boolean(open);
     const creating = visible && !editing;
+    const [uploadedUser, setUploadedUser] = useState<UserRecord | null>(null);
+    const displayedUser = uploadedUser?.id === user?.id ? uploadedUser : user;
     const editableMaxRank = currentUser ? maxCreatableRank(currentUser) : (user?.ranks ?? 0);
     const editableRankOptions = useMemo(
         () => toEditableRankOptions(rankOptions, editableMaxRank),
@@ -216,31 +250,84 @@ export const UserEditDrawer = ({
         }));
     }, [roleById]);
     const departmentOptions = useMemo(() => departmentTreeOptions(departments), [departments]);
-    const saveForm = () => {
-        form.validateFields().then((values) => {
-            if (creating) {
-                onCreate?.(values);
-                return;
+    const invalidateUserPage = async () => {
+        await queryClient.invalidateQueries({ queryKey: ["user", "page"] });
+    };
+    const createMutation = useMutation({
+        mutationFn: async (values: UserFormValues) => {
+            const loginForm = await createLoginForm();
+            const encryptedPassword = sm2.doEncrypt(values.loginPass, loginForm.publicKey, 0);
+            return service.create(
+                toCreateSaveCommand(values, encryptedPassword, loginForm.loginToken)
+            );
+        },
+        onSuccess: async () => {
+            await invalidateUserPage();
+            messageApi.success("用户已新增");
+            onClose();
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "新增失败");
+        }
+    });
+    const updateMutation = useMutation({
+        mutationFn: ({
+            currentUser,
+            values
+        }: {
+            currentUser: UserRecord;
+            values: UserFormValues;
+        }) => service.changeInfo(toSaveCommand(currentUser, values)),
+        onSuccess: async () => {
+            await invalidateUserPage();
+            messageApi.success("用户已更新");
+            onClose();
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "更新失败");
+        }
+    });
+    const avatarUploadMutation = useMutation({
+        mutationFn: ({ id, avatar }: { id: string; avatar: File }) =>
+            service.uploadAvatar(id, avatar),
+        onSuccess: async (_, variables) => {
+            await queryClient.refetchQueries({ queryKey: ["user", "page"] });
+            const refreshedUser = queryClient
+                .getQueriesData<Page<UserRecord>>({
+                    queryKey: ["user", "page"],
+                    type: "active"
+                })
+                .flatMap(([, page]) => page?.records ?? [])
+                .find((record) => record.id === variables.id);
+            if (refreshedUser) {
+                setUploadedUser(refreshedUser);
             }
-            onSave?.(values);
-        });
+            messageApi.success("头像已更新");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "头像上传失败");
+        }
+    });
+    const saving = createMutation.isPending || updateMutation.isPending;
+    const saveForm = async () => {
+        const values = await form.validateFields();
+        if (creating) {
+            createMutation.mutate(values);
+            return;
+        }
+        if (user) {
+            updateMutation.mutate({ currentUser: user, values });
+        }
     };
 
     return (
         <KuzhambuDrawer
             testId="system-user-user-edit-drawer"
             className="user-edit-drawer"
-            title={title}
+            title={creating ? "新增用户" : "编辑用户"}
             open={visible}
             size="large"
             onClose={onClose}
-            extra={
-                creating ? null : (
-                    <KuzhambuButton testId="system-user-user-remove-button" size="small">
-                        −
-                    </KuzhambuButton>
-                )
-            }
             footerActions={[
                 {
                     testId: "system-user-user-cancel-button",
@@ -250,8 +337,9 @@ export const UserEditDrawer = ({
                 },
                 {
                     testId: "system-user-user-action-button",
-                    title: saveText,
+                    title: "保存",
                     type: "primary",
+                    disabled: userRoleQuery.isError,
                     loading: saving,
                     action: saveForm
                 }
@@ -263,21 +351,64 @@ export const UserEditDrawer = ({
                 component="div"
                 initialValues={initialValues}
             >
-                {!creating && user ? (
+                {userRoleQuery.isError ? (
+                    <KuzhambuAlert
+                        showIcon
+                        type="error"
+                        title="角色选项加载失败"
+                        description="无法确认可分配角色，请重试后再保存。"
+                        action={
+                            <KuzhambuButton
+                                ariaLabel="重试加载角色选项"
+                                testId="system-user-role-options-retry-button"
+                                onClick={() => void userRoleQuery.refetch()}
+                            >
+                                重试
+                            </KuzhambuButton>
+                        }
+                    />
+                ) : null}
+                {!creating && displayedUser ? (
                     <KuzhambuFormItem label="头像" layoutSize="large">
-                        <UserAvatarField user={user} onAvatarUpload={onAvatarUpload} />
+                        <UserAvatarField
+                            user={displayedUser}
+                            onAvatarUpload={(avatar) => {
+                                if (displayedUser.id) {
+                                    return avatarUploadMutation.mutateAsync({
+                                        id: displayedUser.id,
+                                        avatar
+                                    });
+                                }
+                                return undefined;
+                            }}
+                        />
                     </KuzhambuFormItem>
                 ) : null}
-                <KuzhambuFormItem name="loginName" label="登录名" layoutSize="middle">
+                <KuzhambuFormItem
+                    name="loginName"
+                    label="登录名"
+                    layoutSize="middle"
+                    rules={[{ required: true, whitespace: true, message: "请输入登录名" }]}
+                >
                     <Input placeholder="lin.zhiyuan" />
                 </KuzhambuFormItem>
                 {creating ? (
-                    <KuzhambuFormItem name="loginPass" label="登录密码" layoutSize="middle">
+                    <KuzhambuFormItem
+                        name="loginPass"
+                        label="登录密码"
+                        layoutSize="middle"
+                        rules={[{ required: true, message: "请输入登录密码" }]}
+                    >
                         <Input.Password placeholder="设置初始密码" />
                     </KuzhambuFormItem>
                 ) : null}
                 <KuzhambuFormPlaceholderItem layoutSize="large" />
-                <KuzhambuFormItem name="name" label="姓名" layoutSize="middle">
+                <KuzhambuFormItem
+                    name="name"
+                    label="姓名"
+                    layoutSize="middle"
+                    rules={[{ required: true, whitespace: true, message: "请输入姓名" }]}
+                >
                     <Input placeholder="用户姓名" />
                 </KuzhambuFormItem>
                 <KuzhambuFormPlaceholderItem layoutSize="large" />
@@ -287,7 +418,12 @@ export const UserEditDrawer = ({
                 <KuzhambuFormItem name="mobile" label="手机">
                     <Input placeholder="手机号" />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem name="departmentId" label="部门" layoutSize="middle">
+                <KuzhambuFormItem
+                    name="departmentId"
+                    label="部门"
+                    layoutSize="middle"
+                    rules={[{ required: true, message: "请选择部门" }]}
+                >
                     <TreeSelect
                         treeData={departmentOptions}
                         placeholder="选择部门"

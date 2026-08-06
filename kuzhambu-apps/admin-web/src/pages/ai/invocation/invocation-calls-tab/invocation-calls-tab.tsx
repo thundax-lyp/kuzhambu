@@ -1,21 +1,26 @@
-import { DatePicker, Table, Tag } from "antd";
+import { DatePicker, Tag } from "antd";
 import { Form } from "antd";
-import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
+import type { TablePaginationConfig } from "antd/es/table";
+import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 import { useState } from "react";
 import {
     KuzhambuButton,
+    KuzhambuAlert,
     KuzhambuCard,
     KuzhambuForm,
     KuzhambuFormItem,
     KuzhambuSelect,
-    KuzhambuSpace
+    KuzhambuSpace,
+    KuzhambuTable
 } from "@/components";
+import type { KuzhambuTableColumn } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/types/page";
-import type { Page } from "@/types/page";
 import type { AiInvocationLogPageQuery } from "@/pages/ai/invocation/invocation-service";
+import * as service from "@/pages/ai/invocation/invocation-service";
 import type { AiInvocationLogRecord } from "@/pages/ai/invocation/invocation-types";
+import { InvocationDetailDrawer } from "@/pages/ai/invocation/invocation-detail-drawer";
 
 import "./invocation-calls-tab.css";
 
@@ -84,25 +89,33 @@ const buildInvocationLogQuery = (
 };
 
 interface InvocationCallsTabProps {
+    canViewInvocation: boolean;
     formatCapability: (capability?: string | null) => string;
-    invocationLogPage?: Page<AiInvocationLogRecord>;
-    loading: boolean;
-    onOpenDetail: (record: AiInvocationLogRecord) => void;
-    onSearchCalls: (query: AiInvocationLogPageQuery) => void;
 }
 
 export const InvocationCallsTab = ({
-    formatCapability,
-    invocationLogPage,
-    loading,
-    onOpenDetail,
-    onSearchCalls
+    canViewInvocation,
+    formatCapability
 }: InvocationCallsTabProps) => {
     const [callsForm] = Form.useForm<InvocationLogFilterValues>();
     const [currentPageNo, setCurrentPageNo] = useState(DEFAULT_PAGE_NO);
     const [currentPageSize, setCurrentPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [detailInvocationLog, setDetailInvocationLog] = useState<AiInvocationLogRecord | null>(
+        null
+    );
+    const [invocationLogQuery, setInvocationLogQuery] = useState<AiInvocationLogPageQuery>({
+        pageNo: DEFAULT_PAGE_NO,
+        pageSize: DEFAULT_PAGE_SIZE
+    });
+    const invocationLogPageQuery = useQuery({
+        queryKey: ["ai", "invocation", "calls", invocationLogQuery],
+        queryFn: () => service.pageInvocationLogs(invocationLogQuery),
+        enabled: canViewInvocation,
+        retry: false
+    });
+    const invocationLogPage = invocationLogPageQuery.data;
 
-    const invocationLogColumns: ColumnsType<AiInvocationLogRecord> = [
+    const invocationLogColumns: KuzhambuTableColumn<AiInvocationLogRecord>[] = [
         {
             title: "能力",
             dataIndex: "capability",
@@ -119,7 +132,7 @@ export const InvocationCallsTab = ({
             title: "内容ID",
             dataIndex: "contentId",
             key: "contentId",
-            render: (value?: number | null) => value ?? "-"
+            render: (value?: string | null) => value || "-"
         },
         {
             title: "模型名称",
@@ -147,6 +160,18 @@ export const InvocationCallsTab = ({
             key: "requestedAt",
             className: "invocation-nowrap-column",
             render: formatDateTime
+        },
+        {
+            key: "actions",
+            options: (record) => [
+                {
+                    key: "view",
+                    text: "查看",
+                    ariaLabel: `查看调用 ${readCallId(record)} 详情`,
+                    testId: `ai-invocation-${readCallId(record)}-view-button`,
+                    onClick: setDetailInvocationLog
+                }
+            ]
         }
     ];
 
@@ -154,14 +179,14 @@ export const InvocationCallsTab = ({
         const values = await callsForm.validateFields();
         setCurrentPageNo(pageNo);
         setCurrentPageSize(pageSize);
-        onSearchCalls(buildInvocationLogQuery(values, pageNo, pageSize));
+        setInvocationLogQuery(buildInvocationLogQuery(values, pageNo, pageSize));
     };
 
     const resetCalls = () => {
         callsForm.resetFields();
         setCurrentPageNo(DEFAULT_PAGE_NO);
         setCurrentPageSize(DEFAULT_PAGE_SIZE);
-        onSearchCalls({ pageNo: DEFAULT_PAGE_NO, pageSize: DEFAULT_PAGE_SIZE });
+        setInvocationLogQuery({ pageNo: DEFAULT_PAGE_NO, pageSize: DEFAULT_PAGE_SIZE });
     };
 
     const handleTableChange = (pagination: TablePaginationConfig) => {
@@ -171,56 +196,84 @@ export const InvocationCallsTab = ({
     };
 
     return (
-        <KuzhambuCard className="invocation-section-card">
-            <KuzhambuForm className="invocation-calls-filter-form" form={callsForm}>
-                <KuzhambuFormItem label="状态" name="status" layoutSize="small">
-                    <KuzhambuSelect
-                        allowClear
-                        className="invocation-calls-filter-control"
-                        options={STATUS_OPTIONS}
-                    />
-                </KuzhambuFormItem>
-                <KuzhambuFormItem label="请求时间" name="requestedAt" layoutSize="middle">
-                    <RangePicker
-                        aria-label="请求时间"
-                        format={DATE_TIME_FORMAT}
-                        showTime
-                        style={{ width: "100%" }}
-                    />
-                </KuzhambuFormItem>
-            </KuzhambuForm>
-            <KuzhambuSpace>
-                <KuzhambuButton
-                    testId="ai-invocation-invocation-query-button"
-                    type="primary"
-                    onClick={() => void searchCalls()}
-                >
-                    查询
-                </KuzhambuButton>
-                <KuzhambuButton testId="ai-invocation-invocation-reset-button" onClick={resetCalls}>
-                    重置
-                </KuzhambuButton>
-            </KuzhambuSpace>
+        <>
+            <KuzhambuCard className="invocation-section-card">
+                <KuzhambuForm className="invocation-calls-filter-form" form={callsForm}>
+                    <KuzhambuFormItem label="状态" name="status" layoutSize="small">
+                        <KuzhambuSelect
+                            allowClear
+                            className="invocation-calls-filter-control"
+                            options={STATUS_OPTIONS}
+                        />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="请求时间" name="requestedAt" layoutSize="middle">
+                        <RangePicker
+                            aria-label="请求时间"
+                            format={DATE_TIME_FORMAT}
+                            showTime
+                            style={{ width: "100%" }}
+                        />
+                    </KuzhambuFormItem>
+                </KuzhambuForm>
+                <KuzhambuSpace>
+                    <KuzhambuButton
+                        testId="ai-invocation-invocation-query-button"
+                        type="primary"
+                        onClick={() => void searchCalls()}
+                    >
+                        查询
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        testId="ai-invocation-invocation-reset-button"
+                        onClick={resetCalls}
+                    >
+                        重置
+                    </KuzhambuButton>
+                </KuzhambuSpace>
 
-            <Table<AiInvocationLogRecord>
-                aria-label="AI 调用记录"
-                rowKey={readCallId}
-                className="invocation-table"
-                columns={invocationLogColumns}
-                dataSource={invocationLogPage?.records || []}
-                loading={loading}
-                pagination={{
-                    current: currentPageNo,
-                    pageSize: currentPageSize,
-                    pageSizeOptions: PAGE_SIZE_OPTIONS,
-                    showSizeChanger: true,
-                    total: invocationLogPage?.totalCount ?? invocationLogPage?.count ?? 0
-                }}
-                onRow={(record) => ({
-                    onClick: () => onOpenDetail(record)
-                })}
-                onChange={handleTableChange}
+                {invocationLogPageQuery.isError ? (
+                    <KuzhambuAlert
+                        showIcon
+                        type="error"
+                        title="调用记录加载失败"
+                        description={
+                            invocationLogPageQuery.error instanceof Error
+                                ? invocationLogPageQuery.error.message
+                                : "请稍后重试"
+                        }
+                        action={
+                            <KuzhambuButton
+                                ariaLabel="重试加载调用记录"
+                                testId="ai-invocation-calls-retry-button"
+                                onClick={() => void invocationLogPageQuery.refetch()}
+                            >
+                                重试
+                            </KuzhambuButton>
+                        }
+                    />
+                ) : null}
+                <KuzhambuTable<AiInvocationLogRecord>
+                    ariaLabel="AI 调用记录"
+                    rowKey={readCallId}
+                    className="invocation-table"
+                    columns={invocationLogColumns}
+                    dataSource={invocationLogPage?.records || []}
+                    loading={invocationLogPageQuery.isFetching}
+                    pagination={{
+                        current: currentPageNo,
+                        pageSize: currentPageSize,
+                        pageSizeOptions: PAGE_SIZE_OPTIONS,
+                        showSizeChanger: true,
+                        total: invocationLogPage?.totalCount ?? invocationLogPage?.count ?? 0
+                    }}
+                    onChange={handleTableChange}
+                />
+            </KuzhambuCard>
+            <InvocationDetailDrawer
+                call={detailInvocationLog}
+                open={Boolean(detailInvocationLog)}
+                onClose={() => setDetailInvocationLog(null)}
             />
-        </KuzhambuCard>
+        </>
     );
 };
