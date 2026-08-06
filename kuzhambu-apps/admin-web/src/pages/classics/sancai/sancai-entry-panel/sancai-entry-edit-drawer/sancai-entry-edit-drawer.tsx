@@ -1,4 +1,5 @@
 import { App, Empty } from "antd";
+import { EyeOutlined } from "@ant-design/icons";
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { KuzhambuSegmentedDrawer, KuzhambuButton } from "@/components";
@@ -181,6 +182,8 @@ export const SancaiEntryEditDrawer = ({
                 mode === "edit" ? (
                     <KuzhambuButton
                         testId="classics-sancai-sancai-entry-preview-sancai-entry-button"
+                        type="text"
+                        icon={<EyeOutlined />}
                         onClick={openPreviewWindow}
                     >
                         预览

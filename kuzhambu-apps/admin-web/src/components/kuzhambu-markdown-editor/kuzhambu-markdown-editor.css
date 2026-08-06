@@ -1,0 +1,62 @@
+.kuzhambu-markdown-editor {
+    display: grid;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--surface-panel);
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+}
+
+.kuzhambu-markdown-editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    padding: 8px;
+    background: var(--surface-soft);
+    border-bottom: 1px solid var(--line-subtle);
+}
+
+.kuzhambu-markdown-editor-toolbar-button {
+    min-width: 36px;
+}
+
+.kuzhambu-markdown-editor-toolbar .is-active {
+    color: var(--accent-blue) !important;
+    background: var(--accent-blue-soft) !important;
+    border-color: color-mix(in srgb, var(--accent-blue) 36%, var(--line-subtle)) !important;
+}
+
+.kuzhambu-markdown-editor-content {
+    min-height: inherit;
+    max-height: 560px;
+    padding: 14px 16px;
+    overflow-y: auto;
+    outline: none;
+    line-height: 1.65;
+}
+
+.kuzhambu-markdown-editor-content p,
+.kuzhambu-markdown-editor-content ul,
+.kuzhambu-markdown-editor-content ol,
+.kuzhambu-markdown-editor-content blockquote {
+    margin: 0 0 12px;
+}
+
+.kuzhambu-markdown-editor-content h2 {
+    margin: 18px 0 10px;
+    font-size: 18px;
+    line-height: 1.45;
+}
+
+.kuzhambu-markdown-editor-content ul,
+.kuzhambu-markdown-editor-content ol {
+    padding-inline-start: 24px;
+}
+
+.kuzhambu-markdown-editor-content blockquote {
+    padding: 6px 12px;
+    color: var(--text-secondary);
+    background: var(--surface-soft);
+    border-left: 3px solid var(--accent-blue);
+}

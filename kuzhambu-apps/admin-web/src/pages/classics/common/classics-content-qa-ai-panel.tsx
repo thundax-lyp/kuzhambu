@@ -2,7 +2,7 @@ import { CloseCircleOutlined, PlusOutlined, RobotOutlined } from "@ant-design/ic
 import { App, Empty, Typography } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     KuzhambuAlert,
     KuzhambuButton,
@@ -18,6 +18,7 @@ import { isSameId, normalizeId } from "@/types/id";
 import * as aiCandidateService from "./ai-candidate-service";
 import type { AiCandidateRecord } from "./ai-candidate-types";
 import * as aiRefinementTaskService from "./ai-refinement-task-service";
+import * as contentService from "./classics-content-service";
 import { AI_BUSINESS_CAPABILITY, type AiRefinementTaskRecord } from "./ai-refinement-task-types";
 import type { ClassicsContentType } from "./classics-content-types";
 
@@ -29,9 +30,15 @@ interface ClassicsContentQaAiPanelProps {
     contentType: ClassicsContentType;
     creatingTask?: boolean;
     onChanged?: () => void | Promise<void>;
-    onCreateTask?: () => void;
+    onCreateTask?: (existingQaPairs: ClassicsContentQaTaskPair[]) => void;
     onTaskChange?: (task: AiRefinementTaskRecord | null) => void;
     qaTasks?: AiRefinementTaskRecord[];
+    trackingTask?: AiRefinementTaskRecord | null;
+}
+
+export interface ClassicsContentQaTaskPair {
+    answer: string;
+    question: string;
 }
 
 const QA_TASK_POLL_INTERVAL_MS = 3000;
@@ -356,7 +363,8 @@ export const ClassicsContentQaAiPanel = ({
     onChanged,
     onCreateTask,
     onTaskChange,
-    qaTasks = []
+    qaTasks = [],
+    trackingTask
 }: ClassicsContentQaAiPanelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -365,8 +373,24 @@ export const ClassicsContentQaAiPanel = ({
     const [candidateSubmitEnabled, setCandidateSubmitEnabled] = useState<Record<string, boolean>>(
         {}
     );
+    const qaPairsQuery = useQuery({
+        queryKey: ["classics", "content", "qa-pairs", contentType, contentId],
+        queryFn: () => contentService.listQaPairs({ contentId, contentType }),
+        enabled: open && Boolean(contentId),
+        retry: false
+    });
+    const currentQaPairs = useMemo(
+        () =>
+            (Array.isArray(qaPairsQuery.data) ? qaPairsQuery.data : [])
+                .map((pair) => ({
+                    answer: pair.answer?.trim() || "",
+                    question: pair.question?.trim() || ""
+                }))
+                .filter((pair) => pair.question || pair.answer),
+        [qaPairsQuery.data]
+    );
 
-    const latestQaTask = useMemo(
+    const latestQaTaskFromList = useMemo(
         () =>
             [...qaTasks]
                 .filter(
@@ -377,6 +401,7 @@ export const ClassicsContentQaAiPanel = ({
                 .sort(sortRefinementTasksByNewest)[0] ?? null,
         [qaTasks]
     );
+    const latestQaTask = trackingTask || latestQaTaskFromList;
 
     const refresh = async () => {
         await Promise.all([
@@ -498,7 +523,7 @@ export const ClassicsContentQaAiPanel = ({
                 workflow={{
                     ...qaTaskAdapter,
                     task: latestQaTask,
-                    createTask: () => onCreateTask?.(),
+                    createTask: () => onCreateTask?.(currentQaPairs),
                     fetchResult: loadQaCandidate,
                     fetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId }),
                     onTaskChange,

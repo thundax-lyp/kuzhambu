@@ -30,9 +30,10 @@ interface ClassicsContentTagAiPanelProps {
     contentType: ClassicsContentType;
     creatingTask?: boolean;
     onChanged?: () => void | Promise<void>;
-    onCreateTask?: () => void;
+    onCreateTask?: (existingTags: string[]) => void;
     onTaskChange?: (task: AiRefinementTaskRecord | null) => void;
     tagTasks?: AiRefinementTaskRecord[];
+    trackingTask?: AiRefinementTaskRecord | null;
 }
 
 const TAG_TASK_POLL_INTERVAL_MS = 3000;
@@ -269,7 +270,8 @@ export const ClassicsContentTagAiPanel = ({
     onChanged,
     onCreateTask,
     onTaskChange,
-    tagTasks = []
+    tagTasks = [],
+    trackingTask
 }: ClassicsContentTagAiPanelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -284,14 +286,17 @@ export const ClassicsContentTagAiPanel = ({
     });
 
     const tags = useMemo(
-        () => (tagsQuery.data || []).filter((tag) => (tag.status || "ACTIVE") !== "REMOVED"),
+        () =>
+            (Array.isArray(tagsQuery.data) ? tagsQuery.data : []).filter(
+                (tag) => (tag.status || "ACTIVE") !== "REMOVED"
+            ),
         [tagsQuery.data]
     );
     const currentTagNames = useMemo(
         () => uniqueTagNames(tags.map((tag) => tag.tagNameSnapshot)),
         [tags]
     );
-    const latestTagTask = useMemo(
+    const latestTagTaskFromList = useMemo(
         () =>
             [...tagTasks]
                 .filter(
@@ -302,6 +307,7 @@ export const ClassicsContentTagAiPanel = ({
                 .sort(sortRefinementTasksByNewest)[0] ?? null,
         [tagTasks]
     );
+    const latestTagTask = trackingTask || latestTagTaskFromList;
 
     const refresh = async () => {
         await Promise.all([
@@ -436,12 +442,12 @@ export const ClassicsContentTagAiPanel = ({
                 createText="生成候选标签"
                 createDisabled={!canCreateTask || !canViewCandidate}
                 creating={creatingTask}
-                hideCancel={({ result }) => Boolean(result)}
+                hideCancel={() => true}
                 onCancel={() => setOpen(false)}
                 workflow={{
                     ...tagTaskAdapter,
                     task: latestTagTask,
-                    createTask: () => onCreateTask?.(),
+                    createTask: () => onCreateTask?.(currentTagNames),
                     fetchResult: loadTagCandidate,
                     fetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId }),
                     onTaskChange,

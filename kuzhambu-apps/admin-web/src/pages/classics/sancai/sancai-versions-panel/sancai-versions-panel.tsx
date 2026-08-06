@@ -5,7 +5,8 @@ import {
     KuzhambuListMeta,
     KuzhambuSpace,
     KuzhambuButton,
-    KuzhambuAlert
+    KuzhambuAlert,
+    KuzhambuTextCompare
 } from "@/components";
 
 import type {
@@ -21,12 +22,12 @@ const { Text } = Typography;
 const compareFields: Array<{
     key: keyof SancaiVersionSnapshot;
     label: string;
+    textDiff?: boolean;
 }> = [
-    { key: "volumeId", label: "卷目 ID" },
     { key: "title", label: "标题" },
-    { key: "originalText", label: "原文" },
-    { key: "translationText", label: "译文" },
-    { key: "summary", label: "摘要" },
+    { key: "originalText", label: "原文", textDiff: true },
+    { key: "translationText", label: "译文", textDiff: true },
+    { key: "summary", label: "摘要", textDiff: true },
     { key: "lifecycleStatus", label: "生命周期" },
     { key: "translationStatus", label: "翻译状态" },
     { key: "imageStatus", label: "配图状态" },
@@ -184,12 +185,26 @@ export const SancaiVersionsPanel = ({
                                                 label={field.label}
                                                 className={changed ? "is-changed" : undefined}
                                             >
-                                                <KuzhambuSpace orientation="vertical" size={2}>
-                                                    <Text>当前：{formatValue(currentValue)}</Text>
-                                                    <Text type={changed ? "warning" : "secondary"}>
-                                                        历史：{formatValue(historyValue)}
-                                                    </Text>
-                                                </KuzhambuSpace>
+                                                {field.textDiff ? (
+                                                    <KuzhambuTextCompare
+                                                        baseline={formatValue(historyValue)}
+                                                        candidate={formatValue(currentValue)}
+                                                        emptyText="历史版本与当前内容一致"
+                                                        testId={`classics-sancai-version-${field.key}-compare`}
+                                                        title={`${field.label}差异（历史 → 当前）`}
+                                                    />
+                                                ) : (
+                                                    <KuzhambuSpace orientation="vertical" size={2}>
+                                                        <Text>
+                                                            当前：{formatValue(currentValue)}
+                                                        </Text>
+                                                        <Text
+                                                            type={changed ? "warning" : "secondary"}
+                                                        >
+                                                            历史：{formatValue(historyValue)}
+                                                        </Text>
+                                                    </KuzhambuSpace>
+                                                )}
                                             </Descriptions.Item>
                                         );
                                     })}
@@ -202,15 +217,17 @@ export const SancaiVersionsPanel = ({
                                 />
                             )}
                             {!readOnly ? (
-                                <KuzhambuButton
-                                    testId="classics-sancai-sancai-version-history-action-button-2"
-                                    danger
-                                    loading={resetting}
-                                    disabled={!snapshot}
-                                    onClick={() => onResetVersion(selectedVersion)}
-                                >
-                                    恢复此版本
-                                </KuzhambuButton>
+                                <div className="sancai-version-history-detail-actions">
+                                    <KuzhambuButton
+                                        testId="classics-sancai-sancai-version-history-action-button-2"
+                                        danger
+                                        loading={resetting}
+                                        disabled={!snapshot}
+                                        onClick={() => onResetVersion(selectedVersion)}
+                                    >
+                                        恢复此版本
+                                    </KuzhambuButton>
+                                </div>
                             ) : null}
                         </KuzhambuSpace>
                     ) : (
