@@ -80,10 +80,10 @@ export const QaSessionTable = ({
         }
     });
     const page = sessionsQuery.data;
-    const sessions = page?.items ?? page?.records ?? [];
-    const totalCount = page?.total ?? 0;
+    const sessions = page?.records ?? [];
+    const totalPage = page?.totalPage ?? 0;
     const hasPreviousPage = pageNo > 1;
-    const hasNextPage = pageNo * DEFAULT_PAGE_SIZE < totalCount;
+    const hasNextPage = pageNo < totalPage;
 
     const confirmDeleteSession = (session: DiscoveryQaSessionRecord, sessionId: string) => {
         if (ownerUserId === null) {

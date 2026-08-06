@@ -59,10 +59,11 @@ const mocks = vi.hoisted(() => ({
     pageQaSessions: vi.fn(async (query?: { pageNo?: number }) => {
         void query;
         return {
-            items: [] as Array<{ id: string; openedAt: number; title: string }>,
+            count: 0,
             pageNo: 1,
             pageSize: 20,
-            total: 0
+            records: [] as Array<{ id: string; openedAt: number; title: string }>,
+            totalPage: 0
         };
     })
 }));
@@ -203,16 +204,17 @@ describe("QaPage", () => {
 
     it("renders messages from an existing session detail", async () => {
         mocks.pageQaSessions.mockResolvedValueOnce({
-            items: [
+            count: 1,
+            pageNo: 1,
+            pageSize: 20,
+            records: [
                 {
                     id: "7001",
                     openedAt: 1700000000000,
                     title: "既有对话"
                 }
             ],
-            pageNo: 1,
-            pageSize: 20,
-            total: 1
+            totalPage: 1
         });
         mocks.getQaSession.mockResolvedValueOnce({
             messages: [
@@ -277,16 +279,17 @@ describe("QaPage", () => {
 
     it("deletes a conversation from the session list", async () => {
         mocks.pageQaSessions.mockResolvedValueOnce({
-            items: [
+            count: 1,
+            pageNo: 1,
+            pageSize: 20,
+            records: [
                 {
                     id: "7001",
                     openedAt: 1700000000000,
                     title: "礼学和礼制有什么关系？"
                 }
             ],
-            pageNo: 1,
-            pageSize: 20,
-            total: 1
+            totalPage: 1
         });
         const user = userEvent.setup();
         renderPage();
@@ -344,13 +347,14 @@ describe("QaPage", () => {
 
     it("loads later session pages from the sidebar", async () => {
         mocks.pageQaSessions.mockImplementation(async ({ pageNo } = {}) => ({
-            items:
+            count: 21,
+            pageNo: pageNo ?? 1,
+            pageSize: 20,
+            records:
                 pageNo === 2
                     ? [{ id: "7021", openedAt: 1700000000000, title: "更早的对话" }]
                     : [{ id: "7001", openedAt: 1700000000000, title: "最近的对话" }],
-            pageNo: pageNo ?? 1,
-            pageSize: 20,
-            total: 21
+            totalPage: 2
         }));
         const user = userEvent.setup();
         renderPage();
