@@ -14,6 +14,7 @@ import type {
     SancaiEntryRecord,
     SancaiVersionSnapshot
 } from "@/pages/classics/sancai/sancai-types";
+import { isSameId } from "@/types/id";
 
 import "./sancai-versions-panel.css";
 
@@ -24,6 +25,7 @@ const compareFields: Array<{
     label: string;
     textDiff?: boolean;
 }> = [
+    { key: "volumeId", label: "卷目" },
     { key: "title", label: "标题" },
     { key: "originalText", label: "原文", textDiff: true },
     { key: "translationText", label: "译文", textDiff: true },
@@ -74,6 +76,25 @@ const formatValue = (value: unknown) => {
     return String(value);
 };
 
+interface SancaiVersionVolumeOption {
+    label: string;
+    value: string;
+}
+
+const formatFieldValue = (
+    key: keyof SancaiVersionSnapshot,
+    value: unknown,
+    volumeOptions: SancaiVersionVolumeOption[]
+) => {
+    if (key !== "volumeId" || value === null || value === undefined || value === "") {
+        return formatValue(value);
+    }
+    const volumeId = String(value);
+    return (
+        volumeOptions.find((option) => isSameId(option.value, volumeId))?.label || `卷 ${volumeId}`
+    );
+};
+
 interface SancaiVersionsPanelProps {
     currentEntry?: SancaiEntryRecord | null;
     detailLoading?: boolean;
@@ -81,6 +102,7 @@ interface SancaiVersionsPanelProps {
     resetting?: boolean;
     readOnly?: boolean;
     selectedVersion?: SancaiContentVersionRecord | null;
+    volumeOptions?: SancaiVersionVolumeOption[];
     versions: SancaiContentVersionRecord[];
     onResetVersion: (version: SancaiContentVersionRecord) => void;
     onSelectVersion: (version: SancaiContentVersionRecord) => void;
@@ -93,6 +115,7 @@ export const SancaiVersionsPanel = ({
     resetting = false,
     readOnly = false,
     selectedVersion,
+    volumeOptions = [],
     versions,
     onResetVersion,
     onSelectVersion
@@ -177,8 +200,17 @@ export const SancaiVersionsPanel = ({
                                             field.key
                                         );
                                         const historyValue = snapshot[field.key];
-                                        const changed =
-                                            formatValue(currentValue) !== formatValue(historyValue);
+                                        const currentDisplayValue = formatFieldValue(
+                                            field.key,
+                                            currentValue,
+                                            volumeOptions
+                                        );
+                                        const historyDisplayValue = formatFieldValue(
+                                            field.key,
+                                            historyValue,
+                                            volumeOptions
+                                        );
+                                        const changed = currentDisplayValue !== historyDisplayValue;
                                         return (
                                             <Descriptions.Item
                                                 key={field.key}
@@ -187,21 +219,19 @@ export const SancaiVersionsPanel = ({
                                             >
                                                 {field.textDiff ? (
                                                     <KuzhambuTextCompare
-                                                        baseline={formatValue(historyValue)}
-                                                        candidate={formatValue(currentValue)}
+                                                        baseline={historyDisplayValue}
+                                                        candidate={currentDisplayValue}
                                                         emptyText="历史版本与当前内容一致"
                                                         testId={`classics-sancai-version-${field.key}-compare`}
                                                         title={`${field.label}差异（历史 → 当前）`}
                                                     />
                                                 ) : (
                                                     <KuzhambuSpace orientation="vertical" size={2}>
-                                                        <Text>
-                                                            当前：{formatValue(currentValue)}
-                                                        </Text>
+                                                        <Text>当前：{currentDisplayValue}</Text>
                                                         <Text
                                                             type={changed ? "warning" : "secondary"}
                                                         >
-                                                            历史：{formatValue(historyValue)}
+                                                            历史：{historyDisplayValue}
                                                         </Text>
                                                     </KuzhambuSpace>
                                                 )}

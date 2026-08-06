@@ -14,6 +14,7 @@ interface SancaiEntryVersionSectionProps {
     currentEntry: SancaiEntryRecord | undefined;
     isCreating: boolean;
     readOnly?: boolean;
+    volumeOptions?: Array<{ label: string; value: string }>;
     onChanged: () => void | Promise<void>;
 }
 
@@ -21,6 +22,7 @@ export const SancaiEntryVersionSection = ({
     currentEntry,
     isCreating,
     readOnly = false,
+    volumeOptions = [],
     onChanged
 }: SancaiEntryVersionSectionProps) => {
     const { message: messageApi, modal: modalApi } = App.useApp();
@@ -93,6 +95,7 @@ export const SancaiEntryVersionSection = ({
             resetting={resetVersionMutation.isPending}
             readOnly={readOnly}
             selectedVersion={selectedVersion}
+            volumeOptions={volumeOptions}
             versions={versions}
             onSelectVersion={(version) =>
                 setSelectedVersionKey({

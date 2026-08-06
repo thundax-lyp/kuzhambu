@@ -75,6 +75,22 @@ export const SancaiEntryEditDrawer = ({
     );
     const categoryTitle = selectedEntryCategory?.label?.trim() || "未归类";
     const volumeTitle = selectedEntryVolume?.title?.trim() || "未选择卷目";
+    const versionVolumeOptions = useMemo(
+        () =>
+            volumes.map((volume) => {
+                const category = categoryOptions.find((option) =>
+                    isSameId(option.value, volume.categoryId)
+                );
+                const volumeLabel = volume.title?.trim() || `卷 ${volume.id}`;
+                return {
+                    label: category?.label?.trim()
+                        ? `${category.label.trim()} / ${volumeLabel}`
+                        : volumeLabel,
+                    value: volume.id
+                };
+            }),
+        [categoryOptions, volumes]
+    );
 
     const submitForm = () => {
         if (!entryDraft.volumeId) {
@@ -160,6 +176,7 @@ export const SancaiEntryEditDrawer = ({
                     currentEntry={entry}
                     isCreating={mode === "create"}
                     readOnly={readOnly}
+                    volumeOptions={versionVolumeOptions}
                     onChanged={onEntryChanged}
                 />
             ) : (
