@@ -72,7 +72,7 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         ({ left, right }: { left: { id: string }; right: { id: string } }) =>
             right.id.localeCompare(left.id)
     ),
-    pageTasks: vi.fn(() => Promise.resolve({ items: [], totalCount: 0, pageNo: 1, pageSize: 10 })),
+    pageTasks: vi.fn(() => Promise.resolve({ items: [], total: 0, pageNo: 1, pageSize: 10 })),
     cancelTask: vi.fn(),
     getNormalizedTaskCapability: vi.fn((capability: string) => {
         const aliases: Record<string, string> = {
@@ -438,7 +438,7 @@ describe("MingCustomPage", () => {
             Promise.resolve(createMockRefinementTask())
         );
         vi.mocked(aiRefinementTaskService.pageTasks).mockImplementation(() =>
-            Promise.resolve({ items: [], totalCount: 0, pageNo: 1, pageSize: 10 })
+            Promise.resolve({ items: [], total: 0, pageNo: 1, pageSize: 10 })
         );
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
@@ -734,7 +734,7 @@ describe("MingCustomPage", () => {
         });
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValue(submittedSummaryTask);
         vi.mocked(aiRefinementTaskService.pageTasks)
-            .mockResolvedValueOnce({ items: [], totalCount: 0, pageNo: 1, pageSize: 10 })
+            .mockResolvedValueOnce({ items: [], total: 0, pageNo: 1, pageSize: 10 })
             .mockResolvedValue({
                 items: [
                     {
@@ -750,7 +750,7 @@ describe("MingCustomPage", () => {
                     },
                     submittedSummaryTask
                 ],
-                totalCount: 2,
+                total: 2,
                 pageNo: 1,
                 pageSize: 10
             });
@@ -823,7 +823,7 @@ describe("MingCustomPage", () => {
         summaryCandidateRecords = [];
         vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValue({
             items: [],
-            totalCount: 0,
+            total: 0,
             pageNo: 1,
             pageSize: 10
         });
