@@ -342,6 +342,53 @@ describe("QaPage", () => {
         expect(streamSignal?.aborted).toBe(true);
     });
 
+    it("settles an aborted stream before returning to the previous session", async () => {
+        mocks.pageQaSessions.mockResolvedValueOnce({
+            count: 2,
+            pageNo: 1,
+            pageSize: 20,
+            records: [
+                {
+                    id: "7001",
+                    openedAt: 1700000000000,
+                    title: "第一会话"
+                },
+                {
+                    id: "7002",
+                    openedAt: 1700000100000,
+                    title: "第二会话"
+                }
+            ],
+            totalPage: 1
+        });
+        mocks.getQaSession.mockImplementation(async ({ sessionId }) => ({
+            messages: [],
+            id: sessionId,
+            openedAt: 1700000000000,
+            title: sessionId === "7001" ? "第一会话" : "第二会话"
+        }));
+        mocks.createQaChatCompletionStream.mockImplementationOnce(({ signal }) => {
+            return new Promise((_resolve, reject) => {
+                signal?.addEventListener("abort", () =>
+                    reject(new DOMException("Aborted", "AbortError"))
+                );
+            });
+        });
+        const user = userEvent.setup();
+        renderPage();
+
+        await user.click(await screen.findByRole("button", { name: "第一会话" }));
+        await user.type(screen.getByLabelText("问题"), "持续生成回答");
+        await user.click(screen.getByRole("button", { name: "发送问题" }));
+        expect(await screen.findByText("持续生成回答")).toBeInTheDocument();
+
+        await user.click(await screen.findByRole("button", { name: "第二会话" }));
+        await user.click(await screen.findByRole("button", { name: "第一会话" }));
+
+        expect(await screen.findByText("回答已取消。")).toBeInTheDocument();
+        expect(screen.queryByText("正在检索知识库...")).not.toBeInTheDocument();
+    });
+
     it("ignores url context filters and keeps full-library qa", async () => {
         renderPage(
             "/discovery/qa?contextContentType=WANGQI_DOCUMENT&contextContentId=3001&contextMode=SINGLE_DOCUMENT&title=%E7%8E%8B%E5%9C%BB%E5%AE%98%E5%88%B6"

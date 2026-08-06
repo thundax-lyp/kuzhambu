@@ -15,6 +15,7 @@ import "./qa-page.css";
 const FIXED_MODEL = "kuzhambu-qa";
 const FULL_LIBRARY_CONTEXT_MODE = "GENERAL";
 const FULL_LIBRARY_SESSION_TITLE = "新对话";
+const STREAM_CANCELLED_MESSAGE = "回答已取消。";
 const SESSION_TITLE_MAX_LENGTH = 24;
 interface QaFormState {
     question: string;
@@ -230,6 +231,7 @@ export const QaPage = () => {
         setOperationMessage(null);
         let nextSessionId: string | null = null;
         let assistantMessageId: string | null = null;
+        let streamedAnswer = "";
         try {
             nextSessionId = await ensureSessionId(question);
             const activeSessionId = nextSessionId;
@@ -259,7 +261,6 @@ export const QaPage = () => {
             );
             updateField("question", "");
 
-            let streamedAnswer = "";
             const response = await chatCompletionMutation.mutateAsync({
                 command: {
                     messages: [{ content: question, role: "user" }],
@@ -298,6 +299,14 @@ export const QaPage = () => {
             });
         } catch (error) {
             if (streamAbortController.signal.aborted) {
+                if (nextSessionId !== null && assistantMessageId !== null) {
+                    updateMessage(nextSessionId, assistantMessageId, {
+                        content: streamedAnswer
+                            ? `${streamedAnswer}\n\n${STREAM_CANCELLED_MESSAGE}`
+                            : STREAM_CANCELLED_MESSAGE,
+                        status: "failed"
+                    });
+                }
                 return;
             }
             const message = error instanceof Error ? error.message : "回答生成失败";
