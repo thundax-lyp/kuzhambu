@@ -33,6 +33,7 @@ description: Kuzhambu strict current-branch PR code review workflow for direct s
 ```sh
 git status
 git diff --stat main...HEAD
+git diff --name-status main...HEAD
 git diff main...HEAD
 ```
 
@@ -41,7 +42,7 @@ git diff main...HEAD
 - 如果用户明确要求审查工作区变更，再额外读取相关 `git diff` / 文件内容。
 - 如果用户只要求审查“本分支”或 PR，默认只审 `main...HEAD`，并在 summary 中简短说明工作区还有未提交/未跟踪内容未纳入审查。
 
-如果 `git diff main...HEAD` 为空，仍输出 `No actionable findings.`，并在 summary 中说明当前分支相对 `main` 无已提交代码差异。
+如果 `git diff main...HEAD` 为空，把 changed-file 总数和 ledger 总数都记为 0、contract surfaces 记为 none、coverage 记为 complete，再输出 `No actionable findings.`，并在 summary 中说明当前分支相对 `main` 无已提交代码差异。
 
 ## 上下文加载
 
@@ -65,13 +66,13 @@ git diff main...HEAD
 
 本 skill 的主流程固定为 7 步，顺序不要跳：
 
-1. **理解 PR 目标**：明确本 PR 想完成什么，哪些运行时语义可能被改动。
+1. **解析 diff 并建立文件基线**：记录当前 `HEAD`，从 `git diff --name-status main...HEAD` 取得完整文件集并按模块归类。
 2. **识别系统承诺**：把 diff 转换成被改变的用户能力、接口语义、状态语义、数据语义、权限语义、验证语义或流程语义。
 3. **归类失效模式**：不要直接找 bug，先判断这个 PR 最可能落入哪些风险模型。
-4. **建立运行时模型**：为命中的风险模型产出最小必要的链路表 / 一致性表 / 状态表 / 治理能力表。
-5. **对账正空间和负空间**：既检查新增路径是否成立，也检查被替换、删除、绕过或收窄的旧路径是否仍有明确语义。
+4. **建立运行时模型和 contract surfaces**：为每条系统承诺、命中的风险模型和触发的强制专项检查建立可追踪的 contract surfaces。
+5. **审查并更新 ledger**：对账新增路径与被替换、删除、绕过或收窄的旧路径，并持续更新 changed-file 和 contract-surface 状态。
 6. **推演边界与时间线**：至少检查一组历史数据、异常路径、并发、刷新时序或治理失败路径。
-7. **输出 findings**：只报告明确、可操作、由当前分支引入或暴露的问题。
+7. **重新取 diff 并关闭审查**：重新检查 `HEAD` 和 changed-file 集合；如有变化则重建 ledger，否则执行 closure gate 并输出 findings。
 
 如果第 2 步没有识别出系统承诺，或第 4 步没有形成清晰的运行时模型，不要急着给结论。
 
@@ -111,115 +112,7 @@ git diff main...HEAD
 
 ## 失效模式分类
 
-先从下面几类里选出 1-3 个与本 PR 最相关的主风险模型，后续 review 重点围绕这些模型展开：
-
-### A. 契约链路失效
-
-适用于：
-
-- DTO / command / request / response 字段改动
-- 默认值、可空性、枚举值、schema、prompt 变量、配置 key、输出结构变化
-- 同一字段从一层生成，另一层校验或消费
-
-常见症状：
-
-- 上游改了字段，但真实消费点没跟上
-- 中间层只转发不校验，最终在更下游炸掉
-- 测试只验证构造结果，没有验证消费点是否接受
-
-### B. 多路径不一致
-
-适用于：
-
-- 同一能力存在 sync/async、create/update、preview/apply、list/detail、page/dialog、新标签页/页内跳转
-- 同一对象有多个 taskType、status、version、candidate、action 路径
-
-常见症状：
-
-- 页面展示 A，按钮操作 B
-- 某条路径修好了，等价路径仍旧走旧语义
-- preview、download、open-in-new-tab 的认证和数据语义不一致
-
-### C. 权限与身份真相源错位
-
-适用于：
-
-- 菜单、按钮、资源链接、controller、subject、role、permission、seed 数据改动
-- 客户端传 actor、tenant、scope、owner、subjectId
-
-常见症状：
-
-- 前端可见但后端 403
-- 角色 seed 变更后通过权限展开逻辑获得额外写权限
-- 身份字段来自客户端而不是认证主体
-
-### D. 状态机与时序失效
-
-适用于：
-
-- 任务、版本、候选、apply、异步回写、刷新、轮询、fallback、局部状态同步
-- 任何“先后顺序变了就可能错”的逻辑
-
-常见症状：
-
-- 旧数据 later apply 覆盖新任务状态
-- unmount 后展示卡在旧状态
-- 局部状态和远端状态在异步刷新后冲突
-
-### E. 数据范围与性能放大
-
-适用于：
-
-- 搜索、树、列表、分页、聚合查询、每项逐个查询、React Query key 依赖输入值
-- 循环内 service / repository / facade 调用
-
-常见症状：
-
-- root 页面打开就全量扫描
-- 输入每个字符都触发昂贵请求
-- 每项触发单独远程/数据库查询，形成 N+1 或请求风暴
-
-### F. 前端受控语义与局部状态边界失效
-
-适用于：
-
-- `Form.Item` / `KuzhambuFormItem` 包裹结构变化
-- 受控组件 wrapper、自定义字段组件、`initialValues`、`setFieldsValue`、`resetFields`
-- `useEffect`、`useCallback`、`useMemo`、本地 draft、refetch、mutation success
-
-常见症状：
-
-- wrapper 吞掉 `value/onChange`、`checked/onChange`
-- 新对象 refresh 覆盖未保存草稿
-- partial patch 留下旧值
-- effect 因依赖身份不稳陷入循环或重复覆盖
-
-### G. 测试伪覆盖
-
-适用于：
-
-- 本 PR 只加了 happy path 测试
-- 测试只断言构造数据，没断言最终用户可见行为
-- 测试没有覆盖刷新、切换、失败、历史数据或交错时序
-
-常见症状：
-
-- 测试全绿，但实际运行在非默认路径失败
-- 测试绑定实现细节，没覆盖运行时语义
-
-### H. 治理能力失效
-
-适用于：
-
-- 架构测试、命名门禁、CI workflow、验证脚本、PR 流程、agent、skill、自动化检查或发布规则改动
-- 声称新增约束、扩大覆盖、整理历史、同步 PR 信息、观察 CI/review 或改变合并前流程
-
-常见症状：
-
-- 门禁只检查文件形状，没有检查真实声明、运行对象或最终消费结果
-- 门禁在当前仓库启用后立即失败，或仍能被等价路径绕过
-- 流程基于旧的本地/远端/CI/review 状态报告成功
-- 自动化失败后无法恢复到原始安全状态
+开始源代码审查前，完整读取 [`references/failure-models.md`](./references/failure-models.md)，从其中选择 1-3 个与本 PR 最相关的主风险模型。后续 review 和 contract-surface ledger 必须使用所选模型的标识与语义。
 
 ## 运行时建模要求
 
@@ -365,15 +258,68 @@ git diff main...HEAD
 - 检查是否在 root-only、空过滤、每次键入、每条记录上触发昂贵查询
 - 检查请求是否可 debounce、batch、memoize、skip 或只在必要场景触发
 
-## 审查步骤
+## Coverage ledger
 
-1. 推断本 PR 的目标和主要风险区域。
-2. 识别本 PR 改变的 1-5 条系统承诺。
-3. 归类最相关的 1-3 个失效模式。
-4. 为命中的失效模式建立最小运行时模型。
-5. 扫描本 PR 中所有调用点、迁移点、测试、配置和文档是否满足这些模型。
-6. 对 exact string、Set membership、数组 includes、枚举映射、路径前缀、SQL 条件、状态机分支、协议字段判断以及前端 wrapper/受控组件变更，检查合法边界变体。
-7. 只把明确违反契约、造成回归风险、安全风险、架构边界问题、性能退化或真实维护阻塞的问题作为 finding。
+在输出 findings 前维护以下两个 ledger。Ledger 可以直接保留在最终回复中，不需要创建额外文件。
+
+### Changed-file ledger
+
+从 `git diff --name-status main...HEAD` 取得完整文件清单。审查过程中必须把每个 changed file 归入一个模块，并且只能使用一个终态：
+
+- `reviewed`：已经结合 diff 和必要上下文完成行为审查。
+- `mechanical`：纯格式、批量数据重排、生成物或无独立行为的机械变更；必须写明判定依据。
+- `not-applicable`：对识别出的系统承诺没有影响；必须写明原因。
+- `deferred`：缺少必要上下文或未完成审查；必须写明具体缺口。
+
+重命名文件按一条 rename 记录，不要把同一次 rename 当成删除和新增重复计数。测试、seed、配置、迁移、脚本和文档文件同样必须计入。
+
+按以下稳定规则确定模块，不要临时选择不同粒度：
+
+- 根目录治理和仓库级配置：`repo-governance`
+- `docs/**`：`docs`
+- `db/**` 和 seed/import 脚本：`db-seed`
+- `deploy/**`：`deploy`
+- `kuzhambu-servers/**`：`servers:<最小可识别 Maven reactor module 或直接 owning module>`
+- `kuzhambu-apps/<app>/**`：`apps:<app>`
+- `kuzhambu-workers/**`：`workers`
+- 其余路径：`other`，并逐文件说明无法归入上述模块的原因
+
+最终回复按模块汇总文件数，不要默认展开全部文件。每个模块至少报告 `total`、`reviewed`、`mechanical`、`not-applicable` 和 `deferred` 数量；所有模块的 `total` 之和必须等于 diff changed-file 总数，每个模块的各终态数量之和必须等于该模块的 `total`。
+
+对 `mechanical` 和 `not-applicable` 按模块输出简短的“数量 + 原因”分组；同一模块存在多种原因时分别计数，这些原因组的数量之和必须等于对应状态数量。只逐文件列出以下例外：
+
+- `deferred` 文件。
+- 无法可靠归入模块的文件。
+- 需要作为 finding、contract surface 或跨模块链路证据定位的文件。
+
+### Contract-surface ledger
+
+从第 2 步识别出的系统承诺和命中的失效模式派生 contract surfaces。每个 surface 必须说明具体范围，例如 producer、adapter、validator、consumer、fallback、历史数据、持久化、迁移、等价调用路径、测试或文档，并且只能使用一个终态：
+
+- `reviewed`：surface 的相关链路和负空间已经完成对账。
+- `not-applicable`：经检查不影响本 PR；必须写明原因。
+- `deferred`：链路不完整、缺少证据或尚未完成；必须写明具体缺口。
+
+不要预置与当前 PR 无关的大型固定 checklist。Contract surface 必须能回溯到本 PR 改变的系统承诺；同一个承诺跨越多个持久化面、调用路径或协议边界时，拆成足以暴露独立遗漏的多条记录。
+
+强制映射规则：
+
+- 每条系统承诺必须映射到至少一个 contract surface。
+- 每个命中的主风险模型必须映射到至少一个 contract surface。
+- 每个被 diff 触发的强制专项检查必须映射到至少一个 contract surface。
+- 每个 surface 必须至少记录一个 changed-file anchor，以及首个真实 validator、最终 consumer/sink 或可以证明链路终止的明确边界。
+- 找不到 validator、consumer/sink 或明确终点时，surface 必须标记为 `deferred`，不能标记为 `reviewed`。
+
+### Ledger closure gate
+
+- 每个 changed file 在内部归类中、每个已识别的 contract surface 都必须有明确终态。
+- Changed-file 模块计数必须满足总数守恒；计数不一致等同于存在缺失条目。
+- 系统承诺、命中的风险模型和触发的强制专项检查必须全部满足 contract-surface 映射规则；缺少映射等同于 coverage incomplete。
+- `mechanical`、`not-applicable` 和 `deferred` 不能没有理由。
+- 任何缺失条目、无终态条目或 `deferred` 条目都表示 coverage incomplete。
+- Coverage incomplete 时，禁止输出 `No actionable findings.`，禁止无条件建议合并；改为输出 `No confirmed findings, but review coverage is incomplete.`，并在 validation gaps 中列出未完成项。
+- 只有两个 ledger 全部闭合且不存在 `deferred` 时，才允许输出 `No actionable findings.`。
+- 输出前重新运行 `git diff --name-status main...HEAD` 并检查 `HEAD`；文件集或 `HEAD` 与基线不一致时，旧 ledger 作废，按新 diff 重新归类和审查。
 
 ## 边界与时序推演清单
 
@@ -456,7 +402,7 @@ git diff main...HEAD
 - 不要为了凑数量提出建议。
 - 不报告“可以更优雅”“可以顺手重构”“命名个人偏好”这类没有明确用户可见后果或维护风险的问题。
 - 不把缺少重构、抽象不够漂亮、文件还可以继续拆分当作 bug；只有当它造成真实职责错位、回归风险或后续维护阻塞时才报告。
-- 不确定的问题不要描述为确定缺陷；可以作为 open question 放在 summary 后。
+- 不确定的问题不要描述为确定缺陷；可以作为 open question 放在 findings 后、coverage ledger 前。
 - 相同根因的问题合并报告，避免对同一缺陷重复计数。
 - 优先报告 bug、回归风险、安全问题、权限问题、状态/时序问题和性能放大问题，而不是个人风格偏好。
 - 每条 finding 必须包含最小文件位置。行号优先使用 diff 或文件中的具体行；无法精确到单行时，使用最小必要范围。
@@ -477,7 +423,7 @@ git diff main...HEAD
 
 ## Open questions
 
-如果存在影响判断但无法从代码和文档确认的问题，在 findings 后、summary 前输出：
+如果存在影响判断但无法从代码和文档确认的问题，在 findings 后、coverage ledger 前输出：
 
 ```md
 ## Open questions
@@ -499,11 +445,34 @@ git diff main...HEAD
 在所有 findings 之后输出：
 
 ```md
+## Coverage ledger
+
+### Changed files
+
+* `<module>` — total: N; reviewed: N; mechanical: N; not-applicable: N; deferred: N
+  * mechanical: N — <module-level reason>
+  * not-applicable: N — <module-level reason>
+* Total — diff files: N; ledger files: N
+
+Exceptions:
+
+* `deferred` — `path/to/file`: <reason>
+
+### Contract surfaces
+
+* `reviewed` — <commitment/risk/special-check mapping> — <surface>: anchor `<changed-file>`; validator `<location>`; consumer/sink `<location>`
+* `deferred` — <mapping> — <surface>: <missing evidence or endpoint>
+
+### Validation gaps
+
+* <None, or every deferred/missing coverage item and reason.>
+
 ## Review summary
 
 * 本次审查范围：当前分支相对 `main` 的已提交 diff；如有排除项，明确说明
 * 我理解的 PR 目标：一句话概述
 * 主风险模型：列出本次命中的 1-3 个失效模式
+* Coverage 状态：complete / incomplete
 * 是否建议合并：是 / 修复后合并 / 不建议合并
 * P0 数量
 * P1 数量
@@ -519,4 +488,12 @@ git diff main...HEAD
 No actionable findings.
 ```
 
-然后仍输出 `## Review summary`，说明建议合并、各优先级数量为 0，以及主要剩余风险或测试缺口。
+这句话仅允许在 coverage complete 时使用。然后仍输出完整的 `## Coverage ledger` 和 `## Review summary`，说明建议合并、各优先级数量为 0，以及主要剩余风险或测试缺口。
+
+如果没有 confirmed finding 但 coverage incomplete，改为输出：
+
+```text
+No confirmed findings, but review coverage is incomplete.
+```
+
+然后列出完整 ledger、所有 deferred/缺失项及其原因，并将“是否建议合并”设为“补齐审查后再决定”或更严格结论。
