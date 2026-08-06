@@ -69,6 +69,11 @@ const formatSyncItemKey = (record: KnowledgeSyncItemRecord) => {
     return record.sourceId ?? `${record.contentType ?? "UNKNOWN"}-${record.contentId ?? "0"}`;
 };
 
+const isSameSyncQuery = (
+    left: service.KnowledgeSyncItemPageQuery,
+    right: service.KnowledgeSyncItemPageQuery
+) => JSON.stringify(left) === JSON.stringify(right);
+
 export const QaSyncTable = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
@@ -108,12 +113,17 @@ export const QaSyncTable = () => {
     const syncItems = pageData?.records ?? [];
 
     const querySyncItems = () => {
-        setQuery({
+        const nextQuery = {
             contentType: contentType?.trim() || undefined,
             pageNo: 1,
             pageSize: DEFAULT_PAGE_SIZE,
             syncStatus: syncStatus?.trim() || null
-        });
+        };
+        if (isSameSyncQuery(query, nextQuery)) {
+            void syncPageQuery.refetch();
+            return;
+        }
+        setQuery(nextQuery);
     };
 
     const confirmRebuild = () => {

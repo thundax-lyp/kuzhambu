@@ -211,6 +211,26 @@ describe("QaConsolePage", () => {
         expect(screen.getAllByText("2023-11-15").length).toBeGreaterThan(0);
     }, 30000);
 
+    it("refetches sync items when unchanged filters are submitted", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        await waitFor(() => expect(mocks.pageKnowledgeSyncItems).toHaveBeenCalled());
+        mocks.pageKnowledgeSyncItems.mockClear();
+
+        await switchPanel(user, "知识文档");
+        await user.click(screen.getByRole("button", { name: /查\s*询/u }));
+
+        await waitFor(() => {
+            expect(mocks.pageKnowledgeSyncItems).toHaveBeenCalledWith({
+                contentType: "SANCAI_ENTRY",
+                pageNo: 1,
+                pageSize: 10,
+                syncStatus: null
+            });
+        });
+    }, 30000);
+
     it("preserves sync filter state when switching console panels", async () => {
         const user = userEvent.setup();
         renderPage();
@@ -282,6 +302,42 @@ describe("QaConsolePage", () => {
         await waitFor(() => {
             expect(mocks.getQaSession.mock.calls[0]?.[0]).toEqual({ sessionId: "2001" });
         });
+        expect(await screen.findByText("礼器在哪里出现？")).toBeInTheDocument();
+    }, 30000);
+
+    it("refetches sessions when unchanged filters are submitted", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        await waitFor(() => expect(mocks.pageQaSessions).toHaveBeenCalled());
+        mocks.pageQaSessions.mockClear();
+
+        await switchPanel(user, "会话管理");
+        await user.click(screen.getByRole("button", { name: /查\s*询/u }));
+
+        await waitFor(() => {
+            expect(mocks.pageQaSessions).toHaveBeenCalledWith({
+                openedAtEnd: null,
+                openedAtStart: null,
+                pageNo: 1,
+                pageSize: 10,
+                title: null
+            });
+        });
+    }, 30000);
+
+    it("renders recoverable error when session detail fails", async () => {
+        mocks.getQaSession.mockRejectedValueOnce(new Error("详情加载失败"));
+        const user = userEvent.setup();
+        renderPage();
+
+        await switchPanel(user, "会话管理");
+        expect(await screen.findByText("礼器问答")).toBeInTheDocument();
+        await user.click(screen.getByTestId("discovery-qa-console-qa-console-view-session-button"));
+
+        expect(await screen.findByText("详情加载失败")).toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: "重试" }));
+
         expect(await screen.findByText("礼器在哪里出现？")).toBeInTheDocument();
     }, 30000);
 

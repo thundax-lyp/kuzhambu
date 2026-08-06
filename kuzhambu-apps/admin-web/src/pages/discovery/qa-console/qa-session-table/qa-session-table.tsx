@@ -43,6 +43,11 @@ const formatDate = (value?: number | string | null) => {
     return `${year}-${month}-${day}`;
 };
 
+const isSameSessionQuery = (
+    left: service.DiscoveryQaSessionPageQuery,
+    right: service.DiscoveryQaSessionPageQuery
+) => JSON.stringify(left) === JSON.stringify(right);
+
 export const QaSessionTable = () => {
     const confirm = useKuzhambuConfirm();
     const [title, setTitle] = useState("");
@@ -92,14 +97,19 @@ export const QaSessionTable = () => {
     const rows = pageData?.records ?? [];
 
     const querySessions = () => {
-        setQuery({
+        const nextQuery = {
             openedAtEnd: range?.[1]?.endOf("day").toISOString() ?? null,
             openedAtStart: range?.[0]?.startOf("day").toISOString() ?? null,
             pageNo: 1,
             pageSize: DEFAULT_PAGE_SIZE,
             title: title.trim() || null
-        });
+        };
         setDetailSessionId(null);
+        if (isSameSessionQuery(query, nextQuery)) {
+            void sessionPageQuery.refetch();
+            return;
+        }
+        setQuery(nextQuery);
     };
 
     const confirmDeleteSession = (sessionId: string) => {
