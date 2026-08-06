@@ -92,9 +92,11 @@ export const MenuPage = () => {
     const [menuEditDrawerOpen, setMenuEditDrawerOpen] = useState(false);
     const [expandedRowKeys, setExpandedRowKeys] = useState<Key[] | null>(null);
     const canEditMenu = hasPermission("super");
+    const canViewMenu = canEditMenu;
     const menuTreeQuery = useQuery({
         queryKey: ["menu", "list"],
         queryFn: () => service.listMenus(),
+        enabled: canViewMenu,
         retry: false
     });
     const menus = useMemo(() => menuTreeQuery.data || [], [menuTreeQuery.data]);
@@ -169,11 +171,17 @@ export const MenuPage = () => {
     });
 
     const openCreateMenuDrawer = () => {
+        if (!canEditMenu) {
+            return;
+        }
         setEditingMenu(null);
         setMenuEditDrawerOpen(true);
     };
 
     const openEditMenuDrawer = (menu: MenuTableNode) => {
+        if (!canEditMenu) {
+            return;
+        }
         setEditingMenu(menu);
         setMenuEditDrawerOpen(true);
     };
@@ -187,10 +195,16 @@ export const MenuPage = () => {
     };
 
     const saveMenu = (request: MenuSaveCommand) => {
+        if (!canEditMenu) {
+            return;
+        }
         saveMenuMutation.mutate(request);
     };
 
     const openDeleteConfirm = (menu: MenuTableNode) => {
+        if (!canEditMenu) {
+            return;
+        }
         confirm.danger({
             title: "删除菜单",
             message: `确认删除 ${menu.name || ""}？`,
@@ -305,9 +319,11 @@ export const MenuPage = () => {
                     unCheckedChildren="隐藏"
                     disabled={!canEditMenu || displayMutation.isPending}
                     aria-label={`切换 ${menu.name} 显示状态，当前${display === false ? "隐藏" : "显示"}`}
-                    onChange={(checked) =>
-                        displayMutation.mutate({ id: menu.id, display: checked })
-                    }
+                    onChange={(checked) => {
+                        if (canEditMenu) {
+                            displayMutation.mutate({ id: menu.id, display: checked });
+                        }
+                    }}
                 />
             )
         },
@@ -362,7 +378,13 @@ export const MenuPage = () => {
                         <KuzhambuButton
                             testId="system-menu-menu-refresh-button"
                             icon={<ReloadOutlined />}
-                            onClick={() => menuTreeQuery.refetch()}
+                            disabled={!canViewMenu}
+                            onClick={() => {
+                                if (!canViewMenu) {
+                                    return;
+                                }
+                                void menuTreeQuery.refetch();
+                            }}
                         >
                             刷新
                         </KuzhambuButton>
@@ -386,7 +408,6 @@ export const MenuPage = () => {
                 pagination={false}
                 scroll={{ x: TABLE_SCROLL_X }}
                 expandable={{
-                    defaultExpandAllRows: true,
                     expandedRowKeys: actualExpandedRowKeys,
                     indentSize: 24,
                     expandIconColumnIndex: 0,
