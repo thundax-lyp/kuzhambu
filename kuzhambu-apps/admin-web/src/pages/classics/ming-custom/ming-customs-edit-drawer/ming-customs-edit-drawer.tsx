@@ -169,6 +169,7 @@ interface MingCustomsEditDrawerProps {
     summaryTrackingTask?: AiRefinementTaskRecord | null;
     tagContent?: ReactNode;
     versionContent?: ReactNode;
+    onChanged?: () => void | Promise<void>;
     onClose: () => void;
     onCreateSummaryTask?: () => void;
     onSummaryTaskChange?: (task: AiRefinementTaskRecord | null) => void;
@@ -188,6 +189,7 @@ export const MingCustomsEditDrawer = ({
     summaryTrackingTask,
     tagContent,
     versionContent,
+    onChanged,
     onClose,
     onCreateSummaryTask,
     onSummaryTaskChange,
@@ -291,6 +293,7 @@ export const MingCustomsEditDrawer = ({
                 changeSummary: "AI 应用：摘要"
             });
             form.setFieldValue("summary", summaryDraft);
+            await onChanged?.();
             setSummaryModalOpen(false);
             messageApi.success("摘要已写入基础信息");
         } catch (error) {

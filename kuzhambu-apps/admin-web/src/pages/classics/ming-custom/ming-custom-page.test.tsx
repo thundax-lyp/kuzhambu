@@ -563,6 +563,7 @@ describe("MingCustomPage", () => {
         await waitFor(() =>
             expect(screen.getByLabelText("明代习俗候选摘要")).toHaveValue("文献摘要候选")
         );
+        const applyStartCallCount = capturedCalls.length;
         await user.click(screen.getByTestId("classics-ming-customs-summary-ai-apply-button"));
         await waitFor(() => {
             expect(screen.getByLabelText("明代习俗概述")).toHaveValue("文献摘要候选");
@@ -580,6 +581,14 @@ describe("MingCustomPage", () => {
             },
             method: "POST",
             path: "/classics/content/ai-candidates/change"
+        });
+        await waitFor(() => {
+            const pathsAfterApply = capturedCalls
+                .slice(applyStartCallCount)
+                .map((call) => call.path);
+            expect(pathsAfterApply).toContain("/classics/ming-customs/page");
+            expect(pathsAfterApply).toContain("/classics/ming-customs/get");
+            expect(pathsAfterApply).toContain("/classics/ming-customs/versions/list");
         });
         await switchMingCustomsDrawerSection(user, "标签");
         await user.click(await screen.findByTestId("classics-common-content-tag-ai-button"));

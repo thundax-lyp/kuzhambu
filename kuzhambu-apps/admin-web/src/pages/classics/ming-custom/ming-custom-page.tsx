@@ -757,6 +757,7 @@ export const MingCustomPage = () => {
                 mode={mingCustomsEditDrawerMode}
                 open={mingCustomsEditDrawerOpen}
                 saving={saveMutation.isPending}
+                onChanged={invalidateMingCustoms}
                 onClose={closeMingCustomsEditDrawer}
                 onSave={(command) => saveMutation.mutate(command)}
                 summaryCreating={creatingRefinementCapability === "summary"}
