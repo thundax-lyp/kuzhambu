@@ -2,7 +2,7 @@ import { AdminQueryProvider } from "@/query/query-client";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { SearchPage } from "./search-page";
 
 const mocks = vi.hoisted(() => ({
@@ -48,13 +48,26 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("./search-service", () => mocks);
 
+const LocationProbe = () => {
+    const location = useLocation();
+    return <output data-testid="location-search">{location.search}</output>;
+};
+
 const renderPage = (initialEntry = "/discovery/search") => {
     return render(
         <AdminQueryProvider>
             <AntdApp>
                 <MemoryRouter initialEntries={[initialEntry]}>
                     <Routes>
-                        <Route path="/discovery/search" element={<SearchPage />} />
+                        <Route
+                            path="/discovery/search"
+                            element={
+                                <>
+                                    <SearchPage />
+                                    <LocationProbe />
+                                </>
+                            }
+                        />
                         <Route path="/classics/sancai" element={<div>三才详情</div>} />
                     </Routes>
                 </MemoryRouter>
@@ -89,10 +102,7 @@ describe("SearchPage", () => {
 
         await waitFor(() => {
             expect(mocks.searchDiscovery).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    queryText: ""
-                }),
-                expect.anything()
+                expect.objectContaining({ queryText: "" })
             );
         });
     });
@@ -106,10 +116,7 @@ describe("SearchPage", () => {
 
         await waitFor(() => {
             expect(mocks.searchDiscovery).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    queryText: "礼器"
-                }),
-                expect.anything()
+                expect.objectContaining({ queryText: "礼器" })
             );
         });
         expect(await screen.findByText("三才图会")).toBeInTheDocument();
@@ -126,24 +133,24 @@ describe("SearchPage", () => {
         const result = await screen.findByRole("button", { name: "打开搜索预览：礼器图" });
         await user.click(result);
 
-        expect(mocks.clickSearchResult).toHaveBeenCalledWith({
-            contentDomain: "classics",
-            contentId: "1001",
-            contentTitle: "礼器图",
-            contentType: "SANCAI_ENTRY",
-            groupRank: 1,
-            resultGroupKey: "SANCAI_ENTRY",
-            resultRank: 1,
-            searchEventId: "EVT-1001",
-            targetPath: "/classics/sancai"
-        });
-        expect(mocks.previewSearchResult).toHaveBeenCalledWith(
+        expect(mocks.clickSearchResult).toHaveBeenCalledWith(
             {
+                contentDomain: "classics",
                 contentId: "1001",
-                contentType: "SANCAI_ENTRY"
+                contentTitle: "礼器图",
+                contentType: "SANCAI_ENTRY",
+                groupRank: 1,
+                resultGroupKey: "SANCAI_ENTRY",
+                resultRank: 1,
+                searchEventId: "EVT-1001",
+                targetPath: "/classics/sancai"
             },
             expect.anything()
         );
+        expect(mocks.previewSearchResult).toHaveBeenCalledWith({
+            contentId: "1001",
+            contentType: "SANCAI_ENTRY"
+        });
         expect(await screen.findByText("第一段正文。")).toBeInTheDocument();
         expect(screen.getByText("第二段正文。")).toBeInTheDocument();
         expect(screen.getByText("正文")).toBeInTheDocument();
@@ -153,5 +160,45 @@ describe("SearchPage", () => {
         expect(screen.queryByText("可见性")).not.toBeInTheDocument();
         expect(screen.queryByText("状态")).not.toBeInTheDocument();
         expect(screen.queryByText("/classics/sancai")).not.toBeInTheDocument();
+    });
+
+    it("persists pagination in the URL and restores it", async () => {
+        mocks.searchDiscovery.mockResolvedValueOnce({
+            displayQueryText: "礼器",
+            groupCount: 0,
+            groups: [],
+            id: "EVT-2001",
+            queryText: "礼器",
+            totalCount: 25
+        });
+        const user = userEvent.setup();
+        renderPage("/discovery/search?q=礼器&pageNo=2&pageSize=20");
+
+        await waitFor(() => {
+            expect(mocks.searchDiscovery).toHaveBeenCalledWith(
+                expect.objectContaining({ pageNo: 2, pageSize: 20, queryText: "礼器" })
+            );
+        });
+        expect(screen.getByTestId("location-search")).toHaveTextContent(
+            "?q=礼器&pageNo=2&pageSize=20"
+        );
+
+        await user.click(screen.getByRole("button", { name: "搜索" }));
+        await waitFor(() => {
+            expect(screen.getByTestId("location-search")).toHaveTextContent(
+                "?q=%E7%A4%BC%E5%99%A8&pageNo=1&pageSize=20"
+            );
+        });
+    });
+
+    it("keeps preview usable when click recording fails", async () => {
+        mocks.clickSearchResult.mockRejectedValueOnce(new Error("tracking unavailable"));
+        const user = userEvent.setup();
+        renderPage("/discovery/search?q=礼器&pageNo=1&pageSize=10");
+
+        await user.click(await screen.findByRole("button", { name: "打开搜索预览：礼器图" }));
+
+        expect(await screen.findByText("第一段正文。")).toBeInTheDocument();
+        expect(screen.getByTestId("discovery-search-preview-drawer")).toBeInTheDocument();
     });
 });
