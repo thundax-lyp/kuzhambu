@@ -24,6 +24,7 @@ import type { ClassicsContentType } from "./classics-content-types";
 interface ClassicsContentQaAiPanelProps {
     canApplyCandidate?: boolean;
     canCreateTask?: boolean;
+    canRejectCandidate?: boolean;
     canViewCandidate?: boolean;
     contentId: string;
     contentType: ClassicsContentType;
@@ -42,6 +43,8 @@ export interface ClassicsContentQaTaskPair {
 
 const QA_TASK_POLL_INTERVAL_MS = 3000;
 const QA_AI_MODAL_TEST_ID = "classics-content-qa-ai-modal";
+const REJECT_ERROR_TYPE = "USER_REJECTED";
+const REJECT_ERROR_MESSAGE = "用户已拒绝该 AI 候选";
 
 const QA_TASK_STATUS_LABELS: Record<string, string> = {
     PENDING: "等待中",
@@ -400,6 +403,7 @@ const CandidateQaTable = ({
 export const ClassicsContentQaAiPanel = ({
     canApplyCandidate = false,
     canCreateTask = true,
+    canRejectCandidate = false,
     canViewCandidate = false,
     contentId,
     contentType,
@@ -476,6 +480,18 @@ export const ClassicsContentQaAiPanel = ({
         }
     });
 
+    const rejectMutation = useMutation({
+        mutationFn: aiCandidateService.reject,
+        onSuccess: async () => {
+            await refresh();
+            setOpen(false);
+            messageApi.success("候选问答已拒绝");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "拒绝候选问答失败");
+        }
+    });
+
     const openModal = () => {
         setCandidatePayloads({});
         setCandidateSubmitEnabled({});
@@ -542,6 +558,18 @@ export const ClassicsContentQaAiPanel = ({
         });
     };
 
+    const rejectCandidate = (candidate: AiCandidateRecord | null) => {
+        if (!candidate) {
+            messageApi.warning("暂无可拒绝的候选问答");
+            return;
+        }
+        rejectMutation.mutate({
+            candidateId: getCandidateStableId(candidate),
+            errorType: REJECT_ERROR_TYPE,
+            errorMessage: REJECT_ERROR_MESSAGE
+        });
+    };
+
     return (
         <>
             <KuzhambuButton
@@ -578,13 +606,20 @@ export const ClassicsContentQaAiPanel = ({
                 renderStatus={renderQaTaskStatus}
                 renderFooterActions={({ creating, result, resultLoading, tracking }) => {
                     const candidateId = result ? getCandidateStableId(result) : "";
-                    const isBusy = creating || tracking || resultLoading || applyMutation.isPending;
+                    const isBusy =
+                        creating ||
+                        tracking ||
+                        resultLoading ||
+                        applyMutation.isPending ||
+                        rejectMutation.isPending;
                     const canAppend =
                         canApplyCandidate &&
                         canViewCandidate &&
                         Boolean(result) &&
                         Boolean(candidateSubmitEnabled[candidateId]) &&
                         !isBusy;
+                    const canReject =
+                        canRejectCandidate && canViewCandidate && Boolean(result) && !isBusy;
 
                     return (
                         <>
@@ -595,6 +630,14 @@ export const ClassicsContentQaAiPanel = ({
                                 onClick={() => setOpen(false)}
                             >
                                 关闭
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                testId="classics-content-qa-ai-reject-button"
+                                disabled={!canReject}
+                                loading={rejectMutation.isPending}
+                                onClick={() => rejectCandidate(result)}
+                            >
+                                拒绝
                             </KuzhambuButton>
                             <KuzhambuButton
                                 testId="classics-content-qa-ai-append-button"

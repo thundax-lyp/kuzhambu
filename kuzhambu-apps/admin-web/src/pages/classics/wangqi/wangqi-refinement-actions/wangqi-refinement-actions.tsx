@@ -102,6 +102,7 @@ export const WangqiRefinementActions = ({
                     <ClassicsContentQaAiPanel
                         canApplyCandidate={canApplyAiCandidates}
                         canCreateTask={canCreateAiRefinementTask}
+                        canRejectCandidate={canRejectAiCandidates}
                         canViewCandidate={canViewAiCandidates}
                         contentId={document.id}
                         contentType="WANGQI_DOCUMENT"

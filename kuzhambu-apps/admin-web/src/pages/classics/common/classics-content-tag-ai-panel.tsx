@@ -1,6 +1,6 @@
 import { CloseCircleOutlined, PlusOutlined, RobotOutlined, SwapOutlined } from "@ant-design/icons";
-import { App, Empty } from "antd";
-import { useMemo, useState } from "react";
+import { App, Empty, Input } from "antd";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -39,6 +39,8 @@ interface ClassicsContentTagAiPanelProps {
 const TAG_TASK_POLL_INTERVAL_MS = 3000;
 const TAG_TASK_LABEL = "标签";
 const TAG_AI_MODAL_TEST_ID = "classics-content-tag-ai-modal";
+const REJECT_ERROR_TYPE = "USER_REJECTED";
+const REJECT_ERROR_MESSAGE = "用户已拒绝该 AI 候选";
 
 const TAG_TASK_STATUS_LABELS: Record<string, string> = {
     PENDING: "等待中",
@@ -97,6 +99,102 @@ const tagKey = (tagName: string) => tagName.toLocaleLowerCase();
 
 const getCandidateStableId = (candidate: AiCandidateRecord) => {
     return candidate.candidateIdText || String(candidate.candidateId);
+};
+
+let candidateTagRowSequence = 0;
+
+const createCandidateTagRowId = () => {
+    candidateTagRowSequence += 1;
+    return `candidate-tag-${candidateTagRowSequence}`;
+};
+
+interface CandidateTagRow {
+    id: string;
+    tagName: string;
+}
+
+const createCandidateTagRows = (candidate: AiCandidateRecord): CandidateTagRow[] =>
+    parseCandidateTags(candidate.resultPayload).map((tagName, index) => ({
+        id: `${getCandidateStableId(candidate)}-${index}-${tagName}`,
+        tagName
+    }));
+
+const stringifyTagPayload = (tags: string[]) => JSON.stringify({ tags: uniqueTagNames(tags) });
+
+interface CandidateTagEditorProps {
+    candidate: AiCandidateRecord;
+    disabled?: boolean;
+    onTagsChange: (candidateId: string, tags: string[]) => void;
+}
+
+const CandidateTagEditor = ({
+    candidate,
+    disabled = false,
+    onTagsChange
+}: CandidateTagEditorProps) => {
+    const candidateId = getCandidateStableId(candidate);
+    const [rows, setRows] = useState<CandidateTagRow[]>(() => createCandidateTagRows(candidate));
+
+    useEffect(() => {
+        onTagsChange(candidateId, uniqueTagNames(rows.map((row) => row.tagName)));
+    }, [candidateId, onTagsChange, rows]);
+
+    const updateTag = (rowId: string, tagName: string) => {
+        setRows((currentRows) =>
+            currentRows.map((row) => (row.id === rowId ? { ...row, tagName } : row))
+        );
+    };
+
+    return (
+        <KuzhambuSpace orientation="vertical" size={8} style={{ width: "100%" }}>
+            <KuzhambuButton
+                testId="classics-content-tag-ai-generated-add-button"
+                disabled={disabled}
+                icon={<PlusOutlined />}
+                onClick={() =>
+                    setRows((currentRows) => [
+                        ...currentRows,
+                        { id: createCandidateTagRowId(), tagName: "" }
+                    ])
+                }
+            >
+                新增标签
+            </KuzhambuButton>
+            {rows.length ? (
+                <KuzhambuSpace orientation="vertical" size={8} style={{ width: "100%" }}>
+                    {rows.map((row, index) => (
+                        <KuzhambuSpace
+                            key={row.id}
+                            align="center"
+                            size={8}
+                            style={{ width: "100%" }}
+                        >
+                            <Input
+                                aria-label={`候选标签 ${index + 1}`}
+                                disabled={disabled}
+                                value={row.tagName}
+                                onChange={(event) => updateTag(row.id, event.target.value)}
+                            />
+                            <KuzhambuButton
+                                testId={`classics-content-tag-ai-generated-delete-${row.id}-button`}
+                                danger
+                                disabled={disabled}
+                                onClick={() =>
+                                    setRows((currentRows) =>
+                                        currentRows.filter((currentRow) => currentRow.id !== row.id)
+                                    )
+                                }
+                            >
+                                删除
+                            </KuzhambuButton>
+                        </KuzhambuSpace>
+                    ))}
+                </KuzhambuSpace>
+            ) : (
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="候选标签为空" />
+            )}
+        </KuzhambuSpace>
+    );
 };
 
 const sortRefinementTasksByNewest = (
@@ -263,6 +361,7 @@ const selectLatestTagCandidate = (
 export const ClassicsContentTagAiPanel = ({
     canApplyCandidate = false,
     canCreateTask = true,
+    canRejectCandidate = false,
     canViewCandidate = false,
     contentId,
     contentType,
@@ -277,6 +376,7 @@ export const ClassicsContentTagAiPanel = ({
     const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
     const [handlingCandidateId, setHandlingCandidateId] = useState<string | null>(null);
+    const [candidateTagsById, setCandidateTagsById] = useState<Record<string, string[]>>({});
 
     const tagsQuery = useQuery({
         queryKey: ["classics", "content", "tags", contentType, contentId],
@@ -352,14 +452,15 @@ export const ClassicsContentTagAiPanel = ({
             capability: AI_BUSINESS_CAPABILITY.CLASSICS_TAG_EXTRACT,
             objectId: candidate.objectId,
             resultFormat: candidate.resultFormat || "STRUCTURED",
-            resultPayload: JSON.stringify({ tags: appliedTags }),
+            resultPayload: stringifyTagPayload(appliedTags),
             changeSummary: "AI 应用：标签",
             tagApplyMode
         });
     };
 
     const readCandidateTagsOrThrow = (candidate: AiCandidateRecord) => {
-        const tags = parseCandidateTags(candidate.resultPayload);
+        const candidateId = getCandidateStableId(candidate);
+        const tags = candidateTagsById[candidateId] || parseCandidateTags(candidate.resultPayload);
         if (!tags.length) {
             throw new Error("AI 候选标签为空");
         }
@@ -420,14 +521,59 @@ export const ClassicsContentTagAiPanel = ({
         onSettled: () => setHandlingCandidateId(null)
     });
 
-    const isCandidateMutationPending = appendMutation.isPending || coverMutation.isPending;
+    const rejectMutation = useMutation({
+        mutationFn: async (candidate: AiCandidateRecord) => {
+            const candidateId = getCandidateStableId(candidate);
+            setHandlingCandidateId(candidateId);
+            await aiCandidateService.reject({
+                candidateId,
+                errorType: REJECT_ERROR_TYPE,
+                errorMessage: REJECT_ERROR_MESSAGE
+            });
+        },
+        onSuccess: async () => {
+            await refresh();
+            setOpen(false);
+            messageApi.success("候选标签已拒绝");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "拒绝候选标签失败");
+        },
+        onSettled: () => setHandlingCandidateId(null)
+    });
+
+    const updateCandidateTags = useCallback((candidateId: string, tags: string[]) => {
+        setCandidateTagsById((currentTagsById) => {
+            const currentTags = currentTagsById[candidateId] || [];
+            if (currentTags.join("\n") === tags.join("\n")) {
+                return currentTagsById;
+            }
+            return {
+                ...currentTagsById,
+                [candidateId]: tags
+            };
+        });
+    }, []);
+
+    const openModal = () => {
+        setCandidateTagsById({});
+        setOpen(true);
+    };
+
+    const getEditedCandidateTags = (candidate: AiCandidateRecord) => {
+        const candidateId = getCandidateStableId(candidate);
+        return candidateTagsById[candidateId] || parseCandidateTags(candidate.resultPayload);
+    };
+
+    const isCandidateMutationPending =
+        appendMutation.isPending || coverMutation.isPending || rejectMutation.isPending;
 
     return (
         <>
             <KuzhambuButton
                 testId="classics-common-content-tag-ai-button"
                 icon={<RobotOutlined />}
-                onClick={() => setOpen(true)}
+                onClick={openModal}
             >
                 AI 生成
             </KuzhambuButton>
@@ -457,7 +603,7 @@ export const ClassicsContentTagAiPanel = ({
                 }}
                 renderStatus={renderTagTaskStatus}
                 renderFooterActions={({ creating, result, resultLoading, tracking }) => {
-                    const candidateTags = result ? parseCandidateTags(result.resultPayload) : [];
+                    const candidateTags = result ? getEditedCandidateTags(result) : [];
                     const loading = result
                         ? handlingCandidateId === getCandidateStableId(result)
                         : false;
@@ -466,6 +612,12 @@ export const ClassicsContentTagAiPanel = ({
                         !canApplyCandidate ||
                         !canViewCandidate ||
                         !candidateTags.length ||
+                        isResultBusy ||
+                        isCandidateMutationPending;
+                    const isRejectDisabled =
+                        !canRejectCandidate ||
+                        !canViewCandidate ||
+                        !result ||
                         isResultBusy ||
                         isCandidateMutationPending;
                     const isCloseDisabled = isResultBusy || isCandidateMutationPending;
@@ -479,6 +631,18 @@ export const ClassicsContentTagAiPanel = ({
                                 onClick={() => setOpen(false)}
                             >
                                 关闭
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                testId="classics-content-tag-ai-reject-button"
+                                disabled={isRejectDisabled}
+                                loading={loading && rejectMutation.isPending}
+                                onClick={() => {
+                                    if (result) {
+                                        rejectMutation.mutate(result);
+                                    }
+                                }}
+                            >
+                                拒绝
                             </KuzhambuButton>
                             <KuzhambuButton
                                 testId="classics-content-tag-ai-append-button"
@@ -511,7 +675,7 @@ export const ClassicsContentTagAiPanel = ({
                     );
                 }}
                 renderBody={({ creating, result, resultLoading, tracking }) => {
-                    const candidateTags = result ? parseCandidateTags(result.resultPayload) : [];
+                    const candidateTags = result ? getEditedCandidateTags(result) : [];
                     const candidateKeys = new Set(candidateTags.map(tagKey));
                     const currentKeys = new Set(currentTagNames.map(tagKey));
                     const addedTagNames = candidateTags.filter(
@@ -554,13 +718,12 @@ export const ClassicsContentTagAiPanel = ({
                                 </KuzhambuCard>
                                 <KuzhambuCard size="small" title="候选标签" style={{ minWidth: 0 }}>
                                     {result ? (
-                                        <KuzhambuSpace wrap>
-                                            {candidateTags.map((tagName) => (
-                                                <KuzhambuTag key={tagName} type="accent">
-                                                    {tagName}
-                                                </KuzhambuTag>
-                                            ))}
-                                        </KuzhambuSpace>
+                                        <CandidateTagEditor
+                                            key={`${getCandidateStableId(result)}-${result.resultPayload ?? ""}`}
+                                            candidate={result}
+                                            disabled={isResultBusy || isCandidateMutationPending}
+                                            onTagsChange={updateCandidateTags}
+                                        />
                                     ) : (
                                         <Empty
                                             image={Empty.PRESENTED_IMAGE_SIMPLE}
