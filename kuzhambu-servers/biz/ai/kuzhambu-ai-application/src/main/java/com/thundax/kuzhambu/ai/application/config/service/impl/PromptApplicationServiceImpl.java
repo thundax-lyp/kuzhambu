@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.ai.application.config.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.config.command.BuildPromptOptimizationSuggestionCommand;
 import com.thundax.kuzhambu.ai.application.config.command.ChangePromptTemplateStatusCommand;
 import com.thundax.kuzhambu.ai.application.config.command.DeletePromptTemplateCommand;
@@ -45,6 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{\\s*([A-Za-z][A-Za-z0-9_]*)\\s*}}");
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final PromptRepository promptRepository;
 
@@ -81,6 +85,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         List<PromptVariable> variables = toVariables(command, templateId);
         normalizeCapabilityVariables(command.getCapability(), variables);
         ensureTemplateVariablesDefined(command.getMessageTemplatesJson(), variables);
+        ensureRequiredCapabilityVariablesPresent(command.getCapability(), command.getMessageTemplatesJson(), variables);
         int versionNo = nextVersionNo(templateId);
         PromptVersion version = toVersion(command, templateId, versionNo, variablesSnapshotJson(variables));
         replaceVariablesOnCreate(template, templateId, variables);
@@ -214,11 +219,15 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     private List<PromptVariable> toVariables(PromptTemplateSaveCommand command, PromptTemplateId effectiveTemplateId) {
         List<PromptVariable> promptVariables = new ArrayList<>();
-        if (command.getVariables() == null) {
+        List<PromptTemplateSaveCommand.VariableItem> items = command.getVariables();
+        if ((items == null || items.isEmpty()) && !isBlank(command.getVariablesSnapshotJson())) {
+            items = parseVariableSnapshot(command.getVariablesSnapshotJson());
+        }
+        if (items == null) {
             return promptVariables;
         }
-        for (int i = 0; i < command.getVariables().size(); i++) {
-            PromptTemplateSaveCommand.VariableItem item = command.getVariables().get(i);
+        for (int i = 0; i < items.size(); i++) {
+            PromptTemplateSaveCommand.VariableItem item = items.get(i);
             if (item == null) {
                 continue;
             }
@@ -231,6 +240,28 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
             promptVariables.add(variable);
         }
         return promptVariables;
+    }
+
+    private List<PromptTemplateSaveCommand.VariableItem> parseVariableSnapshot(String snapshotJson) {
+        try {
+            JsonNode root = OBJECT_MAPPER.readTree(snapshotJson);
+            if (root == null || !root.isArray()) {
+                throw new BizException("Prompt variables snapshot must be a JSON array");
+            }
+            List<PromptTemplateSaveCommand.VariableItem> items = new ArrayList<>();
+            for (JsonNode node : root) {
+                PromptTemplateSaveCommand.VariableItem item = new PromptTemplateSaveCommand.VariableItem();
+                item.setVariableName(node.path("variableName").asText(null));
+                item.setRequired(node.path("required").asBoolean(true));
+                item.setDescription(node.path("description").asText(null));
+                item.setPriority(
+                        node.hasNonNull("priority") ? node.get("priority").asInt() : null);
+                items.add(item);
+            }
+            return items;
+        } catch (JsonProcessingException ex) {
+            throw new BizException("Prompt variables snapshot is invalid JSON");
+        }
     }
 
     private PromptTemplateId saveOrUpdateTemplate(PromptTemplate template) {
@@ -341,6 +372,25 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
             }
             variable.setRequired(definition.required());
             variable.setDescription(definition.description());
+        }
+    }
+
+    private void ensureRequiredCapabilityVariablesPresent(
+            AiBusinessCapability capability, String messageTemplatesJson, List<PromptVariable> variables) {
+        Set<String> definedNames = new HashSet<>();
+        for (PromptVariable variable : variables) {
+            if (!isBlank(variable.getVariableName())) {
+                definedNames.add(variable.getVariableName());
+            }
+        }
+        Set<String> placeholders = extractPlaceholders(messageTemplatesJson);
+        List<String> missingNames = PromptCapabilityVariableCatalog.list(capability).stream()
+                .filter(PromptCapabilityVariableResult::required)
+                .map(PromptCapabilityVariableResult::variableName)
+                .filter(name -> !definedNames.contains(name) || !placeholders.contains(name))
+                .toList();
+        if (!missingNames.isEmpty()) {
+            throw new BizException("Prompt required capability variables are missing: " + missingNames);
         }
     }
 
