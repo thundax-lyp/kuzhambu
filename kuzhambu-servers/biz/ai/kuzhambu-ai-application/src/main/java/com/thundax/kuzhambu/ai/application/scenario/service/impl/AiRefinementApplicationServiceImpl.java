@@ -194,8 +194,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
                 && command.getModelId() != null
                 && command.getPromptVersionId() != null
                 && !isBlank(command.getPromptMessagesJson())
-                && !isBlank(command.getPromptVariablesJson())
-                && !isBlank(command.getOutputSchemaJson());
+                && !isBlank(command.getPromptVariablesJson());
     }
 
     private void copyResolvedInvokeConfig(AiRefinementRequestCommand command, AiInvokeCommand invokeCommand) {

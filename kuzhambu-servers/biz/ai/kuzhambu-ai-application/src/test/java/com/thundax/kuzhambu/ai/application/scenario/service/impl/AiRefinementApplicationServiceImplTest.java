@@ -266,6 +266,27 @@ class AiRefinementApplicationServiceImplTest {
         assertEquals("{\"type\":\"object\",\"required\":[\"qaPairs\"]}", capturedCommand.getOutputSchemaJson());
     }
 
+    @Test
+    void refinementShouldPreserveSubmittedSnapshotWithoutOutputSchema() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        CapturingBusinessInvokeConfigResolver businessConfigResolver = new CapturingBusinessInvokeConfigResolver();
+        AiRefinementApplicationServiceImpl service =
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, businessConfigResolver);
+        AiRefinementRequestCommand command = command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_SUMMARY);
+        command.setPromptVariablesJson("{\"title\":\"submitted variables\"}");
+        command.setOutputSchemaJson(null);
+
+        service.summarize(command);
+        AiInvokeCommand capturedCommand = invocationService.capturedCommand();
+
+        assertEquals(0, businessConfigResolver.resolveCount());
+        assertEquals(new AiModelId(20L), capturedCommand.getModelId());
+        assertEquals(new PromptVersionId(30L), capturedCommand.getPromptVersionId());
+        assertEquals("[{\"role\":\"user\",\"content\":\"hello\"}]", capturedCommand.getPromptMessagesJson());
+        assertEquals("{\"title\":\"submitted variables\"}", capturedCommand.getPromptVariablesJson());
+        assertNull(capturedCommand.getOutputSchemaJson());
+    }
+
     private AiRefinementRequestCommand command(String contentType, String operation, String capability) {
         AiRefinementRequestCommand command = new AiRefinementRequestCommand();
         command.setScope("classics");
