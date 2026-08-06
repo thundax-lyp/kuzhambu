@@ -56,16 +56,13 @@ const mocks = vi.hoisted(() => ({
         title: "知识中心问答"
     })),
     deleteQaSession: vi.fn(async () => undefined),
-    pageQaSessions: vi.fn(async (query?: { pageNo?: number }) => {
-        void query;
-        return {
-            count: 0,
-            pageNo: 1,
-            pageSize: 20,
-            records: [] as Array<{ id: string; openedAt: number; title: string }>,
-            totalPage: 0
-        };
-    })
+    pageQaSessions: vi.fn(async () => ({
+        count: 0,
+        pageNo: 1,
+        pageSize: 20,
+        records: [] as Array<{ id: string; openedAt: number; title: string }>,
+        totalPage: 0
+    }))
 }));
 const currentUserMocks = vi.hoisted(() => ({
     getCurrentUserInfo: vi.fn(async () => ({ id: "9001", loginName: "qa-user" }))
@@ -343,31 +340,6 @@ describe("QaPage", () => {
         await user.click(screen.getByRole("button", { name: "新建对话" }));
 
         expect(streamSignal?.aborted).toBe(true);
-    });
-
-    it("loads later session pages from the sidebar", async () => {
-        mocks.pageQaSessions.mockImplementation(async ({ pageNo } = {}) => ({
-            count: 21,
-            pageNo: pageNo ?? 1,
-            pageSize: 20,
-            records:
-                pageNo === 2
-                    ? [{ id: "7021", openedAt: 1700000000000, title: "更早的对话" }]
-                    : [{ id: "7001", openedAt: 1700000000000, title: "最近的对话" }],
-            totalPage: 2
-        }));
-        const user = userEvent.setup();
-        renderPage();
-
-        await user.click(await screen.findByRole("button", { name: "下一页" }));
-
-        expect(await screen.findByRole("button", { name: "更早的对话" })).toBeInTheDocument();
-        expect(mocks.pageQaSessions).toHaveBeenLastCalledWith({
-            ownerUserId: "9001",
-            pageNo: 2,
-            pageSize: 20,
-            scope: "PORTAL"
-        });
     });
 
     it("ignores url context filters and keeps full-library qa", async () => {

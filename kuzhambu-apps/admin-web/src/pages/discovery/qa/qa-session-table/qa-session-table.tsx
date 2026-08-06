@@ -1,8 +1,7 @@
 import { CloseOutlined } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Empty } from "antd";
-import { useState } from "react";
-import { KuzhambuButton, KuzhambuSpace } from "@/components";
+import { KuzhambuButton } from "@/components";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import * as service from "@/pages/discovery/qa/qa-service";
 import type { DiscoveryQaSessionRecord } from "@/pages/discovery/qa/qa-types";
@@ -40,26 +39,21 @@ export const QaSessionTable = ({
     selectedSessionId
 }: QaSessionTableProps) => {
     const confirm = useKuzhambuConfirm();
-    const [pageNo, setPageNo] = useState(1);
     const sessionsQuery = useQuery({
         queryFn: () =>
             service.pageQaSessions({
                 ownerUserId,
-                pageNo,
+                pageNo: 1,
                 pageSize: DEFAULT_PAGE_SIZE,
                 scope: "PORTAL"
             }),
-        queryKey: ["discovery-qa", "session-page", ownerUserId, pageNo],
+        queryKey: ["discovery-qa", "session-page", ownerUserId],
         enabled: ownerUserId !== null
     });
     const deleteSessionMutation = useMutation({
         mutationFn: service.deleteQaSession,
         onSuccess: async (_, command) => {
             onDeleted(command.sessionId);
-            if (sessions.length === 1 && pageNo > 1) {
-                setPageNo((current) => current - 1);
-                return;
-            }
             await sessionsQuery.refetch();
         },
         onError: (error) => {
@@ -81,9 +75,6 @@ export const QaSessionTable = ({
     });
     const page = sessionsQuery.data;
     const sessions = page?.records ?? [];
-    const totalPage = page?.totalPage ?? 0;
-    const hasPreviousPage = pageNo > 1;
-    const hasNextPage = pageNo < totalPage;
 
     const confirmDeleteSession = (session: DiscoveryQaSessionRecord, sessionId: string) => {
         if (ownerUserId === null) {
@@ -166,22 +157,6 @@ export const QaSessionTable = ({
                     />
                 )}
             </div>
-            <KuzhambuSpace>
-                <KuzhambuButton
-                    disabled={!hasPreviousPage}
-                    testId="discovery-qa-previous-session-page-button"
-                    onClick={() => setPageNo((current) => Math.max(1, current - 1))}
-                >
-                    上一页
-                </KuzhambuButton>
-                <KuzhambuButton
-                    disabled={!hasNextPage}
-                    testId="discovery-qa-next-session-page-button"
-                    onClick={() => setPageNo((current) => current + 1)}
-                >
-                    下一页
-                </KuzhambuButton>
-            </KuzhambuSpace>
             <KuzhambuButton
                 testId="discovery-qa-export-session-button"
                 disabled={selectedSessionId === null}
