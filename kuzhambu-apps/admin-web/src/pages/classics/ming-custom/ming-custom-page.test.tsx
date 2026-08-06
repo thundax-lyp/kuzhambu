@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
+import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import { MingCustomsVersionHistoryPanel } from "./ming-customs-version-history-panel";
 import { MingCustomPage } from "./ming-custom-page";
@@ -113,6 +114,7 @@ interface CapturedCall {
 }
 
 const capturedCalls: CapturedCall[] = [];
+let summaryCandidateRecords: AiCandidateRecord[] = [];
 let mockMingCustomsRecord: MingCustomsRecord = {
     id: "500000000001",
     title: "岁时礼仪：元旦朝贺",
@@ -367,19 +369,7 @@ const installFetchMock = () => {
                     }
                 ]);
             }
-            return apiResponse([
-                {
-                    candidateId: "6001",
-                    contentType: "MING_CUSTOMS",
-                    contentId: "500000000001",
-                    capability: "summary",
-                    objectId: null,
-                    resultFormat: "TEXT",
-                    resultPayload: "文献摘要候选",
-                    status: "PENDING",
-                    requestedAt: "2026-01-01T00:00:00.000+00:00"
-                }
-            ]);
+            return apiResponse(summaryCandidateRecords);
         }
         if (path.endsWith("/classics/content/ai-candidates/change")) {
             return apiResponse({
@@ -448,6 +438,19 @@ describe("MingCustomPage", () => {
             content: "## 正旦",
             originalExcerpts: "正旦朝贺。"
         };
+        summaryCandidateRecords = [
+            {
+                candidateId: "6001",
+                contentType: "MING_CUSTOMS",
+                contentId: "500000000001",
+                capability: "summary",
+                objectId: null,
+                resultFormat: "TEXT",
+                resultPayload: "文献摘要候选",
+                status: "PENDING",
+                requestedAt: "2026-01-01T00:00:00.000+00:00"
+            }
+        ];
         confirmDangerMock.mockClear();
         confirmDangerMock.mockImplementation((options: { onConfirm?: () => void }) =>
             options.onConfirm?.()
@@ -697,6 +700,81 @@ describe("MingCustomPage", () => {
         expect(JSON.parse(calls[2].inputPayloadJson).existingQaPairs).toEqual([
             { question: "元旦朝贺是什么？", answer: "明代正旦礼仪。" }
         ]);
+    }, 30000);
+
+    it("matches summary candidates by exact text ids", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiRefinementTaskService.createTask).mockResolvedValueOnce({
+            taskId: "9101",
+            status: "SUCCEEDED",
+            capability: "CLASSICS_SUMMARY",
+            contentType: "MING_CUSTOMS",
+            contentId: "500000000001",
+            candidateId: "9007199254740992",
+            candidateIdText: "9007199254740993"
+        });
+        summaryCandidateRecords = [
+            {
+                candidateId: "9007199254740992",
+                candidateIdText: "9007199254740992",
+                contentType: "MING_CUSTOMS",
+                contentId: "500000000001",
+                capability: "summary",
+                objectId: null,
+                resultFormat: "TEXT",
+                resultPayload: "错误摘要候选",
+                status: "PENDING",
+                requestedAt: "2026-01-03T00:00:00.000+00:00"
+            },
+            {
+                candidateId: "9007199254740992",
+                candidateIdText: "9007199254740993",
+                contentType: "MING_CUSTOMS",
+                contentId: "500000000001",
+                capability: "summary",
+                objectId: null,
+                resultFormat: "TEXT",
+                resultPayload: "精确摘要候选",
+                status: "PENDING",
+                requestedAt: "2026-01-01T00:00:00.000+00:00"
+            }
+        ];
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
+        await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
+        await user.click(
+            await screen.findByTestId("classics-ming-customs-summary-ai-generate-button")
+        );
+        await waitFor(() =>
+            expect(screen.getByLabelText("明代习俗候选摘要")).toHaveValue("精确摘要候选")
+        );
+
+        await user.click(screen.getByTestId("classics-ming-customs-summary-ai-apply-button"));
+
+        await waitFor(() => {
+            expect(capturedCalls).toContainEqual({
+                body: {
+                    candidateId: "9007199254740993",
+                    contentId: "500000000001",
+                    contentType: "MING_CUSTOMS",
+                    capability: "CLASSICS_SUMMARY",
+                    objectId: null,
+                    resultFormat: "TEXT",
+                    resultPayload: "精确摘要候选",
+                    changeSummary: "AI 应用：摘要"
+                },
+                method: "POST",
+                path: "/classics/content/ai-candidates/change"
+            });
+        });
     }, 30000);
 
     it("rejects summary candidate and refreshes active Ming caches", async () => {

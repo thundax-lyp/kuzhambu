@@ -23,7 +23,7 @@ import {
     AI_BUSINESS_CAPABILITY,
     type AiRefinementTaskRecord
 } from "@/pages/classics/common/ai-refinement-task-types";
-import { isSameId, normalizeId, normalizeNullableId } from "@/types/id";
+import { isSameId, normalizeNullableId } from "@/types/id";
 import type { MingCustomsCommand } from "@/pages/classics/ming-custom/ming-custom-service";
 import type { MingCustomsRecord } from "@/pages/classics/ming-custom/ming-custom-types";
 import type { DictItem } from "@/types/dict";
@@ -39,19 +39,25 @@ const REJECT_ERROR_MESSAGE = "用户已拒绝该 AI 候选";
 const isSummaryTaskActive = (task?: AiRefinementTaskRecord | null) =>
     task?.status === "PENDING" || task?.status === "RUNNING";
 
+const getSummaryTaskCandidateId = (task?: AiRefinementTaskRecord | null) =>
+    normalizeNullableId(task?.candidateIdText ?? task?.candidateId);
+
+const getSummaryCandidateStableId = (candidate?: AiCandidateRecord | null) =>
+    normalizeNullableId(candidate?.candidateIdText ?? candidate?.candidateId);
+
 const summaryTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
     getId: (task) => aiRefinementTaskService.getTaskStableId(task.taskId, task.taskIdText),
     getMessage: (task) => task.errorMessage || task.resultPreview || "摘要任务处理中",
     getPhase: (task) => {
         if (isSummaryTaskActive(task)) return "tracking";
         if (task.status === "SUCCEEDED" || task.status === "PARTIAL") {
-            return task.candidateId ? "result_ready" : "waiting_result";
+            return getSummaryTaskCandidateId(task) ? "result_ready" : "waiting_result";
         }
         if (task.status === "FAILED") return "failed";
         if (task.status === "CANCELLED") return "cancelled";
         return "tracking";
     },
-    getResultKey: (task) => normalizeId(task.candidateId),
+    getResultKey: (task) => getSummaryTaskCandidateId(task) ?? "",
     getStatusLabel: (task) => `摘要任务${task.status}`
 };
 
@@ -67,7 +73,10 @@ const selectLatestSummaryCandidate = (
                     "summary" &&
                 candidate.status === "PENDING" &&
                 (!normalizedTrackedCandidateId ||
-                    isSameId(candidate.candidateId, normalizedTrackedCandidateId)) &&
+                    isSameId(
+                        candidate.candidateIdText ?? candidate.candidateId,
+                        normalizedTrackedCandidateId
+                    )) &&
                 Boolean(candidate.resultPayload?.trim())
         )
         .sort((left, right) =>
@@ -266,7 +275,7 @@ export const MingCustomsEditDrawer = ({
 
     const loadSummaryCandidate = async (task: AiRefinementTaskRecord | null) => {
         if (!entryId) return null;
-        const trackedCandidateId = task?.candidateId ?? null;
+        const trackedCandidateId = getSummaryTaskCandidateId(task);
         if (summaryTrackingTaskId && !trackedCandidateId) return null;
         const candidates = await aiCandidateService.list({
             contentId: entryId,
@@ -278,7 +287,7 @@ export const MingCustomsEditDrawer = ({
     };
 
     const updateSummaryDraft = (candidate: AiCandidateRecord | null) => {
-        const candidateId = normalizeNullableId(candidate?.candidateId);
+        const candidateId = getSummaryCandidateStableId(candidate);
         if (!candidate || candidateId === loadedSummaryCandidateId) return;
         setLoadedSummaryCandidateId(candidateId);
         setSummaryDraft(candidate.resultPayload?.trim() || "");
