@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { KuzhambuSyncTaskModalProps, KuzhambuSyncTaskModalState } from "@/components";
+import { selectLatestQaCandidate } from "./classics-content-ai-candidate-selectors";
 import { ClassicsContentQaAiPanel } from "./classics-content-qa-ai-panel";
 
 const qaCandidate = {
@@ -233,5 +234,27 @@ describe("ClassicsContentQaAiPanel", () => {
                 })
             );
         });
+    });
+
+    it("filters tracked qa candidates by exact stable id only", () => {
+        const selected = selectLatestQaCandidate(
+            [
+                {
+                    ...qaCandidate,
+                    candidateId: "872517961657614336",
+                    candidateIdText: "872517961657614321",
+                    requestedAt: "2026-08-06T09:00:00Z"
+                },
+                {
+                    ...qaCandidate,
+                    candidateId: "872517961657614336",
+                    candidateIdText: "872517961657614322",
+                    requestedAt: "2026-08-06T09:01:00Z"
+                }
+            ],
+            "872517961657614321"
+        );
+
+        expect(selected?.candidateIdText).toBe("872517961657614321");
     });
 });
