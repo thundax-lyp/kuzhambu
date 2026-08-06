@@ -7,6 +7,7 @@ interface MenuTreeFieldProps {
     value?: Key[];
     treeData: DataNode[];
     expandedMenuIds: Key[];
+    loading?: boolean;
     onChange?: (value: Key[]) => void;
 }
 
@@ -14,12 +15,14 @@ export const MenuTreeField = ({
     value = [],
     treeData,
     expandedMenuIds,
+    loading,
     onChange
 }: MenuTreeFieldProps) => {
     return (
         <div className="menu-tree-field">
             <Tree
                 checkable
+                disabled={loading}
                 defaultExpandAll
                 checkedKeys={value}
                 defaultExpandedKeys={expandedMenuIds}

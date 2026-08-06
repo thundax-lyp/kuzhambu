@@ -1,25 +1,26 @@
 import { DeleteOutlined, ReloadOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Typography } from "antd";
-import type { DataNode } from "antd/es/tree";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import {
+    KuzhambuAlert,
     KuzhambuButton,
     KuzhambuListPage,
     KuzhambuSelect,
     KuzhambuSpace,
     KuzhambuSwitch,
     KuzhambuTag,
+    KuzhambuTable,
     type KuzhambuTableProps,
     type KuzhambuTableSortPosition,
     type OptionsRecord
 } from "@/components";
 import { RoleEditDrawer } from "./role-edit-drawer";
 import * as service from "./role-service";
-import type { RoleOptionKeys, RoleSaveCommand } from "./role-service";
-import type { RoleMenuNode, RoleMenuTreeNode, RoleRecord } from "./role-types";
+import type { RoleOptionKeys } from "./role-service";
+import type { RoleRecord } from "./role-types";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 
 import "./role-page.css";
@@ -35,8 +36,7 @@ const DEFAULT_COLUMN_WIDTHS = {
     name: 220,
     privilege: 120,
     status: 112,
-    menuCount: 120,
-    remarks: 280
+    menuCount: 120
 };
 
 interface RoleFilters {
@@ -45,49 +45,6 @@ interface RoleFilters {
 
 const DEFAULT_ROLE_FILTERS: RoleFilters = {
     enable: "ALL"
-};
-
-const buildMenuTree = (menus: RoleMenuNode[]) => {
-    const nodeMap = new Map<string, RoleMenuTreeNode>();
-    const roots: RoleMenuTreeNode[] = [];
-
-    menus.forEach((menu) => {
-        nodeMap.set(menu.id, { ...menu });
-    });
-
-    nodeMap.forEach((menu) => {
-        if (menu.parentId) {
-            const parent = nodeMap.get(menu.parentId);
-            if (parent) {
-                parent.children = parent.children || [];
-                parent.children.push(menu);
-                return;
-            }
-        }
-        roots.push(menu);
-    });
-
-    return roots;
-};
-
-const collectMenuIds = (menus: RoleMenuTreeNode[]): string[] => {
-    return menus.flatMap((menu) => [
-        menu.id,
-        ...(menu.children ? collectMenuIds(menu.children) : [])
-    ]);
-};
-
-const toTreeData = (menus: RoleMenuTreeNode[]): DataNode[] => {
-    return menus.map((menu) => ({
-        key: menu.id,
-        title: (
-            <KuzhambuSpace size={8}>
-                <span>{menu.name}</span>
-                {menu.perms ? <Text type="secondary">{menu.perms}</Text> : null}
-            </KuzhambuSpace>
-        ),
-        children: menu.children ? toTreeData(menu.children) : undefined
-    }));
 };
 
 const sortByMove = (
@@ -130,12 +87,6 @@ export const RolePage = () => {
         enabled: canViewRole,
         retry: false
     });
-    const roleMenuTreeQuery = useQuery({
-        queryKey: ["role", "menu", "tree"],
-        queryFn: service.listMenus,
-        enabled: canViewRole,
-        retry: false
-    });
     const roleOptionsQuery = useQuery({
         queryKey: ["role", "options"],
         queryFn: service.getOptions,
@@ -162,27 +113,6 @@ export const RolePage = () => {
             );
         });
     }, [roles, searchText]);
-    const menuTree = useMemo(
-        () => buildMenuTree(roleMenuTreeQuery.data || []),
-        [roleMenuTreeQuery.data]
-    );
-    const treeData = useMemo(() => toTreeData(menuTree), [menuTree]);
-    const expandedMenuIds = useMemo(() => collectMenuIds(menuTree), [menuTree]);
-
-    const saveRoleMutation = useMutation({
-        mutationFn: (values: RoleSaveCommand) =>
-            values.id ? service.changeInfo(values) : service.create(values),
-        onSuccess: async () => {
-            setRoleEditDrawerOpen(false);
-            setEditingRole(null);
-            await queryClient.invalidateQueries({ queryKey: ["role", "list"] });
-            messageApi.success("角色已保存");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "保存失败");
-        }
-    });
-
     const statusMutation = useMutation({
         mutationFn: service.changeStatus,
         onSuccess: async () => {
@@ -242,15 +172,8 @@ export const RolePage = () => {
     };
 
     const closeRoleEditDrawer = () => {
-        if (saveRoleMutation.isPending) {
-            return;
-        }
         setRoleEditDrawerOpen(false);
         setEditingRole(null);
-    };
-
-    const saveRole = (request: RoleSaveCommand) => {
-        saveRoleMutation.mutate(request);
     };
 
     const updateSingleStatus = (role: RoleRecord, enable: boolean) => {
@@ -307,6 +230,7 @@ export const RolePage = () => {
         if (!canEditRole || sourceRole.id === targetRole.id) {
             return;
         }
+        // Filtered rows are intentional visible anchors for the complete global role order.
         sortMutation.mutate({
             orderedIds: sortByMove(roles, sourceRole, targetRole, position),
             sortDirection: "ASC"
@@ -364,7 +288,6 @@ export const RolePage = () => {
             title: "备注",
             dataIndex: "remarks",
             key: "remarks",
-            width: DEFAULT_COLUMN_WIDTHS.remarks,
             ellipsis: true,
             render: (remarks?: string | null) => remarks || null
         },
@@ -390,6 +313,37 @@ export const RolePage = () => {
             ]
         }
     ];
+
+    const batchActions = (
+        <KuzhambuSpace wrap>
+            <KuzhambuButton
+                testId="system-role-role-enable-button"
+                disabled={!canEditRole || !hasSelectedRoles}
+                loading={statusMutation.isPending}
+                onClick={() => batchUpdateStatus(true)}
+            >
+                启用
+            </KuzhambuButton>
+            <KuzhambuButton
+                testId="system-role-role-disable-button"
+                disabled={!canEditRole || !hasSelectedRoles}
+                loading={statusMutation.isPending}
+                onClick={() => batchUpdateStatus(false)}
+            >
+                禁用
+            </KuzhambuButton>
+            <KuzhambuButton
+                testId="system-role-role-batch-delete-button"
+                danger
+                icon={<DeleteOutlined />}
+                disabled={!canEditRole || !hasSelectedRoles}
+                loading={deleteMutation.isPending}
+                onClick={batchDeleteRoles}
+            >
+                批量删除
+            </KuzhambuButton>
+        </KuzhambuSpace>
+    );
 
     return (
         <>
@@ -437,77 +391,90 @@ export const RolePage = () => {
                     <KuzhambuButton
                         testId="system-role-role-refresh-button"
                         icon={<ReloadOutlined />}
-                        onClick={() => rolePageQuery.refetch()}
+                        loading={rolePageQuery.isFetching}
+                        onClick={() => void rolePageQuery.refetch()}
                     >
                         刷新
                     </KuzhambuButton>
                 }
-                batchClassName="role-table-toolbar"
-                selectedCount={selectedRowKeys.length}
-                batchActions={
-                    <KuzhambuSpace wrap>
-                        <KuzhambuButton
-                            testId="system-role-role-enable-button"
-                            disabled={!canEditRole || !hasSelectedRoles}
-                            loading={statusMutation.isPending}
-                            onClick={() => batchUpdateStatus(true)}
-                        >
-                            启用
-                        </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="system-role-role-disable-button"
-                            disabled={!canEditRole || !hasSelectedRoles}
-                            loading={statusMutation.isPending}
-                            onClick={() => batchUpdateStatus(false)}
-                        >
-                            禁用
-                        </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="system-role-role-batch-delete-button"
-                            danger
-                            icon={<DeleteOutlined />}
-                            disabled={!canEditRole || !hasSelectedRoles}
-                            loading={deleteMutation.isPending}
-                            onClick={batchDeleteRoles}
-                        >
-                            批量删除
-                        </KuzhambuButton>
-                    </KuzhambuSpace>
+                content={
+                    <>
+                        {roleOptionsQuery.isError ? (
+                            <KuzhambuAlert
+                                showIcon
+                                type="warning"
+                                title="角色选项加载失败"
+                                description="状态和权限级别名称将显示默认值。"
+                                action={
+                                    <KuzhambuButton
+                                        ariaLabel="重试加载角色选项"
+                                        testId="system-role-options-retry-button"
+                                        onClick={() => void roleOptionsQuery.refetch()}
+                                    >
+                                        重试
+                                    </KuzhambuButton>
+                                }
+                            />
+                        ) : null}
+                        {rolePageQuery.isError ? (
+                            <KuzhambuAlert
+                                showIcon
+                                type="error"
+                                title="角色列表加载失败"
+                                description={
+                                    roles.length > 0
+                                        ? "当前展示的是上次成功加载的数据，本次查询未更新。"
+                                        : rolePageQuery.error instanceof Error
+                                          ? rolePageQuery.error.message
+                                          : "请确认权限和接口状态后重试。"
+                                }
+                                action={
+                                    <KuzhambuButton
+                                        ariaLabel="重试加载角色列表"
+                                        testId="system-role-page-retry-button"
+                                        onClick={() => void rolePageQuery.refetch()}
+                                    >
+                                        重试
+                                    </KuzhambuButton>
+                                }
+                            />
+                        ) : null}
+                        <KuzhambuTable<RoleRecord>
+                            ariaLabel="角色列表"
+                            rowKey="id"
+                            className="role-table"
+                            batchActionBar={{
+                                actions: batchActions,
+                                className: "role-table-toolbar",
+                                selectedCount: selectedRowKeys.length
+                            }}
+                            columns={columns}
+                            dataSource={filteredRoles}
+                            loading={rolePageQuery.isFetching || sortMutation.isPending}
+                            pagination={false}
+                            scroll={{ x: 1006 }}
+                            rowSelection={{
+                                selectedRowKeys,
+                                onChange: setSelectedRowKeys,
+                                getCheckboxProps: () => ({
+                                    disabled: !canEditRole
+                                })
+                            }}
+                            locale={{ emptyText: "暂无角色" }}
+                            onSort={sortRole}
+                            sortable={canEditRole}
+                        />
+                    </>
                 }
-                rowKey="id"
-                className="role-table"
-                columns={columns}
-                dataSource={filteredRoles}
-                loading={rolePageQuery.isFetching || sortMutation.isPending}
-                pagination={false}
-                scroll={{ x: 1006 }}
-                rowSelection={{
-                    selectedRowKeys,
-                    onChange: setSelectedRowKeys,
-                    getCheckboxProps: () => ({
-                        disabled: !canEditRole
-                    })
-                }}
-                locale={{
-                    emptyText: rolePageQuery.isError
-                        ? "角色列表加载失败，请确认权限和接口状态。"
-                        : "暂无角色"
-                }}
-                onSort={sortRole}
-                sortable={canEditRole}
             />
 
             <RoleEditDrawer
                 key={roleEditDrawerOpen ? editingRole?.id || "create" : "closed"}
                 open={roleEditDrawerOpen}
                 role={editingRole}
-                treeData={treeData}
-                expandedMenuIds={expandedMenuIds}
                 statusOptions={roleOptions.statusOptions}
                 privilegeOptions={roleOptions.privilegeOptions}
-                saving={saveRoleMutation.isPending}
                 onClose={closeRoleEditDrawer}
-                onSave={saveRole}
             />
         </>
     );

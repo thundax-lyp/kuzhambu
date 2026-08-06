@@ -61,6 +61,20 @@ const readModelName = (record: AiModelRecord) => {
     return record.displayName?.trim() || record.modelName;
 };
 
+const readFailureReason = (reason: unknown) => {
+    return reason instanceof Error ? reason.message : String(reason || "未知原因");
+};
+
+const formatBatchFailureDetails = (results: PromiseSettledResult<unknown>[], labels: string[]) => {
+    return results
+        .flatMap((result, index) =>
+            result.status === "rejected"
+                ? [`${labels[index] || `第 ${index + 1} 项`}：${readFailureReason(result.reason)}`]
+                : []
+        )
+        .join("；");
+};
+
 const toEnabledCommand = (record: AiModelRecord, enabled: boolean): AiModelChangeCommand => ({
     id: record.id,
     apiSource: record.apiSource,
@@ -166,7 +180,16 @@ export const AiModelPage = () => {
                 return;
             }
             const successCount = ids.length - failedIds.length;
-            messageApi.warning(`批量删除完成：成功 ${successCount}，失败 ${failedIds.length}`);
+            const modelNameById = new Map(
+                (aiModelListQuery.data || []).map((model) => [model.id, readModelName(model)])
+            );
+            const failureDetails = formatBatchFailureDetails(
+                results,
+                ids.map((id) => modelNameById.get(id) || id)
+            );
+            messageApi.warning(
+                `批量删除完成：成功 ${successCount}，失败 ${failedIds.length}；失败详情：${failureDetails}`
+            );
         }
     });
 
@@ -184,8 +207,17 @@ export const AiModelPage = () => {
                 return;
             }
             const successCount = commands.length - failedIds.length;
+            const modelNameById = new Map(
+                (aiModelListQuery.data || []).map((model) => [model.id, readModelName(model)])
+            );
+            const failureDetails = formatBatchFailureDetails(
+                results,
+                commands.map((command) =>
+                    command.id ? modelNameById.get(command.id) || command.id : "未知模型"
+                )
+            );
             messageApi.warning(
-                `批量${enabled ? "启用" : "禁用"}完成：成功 ${successCount}，失败 ${failedIds.length}`
+                `批量${enabled ? "启用" : "禁用"}完成：成功 ${successCount}，失败 ${failedIds.length}；失败详情：${failureDetails}`
             );
         }
     });

@@ -338,10 +338,12 @@ const PromptMarkdownEditor = ({
 
 const PromptVersionSection = ({
     canEdit,
-    template
+    template,
+    onRollback
 }: {
     canEdit: boolean;
     template: AiPromptTemplateRecord;
+    onRollback: (version: AiPromptVersionRecord) => void;
 }) => {
     const { message } = App.useApp();
     const confirm = useKuzhambuConfirm();
@@ -364,8 +366,9 @@ const PromptVersionSection = ({
     });
     const rollbackMutation = useMutation({
         mutationFn: service.changePromptVersionRollback,
-        onSuccess: async () => {
+        onSuccess: async (version) => {
             await queryClient.invalidateQueries({ queryKey: ["ai", "prompt"] });
+            onRollback(version);
             message.success("提示词版本已回滚");
         },
         onError: (error) => {
@@ -496,6 +499,9 @@ export const PromptEditDrawer = ({
     const [form] = Form.useForm<PromptFormValues>();
     const initializedFormRef = useRef(false);
     const [variableModalOpen, setVariableModalOpen] = useState(false);
+    const [activeVersionNo, setActiveVersionNo] = useState<number | null>(
+        template?.currentVersionNo ?? null
+    );
     const variablesSnapshotJson = Form.useWatch("variablesSnapshotJson", form);
     const messageTemplatesJson = Form.useWatch("messageTemplatesJson", form);
     const currentCapability = Form.useWatch("capability", form);
@@ -674,6 +680,18 @@ export const PromptEditDrawer = ({
         await validateMutation.mutateAsync({
             id: currentTemplateId,
             providedNames: variableRows.map((variable) => variable.variableName)
+        });
+    };
+
+    const applyRolledBackVersion = (version: AiPromptVersionRecord) => {
+        const outputSchemaJson = formatJsonText(version.outputSchemaJson, TEXT_OUTPUT_SCHEMA);
+        setActiveVersionNo(version.versionNo ?? null);
+        form.setFieldsValue({
+            messageTemplatesJson: formatJsonText(version.messageTemplatesJson, EMPTY_JSON_ARRAY),
+            variablesSnapshotJson: formatJsonText(version.variablesSnapshotJson, EMPTY_JSON_ARRAY),
+            outputSchemaJson,
+            outputStructure: readPromptOutputStructure(outputSchemaJson),
+            changeSummary: ""
         });
     };
 
@@ -864,7 +882,13 @@ export const PromptEditDrawer = ({
                         </KuzhambuSpace>
                     </KuzhambuFormItem>
                 </KuzhambuForm>
-                {template ? <PromptVersionSection canEdit={canEdit} template={template} /> : null}
+                {template ? (
+                    <PromptVersionSection
+                        canEdit={canEdit}
+                        template={{ ...template, currentVersionNo: activeVersionNo }}
+                        onRollback={applyRolledBackVersion}
+                    />
+                ) : null}
             </KuzhambuDrawer>
 
             <KuzhambuModal

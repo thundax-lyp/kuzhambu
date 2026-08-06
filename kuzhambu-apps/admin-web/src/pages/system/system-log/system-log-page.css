@@ -65,30 +65,11 @@ html[data-theme="dark"] .system-log-page {
 }
 
 .system-log-detail {
-    display: grid;
-    gap: 10px;
     padding: 10px 14px;
     color: var(--system-log-ink);
-}
-
-.system-log-detail div {
-    display: grid;
-    grid-template-columns: 82px minmax(0, 1fr);
-    gap: 12px;
-}
-
-.system-log-detail span:first-child {
-    color: var(--system-log-copy);
 }
 
 .system-log-detail-text {
     min-width: 0;
     word-break: break-all;
-}
-
-@media (max-width: 760px) {
-    .system-log-detail div {
-        grid-template-columns: 1fr;
-        gap: 4px;
-    }
 }

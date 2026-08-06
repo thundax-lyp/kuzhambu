@@ -1,4 +1,5 @@
 import { AdminQueryProvider } from "@/query/query-client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
@@ -51,6 +52,20 @@ const renderPage = () =>
         </App>
     );
 
+const renderPageWithQueryClient = () => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } }
+    });
+    render(
+        <QueryClientProvider client={queryClient}>
+            <App>
+                <InvocationPage />
+            </App>
+        </QueryClientProvider>
+    );
+    return queryClient;
+};
+
 describe("InvocationPage", () => {
     beforeEach(() => {
         replacePermissions(["ai:invocation:view"]);
@@ -99,19 +114,48 @@ describe("InvocationPage", () => {
 
         fireEvent.click(screen.getByRole("tab", { name: "调用记录" }));
 
-        expect(screen.getByText("entry")).toBeInTheDocument();
+        expect(await screen.findByText("entry")).toBeInTheDocument();
     });
 
-    it("opens call detail drawer by clicking call row", async () => {
+    it("opens call detail drawer from the accessible view action", async () => {
         renderPage();
         fireEvent.click(await screen.findByRole("tab", { name: "调用记录" }));
         await screen.findByText("entry");
 
         expect(screen.queryByText("req-1")).not.toBeInTheDocument();
-        fireEvent.click(screen.getByText("entry"));
+        fireEvent.click(screen.getByRole("button", { name: "查看调用 9001 详情" }));
 
         expect(await screen.findByText("调用详情")).toBeInTheDocument();
         expect(await screen.findByText("req-1")).toBeInTheDocument();
         expect(screen.getByText("trace-1")).toBeInTheDocument();
+    });
+
+    it("shows a recoverable summary error state", async () => {
+        vi.mocked(service.getInvocationSummary).mockRejectedValueOnce(
+            new Error("统计服务暂不可用")
+        );
+
+        renderPage();
+
+        expect(await screen.findByText("调用统计加载失败")).toBeInTheDocument();
+        expect(screen.getByText("统计服务暂不可用")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "重试加载调用统计" })).toBeInTheDocument();
+        expect(screen.queryByText("调用次数")).not.toBeInTheDocument();
+    });
+
+    it("keeps cached summary metrics visible when a refresh fails", async () => {
+        const queryClient = renderPageWithQueryClient();
+        expect(await screen.findByText("调用次数")).toBeInTheDocument();
+        expect(screen.getAllByText("12")).toHaveLength(2);
+        vi.mocked(service.getInvocationSummary).mockRejectedValueOnce(
+            new Error("统计服务暂不可用")
+        );
+
+        await queryClient.refetchQueries({ queryKey: ["ai", "invocation", "summary"] });
+
+        expect(await screen.findByText("调用统计加载失败")).toBeInTheDocument();
+        expect(screen.getByText("统计服务暂不可用")).toBeInTheDocument();
+        expect(screen.getByText("调用次数")).toBeInTheDocument();
+        expect(screen.getAllByText("12")).toHaveLength(2);
     });
 });
