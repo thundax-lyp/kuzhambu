@@ -6,11 +6,7 @@
     --system-log-copy: #52627a;
     --system-log-muted: #8a99ad;
     --system-log-line: rgba(107, 124, 150, 0.24);
-    --system-log-line-strong: rgba(71, 91, 121, 0.34);
     --system-log-blue: #2563eb;
-    --system-log-blue-hover: #1d4ed8;
-    --system-log-blue-soft: rgba(37, 99, 235, 0.1);
-    --system-log-blue-line: rgba(37, 99, 235, 0.26);
     --system-log-cyan: #0891b2;
     --system-log-cyan-soft: rgba(8, 145, 178, 0.11);
     --system-log-cyan-line: rgba(8, 145, 178, 0.24);
@@ -23,9 +19,6 @@
     --system-log-amber: #b45309;
     --system-log-amber-soft: rgba(180, 83, 9, 0.1);
     --system-log-amber-line: rgba(180, 83, 9, 0.24);
-    --system-log-blue-shadow: 0 10px 26px rgba(37, 99, 235, 0.2);
-    --system-log-button-bg: rgba(255, 255, 255, 0.64);
-    --system-log-field-bg: rgba(255, 255, 255, 0.7);
     --system-log-filter-bg-end: rgba(248, 251, 255, 0.48);
     --system-log-filter-bg-start: rgba(226, 235, 247, 0.62);
     --system-log-filter-inset: color-mix(in srgb, white 56%, transparent);
@@ -40,11 +33,7 @@ html[data-theme="dark"] .system-log-page {
     --system-log-copy: #b8c4d8;
     --system-log-muted: #748299;
     --system-log-line: rgba(171, 191, 222, 0.16);
-    --system-log-line-strong: rgba(191, 207, 232, 0.28);
     --system-log-blue: #3b82f6;
-    --system-log-blue-hover: #60a5fa;
-    --system-log-blue-soft: rgba(59, 130, 246, 0.16);
-    --system-log-blue-line: rgba(59, 130, 246, 0.3);
     --system-log-cyan: #22d3ee;
     --system-log-cyan-soft: rgba(34, 211, 238, 0.12);
     --system-log-cyan-line: rgba(34, 211, 238, 0.26);
@@ -57,76 +46,16 @@ html[data-theme="dark"] .system-log-page {
     --system-log-amber: #f59e0b;
     --system-log-amber-soft: rgba(245, 158, 11, 0.13);
     --system-log-amber-line: rgba(245, 158, 11, 0.28);
-    --system-log-blue-shadow: 0 18px 42px rgba(37, 99, 235, 0.35);
-    --system-log-button-bg: rgba(17, 28, 46, 0.64);
-    --system-log-field-bg: rgba(12, 22, 38, 0.7);
     --system-log-filter-bg-end: rgba(12, 22, 38, 0.48);
     --system-log-filter-bg-start: rgba(48, 72, 110, 0.52);
     --system-log-filter-inset: rgba(185, 207, 238, 0.12);
-}
-
-.system-log-page .ant-typography-secondary {
-    color: var(--system-log-copy);
-}
-
-.system-log-page .ant-btn-primary {
-    background: linear-gradient(
-        135deg,
-        var(--system-log-blue),
-        color-mix(in srgb, var(--system-log-blue) 72%, #102542)
-    );
-    border-color: var(--system-log-blue);
-    box-shadow: var(--system-log-blue-shadow);
-}
-
-.system-log-page .ant-btn-primary:not(:disabled):hover {
-    background: linear-gradient(
-        135deg,
-        var(--system-log-blue-hover),
-        var(--system-log-blue)
-    ) !important;
-    border-color: var(--system-log-blue-hover) !important;
-}
-
-.system-log-page .ant-btn-default {
-    color: var(--system-log-ink);
-    background: var(--system-log-button-bg);
-    border-color: var(--system-log-line);
-}
-
-.system-log-page .ant-btn-default:not(:disabled):hover {
-    color: var(--system-log-blue) !important;
-    background: var(--system-log-blue-soft) !important;
-    border-color: var(--system-log-blue-line) !important;
-}
-
-.system-log-page .ant-input-affix-wrapper,
-.system-log-page .ant-input,
-.system-log-page .ant-select-selector {
-    color: var(--system-log-ink);
-    background: var(--system-log-field-bg) !important;
-    border-color: var(--system-log-line) !important;
-}
-
-.system-log-page .ant-input-affix-wrapper:hover,
-.system-log-page .ant-input:hover,
-.system-log-page .ant-select-selector:hover {
-    border-color: var(--system-log-line-strong) !important;
-}
-
-.system-log-page .ant-input-affix-wrapper:focus,
-.system-log-page .ant-input-affix-wrapper-focused,
-.system-log-page .ant-input:focus,
-.system-log-page .ant-select-focused .ant-select-selector {
-    border-color: var(--system-log-blue) !important;
-    box-shadow: 0 0 0 3px var(--system-log-blue-soft) !important;
 }
 
 .system-log-time-icon {
     color: var(--system-log-blue);
 }
 
-.system-log-table .ant-typography code {
+.system-log-code {
     padding: 2px 7px;
     color: var(--system-log-code);
     font-size: 12px;
@@ -152,7 +81,7 @@ html[data-theme="dark"] .system-log-page {
     color: var(--system-log-copy);
 }
 
-.system-log-detail .ant-typography {
+.system-log-detail-text {
     min-width: 0;
     word-break: break-all;
 }

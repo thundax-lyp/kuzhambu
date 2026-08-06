@@ -204,7 +204,11 @@ export const SystemLogPage = () => {
             width: DEFAULT_COLUMN_WIDTHS.requestUri,
             ellipsis: true,
             render: (requestUri?: string | null) =>
-                requestUri ? <Text code>{requestUri}</Text> : null
+                requestUri ? (
+                    <Text className="system-log-code" code>
+                        {requestUri}
+                    </Text>
+                ) : null
         },
         {
             title: "用户",
@@ -364,15 +368,17 @@ export const SystemLogPage = () => {
                     <div className="system-log-detail">
                         <div>
                             <span>请求参数</span>
-                            <Text>{log.requestParams || ""}</Text>
+                            <Text className="system-log-detail-text">
+                                {log.requestParams || ""}
+                            </Text>
                         </div>
                         <div>
                             <span>User-Agent</span>
-                            <Text>{log.userAgent || ""}</Text>
+                            <Text className="system-log-detail-text">{log.userAgent || ""}</Text>
                         </div>
                         <div>
                             <span>部门</span>
-                            <Text>
+                            <Text className="system-log-detail-text">
                                 {log.createUser?.department?.namePath ||
                                     log.createUser?.department?.name ||
                                     ""}
@@ -380,7 +386,7 @@ export const SystemLogPage = () => {
                         </div>
                         <div>
                             <span>备注</span>
-                            <Text>{log.remarks || ""}</Text>
+                            <Text className="system-log-detail-text">{log.remarks || ""}</Text>
                         </div>
                     </div>
                 )
