@@ -4,14 +4,14 @@
     max-width: 420px;
     gap: 8px;
     padding: 10px 12px;
-    border: 1px solid var(--storage-object-line);
+    color: var(--text-primary);
+    border: 1px solid var(--line-subtle);
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--surface-panel);
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
 html[data-theme="dark"] .storage-upload-task-card {
-    background: rgba(17, 28, 46, 0.72);
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.34);
 }
 
@@ -23,11 +23,11 @@ html[data-theme="dark"] .storage-upload-task-card {
 }
 
 .storage-upload-task-card-title {
-    color: var(--storage-object-ink);
+    color: var(--text-primary);
 }
 
 .storage-upload-task-card-stage {
-    color: var(--storage-object-copy);
+    color: var(--text-secondary);
 }
 
 .storage-upload-task-card-meta {

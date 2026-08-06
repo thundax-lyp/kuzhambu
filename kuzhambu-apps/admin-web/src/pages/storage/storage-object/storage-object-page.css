@@ -98,10 +98,6 @@ html[data-theme="dark"] .storage-object-page {
     border-color: var(--storage-object-red-line);
 }
 
-.storage-object-upload-input {
-    display: none;
-}
-
 .storage-object-file-icon {
     color: var(--storage-object-blue);
 }
@@ -125,10 +121,4 @@ html[data-theme="dark"] .storage-object-page {
     background: var(--storage-object-code-soft);
     border: 1px solid var(--storage-object-code-line);
     border-radius: 6px;
-}
-
-.storage-object-upload-task-wrap {
-    margin-bottom: 12px;
-    width: 100%;
-    max-width: 520px;
 }

@@ -1,8 +1,8 @@
-import { DeleteOutlined, FileOutlined, ReloadOutlined, UploadOutlined } from "@ant-design/icons";
+import { DeleteOutlined, FileOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Input, Typography } from "antd";
-import { useMemo, useRef, useState } from "react";
-import type { ChangeEvent, Key } from "react";
+import { useMemo, useState } from "react";
+import type { Key } from "react";
 import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
 import { hasPermission } from "@/auth/permission-storage";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
@@ -13,17 +13,12 @@ import {
     KuzhambuSelect,
     KuzhambuSpace,
     KuzhambuTag,
-    type KuzhambuTableProps,
-    type KuzhambuTableSortPosition
+    type KuzhambuTableProps
 } from "@/components";
 import * as service from "./storage-object-service";
 import type { StoragePageQuery } from "./storage-object-service";
-import { StorageUploadTaskCard } from "./storage-upload-task-card";
-import type {
-    StorageContentMode,
-    StorageRecord,
-    StorageUploadTaskRecord
-} from "./storage-object-types";
+import { StorageObjectUpload } from "./storage-object-upload";
+import type { StorageContentMode, StorageRecord } from "./storage-object-types";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 
 import "./storage-object-page.css";
@@ -36,8 +31,7 @@ const DEFAULT_COLUMN_WIDTHS = {
     size: 120,
     objectStatus: 120,
     referenceStatus: 130,
-    referenceOwner: 180,
-    remarks: 240
+    referenceOwner: 180
 };
 
 type StorageObjectStatusFilter = "ALL" | "ACTIVE" | "DELETING" | "DELETED";
@@ -73,9 +67,6 @@ const referenceStatusLabels: Record<Exclude<StorageReferenceStatusFilter, "ALL">
     REFERENCED: "已引用",
     UNREFERENCED: "未引用"
 };
-
-const uploadAccept =
-    ".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.md,.csv,.json,.html,.zip,.docx,.xlsx,.pptx";
 
 const normalizeSearch = (value?: string | null) => {
     const normalizedValue = value?.trim();
@@ -147,29 +138,6 @@ const referenceStatusTagType = (status?: string | null) => {
     return status === "REFERENCED" ? "success" : "neutral";
 };
 
-const sortByMove = (
-    storages: StorageRecord[],
-    sourceStorage: StorageRecord,
-    targetStorage: StorageRecord,
-    position: KuzhambuTableSortPosition
-) => {
-    const sourceIndex = storages.findIndex((storage) => storage.id === sourceStorage.id);
-    const targetIndex = storages.findIndex((storage) => storage.id === targetStorage.id);
-    if (sourceIndex < 0 || targetIndex < 0) {
-        return storages;
-    }
-
-    const nextStorages = [...storages];
-    const [movedStorage] = nextStorages.splice(sourceIndex, 1);
-    const nextTargetIndex = nextStorages.findIndex((storage) => storage.id === targetStorage.id);
-    nextStorages.splice(
-        position === "before" ? nextTargetIndex : nextTargetIndex + 1,
-        0,
-        movedStorage
-    );
-    return nextStorages;
-};
-
 export const StorageObjectPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
@@ -183,9 +151,6 @@ export const StorageObjectPage = () => {
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<StorageObjectFilters>(DEFAULT_STORAGE_OBJECT_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-    const [uploadTask, setUploadTask] = useState<StorageUploadTaskRecord | null>(null);
-    const uploadInputRef = useRef<HTMLInputElement>(null);
-    const uploadAbortControllerRef = useRef<AbortController | null>(null);
     const hasSelectedStorages = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(
         filters.originalFilename.trim() ||
@@ -221,42 +186,6 @@ export const StorageObjectPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "删除失败");
-        }
-    });
-
-    const uploadMutation = useMutation({
-        mutationFn: (file: File) => {
-            uploadAbortControllerRef.current?.abort();
-            uploadAbortControllerRef.current = new AbortController();
-            return service.uploadStorageFile({
-                file,
-                signal: uploadAbortControllerRef.current.signal,
-                onTaskUpdate: setUploadTask
-            });
-        },
-        onSuccess: async () => {
-            await invalidateStoragePage();
-            messageApi.success("文件已上传");
-        },
-        onError: (error) => {
-            if (error instanceof Error && error.message === "Request was aborted") {
-                return;
-            }
-            messageApi.error(error instanceof Error ? error.message : "上传失败");
-        },
-        onSettled: () => {
-            uploadAbortControllerRef.current = null;
-        }
-    });
-
-    const sortMutation = useMutation({
-        mutationFn: service.sortStorageObjects,
-        onSuccess: async () => {
-            await invalidateStoragePage();
-            messageApi.success("存储对象顺序已更新");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "排序失败");
         }
     });
 
@@ -315,37 +244,6 @@ export const StorageObjectPage = () => {
         });
     };
 
-    const openUploadPicker = () => {
-        uploadInputRef.current?.click();
-    };
-
-    const uploadSelectedFile = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        event.target.value = "";
-        if (file) {
-            setUploadTask(null);
-            uploadMutation.mutate(file);
-        }
-    };
-
-    const cancelUpload = () => {
-        if (!uploadTask?.canCancel) {
-            return;
-        }
-        uploadAbortControllerRef.current?.abort();
-    };
-
-    const isUploadInProgress = Boolean(
-        uploadMutation.isPending ||
-        (uploadTask &&
-            [
-                "uploading-single",
-                "initiating-multipart",
-                "uploading-parts",
-                "completing-multipart"
-            ].includes(uploadTask.stage))
-    );
-
     const openDeleteConfirm = (storage: StorageRecord) => {
         confirm.danger({
             title: "删除存储对象",
@@ -366,20 +264,6 @@ export const StorageObjectPage = () => {
             description: "删除后需要重新上传。若对象仍被业务引用，接口会按后端校验结果拦截。",
             okText: "删除",
             onConfirm: () => deleteMutation.mutateAsync(selectedRowKeys.map(String))
-        });
-    };
-
-    const moveStorage = (
-        sourceStorage: StorageRecord,
-        targetStorage: StorageRecord,
-        position: KuzhambuTableSortPosition
-    ) => {
-        if (!canEditStorage || sourceStorage.id === targetStorage.id) {
-            return;
-        }
-        const nextStorages = sortByMove(storages, sourceStorage, targetStorage, position);
-        sortMutation.mutate({
-            orderedIds: nextStorages.map((storage) => storage.id)
         });
     };
 
@@ -474,7 +358,6 @@ export const StorageObjectPage = () => {
             title: "备注",
             dataIndex: "remarks",
             key: "remarks",
-            width: DEFAULT_COLUMN_WIDTHS.remarks,
             ellipsis: true,
             render: (remarks?: string | null) => remarks || null
         },
@@ -526,11 +409,6 @@ export const StorageObjectPage = () => {
 
     return (
         <>
-            {uploadTask ? (
-                <div className="storage-object-upload-task-wrap">
-                    <StorageUploadTaskCard task={uploadTask} onCancel={cancelUpload} />
-                </div>
-            ) : null}
             <KuzhambuListPage<StorageRecord>
                 pageClassName="storage-object-page"
                 title="存储对象"
@@ -675,23 +553,10 @@ export const StorageObjectPage = () => {
                 onFilterReset={resetFilters}
                 pageActions={
                     <KuzhambuSpace wrap>
-                        <input
-                            ref={uploadInputRef}
-                            aria-label="选择上传文件"
-                            className="storage-object-upload-input"
-                            type="file"
-                            accept={uploadAccept}
-                            onChange={uploadSelectedFile}
+                        <StorageObjectUpload
+                            canUpload={canEditStorage}
+                            onUploaded={invalidateStoragePage}
                         />
-                        <KuzhambuButton
-                            testId="storage-storage-object-storage-object-upload-button"
-                            icon={<UploadOutlined />}
-                            disabled={!canEditStorage || isUploadInProgress}
-                            loading={isUploadInProgress}
-                            onClick={openUploadPicker}
-                        >
-                            上传
-                        </KuzhambuButton>
                         <KuzhambuButton
                             testId="storage-storage-object-storage-object-refresh-button"
                             icon={<ReloadOutlined />}
@@ -722,12 +587,7 @@ export const StorageObjectPage = () => {
                 className="storage-object-table"
                 columns={columns}
                 dataSource={storages}
-                loading={
-                    storageObjectPageQuery.isFetching ||
-                    sortMutation.isPending ||
-                    uploadMutation.isPending
-                }
-                onSort={moveStorage}
+                loading={storageObjectPageQuery.isFetching}
                 pagination={{
                     current: currentPageNo,
                     pageSize: currentPageSize,
@@ -739,7 +599,6 @@ export const StorageObjectPage = () => {
                     selectedRowKeys,
                     onChange: setSelectedRowKeys
                 }}
-                sortable={canEditStorage}
             />
         </>
     );
