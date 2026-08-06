@@ -5,6 +5,7 @@ import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
+import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import { MingCustomsVersionHistoryPanel } from "./ming-customs-version-history-panel";
 import { MingCustomPage } from "./ming-custom-page";
 import type { MingCustomsContentVersionRecord, MingCustomsRecord } from "./ming-custom-types";
@@ -40,28 +41,32 @@ vi.mock("@/pages/classics/common/ai-candidate-panel", () => {
     };
 });
 
+const createMockRefinementTask = vi.hoisted(() => (capability = "CLASSICS_SUMMARY") => {
+    const candidateIds: Record<string, string> = {
+        CLASSICS_SUMMARY: "6001",
+        CLASSICS_TAG_EXTRACT: "6002",
+        CLASSICS_QA: "6003"
+    };
+    const taskIds: Record<string, string> = {
+        CLASSICS_SUMMARY: "9101",
+        CLASSICS_TAG_EXTRACT: "9102",
+        CLASSICS_QA: "9103"
+    };
+    return {
+        taskId: taskIds[capability] || "9101",
+        status: "SUCCEEDED",
+        capability,
+        contentType: "MING_CUSTOMS",
+        contentId: "500000000001",
+        candidateId: candidateIds[capability] || "6001"
+    };
+});
+
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
-    createTask: vi.fn((payload: { capability?: string }) => {
-        const candidateIds: Record<string, string> = {
-            CLASSICS_SUMMARY: "6001",
-            CLASSICS_TAG_EXTRACT: "6002",
-            CLASSICS_QA: "6003"
-        };
-        const taskIds: Record<string, string> = {
-            CLASSICS_SUMMARY: "9101",
-            CLASSICS_TAG_EXTRACT: "9102",
-            CLASSICS_QA: "9103"
-        };
-        return Promise.resolve({
-            taskId: taskIds[payload.capability || "CLASSICS_SUMMARY"] || "9101",
-            status: "SUCCEEDED",
-            capability: payload.capability || "CLASSICS_SUMMARY",
-            contentType: "MING_CUSTOMS",
-            contentId: "500000000001",
-            candidateId: candidateIds[payload.capability || "CLASSICS_SUMMARY"] || "6001"
-        });
-    }),
-    getTask: vi.fn(),
+    createTask: vi.fn((payload: { capability?: string }) =>
+        Promise.resolve(createMockRefinementTask(payload.capability || "CLASSICS_SUMMARY"))
+    ),
+    getTask: vi.fn(() => Promise.resolve(createMockRefinementTask())),
     getTaskStableId: vi.fn((taskId: string, taskIdText?: string | null) => taskIdText || taskId),
     sortNewestByRequestedAtThenId: vi.fn(
         ({ left, right }: { left: { id: string }; right: { id: string } }) =>
@@ -425,6 +430,16 @@ describe("MingCustomPage", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.mocked(aiRefinementTaskService.createTask).mockImplementation(
+            (payload: { capability?: string }) =>
+                Promise.resolve(createMockRefinementTask(payload.capability || "CLASSICS_SUMMARY"))
+        );
+        vi.mocked(aiRefinementTaskService.getTask).mockImplementation(() =>
+            Promise.resolve(createMockRefinementTask())
+        );
+        vi.mocked(aiRefinementTaskService.pageTasks).mockImplementation(() =>
+            Promise.resolve({ items: [], totalCount: 0, pageNo: 1, pageSize: 10 })
+        );
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
         mockMingCustomsRecord = {
@@ -704,15 +719,41 @@ describe("MingCustomPage", () => {
 
     it("matches summary candidates by exact text ids", async () => {
         const user = userEvent.setup();
-        vi.mocked(aiRefinementTaskService.createTask).mockResolvedValueOnce({
-            taskId: "9101",
+        const submittedSummaryTask: AiRefinementTaskRecord = {
+            taskId: "9007199254740992",
+            taskIdText: "9007199254740993",
             status: "SUCCEEDED",
             capability: "CLASSICS_SUMMARY",
             contentType: "MING_CUSTOMS",
             contentId: "500000000001",
             candidateId: "9007199254740992",
             candidateIdText: "9007199254740993"
+        };
+        vi.mocked(aiRefinementTaskService.createTask).mockResolvedValueOnce({
+            ...submittedSummaryTask
         });
+        vi.mocked(aiRefinementTaskService.getTask).mockResolvedValue(submittedSummaryTask);
+        vi.mocked(aiRefinementTaskService.pageTasks)
+            .mockResolvedValueOnce({ items: [], totalCount: 0, pageNo: 1, pageSize: 10 })
+            .mockResolvedValue({
+                items: [
+                    {
+                        taskId: "9007199254740992",
+                        taskIdText: "9007199254740992",
+                        status: "SUCCEEDED",
+                        capability: "CLASSICS_SUMMARY",
+                        contentType: "MING_CUSTOMS",
+                        contentId: "500000000001",
+                        candidateId: "9007199254740992",
+                        candidateIdText: "9007199254740992",
+                        requestedAt: "2026-01-03T00:00:00.000+00:00"
+                    },
+                    submittedSummaryTask
+                ],
+                totalCount: 2,
+                pageNo: 1,
+                pageSize: 10
+            });
         summaryCandidateRecords = [
             {
                 candidateId: "9007199254740992",
@@ -775,6 +816,35 @@ describe("MingCustomPage", () => {
                 path: "/classics/content/ai-candidates/change"
             });
         });
+    }, 30000);
+
+    it("disables summary adoption until a candidate is loaded", async () => {
+        const user = userEvent.setup();
+        summaryCandidateRecords = [];
+        vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValue({
+            items: [],
+            totalCount: 0,
+            pageNo: 1,
+            pageSize: 10
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
+        await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
+
+        expect(
+            await screen.findByTestId("classics-ming-customs-summary-ai-apply-button")
+        ).toBeDisabled();
+        expect(screen.getByLabelText("明代习俗候选摘要")).toHaveValue(
+            "记录明代正旦朝贺与家族拜礼。"
+        );
     }, 30000);
 
     it("rejects summary candidate and refreshes active Ming caches", async () => {

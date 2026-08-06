@@ -39,6 +39,9 @@ const REJECT_ERROR_MESSAGE = "用户已拒绝该 AI 候选";
 const isSummaryTaskActive = (task?: AiRefinementTaskRecord | null) =>
     task?.status === "PENDING" || task?.status === "RUNNING";
 
+const getSummaryTaskStableId = (task?: AiRefinementTaskRecord | null) =>
+    normalizeNullableId(task?.taskIdText ?? task?.taskId);
+
 const getSummaryTaskCandidateId = (task?: AiRefinementTaskRecord | null) =>
     normalizeNullableId(task?.candidateIdText ?? task?.candidateId);
 
@@ -238,12 +241,13 @@ export const MingCustomsEditDrawer = ({
                 )[0],
         [summaryTasks]
     );
+    const trackedSummaryTaskId = getSummaryTaskStableId(summaryTrackingTask);
     const trackedSummaryTask = summaryTasks.find((task) =>
-        isSameId(task.taskId, summaryTrackingTask?.taskId)
+        isSameId(getSummaryTaskStableId(task), trackedSummaryTaskId)
     );
     const latestSummaryTask =
         trackedSummaryTask || summaryTrackingTask || latestSummaryTaskFromList || null;
-    const summaryTrackingTaskId = summaryTrackingTask?.taskId;
+    const summaryTrackingTaskId = trackedSummaryTaskId;
     const summaryLocked =
         summaryCreating ||
         isSummaryTaskActive(latestSummaryTask) ||
@@ -453,11 +457,12 @@ export const MingCustomsEditDrawer = ({
                 title="AI 摘要"
                 open={summaryModalOpen}
                 width={880}
-                applyDisabled={({ creating, resultLoading, tracking }) =>
+                applyDisabled={({ creating, result, resultLoading, tracking }) =>
                     creating ||
                     resultLoading ||
                     tracking ||
                     summaryRejecting ||
+                    !result ||
                     !summaryDraft.trim()
                 }
                 applyTestId="classics-ming-customs-summary-ai-apply-button"
