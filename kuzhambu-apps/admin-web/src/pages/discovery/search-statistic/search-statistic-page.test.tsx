@@ -213,4 +213,29 @@ describe("SearchStatisticPage", () => {
         expect(await screen.findByText("REQ-1001")).toBeInTheDocument();
         expect(screen.getByText('{"scope":"classics"}')).toBeInTheDocument();
     }, 30000);
+
+    it("preserves record query state when switching statistics panels", async () => {
+        const user = userEvent.setup();
+        render(
+            <AdminQueryProvider>
+                <AntdApp>
+                    <SearchStatisticPage />
+                </AntdApp>
+            </AdminQueryProvider>
+        );
+
+        await user.click(screen.getByText("检索记录"));
+        await user.click(screen.getByRole("button", { name: "查询记录" }));
+        expect(await screen.findByText("EVT-1001")).toBeInTheDocument();
+        expect(screen.getByText("共 42 条记录")).toBeInTheDocument();
+
+        await user.click(screen.getByText("统计摘要"));
+        expect(screen.queryByRole("button", { name: "查询记录" })).not.toBeInTheDocument();
+        await user.click(screen.getByText("检索记录"));
+
+        expect(screen.getByText("EVT-1001")).toBeInTheDocument();
+        expect(screen.getByText("共 42 条记录")).toBeInTheDocument();
+        expect(screen.getByLabelText("搜索词")).toHaveValue("礼器");
+        expect(screen.getByLabelText("状态")).toHaveValue("SUCCESS");
+    }, 30000);
 });

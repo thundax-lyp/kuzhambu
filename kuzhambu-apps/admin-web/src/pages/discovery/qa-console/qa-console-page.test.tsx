@@ -70,7 +70,7 @@ const findButtonByNormalizedText = (text: string) => {
 };
 
 const switchPanel = async (user: ReturnType<typeof userEvent.setup>, panelName: string) => {
-    await user.click(screen.getByText(panelName));
+    await user.click(screen.getByTitle(panelName));
 };
 
 describe("QaConsolePage", () => {
@@ -211,6 +211,40 @@ describe("QaConsolePage", () => {
         expect(screen.getAllByText("2023-11-15").length).toBeGreaterThan(0);
     }, 30000);
 
+    it("preserves sync filter state when switching console panels", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        await switchPanel(user, "知识文档");
+        await user.click(screen.getByRole("combobox", { name: "同步状态" }));
+        await user.click(await screen.findByText("失败"));
+        await user.click(screen.getByRole("button", { name: /查\s*询/u }));
+
+        await waitFor(() => {
+            expect(mocks.pageKnowledgeSyncItems.mock.calls.at(-1)?.[0]).toEqual({
+                contentType: "SANCAI_ENTRY",
+                pageNo: 1,
+                pageSize: 10,
+                syncStatus: "FAILED"
+            });
+        });
+
+        await switchPanel(user, "问答诊断");
+        expect(screen.queryByRole("button", { name: /查\s*询/u })).not.toBeInTheDocument();
+        await switchPanel(user, "知识文档");
+
+        expect(screen.getAllByText("失败").length).toBeGreaterThan(0);
+        await user.click(screen.getByRole("button", { name: /查\s*询/u }));
+        await waitFor(() => {
+            expect(mocks.pageKnowledgeSyncItems.mock.calls.at(-1)?.[0]).toEqual({
+                contentType: "SANCAI_ENTRY",
+                pageNo: 1,
+                pageSize: 10,
+                syncStatus: "FAILED"
+            });
+        });
+    }, 30000);
+
     it("supports row sync action", async () => {
         const user = userEvent.setup();
         renderPage();
@@ -266,7 +300,7 @@ describe("QaConsolePage", () => {
     it("exports session from table action", async () => {
         renderPage();
 
-        fireEvent.click(screen.getByText("会话管理"));
+        fireEvent.click(screen.getByTitle("会话管理"));
         expect(await screen.findByText("礼器问答")).toBeInTheDocument();
         fireEvent.click(
             screen.getByTestId("discovery-qa-console-qa-console-export-session-button")
@@ -326,7 +360,7 @@ describe("QaConsolePage", () => {
             });
         renderPage();
 
-        fireEvent.click(screen.getByText("会话管理"));
+        fireEvent.click(screen.getByTitle("会话管理"));
         await waitFor(() => {
             expect(mocks.pageQaSessions.mock.calls.at(-1)?.[0]).toEqual({
                 openedAtEnd: null,

@@ -37,9 +37,15 @@ export const SearchStatisticPage = () => {
                         onChange={(value) => setActivePanel(value as SearchStatisticsPanel)}
                     />
 
-                    {activePanel === "summary" ? <SearchSummaryPanel /> : null}
-                    {activePanel === "records" ? <SearchEventPanel /> : null}
-                    {activePanel === "rebuild" ? <SearchIndexRebuildPanel /> : null}
+                    <div hidden={activePanel !== "summary"}>
+                        <SearchSummaryPanel />
+                    </div>
+                    <div hidden={activePanel !== "records"}>
+                        <SearchEventPanel />
+                    </div>
+                    <div hidden={activePanel !== "rebuild"}>
+                        <SearchIndexRebuildPanel />
+                    </div>
                 </KuzhambuSpace>
             </section>
         </main>

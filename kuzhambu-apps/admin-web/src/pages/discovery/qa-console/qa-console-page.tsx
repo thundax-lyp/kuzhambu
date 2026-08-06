@@ -44,12 +44,18 @@ export const QaConsolePage = () => {
                         onChange={(value) => setActivePanel(value as QaConsolePanel)}
                     />
 
-                    {activePanel === "health" ? <QaHealthPanel /> : null}
-                    {activePanel === "sync" ? <QaSyncTable /> : null}
-                    {activePanel === "sessions" ? <QaSessionTable /> : null}
-                    {activePanel === "diagnostics" ? (
+                    <div hidden={activePanel !== "health"}>
+                        <QaHealthPanel />
+                    </div>
+                    <div hidden={activePanel !== "sync"}>
+                        <QaSyncTable />
+                    </div>
+                    <div hidden={activePanel !== "sessions"}>
+                        <QaSessionTable />
+                    </div>
+                    <div hidden={activePanel !== "diagnostics"}>
                         <QaDiagnosticsPanel fastGptConsoleUrl={fastGptConsoleUrl} />
-                    ) : null}
+                    </div>
                 </KuzhambuSpace>
             </section>
         </main>
