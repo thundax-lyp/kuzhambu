@@ -1,5 +1,4 @@
 import { Empty, Pagination, Spin, Tag } from "antd";
-import type { ReactNode } from "react";
 import type {
     DiscoverySearchGroupRecord,
     DiscoverySearchItemRecord
@@ -22,10 +21,70 @@ interface SearchResultTableProps {
     totalCount: number;
     onChangePage: (pageNo?: number, pageSize?: number) => void;
     onOpenPreview: (result: SearchResultEntry) => void;
-    renderHighlightText: (highlightText?: string | null) => ReactNode;
-    renderQueryHighlight: (text: string, queryText: string) => ReactNode;
-    toPlainHighlightText: (value?: string | null) => string;
 }
+
+const splitList = (value: string) => {
+    const tokens = value
+        .split(/[\n,，、\s]+/gu)
+        .map((token) => token.trim())
+        .filter(Boolean);
+    return Array.from(new Set(tokens));
+};
+
+const escapeRegExp = (value: string) => {
+    return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+};
+
+const renderHighlightText = (highlightText?: string | null) => {
+    if (!highlightText) {
+        return null;
+    }
+
+    const nodes: Array<string | JSX.Element> = [];
+    const markPattern = /<mark>(.*?)<\/mark>/giu;
+    let lastIndex = 0;
+    let match = markPattern.exec(highlightText);
+    while (match) {
+        if (match.index > lastIndex) {
+            nodes.push(highlightText.slice(lastIndex, match.index));
+        }
+        nodes.push(<mark key={`mark-${match.index}`}>{match[1]}</mark>);
+        lastIndex = match.index + match[0].length;
+        match = markPattern.exec(highlightText);
+    }
+    if (lastIndex < highlightText.length) {
+        nodes.push(highlightText.slice(lastIndex));
+    }
+    return nodes;
+};
+
+const renderQueryHighlight = (text: string, queryText: string) => {
+    const terms = splitList(queryText);
+    if (terms.length === 0) {
+        return text;
+    }
+
+    const pattern = new RegExp(`(${terms.map(escapeRegExp).join("|")})`, "giu");
+    const nodes: Array<string | JSX.Element> = [];
+    let lastIndex = 0;
+    let match = pattern.exec(text);
+    while (match) {
+        if (match.index > lastIndex) {
+            nodes.push(text.slice(lastIndex, match.index));
+        }
+        nodes.push(<mark key={`query-mark-${match.index}`}>{match[0]}</mark>);
+        lastIndex = match.index + match[0].length;
+        match = pattern.exec(text);
+    }
+    if (lastIndex < text.length) {
+        nodes.push(text.slice(lastIndex));
+    }
+    return nodes.length > 0 ? nodes : text;
+};
+
+const toPlainHighlightText = (value?: string | null) => {
+    return (value ?? "").replace(/<mark>(.*?)<\/mark>/giu, "$1").trim();
+};
 
 export const SearchResultTable = ({
     currentPageNo,
@@ -37,10 +96,7 @@ export const SearchResultTable = ({
     shouldShowZeroResult,
     totalCount,
     onChangePage,
-    onOpenPreview,
-    renderHighlightText,
-    renderQueryHighlight,
-    toPlainHighlightText
+    onOpenPreview
 }: SearchResultTableProps) => {
     const renderResultTitle = (result: SearchResultEntry) => {
         const title = result.item.title || "未命名结果";

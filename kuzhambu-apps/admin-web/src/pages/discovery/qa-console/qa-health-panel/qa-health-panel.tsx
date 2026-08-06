@@ -1,7 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { Descriptions } from "antd";
 import { KuzhambuButton, KuzhambuSpace, KuzhambuCard } from "@/components";
-
-import type { KnowledgeHealthRecord } from "@/pages/discovery/qa-console/qa-console-types";
+import * as service from "@/pages/discovery/qa-console/qa-console-service";
 
 const formatTime = (value?: number | string | null) => {
     if (value === null || value === undefined || value === "") {
@@ -17,21 +17,21 @@ const formatTime = (value?: number | string | null) => {
     }).format(new Date(timestamp));
 };
 
-interface QaHealthPanelProps {
-    data?: KnowledgeHealthRecord;
-    loading: boolean;
-    onRefresh: () => void;
-}
+export const QaHealthPanel = () => {
+    const healthQuery = useQuery({
+        queryFn: service.getKnowledgeHealth,
+        queryKey: ["discovery-qa-console", "knowledge-health"]
+    });
+    const data = healthQuery.data;
 
-export const QaHealthPanel = ({ data, loading, onRefresh }: QaHealthPanelProps) => {
     return (
         <KuzhambuCard title="知识库健康" size="small">
             <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                 <KuzhambuSpace wrap>
                     <KuzhambuButton
                         testId="discovery-qa-console-qa-console-refresh-health-button"
-                        loading={loading}
-                        onClick={onRefresh}
+                        loading={healthQuery.isFetching}
+                        onClick={() => void healthQuery.refetch()}
                         type="primary"
                     >
                         刷新健康

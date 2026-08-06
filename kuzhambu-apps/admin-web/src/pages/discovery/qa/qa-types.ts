@@ -1,3 +1,5 @@
+import type { Page } from "@/types/page";
+
 export interface DiscoveryQaSessionRecord {
     contextContentId?: string | null;
     contextContentType?: string | null;
@@ -23,13 +25,7 @@ export interface DiscoveryQaSessionMessageRecord {
     sessionId?: string | null;
 }
 
-export interface DiscoveryQaSessionPageRecord {
-    items?: DiscoveryQaSessionRecord[] | null;
-    records?: DiscoveryQaSessionRecord[] | null;
-    pageNo?: number | null;
-    pageSize?: number | null;
-    total?: number | null;
-}
+export type DiscoveryQaSessionPageRecord = Page<DiscoveryQaSessionRecord>;
 
 export interface DiscoveryQaExportSessionRecord {
     completedAt?: number | null;

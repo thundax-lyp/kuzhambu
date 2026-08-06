@@ -1,6 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { Descriptions, Empty, Spin, Tag, Typography } from "antd";
 import { KuzhambuDrawer } from "@/components";
-import type { DiscoverySearchPreviewRecord } from "@/pages/discovery/search/search-types";
+import * as service from "@/pages/discovery/search/search-service";
 import type { SearchResultEntry } from "@/pages/discovery/search/search-result-table";
 
 const PREVIEW_PARAGRAPH_MAX_LENGTH = 360;
@@ -50,24 +51,35 @@ const splitPreviewBody = (value?: string | null) => {
 };
 
 interface SearchResultDetailProps {
-    errorMessage?: string | null;
-    loading: boolean;
-    open: boolean;
-    previewData?: DiscoverySearchPreviewRecord;
     previewResult?: SearchResultEntry | null;
-    toKnowledgeBaseLabel: (value?: string | null) => string;
     onClose: () => void;
 }
 
-export const SearchResultDetail = ({
-    errorMessage,
-    loading,
-    open,
-    previewData,
-    previewResult,
-    toKnowledgeBaseLabel,
-    onClose
-}: SearchResultDetailProps) => {
+const KNOWLEDGE_BASE_LABELS = new Map([
+    ["SANCAI_ENTRY", "三才图会"],
+    ["WANGQI_DOCUMENT", "王圻文档"],
+    ["MING_CUSTOMS", "明代习俗"]
+]);
+
+const toKnowledgeBaseLabel = (value?: string | null) => {
+    return (value ? KNOWLEDGE_BASE_LABELS.get(value) : null) || value || "-";
+};
+
+export const SearchResultDetail = ({ previewResult, onClose }: SearchResultDetailProps) => {
+    const contentId = previewResult?.item.contentId ?? null;
+    const contentType = previewResult?.item.contentType ?? null;
+    const previewQuery = useQuery({
+        enabled: contentId !== null && contentType !== null,
+        queryFn: () =>
+            service.previewSearchResult({
+                contentId: contentId ?? "",
+                contentType: contentType ?? ""
+            }),
+        queryKey: ["discovery-search", "preview", contentType, contentId]
+    });
+    const previewData = previewQuery.data;
+    const errorMessage = previewQuery.error instanceof Error ? previewQuery.error.message : null;
+    const open = previewResult !== null && previewResult !== undefined;
     const previewTitle = previewData?.title || previewResult?.item.title || "搜索命中预览";
     const previewBodyParagraphs = splitPreviewBody(previewData?.bodyText);
     const previewMetaItems = [
@@ -99,9 +111,9 @@ export const SearchResultDetail = ({
             ]}
             onClose={onClose}
         >
-            <Spin spinning={loading}>
+            <Spin spinning={previewQuery.isFetching}>
                 {errorMessage ? <Empty description={`预览失败：${errorMessage}`} /> : null}
-                {!errorMessage && open && !previewData && !loading ? (
+                {!errorMessage && open && !previewData && !previewQuery.isFetching ? (
                     <Empty description="当前内容不可预览或已经不可见" />
                 ) : null}
                 {previewData ? (

@@ -1,5 +1,5 @@
 import { AdminQueryProvider } from "@/query/query-client";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -43,7 +43,7 @@ const mocks = vi.hoisted(() => ({
             ]
         };
     }),
-    getQaSession: vi.fn(async () => ({
+    getQaSession: vi.fn(async (query: { sessionId: string }) => ({
         messages: [] as Array<{
             content: string;
             id: string;
@@ -51,20 +51,25 @@ const mocks = vi.hoisted(() => ({
             role: string;
             sessionId: string;
         }>,
-        id: "7001",
+        id: query.sessionId,
         openedAt: 1700000000000,
         title: "知识中心问答"
     })),
     deleteQaSession: vi.fn(async () => undefined),
     pageQaSessions: vi.fn(async () => ({
-        items: [] as Array<{ id: string; openedAt: number; title: string }>,
+        count: 0,
         pageNo: 1,
         pageSize: 20,
-        total: 0
+        records: [] as Array<{ id: string; openedAt: number; title: string }>,
+        totalPage: 0
     }))
+}));
+const currentUserMocks = vi.hoisted(() => ({
+    getCurrentUserInfo: vi.fn(async () => ({ id: "9001", loginName: "qa-user" }))
 }));
 
 vi.mock("./qa-service", () => mocks);
+vi.mock("@/service/current-user-service", () => currentUserMocks);
 
 const renderPage = (initialEntry = "/discovery/qa") => {
     return render(
@@ -83,6 +88,7 @@ const renderPage = (initialEntry = "/discovery/qa") => {
 describe("QaPage", () => {
     beforeEach(() => {
         Object.values(mocks).forEach((mock) => mock.mockClear());
+        currentUserMocks.getCurrentUserInfo.mockClear();
         mocks.createQaSession.mockImplementation(async () => ({
             contextMode: "GENERAL",
             id: "7001",
@@ -111,7 +117,7 @@ describe("QaPage", () => {
         expect(screen.queryByLabelText("Trace ID")).not.toBeInTheDocument();
         await waitFor(() => {
             expect(mocks.pageQaSessions).toHaveBeenCalledWith({
-                ownerUserId: "1001",
+                ownerUserId: "9001",
                 pageNo: 1,
                 pageSize: 20,
                 scope: "PORTAL"
@@ -132,7 +138,7 @@ describe("QaPage", () => {
                     contextContentId: null,
                     contextContentType: null,
                     contextMode: "GENERAL",
-                    ownerUserId: "1001",
+                    ownerUserId: "9001",
                     requestId: null,
                     scope: "PORTAL",
                     title: "礼学和礼制有什么关系？",
@@ -172,7 +178,7 @@ describe("QaPage", () => {
             expect(mocks.createQaSessionExport).toHaveBeenCalledWith(
                 {
                     format: "CSV",
-                    ownerUserId: "1001",
+                    ownerUserId: "9001",
                     sessionId: "7001"
                 },
                 expect.anything()
@@ -195,16 +201,17 @@ describe("QaPage", () => {
 
     it("renders messages from an existing session detail", async () => {
         mocks.pageQaSessions.mockResolvedValueOnce({
-            items: [
+            count: 1,
+            pageNo: 1,
+            pageSize: 20,
+            records: [
                 {
                     id: "7001",
                     openedAt: 1700000000000,
                     title: "既有对话"
                 }
             ],
-            pageNo: 1,
-            pageSize: 20,
-            total: 1
+            totalPage: 1
         });
         mocks.getQaSession.mockResolvedValueOnce({
             messages: [
@@ -235,9 +242,16 @@ describe("QaPage", () => {
         expect(await screen.findByText("礼学是什么？")).toBeInTheDocument();
         expect(screen.getByText("礼学是礼制相关的学问。")).toBeInTheDocument();
         expect(mocks.getQaSession).toHaveBeenCalledWith({
-            ownerUserId: "1001",
+            ownerUserId: "9001",
             sessionId: "7001"
         });
+
+        await user.type(screen.getByLabelText("问题"), "礼学有哪些代表人物？");
+        await user.click(screen.getByRole("button", { name: "发送问题" }));
+
+        expect(await screen.findByText("礼学有哪些代表人物？")).toBeInTheDocument();
+        expect(screen.getByText("礼学是什么？")).toBeInTheDocument();
+        expect(screen.getByText("礼学是礼制相关的学问。")).toBeInTheDocument();
     });
 
     it("truncates first question as automatic conversation title", async () => {
@@ -262,26 +276,31 @@ describe("QaPage", () => {
 
     it("deletes a conversation from the session list", async () => {
         mocks.pageQaSessions.mockResolvedValueOnce({
-            items: [
+            count: 1,
+            pageNo: 1,
+            pageSize: 20,
+            records: [
                 {
                     id: "7001",
                     openedAt: 1700000000000,
                     title: "礼学和礼制有什么关系？"
                 }
             ],
-            pageNo: 1,
-            pageSize: 20,
-            total: 1
+            totalPage: 1
         });
         const user = userEvent.setup();
         renderPage();
 
         await user.click(await screen.findByTestId("discovery-qa-delete-session-button"));
 
+        const confirmDialog = await screen.findByRole("dialog");
+        expect(screen.getByText("确认删除「礼学和礼制有什么关系？」？")).toBeInTheDocument();
+        await user.click(within(confirmDialog).getByRole("button", { name: /删\s*除/ }));
+
         await waitFor(() => {
             expect(mocks.deleteQaSession).toHaveBeenCalledWith(
                 {
-                    ownerUserId: "1001",
+                    ownerUserId: "9001",
                     sessionId: "7001"
                 },
                 expect.anything()
@@ -300,6 +319,74 @@ describe("QaPage", () => {
         expect(await screen.findByText("创建会话失败")).toBeInTheDocument();
         expect(screen.getByLabelText("问题")).toHaveValue("礼学和礼制有什么关系？");
         expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
+    });
+
+    it("aborts the active stream when starting a new conversation", async () => {
+        let streamSignal: AbortSignal | undefined;
+        mocks.createQaChatCompletionStream.mockImplementationOnce(({ signal }) => {
+            streamSignal = signal;
+            return new Promise((_resolve, reject) => {
+                signal?.addEventListener("abort", () =>
+                    reject(new DOMException("Aborted", "AbortError"))
+                );
+            });
+        });
+        const user = userEvent.setup();
+        renderPage();
+
+        await user.type(screen.getByLabelText("问题"), "持续生成回答");
+        await user.click(screen.getByRole("button", { name: "发送问题" }));
+        await waitFor(() => expect(streamSignal).toBeDefined());
+        await user.click(screen.getByRole("button", { name: "新建对话" }));
+
+        expect(streamSignal?.aborted).toBe(true);
+    });
+
+    it("settles an aborted stream before returning to the previous session", async () => {
+        mocks.pageQaSessions.mockResolvedValueOnce({
+            count: 2,
+            pageNo: 1,
+            pageSize: 20,
+            records: [
+                {
+                    id: "7001",
+                    openedAt: 1700000000000,
+                    title: "第一会话"
+                },
+                {
+                    id: "7002",
+                    openedAt: 1700000100000,
+                    title: "第二会话"
+                }
+            ],
+            totalPage: 1
+        });
+        mocks.getQaSession.mockImplementation(async ({ sessionId }) => ({
+            messages: [],
+            id: sessionId,
+            openedAt: 1700000000000,
+            title: sessionId === "7001" ? "第一会话" : "第二会话"
+        }));
+        mocks.createQaChatCompletionStream.mockImplementationOnce(({ signal }) => {
+            return new Promise((_resolve, reject) => {
+                signal?.addEventListener("abort", () =>
+                    reject(new DOMException("Aborted", "AbortError"))
+                );
+            });
+        });
+        const user = userEvent.setup();
+        renderPage();
+
+        await user.click(await screen.findByRole("button", { name: "第一会话" }));
+        await user.type(screen.getByLabelText("问题"), "持续生成回答");
+        await user.click(screen.getByRole("button", { name: "发送问题" }));
+        expect(await screen.findByText("持续生成回答")).toBeInTheDocument();
+
+        await user.click(await screen.findByRole("button", { name: "第二会话" }));
+        await user.click(await screen.findByRole("button", { name: "第一会话" }));
+
+        expect(await screen.findByText("回答已取消。")).toBeInTheDocument();
+        expect(screen.queryByText("正在检索知识库...")).not.toBeInTheDocument();
     });
 
     it("ignores url context filters and keeps full-library qa", async () => {

@@ -1,7 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { Descriptions, Typography } from "antd";
-import { KuzhambuDrawer, KuzhambuSpace } from "@/components";
-
-import type { DiscoveryQaSessionDetailRecord } from "@/pages/discovery/qa-console/qa-console-types";
+import { KuzhambuButton, KuzhambuDrawer, KuzhambuSpace } from "@/components";
+import * as service from "@/pages/discovery/qa-console/qa-console-service";
 
 const { Text } = Typography;
 
@@ -28,24 +28,44 @@ const formatTime = (value?: number | string | null) => {
 
 interface QaSessionDetailDrawerProps {
     onClose: () => void;
-    open: boolean;
-    sessionDetail: DiscoveryQaSessionDetailRecord | null;
+    sessionId: string | null;
 }
 
-export const QaSessionDetailDrawer = ({
-    onClose,
-    open,
-    sessionDetail
-}: QaSessionDetailDrawerProps) => {
+export const QaSessionDetailDrawer = ({ onClose, sessionId }: QaSessionDetailDrawerProps) => {
+    const sessionDetailQuery = useQuery({
+        queryFn: () => service.getQaSession({ sessionId: sessionId ?? "" }),
+        queryKey: ["discovery-qa-console", "session-detail", sessionId],
+        enabled: sessionId !== null
+    });
+    const sessionDetail = sessionDetailQuery.data;
+    const errorMessage =
+        sessionDetailQuery.error instanceof Error
+            ? sessionDetailQuery.error.message
+            : "会话详情加载失败";
+
     return (
         <KuzhambuDrawer
             destroyOnClose
             onClose={onClose}
-            open={open}
+            open={sessionId !== null}
+            loading={sessionDetailQuery.isFetching}
             size="large"
             testId="discovery-qa-console-session-detail-drawer"
             title={sessionDetail?.title ?? "会话详情"}
         >
+            {sessionDetailQuery.isError ? (
+                <KuzhambuSpace orientation="vertical" size={12}>
+                    <Text type="danger">{errorMessage}</Text>
+                    <KuzhambuButton
+                        ariaLabel="重试"
+                        loading={sessionDetailQuery.isFetching}
+                        testId="discovery-qa-console-session-detail-retry-button"
+                        onClick={() => void sessionDetailQuery.refetch()}
+                    >
+                        重试
+                    </KuzhambuButton>
+                </KuzhambuSpace>
+            ) : null}
             {sessionDetail ? (
                 <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                     <Descriptions
