@@ -1,19 +1,15 @@
 import { ApartmentOutlined } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
 import { Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import type { Key } from "react";
-import { KuzhambuSpace } from "@/components";
-import * as service from "@/pages/system/user/user-service";
+import { KuzhambuAlert, KuzhambuButton, KuzhambuSpace } from "@/components";
 import type { UserDepartmentNode } from "@/pages/system/user/user-types";
 import "./user-department-tree.css";
 
 const { Text } = Typography;
 
 export const ALL_DEPARTMENT_ID = "all";
-
-const EMPTY_DEPARTMENTS: UserDepartmentNode[] = [];
 
 const buildDepartmentTree = (departments: UserDepartmentNode[]): DataNode[] => {
     const rootDepartment: UserDepartmentNode = {
@@ -53,46 +49,27 @@ const collectTreeKeys = (nodes: DataNode[]): Key[] => {
 };
 
 interface UserDepartmentTreeProps {
-    refreshSignal: number;
+    departments: UserDepartmentNode[];
+    error?: Error | null;
+    loading: boolean;
     selectedDepartmentId: string;
-    onDepartmentsChange: (departments: UserDepartmentNode[]) => void;
-    onFetchingChange: (isFetching: boolean) => void;
+    onRetry: () => void;
     onSelectDepartment: (departmentId: string) => void;
 }
 
 export const UserDepartmentTree = ({
-    refreshSignal,
+    departments,
+    error,
+    loading,
     selectedDepartmentId,
-    onDepartmentsChange,
-    onFetchingChange,
+    onRetry,
     onSelectDepartment
 }: UserDepartmentTreeProps) => {
-    const departmentQuery = useQuery({
-        queryKey: ["user", "department", "tree"],
-        queryFn: () => service.listDepartments(),
-        retry: false
-    });
-    const { data: departmentData, isFetching, refetch } = departmentQuery;
-    const departments = useMemo(() => departmentData ?? EMPTY_DEPARTMENTS, [departmentData]);
     const departmentTreeData = useMemo(() => buildDepartmentTree(departments), [departments]);
     const departmentTreeKeys = useMemo(
         () => collectTreeKeys(departmentTreeData),
         [departmentTreeData]
     );
-
-    useEffect(() => {
-        onDepartmentsChange(departments);
-    }, [departments, onDepartmentsChange]);
-
-    useEffect(() => {
-        onFetchingChange(isFetching);
-    }, [isFetching, onFetchingChange]);
-
-    useEffect(() => {
-        if (refreshSignal > 0) {
-            refetch();
-        }
-    }, [refetch, refreshSignal]);
 
     const selectDepartment = (keys: Key[]) => {
         onSelectDepartment(String(keys[0] || ALL_DEPARTMENT_ID));
@@ -106,14 +83,33 @@ export const UserDepartmentTree = ({
                     <Text strong>部门</Text>
                 </KuzhambuSpace>
             </div>
-            <Tree
-                key={departmentTreeKeys.join(",")}
-                blockNode
-                defaultExpandedKeys={departmentTreeKeys}
-                selectedKeys={[selectedDepartmentId]}
-                treeData={departmentTreeData}
-                onSelect={selectDepartment}
-            />
+            {error ? (
+                <KuzhambuAlert
+                    showIcon
+                    type="error"
+                    title="部门加载失败"
+                    description={error.message || "请稍后重试"}
+                    action={
+                        <KuzhambuButton
+                            ariaLabel="重试加载部门"
+                            testId="system-user-department-retry-button"
+                            onClick={onRetry}
+                        >
+                            重试
+                        </KuzhambuButton>
+                    }
+                />
+            ) : (
+                <Tree
+                    key={departmentTreeKeys.join(",")}
+                    blockNode
+                    disabled={loading}
+                    defaultExpandedKeys={departmentTreeKeys}
+                    selectedKeys={[selectedDepartmentId]}
+                    treeData={departmentTreeData}
+                    onSelect={selectDepartment}
+                />
+            )}
         </div>
     );
 };

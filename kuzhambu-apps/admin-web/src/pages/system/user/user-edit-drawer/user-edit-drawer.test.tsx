@@ -1,14 +1,18 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { App } from "antd";
 import type { CurrentUserRecord } from "@/service/current-user-types";
 import type { UserRecord } from "@/pages/system/user/user-types";
 import { UserEditDrawer } from "./user-edit-drawer";
 import * as service from "@/pages/system/user/user-service";
 
 vi.mock("@/pages/system/user/user-service", () => ({
-    listRoles: vi.fn()
+    changeInfo: vi.fn(),
+    create: vi.fn(),
+    listRoles: vi.fn(),
+    uploadAvatar: vi.fn()
 }));
 
 const currentUser: CurrentUserRecord = {
@@ -46,16 +50,15 @@ const renderDrawer = (user: UserRecord) => {
     });
     const view = render(
         <QueryClientProvider client={queryClient}>
-            <UserEditDrawer
-                open
-                title="编辑用户"
-                saveText="保存"
-                user={user}
-                currentUser={currentUser}
-                departments={[baseUser.department!]}
-                onClose={vi.fn()}
-                onSave={vi.fn()}
-            />
+            <App>
+                <UserEditDrawer
+                    open
+                    user={user}
+                    currentUser={currentUser}
+                    departments={[baseUser.department!]}
+                    onClose={vi.fn()}
+                />
+            </App>
         </QueryClientProvider>
     );
     return {
@@ -63,16 +66,15 @@ const renderDrawer = (user: UserRecord) => {
         rerenderDrawer: (nextUser: UserRecord) =>
             view.rerender(
                 <QueryClientProvider client={queryClient}>
-                    <UserEditDrawer
-                        open
-                        title="编辑用户"
-                        saveText="保存"
-                        user={nextUser}
-                        currentUser={currentUser}
-                        departments={[baseUser.department!]}
-                        onClose={vi.fn()}
-                        onSave={vi.fn()}
-                    />
+                    <App>
+                        <UserEditDrawer
+                            open
+                            user={nextUser}
+                            currentUser={currentUser}
+                            departments={[baseUser.department!]}
+                            onClose={vi.fn()}
+                        />
+                    </App>
                 </QueryClientProvider>
             )
     };
@@ -99,5 +101,35 @@ describe("UserEditDrawer", () => {
 
         expect(screen.getByDisplayValue("草稿姓名")).toBeInTheDocument();
         expect(screen.queryByDisplayValue("服务端姓名")).not.toBeInTheDocument();
+    });
+
+    it("owns the edit mutation and closes after saving", async () => {
+        const user = userEvent.setup();
+        const onClose = vi.fn();
+        vi.mocked(service.changeInfo).mockResolvedValue(baseUser);
+        const queryClient = new QueryClient({
+            defaultOptions: { queries: { retry: false } }
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <App>
+                    <UserEditDrawer
+                        open
+                        user={baseUser}
+                        currentUser={currentUser}
+                        departments={[baseUser.department!]}
+                        onClose={onClose}
+                    />
+                </App>
+            </QueryClientProvider>
+        );
+
+        await screen.findByLabelText("姓名");
+        await user.click(screen.getByRole("button", { name: /保\s*存/ }));
+
+        await waitFor(() => expect(service.changeInfo).toHaveBeenCalledTimes(1));
+        await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+        expect(screen.queryByTestId("system-user-user-remove-button")).not.toBeInTheDocument();
     });
 });
