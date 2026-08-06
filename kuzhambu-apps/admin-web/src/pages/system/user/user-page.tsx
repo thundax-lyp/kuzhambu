@@ -346,7 +346,8 @@ export const UserPage = () => {
                                     </KuzhambuButton>
                                 }
                             />
-                        ) : (
+                        ) : null}
+                        {pageData || !userPageQuery.isError ? (
                             <UserTable
                                 users={users}
                                 loading={userPageQuery.isFetching}
@@ -381,7 +382,7 @@ export const UserPage = () => {
                                 }}
                                 onDelete={confirmDeleteUser}
                             />
-                        )}
+                        ) : null}
                     </Splitter.Panel>
                 </Splitter>
             </KuzhambuPage>

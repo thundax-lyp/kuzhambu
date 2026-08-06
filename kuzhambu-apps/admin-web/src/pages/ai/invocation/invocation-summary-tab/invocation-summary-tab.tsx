@@ -141,7 +141,7 @@ export const InvocationSummaryTab = ({
                 />
             ) : null}
 
-            {!invocationSummaryQuery.isError ? (
+            {summary || !invocationSummaryQuery.isError ? (
                 <>
                     <div className="invocation-metrics">
                         <KuzhambuCard>

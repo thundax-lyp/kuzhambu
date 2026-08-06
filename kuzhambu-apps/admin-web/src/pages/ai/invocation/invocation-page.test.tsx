@@ -1,4 +1,5 @@
 import { AdminQueryProvider } from "@/query/query-client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
@@ -50,6 +51,20 @@ const renderPage = () =>
             </AdminQueryProvider>
         </App>
     );
+
+const renderPageWithQueryClient = () => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } }
+    });
+    render(
+        <QueryClientProvider client={queryClient}>
+            <App>
+                <InvocationPage />
+            </App>
+        </QueryClientProvider>
+    );
+    return queryClient;
+};
 
 describe("InvocationPage", () => {
     beforeEach(() => {
@@ -126,5 +141,21 @@ describe("InvocationPage", () => {
         expect(screen.getByText("统计服务暂不可用")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "重试加载调用统计" })).toBeInTheDocument();
         expect(screen.queryByText("调用次数")).not.toBeInTheDocument();
+    });
+
+    it("keeps cached summary metrics visible when a refresh fails", async () => {
+        const queryClient = renderPageWithQueryClient();
+        expect(await screen.findByText("调用次数")).toBeInTheDocument();
+        expect(screen.getAllByText("12")).toHaveLength(2);
+        vi.mocked(service.getInvocationSummary).mockRejectedValueOnce(
+            new Error("统计服务暂不可用")
+        );
+
+        await queryClient.refetchQueries({ queryKey: ["ai", "invocation", "summary"] });
+
+        expect(await screen.findByText("调用统计加载失败")).toBeInTheDocument();
+        expect(screen.getByText("统计服务暂不可用")).toBeInTheDocument();
+        expect(screen.getByText("调用次数")).toBeInTheDocument();
+        expect(screen.getAllByText("12")).toHaveLength(2);
     });
 });

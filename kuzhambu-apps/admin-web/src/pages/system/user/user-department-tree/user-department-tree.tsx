@@ -99,7 +99,8 @@ export const UserDepartmentTree = ({
                         </KuzhambuButton>
                     }
                 />
-            ) : (
+            ) : null}
+            {departments.length > 0 || !error ? (
                 <Tree
                     key={departmentTreeKeys.join(",")}
                     blockNode
@@ -109,7 +110,7 @@ export const UserDepartmentTree = ({
                     treeData={departmentTreeData}
                     onSelect={selectDepartment}
                 />
-            )}
+            ) : null}
         </div>
     );
 };
