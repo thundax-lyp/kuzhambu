@@ -228,19 +228,21 @@ export const SancaiEntryTagSection = forwardRef<HTMLDivElement, SancaiEntryTagSe
                         panelTitle="标签"
                         readOnly={readOnly}
                         toolbarExtra={
-                            <ClassicsContentTagAiPanel
-                                canApplyCandidate={canApplyTagAiCandidates}
-                                canCreateTask={canCreateAiRefinementTask}
-                                canRejectCandidate={canRejectAiCandidates}
-                                canViewCandidate={canViewAiCandidates}
-                                contentId={entry.id}
-                                contentType="SANCAI_ENTRY"
-                                creatingTask={createTagTaskMutation.isPending}
-                                tagTasks={tagTasks}
-                                onChanged={onChanged}
-                                onCreateTask={createTagTask}
-                                onTaskChange={handleTagTaskChange}
-                            />
+                            readOnly ? undefined : (
+                                <ClassicsContentTagAiPanel
+                                    canApplyCandidate={canApplyTagAiCandidates}
+                                    canCreateTask={canCreateAiRefinementTask}
+                                    canRejectCandidate={canRejectAiCandidates}
+                                    canViewCandidate={canViewAiCandidates}
+                                    contentId={entry.id}
+                                    contentType="SANCAI_ENTRY"
+                                    creatingTask={createTagTaskMutation.isPending}
+                                    tagTasks={tagTasks}
+                                    onChanged={onChanged}
+                                    onCreateTask={createTagTask}
+                                    onTaskChange={handleTagTaskChange}
+                                />
+                            )
                         }
                         onChanged={onChanged}
                     />

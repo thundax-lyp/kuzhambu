@@ -48,6 +48,7 @@ interface SancaiEntryImageFieldProps {
     images: SancaiEntryImageRecord[];
     isLoading: boolean;
     isUploadingImage: boolean;
+    readOnly?: boolean;
     onDeleteImage: (image: SancaiEntryImageRecord) => void;
     onDownloadImage: (image: SancaiEntryImageRecord) => void;
     onSortImage: (
@@ -65,6 +66,7 @@ export const SancaiEntryImageField = ({
     images,
     isLoading,
     isUploadingImage,
+    readOnly = false,
     onDeleteImage,
     onDownloadImage,
     onSortImage,
@@ -77,26 +79,28 @@ export const SancaiEntryImageField = ({
             aria-label="三才图会图片管理"
             aria-busy={isLoading}
         >
-            <div className="sancai-entry-image-toolbar">
-                <Upload
-                    aria-label="上传图片"
-                    accept={IMAGE_ACCEPT}
-                    showUploadList={false}
-                    beforeUpload={(file) => {
-                        onUploadImage(file);
-                        return Upload.LIST_IGNORE;
-                    }}
-                >
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-image-upload-button"
-                        icon={<UploadOutlined />}
-                        loading={isUploadingImage}
-                        type="primary"
+            {!readOnly ? (
+                <div className="sancai-entry-image-toolbar">
+                    <Upload
+                        aria-label="上传图片"
+                        accept={IMAGE_ACCEPT}
+                        showUploadList={false}
+                        beforeUpload={(file) => {
+                            onUploadImage(file);
+                            return Upload.LIST_IGNORE;
+                        }}
                     >
-                        上传图片
-                    </KuzhambuButton>
-                </Upload>
-            </div>
+                        <KuzhambuButton
+                            testId="classics-sancai-sancai-entry-image-upload-button"
+                            icon={<UploadOutlined />}
+                            loading={isUploadingImage}
+                            type="primary"
+                        >
+                            上传图片
+                        </KuzhambuButton>
+                    </Upload>
+                </div>
+            ) : null}
             {images.length > 0 ? (
                 <Image.PreviewGroup>
                     <KuzhambuTable
@@ -157,7 +161,7 @@ export const SancaiEntryImageField = ({
                                             key: "cover",
                                             text: "封面",
                                             ariaLabel: `设为封面 ${readImageTitle(image)}`,
-                                            disabled: Boolean(image.currentUsed),
+                                            disabled: readOnly || Boolean(image.currentUsed),
                                             onClick: () => onUseImage(image)
                                         },
                                         {
@@ -168,7 +172,7 @@ export const SancaiEntryImageField = ({
                                             text: "删除",
                                             type: "danger",
                                             ariaLabel: `删除 ${readImageTitle(image)}`,
-                                            disabled: deleteImageLoading,
+                                            disabled: readOnly || deleteImageLoading,
                                             onClick: () => onDeleteImage(image)
                                         }
                                     ]
@@ -180,7 +184,7 @@ export const SancaiEntryImageField = ({
                         rowKey="id"
                         size="small"
                         scroll={{ x: 640 }}
-                        sortable
+                        sortable={!readOnly}
                         onSort={onSortImage}
                     />
                 </Image.PreviewGroup>

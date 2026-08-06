@@ -229,18 +229,20 @@ export const SancaiEntryQaSection = ({
                 contentType="SANCAI_ENTRY"
                 readOnly={readOnly}
                 toolbarExtra={
-                    <ClassicsContentQaAiPanel
-                        canApplyCandidate={canApplyQaAiCandidates}
-                        canCreateTask={canCreateAiRefinementTask}
-                        canViewCandidate={canViewAiCandidates}
-                        contentId={entry.id}
-                        contentType="SANCAI_ENTRY"
-                        creatingTask={createQaTaskMutation.isPending}
-                        qaTasks={qaTasks}
-                        onChanged={onChanged}
-                        onCreateTask={createQaTask}
-                        onTaskChange={handleQaTaskChange}
-                    />
+                    readOnly ? undefined : (
+                        <ClassicsContentQaAiPanel
+                            canApplyCandidate={canApplyQaAiCandidates}
+                            canCreateTask={canCreateAiRefinementTask}
+                            canViewCandidate={canViewAiCandidates}
+                            contentId={entry.id}
+                            contentType="SANCAI_ENTRY"
+                            creatingTask={createQaTaskMutation.isPending}
+                            qaTasks={qaTasks}
+                            onChanged={onChanged}
+                            onCreateTask={createQaTask}
+                            onTaskChange={handleQaTaskChange}
+                        />
+                    )
                 }
                 onChanged={onChanged}
             />
