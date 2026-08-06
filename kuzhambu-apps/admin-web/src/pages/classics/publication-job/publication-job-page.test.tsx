@@ -34,16 +34,27 @@ const apiResponse = (data: unknown) =>
         })
     );
 
+let pageRequestFails = false;
+let detailRequestFails = false;
+const pageRequestBodies: unknown[] = [];
+
 describe("PublicationJobPage", () => {
     beforeEach(() => {
+        pageRequestFails = false;
+        detailRequestFails = false;
+        pageRequestBodies.length = 0;
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
             "kuzhambu.admin.accessTokenExpireAt",
             String(Date.now() + 3600 * 1000)
         );
-        vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+        vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
             const path = String(input).replace("/kuzhambu-admin-api/api", "");
             if (path.endsWith("/classics/publication-jobs/page")) {
+                pageRequestBodies.push(JSON.parse(String(init?.body)));
+                if (pageRequestFails) {
+                    return Promise.reject(new Error("发布任务服务暂不可用"));
+                }
                 return apiResponse({
                     pageNo: 1,
                     pageSize: 20,
@@ -53,6 +64,9 @@ describe("PublicationJobPage", () => {
                 });
             }
             if (path.endsWith("/classics/publication-jobs/get")) {
+                if (detailRequestFails) {
+                    return Promise.reject(new Error("发布任务详情服务暂不可用"));
+                }
                 return apiResponse(job);
             }
             return apiResponse(null);
@@ -77,7 +91,7 @@ describe("PublicationJobPage", () => {
 
         expect(await screen.findByText("三才图会｜天地")).toBeInTheDocument();
         expect(screen.queryByText("9007199254740993")).not.toBeInTheDocument();
-        expect(screen.getAllByRole("checkbox")).toHaveLength(2);
+        expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
         expect(screen.getByText("发布")).toHaveClass("kuzhambu-tag", "kuzhambu-tag-accent");
         expect(screen.getByText("搜索索引已写入")).toHaveClass("kuzhambu-tag", "kuzhambu-tag-info");
         expect(
@@ -87,9 +101,56 @@ describe("PublicationJobPage", () => {
         await user.click(screen.getByRole("button", { name: "查看" }));
 
         expect(await screen.findByText("ES probe failed")).toBeInTheDocument();
-        expect(screen.getAllByText("搜索索引已写入")).toHaveLength(2);
+        expect(screen.getAllByText("搜索索引已写入")).toHaveLength(3);
+        expect(screen.getByText("草稿 → 已发布")).toBeInTheDocument();
+        expect(screen.getByText("等待清理")).toBeInTheDocument();
+        expect(screen.getByText("无需清理")).toBeInTheDocument();
         await waitFor(() => {
             expect(globalThis.fetch).toHaveBeenCalledTimes(2);
         });
+    });
+
+    it("shows recoverable list and detail errors", async () => {
+        const user = userEvent.setup({ delay: null });
+        pageRequestFails = true;
+        render(
+            <AdminQueryProvider>
+                <AntdApp>
+                    <PublicationJobPage />
+                </AntdApp>
+            </AdminQueryProvider>
+        );
+
+        expect(await screen.findByText("发布任务加载失败")).toBeInTheDocument();
+        expect(screen.getByText("发布任务服务暂不可用")).toBeInTheDocument();
+        expect(screen.queryByRole("table", { name: "发布任务列表" })).not.toBeInTheDocument();
+        pageRequestFails = false;
+        await user.click(screen.getByRole("button", { name: "重试加载发布任务" }));
+        expect(await screen.findByText("三才图会｜天地")).toBeInTheDocument();
+
+        detailRequestFails = true;
+        await user.click(screen.getByRole("button", { name: "查看" }));
+        expect(await screen.findByText("发布任务详情加载失败")).toBeInTheDocument();
+        expect(screen.getByText("发布任务详情服务暂不可用")).toBeInTheDocument();
+        detailRequestFails = false;
+        await user.click(screen.getByRole("button", { name: "重试加载发布任务详情" }));
+        expect(await screen.findByText("ES probe failed")).toBeInTheDocument();
+    });
+
+    it("debounces server searches", async () => {
+        const user = userEvent.setup({ delay: null });
+        render(
+            <AdminQueryProvider>
+                <AntdApp>
+                    <PublicationJobPage />
+                </AntdApp>
+            </AdminQueryProvider>
+        );
+        await screen.findByText("三才图会｜天地");
+
+        await user.type(screen.getByRole("textbox", { name: "搜索发布任务" }), "天地");
+        expect(pageRequestBodies).toHaveLength(1);
+        await waitFor(() => expect(pageRequestBodies).toHaveLength(2));
+        expect(pageRequestBodies.at(-1)).toMatchObject({ keyword: "天地", pageNo: 1 });
     });
 });

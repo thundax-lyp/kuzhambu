@@ -6,7 +6,7 @@ import {
     SearchOutlined
 } from "@ant-design/icons";
 import { Input, Splitter } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     KuzhambuFilterPanel,
     KuzhambuPage,
@@ -35,6 +35,7 @@ const normalizeKeyword = (value: string) => {
     const keyword = value.trim();
     return keyword || undefined;
 };
+const SEARCH_DEBOUNCE_MS = 500;
 
 export const SancaiPage = () => {
     const [createIntent, setCreateIntent] = useState<{
@@ -84,6 +85,13 @@ export const SancaiPage = () => {
         enableAdd = Boolean(selectedVolume);
     }
 
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            setAppliedKeyword(normalizeKeyword(searchText) ?? null);
+        }, SEARCH_DEBOUNCE_MS);
+        return () => window.clearTimeout(timeoutId);
+    }, [searchText]);
+
     const applyFilters = () => {
         setAppliedKeyword(normalizeKeyword(searchText) ?? null);
         setAppliedLifecycleStatus(lifecycleStatus === "ALL" ? null : lifecycleStatus);
@@ -126,7 +134,6 @@ export const SancaiPage = () => {
                             onChange={(event) => {
                                 const { value } = event.target;
                                 setSearchText(value);
-                                setAppliedKeyword(normalizeKeyword(value) ?? null);
                             }}
                         />
                     ) : null}

@@ -121,6 +121,9 @@ export const SancaiEntryBasicSection = ({
     });
     const uploadImageMutation = useMutation({
         mutationFn: (file: File) => {
+            if (readOnly) {
+                throw new Error("当前条目不可编辑");
+            }
             if (!entryId) {
                 throw new Error("请先保存条目后再上传图片");
             }
@@ -169,6 +172,9 @@ export const SancaiEntryBasicSection = ({
         window.open(downloadUrl, "_blank", "noopener,noreferrer");
     };
     const changeCurrentImage = (image: SancaiEntryImageRecord) => {
+        if (readOnly) {
+            return;
+        }
         if (!entryId || image.currentUsed) {
             return;
         }
@@ -178,6 +184,9 @@ export const SancaiEntryBasicSection = ({
         });
     };
     const deleteImage = (image: SancaiEntryImageRecord) => {
+        if (readOnly) {
+            return;
+        }
         if (!entryId) {
             return;
         }
@@ -201,6 +210,9 @@ export const SancaiEntryBasicSection = ({
         targetImage: SancaiEntryImageRecord,
         position: KuzhambuTableSortPosition
     ) => {
+        if (readOnly) {
+            return;
+        }
         if (!entryId || sourceImage.id === targetImage.id) {
             return;
         }
@@ -282,6 +294,7 @@ export const SancaiEntryBasicSection = ({
                     entryId={entryId}
                     getFormValues={readFormValues}
                     mode={mode}
+                    readOnly={readOnly}
                 />
             </KuzhambuFormItem>
             <KuzhambuFormItem name="summary" label="摘要" layoutSize="large">
@@ -289,6 +302,7 @@ export const SancaiEntryBasicSection = ({
                     entryId={entryId}
                     getFormValues={readFormValues}
                     mode={mode}
+                    readOnly={readOnly}
                 />
             </KuzhambuFormItem>
             {entryId ? (
@@ -299,6 +313,7 @@ export const SancaiEntryBasicSection = ({
                         images={entryImages}
                         isLoading={imagesQuery.isLoading}
                         isUploadingImage={uploadImageMutation.isPending}
+                        readOnly={readOnly}
                         onDeleteImage={deleteImage}
                         onDownloadImage={downloadImage}
                         onSortImage={sortImage}
