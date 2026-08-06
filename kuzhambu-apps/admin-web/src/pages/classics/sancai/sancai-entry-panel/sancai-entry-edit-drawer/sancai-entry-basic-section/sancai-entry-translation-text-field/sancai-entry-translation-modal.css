@@ -1,0 +1,32 @@
+.sancai-entry-translation-modal-task-alert,
+.sancai-entry-translation-modal-original {
+    margin-bottom: 12px;
+}
+
+.sancai-entry-translation-modal-compare-grid {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.sancai-entry-translation-modal-field {
+    display: grid;
+    gap: 8px;
+}
+
+.sancai-entry-translation-modal-label {
+    color: color-mix(in srgb, var(--sancai-ink) 82%, #7e2e25 18%);
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.sancai-entry-translation-modal-diff {
+    margin-top: 12px;
+}
+
+@media (max-width: 760px) {
+    .sancai-entry-translation-modal-compare-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

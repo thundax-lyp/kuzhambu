@@ -1,12 +1,11 @@
 import { CloseCircleOutlined, PlusOutlined, RobotOutlined } from "@ant-design/icons";
-import { App, Empty, Typography } from "antd";
+import { App, Empty, Input } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     KuzhambuAlert,
     KuzhambuButton,
-    KuzhambuExpandableText,
     KuzhambuSpace,
     KuzhambuSyncTaskModal,
     KuzhambuTable,
@@ -18,24 +17,34 @@ import { isSameId, normalizeId } from "@/types/id";
 import * as aiCandidateService from "./ai-candidate-service";
 import type { AiCandidateRecord } from "./ai-candidate-types";
 import * as aiRefinementTaskService from "./ai-refinement-task-service";
+import * as contentService from "./classics-content-service";
 import { AI_BUSINESS_CAPABILITY, type AiRefinementTaskRecord } from "./ai-refinement-task-types";
 import type { ClassicsContentType } from "./classics-content-types";
 
 interface ClassicsContentQaAiPanelProps {
     canApplyCandidate?: boolean;
     canCreateTask?: boolean;
+    canRejectCandidate?: boolean;
     canViewCandidate?: boolean;
     contentId: string;
     contentType: ClassicsContentType;
     creatingTask?: boolean;
     onChanged?: () => void | Promise<void>;
-    onCreateTask?: () => void;
+    onCreateTask?: (existingQaPairs: ClassicsContentQaTaskPair[]) => void;
     onTaskChange?: (task: AiRefinementTaskRecord | null) => void;
     qaTasks?: AiRefinementTaskRecord[];
+    trackingTask?: AiRefinementTaskRecord | null;
+}
+
+export interface ClassicsContentQaTaskPair {
+    answer: string;
+    question: string;
 }
 
 const QA_TASK_POLL_INTERVAL_MS = 3000;
 const QA_AI_MODAL_TEST_ID = "classics-content-qa-ai-modal";
+const REJECT_ERROR_TYPE = "USER_REJECTED";
+const REJECT_ERROR_MESSAGE = "用户已拒绝该 AI 候选";
 
 const QA_TASK_STATUS_LABELS: Record<string, string> = {
     PENDING: "等待中",
@@ -120,6 +129,9 @@ const isQaTaskCompleted = (task?: AiRefinementTaskRecord | null) => {
     return task?.status === "SUCCEEDED" || task?.status === "PARTIAL";
 };
 
+const getTaskCandidateId = (task?: AiRefinementTaskRecord | null) =>
+    task?.candidateIdText ?? task?.candidateId;
+
 const readTaskMessage = (task?: AiRefinementTaskRecord | null) => {
     if (!task) {
         return undefined;
@@ -172,7 +184,7 @@ const qaTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
             return "tracking";
         }
         if (isQaTaskCompleted(task)) {
-            return task.candidateId ? "result_ready" : "waiting_result";
+            return getTaskCandidateId(task) ? "result_ready" : "waiting_result";
         }
         if (task.status === "CANCELLED") {
             return "cancelled";
@@ -182,7 +194,7 @@ const qaTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
         }
         return "tracking";
     },
-    getResultKey: (task) => task.candidateId,
+    getResultKey: getTaskCandidateId,
     getStatusLabel: (task) => {
         const statusLabel = QA_TASK_STATUS_LABELS[task.status] || task.status;
         return `问答任务：${statusLabel}`;
@@ -269,6 +281,13 @@ const getCandidateStableId = (candidate: AiCandidateRecord) => {
     return candidate.candidateIdText || normalizeId(candidate.candidateId);
 };
 
+let candidateQaRowSequence = 0;
+
+const createCandidateQaRowId = () => {
+    candidateQaRowSequence += 1;
+    return `candidate-qa-${candidateQaRowSequence}`;
+};
+
 interface CandidateQaTableProps {
     candidate: AiCandidateRecord;
     disabled?: boolean;
@@ -294,61 +313,100 @@ const CandidateQaTable = ({
         onSubmitEnabledChange(candidateId, canSubmit);
     }, [candidateId, onPayloadChange, onSubmitEnabledChange, rows]);
 
-    if (!rows.length) {
-        return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="候选问答为空" />;
-    }
+    const updateRow = (rowId: string, field: "question" | "answer", value: string) => {
+        setRows((currentRows) =>
+            currentRows.map((row) => (row.id === rowId ? { ...row, [field]: value } : row))
+        );
+    };
 
     return (
-        <KuzhambuTable<CandidateQaPairRow>
-            ariaLabel="候选问答列表"
-            dataSource={rows}
-            pagination={false}
-            rowKey="id"
-            columns={[
-                {
-                    key: "qa",
-                    title: "生成问答",
-                    render: (_value, row) => (
-                        <KuzhambuSpace orientation="vertical" size={6} style={{ width: "100%" }}>
-                            <Typography.Text strong>{`问：${row.question || "-"}`}</Typography.Text>
-                            <div style={{ color: "rgba(0, 0, 0, 0.65)" }}>
-                                <KuzhambuExpandableText
-                                    content={`答：${row.answer || "-"}`}
-                                    collapsedRows={2}
-                                />
-                            </div>
-                        </KuzhambuSpace>
-                    )
-                },
-                {
-                    key: "actions",
-                    title: "操作",
-                    options: (row) => [
+        <KuzhambuSpace orientation="vertical" size={8} style={{ width: "100%" }}>
+            <KuzhambuButton
+                testId="classics-content-qa-ai-generated-add-button"
+                disabled={disabled}
+                icon={<PlusOutlined />}
+                onClick={() =>
+                    setRows((currentRows) => [
+                        ...currentRows,
+                        { id: createCandidateQaRowId(), question: "", answer: "" }
+                    ])
+                }
+            >
+                新增问答
+            </KuzhambuButton>
+            {rows.length ? (
+                <KuzhambuTable<CandidateQaPairRow>
+                    ariaLabel="候选问答列表"
+                    dataSource={rows}
+                    pagination={false}
+                    rowKey="id"
+                    columns={[
                         {
-                            key: "delete-divider",
-                            type: "divider"
+                            key: "qa",
+                            title: "生成问答",
+                            render: (_value, row, index) => (
+                                <KuzhambuSpace
+                                    orientation="vertical"
+                                    size={6}
+                                    style={{ width: "100%" }}
+                                >
+                                    <Input.TextArea
+                                        aria-label={`候选问题 ${index + 1}`}
+                                        value={row.question}
+                                        disabled={disabled}
+                                        autoSize={{ minRows: 1, maxRows: 4 }}
+                                        onChange={(event) =>
+                                            updateRow(row.id, "question", event.target.value)
+                                        }
+                                    />
+                                    <Input.TextArea
+                                        aria-label={`候选答案 ${index + 1}`}
+                                        value={row.answer}
+                                        disabled={disabled}
+                                        autoSize={{ minRows: 2, maxRows: 8 }}
+                                        onChange={(event) =>
+                                            updateRow(row.id, "answer", event.target.value)
+                                        }
+                                    />
+                                </KuzhambuSpace>
+                            )
                         },
                         {
-                            key: "delete",
-                            text: "删除",
-                            type: "danger",
-                            disabled,
-                            testId: `classics-content-qa-ai-generated-delete-${row.id}-button`,
-                            onClick: () =>
-                                setRows((currentRows) =>
-                                    currentRows.filter((currentRow) => currentRow.id !== row.id)
-                                )
+                            key: "actions",
+                            title: "操作",
+                            options: (row) => [
+                                {
+                                    key: "delete-divider",
+                                    type: "divider"
+                                },
+                                {
+                                    key: "delete",
+                                    text: "删除",
+                                    type: "danger",
+                                    disabled,
+                                    testId: `classics-content-qa-ai-generated-delete-${row.id}-button`,
+                                    onClick: () =>
+                                        setRows((currentRows) =>
+                                            currentRows.filter(
+                                                (currentRow) => currentRow.id !== row.id
+                                            )
+                                        )
+                                }
+                            ]
                         }
-                    ]
-                }
-            ]}
-        />
+                    ]}
+                />
+            ) : (
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="候选问答为空" />
+            )}
+        </KuzhambuSpace>
     );
 };
 
 export const ClassicsContentQaAiPanel = ({
     canApplyCandidate = false,
     canCreateTask = true,
+    canRejectCandidate = false,
     canViewCandidate = false,
     contentId,
     contentType,
@@ -356,7 +414,8 @@ export const ClassicsContentQaAiPanel = ({
     onChanged,
     onCreateTask,
     onTaskChange,
-    qaTasks = []
+    qaTasks = [],
+    trackingTask
 }: ClassicsContentQaAiPanelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -365,8 +424,24 @@ export const ClassicsContentQaAiPanel = ({
     const [candidateSubmitEnabled, setCandidateSubmitEnabled] = useState<Record<string, boolean>>(
         {}
     );
+    const qaPairsQuery = useQuery({
+        queryKey: ["classics", "content", "qa-pairs", contentType, contentId],
+        queryFn: () => contentService.listQaPairs({ contentId, contentType }),
+        enabled: open && Boolean(contentId),
+        retry: false
+    });
+    const currentQaPairs = useMemo(
+        () =>
+            (Array.isArray(qaPairsQuery.data) ? qaPairsQuery.data : [])
+                .map((pair) => ({
+                    answer: pair.answer?.trim() || "",
+                    question: pair.question?.trim() || ""
+                }))
+                .filter((pair) => pair.question || pair.answer),
+        [qaPairsQuery.data]
+    );
 
-    const latestQaTask = useMemo(
+    const latestQaTaskFromList = useMemo(
         () =>
             [...qaTasks]
                 .filter(
@@ -377,6 +452,7 @@ export const ClassicsContentQaAiPanel = ({
                 .sort(sortRefinementTasksByNewest)[0] ?? null,
         [qaTasks]
     );
+    const latestQaTask = trackingTask || latestQaTaskFromList;
 
     const refresh = async () => {
         await Promise.all([
@@ -407,6 +483,18 @@ export const ClassicsContentQaAiPanel = ({
         }
     });
 
+    const rejectMutation = useMutation({
+        mutationFn: aiCandidateService.reject,
+        onSuccess: async () => {
+            await refresh();
+            setOpen(false);
+            messageApi.success("候选问答已拒绝");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "拒绝候选问答失败");
+        }
+    });
+
     const openModal = () => {
         setCandidatePayloads({});
         setCandidateSubmitEnabled({});
@@ -423,7 +511,7 @@ export const ClassicsContentQaAiPanel = ({
             capability: AI_BUSINESS_CAPABILITY.CLASSICS_QA,
             status: "PENDING"
         });
-        return selectLatestQaCandidate(candidates, task?.candidateId) ?? null;
+        return selectLatestQaCandidate(candidates, getTaskCandidateId(task)) ?? null;
     };
 
     const updateCandidatePayload = useCallback((candidateId: string, payload: string) => {
@@ -473,6 +561,18 @@ export const ClassicsContentQaAiPanel = ({
         });
     };
 
+    const rejectCandidate = (candidate: AiCandidateRecord | null) => {
+        if (!candidate) {
+            messageApi.warning("暂无可拒绝的候选问答");
+            return;
+        }
+        rejectMutation.mutate({
+            candidateId: getCandidateStableId(candidate),
+            errorType: REJECT_ERROR_TYPE,
+            errorMessage: REJECT_ERROR_MESSAGE
+        });
+    };
+
     return (
         <>
             <KuzhambuButton
@@ -498,7 +598,7 @@ export const ClassicsContentQaAiPanel = ({
                 workflow={{
                     ...qaTaskAdapter,
                     task: latestQaTask,
-                    createTask: () => onCreateTask?.(),
+                    createTask: () => onCreateTask?.(currentQaPairs),
                     fetchResult: loadQaCandidate,
                     fetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId }),
                     onTaskChange,
@@ -509,13 +609,20 @@ export const ClassicsContentQaAiPanel = ({
                 renderStatus={renderQaTaskStatus}
                 renderFooterActions={({ creating, result, resultLoading, tracking }) => {
                     const candidateId = result ? getCandidateStableId(result) : "";
-                    const isBusy = creating || tracking || resultLoading || applyMutation.isPending;
+                    const isBusy =
+                        creating ||
+                        tracking ||
+                        resultLoading ||
+                        applyMutation.isPending ||
+                        rejectMutation.isPending;
                     const canAppend =
                         canApplyCandidate &&
                         canViewCandidate &&
                         Boolean(result) &&
                         Boolean(candidateSubmitEnabled[candidateId]) &&
                         !isBusy;
+                    const canReject =
+                        canRejectCandidate && canViewCandidate && Boolean(result) && !isBusy;
 
                     return (
                         <>
@@ -526,6 +633,14 @@ export const ClassicsContentQaAiPanel = ({
                                 onClick={() => setOpen(false)}
                             >
                                 关闭
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                testId="classics-content-qa-ai-reject-button"
+                                disabled={!canReject}
+                                loading={rejectMutation.isPending}
+                                onClick={() => rejectCandidate(result)}
+                            >
+                                拒绝
                             </KuzhambuButton>
                             <KuzhambuButton
                                 testId="classics-content-qa-ai-append-button"

@@ -5,7 +5,8 @@ import {
     KuzhambuListMeta,
     KuzhambuSpace,
     KuzhambuButton,
-    KuzhambuAlert
+    KuzhambuAlert,
+    KuzhambuTextCompare
 } from "@/components";
 
 import type {
@@ -21,12 +22,13 @@ const { Text } = Typography;
 const compareFields: Array<{
     key: keyof WangqiVersionSnapshot;
     label: string;
+    textDiff?: boolean;
 }> = [
-    { key: "title", label: "标题" },
-    { key: "summary", label: "摘要" },
+    { key: "title", label: "标题", textDiff: true },
+    { key: "summary", label: "摘要", textDiff: true },
     { key: "contentFormat", label: "格式" },
-    { key: "content", label: "正文" },
-    { key: "documentTime", label: "文档时间" }
+    { key: "content", label: "正文", textDiff: true },
+    { key: "documentTime", label: "时间" }
 ];
 
 const formatDateTime = (value?: string | null) => {
@@ -146,6 +148,7 @@ export const WangqiVersionPanel = ({
                     empty="暂无版本历史"
                     renderItem={(version) => (
                         <KuzhambuListItem
+                            className="wangqi-version-list-item"
                             key={version.id}
                             actions={[
                                 <KuzhambuButton
@@ -221,18 +224,47 @@ export const WangqiVersionPanel = ({
                                                     label={field.label}
                                                     className={changed ? "is-changed" : undefined}
                                                 >
-                                                    <KuzhambuSpace orientation="vertical" size={2}>
-                                                        <Text>
-                                                            当前：
-                                                            {formatValue(currentValue, field.key)}
-                                                        </Text>
-                                                        <Text
-                                                            type={changed ? "warning" : "secondary"}
+                                                    {field.textDiff ? (
+                                                        <KuzhambuTextCompare
+                                                            baseline={formatValue(
+                                                                historyValue,
+                                                                field.key
+                                                            )}
+                                                            candidate={formatValue(
+                                                                currentValue,
+                                                                field.key
+                                                            )}
+                                                            emptyText="历史版本与当前内容一致"
+                                                            testId={`classics-wangqi-version-${field.key}-compare`}
+                                                            title={`${field.label}差异（历史 → 当前）`}
+                                                        />
+                                                    ) : (
+                                                        <KuzhambuSpace
+                                                            orientation="vertical"
+                                                            size={2}
                                                         >
-                                                            历史：
-                                                            {formatValue(historyValue, field.key)}
-                                                        </Text>
-                                                    </KuzhambuSpace>
+                                                            <Text>
+                                                                当前：
+                                                                {formatValue(
+                                                                    currentValue,
+                                                                    field.key
+                                                                )}
+                                                            </Text>
+                                                            <Text
+                                                                type={
+                                                                    changed
+                                                                        ? "warning"
+                                                                        : "secondary"
+                                                                }
+                                                            >
+                                                                历史：
+                                                                {formatValue(
+                                                                    historyValue,
+                                                                    field.key
+                                                                )}
+                                                            </Text>
+                                                        </KuzhambuSpace>
+                                                    )}
                                                 </Descriptions.Item>
                                             );
                                         })}
@@ -267,14 +299,17 @@ export const WangqiVersionPanel = ({
                                     title="版本快照为空或无法解析"
                                 />
                             )}
-                            <KuzhambuButton
-                                testId={`wangqi-version-restore-${selectedVersion.id}-button`}
-                                danger
-                                loading={resetting}
-                                onClick={() => onResetVersion(selectedVersion)}
-                            >
-                                恢复此版本
-                            </KuzhambuButton>
+                            <div className="wangqi-version-detail-actions">
+                                <KuzhambuButton
+                                    testId={`wangqi-version-restore-${selectedVersion.id}-button`}
+                                    danger
+                                    loading={resetting}
+                                    disabled={!snapshot}
+                                    onClick={() => onResetVersion(selectedVersion)}
+                                >
+                                    恢复此版本
+                                </KuzhambuButton>
+                            </div>
                         </KuzhambuSpace>
                     ) : (
                         <Empty

@@ -1,12 +1,19 @@
-import { Typography } from "antd";
 import type { ReactNode } from "react";
-
-const { Text } = Typography;
+import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
+import { WangqiDocumentSectionOverview } from "../wangqi-document-section-overview";
+import "./wangqi-document-tags-section.css";
 
 interface WangqiDocumentTagsSectionProps {
+    document: WangqiDocumentRecord;
     content?: ReactNode;
 }
 
-export const WangqiDocumentTagsSection = ({ content }: WangqiDocumentTagsSectionProps) => {
-    return content || <Text type="secondary">暂无标签</Text>;
-};
+export const WangqiDocumentTagsSection = ({
+    document,
+    content
+}: WangqiDocumentTagsSectionProps) => (
+    <div className="wangqi-document-tags-section">
+        <WangqiDocumentSectionOverview document={document} />
+        {content}
+    </div>
+);

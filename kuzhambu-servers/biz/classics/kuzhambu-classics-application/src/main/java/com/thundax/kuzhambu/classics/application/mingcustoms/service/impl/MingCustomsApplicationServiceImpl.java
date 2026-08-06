@@ -74,6 +74,11 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     }
 
     @Override
+    public List<String> listCategories() {
+        return repository.listCategories();
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public MingCustomsEntryId add(MingCustomsCommand command) {
         MingCustomsEntry entry = toEntry(command);

@@ -54,6 +54,15 @@ class MingCustomsAdminControllerTest {
     }
 
     @Test
+    void categoriesShouldReturnStoredValues() {
+        MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
+        when(service.listCategories()).thenReturn(List.of("食（饮食生活）", "RITUAL"));
+        MingCustomsAdminController controller = controller(service, null);
+
+        assertEquals(List.of("食（饮食生活）", "RITUAL"), controller.listCategories().getCategories());
+    }
+
+    @Test
     void keywordCloudShouldReturnKeywordAndCount() {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         when(service.listKeywordCloud()).thenReturn(List.of(new MingCustomsKeywordCloudItem("礼俗", 3L)));
@@ -143,6 +152,7 @@ class MingCustomsAdminControllerTest {
     @Test
     void versionRoutesShouldKeepExpectedPathsAndPermissions() throws Exception {
         Class<?> controllerType = MingCustomsAdminController.class;
+        assertPostMapping(controllerType, "listCategories", "categories/list", "classics:mingcustoms:view");
         assertPostMapping(
                 controllerType,
                 "listKeywordCloud",

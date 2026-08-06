@@ -559,47 +559,46 @@
       "roles": ["运营支持"]
     }
   ],
+  "deprecatedDicts": [
+    {
+      "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
+      "values": [
+        "RITUAL",
+        "FESTIVAL",
+        "MARRIAGE",
+        "DAILY_LIFE",
+        "BELIEF",
+        "SOCIAL"
+      ]
+    }
+  ],
   "dicts": [
     {
       "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
-      "label": "礼制",
-      "value": "RITUAL",
+      "label": "食（饮食生活）",
+      "value": "食（饮食生活）",
       "priority": 10,
       "remarks": "明代习俗分类"
     },
     {
       "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
-      "label": "岁时节令",
-      "value": "FESTIVAL",
+      "label": "衣（服饰穿戴）",
+      "value": "衣（服饰穿戴）",
       "priority": 20,
       "remarks": "明代习俗分类"
     },
     {
       "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
-      "label": "婚丧嫁娶",
-      "value": "MARRIAGE",
+      "label": "住（居住空间）",
+      "value": "住（居住空间）",
       "priority": 30,
       "remarks": "明代习俗分类"
     },
     {
       "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
-      "label": "日用生活",
-      "value": "DAILY_LIFE",
+      "label": "行（出行与行旅）",
+      "value": "行（出行与行旅）",
       "priority": 40,
-      "remarks": "明代习俗分类"
-    },
-    {
-      "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
-      "label": "信仰禁忌",
-      "value": "BELIEF",
-      "priority": 50,
-      "remarks": "明代习俗分类"
-    },
-    {
-      "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
-      "label": "社会交往",
-      "value": "SOCIAL",
-      "priority": 60,
       "remarks": "明代习俗分类"
     }
   ],

@@ -4,125 +4,12 @@
     gap: 8px;
 }
 
-.wangqi-document-edit-drawer-form {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.wangqi-document-edit-drawer-date-picker {
-    width: 100%;
-}
-
-.wangqi-rich-text-editor {
-    display: grid;
-    min-width: 0;
-    overflow: hidden;
-    background: var(--surface-panel);
-    border: 1px solid var(--wangqi-panel-border);
-    border-radius: 8px;
-}
-
-.wangqi-rich-text-editor-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-    padding: 8px;
-    background: var(--wangqi-panel-bg);
-    border-bottom: 1px solid var(--wangqi-panel-border);
-}
-
-.wangqi-rich-text-editor-toolbar .ant-btn {
-    min-width: 36px;
-}
-
-.wangqi-rich-text-editor-toolbar-button-active {
-    color: var(--wangqi-accent-color) !important;
-    background: color-mix(in srgb, var(--wangqi-accent-color) 12%, transparent) !important;
-    border-color: color-mix(
-        in srgb,
-        var(--wangqi-accent-color) 36%,
-        var(--wangqi-panel-border)
-    ) !important;
-}
-
-.wangqi-rich-text-editor-content {
-    min-height: 360px;
-    max-height: 560px;
-    padding: 14px 16px;
-    overflow-y: auto;
-    outline: none;
-    font-family: var(--font-sans, -apple-system), BlinkMacSystemFont, "Segoe UI", sans-serif;
-    line-height: 1.65;
-}
-
-.wangqi-rich-text-editor-content p {
-    margin: 0 0 12px;
-}
-
-.wangqi-rich-text-editor-content h2 {
-    margin: 18px 0 10px;
-    font-size: 18px;
-    line-height: 1.45;
-}
-
-.wangqi-rich-text-editor-content ul,
-.wangqi-rich-text-editor-content ol {
-    margin: 0 0 12px;
-    padding-inline-start: 24px;
-}
-
-.wangqi-rich-text-editor-content blockquote {
-    margin: 0 0 12px;
-    padding: 6px 12px;
-    color: var(--text-secondary);
-    border-left: 3px solid var(--wangqi-accent-color);
-    background: var(--wangqi-panel-bg);
-}
-
-.wangqi-document-edit-drawer-form .ant-form-item {
-    margin-bottom: 0;
-}
-
-.wangqi-document-edit-drawer-form .ant-form-item-label {
-    padding-inline-end: 12px;
-}
-
-.wangqi-document-edit-drawer-form .ant-form-item-label > label {
-    color: color-mix(in srgb, var(--text-primary) 84%, var(--wangqi-accent-color) 16%);
-    font-weight: 700;
-    letter-spacing: 0;
-}
-
-.wangqi-document-edit-drawer-form .ant-form-item-control {
-    min-width: 0;
-}
-
 .wangqi-document-edit-drawer-sections {
     min-width: 0;
 }
 
 .wangqi-document-edit-drawer-section {
     min-width: 0;
-}
-
-.wangqi-document-edit-drawer-basic {
-    min-width: 0;
-}
-
-.wangqi-document-edit-drawer-basic-head {
-    min-width: 0;
-    padding-bottom: 4px;
-    border-bottom: 1px solid var(--wangqi-panel-border);
-}
-
-.wangqi-document-edit-drawer-text-fields {
-    min-width: 0;
-}
-
-.wangqi-document-edit-drawer-form-item-top .ant-form-item-label {
-    padding-top: 5px;
 }
 
 .wangqi-summary-modal-footer {

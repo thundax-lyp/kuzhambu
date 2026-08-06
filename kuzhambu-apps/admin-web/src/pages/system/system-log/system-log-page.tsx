@@ -225,7 +225,11 @@ export const SystemLogPage = () => {
             width: DEFAULT_COLUMN_WIDTHS.requestUri,
             ellipsis: true,
             render: (requestUri?: string | null) =>
-                requestUri ? <Text code>{requestUri}</Text> : null
+                requestUri ? (
+                    <Text className="system-log-code" code>
+                        {requestUri}
+                    </Text>
+                ) : null
         },
         {
             title: "用户",
@@ -403,25 +407,40 @@ export const SystemLogPage = () => {
                                         {
                                             key: "requestParams",
                                             label: "请求参数",
-                                            children: log.requestParams || "-"
+                                            children: (
+                                                <span className="system-log-detail-text">
+                                                    {log.requestParams || "-"}
+                                                </span>
+                                            )
                                         },
                                         {
                                             key: "userAgent",
                                             label: "User-Agent",
-                                            children: log.userAgent || "-"
+                                            children: (
+                                                <span className="system-log-detail-text">
+                                                    {log.userAgent || "-"}
+                                                </span>
+                                            )
                                         },
                                         {
                                             key: "department",
                                             label: "部门",
-                                            children:
-                                                log.createUser?.department?.namePath ||
-                                                log.createUser?.department?.name ||
-                                                "-"
+                                            children: (
+                                                <span className="system-log-detail-text">
+                                                    {log.createUser?.department?.namePath ||
+                                                        log.createUser?.department?.name ||
+                                                        "-"}
+                                                </span>
+                                            )
                                         },
                                         {
                                             key: "remarks",
                                             label: "备注",
-                                            children: log.remarks || "-"
+                                            children: (
+                                                <span className="system-log-detail-text">
+                                                    {log.remarks || "-"}
+                                                </span>
+                                            )
                                         }
                                     ]}
                                 />

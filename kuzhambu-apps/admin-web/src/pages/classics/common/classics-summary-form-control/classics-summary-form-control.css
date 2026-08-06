@@ -1,0 +1,24 @@
+.classics-summary-form-control {
+    display: grid;
+    min-width: 0;
+    gap: 10px;
+    justify-items: start;
+}
+
+.classics-summary-form-control-ai-button {
+    color: var(--accent-blue);
+    background: var(--accent-blue-soft);
+    border-color: color-mix(in srgb, var(--accent-blue) 32%, var(--line-subtle));
+    box-shadow: none;
+}
+
+.classics-summary-form-control-ai-button:hover,
+.classics-summary-form-control-ai-button:focus-visible {
+    color: var(--accent-blue) !important;
+    background: color-mix(
+        in srgb,
+        var(--accent-blue-soft) 76%,
+        var(--surface-panel) 24%
+    ) !important;
+    border-color: var(--accent-blue) !important;
+}

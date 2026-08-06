@@ -186,7 +186,11 @@ export const DictionaryPage = () => {
             dataIndex: "value",
             key: "value",
             width: DEFAULT_COLUMN_WIDTHS.value,
-            render: (value: string) => <Text code>{value}</Text>
+            render: (value: string) => (
+                <Text className="dictionary-code" code>
+                    {value}
+                </Text>
+            )
         },
         {
             title: "备注",

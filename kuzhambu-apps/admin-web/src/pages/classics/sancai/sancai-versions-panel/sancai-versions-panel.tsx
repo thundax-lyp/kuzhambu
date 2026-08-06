@@ -5,7 +5,8 @@ import {
     KuzhambuListMeta,
     KuzhambuSpace,
     KuzhambuButton,
-    KuzhambuAlert
+    KuzhambuAlert,
+    KuzhambuTextCompare
 } from "@/components";
 
 import type {
@@ -13,6 +14,7 @@ import type {
     SancaiEntryRecord,
     SancaiVersionSnapshot
 } from "@/pages/classics/sancai/sancai-types";
+import { isSameId } from "@/types/id";
 
 import "./sancai-versions-panel.css";
 
@@ -21,12 +23,13 @@ const { Text } = Typography;
 const compareFields: Array<{
     key: keyof SancaiVersionSnapshot;
     label: string;
+    textDiff?: boolean;
 }> = [
-    { key: "volumeId", label: "卷目 ID" },
+    { key: "volumeId", label: "卷目" },
     { key: "title", label: "标题" },
-    { key: "originalText", label: "原文" },
-    { key: "translationText", label: "译文" },
-    { key: "summary", label: "摘要" },
+    { key: "originalText", label: "原文", textDiff: true },
+    { key: "translationText", label: "译文", textDiff: true },
+    { key: "summary", label: "摘要", textDiff: true },
     { key: "lifecycleStatus", label: "生命周期" },
     { key: "translationStatus", label: "翻译状态" },
     { key: "imageStatus", label: "配图状态" },
@@ -73,6 +76,25 @@ const formatValue = (value: unknown) => {
     return String(value);
 };
 
+interface SancaiVersionVolumeOption {
+    label: string;
+    value: string;
+}
+
+const formatFieldValue = (
+    key: keyof SancaiVersionSnapshot,
+    value: unknown,
+    volumeOptions: SancaiVersionVolumeOption[]
+) => {
+    if (key !== "volumeId" || value === null || value === undefined || value === "") {
+        return formatValue(value);
+    }
+    const volumeId = String(value);
+    return (
+        volumeOptions.find((option) => isSameId(option.value, volumeId))?.label || `卷 ${volumeId}`
+    );
+};
+
 interface SancaiVersionsPanelProps {
     currentEntry?: SancaiEntryRecord | null;
     detailLoading?: boolean;
@@ -80,6 +102,7 @@ interface SancaiVersionsPanelProps {
     resetting?: boolean;
     readOnly?: boolean;
     selectedVersion?: SancaiContentVersionRecord | null;
+    volumeOptions?: SancaiVersionVolumeOption[];
     versions: SancaiContentVersionRecord[];
     onResetVersion: (version: SancaiContentVersionRecord) => void;
     onSelectVersion: (version: SancaiContentVersionRecord) => void;
@@ -92,6 +115,7 @@ export const SancaiVersionsPanel = ({
     resetting = false,
     readOnly = false,
     selectedVersion,
+    volumeOptions = [],
     versions,
     onResetVersion,
     onSelectVersion
@@ -176,20 +200,41 @@ export const SancaiVersionsPanel = ({
                                             field.key
                                         );
                                         const historyValue = snapshot[field.key];
-                                        const changed =
-                                            formatValue(currentValue) !== formatValue(historyValue);
+                                        const currentDisplayValue = formatFieldValue(
+                                            field.key,
+                                            currentValue,
+                                            volumeOptions
+                                        );
+                                        const historyDisplayValue = formatFieldValue(
+                                            field.key,
+                                            historyValue,
+                                            volumeOptions
+                                        );
+                                        const changed = currentDisplayValue !== historyDisplayValue;
                                         return (
                                             <Descriptions.Item
                                                 key={field.key}
                                                 label={field.label}
                                                 className={changed ? "is-changed" : undefined}
                                             >
-                                                <KuzhambuSpace orientation="vertical" size={2}>
-                                                    <Text>当前：{formatValue(currentValue)}</Text>
-                                                    <Text type={changed ? "warning" : "secondary"}>
-                                                        历史：{formatValue(historyValue)}
-                                                    </Text>
-                                                </KuzhambuSpace>
+                                                {field.textDiff ? (
+                                                    <KuzhambuTextCompare
+                                                        baseline={historyDisplayValue}
+                                                        candidate={currentDisplayValue}
+                                                        emptyText="历史版本与当前内容一致"
+                                                        testId={`classics-sancai-version-${field.key}-compare`}
+                                                        title={`${field.label}差异（历史 → 当前）`}
+                                                    />
+                                                ) : (
+                                                    <KuzhambuSpace orientation="vertical" size={2}>
+                                                        <Text>当前：{currentDisplayValue}</Text>
+                                                        <Text
+                                                            type={changed ? "warning" : "secondary"}
+                                                        >
+                                                            历史：{historyDisplayValue}
+                                                        </Text>
+                                                    </KuzhambuSpace>
+                                                )}
                                             </Descriptions.Item>
                                         );
                                     })}
@@ -202,15 +247,17 @@ export const SancaiVersionsPanel = ({
                                 />
                             )}
                             {!readOnly ? (
-                                <KuzhambuButton
-                                    testId="classics-sancai-sancai-version-history-action-button-2"
-                                    danger
-                                    loading={resetting}
-                                    disabled={!snapshot}
-                                    onClick={() => onResetVersion(selectedVersion)}
-                                >
-                                    恢复此版本
-                                </KuzhambuButton>
+                                <div className="sancai-version-history-detail-actions">
+                                    <KuzhambuButton
+                                        testId="classics-sancai-sancai-version-history-action-button-2"
+                                        danger
+                                        loading={resetting}
+                                        disabled={!snapshot}
+                                        onClick={() => onResetVersion(selectedVersion)}
+                                    >
+                                        恢复此版本
+                                    </KuzhambuButton>
+                                </div>
                             ) : null}
                         </KuzhambuSpace>
                     ) : (

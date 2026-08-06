@@ -32,6 +32,8 @@ public interface MingCustomsRepository {
             String tagNameSnapshot,
             SortDirection sortDirection);
 
+    List<String> listCategories();
+
     MingCustomsEntryId insert(MingCustomsEntry entry);
 
     int update(MingCustomsEntry entry);

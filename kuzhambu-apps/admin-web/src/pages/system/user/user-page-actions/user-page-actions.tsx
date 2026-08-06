@@ -38,7 +38,9 @@ export const UserPageActions = ({
         />
         <KuzhambuButton
             testId="system-user-user-page-actions-filter-button"
-            className={filterOpen || filterActive ? "user-page-filter-active" : ""}
+            className={`user-page-action-button${
+                filterOpen || filterActive ? " user-page-filter-active" : ""
+            }`}
             icon={<FilterOutlined />}
             aria-expanded={filterOpen}
             onClick={onToggleFilter}
@@ -47,6 +49,7 @@ export const UserPageActions = ({
         </KuzhambuButton>
         <KuzhambuButton
             testId="system-user-user-page-actions-refresh-button"
+            className="user-page-action-button"
             icon={<ReloadOutlined />}
             loading={isRefreshing}
             onClick={onRefresh}
@@ -56,6 +59,7 @@ export const UserPageActions = ({
         {canCreateUser ? (
             <KuzhambuButton
                 testId="system-user-user-page-actions-create-button"
+                className="user-page-action-button"
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={onCreate}

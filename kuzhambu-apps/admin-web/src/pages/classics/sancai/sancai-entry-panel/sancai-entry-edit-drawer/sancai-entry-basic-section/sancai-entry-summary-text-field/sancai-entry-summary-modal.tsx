@@ -13,6 +13,7 @@ import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-edit-drawer-form-values";
+import "./sancai-entry-summary-modal.css";
 
 const MODAL_TITLE = "AI摘要";
 const TASK_LABEL = "摘要";
@@ -186,7 +187,7 @@ export const SancaiEntrySummaryModal = ({
                 creating || task ? (
                     <KuzhambuAlert
                         showIcon
-                        className="sancai-ai-text-task-alert"
+                        className="sancai-entry-summary-modal-task-alert"
                         type={creating ? "info" : readRefinementTaskAlertType(task?.status)}
                         title={
                             creating
@@ -206,9 +207,9 @@ export const SancaiEntrySummaryModal = ({
                 const isAiTextLoading = isAiTextGenerating || isAiTextCandidateFetching;
                 return (
                     <>
-                        <div className="sancai-detail-card sancai-entry-edit-drawer-form sancai-ai-text-modal-original">
-                            <div className="sancai-ai-text-modal-field">
-                                <label className="sancai-ai-text-modal-label">原文</label>
+                        <div className="sancai-detail-card sancai-entry-summary-modal-card sancai-entry-summary-modal-original">
+                            <div className="sancai-entry-summary-modal-field">
+                                <label className="sancai-entry-summary-modal-label">原文</label>
                                 <Input.TextArea
                                     aria-label={`${MODAL_TITLE}原文`}
                                     value={form.originalText}
@@ -217,10 +218,12 @@ export const SancaiEntrySummaryModal = ({
                                 />
                             </div>
                         </div>
-                        <div className="sancai-ai-text-modal-compare-grid">
-                            <div className="sancai-detail-card sancai-entry-edit-drawer-form">
-                                <div className="sancai-ai-text-modal-field">
-                                    <label className="sancai-ai-text-modal-label">当前摘要</label>
+                        <div className="sancai-entry-summary-modal-compare-grid">
+                            <div className="sancai-detail-card sancai-entry-summary-modal-card">
+                                <div className="sancai-entry-summary-modal-field">
+                                    <label className="sancai-entry-summary-modal-label">
+                                        当前摘要
+                                    </label>
                                     <Input.TextArea
                                         aria-label={`${MODAL_TITLE}当前摘要`}
                                         value={form.summary}
@@ -232,9 +235,11 @@ export const SancaiEntrySummaryModal = ({
                                     />
                                 </div>
                             </div>
-                            <div className="sancai-detail-card sancai-entry-edit-drawer-form">
-                                <div className="sancai-ai-text-modal-field">
-                                    <label className="sancai-ai-text-modal-label">AI摘要</label>
+                            <div className="sancai-detail-card sancai-entry-summary-modal-card">
+                                <div className="sancai-entry-summary-modal-field">
+                                    <label className="sancai-entry-summary-modal-label">
+                                        AI摘要
+                                    </label>
                                     <Input.TextArea
                                         aria-label={`${MODAL_TITLE}AI摘要`}
                                         value={aiTextDraft}
@@ -266,7 +271,7 @@ export const SancaiEntrySummaryModal = ({
                         <KuzhambuTextCompare
                             baseline={form.summary}
                             candidate={aiTextDraft}
-                            className="sancai-ai-text-modal-diff"
+                            className="sancai-entry-summary-modal-diff"
                             emptyText="当前摘要与 AI 摘要暂无差异"
                             testId="classics-sancai-sancai-entry-ai-summary-compare"
                             title="摘要差异"

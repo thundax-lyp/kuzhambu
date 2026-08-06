@@ -35,6 +35,19 @@ import org.junit.jupiter.api.Test;
 class MingCustomsApplicationServiceImplTest {
 
     @Test
+    void listCategoriesShouldPreserveStoredCategoryValues() {
+        MingCustomsRepository repository = mock(MingCustomsRepository.class);
+        MingCustomsApplicationServiceImpl service =
+                new MingCustomsApplicationServiceImpl(repository, null, mock(ClassicsPublicationWriteGuard.class));
+        when(repository.listCategories()).thenReturn(List.of("食（饮食生活）", "RITUAL"));
+
+        List<String> categories = service.listCategories();
+
+        assertEquals(List.of("食（饮食生活）", "RITUAL"), categories);
+        verify(repository).listCategories();
+    }
+
+    @Test
     void addShouldVersionEntry() {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
