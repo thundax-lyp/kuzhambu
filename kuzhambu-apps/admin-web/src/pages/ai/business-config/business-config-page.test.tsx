@@ -58,7 +58,8 @@ const capabilities = [
     {
         capability: "CLASSICS_SUMMARY",
         name: "古籍摘要",
-        requiredTags: ["text"],
+        requiredTags: [],
+        requiredModelCapabilities: ["TEXT2TEXT"],
         outputMode: "TEXT",
         enabled: true,
         priority: 10
@@ -72,7 +73,7 @@ const models = [
         baseUrl: "https://example.test/v1",
         modelName: "dall-e-3",
         displayName: "DALL-E 3",
-        capabilities: ["image"],
+        capabilities: ["TEXT2IMAGE"],
         defaultParamsJson: "{}",
         description: "image only",
         enabled: true,
@@ -84,7 +85,7 @@ const models = [
         baseUrl: "https://example.test/v1",
         modelName: "gpt-4o",
         displayName: "GPT 4o",
-        capabilities: ["text"],
+        capabilities: ["TEXT2TEXT"],
         defaultParamsJson: "{}",
         description: "primary",
         enabled: true,
@@ -181,7 +182,8 @@ describe("BusinessConfigPage", () => {
                 {
                     capability: "CLASSICS_TRANSLATION",
                     name: "古籍翻译",
-                    requiredTags: ["text"],
+                    requiredTags: [],
+                    requiredModelCapabilities: ["TEXT2TEXT"],
                     outputMode: "TEXT",
                     enabled: true,
                     priority: 20

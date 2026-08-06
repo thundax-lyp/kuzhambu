@@ -105,10 +105,12 @@ export const BusinessConfigEditDrawer = ({
     }, [capabilityNameByCode, prompts, selectedCapability]);
 
     const modelOptions = useMemo(() => {
-        const requiredTags = selectedCapabilityRecord?.requiredTags || [];
+        const requiredModelCapabilities = selectedCapabilityRecord?.requiredModelCapabilities || [];
         return models
             .filter((model) => {
-                const isCompatible = requiredTags.every((tag) => model.capabilities.includes(tag));
+                const isCompatible = requiredModelCapabilities.every((capability) =>
+                    model.capabilities.includes(capability)
+                );
                 return isCompatible || model.id === config?.modelId;
             })
             .map((model) => ({
