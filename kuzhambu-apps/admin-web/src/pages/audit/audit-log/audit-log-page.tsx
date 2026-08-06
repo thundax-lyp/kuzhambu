@@ -36,8 +36,7 @@ const DEFAULT_COLUMN_WIDTHS = {
     object: 260,
     action: 120,
     operator: 180,
-    source: 140,
-    summary: 260
+    source: 140
 };
 
 const ADMIN_OPERATOR_TYPE = "USER";
@@ -175,13 +174,6 @@ export const AuditLogPage = () => {
         enabled: canViewAuditLog,
         retry: false
     });
-    const auditLogDetailQuery = useQuery({
-        queryKey: ["audit-log", "detail", detailLogId],
-        queryFn: () => service.getAuditLogDetail(detailLogId || ""),
-        enabled: canViewAuditLog && Boolean(detailLogId),
-        retry: false
-    });
-
     const auditLogPage = auditLogQuery.data;
     const auditLogs = useMemo(() => auditLogPage?.records || [], [auditLogPage?.records]);
     const totalCount = auditLogPage?.count ?? auditLogPage?.totalCount ?? 0;
@@ -417,7 +409,6 @@ export const AuditLogPage = () => {
             title: "摘要",
             dataIndex: "summary",
             key: "summary",
-            width: DEFAULT_COLUMN_WIDTHS.summary,
             ellipsis: true,
             render: (summary?: string | null) => summary || "-"
         },
@@ -433,8 +424,6 @@ export const AuditLogPage = () => {
             ]
         }
     ];
-
-    const detailLog = auditLogDetailQuery.data;
 
     return (
         <>
@@ -485,10 +474,7 @@ export const AuditLogPage = () => {
 
             <AuditLogDetail
                 accessToken={accessToken}
-                auditLog={detailLog}
-                error={auditLogDetailQuery.isError}
-                loading={auditLogDetailQuery.isFetching}
-                open={Boolean(detailLogId)}
+                auditLogId={detailLogId}
                 onClose={() => setDetailLogId(null)}
             />
         </>

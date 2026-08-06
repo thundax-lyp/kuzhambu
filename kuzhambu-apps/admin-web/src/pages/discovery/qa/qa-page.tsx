@@ -1,5 +1,6 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import * as currentUserService from "@/service/current-user-service";
 import { QaMessagePanel, type QaTimelineMessage } from "./qa-message-panel";
 import { QaSessionDetailDrawer } from "./qa-session-detail-drawer";
 import { QaSessionTable } from "./qa-session-table";
@@ -11,11 +12,10 @@ import type {
 } from "./qa-types";
 import "./qa-page.css";
 
-const DEFAULT_OWNER_USER_ID = "1001";
-const DEFAULT_PAGE_SIZE = 20;
 const FIXED_MODEL = "kuzhambu-qa";
 const FULL_LIBRARY_CONTEXT_MODE = "GENERAL";
 const FULL_LIBRARY_SESSION_TITLE = "新对话";
+const STREAM_CANCELLED_MESSAGE = "回答已取消。";
 const SESSION_TITLE_MAX_LENGTH = 24;
 interface QaFormState {
     question: string;
@@ -92,25 +92,21 @@ const toTimelineMessages = (session?: DiscoveryQaSessionRecord | null): QaTimeli
 };
 
 export const QaPage = () => {
+    const queryClient = useQueryClient();
     const [form, setForm] = useState<QaFormState>(INITIAL_FORM_STATE);
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
     const [sessionDetailDrawerOpen, setSessionDetailDrawerOpen] = useState(false);
     const [timelineBySession, setTimelineBySession] = useState<QaTimeline>({});
     const [operationMessage, setOperationMessage] = useState<string | null>(null);
-    const ownerUserId = DEFAULT_OWNER_USER_ID;
+    const streamAbortControllerRef = useRef<AbortController | null>(null);
 
-    const sessionsQuery = useQuery({
-        queryFn: () =>
-            service.pageQaSessions({
-                ownerUserId,
-                pageNo: 1,
-                pageSize: DEFAULT_PAGE_SIZE,
-                scope: "PORTAL"
-            }),
-        queryKey: ["discovery-qa", "session-page", ownerUserId]
+    const currentUserQuery = useQuery({
+        queryFn: currentUserService.getCurrentUserInfo,
+        queryKey: ["current-user", "info"]
     });
+    const ownerUserId = currentUserQuery.data?.id ?? null;
     const selectedSessionQuery = useQuery({
-        enabled: selectedSessionId !== null,
+        enabled: ownerUserId !== null && selectedSessionId !== null,
         queryFn: () => {
             if (selectedSessionId === null) {
                 throw new Error("会话尚未选中");
@@ -124,30 +120,6 @@ export const QaPage = () => {
     const chatCompletionMutation = useMutation({
         mutationFn: service.createQaChatCompletionStream
     });
-    const deleteSessionMutation = useMutation({
-        mutationFn: service.deleteQaSession,
-        onError: (error) => {
-            setOperationMessage(error instanceof Error ? error.message : "删除对话失败");
-        }
-    });
-    const exportSessionMutation = useMutation({
-        mutationFn: service.createQaSessionExport,
-        onSuccess: (result) => {
-            if (result.exportStatus === "FAILED") {
-                setOperationMessage(result.failureReason ?? "导出失败");
-                return;
-            }
-            setOperationMessage(`导出完成：${result.filename ?? "问答会话.csv"}`);
-        },
-        onError: (error) => {
-            setOperationMessage(error instanceof Error ? error.message : "导出失败");
-        }
-    });
-
-    const sessions = useMemo(() => {
-        const data = sessionsQuery.data;
-        return data?.items ?? data?.records ?? [];
-    }, [sessionsQuery.data]);
     const messages = useMemo(() => {
         if (selectedSessionId === null) {
             return [];
@@ -165,10 +137,14 @@ export const QaPage = () => {
         }));
     };
 
-    const appendMessage = (sessionId: string, message: QaTimelineMessage) => {
+    const appendMessages = (
+        sessionId: string,
+        messagesToAppend: QaTimelineMessage[],
+        initialMessages: QaTimelineMessage[] = []
+    ) => {
         setTimelineBySession((current) => ({
             ...current,
-            [sessionId]: [...(current[sessionId] ?? []), message]
+            [sessionId]: [...(current[sessionId] ?? initialMessages), ...messagesToAppend]
         }));
     };
 
@@ -203,19 +179,27 @@ export const QaPage = () => {
             ...current,
             [nextSessionId]: current[nextSessionId] ?? []
         }));
-        void sessionsQuery.refetch();
+        void queryClient.invalidateQueries({ queryKey: ["discovery-qa", "session-page"] });
         return nextSessionId;
     };
 
+    const cancelActiveStream = () => {
+        streamAbortControllerRef.current?.abort();
+        streamAbortControllerRef.current = null;
+    };
+
+    useEffect(() => {
+        return cancelActiveStream;
+    }, []);
+
     const createNewSession = () => {
+        cancelActiveStream();
         setOperationMessage(null);
         setForm(INITIAL_FORM_STATE);
         setSelectedSessionId(null);
     };
 
-    const deleteSession = async (sessionId: string) => {
-        setOperationMessage(null);
-        await deleteSessionMutation.mutateAsync({ ownerUserId, sessionId });
+    const removeDeletedSession = (sessionId: string) => {
         setTimelineBySession((current) => {
             const next = { ...current };
             delete next[sessionId];
@@ -224,7 +208,11 @@ export const QaPage = () => {
         if (selectedSessionId === sessionId) {
             setSelectedSessionId(null);
         }
-        void sessionsQuery.refetch();
+    };
+
+    const selectSession = (sessionId: string) => {
+        cancelActiveStream();
+        setSelectedSessionId(sessionId);
     };
 
     const submitQuestion = async (questionValue = form.question) => {
@@ -232,30 +220,47 @@ export const QaPage = () => {
         if (!question) {
             return;
         }
+        if (ownerUserId === null) {
+            setOperationMessage("当前用户信息尚未加载完成");
+            return;
+        }
 
+        cancelActiveStream();
+        const streamAbortController = new AbortController();
+        streamAbortControllerRef.current = streamAbortController;
         setOperationMessage(null);
         let nextSessionId: string | null = null;
         let assistantMessageId: string | null = null;
+        let streamedAnswer = "";
         try {
             nextSessionId = await ensureSessionId(question);
             const activeSessionId = nextSessionId;
             assistantMessageId = createMessageId();
             const activeAssistantMessageId = assistantMessageId;
-            appendMessage(activeSessionId, {
-                content: question,
-                id: createMessageId(),
-                role: "user",
-                status: "succeeded"
-            });
-            appendMessage(activeSessionId, {
-                content: "",
-                id: activeAssistantMessageId,
-                role: "assistant",
-                status: "loading"
-            });
+            const initialMessages =
+                selectedSessionId === activeSessionId
+                    ? toTimelineMessages(selectedSessionQuery.data)
+                    : [];
+            appendMessages(
+                activeSessionId,
+                [
+                    {
+                        content: question,
+                        id: createMessageId(),
+                        role: "user",
+                        status: "succeeded"
+                    },
+                    {
+                        content: "",
+                        id: activeAssistantMessageId,
+                        role: "assistant",
+                        status: "loading"
+                    }
+                ],
+                initialMessages
+            );
             updateField("question", "");
 
-            let streamedAnswer = "";
             const response = await chatCompletionMutation.mutateAsync({
                 command: {
                     messages: [{ content: question, role: "user" }],
@@ -283,7 +288,8 @@ export const QaPage = () => {
                         content: message,
                         status: "failed"
                     });
-                }
+                },
+                signal: streamAbortController.signal
             });
             const answerText = extractAnswerText(response) || streamedAnswer;
             updateMessage(activeSessionId, activeAssistantMessageId, {
@@ -292,6 +298,17 @@ export const QaPage = () => {
                 status: response.answerStatus === "FAILED" ? "failed" : "succeeded"
             });
         } catch (error) {
+            if (streamAbortController.signal.aborted) {
+                if (nextSessionId !== null && assistantMessageId !== null) {
+                    updateMessage(nextSessionId, assistantMessageId, {
+                        content: streamedAnswer
+                            ? `${streamedAnswer}\n\n${STREAM_CANCELLED_MESSAGE}`
+                            : STREAM_CANCELLED_MESSAGE,
+                        status: "failed"
+                    });
+                }
+                return;
+            }
             const message = error instanceof Error ? error.message : "回答生成失败";
             if (nextSessionId !== null && assistantMessageId !== null) {
                 updateMessage(nextSessionId, assistantMessageId, {
@@ -301,34 +318,23 @@ export const QaPage = () => {
                 return;
             }
             setOperationMessage(message);
+        } finally {
+            if (streamAbortControllerRef.current === streamAbortController) {
+                streamAbortControllerRef.current = null;
+            }
         }
-    };
-
-    const exportCurrentSession = () => {
-        if (selectedSessionId === null) {
-            return;
-        }
-        exportSessionMutation.mutate({
-            format: "CSV",
-            ownerUserId,
-            sessionId: selectedSessionId
-        });
     };
 
     return (
         <main className="kuzhambu-page qa-page discovery-qa-page">
             <QaSessionTable
-                deleting={deleteSessionMutation.isPending}
-                exportDisabled={selectedSessionId === null}
-                exporting={exportSessionMutation.isPending}
-                loading={sessionsQuery.isPending}
                 onCreate={createNewSession}
-                onDelete={(sessionId) => void deleteSession(sessionId)}
-                onExport={exportCurrentSession}
-                onSelect={setSelectedSessionId}
+                onDeleted={removeDeletedSession}
+                onOperationMessage={setOperationMessage}
+                onSelect={selectSession}
+                ownerUserId={ownerUserId}
                 opening={openSessionMutation.isPending}
                 selectedSessionId={selectedSessionId}
-                sessions={sessions}
             />
             <QaMessagePanel
                 inputValue={form.question}
@@ -337,7 +343,9 @@ export const QaPage = () => {
                 onDetailOpen={() => setSessionDetailDrawerOpen(true)}
                 onInputChange={(value) => updateField("question", value)}
                 onSubmit={(message) => void submitQuestion(message)}
-                operationMessage={operationMessage}
+                operationMessage={
+                    operationMessage ?? (currentUserQuery.isError ? "当前用户信息加载失败" : null)
+                }
                 selectedSession={selectedSession}
             />
             <QaSessionDetailDrawer

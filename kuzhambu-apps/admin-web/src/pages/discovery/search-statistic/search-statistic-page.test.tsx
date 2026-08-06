@@ -1,5 +1,5 @@
 import { AdminQueryProvider } from "@/query/query-client";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { SearchStatisticPage } from "./search-statistic-page";
@@ -41,8 +41,8 @@ const mocks = vi.hoisted(() => ({
         pageNo: 1,
         pageSize: 10,
         count: 1,
-        totalCount: 1,
-        totalPage: 1,
+        totalCount: 42,
+        totalPage: 5,
         records: [
             {
                 id: "EVT-1001",
@@ -132,9 +132,27 @@ describe("SearchStatisticPage", () => {
 
         expect(screen.getByRole("button", { name: "触发重建" })).toBeInTheDocument();
         expect(screen.queryByLabelText("索引重建进度")).not.toBeInTheDocument();
-        await user.click(screen.getByRole("button", { name: "触发重建" }));
+        await user.click(
+            screen.getByTestId(
+                "discovery-search-statistics-search-statistics-trigger-rebuild-button"
+            )
+        );
+
+        const cancelDialog = await screen.findByRole("dialog");
+        await user.click(within(cancelDialog).getByRole("button", { name: /取\s*消/u }));
+        expect(mocks.rebuildSearchIndex).not.toHaveBeenCalled();
+
+        await user.click(
+            screen.getByTestId(
+                "discovery-search-statistics-search-statistics-trigger-rebuild-button"
+            )
+        );
+        const confirmDialogs = await screen.findAllByRole("dialog");
+        const confirmDialog = confirmDialogs.at(-1) as HTMLElement;
+        await user.click(within(confirmDialog).getByRole("button", { name: "触发重建" }));
 
         expect(await screen.findByLabelText("索引重建进度")).toBeInTheDocument();
+        expect(mocks.rebuildSearchIndex).toHaveBeenCalledWith({ confirm: true }, expect.anything());
         expect(screen.queryByRole("button", { name: "查询记录" })).not.toBeInTheDocument();
     }, 30000);
 
@@ -177,26 +195,47 @@ describe("SearchStatisticPage", () => {
         await user.click(screen.getByText("检索记录"));
         await user.click(screen.getByRole("button", { name: "查询记录" }));
 
-        expect(mocks.pageSearchEvents).toHaveBeenCalledWith(
-            {
-                dateFrom: null,
-                dateTo: null,
-                pageNo: 1,
-                pageSize: 20,
-                queryText: "礼器",
-                searchStatuses: ["SUCCESS"]
-            },
-            expect.anything()
-        );
+        expect(mocks.pageSearchEvents).toHaveBeenCalledWith({
+            dateFrom: null,
+            dateTo: null,
+            pageNo: 1,
+            pageSize: 20,
+            queryText: "礼器",
+            searchStatuses: ["SUCCESS"]
+        });
         expect(await screen.findByText("EVT-1001")).toBeInTheDocument();
+        expect(screen.getAllByText("共 42 条").length).toBeGreaterThan(0);
+        expect(screen.getByText("共 42 条记录")).toBeInTheDocument();
 
         await user.click(screen.getByRole("button", { name: /展开行|Expand row/u }));
 
-        expect(mocks.getSearchEventDetail).toHaveBeenCalledWith(
-            { id: "EVT-1001" },
-            expect.anything()
-        );
+        expect(mocks.getSearchEventDetail).toHaveBeenCalledWith({ id: "EVT-1001" });
         expect(await screen.findByText("REQ-1001")).toBeInTheDocument();
         expect(screen.getByText('{"scope":"classics"}')).toBeInTheDocument();
+    }, 30000);
+
+    it("preserves record query state when switching statistics panels", async () => {
+        const user = userEvent.setup();
+        render(
+            <AdminQueryProvider>
+                <AntdApp>
+                    <SearchStatisticPage />
+                </AntdApp>
+            </AdminQueryProvider>
+        );
+
+        await user.click(screen.getByText("检索记录"));
+        await user.click(screen.getByRole("button", { name: "查询记录" }));
+        expect(await screen.findByText("EVT-1001")).toBeInTheDocument();
+        expect(screen.getByText("共 42 条记录")).toBeInTheDocument();
+
+        await user.click(screen.getByText("统计摘要"));
+        expect(screen.queryByRole("button", { name: "查询记录" })).not.toBeInTheDocument();
+        await user.click(screen.getByText("检索记录"));
+
+        expect(screen.getByText("EVT-1001")).toBeInTheDocument();
+        expect(screen.getByText("共 42 条记录")).toBeInTheDocument();
+        expect(screen.getByLabelText("搜索词")).toHaveValue("礼器");
+        expect(screen.getByLabelText("状态")).toHaveValue("SUCCESS");
     }, 30000);
 });

@@ -1,7 +1,9 @@
 import { Avatar, Descriptions, Empty, Typography } from "antd";
+import { useQuery } from "@tanstack/react-query";
 import { ADMIN_API_BASE_URL } from "@/api/http";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { KuzhambuDrawer, KuzhambuSpace, KuzhambuTag } from "@/components";
+import * as service from "../audit-log-service";
 
 import type {
     AuditFieldRecord,
@@ -18,10 +20,7 @@ const ADMIN_OPERATOR_TYPE = "USER";
 
 interface AuditLogDetailProps {
     accessToken: string | null;
-    auditLog?: AuditLogDetailRecord | null;
-    error?: boolean;
-    loading?: boolean;
-    open: boolean;
+    auditLogId: string | null;
     onClose: () => void;
 }
 
@@ -192,77 +191,86 @@ const renderSnapshotCompare = (
     );
 };
 
-export const AuditLogDetail = ({
-    accessToken,
-    auditLog,
-    error = false,
-    loading = false,
-    open,
-    onClose
-}: AuditLogDetailProps) => (
-    <KuzhambuDrawer
-        testId="audit-audit-log-audit-log-detail-drawer"
-        title="审计详情"
-        open={open}
-        size="large"
-        loading={loading}
-        onClose={onClose}
-    >
-        {auditLog ? (
-            <div className="audit-log-detail">
-                <Descriptions column={2} size="small" bordered>
-                    <Descriptions.Item label="对象">
-                        {auditLog.objectDisplayName || auditLog.objectId || "-"}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="对象类型">
-                        {auditLog.objectTypeLabel || auditLog.objectType || "-"}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="动作">
-                        {auditLog.actionLabel || auditLog.action || "-"}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="版本">{auditLog.version ?? "-"}</Descriptions.Item>
-                    <Descriptions.Item label="操作者">
-                        {renderOperator(auditLog, accessToken)}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="操作者类型">
-                        {auditLog.operatorTypeLabel || auditLog.operatorType || "-"}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="来源">{auditLog.source || "-"}</Descriptions.Item>
-                    <Descriptions.Item label="远端地址">
-                        {auditLog.remoteAddr || "-"}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="请求 ID">
-                        {auditLog.requestId || "-"}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="链路 ID">{auditLog.traceId || "-"}</Descriptions.Item>
-                    <Descriptions.Item label="发生时间">
-                        {formatDateTime(auditLog.occurredAt)}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="幂等键">
-                        {auditLog.idempotencyKey || "-"}
-                    </Descriptions.Item>
-                </Descriptions>
+export const AuditLogDetail = ({ accessToken, auditLogId, onClose }: AuditLogDetailProps) => {
+    const auditLogDetailQuery = useQuery({
+        queryKey: ["audit-log", "detail", auditLogId],
+        queryFn: () => service.getAuditLogDetail(auditLogId || ""),
+        enabled: Boolean(auditLogId),
+        retry: false
+    });
+    const auditLog = auditLogDetailQuery.data;
 
-                <section>
-                    <Text type="secondary">摘要</Text>
-                    <Paragraph>{auditLog.summary || "-"}</Paragraph>
-                </section>
+    return (
+        <KuzhambuDrawer
+            testId="audit-audit-log-audit-log-detail-drawer"
+            title="审计详情"
+            open={Boolean(auditLogId)}
+            size="large"
+            loading={auditLogDetailQuery.isFetching}
+            onClose={onClose}
+        >
+            {auditLog ? (
+                <div className="audit-log-detail">
+                    <Descriptions column={2} size="small" bordered>
+                        <Descriptions.Item label="对象">
+                            {auditLog.objectDisplayName || auditLog.objectId || "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="对象类型">
+                            {auditLog.objectTypeLabel || auditLog.objectType || "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="动作">
+                            {auditLog.actionLabel || auditLog.action || "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="版本">
+                            {auditLog.version ?? "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="操作者">
+                            {renderOperator(auditLog, accessToken)}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="操作者类型">
+                            {auditLog.operatorTypeLabel || auditLog.operatorType || "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="来源">{auditLog.source || "-"}</Descriptions.Item>
+                        <Descriptions.Item label="远端地址">
+                            {auditLog.remoteAddr || "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="请求 ID">
+                            {auditLog.requestId || "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="链路 ID">
+                            {auditLog.traceId || "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="发生时间">
+                            {formatDateTime(auditLog.occurredAt)}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="幂等键">
+                            {auditLog.idempotencyKey || "-"}
+                        </Descriptions.Item>
+                    </Descriptions>
 
-                <section>
-                    <Text type="secondary">字段变更</Text>
-                    {renderChangedFields(auditLog.changedFields)}
-                </section>
+                    <section>
+                        <Text type="secondary">摘要</Text>
+                        <Paragraph>{auditLog.summary || "-"}</Paragraph>
+                    </section>
 
-                <section>
-                    <Text type="secondary">快照对比</Text>
-                    {renderSnapshotCompare(
-                        auditLog.beforeSnapshot,
-                        auditLog.afterSnapshot,
-                        auditLog.changedFields
-                    )}
-                </section>
-            </div>
-        ) : null}
-        {!auditLog && error ? <Empty description="审计详情加载失败" /> : null}
-    </KuzhambuDrawer>
-);
+                    <section>
+                        <Text type="secondary">字段变更</Text>
+                        {renderChangedFields(auditLog.changedFields)}
+                    </section>
+
+                    <section>
+                        <Text type="secondary">快照对比</Text>
+                        {renderSnapshotCompare(
+                            auditLog.beforeSnapshot,
+                            auditLog.afterSnapshot,
+                            auditLog.changedFields
+                        )}
+                    </section>
+                </div>
+            ) : null}
+            {!auditLog && auditLogDetailQuery.isError ? (
+                <Empty description="审计详情加载失败" />
+            ) : null}
+        </KuzhambuDrawer>
+    );
+};
