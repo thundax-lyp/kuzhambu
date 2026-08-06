@@ -1,6 +1,6 @@
 import { MenuOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Typography } from "antd";
+import { App, Empty, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -264,6 +264,10 @@ export const MenuPage = () => {
             type: "insideLast"
         });
     };
+
+    if (!canViewMenu) {
+        return <Empty description="缺少 super 权限" />;
+    }
 
     const columns: KuzhambuTableProps<MenuTableNode>["columns"] = [
         {
