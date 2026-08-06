@@ -277,6 +277,15 @@ describe("PromptPage", () => {
         );
 
         expect(await screen.findByDisplayValue("回滚后的正文")).toBeInTheDocument();
+        const versionTable = screen.getByRole("table", { name: "提示词版本列表" });
+        const versionOneRow = within(versionTable).getByText("1").closest("tr");
+        const versionTwoRow = within(versionTable).getByText("2").closest("tr");
+        expect(versionOneRow).not.toBeNull();
+        expect(versionTwoRow).not.toBeNull();
+        expect(within(versionOneRow!).getByText("当前")).toBeInTheDocument();
+        expect(within(versionOneRow!).getByRole("button", { name: "回滚" })).toBeDisabled();
+        expect(within(versionTwoRow!).getByText("历史")).toBeInTheDocument();
+        expect(within(versionTwoRow!).getByRole("button", { name: "回滚" })).toBeEnabled();
     });
 
     it("updates create drawer variable modal content when capability changes", async () => {

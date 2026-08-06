@@ -499,6 +499,9 @@ export const PromptEditDrawer = ({
     const [form] = Form.useForm<PromptFormValues>();
     const initializedFormRef = useRef(false);
     const [variableModalOpen, setVariableModalOpen] = useState(false);
+    const [activeVersionNo, setActiveVersionNo] = useState<number | null>(
+        template?.currentVersionNo ?? null
+    );
     const variablesSnapshotJson = Form.useWatch("variablesSnapshotJson", form);
     const messageTemplatesJson = Form.useWatch("messageTemplatesJson", form);
     const currentCapability = Form.useWatch("capability", form);
@@ -682,6 +685,7 @@ export const PromptEditDrawer = ({
 
     const applyRolledBackVersion = (version: AiPromptVersionRecord) => {
         const outputSchemaJson = formatJsonText(version.outputSchemaJson, TEXT_OUTPUT_SCHEMA);
+        setActiveVersionNo(version.versionNo ?? null);
         form.setFieldsValue({
             messageTemplatesJson: formatJsonText(version.messageTemplatesJson, EMPTY_JSON_ARRAY),
             variablesSnapshotJson: formatJsonText(version.variablesSnapshotJson, EMPTY_JSON_ARRAY),
@@ -881,7 +885,7 @@ export const PromptEditDrawer = ({
                 {template ? (
                     <PromptVersionSection
                         canEdit={canEdit}
-                        template={template}
+                        template={{ ...template, currentVersionNo: activeVersionNo }}
                         onRollback={applyRolledBackVersion}
                     />
                 ) : null}
