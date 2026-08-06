@@ -129,6 +129,9 @@ const isQaTaskCompleted = (task?: AiRefinementTaskRecord | null) => {
     return task?.status === "SUCCEEDED" || task?.status === "PARTIAL";
 };
 
+const getTaskCandidateId = (task?: AiRefinementTaskRecord | null) =>
+    task?.candidateIdText ?? task?.candidateId;
+
 const readTaskMessage = (task?: AiRefinementTaskRecord | null) => {
     if (!task) {
         return undefined;
@@ -181,7 +184,7 @@ const qaTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
             return "tracking";
         }
         if (isQaTaskCompleted(task)) {
-            return task.candidateId ? "result_ready" : "waiting_result";
+            return getTaskCandidateId(task) ? "result_ready" : "waiting_result";
         }
         if (task.status === "CANCELLED") {
             return "cancelled";
@@ -191,7 +194,7 @@ const qaTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
         }
         return "tracking";
     },
-    getResultKey: (task) => task.candidateId,
+    getResultKey: getTaskCandidateId,
     getStatusLabel: (task) => {
         const statusLabel = QA_TASK_STATUS_LABELS[task.status] || task.status;
         return `问答任务：${statusLabel}`;
@@ -508,7 +511,7 @@ export const ClassicsContentQaAiPanel = ({
             capability: AI_BUSINESS_CAPABILITY.CLASSICS_QA,
             status: "PENDING"
         });
-        return selectLatestQaCandidate(candidates, task?.candidateId) ?? null;
+        return selectLatestQaCandidate(candidates, getTaskCandidateId(task)) ?? null;
     };
 
     const updateCandidatePayload = useCallback((candidateId: string, payload: string) => {

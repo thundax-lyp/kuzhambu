@@ -226,6 +226,9 @@ const readRefinementTaskFailureText = (task?: AiRefinementTaskRecord | null) => 
     );
 };
 
+const getTaskCandidateId = (task?: AiRefinementTaskRecord | null) =>
+    task?.candidateIdText ?? task?.candidateId;
+
 const tagTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
     getId: (task) => aiRefinementTaskService.getTaskStableId(task.taskId, task.taskIdText),
     getMessage: (task) => readRefinementTaskFailureText(task),
@@ -234,7 +237,7 @@ const tagTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
             return "tracking";
         }
         if (task.status === "SUCCEEDED" || task.status === "PARTIAL") {
-            return task.candidateId ? "result_ready" : "waiting_result";
+            return getTaskCandidateId(task) ? "result_ready" : "waiting_result";
         }
         if (task.status === "CANCELLED") {
             return "cancelled";
@@ -244,7 +247,7 @@ const tagTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
         }
         return "tracking";
     },
-    getResultKey: (task) => task.candidateId,
+    getResultKey: getTaskCandidateId,
     getStatusLabel: (task) => {
         const statusLabel = TAG_TASK_STATUS_LABELS[task.status] || task.status;
         return `${TAG_TASK_LABEL}任务：${statusLabel}`;
@@ -477,7 +480,7 @@ export const ClassicsContentTagAiPanel = ({
             capability: AI_BUSINESS_CAPABILITY.CLASSICS_TAG_EXTRACT,
             status: "PENDING"
         });
-        return selectLatestTagCandidate(candidates, task?.candidateId) ?? null;
+        return selectLatestTagCandidate(candidates, getTaskCandidateId(task)) ?? null;
     };
 
     const coverMutation = useMutation({
