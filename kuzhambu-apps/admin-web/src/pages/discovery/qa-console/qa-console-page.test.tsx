@@ -10,12 +10,17 @@ const mocks = vi.hoisted(() => ({
     confirmDanger: vi.fn(),
     createQaSessionExport: vi.fn(),
     deleteQaSession: vi.fn(),
+    getCurrentUserInfo: vi.fn(),
     getKnowledgeHealth: vi.fn(),
     getQaSession: vi.fn(),
     pageQaSessions: vi.fn(),
     pageKnowledgeSyncItems: vi.fn(),
     rebuildKnowledge: vi.fn(),
     createKnowledgeSync: vi.fn()
+}));
+
+vi.mock("@/service/current-user-service", () => ({
+    getCurrentUserInfo: mocks.getCurrentUserInfo
 }));
 
 vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
@@ -65,7 +70,7 @@ const findButtonByNormalizedText = (text: string) => {
 };
 
 const switchPanel = async (user: ReturnType<typeof userEvent.setup>, panelName: string) => {
-    await user.click(screen.getByText(panelName));
+    await user.click(screen.getByTitle(panelName));
 };
 
 describe("QaConsolePage", () => {
@@ -80,6 +85,10 @@ describe("QaConsolePage", () => {
             knowledgeBaseName: "kuzhambu-qa",
             provider: "FASTGPT",
             status: "AVAILABLE"
+        });
+        mocks.getCurrentUserInfo.mockResolvedValue({
+            id: "9001",
+            loginName: "qa-admin"
         });
         mocks.getQaSession.mockResolvedValue({
             id: "2001",
@@ -202,6 +211,60 @@ describe("QaConsolePage", () => {
         expect(screen.getAllByText("2023-11-15").length).toBeGreaterThan(0);
     }, 30000);
 
+    it("refetches sync items when unchanged filters are submitted", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        await waitFor(() => expect(mocks.pageKnowledgeSyncItems).toHaveBeenCalled());
+        mocks.pageKnowledgeSyncItems.mockClear();
+
+        await switchPanel(user, "知识文档");
+        await user.click(screen.getByRole("button", { name: /查\s*询/u }));
+
+        await waitFor(() => {
+            expect(mocks.pageKnowledgeSyncItems).toHaveBeenCalledWith({
+                contentType: "SANCAI_ENTRY",
+                pageNo: 1,
+                pageSize: 10,
+                syncStatus: null
+            });
+        });
+    }, 30000);
+
+    it("preserves sync filter state when switching console panels", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        await switchPanel(user, "知识文档");
+        await user.click(screen.getByRole("combobox", { name: "同步状态" }));
+        await user.click(await screen.findByText("失败"));
+        await user.click(screen.getByRole("button", { name: /查\s*询/u }));
+
+        await waitFor(() => {
+            expect(mocks.pageKnowledgeSyncItems.mock.calls.at(-1)?.[0]).toEqual({
+                contentType: "SANCAI_ENTRY",
+                pageNo: 1,
+                pageSize: 10,
+                syncStatus: "FAILED"
+            });
+        });
+
+        await switchPanel(user, "问答诊断");
+        expect(screen.queryByRole("button", { name: /查\s*询/u })).not.toBeInTheDocument();
+        await switchPanel(user, "知识文档");
+
+        expect(screen.getAllByText("失败").length).toBeGreaterThan(0);
+        await user.click(screen.getByRole("button", { name: /查\s*询/u }));
+        await waitFor(() => {
+            expect(mocks.pageKnowledgeSyncItems.mock.calls.at(-1)?.[0]).toEqual({
+                contentType: "SANCAI_ENTRY",
+                pageNo: 1,
+                pageSize: 10,
+                syncStatus: "FAILED"
+            });
+        });
+    }, 30000);
+
     it("supports row sync action", async () => {
         const user = userEvent.setup();
         renderPage();
@@ -242,6 +305,42 @@ describe("QaConsolePage", () => {
         expect(await screen.findByText("礼器在哪里出现？")).toBeInTheDocument();
     }, 30000);
 
+    it("refetches sessions when unchanged filters are submitted", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        await waitFor(() => expect(mocks.pageQaSessions).toHaveBeenCalled());
+        mocks.pageQaSessions.mockClear();
+
+        await switchPanel(user, "会话管理");
+        await user.click(screen.getByRole("button", { name: /查\s*询/u }));
+
+        await waitFor(() => {
+            expect(mocks.pageQaSessions).toHaveBeenCalledWith({
+                openedAtEnd: null,
+                openedAtStart: null,
+                pageNo: 1,
+                pageSize: 10,
+                title: null
+            });
+        });
+    }, 30000);
+
+    it("renders recoverable error when session detail fails", async () => {
+        mocks.getQaSession.mockRejectedValueOnce(new Error("详情加载失败"));
+        const user = userEvent.setup();
+        renderPage();
+
+        await switchPanel(user, "会话管理");
+        expect(await screen.findByText("礼器问答")).toBeInTheDocument();
+        await user.click(screen.getByTestId("discovery-qa-console-qa-console-view-session-button"));
+
+        expect(await screen.findByText("详情加载失败")).toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: "重试" }));
+
+        expect(await screen.findByText("礼器在哪里出现？")).toBeInTheDocument();
+    }, 30000);
+
     it("links diagnostics to FastGPT", async () => {
         const user = userEvent.setup();
         renderPage();
@@ -257,7 +356,7 @@ describe("QaConsolePage", () => {
     it("exports session from table action", async () => {
         renderPage();
 
-        fireEvent.click(screen.getByText("会话管理"));
+        fireEvent.click(screen.getByTitle("会话管理"));
         expect(await screen.findByText("礼器问答")).toBeInTheDocument();
         fireEvent.click(
             screen.getByTestId("discovery-qa-console-qa-console-export-session-button")
@@ -266,7 +365,7 @@ describe("QaConsolePage", () => {
         await waitFor(() => {
             expect(mocks.createQaSessionExport.mock.calls[0]?.[0]).toEqual({
                 format: "CSV",
-                requesterUserId: "1001",
+                requesterUserId: "9001",
                 sessionId: "2001"
             });
         });
@@ -317,7 +416,7 @@ describe("QaConsolePage", () => {
             });
         renderPage();
 
-        fireEvent.click(screen.getByText("会话管理"));
+        fireEvent.click(screen.getByTitle("会话管理"));
         await waitFor(() => {
             expect(mocks.pageQaSessions.mock.calls.at(-1)?.[0]).toEqual({
                 openedAtEnd: null,
@@ -340,7 +439,7 @@ describe("QaConsolePage", () => {
         );
         await waitFor(() => {
             expect(mocks.deleteQaSession.mock.calls[0]?.[0]).toEqual({
-                requesterUserId: "1001",
+                requesterUserId: "9001",
                 sessionId: "2001"
             });
         });

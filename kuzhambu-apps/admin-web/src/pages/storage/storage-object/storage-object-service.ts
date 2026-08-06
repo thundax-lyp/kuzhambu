@@ -29,11 +29,6 @@ export interface StoragePageQuery extends StorageObjectReferenceFilter {
     sortDirection?: "ASC" | "DESC" | null;
 }
 
-export interface StorageSortCommand {
-    orderedIds: string[];
-    sortDirection?: "ASC" | "DESC";
-}
-
 export interface StorageObjectContentUrlCommand {
     mode?: StorageContentMode;
     storageObjectId: string;
@@ -478,12 +473,6 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
     } finally {
         signal?.removeEventListener("abort", abortServerOnSignal);
     }
-};
-
-export const sortStorageObjects = (request: StorageSortCommand) => {
-    return postJson<boolean, StorageSortCommand>("/storage/object/sort", {
-        body: request
-    });
 };
 
 export const getStorageObjectContentUrl = (request: StorageObjectContentUrlCommand) => {
