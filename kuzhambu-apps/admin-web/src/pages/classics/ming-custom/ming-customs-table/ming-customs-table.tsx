@@ -17,11 +17,31 @@ import "./ming-customs-table.css";
 const { Text } = Typography;
 
 const DEFAULT_COLUMN_WIDTHS = {
-    title: 260,
     category: 140,
     chapter: 160,
     section: 140,
     summary: 320
+};
+
+const PUBLICATION_STATUS_LABELS: Readonly<Record<string, string>> = {
+    DRAFT: "草稿",
+    PUBLISHED: "已发布",
+    OFFLINE: "已下线",
+    ERROR: "发布异常"
+};
+
+const PUBLICATION_TRANSITION_STATUS_LABELS: Readonly<Record<string, string>> = {
+    PUBLISHING: "发布中",
+    OFFLINING: "下线中"
+};
+
+const formatPublicationStatus = (status?: string | null) => {
+    const normalizedStatus = status || "DRAFT";
+    return PUBLICATION_STATUS_LABELS[normalizedStatus] || normalizedStatus;
+};
+
+const formatPublicationTransitionStatus = (status: string) => {
+    return PUBLICATION_TRANSITION_STATUS_LABELS[status] || status;
 };
 
 const isPublicationTransitionActive = (record: MingCustomsRecord) =>
@@ -66,23 +86,6 @@ export const MingCustomsTable = ({
 }: MingCustomsTableProps) => {
     const columns: KuzhambuTableProps<MingCustomsRecord>["columns"] = [
         {
-            title: "标题",
-            dataIndex: "title",
-            key: "title",
-            width: DEFAULT_COLUMN_WIDTHS.title,
-            render: (title: string | null | undefined, record) => (
-                <KuzhambuButton
-                    testId={`ming-customs-edit-${record.id}-button`}
-                    type="link"
-                    className="ming-customs-title-link"
-                    disabled={isPublicationTransitionActive(record)}
-                    onClick={() => onOpenEdit(record)}
-                >
-                    <Text strong>{title || "未命名条目"}</Text>
-                </KuzhambuButton>
-            )
-        },
-        {
             title: "分类",
             dataIndex: "category",
             key: "category",
@@ -109,6 +112,32 @@ export const MingCustomsTable = ({
             render: (section?: string | null) => section || "未填写"
         },
         {
+            title: "稿件",
+            dataIndex: "title",
+            key: "title",
+            minWidth: 260,
+            render: (title: string | null | undefined, record) => {
+                const displayTitle = title || "未命名条目";
+                return (
+                    <KuzhambuButton
+                        testId={`ming-customs-edit-${record.id}-button`}
+                        type="link"
+                        className="ming-customs-title-link"
+                        disabled={isPublicationTransitionActive(record)}
+                        onClick={() => onOpenEdit(record)}
+                    >
+                        <Text
+                            strong
+                            className="ming-customs-title-text"
+                            ellipsis={{ tooltip: displayTitle }}
+                        >
+                            {displayTitle}
+                        </Text>
+                    </KuzhambuButton>
+                );
+            }
+        },
+        {
             title: "发布状态",
             key: "publicationStatus",
             width: 140,
@@ -123,10 +152,12 @@ export const MingCustomsTable = ({
                                   : "neutral"
                         }
                     >
-                        {record.lifecycleStatus || "DRAFT"}
+                        {formatPublicationStatus(record.lifecycleStatus)}
                     </KuzhambuTag>
                     {record.transitionStatus && record.transitionStatus !== "NONE" ? (
-                        <KuzhambuTag type="info">{record.transitionStatus}</KuzhambuTag>
+                        <KuzhambuTag type="info">
+                            {formatPublicationTransitionStatus(record.transitionStatus)}
+                        </KuzhambuTag>
                     ) : null}
                 </KuzhambuSpace>
             )

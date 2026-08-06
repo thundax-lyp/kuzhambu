@@ -4,22 +4,31 @@
     gap: 2px;
 }
 
-.ming-customs-edit-drawer-preview {
-    display: flex;
-    flex-direction: column;
+.ming-customs-edit-drawer-sections,
+.ming-customs-edit-drawer-section {
+    min-width: 0;
+}
+
+.ming-customs-summary-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 12px;
+}
+
+.ming-customs-summary-modal-grid > label {
+    display: grid;
     gap: 8px;
-    margin-bottom: 24px;
-    padding: 14px;
-    background: rgba(148, 111, 67, 0.06);
-    border: 1px solid rgba(148, 111, 67, 0.16);
+    padding: 12px;
+    color: var(--text-primary);
+    font-weight: 700;
+    background: color-mix(in srgb, var(--ming-customs-accent-color) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ming-customs-accent-color) 22%, transparent);
     border-radius: 8px;
 }
 
-.ming-customs-edit-drawer-preview-content {
-    min-height: 72px;
-}
-
-html[data-theme="dark"] .ming-customs-edit-drawer-preview {
-    background: rgba(205, 167, 112, 0.1);
-    border-color: rgba(205, 167, 112, 0.24);
+@media (max-width: 980px) {
+    .ming-customs-summary-modal-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }

@@ -33,6 +33,7 @@ const generate = (seed) => {
     appendUserSql(lines, users, departmentByPath);
     appendRoleSql(lines, roles);
     appendMenuSql(lines, menus);
+    appendDeprecatedDictSql(lines, seed.deprecatedDicts ?? []);
     appendDictSql(lines, seed.dicts ?? []);
     appendUserRoleSql(lines, users, roleByName);
     appendRoleMenuSql(lines, roles, menus, menuByPath);
@@ -276,6 +277,17 @@ const appendDictSql = (lines, dicts) => {
     lines.push("    `value` = VALUES(`value`),");
     lines.push("    `priority` = VALUES(`priority`),");
     lines.push("    `remarks` = VALUES(`remarks`);");
+    lines.push("");
+};
+const appendDeprecatedDictSql = (lines, deprecatedDicts) => {
+    if (deprecatedDicts.length === 0) {
+        return;
+    }
+    for (const deprecatedDict of deprecatedDicts) {
+        lines.push(
+            `DELETE FROM \`system_dict\` WHERE \`type\` = ${sqlValue(deprecatedDict.type)} AND \`value\` IN (${deprecatedDict.values.map(sqlValue).join(", ")});`,
+        );
+    }
     lines.push("");
 };
 const appendUserRoleSql = (lines, users, roleByName) => {

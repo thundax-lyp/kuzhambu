@@ -41,9 +41,21 @@ vi.mock("@/pages/classics/common/ai-candidate-panel", () => {
 
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
     createTask: vi.fn(() =>
-        Promise.resolve({ id: "9101", status: "PENDING", capability: "summary" })
+        Promise.resolve({
+            taskId: "9101",
+            status: "SUCCEEDED",
+            capability: "CLASSICS_SUMMARY",
+            contentType: "MING_CUSTOMS",
+            contentId: "500000000001",
+            candidateId: "6001"
+        })
     ),
     getTask: vi.fn(),
+    getTaskStableId: vi.fn((taskId: string, taskIdText?: string | null) => taskIdText || taskId),
+    sortNewestByRequestedAtThenId: vi.fn(
+        ({ left, right }: { left: { id: string }; right: { id: string } }) =>
+            right.id.localeCompare(left.id)
+    ),
     pageTasks: vi.fn(() => Promise.resolve({ items: [], totalCount: 0, pageNo: 1, pageSize: 10 })),
     cancelTask: vi.fn(),
     getNormalizedTaskCapability: vi.fn((capability: string) => {
@@ -94,7 +106,7 @@ const capturedCalls: CapturedCall[] = [];
 let mockMingCustomsRecord: MingCustomsRecord = {
     id: "500000000001",
     title: "岁时礼仪：元旦朝贺",
-    category: "RITUAL",
+    category: "食（饮食生活）",
     chapter: "岁时礼仪",
     section: "正旦",
     summary: "记录明代正旦朝贺与家族拜礼。",
@@ -108,6 +120,17 @@ let mockMingCustomsRecord: MingCustomsRecord = {
 const selectFirstRow = (table: HTMLElement) => {
     const checkbox = within(table).getAllByRole("checkbox")[1];
     fireEvent.click(checkbox.closest("label") ?? checkbox);
+};
+
+const switchMingCustomsDrawerSection = async (
+    user: ReturnType<typeof userEvent.setup>,
+    sectionName: "标签" | "问答" | "版本"
+) => {
+    await user.click(
+        await screen.findByText(sectionName, {
+            selector: ".ant-segmented-item-label"
+        })
+    );
 };
 
 const waitForSelectableRow = async (table: HTMLElement) => {
@@ -193,11 +216,30 @@ const installFetchMock = () => {
                 records: [
                     {
                         type: "CLASSICS_MING_CUSTOMS_CATEGORY",
-                        value: "RITUAL",
-                        label: "礼制"
+                        value: "食（饮食生活）",
+                        label: "食（饮食生活）"
                     }
                 ]
             });
+        }
+        if (path.endsWith("/classics/ming-customs/categories/list")) {
+            return apiResponse({ categories: ["食（饮食生活）"] });
+        }
+        if (path.endsWith("/classics/content/tags/list")) {
+            return apiResponse([
+                { id: "7101", tagNameSnapshot: "礼制", status: "ACTIVE", priority: 1 }
+            ]);
+        }
+        if (path.endsWith("/classics/content/qa-pairs/list")) {
+            return apiResponse([
+                {
+                    id: "7201",
+                    question: "元旦朝贺是什么？",
+                    answer: "明代正旦礼仪。",
+                    status: "ACTIVE",
+                    priority: 1
+                }
+            ]);
         }
 
         if (path.endsWith("/classics/content/exports/page")) {
@@ -223,7 +265,7 @@ const installFetchMock = () => {
                     versionedAt: "2026-01-01T00:00:00.000+00:00",
                     snapshotJson: JSON.stringify({
                         title: "旧标题",
-                        category: "RITUAL",
+                        category: "食（饮食生活）",
                         chapter: "岁时礼仪",
                         section: "正旦",
                         summary: "旧版摘要",
@@ -245,7 +287,7 @@ const installFetchMock = () => {
                 versionedAt: "2026-01-01T00:00:00.000+00:00",
                 snapshotJson: JSON.stringify({
                     title: "旧标题",
-                    category: "RITUAL",
+                    category: "食（饮食生活）",
                     chapter: "岁时礼仪",
                     section: "正旦",
                     summary: "旧版摘要",
@@ -267,7 +309,7 @@ const installFetchMock = () => {
                 versionedAt: "2026-01-02T00:00:00.000+00:00",
                 snapshotJson: JSON.stringify({
                     title: "新标题",
-                    category: "RITUAL",
+                    category: "食（饮食生活）",
                     chapter: "岁时礼仪",
                     section: "正旦",
                     summary: "恢复后的摘要",
@@ -336,7 +378,7 @@ describe("MingCustomPage", () => {
         mockMingCustomsRecord = {
             id: "500000000001",
             title: "岁时礼仪：元旦朝贺",
-            category: "RITUAL",
+            category: "食（饮食生活）",
             chapter: "岁时礼仪",
             section: "正旦",
             summary: "记录明代正旦朝贺与家族拜礼。",
@@ -352,7 +394,11 @@ describe("MingCustomPage", () => {
         replacePermissions([
             "classics:mingcustoms:view",
             "classics:mingcustoms:edit",
-            "classics:content:export"
+            "classics:content:export",
+            "classics:content:edit",
+            "ai:refinement:edit",
+            "ai:invocation:view",
+            "ai:invocation:edit"
         ]);
         installFetchMock();
     });
@@ -376,6 +422,7 @@ describe("MingCustomPage", () => {
 
         expect(await screen.findByRole("heading", { name: "明代习俗" })).toBeInTheDocument();
         expect(await screen.findByText("岁时礼仪：元旦朝贺")).toBeInTheDocument();
+        expect(screen.getByText("草稿")).toBeInTheDocument();
     }, 30000);
 
     it("disables entry writes while publication is transitioning", async () => {
@@ -394,6 +441,8 @@ describe("MingCustomPage", () => {
         );
 
         expect(await screen.findByTestId("ming-customs-edit-500000000001-button")).toBeDisabled();
+        expect(screen.getByText("已发布")).toBeInTheDocument();
+        expect(screen.getByText("下线中")).toBeInTheDocument();
         const table = screen.getByLabelText("明代习俗表格");
         expect(within(table).getAllByRole("checkbox")[1]).toBeDisabled();
     }, 30000);
@@ -499,11 +548,22 @@ describe("MingCustomPage", () => {
         );
 
         await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
-        await user.click(await screen.findByRole("button", { name: "创建摘要任务" }));
+        await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
+        await screen.findByTestId("classics-ming-customs-summary-ai-modal");
+        await user.click(screen.getByTestId("classics-ming-customs-summary-ai-generate-button"));
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
-        await user.click(await screen.findByRole("button", { name: "创建标签任务" }));
+        await waitFor(() =>
+            expect(screen.getByLabelText("明代习俗候选摘要")).toHaveValue("文献摘要候选")
+        );
+        await user.click(screen.getByTestId("classics-ming-customs-summary-ai-apply-button"));
+        expect(screen.getByLabelText("明代习俗概述")).toHaveValue("文献摘要候选");
+        await switchMingCustomsDrawerSection(user, "标签");
+        await user.click(await screen.findByTestId("classics-common-content-tag-ai-button"));
+        await user.click(await screen.findByTestId("classics-content-tag-ai-create-task-button"));
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(2));
-        await user.click(await screen.findByRole("button", { name: "创建问答任务" }));
+        await switchMingCustomsDrawerSection(user, "问答");
+        await user.click(await screen.findByTestId("classics-common-content-qa-ai-button"));
+        await user.click(await screen.findByTestId("classics-content-qa-ai-create-task-button"));
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(3));
 
         const calls = vi
@@ -537,11 +597,53 @@ describe("MingCustomPage", () => {
             expect(JSON.parse(payload.inputPayloadJson)).toMatchObject({
                 contentType: "MING_CUSTOMS",
                 document: "正旦朝贺。\n\n## 正旦",
-                categoryPath: "RITUAL / 岁时礼仪 / 正旦",
+                categoryPath: "食（饮食生活） / 岁时礼仪 / 正旦",
                 originalText: "正旦朝贺。",
                 bodyText: "## 正旦",
                 existingSummary: "记录明代正旦朝贺与家族拜礼。"
             });
+        });
+        expect(JSON.parse(calls[1].inputPayloadJson).existingTags).toEqual(["礼制"]);
+        expect(JSON.parse(calls[2].inputPayloadJson).existingQaPairs).toEqual([
+            { question: "元旦朝贺是什么？", answer: "明代正旦礼仪。" }
+        ]);
+    }, 30000);
+
+    it("preserves historical html content without markdown serialization", async () => {
+        const user = userEvent.setup();
+        mockMingCustomsRecord = {
+            ...mockMingCustomsRecord,
+            contentFormat: "HTML",
+            content: "<p>旧版正文</p>"
+        };
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
+        const contentInput = await screen.findByLabelText("明代习俗正文（HTML）");
+        expect(contentInput).toHaveValue("<p>旧版正文</p>");
+        expect(screen.queryByLabelText("明代习俗正文 Markdown 编辑器")).not.toBeInTheDocument();
+
+        await user.clear(contentInput);
+        await user.type(contentInput, "<p>修改后的正文</p>");
+        await user.click(screen.getByTestId("classics-ming-customs-ming-customs-create-button"));
+
+        await waitFor(() => {
+            const updateCall = capturedCalls.find((call) =>
+                call.path.endsWith("/classics/ming-customs/update")
+            );
+            expect(updateCall?.body).toEqual(
+                expect.objectContaining({
+                    contentFormat: "HTML",
+                    content: "<p>修改后的正文</p>"
+                })
+            );
         });
     }, 30000);
 
@@ -562,7 +664,9 @@ describe("MingCustomPage", () => {
         );
 
         await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
-        await user.click(await screen.findByRole("button", { name: "创建问答任务" }));
+        await switchMingCustomsDrawerSection(user, "问答");
+        await user.click(await screen.findByTestId("classics-common-content-qa-ai-button"));
+        await user.click(await screen.findByTestId("classics-content-qa-ai-create-task-button"));
 
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
         expect(
@@ -668,88 +772,6 @@ describe("MingCustomPage", () => {
         });
     }, 30000);
 
-    it("refreshes detail and tags/qa/versions after ai candidate apply", async () => {
-        const user = userEvent.setup();
-        const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
-
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <MingCustomPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
-
-        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
-        capturedCalls.length = 0;
-        await user.click(await screen.findByRole("button", { name: "mock-ai-applied" }));
-
-        await waitFor(() => {
-            expect(
-                invalidateSpy.mock.calls.some(
-                    ([arg]) =>
-                        JSON.stringify(arg?.queryKey) === JSON.stringify(["ming-customs", "detail"])
-                )
-            ).toBeTruthy();
-            expect(
-                invalidateSpy.mock.calls.some(
-                    ([arg]) =>
-                        JSON.stringify(arg?.queryKey) ===
-                        JSON.stringify(["classics", "content", "tags", "MING_CUSTOMS"])
-                )
-            ).toBeTruthy();
-            expect(
-                invalidateSpy.mock.calls.some(
-                    ([arg]) =>
-                        JSON.stringify(arg?.queryKey) ===
-                        JSON.stringify(["classics", "content", "qa-pairs", "MING_CUSTOMS"])
-                )
-            ).toBeTruthy();
-            expect(
-                invalidateSpy.mock.calls.some(
-                    ([arg]) =>
-                        JSON.stringify(arg?.queryKey) ===
-                        JSON.stringify(["ming-customs", "versions"])
-                )
-            ).toBeTruthy();
-        });
-    }, 30000);
-
-    it("only refreshes candidate list after ai candidate reject", async () => {
-        const user = userEvent.setup();
-        const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
-
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <MingCustomPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
-
-        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
-        capturedCalls.length = 0;
-        await user.click(await screen.findByRole("button", { name: "mock-ai-rejected" }));
-
-        await waitFor(() => {
-            expect(
-                invalidateSpy.mock.calls.some(
-                    ([arg]) =>
-                        JSON.stringify(arg?.queryKey) ===
-                        JSON.stringify(["ai", "candidates", "MING_CUSTOMS", "500000000001"])
-                )
-            ).toBeTruthy();
-        });
-
-        expect(
-            invalidateSpy.mock.calls.every(
-                ([arg]) =>
-                    JSON.stringify(arg?.queryKey) ===
-                    JSON.stringify(["ai", "candidates", "MING_CUSTOMS", "500000000001"])
-            )
-        ).toBeTruthy();
-    }, 30000);
-
     it("renders ming customs version history panel with snapshot compare", () => {
         const version: MingCustomsContentVersionRecord = {
             id: "500000000003",
@@ -759,7 +781,7 @@ describe("MingCustomPage", () => {
             versionedAt: "2026-06-01T00:00:00.000+00:00",
             snapshotJson: JSON.stringify({
                 title: "旧标题",
-                category: "RITUAL",
+                category: "食（饮食生活）",
                 chapter: "先秦",
                 section: "开端",
                 summary: "旧版摘要",
@@ -798,7 +820,7 @@ describe("MingCustomPage", () => {
                 currentEntry={{
                     id: "500000000001",
                     title: "新标题",
-                    category: "RITUAL",
+                    category: "食（饮食生活）",
                     chapter: "先秦",
                     section: "开端",
                     summary: "新版摘要",
@@ -822,8 +844,7 @@ describe("MingCustomPage", () => {
         expect(
             screen.getByTestId("ming-customs-version-restore-500000000003-button")
         ).toBeInTheDocument();
-        expect(screen.getByText(/历史：旧版摘要/)).toBeInTheDocument();
-        expect(screen.getByText(/当前：新版摘要/)).toBeInTheDocument();
+        expect(screen.getByLabelText("概述差异（历史 → 当前）")).toBeInTheDocument();
         expect(screen.getByText("确认标签")).toBeInTheDocument();
         expect(screen.getByText("礼制")).toBeInTheDocument();
         expect(screen.getByText("朝仪")).toBeInTheDocument();
@@ -890,11 +911,11 @@ describe("MingCustomPage", () => {
         );
 
         await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
+        await switchMingCustomsDrawerSection(user, "版本");
         expect(await screen.findByLabelText("明代习俗版本历史面板")).toBeInTheDocument();
         await user.click(await screen.findByTestId("ming-customs-version-view-9001-button"));
 
-        expect(await screen.findByText("当前：岁时礼仪：元旦朝贺")).toBeInTheDocument();
-        expect(screen.getByText("历史：旧标题")).toBeInTheDocument();
+        expect(await screen.findByLabelText("稿件差异（历史 → 当前）")).toBeInTheDocument();
     });
 
     it("shows reset confirm and calls versions/reset for selected history version", async () => {
@@ -909,6 +930,7 @@ describe("MingCustomPage", () => {
         );
 
         await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
+        await switchMingCustomsDrawerSection(user, "版本");
         await user.click(await screen.findByTestId("ming-customs-version-view-9001-button"));
         await user.click(await screen.findByTestId("ming-customs-version-restore-9001-button"));
 

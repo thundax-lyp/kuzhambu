@@ -161,19 +161,35 @@ export const resetVersion = (entryId: string, versionId: string) => {
 };
 
 export const listCategoryOptions = async () => {
-    const pageResult = await postJson<{ records: DictItem[] }, PageQuery<{ type: string }>>(
-        "/sys/dict/page",
-        {
+    const [pageResult, storedCategories] = await Promise.all([
+        postJson<{ records: DictItem[] }, PageQuery<{ type: string }>>("/sys/dict/page", {
             body: {
                 pageNo: 1,
                 pageSize: 100,
                 type: CATEGORY_DICT_TYPE
             }
-        }
-    );
-    return pageResult.records.map((item) => ({
+        }),
+        postJson<{ categories: string[] }, Record<string, never>>(
+            "/classics/ming-customs/categories/list",
+            {
+                body: {}
+            }
+        ).then((response) => response.categories)
+    ]);
+    const options = pageResult.records.map((item) => ({
         type: item.type,
         value: item.value,
         label: item.label
     }));
+    const optionValues = new Set(options.map((item) => item.value));
+    storedCategories.forEach((category) => {
+        if (!optionValues.has(category)) {
+            options.push({
+                type: CATEGORY_DICT_TYPE,
+                value: category,
+                label: `历史分类：${category}`
+            });
+        }
+    });
+    return options;
 };

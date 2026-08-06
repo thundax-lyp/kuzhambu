@@ -20,6 +20,8 @@ public interface MingCustomsApplicationService {
 
     PageResult<MingCustomsEntry> page(MingCustomsPageQuery query, PageQuery page);
 
+    List<String> listCategories();
+
     MingCustomsEntryId add(MingCustomsCommand command);
 
     MingCustomsEntryId update(MingCustomsCommand command);

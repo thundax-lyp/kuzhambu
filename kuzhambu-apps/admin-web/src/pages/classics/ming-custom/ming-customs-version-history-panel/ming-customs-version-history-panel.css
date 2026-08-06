@@ -1,20 +1,20 @@
 .ming-customs-version-history-panel {
-    margin-top: 12px;
+    min-width: 0;
 }
 
 .ming-customs-version-history-panel-grid {
     display: grid;
-    grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+    grid-template-columns: minmax(220px, 0.85fr) minmax(0, 1.15fr);
+    min-width: 0;
     gap: 12px;
 }
 
 .ming-customs-version-history-list,
 .ming-customs-version-history-detail {
     min-width: 0;
-    min-height: 220px;
     padding: 12px;
-    background: rgba(148, 111, 67, 0.06);
-    border: 1px solid rgba(148, 111, 67, 0.16);
+    background: var(--surface-panel);
+    border: 1px solid var(--line-subtle);
     border-radius: 8px;
 }
 
@@ -27,18 +27,21 @@
     width: 100%;
 }
 
-.ming-customs-version-compare .ant-descriptions-item-label {
-    width: 132px;
-    color: #7f5833;
-    font-weight: 700;
+.ming-customs-version-history-detail {
+    min-height: 220px;
 }
 
-.ming-customs-version-compare .is-changed .ant-descriptions-item-label {
-    color: #a85a1d;
-    background: rgba(148, 111, 67, 0.12);
+.ming-customs-version-history-detail-actions {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
 }
 
-@media (max-width: 760px) {
+.ming-customs-version-compare .is-changed {
+    background: color-mix(in srgb, var(--ming-customs-accent-color) 8%, transparent);
+}
+
+@media (max-width: 980px) {
     .ming-customs-version-history-panel-grid {
         grid-template-columns: minmax(0, 1fr);
     }

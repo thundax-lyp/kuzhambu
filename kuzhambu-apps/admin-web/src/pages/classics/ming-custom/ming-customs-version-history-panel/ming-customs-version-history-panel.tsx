@@ -5,7 +5,8 @@ import {
     KuzhambuListMeta,
     KuzhambuSpace,
     KuzhambuButton,
-    KuzhambuAlert
+    KuzhambuAlert,
+    KuzhambuTextCompare
 } from "@/components";
 
 import type {
@@ -20,15 +21,16 @@ const { Text } = Typography;
 const compareFields: Array<{
     key: keyof MingCustomsVersionSnapshot;
     label: string;
+    textDiff?: boolean;
 }> = [
-    { key: "title", label: "标题" },
+    { key: "title", label: "稿件", textDiff: true },
     { key: "category", label: "分类" },
     { key: "chapter", label: "章节" },
-    { key: "section", label: "节" },
-    { key: "summary", label: "概述" },
-    { key: "contentFormat", label: "正文格式" },
-    { key: "content", label: "正文" },
-    { key: "originalExcerpts", label: "原文摘录" }
+    { key: "section", label: "小节" },
+    { key: "summary", label: "概述", textDiff: true },
+    { key: "contentFormat", label: "格式" },
+    { key: "content", label: "正文", textDiff: true },
+    { key: "originalExcerpts", label: "原文摘录", textDiff: true }
 ];
 
 const formatDateTime = (value?: string | null) => {
@@ -209,16 +211,33 @@ export const MingCustomsVersionHistoryPanel = ({
                                                     label={field.label}
                                                     className={changed ? "is-changed" : undefined}
                                                 >
-                                                    <KuzhambuSpace orientation="vertical" size={2}>
-                                                        <Text>
-                                                            当前：{formatValue(currentValue)}
-                                                        </Text>
-                                                        <Text
-                                                            type={changed ? "warning" : "secondary"}
+                                                    {field.textDiff ? (
+                                                        <KuzhambuTextCompare
+                                                            baseline={formatValue(historyValue)}
+                                                            candidate={formatValue(currentValue)}
+                                                            emptyText="历史版本与当前内容一致"
+                                                            testId={`classics-ming-customs-version-${field.key}-compare`}
+                                                            title={`${field.label}差异（历史 → 当前）`}
+                                                        />
+                                                    ) : (
+                                                        <KuzhambuSpace
+                                                            orientation="vertical"
+                                                            size={2}
                                                         >
-                                                            历史：{formatValue(historyValue)}
-                                                        </Text>
-                                                    </KuzhambuSpace>
+                                                            <Text>
+                                                                当前：{formatValue(currentValue)}
+                                                            </Text>
+                                                            <Text
+                                                                type={
+                                                                    changed
+                                                                        ? "warning"
+                                                                        : "secondary"
+                                                                }
+                                                            >
+                                                                历史：{formatValue(historyValue)}
+                                                            </Text>
+                                                        </KuzhambuSpace>
+                                                    )}
                                                 </Descriptions.Item>
                                             );
                                         })}
@@ -253,15 +272,17 @@ export const MingCustomsVersionHistoryPanel = ({
                                     title="版本快照为空或无法解析"
                                 />
                             )}
-                            <KuzhambuButton
-                                testId={`ming-customs-version-restore-${selectedVersion.id}-button`}
-                                danger
-                                disabled={!canResetVersion}
-                                loading={resetting}
-                                onClick={() => onResetVersion(selectedVersion)}
-                            >
-                                恢复此版本
-                            </KuzhambuButton>
+                            <div className="ming-customs-version-history-detail-actions">
+                                <KuzhambuButton
+                                    testId={`ming-customs-version-restore-${selectedVersion.id}-button`}
+                                    danger
+                                    disabled={!canResetVersion}
+                                    loading={resetting}
+                                    onClick={() => onResetVersion(selectedVersion)}
+                                >
+                                    恢复此版本
+                                </KuzhambuButton>
+                            </div>
                         </KuzhambuSpace>
                     ) : (
                         <Empty

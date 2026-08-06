@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler.Ming
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsKeywordSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsVersionRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsCategoriesResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsTagCloudItemResponse;
@@ -71,6 +72,23 @@ public class MingCustomsAdminController {
         return PageResponseHelper.fromPageResult(
                 service.page(query, PageInterfaceAssembler.toPageQuery(request)),
                 MingCustomsInterfaceAssembler::toResponse);
+    }
+
+    @Operation(summary = "查询明代习俗实际分类", description = "classics:mingcustoms:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("classics:mingcustoms:view")
+    @SysLogger(value = "分类列表")
+    @PostMapping("categories/list")
+    public MingCustomsCategoriesResponse listCategories() {
+        return MingCustomsCategoriesResponse.builder()
+                .categories(service.listCategories())
+                .build();
     }
 
     @Operation(summary = "查看明代习俗", description = "classics:mingcustoms:view")

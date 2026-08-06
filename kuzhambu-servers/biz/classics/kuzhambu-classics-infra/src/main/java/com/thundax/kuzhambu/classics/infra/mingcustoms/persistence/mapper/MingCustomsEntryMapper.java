@@ -10,6 +10,10 @@ import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface MingCustomsEntryMapper extends BaseMapper<MingCustomsEntryDO> {
+    @Select("select distinct category from classics_ming_customs_entry"
+            + " where category is not null and category != '' order by category")
+    List<String> selectCategories();
+
     @Select("select * from classics_ming_customs_entry where id = #{id} for update")
     MingCustomsEntryDO selectPublicationStateForUpdate(@Param("id") Long id);
 
