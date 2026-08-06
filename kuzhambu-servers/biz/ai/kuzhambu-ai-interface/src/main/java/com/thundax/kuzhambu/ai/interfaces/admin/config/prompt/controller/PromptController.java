@@ -1,8 +1,10 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller;
 
+import com.thundax.kuzhambu.ai.application.config.service.AiCapabilityCatalogApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.PromptApplicationService;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.assembler.PromptInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.request.PromptRequests;
+import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.response.PromptResponses.CapabilityVariableResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.response.PromptResponses.TemplateResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.response.PromptResponses.VariableResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.response.PromptResponses.VersionResponse;
@@ -28,9 +30,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class PromptController {
 
     private final PromptApplicationService promptService;
+    private final AiCapabilityCatalogApplicationService capabilityCatalogService;
 
-    public PromptController(PromptApplicationService promptService) {
+    public PromptController(
+            PromptApplicationService promptService, AiCapabilityCatalogApplicationService capabilityCatalogService) {
         this.promptService = promptService;
+        this.capabilityCatalogService = capabilityCatalogService;
     }
 
     @Operation(summary = "获取提示词模板", description = "ai:prompt:view")
@@ -97,6 +102,38 @@ public class PromptController {
         var templateId = promptService.save(PromptInterfaceAssembler.toSaveCommand(request));
         return PromptInterfaceAssembler.toResponse(
                 promptService.get(PromptInterfaceAssembler.toGetPromptQuery(templateId)));
+    }
+
+    @Operation(summary = "更新提示词模板状态", description = "ai:prompt:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "ai:prompt:edit")
+    @SysLogger(value = "模板状态更新")
+    @PostMapping(value = "template/status/update")
+    public Boolean updateTemplateStatus(@Valid @RequestBody PromptRequests.TemplateStatusRequest request) {
+        promptService.changeStatus(PromptInterfaceAssembler.toChangeStatusCommand(request));
+        return true;
+    }
+
+    @Operation(summary = "删除提示词模板", description = "ai:prompt:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "ai:prompt:edit")
+    @SysLogger(value = "模板删除")
+    @PostMapping(value = "template/delete")
+    public Boolean deleteTemplate(@Valid @RequestBody PromptRequests.TemplateIdRequest request) {
+        promptService.delete(PromptInterfaceAssembler.toDeleteCommand(request));
+        return true;
     }
 
     @Operation(summary = "获取当前提示词版本", description = "ai:prompt:view")
@@ -178,6 +215,26 @@ public class PromptController {
     @PostMapping(value = "variable/list")
     public List<VariableResponse> listVariables(@Valid @RequestBody PromptRequests.TemplateIdRequest request) {
         return promptService.listVariables(PromptInterfaceAssembler.toListPromptVariablesQuery(request)).stream()
+                .map(PromptInterfaceAssembler::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Operation(summary = "获取能力变量目录", description = "ai:prompt:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "ai:prompt:view")
+    @SysLogger(value = "能力变量目录")
+    @PostMapping(value = "capability-variable/list")
+    public List<CapabilityVariableResponse> listCapabilityVariables(
+            @Valid @RequestBody PromptRequests.CapabilityVariableListRequest request) {
+        return capabilityCatalogService
+                .listPromptVariables(PromptInterfaceAssembler.toListCapabilityVariablesQuery(request))
+                .stream()
                 .map(PromptInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }

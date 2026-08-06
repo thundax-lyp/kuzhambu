@@ -2,7 +2,7 @@ import { CheckCircleOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/i
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Form, Input, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     KuzhambuButton,
     KuzhambuDrawer,
@@ -20,16 +20,12 @@ import {
 } from "@/components";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 
-import {
-    findUnsupportedPromptVariableNames,
-    getPromptCapabilityVariables
-} from "@/pages/ai/prompt/prompt-capability-variables";
-import type { PromptCapabilityVariableDefinition } from "@/pages/ai/prompt/prompt-capability-variables";
 import type { AiPromptTemplateChangeCommand } from "@/pages/ai/prompt/prompt-service";
 import * as service from "@/pages/ai/prompt/prompt-service";
 
 import type {
     AiPromptTemplateRecord,
+    AiPromptCapabilityVariableRecord,
     AiPromptVariableRecord,
     AiPromptVersionRecord
 } from "@/pages/ai/prompt/prompt-types";
@@ -178,18 +174,23 @@ const extractPromptVariableNames = (messageTemplatesJson?: string | null) => {
 const mergeVariableRows = (
     variablesSnapshotJson?: string | null,
     messageTemplatesJson?: string | null,
-    remoteVariables: AiPromptVariableRecord[] = []
+    remoteVariables: AiPromptVariableRecord[] = [],
+    capabilityVariables: AiPromptCapabilityVariableRecord[] = []
 ) => {
     const currentRows = toVariableRows(variablesSnapshotJson);
     const sourceRows = currentRows.length > 0 ? currentRows : remoteVariables;
     const rowByName = new Map(sourceRows.map((variable) => [variable.variableName, variable]));
+    const capabilityVariableByName = new Map(
+        capabilityVariables.map((variable) => [variable.variableName, variable])
+    );
     const placeholderRows = extractPromptVariableNames(messageTemplatesJson).map(
         (variableName, index) => {
             const existing = rowByName.get(variableName);
+            const capabilityVariable = capabilityVariableByName.get(variableName);
             return {
                 variableName,
-                required: existing?.required !== false,
-                description: existing?.description || "",
+                required: capabilityVariable?.required ?? existing?.required !== false,
+                description: existing?.description || capabilityVariable?.description || "",
                 priority: existing?.priority ?? index + 1
             };
         }
@@ -335,6 +336,153 @@ const PromptMarkdownEditor = ({
     );
 };
 
+const PromptVersionSection = ({
+    canEdit,
+    template
+}: {
+    canEdit: boolean;
+    template: AiPromptTemplateRecord;
+}) => {
+    const { message } = App.useApp();
+    const confirm = useKuzhambuConfirm();
+    const queryClient = useQueryClient();
+    const [viewVersion, setViewVersion] = useState<AiPromptVersionRecord | null>(null);
+    const [compareVersions, setCompareVersions] = useState<AiPromptVersionRecord[]>([]);
+    const templateId = template.id || null;
+    const versionsQuery = useQuery({
+        queryKey: ["ai", "prompt", "versions", templateId],
+        queryFn: () => service.listPromptVersions(templateId || ""),
+        enabled: Boolean(templateId),
+        retry: false
+    });
+    const compareMutation = useMutation({
+        mutationFn: service.previewPromptVersionCompare,
+        onSuccess: setCompareVersions,
+        onError: (error) => {
+            message.error(error instanceof Error ? error.message : "版本对比失败");
+        }
+    });
+    const rollbackMutation = useMutation({
+        mutationFn: service.changePromptVersionRollback,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["ai", "prompt"] });
+            message.success("提示词版本已回滚");
+        },
+        onError: (error) => {
+            message.error(error instanceof Error ? error.message : "提示词版本回滚失败");
+        }
+    });
+    const columns: KuzhambuTableProps<AiPromptVersionRecord>["columns"] = [
+        { title: "版本号", dataIndex: "versionNo", key: "versionNo", width: 96 },
+        {
+            title: "状态",
+            key: "current",
+            width: 96,
+            render: (_, record) => {
+                const current = record.versionNo === template.currentVersionNo;
+                return (
+                    <KuzhambuTag type={current ? "success" : "neutral"}>
+                        {current ? "当前" : "历史"}
+                    </KuzhambuTag>
+                );
+            }
+        },
+        {
+            title: "变更说明",
+            dataIndex: "changeSummary",
+            key: "changeSummary",
+            ellipsis: true,
+            render: (value?: string | null) => value || "-"
+        },
+        {
+            title: "日期",
+            dataIndex: "registeredAt",
+            key: "registeredAt",
+            width: 120,
+            render: formatDate
+        },
+        {
+            key: "actions",
+            options: (record) => {
+                const current = record.versionNo === template.currentVersionNo;
+                return [
+                    { key: "view", text: "查看", onClick: () => setViewVersion(record) },
+                    {
+                        key: "compare",
+                        text: "对比",
+                        disabled: !template.currentVersionNo,
+                        onClick: () => {
+                            if (templateId && record.versionNo && template.currentVersionNo) {
+                                compareMutation.mutate({
+                                    id: templateId,
+                                    leftVersionNo: record.versionNo,
+                                    rightVersionNo: template.currentVersionNo
+                                });
+                            }
+                        }
+                    },
+                    {
+                        key: "rollback",
+                        text: "回滚",
+                        type: "warning",
+                        disabled: !canEdit || current,
+                        onClick: () =>
+                            confirm.danger({
+                                title: "回滚版本",
+                                message: `确认回滚到版本 ${record.versionNo}？`,
+                                okText: "回滚",
+                                onConfirm: () =>
+                                    rollbackMutation.mutateAsync({
+                                        id: templateId || "",
+                                        versionNo: record.versionNo || 0
+                                    })
+                            })
+                    }
+                ];
+            }
+        }
+    ];
+
+    return (
+        <>
+            <div className="prompt-version-section">
+                <Typography.Title level={5}>版本</Typography.Title>
+                <KuzhambuTable<AiPromptVersionRecord>
+                    ariaLabel="提示词版本列表"
+                    rowKey={(record) => record.id || `${record.templateId}-${record.versionNo}`}
+                    columns={columns}
+                    dataSource={versionsQuery.data || []}
+                    loading={versionsQuery.isFetching}
+                    pagination={false}
+                    size="small"
+                />
+            </div>
+            <KuzhambuDrawer
+                testId="ai-prompt-prompt-editor-2-drawer"
+                open={Boolean(viewVersion)}
+                title={viewVersion ? versionTitle(viewVersion) : "版本详情"}
+                size="large"
+                onClose={() => setViewVersion(null)}
+            >
+                {viewVersion ? <VersionDetail version={viewVersion} /> : null}
+            </KuzhambuDrawer>
+            <KuzhambuDrawer
+                testId="ai-prompt-prompt-editor-3-drawer"
+                open={compareVersions.length > 0}
+                title="版本对比"
+                size="large"
+                onClose={() => setCompareVersions([])}
+            >
+                <div className="prompt-compare-grid">
+                    {compareVersions.map((version) => (
+                        <VersionDetail key={version.versionNo} version={version} />
+                    ))}
+                </div>
+            </KuzhambuDrawer>
+        </>
+    );
+};
+
 export const PromptEditDrawer = ({
     canEdit,
     capabilityOptions,
@@ -344,11 +492,9 @@ export const PromptEditDrawer = ({
     onSaved
 }: PromptEditDrawerProps) => {
     const { message } = App.useApp();
-    const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [form] = Form.useForm<PromptFormValues>();
-    const [viewVersion, setViewVersion] = useState<AiPromptVersionRecord | null>(null);
-    const [compareVersions, setCompareVersions] = useState<AiPromptVersionRecord[]>([]);
+    const initializedFormRef = useRef(false);
     const [variableModalOpen, setVariableModalOpen] = useState(false);
     const variablesSnapshotJson = Form.useWatch("variablesSnapshotJson", form);
     const messageTemplatesJson = Form.useWatch("messageTemplatesJson", form);
@@ -363,13 +509,6 @@ export const PromptEditDrawer = ({
         retry: false
     });
 
-    const versionsQuery = useQuery({
-        queryKey: ["ai", "prompt", "versions", templateId],
-        queryFn: () => service.listPromptVersions(templateId || ""),
-        enabled: open && Boolean(templateId),
-        retry: false
-    });
-
     const variablesQuery = useQuery({
         queryKey: ["ai", "prompt", "variables", templateId],
         queryFn: () => service.listPromptVariables(templateId || ""),
@@ -377,13 +516,30 @@ export const PromptEditDrawer = ({
         retry: false
     });
 
+    const capabilityVariablesQuery = useQuery({
+        queryKey: ["ai", "prompt", "capability-variables", currentCapability],
+        queryFn: () => service.listPromptCapabilityVariables(currentCapability || ""),
+        enabled: open && Boolean(currentCapability),
+        retry: false
+    });
+
     const variableRows = useMemo(() => {
-        return mergeVariableRows(variablesSnapshotJson, messageTemplatesJson, variablesQuery.data);
-    }, [messageTemplatesJson, variablesQuery.data, variablesSnapshotJson]);
+        return mergeVariableRows(
+            variablesSnapshotJson,
+            messageTemplatesJson,
+            variablesQuery.data,
+            capabilityVariablesQuery.data
+        );
+    }, [
+        capabilityVariablesQuery.data,
+        messageTemplatesJson,
+        variablesQuery.data,
+        variablesSnapshotJson
+    ]);
 
     const allowedVariableRows = useMemo(
-        () => getPromptCapabilityVariables(currentCapability),
-        [currentCapability]
+        () => capabilityVariablesQuery.data || [],
+        [capabilityVariablesQuery.data]
     );
     const allowedVariableNames = useMemo(
         () => allowedVariableRows.map((variable) => variable.variableName),
@@ -392,6 +548,9 @@ export const PromptEditDrawer = ({
 
     useEffect(() => {
         if (!open) {
+            return;
+        }
+        if (initializedFormRef.current) {
             return;
         }
         if (!template) {
@@ -410,6 +569,10 @@ export const PromptEditDrawer = ({
                 outputStructure: "TEXT",
                 changeSummary: "创建提示词模板"
             });
+            initializedFormRef.current = true;
+            return;
+        }
+        if (currentVersionQuery.isPending || variablesQuery.isPending) {
             return;
         }
         const currentVersion = currentVersionQuery.data;
@@ -436,7 +599,16 @@ export const PromptEditDrawer = ({
             outputStructure: readPromptOutputStructure(outputSchemaJson),
             changeSummary: ""
         });
-    }, [currentVersionQuery.data, form, open, template, variablesQuery.data]);
+        initializedFormRef.current = true;
+    }, [
+        currentVersionQuery.data,
+        currentVersionQuery.isPending,
+        form,
+        open,
+        template,
+        variablesQuery.data,
+        variablesQuery.isPending
+    ]);
 
     const changeMutation = useMutation({
         mutationFn: service.changePromptTemplate,
@@ -460,25 +632,6 @@ export const PromptEditDrawer = ({
         }
     });
 
-    const compareMutation = useMutation({
-        mutationFn: service.previewPromptVersionCompare,
-        onSuccess: setCompareVersions,
-        onError: (error) => {
-            message.error(error instanceof Error ? error.message : "版本对比失败");
-        }
-    });
-
-    const rollbackMutation = useMutation({
-        mutationFn: service.changePromptVersionRollback,
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["ai", "prompt"] });
-            message.success("提示词版本已回滚");
-        },
-        onError: (error) => {
-            message.error(error instanceof Error ? error.message : "提示词版本回滚失败");
-        }
-    });
-
     const submitTemplate = async (overrideVersion?: AiPromptVersionRecord | null) => {
         const values = await form.validateFields();
         const messageTemplatesJson =
@@ -494,14 +647,6 @@ export const PromptEditDrawer = ({
         const submittedVariableNames = Array.from(
             new Set([...placeholderNames, ...variables.map((variable) => variable.variableName)])
         );
-        const unsupportedVariableNames = findUnsupportedPromptVariableNames(
-            effectiveCapability,
-            submittedVariableNames
-        );
-        if (unsupportedVariableNames.length > 0) {
-            message.error(`当前能力不支持变量：${unsupportedVariableNames.join("、")}`);
-            return;
-        }
         const variablesSnapshot =
             overrideVersion?.variablesSnapshotJson || variablesToJson(variableRows);
         await changeMutation.mutateAsync({
@@ -515,7 +660,9 @@ export const PromptEditDrawer = ({
             outputSchemaJson: normalizeJsonText(outputSchemaJson, EMPTY_JSON_OBJECT),
             changeSummary:
                 values.changeSummary || overrideVersion?.changeSummary || "保存提示词版本",
-            variables
+            variables: variables.filter((variable) =>
+                submittedVariableNames.includes(variable.variableName)
+            )
         });
     };
 
@@ -530,33 +677,6 @@ export const PromptEditDrawer = ({
         });
     };
 
-    const compareWithCurrent = async (version: AiPromptVersionRecord) => {
-        if (!templateId || !version.versionNo || !template?.currentVersionNo) {
-            return;
-        }
-        await compareMutation.mutateAsync({
-            id: templateId,
-            leftVersionNo: version.versionNo,
-            rightVersionNo: template.currentVersionNo
-        });
-    };
-
-    const confirmRollbackVersion = (version: AiPromptVersionRecord) => {
-        if (!templateId || !version.versionNo) {
-            return;
-        }
-        confirm.danger({
-            title: "回滚版本",
-            message: `确认回滚到版本 ${version.versionNo}？`,
-            okText: "回滚",
-            onConfirm: () =>
-                rollbackMutation.mutateAsync({
-                    id: templateId,
-                    versionNo: version.versionNo || 0
-                })
-        });
-    };
-
     const closeDrawer = () => {
         if (changeMutation.isPending) {
             return;
@@ -565,7 +685,7 @@ export const PromptEditDrawer = ({
         onClose();
     };
 
-    const variableColumns: ColumnsType<PromptCapabilityVariableDefinition> = [
+    const variableColumns: ColumnsType<AiPromptCapabilityVariableRecord> = [
         {
             title: "变量名",
             dataIndex: "variableName",
@@ -578,69 +698,6 @@ export const PromptEditDrawer = ({
                     </div>
                 </div>
             )
-        }
-    ];
-
-    const versionColumns: KuzhambuTableProps<AiPromptVersionRecord>["columns"] = [
-        { title: "版本号", dataIndex: "versionNo", key: "versionNo", width: 96 },
-        {
-            title: "状态",
-            key: "current",
-            width: 96,
-            render: (_, record) => {
-                const current = record.versionNo === template?.currentVersionNo;
-                return (
-                    <KuzhambuTag type={current ? "success" : "neutral"}>
-                        {current ? "当前" : "历史"}
-                    </KuzhambuTag>
-                );
-            }
-        },
-        {
-            title: "变更说明",
-            dataIndex: "changeSummary",
-            key: "changeSummary",
-            ellipsis: true,
-            render: (value?: string | null) => value || "-"
-        },
-        {
-            title: "日期",
-            dataIndex: "registeredAt",
-            key: "registeredAt",
-            width: 120,
-            render: formatDate
-        },
-        {
-            key: "actions",
-            options: (record) => {
-                const current = record.versionNo === template?.currentVersionNo;
-                return [
-                    {
-                        key: "view",
-                        text: "查看",
-                        ariaLabel: `查看版本 ${record.versionNo ?? "-"}`,
-                        testId: "ai-prompt-prompt-view-button",
-                        onClick: () => setViewVersion(record)
-                    },
-                    {
-                        key: "compare",
-                        text: "对比",
-                        ariaLabel: `对比版本 ${record.versionNo ?? "-"}`,
-                        disabled: !template?.currentVersionNo,
-                        testId: "ai-prompt-prompt-compare-button",
-                        onClick: () => void compareWithCurrent(record)
-                    },
-                    {
-                        key: "rollback",
-                        text: "回滚",
-                        ariaLabel: `回滚版本 ${record.versionNo ?? "-"}`,
-                        disabled: !canEdit || current,
-                        testId: "ai-prompt-prompt-rollback-button",
-                        type: "warning",
-                        onClick: () => confirmRollbackVersion(record)
-                    }
-                ];
-            }
         }
     ];
 
@@ -807,22 +864,7 @@ export const PromptEditDrawer = ({
                         </KuzhambuSpace>
                     </KuzhambuFormItem>
                 </KuzhambuForm>
-                {template ? (
-                    <div className="prompt-version-section">
-                        <Typography.Title level={5}>版本</Typography.Title>
-                        <KuzhambuTable<AiPromptVersionRecord>
-                            ariaLabel="提示词版本列表"
-                            rowKey={(record) =>
-                                record.id || `${record.templateId}-${record.versionNo}`
-                            }
-                            columns={versionColumns}
-                            dataSource={versionsQuery.data || []}
-                            loading={versionsQuery.isFetching}
-                            pagination={false}
-                            size="small"
-                        />
-                    </div>
-                ) : null}
+                {template ? <PromptVersionSection canEdit={canEdit} template={template} /> : null}
             </KuzhambuDrawer>
 
             <KuzhambuModal
@@ -832,40 +874,17 @@ export const PromptEditDrawer = ({
                 footer={null}
                 onCancel={() => setVariableModalOpen(false)}
             >
-                <Table<PromptCapabilityVariableDefinition>
+                <Table<AiPromptCapabilityVariableRecord>
                     aria-label="能力变量列表"
                     rowKey={(record) => record.variableName}
                     columns={variableColumns}
                     dataSource={allowedVariableRows}
+                    loading={capabilityVariablesQuery.isFetching}
                     pagination={false}
                     showHeader={false}
                     size="small"
                 />
             </KuzhambuModal>
-
-            <KuzhambuDrawer
-                testId="ai-prompt-prompt-editor-2-drawer"
-                open={Boolean(viewVersion)}
-                title={viewVersion ? versionTitle(viewVersion) : "版本详情"}
-                size="large"
-                onClose={() => setViewVersion(null)}
-            >
-                {viewVersion ? <VersionDetail version={viewVersion} /> : null}
-            </KuzhambuDrawer>
-
-            <KuzhambuDrawer
-                testId="ai-prompt-prompt-editor-3-drawer"
-                open={compareVersions.length > 0}
-                title="版本对比"
-                size="large"
-                onClose={() => setCompareVersions([])}
-            >
-                <div className="prompt-compare-grid">
-                    {compareVersions.map((version) => (
-                        <VersionDetail key={version.versionNo} version={version} />
-                    ))}
-                </div>
-            </KuzhambuDrawer>
         </>
     );
 };

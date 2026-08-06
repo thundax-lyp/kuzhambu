@@ -2,7 +2,10 @@ package com.thundax.kuzhambu.ai.application.config.service.impl;
 
 import com.thundax.kuzhambu.ai.application.config.query.GetAiCapabilityQuery;
 import com.thundax.kuzhambu.ai.application.config.query.ListAiCapabilitiesQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListPromptCapabilityVariablesQuery;
+import com.thundax.kuzhambu.ai.application.config.result.PromptCapabilityVariableResult;
 import com.thundax.kuzhambu.ai.application.config.service.AiCapabilityCatalogApplicationService;
+import com.thundax.kuzhambu.ai.application.config.support.PromptCapabilityVariableCatalog;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.util.Arrays;
@@ -26,5 +29,10 @@ public class AiCapabilityCatalogApplicationServiceImpl implements AiCapabilityCa
             return List.of();
         }
         return Arrays.asList(AiBusinessCapability.values());
+    }
+
+    @Override
+    public List<PromptCapabilityVariableResult> listPromptVariables(ListPromptCapabilityVariablesQuery query) {
+        return PromptCapabilityVariableCatalog.list(query == null ? null : query.capability());
     }
 }

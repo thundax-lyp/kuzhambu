@@ -36,3 +36,9 @@ export interface AiPromptCapabilityRecord {
     enabled: boolean;
     priority: number;
 }
+
+export interface AiPromptCapabilityVariableRecord {
+    variableName: string;
+    required: boolean;
+    description?: string | null;
+}

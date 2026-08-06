@@ -19,6 +19,7 @@ import {
     KuzhambuTag,
     type KuzhambuTableProps
 } from "@/components";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { PromptEditDrawer } from "./prompt-edit-drawer";
 import {
     DEFAULT_PROMPT_FILTERS,
@@ -39,8 +40,7 @@ const DEFAULT_COLUMN_WIDTHS = {
     name: 220,
     capability: 200,
     enabled: 112,
-    registeredAt: 120,
-    description: 360
+    registeredAt: 120
 };
 
 const formatDate = (value?: string | null) => {
@@ -67,33 +67,9 @@ const toEnabledQueryValue = (enabled: PromptFilters["enabled"]) => {
     return undefined;
 };
 
-const normalizeJsonText = (value?: string | null, fallback = "{}") => {
-    const trimmed = value?.trim();
-    return trimmed ? trimmed : fallback;
-};
-
-const variablesToJson = (
-    variables: Array<{
-        description?: string | null;
-        priority?: number | null;
-        required: boolean;
-        variableName: string;
-    }> = []
-) => {
-    return JSON.stringify(
-        variables.map((variable, index) => ({
-            variableName: variable.variableName,
-            required: variable.required !== false,
-            description: variable.description || "",
-            priority: variable.priority ?? index + 1
-        })),
-        null,
-        2
-    );
-};
-
 export const PromptPage = () => {
-    const { message: messageApi, modal } = App.useApp();
+    const { message: messageApi } = App.useApp();
+    const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const canViewPrompt = hasPermission("ai:prompt:view") || hasPermission("ai:prompt:edit");
     const canEditPrompt = hasPermission("ai:prompt:edit");
@@ -122,7 +98,7 @@ export const PromptPage = () => {
     });
 
     const updatePromptStatusMutation = useMutation({
-        mutationFn: async ({
+        mutationFn: ({
             enabled,
             template
         }: {
@@ -132,22 +108,9 @@ export const PromptPage = () => {
             if (!template.id) {
                 throw new Error("提示词模板 ID 缺失");
             }
-            const [currentVersion, variables] = await Promise.all([
-                service.getCurrentPromptVersion(template.id),
-                service.listPromptVariables(template.id)
-            ]);
-            return service.changePromptTemplate({
+            return service.changePromptTemplateStatus({
                 id: template.id,
-                capability: template.capability || "",
-                name: template.name || "",
-                description: template.description || null,
-                enabled,
-                messageTemplatesJson: normalizeJsonText(currentVersion?.messageTemplatesJson, "[]"),
-                variablesSnapshotJson:
-                    currentVersion?.variablesSnapshotJson || variablesToJson(variables),
-                outputSchemaJson: normalizeJsonText(currentVersion?.outputSchemaJson),
-                changeSummary: enabled ? "启用提示词模板" : "禁用提示词模板",
-                variables
+                enabled
             });
         },
         onSuccess: async () => {
@@ -160,27 +123,11 @@ export const PromptPage = () => {
     });
 
     const deleteMutation = useMutation({
-        mutationFn: async (template: AiPromptTemplateRecord) => {
+        mutationFn: (template: AiPromptTemplateRecord) => {
             if (!template.id) {
                 throw new Error("提示词模板 ID 缺失");
             }
-            const [currentVersion, variables] = await Promise.all([
-                service.getCurrentPromptVersion(template.id),
-                service.listPromptVariables(template.id)
-            ]);
-            return service.changePromptTemplate({
-                id: template.id,
-                capability: template.capability || "",
-                name: template.name || "",
-                description: template.description || null,
-                enabled: false,
-                messageTemplatesJson: normalizeJsonText(currentVersion?.messageTemplatesJson, "[]"),
-                variablesSnapshotJson:
-                    currentVersion?.variablesSnapshotJson || variablesToJson(variables),
-                outputSchemaJson: normalizeJsonText(currentVersion?.outputSchemaJson),
-                changeSummary: "删除提示词模板",
-                variables
-            });
+            return service.deletePromptTemplate(template.id);
         },
         onSuccess: async () => {
             await invalidatePrompt();
@@ -291,16 +238,14 @@ export const PromptPage = () => {
         if (!canEditPrompt) {
             return;
         }
-        modal.confirm({
+        confirm.danger({
             title: "删除提示词模板",
-            content: `确认删除 ${readPromptDisplayName(
+            message: `确认删除 ${readPromptDisplayName(
                 template,
                 capabilityByCode.get(template.capability || "")?.name
             )}？删除后模板会被禁用并保留历史版本。`,
             okText: "删除",
-            okType: "danger",
-            cancelText: "取消",
-            onOk: () => deleteMutation.mutateAsync(template)
+            onConfirm: () => deleteMutation.mutateAsync(template)
         });
     };
 
@@ -320,13 +265,11 @@ export const PromptPage = () => {
         if (!canEditPrompt || !hasSelectedPrompt) {
             return;
         }
-        modal.confirm({
+        confirm.danger({
             title: "批量删除提示词模板",
-            content: `确认删除 ${selectedTemplates.length} 个提示词模板？删除后模板会被禁用并保留历史版本。`,
+            message: `确认删除 ${selectedTemplates.length} 个提示词模板？删除后模板会被禁用并保留历史版本。`,
             okText: "删除",
-            okType: "danger",
-            cancelText: "取消",
-            onOk: async () => {
+            onConfirm: async () => {
                 await Promise.all(
                     selectedTemplates.map((template) => deleteMutation.mutateAsync(template))
                 );
@@ -402,7 +345,6 @@ export const PromptPage = () => {
             title: "说明",
             dataIndex: "description",
             key: "description",
-            width: DEFAULT_COLUMN_WIDTHS.description,
             ellipsis: true,
             render: (description?: string | null) => description || "-"
         },

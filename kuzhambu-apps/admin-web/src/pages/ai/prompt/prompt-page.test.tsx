@@ -8,15 +8,18 @@ import * as service from "./prompt-service";
 
 vi.mock("./prompt-service", () => ({
     changePromptTemplate: vi.fn(),
+    changePromptTemplateStatus: vi.fn(),
     changePromptVersionRollback: vi.fn(),
     confirmPromptVariables: vi.fn(),
     getCurrentPromptVersion: vi.fn(),
     getPromptTemplateByCapability: vi.fn(),
     listPromptCapabilities: vi.fn(),
+    listPromptCapabilityVariables: vi.fn(),
     listPromptTemplates: vi.fn(),
     listPromptVariables: vi.fn(),
     listPromptVersions: vi.fn(),
-    previewPromptVersionCompare: vi.fn()
+    previewPromptVersionCompare: vi.fn(),
+    deletePromptTemplate: vi.fn()
 }));
 
 vi.mock("@/components/kuzhambu-drawer", () => {
@@ -89,12 +92,6 @@ vi.mock("@/components/kuzhambu-modal", () => {
         KuzhambuModal: mockModal
     };
 });
-
-vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
-    useKuzhambuConfirm: () => ({
-        danger: vi.fn()
-    })
-}));
 
 const template = {
     id: "1001",
@@ -185,12 +182,27 @@ describe("PromptPage", () => {
             }
         ]);
         vi.mocked(service.listPromptTemplates).mockResolvedValue([template]);
+        vi.mocked(service.listPromptCapabilityVariables).mockImplementation(async (capability) => {
+            if (capability === "CLASSICS_TRANSLATE") {
+                return [
+                    { variableName: "contextPath", required: false, description: "上下文路径" },
+                    { variableName: "sourceText", required: true, description: "待翻译的源文本" }
+                ];
+            }
+            return [
+                { variableName: "bodyText", required: false, description: "正文内容" },
+                { variableName: "contentType", required: true, description: "内容类型" },
+                { variableName: "title", required: false, description: "内容标题" }
+            ];
+        });
         vi.mocked(service.getCurrentPromptVersion).mockResolvedValue(currentVersion);
         vi.mocked(service.listPromptVersions).mockResolvedValue(versions);
         vi.mocked(service.listPromptVariables).mockResolvedValue(variables);
         vi.mocked(service.confirmPromptVariables).mockResolvedValue(true);
         vi.mocked(service.previewPromptVersionCompare).mockResolvedValue(versions);
         vi.mocked(service.changePromptTemplate).mockResolvedValue(template);
+        vi.mocked(service.changePromptTemplateStatus).mockResolvedValue(true);
+        vi.mocked(service.deletePromptTemplate).mockResolvedValue(true);
         vi.mocked(service.changePromptVersionRollback).mockResolvedValue(currentVersion);
     });
 
@@ -279,7 +291,34 @@ describe("PromptPage", () => {
         expect(screen.queryByText("版本")).not.toBeInTheDocument();
     });
 
-    it("blocks unsupported prompt variables for a fixed capability", async () => {
+    it("preserves optional capability variables when creating a template", async () => {
+        renderPage();
+
+        await screen.findByText("摘要提示词");
+        fireEvent.click(screen.getByRole("button", { name: /新建/ }));
+        await openSelectAndChoose("提示词能力", "古籍摘要");
+        await waitFor(() => {
+            expect(screen.getByTestId("ai-prompt-prompt-view-variables-button")).toBeEnabled();
+        });
+        fireEvent.change(screen.getByLabelText("模板名称"), {
+            target: { value: "新摘要提示词" }
+        });
+        fireEvent.change(screen.getByLabelText("用户消息正文"), {
+            target: { value: "请总结 {{title}}" }
+        });
+        await userEvent.click(screen.getByRole("button", { name: /创建模板/ }));
+
+        await waitFor(() => {
+            expect(service.changePromptTemplate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    variables: [expect.objectContaining({ variableName: "title", required: false })]
+                }),
+                expect.anything()
+            );
+        });
+    });
+
+    it("delegates capability variable validation to the backend", async () => {
         renderPage();
 
         await screen.findByText("摘要提示词");
@@ -289,9 +328,8 @@ describe("PromptPage", () => {
         fireEvent.change(userMessage, { target: { value: "{{unknownName}}" } });
         fireEvent.click(screen.getByRole("button", { name: /保存新版本/ }));
 
-        expect(await screen.findByText("当前能力不支持变量：unknownName")).toBeInTheDocument();
         await waitFor(() => {
-            expect(service.changePromptTemplate).not.toHaveBeenCalled();
+            expect(service.changePromptTemplate).toHaveBeenCalled();
         });
     });
 
@@ -302,13 +340,10 @@ describe("PromptPage", () => {
         fireEvent.click(screen.getByRole("switch", { name: "切换 摘要提示词 状态，当前启用" }));
 
         await waitFor(() => {
-            expect(service.changePromptTemplate).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    enabled: false,
-                    id: template.id,
-                    messageTemplatesJson: currentVersion.messageTemplatesJson
-                })
-            );
+            expect(service.changePromptTemplateStatus).toHaveBeenCalledWith({
+                enabled: false,
+                id: template.id
+            });
         });
     });
 
@@ -324,13 +359,7 @@ describe("PromptPage", () => {
         );
 
         await waitFor(() => {
-            expect(service.changePromptTemplate).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    enabled: false,
-                    id: template.id,
-                    changeSummary: "删除提示词模板"
-                })
-            );
+            expect(service.deletePromptTemplate).toHaveBeenCalledWith(template.id);
         });
     });
 
@@ -343,13 +372,10 @@ describe("PromptPage", () => {
         fireEvent.click(screen.getByRole("button", { name: /禁用/ }));
 
         await waitFor(() => {
-            expect(service.changePromptTemplate).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    enabled: false,
-                    id: template.id,
-                    changeSummary: "禁用提示词模板"
-                })
-            );
+            expect(service.changePromptTemplateStatus).toHaveBeenCalledWith({
+                enabled: false,
+                id: template.id
+            });
         });
     });
 
@@ -367,13 +393,7 @@ describe("PromptPage", () => {
         );
 
         await waitFor(() => {
-            expect(service.changePromptTemplate).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    enabled: false,
-                    id: template.id,
-                    changeSummary: "删除提示词模板"
-                })
-            );
+            expect(service.deletePromptTemplate).toHaveBeenCalledWith(template.id);
         });
     });
 

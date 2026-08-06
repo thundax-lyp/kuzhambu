@@ -64,6 +64,34 @@ class PromptApplicationServiceImplTest {
         assertThat(repository.insertVersionCount).isEqualTo(1);
     }
 
+    @Test
+    void saveTemplateShouldRejectVariableOutsideCapabilityCatalog() {
+        PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(new RecordingPromptRepository());
+        PromptTemplateSaveCommand command = saveCommand();
+        command.setVariables(List.of(new PromptTemplateSaveCommand.VariableItem("unknownName", false, null, 1)));
+
+        assertThatThrownBy(() -> service.save(command))
+                .isInstanceOf(BizException.class)
+                .hasMessageContaining("Prompt variable is not supported by capability: unknownName");
+    }
+
+    @Test
+    void saveTemplateShouldCanonicalizeOptionalVariableInVersionSnapshot() {
+        RecordingPromptRepository repository = new RecordingPromptRepository();
+        PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(repository);
+        PromptTemplateSaveCommand command = saveCommand();
+        command.setMessageTemplatesJson("[{\"role\":\"user\",\"content\":\"{{title}}\"}]");
+        command.setVariablesSnapshotJson("[{\"variableName\":\"title\",\"required\":true}]");
+        command.setVariables(List.of(new PromptTemplateSaveCommand.VariableItem("title", true, "wrong", 1)));
+
+        service.save(command);
+
+        assertThat(repository.lastInsertedVersion.getVariablesSnapshotJson())
+                .contains("\"variableName\":\"title\"")
+                .contains("\"required\":false")
+                .contains("\"description\":\"内容标题\"");
+    }
+
     private PromptTemplateSaveCommand saveCommand() {
         PromptTemplateSaveCommand command = new PromptTemplateSaveCommand();
         command.setId(PromptTemplateIdCodec.toDomain(1001L));
@@ -144,10 +172,12 @@ class PromptApplicationServiceImplTest {
 
         private int insertVersionCount;
         private int replaceVariablesCount;
+        private PromptVersion lastInsertedVersion;
 
         @Override
         public PromptVersionId insertVersion(PromptVersion version) {
             insertVersionCount++;
+            lastInsertedVersion = version;
             return new PromptVersionId(2001L);
         }
 

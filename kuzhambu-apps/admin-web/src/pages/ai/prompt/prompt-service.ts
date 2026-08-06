@@ -2,6 +2,7 @@ import { postJson } from "@/api/http";
 import { normalizeId } from "@/types/id";
 import type {
     AiPromptCapabilityRecord,
+    AiPromptCapabilityVariableRecord,
     AiPromptTemplateRecord,
     AiPromptVariableRecord,
     AiPromptVersionRecord
@@ -50,6 +51,11 @@ export interface AiPromptSuggestionCommand {
     changeSummary?: string | null;
 }
 
+export interface AiPromptTemplateStatusCommand {
+    id: string;
+    enabled: boolean;
+}
+
 export const listPromptCapabilities = () => {
     return postJson<AiPromptCapabilityRecord[], { enabled: boolean }>(
         "/ai/config/capability/list",
@@ -84,6 +90,26 @@ export const changePromptTemplate = (command: AiPromptTemplateChangeCommand) => 
             body: command
         }
     ).then(normalizePromptTemplateRecord);
+};
+
+export const changePromptTemplateStatus = (command: AiPromptTemplateStatusCommand) => {
+    return postJson<boolean, AiPromptTemplateStatusCommand>(
+        "/ai/config/prompt/template/status/update",
+        { body: command }
+    );
+};
+
+export const deletePromptTemplate = (id: string) => {
+    return postJson<boolean, AiPromptTemplateIdCommand>("/ai/config/prompt/template/delete", {
+        body: { id }
+    });
+};
+
+export const listPromptCapabilityVariables = (capability: string) => {
+    return postJson<AiPromptCapabilityVariableRecord[], { capability: string }>(
+        "/ai/config/prompt/capability-variable/list",
+        { body: { capability } }
+    );
 };
 
 export const getCurrentPromptVersion = (templateId: string) => {
