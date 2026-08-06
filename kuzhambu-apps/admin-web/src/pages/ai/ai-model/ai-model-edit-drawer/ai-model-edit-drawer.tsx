@@ -1,4 +1,5 @@
-import { Form, Input } from "antd";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { App, Form, Input } from "antd";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import {
     KuzhambuDrawer,
@@ -9,6 +10,7 @@ import {
 } from "@/components";
 
 import type { AiModelChangeCommand } from "../ai-model-service";
+import * as service from "../ai-model-service";
 import type { AiModelRecord } from "../ai-model-types";
 
 import {
@@ -58,8 +60,11 @@ interface AiModelEditDrawerProps {
     canEdit: boolean;
     model: AiModelRecord | null;
     open: boolean;
-    saving: boolean;
     onClose: () => void;
+}
+
+interface AiModelEditDrawerFormProps extends AiModelEditDrawerProps {
+    saving: boolean;
     onSave: (command: AiModelChangeCommand) => void;
 }
 
@@ -81,15 +86,48 @@ const assertJsonText = (value?: string | null) => {
     }
 };
 
-export const AiModelEditDrawer = ({
-    canEdit,
-    model,
-    open,
-    saving,
-    onClose,
-    onSave
-}: AiModelEditDrawerProps) => {
+export const AiModelEditDrawer = ({ canEdit, model, open, onClose }: AiModelEditDrawerProps) => {
+    const { message: messageApi } = App.useApp();
+    const queryClient = useQueryClient();
     const formKey = `${open ? "open" : "closed"}-${model?.id ?? "create"}`;
+    const invalidateModels = async () => {
+        await queryClient.invalidateQueries({ queryKey: ["ai", "ai-model"] });
+    };
+    const createMutation = useMutation({
+        mutationFn: service.createAiModel,
+        onSuccess: async () => {
+            await invalidateModels();
+            messageApi.success("模型已新增");
+            onClose();
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "模型新增失败");
+        }
+    });
+    const updateMutation = useMutation({
+        mutationFn: service.changeAiModel,
+        onSuccess: async () => {
+            await invalidateModels();
+            messageApi.success("模型已保存");
+            onClose();
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "模型保存失败");
+        }
+    });
+    const saving = createMutation.isPending || updateMutation.isPending;
+    const closeDrawer = () => {
+        if (!saving) {
+            onClose();
+        }
+    };
+    const saveModel = (command: AiModelChangeCommand) => {
+        if (command.id) {
+            updateMutation.mutate(command);
+            return;
+        }
+        createMutation.mutate(command);
+    };
 
     return (
         <AiModelEditDrawerForm
@@ -98,8 +136,8 @@ export const AiModelEditDrawer = ({
             model={model}
             open={open}
             saving={saving}
-            onClose={onClose}
-            onSave={onSave}
+            onClose={closeDrawer}
+            onSave={saveModel}
         />
     );
 };
@@ -111,7 +149,7 @@ const AiModelEditDrawerForm = ({
     saving,
     onClose,
     onSave
-}: AiModelEditDrawerProps) => {
+}: AiModelEditDrawerFormProps) => {
     const [form] = Form.useForm<AiModelFormValues>();
     const initialValues = toFormValues(model);
 

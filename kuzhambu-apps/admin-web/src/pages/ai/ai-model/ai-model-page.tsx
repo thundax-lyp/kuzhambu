@@ -61,6 +61,18 @@ const readModelName = (record: AiModelRecord) => {
     return record.displayName?.trim() || record.modelName;
 };
 
+const toEnabledCommand = (record: AiModelRecord, enabled: boolean): AiModelChangeCommand => ({
+    id: record.id,
+    apiSource: record.apiSource,
+    baseUrl: record.baseUrl || "",
+    modelName: record.modelName,
+    displayName: record.displayName || null,
+    capabilities: record.capabilities || [],
+    defaultParamsJson: normalizeJsonText(record.defaultParamsJson),
+    description: record.description || null,
+    enabled
+});
+
 const formatDateTime = (value?: string | null) => {
     if (!value) {
         return "-";
@@ -120,29 +132,14 @@ export const AiModelPage = () => {
         await queryClient.invalidateQueries({ queryKey: ["ai", "ai-model"] });
     };
 
-    const createMutation = useMutation({
-        mutationFn: service.createAiModel,
-        onSuccess: async () => {
-            await invalidateModels();
-            setAiModelEditDrawerOpen(false);
-            setEditingModel(null);
-            messageApi.success("模型已新增");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "模型新增失败");
-        }
-    });
-
-    const updateModelMutation = useMutation({
+    const changeEnabledMutation = useMutation({
         mutationFn: service.changeAiModel,
         onSuccess: async () => {
             await invalidateModels();
-            setAiModelEditDrawerOpen(false);
-            setEditingModel(null);
-            messageApi.success("模型已保存");
+            messageApi.success("模型状态已更新");
         },
         onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "模型保存失败");
+            messageApi.error(error instanceof Error ? error.message : "模型状态更新失败");
         }
     });
 
@@ -155,6 +152,41 @@ export const AiModelPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "模型删除失败");
+        }
+    });
+
+    const batchDeleteMutation = useMutation({
+        mutationFn: service.deleteAiModels,
+        onSuccess: async (results, { ids }) => {
+            const failedIds = ids.filter((_, index) => results[index]?.status === "rejected");
+            setSelectedRowKeys(failedIds);
+            await invalidateModels();
+            if (failedIds.length === 0) {
+                messageApi.success(`已删除 ${ids.length} 个模型`);
+                return;
+            }
+            const successCount = ids.length - failedIds.length;
+            messageApi.warning(`批量删除完成：成功 ${successCount}，失败 ${failedIds.length}`);
+        }
+    });
+
+    const batchChangeEnabledMutation = useMutation({
+        mutationFn: service.changeAiModels,
+        onSuccess: async (results, { commands }) => {
+            const enabled = commands[0]?.enabled ?? false;
+            const failedIds = commands
+                .filter((_, index) => results[index]?.status === "rejected")
+                .flatMap((command) => (command.id ? [command.id] : []));
+            setSelectedRowKeys(failedIds);
+            await invalidateModels();
+            if (failedIds.length === 0) {
+                messageApi.success(`已${enabled ? "启用" : "禁用"} ${commands.length} 个模型`);
+                return;
+            }
+            const successCount = commands.length - failedIds.length;
+            messageApi.warning(
+                `批量${enabled ? "启用" : "禁用"}完成：成功 ${successCount}，失败 ${failedIds.length}`
+            );
         }
     });
 
@@ -176,36 +208,15 @@ export const AiModelPage = () => {
     };
 
     const closeAiModelEditDrawer = () => {
-        if (createMutation.isPending || updateModelMutation.isPending) {
-            return;
-        }
         setAiModelEditDrawerOpen(false);
         setEditingModel(null);
     };
 
-    const saveModel = (command: AiModelChangeCommand) => {
-        if (command.id) {
-            updateModelMutation.mutate(command);
-            return;
-        }
-        createMutation.mutate(command);
-    };
-
-    const changeEnabled = async (record: AiModelRecord, enabled: boolean) => {
+    const changeEnabled = (record: AiModelRecord, enabled: boolean) => {
         if (!canEditConfig) {
             return;
         }
-        await updateModelMutation.mutateAsync({
-            id: record.id,
-            apiSource: record.apiSource,
-            baseUrl: record.baseUrl || "",
-            modelName: record.modelName,
-            displayName: record.displayName || null,
-            capabilities: record.capabilities || [],
-            defaultParamsJson: normalizeJsonText(record.defaultParamsJson),
-            description: record.description || null,
-            enabled
-        });
+        changeEnabledMutation.mutate(toEnabledCommand(record, enabled));
     };
 
     const applyFilters = () => {
@@ -238,11 +249,7 @@ export const AiModelPage = () => {
             message: `确认删除 ${selectedRowKeys.length} 个模型？`,
             description: "删除后需要重新新增。若模型仍被业务配置引用，接口会按后端校验结果拦截。",
             okText: "删除",
-            onConfirm: async () => {
-                await Promise.all(
-                    selectedRowKeys.map((id) => deleteMutation.mutateAsync(String(id)))
-                );
-            }
+            onConfirm: () => batchDeleteMutation.mutateAsync({ ids: selectedRowKeys.map(String) })
         });
     };
 
@@ -253,8 +260,9 @@ export const AiModelPage = () => {
         const selectedModels = (aiModelListQuery.data || []).filter((model) =>
             selectedRowKeys.includes(model.id)
         );
-        await Promise.all(selectedModels.map((model) => changeEnabled(model, enabled)));
-        setSelectedRowKeys([]);
+        await batchChangeEnabledMutation.mutateAsync({
+            commands: selectedModels.map((model) => toEnabledCommand(model, enabled))
+        });
     };
 
     const columns: KuzhambuTableProps<AiModelRecord>["columns"] = [
@@ -271,7 +279,6 @@ export const AiModelPage = () => {
             dataIndex: "modelName",
             key: "modelName",
             minWidth: DEFAULT_COLUMN_WIDTHS.modelName,
-            width: DEFAULT_COLUMN_WIDTHS.modelName,
             ellipsis: true,
             render: (modelName: string) => (
                 <Text strong ellipsis title={modelName}>
@@ -324,8 +331,8 @@ export const AiModelPage = () => {
                     checkedChildren="启用"
                     unCheckedChildren="禁用"
                     aria-label={`切换 ${readModelName(record)} 状态，当前${enabled ? "启用" : "禁用"}`}
-                    disabled={!canEditConfig || updateModelMutation.isPending}
-                    onChange={(checked) => void changeEnabled(record, checked)}
+                    disabled={!canEditConfig || changeEnabledMutation.isPending}
+                    onChange={(checked) => changeEnabled(record, checked)}
                 />
             )
         },
@@ -374,7 +381,10 @@ export const AiModelPage = () => {
                 searchShortcut="⌘K"
                 searchValue={searchText}
                 searchPlaceholder="搜索模型..."
-                onSearchChange={setSearchText}
+                onSearchChange={(value) => {
+                    setSearchText(value);
+                    setSelectedRowKeys([]);
+                }}
                 onAdd={openCreateAiModelDrawer}
                 filterActive={hasActiveFilters}
                 filterFields={[
@@ -436,7 +446,7 @@ export const AiModelPage = () => {
                         <KuzhambuButton
                             testId="ai-model-enable-button"
                             disabled={!canEditConfig || !hasSelectedModels}
-                            loading={updateModelMutation.isPending}
+                            loading={batchChangeEnabledMutation.isPending}
                             onClick={() => void batchUpdateEnabled(true)}
                         >
                             启用
@@ -444,7 +454,7 @@ export const AiModelPage = () => {
                         <KuzhambuButton
                             testId="ai-model-disable-button"
                             disabled={!canEditConfig || !hasSelectedModels}
-                            loading={updateModelMutation.isPending}
+                            loading={batchChangeEnabledMutation.isPending}
                             onClick={() => void batchUpdateEnabled(false)}
                         >
                             禁用
@@ -454,7 +464,7 @@ export const AiModelPage = () => {
                             danger
                             icon={<DeleteOutlined />}
                             disabled={!canEditConfig || !hasSelectedModels}
-                            loading={deleteMutation.isPending}
+                            loading={batchDeleteMutation.isPending}
                             onClick={batchDeleteModels}
                         >
                             批量删除
@@ -489,9 +499,7 @@ export const AiModelPage = () => {
                 open={aiModelEditDrawerOpen}
                 model={editingModel}
                 canEdit={canEditConfig}
-                saving={createMutation.isPending || updateModelMutation.isPending}
                 onClose={closeAiModelEditDrawer}
-                onSave={saveModel}
             />
         </>
     );

@@ -20,6 +20,14 @@ export interface AiModelChangeCommand {
     enabled: boolean;
 }
 
+export interface AiModelBatchChangeCommand {
+    commands: AiModelChangeCommand[];
+}
+
+export interface AiModelBatchDeleteCommand {
+    ids: string[];
+}
+
 export const listAiModels = (query: AiModelListQuery = {}) => {
     return postJson<AiModelRecord[], AiModelListQuery>("/ai/config/model/list", {
         body: query
@@ -38,10 +46,18 @@ export const changeAiModel = (command: AiModelChangeCommand) => {
     }).then(normalizeAiModelRecord);
 };
 
+export const changeAiModels = (command: AiModelBatchChangeCommand) => {
+    return Promise.allSettled(command.commands.map(changeAiModel));
+};
+
 export const deleteAiModel = (id: string) => {
     return postJson<boolean, { id: string }>("/ai/config/model/delete", {
         body: { id }
     });
+};
+
+export const deleteAiModels = (command: AiModelBatchDeleteCommand) => {
+    return Promise.allSettled(command.ids.map(deleteAiModel));
 };
 
 const normalizeAiModelRecord = (model: AiModelRecord): AiModelRecord => ({
