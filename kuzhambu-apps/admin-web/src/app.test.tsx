@@ -481,6 +481,26 @@ describe("App", () => {
         expect((await screen.findAllByText("总部")).length).toBeGreaterThan(0);
     }, 30000);
 
+    it("blocks department list page without view permission", async () => {
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.permissions", JSON.stringify([]));
+        replacePermissions([]);
+
+        vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+            const url = String(input);
+            return Promise.resolve(
+                new Response(JSON.stringify({ code: "COMMON-00004", message: `mocked ${url}` }), {
+                    headers: { "Content-Type": "application/json" },
+                    status: 404
+                })
+            );
+        });
+
+        renderWithQueryClientAndApp(<DepartmentPage />);
+
+        expect(await screen.findByText("缺少 sys:department:view 权限")).toBeInTheDocument();
+    }, 30000);
+
     it("renders and filters the dictionary page", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
