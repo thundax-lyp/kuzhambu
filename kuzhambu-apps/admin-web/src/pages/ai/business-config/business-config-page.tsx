@@ -33,7 +33,6 @@ const { Text } = Typography;
 
 const DEFAULT_COLUMN_WIDTHS = {
     capability: 260,
-    prompt: 260,
     model: 240,
     enabled: 112,
     configuredAt: 140,
@@ -391,7 +390,6 @@ export const BusinessConfigPage = () => {
             title: "提示词模板",
             dataIndex: "promptName",
             key: "promptName",
-            width: DEFAULT_COLUMN_WIDTHS.prompt,
             ellipsis: true,
             render: (promptName: string) => (
                 <Text ellipsis title={promptName}>
