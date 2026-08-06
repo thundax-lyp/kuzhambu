@@ -1,0 +1,11 @@
+.wangqi-document-section-overview {
+    min-width: 0;
+}
+
+.wangqi-document-section-overview-summary-text {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+    line-height: 1.72;
+    white-space: pre-wrap;
+}

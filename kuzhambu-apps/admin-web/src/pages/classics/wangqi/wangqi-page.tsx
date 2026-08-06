@@ -36,7 +36,7 @@ import { isSameId } from "@/types/id";
 import { WangqiDocumentTable } from "./wangqi-document-table";
 import { WangqiExportActions } from "./wangqi-export-actions";
 import { WangqiDocumentEditDrawer } from "./wangqi-document-edit-drawer";
-import type { WangqiQaTaskPair } from "./wangqi-qa-ai-modal";
+import type { ClassicsContentQaTaskPair } from "@/pages/classics/common/classics-content-qa-ai-panel";
 import { WangqiRefinementActions } from "./wangqi-refinement-actions";
 import { WangqiStorageFilePanel } from "./wangqi-storage-file-panel";
 import { WangqiTimeline } from "./wangqi-timeline";
@@ -73,7 +73,7 @@ const createEventId = (prefix: string) => {
 };
 
 interface RefinementTaskContext {
-    existingQaPairs?: WangqiQaTaskPair[];
+    existingQaPairs?: ClassicsContentQaTaskPair[];
     existingTags?: string[];
 }
 
@@ -352,12 +352,6 @@ export const WangqiPage = () => {
             })
         ]);
     }, [editingDocumentData?.id, queryClient]);
-
-    const invalidateWangqiCandidates = async () => {
-        await queryClient.invalidateQueries({
-            queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", editingDocumentData?.id]
-        });
-    };
 
     const invalidateRefinementTasks = async () => {
         await queryClient.invalidateQueries({
@@ -928,7 +922,6 @@ export const WangqiPage = () => {
                             }
                             onOpenSingleDocumentQa={openSingleDocumentQa}
                             onQaTaskChange={setQaTrackingTask}
-                            onRejectedCandidate={invalidateWangqiCandidates}
                             onTagTaskChange={setTagTrackingTask}
                         />
                     ) : null
@@ -958,7 +951,6 @@ export const WangqiPage = () => {
                             }
                             onOpenSingleDocumentQa={openSingleDocumentQa}
                             onQaTaskChange={setQaTrackingTask}
-                            onRejectedCandidate={invalidateWangqiCandidates}
                             onTagTaskChange={setTagTrackingTask}
                         />
                     ) : null

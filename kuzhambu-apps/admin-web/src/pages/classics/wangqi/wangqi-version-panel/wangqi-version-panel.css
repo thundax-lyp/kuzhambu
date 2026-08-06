@@ -1,21 +1,39 @@
 .wangqi-version-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-    padding: 14px;
+    min-width: 0;
+}
+
+.wangqi-version-panel-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.85fr) minmax(0, 1.15fr);
+    min-width: 0;
+    gap: 12px;
+}
+
+.wangqi-version-list,
+.wangqi-version-detail {
+    min-width: 0;
+    padding: 12px;
     background: var(--wangqi-panel-bg);
     border: 1px solid var(--wangqi-panel-border);
     border-radius: 8px;
 }
 
-.wangqi-version-panel-grid {
-    display: grid;
-    grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
-    gap: 16px;
+.wangqi-version-list-item {
+    align-items: flex-start;
+    padding-inline: 0;
+}
+
+.wangqi-version-detail {
+    min-height: 220px;
 }
 
 .wangqi-version-detail-stack {
+    width: 100%;
+}
+
+.wangqi-version-detail-actions {
+    display: flex;
+    justify-content: flex-end;
     width: 100%;
 }
 

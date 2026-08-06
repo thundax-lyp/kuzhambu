@@ -1,11 +1,5 @@
-import { FileTextOutlined } from "@ant-design/icons";
-import { Input } from "antd";
 import type { ChangeEvent } from "react";
-import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuButton } from "@/components";
-import "./wangqi-document-summary-field.css";
-
-const { TextArea } = Input;
+import { ClassicsSummaryFormControl } from "@/pages/classics/common/classics-summary-form-control";
 
 interface WangqiDocumentSummaryFieldProps {
     mode: "create" | "edit";
@@ -23,32 +17,16 @@ export const WangqiDocumentSummaryField = ({
     onOpenSummaryModal
 }: WangqiDocumentSummaryFieldProps) => {
     return (
-        <div className="wangqi-document-summary-field">
-            {mode === "edit" ? (
-                <div className="wangqi-document-summary-field-action">
-                    <KuzhambuButton
-                        testId="classics-wangqi-document-summary-ai-button"
-                        type="primary"
-                        ariaLabel="AI 摘要"
-                        icon={<FileTextOutlined />}
-                        onClick={onOpenSummaryModal}
-                    >
-                        AI 摘要
-                    </KuzhambuButton>
-                </div>
-            ) : null}
-            <TextArea
-                aria-label="王圻文档摘要"
-                autoSize={resolveTextAreaAutoSize({
-                    minRows: 4,
-                    maxRows: 8
-                })}
-                disabled={summaryLocked}
-                maxLength={500}
-                showCount
-                value={value}
-                onChange={onChange}
-            />
-        </div>
+        <ClassicsSummaryFormControl
+            aiButtonTestId="classics-wangqi-document-summary-ai-button"
+            ariaLabel="王圻文档摘要"
+            disabled={summaryLocked}
+            maxLength={500}
+            mode={mode}
+            showCount
+            value={value}
+            onChange={onChange}
+            onOpenAiSummary={onOpenSummaryModal}
+        />
     );
 };

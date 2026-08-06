@@ -10,6 +10,27 @@ const DEFAULT_COLUMN_WIDTHS = {
     documentTime: 180
 };
 
+const PUBLICATION_STATUS_LABELS: Readonly<Record<string, string>> = {
+    DRAFT: "草稿",
+    PUBLISHED: "已发布",
+    OFFLINE: "已下线",
+    ERROR: "发布异常"
+};
+
+const PUBLICATION_TRANSITION_STATUS_LABELS: Readonly<Record<string, string>> = {
+    PUBLISHING: "发布中",
+    OFFLINING: "下线中"
+};
+
+const formatPublicationStatus = (status?: string | null) => {
+    const normalizedStatus = status || "DRAFT";
+    return PUBLICATION_STATUS_LABELS[normalizedStatus] || normalizedStatus;
+};
+
+const formatPublicationTransitionStatus = (status: string) => {
+    return PUBLICATION_TRANSITION_STATUS_LABELS[status] || status;
+};
+
 const isPublicationTransitionActive = (record: WangqiDocumentRecord) =>
     Boolean(record.transitionStatus && record.transitionStatus !== "NONE");
 
@@ -142,10 +163,12 @@ export const WangqiDocumentTable = ({
                                   : "neutral"
                         }
                     >
-                        {record.lifecycleStatus || "DRAFT"}
+                        {formatPublicationStatus(record.lifecycleStatus)}
                     </KuzhambuTag>
                     {record.transitionStatus && record.transitionStatus !== "NONE" ? (
-                        <KuzhambuTag type="info">{record.transitionStatus}</KuzhambuTag>
+                        <KuzhambuTag type="info">
+                            {formatPublicationTransitionStatus(record.transitionStatus)}
+                        </KuzhambuTag>
                     ) : null}
                 </span>
             )
