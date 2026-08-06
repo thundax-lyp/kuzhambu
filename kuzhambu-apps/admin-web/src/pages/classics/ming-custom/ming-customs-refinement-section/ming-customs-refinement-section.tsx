@@ -106,6 +106,7 @@ export const MingCustomsRefinementSection = ({
                         <ClassicsContentQaAiPanel
                             canApplyCandidate={canApplyAiCandidates}
                             canCreateTask={canCreateAiRefinementTask}
+                            canRejectCandidate={canRejectAiCandidates}
                             canViewCandidate={canViewAiCandidates}
                             contentId={entry.id}
                             contentType="MING_CUSTOMS"

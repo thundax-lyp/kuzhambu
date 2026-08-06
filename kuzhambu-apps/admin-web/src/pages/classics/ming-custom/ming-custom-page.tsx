@@ -267,6 +267,7 @@ export const MingCustomPage = () => {
         "edit",
         hasPermission
     );
+    const canRejectAiCandidates = hasPermission("ai:invocation:edit");
     const refinementTasks = useMemo(
         () => refinementTasksQuery.data?.items || [],
         [refinementTasksQuery.data?.items]
@@ -757,6 +758,7 @@ export const MingCustomPage = () => {
                 mode={mingCustomsEditDrawerMode}
                 open={mingCustomsEditDrawerOpen}
                 saving={saveMutation.isPending}
+                canRejectSummaryCandidate={canRejectAiCandidates}
                 onChanged={invalidateMingCustoms}
                 onClose={closeMingCustomsEditDrawer}
                 onSave={(command) => saveMutation.mutate(command)}

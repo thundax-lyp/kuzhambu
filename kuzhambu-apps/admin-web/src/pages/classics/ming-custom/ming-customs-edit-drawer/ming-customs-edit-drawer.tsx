@@ -7,6 +7,7 @@ import {
     KuzhambuFormHiddenItem,
     KuzhambuFormItem,
     KuzhambuAlert,
+    KuzhambuButton,
     KuzhambuMarkdownEditor,
     KuzhambuSegmentedDrawer,
     KuzhambuSelect,
@@ -32,6 +33,8 @@ import "./ming-customs-edit-drawer.css";
 type MingCustomsEditDrawerSection = "basic" | "tags" | "qa" | "versions";
 const { TextArea } = Input;
 const SUMMARY_CANDIDATE_POLL_INTERVAL_MS = 3000;
+const REJECT_ERROR_TYPE = "USER_REJECTED";
+const REJECT_ERROR_MESSAGE = "用户已拒绝该 AI 候选";
 
 const isSummaryTaskActive = (task?: AiRefinementTaskRecord | null) =>
     task?.status === "PENDING" || task?.status === "RUNNING";
@@ -169,6 +172,7 @@ interface MingCustomsEditDrawerProps {
     summaryTrackingTask?: AiRefinementTaskRecord | null;
     tagContent?: ReactNode;
     versionContent?: ReactNode;
+    canRejectSummaryCandidate?: boolean;
     onChanged?: () => void | Promise<void>;
     onClose: () => void;
     onCreateSummaryTask?: () => void;
@@ -189,6 +193,7 @@ export const MingCustomsEditDrawer = ({
     summaryTrackingTask,
     tagContent,
     versionContent,
+    canRejectSummaryCandidate = false,
     onChanged,
     onClose,
     onCreateSummaryTask,
@@ -201,6 +206,7 @@ export const MingCustomsEditDrawer = ({
     const [activeSection, setActiveSection] = useState<MingCustomsEditDrawerSection>("basic");
     const [summaryModalOpen, setSummaryModalOpen] = useState(false);
     const [summaryApplying, setSummaryApplying] = useState(false);
+    const [summaryRejecting, setSummaryRejecting] = useState(false);
     const [summaryDraft, setSummaryDraft] = useState("");
     const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<string | null>(null);
     const entryId = mode === "edit" ? entry?.id : undefined;
@@ -300,6 +306,28 @@ export const MingCustomsEditDrawer = ({
             messageApi.error(error instanceof Error ? error.message : "AI 候选应用失败");
         } finally {
             setSummaryApplying(false);
+        }
+    };
+
+    const rejectSummaryCandidate = async (candidate: AiCandidateRecord | null) => {
+        if (!candidate) {
+            messageApi.warning("暂无可拒绝的候选摘要");
+            return;
+        }
+        setSummaryRejecting(true);
+        try {
+            await aiCandidateService.reject({
+                candidateId: candidate.candidateIdText || candidate.candidateId,
+                errorType: REJECT_ERROR_TYPE,
+                errorMessage: REJECT_ERROR_MESSAGE
+            });
+            await onChanged?.();
+            setSummaryModalOpen(false);
+            messageApi.success("候选摘要已拒绝");
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : "拒绝候选摘要失败");
+        } finally {
+            setSummaryRejecting(false);
         }
     };
 
@@ -417,7 +445,11 @@ export const MingCustomsEditDrawer = ({
                 open={summaryModalOpen}
                 width={880}
                 applyDisabled={({ creating, resultLoading, tracking }) =>
-                    creating || resultLoading || tracking || !summaryDraft.trim()
+                    creating ||
+                    resultLoading ||
+                    tracking ||
+                    summaryRejecting ||
+                    !summaryDraft.trim()
                 }
                 applyTestId="classics-ming-customs-summary-ai-apply-button"
                 createAriaLabel="生成明代习俗 AI 摘要"
@@ -441,6 +473,24 @@ export const MingCustomsEditDrawer = ({
                     trackTask: Boolean(summaryTrackingTaskId)
                 }}
                 renderStatus={renderSummaryTaskStatus}
+                renderFooterActions={({ creating, result, resultLoading, tracking }) => (
+                    <KuzhambuButton
+                        testId="classics-ming-customs-summary-ai-reject-button"
+                        disabled={
+                            !canRejectSummaryCandidate ||
+                            !result ||
+                            creating ||
+                            resultLoading ||
+                            tracking ||
+                            summaryApplying ||
+                            summaryRejecting
+                        }
+                        loading={summaryRejecting}
+                        onClick={() => void rejectSummaryCandidate(result)}
+                    >
+                        拒绝
+                    </KuzhambuButton>
+                )}
                 renderBody={({ creating, resultLoading, tracking }) => (
                     <div className="ming-customs-summary-modal-grid">
                         <label>

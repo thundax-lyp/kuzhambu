@@ -40,16 +40,26 @@ vi.mock("@/pages/classics/common/ai-candidate-panel", () => {
 });
 
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
-    createTask: vi.fn(() =>
-        Promise.resolve({
-            taskId: "9101",
+    createTask: vi.fn((payload: { capability?: string }) => {
+        const candidateIds: Record<string, string> = {
+            CLASSICS_SUMMARY: "6001",
+            CLASSICS_TAG_EXTRACT: "6002",
+            CLASSICS_QA: "6003"
+        };
+        const taskIds: Record<string, string> = {
+            CLASSICS_SUMMARY: "9101",
+            CLASSICS_TAG_EXTRACT: "9102",
+            CLASSICS_QA: "9103"
+        };
+        return Promise.resolve({
+            taskId: taskIds[payload.capability || "CLASSICS_SUMMARY"] || "9101",
             status: "SUCCEEDED",
-            capability: "CLASSICS_SUMMARY",
+            capability: payload.capability || "CLASSICS_SUMMARY",
             contentType: "MING_CUSTOMS",
             contentId: "500000000001",
-            candidateId: "6001"
-        })
-    ),
+            candidateId: candidateIds[payload.capability || "CLASSICS_SUMMARY"] || "6001"
+        });
+    }),
     getTask: vi.fn(),
     getTaskStableId: vi.fn((taskId: string, taskIdText?: string | null) => taskIdText || taskId),
     sortNewestByRequestedAtThenId: vi.fn(
@@ -168,8 +178,9 @@ const createTestQueryClient = () =>
 const installFetchMock = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
         const path = readFetchUrl(input).replace("/kuzhambu-admin-api/api", "");
+        const body = readFetchBody(init?.body);
         capturedCalls.push({
-            body: readFetchBody(init?.body),
+            body,
             method: init?.method,
             path
         });
@@ -322,6 +333,40 @@ const installFetchMock = () => {
             });
         }
         if (path.endsWith("/ai/invocation/candidate/list")) {
+            const capability = (body as { capability?: string } | undefined)?.capability;
+            if (capability === "CLASSICS_QA") {
+                return apiResponse([
+                    {
+                        candidateId: "6003",
+                        candidateIdText: "6003",
+                        contentType: "MING_CUSTOMS",
+                        contentId: "500000000001",
+                        capability: "qa",
+                        objectId: null,
+                        resultFormat: "STRUCTURED",
+                        resultPayload:
+                            '{"qaPairs":[{"question":"岁时礼仪是什么？","answer":"记录正旦朝贺与家族拜礼。"}]}',
+                        status: "PENDING",
+                        requestedAt: "2026-01-03T00:00:00.000+00:00"
+                    }
+                ]);
+            }
+            if (capability === "CLASSICS_TAG_EXTRACT") {
+                return apiResponse([
+                    {
+                        candidateId: "6002",
+                        candidateIdText: "6002",
+                        contentType: "MING_CUSTOMS",
+                        contentId: "500000000001",
+                        capability: "tags",
+                        objectId: null,
+                        resultFormat: "STRUCTURED",
+                        resultPayload: '{"tags":["礼制","正旦"]}',
+                        status: "PENDING",
+                        requestedAt: "2026-01-02T00:00:00.000+00:00"
+                    }
+                ]);
+            }
             return apiResponse([
                 {
                     candidateId: "6001",
@@ -342,6 +387,15 @@ const installFetchMock = () => {
                 contentId: "500000000001",
                 versionId: "9003",
                 versionNo: 3
+            });
+        }
+        if (path.endsWith("/ai/invocation/candidate/reject")) {
+            return apiResponse({
+                candidateId: (body as { candidateId?: string } | undefined)?.candidateId || "6001",
+                contentType: "MING_CUSTOMS",
+                contentId: "500000000001",
+                capability: "summary",
+                status: "REJECTED"
             });
         }
         if (path.endsWith("/classics/content/ai-candidates/batch/apply")) {
@@ -598,6 +652,9 @@ describe("MingCustomPage", () => {
         await user.click(await screen.findByTestId("classics-common-content-qa-ai-button"));
         await user.click(await screen.findByTestId("classics-content-qa-ai-create-task-button"));
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(3));
+        await waitFor(() => {
+            expect(screen.getByTestId("classics-content-qa-ai-reject-button")).not.toBeDisabled();
+        });
 
         const calls = vi
             .mocked(aiRefinementTaskService.createTask)
@@ -640,6 +697,54 @@ describe("MingCustomPage", () => {
         expect(JSON.parse(calls[2].inputPayloadJson).existingQaPairs).toEqual([
             { question: "元旦朝贺是什么？", answer: "明代正旦礼仪。" }
         ]);
+    }, 30000);
+
+    it("rejects summary candidate and refreshes active Ming caches", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
+        await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
+        await screen.findByTestId("classics-ming-customs-summary-ai-modal");
+        await user.click(screen.getByTestId("classics-ming-customs-summary-ai-generate-button"));
+        await waitFor(() =>
+            expect(screen.getByLabelText("明代习俗候选摘要")).toHaveValue("文献摘要候选")
+        );
+        const rejectStartCallCount = capturedCalls.length;
+        await waitFor(() => {
+            expect(
+                screen.getByTestId("classics-ming-customs-summary-ai-reject-button")
+            ).not.toBeDisabled();
+        });
+
+        await user.click(screen.getByTestId("classics-ming-customs-summary-ai-reject-button"));
+
+        await waitFor(() => {
+            expect(capturedCalls).toContainEqual({
+                body: {
+                    candidateId: "6001",
+                    errorType: "USER_REJECTED",
+                    errorMessage: "用户已拒绝该 AI 候选"
+                },
+                method: "POST",
+                path: "/ai/invocation/candidate/reject"
+            });
+        });
+        await waitFor(() => {
+            const pathsAfterReject = capturedCalls
+                .slice(rejectStartCallCount)
+                .map((call) => call.path);
+            expect(pathsAfterReject).toContain("/classics/ming-customs/page");
+            expect(pathsAfterReject).toContain("/classics/ming-customs/get");
+            expect(pathsAfterReject).toContain("/classics/ming-customs/versions/list");
+        });
     }, 30000);
 
     it("preserves historical html content without markdown serialization", async () => {
