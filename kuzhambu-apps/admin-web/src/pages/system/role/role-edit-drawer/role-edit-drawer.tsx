@@ -15,7 +15,7 @@ import {
     KuzhambuSwitch
 } from "@/components";
 
-import { MenuTreeField } from "@/pages/system/role/menu-tree-field";
+import { MenuTreeField } from "@/pages/system/role/role-edit-drawer/menu-tree-field";
 import * as service from "@/pages/system/role/role-service";
 import type { RoleSaveCommand } from "@/pages/system/role/role-service";
 import type { RoleMenuNode, RoleMenuTreeNode, RoleRecord } from "@/pages/system/role/role-types";

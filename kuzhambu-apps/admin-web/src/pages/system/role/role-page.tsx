@@ -19,6 +19,7 @@ import {
 } from "@/components";
 import { RoleEditDrawer } from "./role-edit-drawer";
 import * as service from "./role-service";
+import type { RoleQuery } from "./role-service";
 import type { RoleOptionKeys } from "./role-service";
 import type { RoleRecord } from "./role-types";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -72,7 +73,7 @@ export const RolePage = () => {
     const queryClient = useQueryClient();
     const canViewRole = hasPermission("sys:role:view") || hasPermission("sys:role:edit");
     const canEditRole = hasPermission("sys:role:edit");
-    const [query, setQuery] = useState({});
+    const [query, setQuery] = useState<RoleQuery>({});
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<RoleFilters>(DEFAULT_ROLE_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
@@ -184,6 +185,9 @@ export const RolePage = () => {
     };
 
     const batchUpdateStatus = (enable: boolean) => {
+        if (!canEditRole) {
+            return;
+        }
         statusMutation.mutate({
             roles: selectedRowKeys.map((id) => ({ id: String(id), enable }))
         });
@@ -213,6 +217,9 @@ export const RolePage = () => {
     };
 
     const batchDeleteRoles = () => {
+        if (!canEditRole) {
+            return;
+        }
         confirm.danger({
             title: "批量删除角色",
             message: `确认删除 ${selectedRowKeys.length} 个角色？`,

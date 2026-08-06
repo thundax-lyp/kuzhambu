@@ -1,6 +1,6 @@
 import { Tree } from "antd";
 import type { DataNode } from "antd/es/tree";
-import type { Key } from "react";
+import { useState, type Key } from "react";
 import "./menu-tree-field.css";
 
 interface MenuTreeFieldProps {
@@ -18,17 +18,22 @@ export const MenuTreeField = ({
     loading,
     onChange
 }: MenuTreeFieldProps) => {
+    const [expandedKeys, setExpandedKeys] = useState<Key[]>(expandedMenuIds);
+
     return (
         <div className="menu-tree-field">
             <Tree
+                key={expandedMenuIds.join(",")}
                 checkable
                 disabled={loading}
-                defaultExpandAll
                 checkedKeys={value}
-                defaultExpandedKeys={expandedMenuIds}
+                expandedKeys={expandedKeys}
                 treeData={treeData}
                 selectable={false}
                 onCheck={(keys) => onChange?.(Array.isArray(keys) ? keys : keys.checked)}
+                onExpand={(keys) => {
+                    setExpandedKeys(keys);
+                }}
             />
         </div>
     );
