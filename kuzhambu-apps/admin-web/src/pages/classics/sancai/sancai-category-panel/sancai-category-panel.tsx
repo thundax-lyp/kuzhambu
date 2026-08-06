@@ -169,7 +169,6 @@ export const SancaiCategoryPanel = ({
         {
             title: "门类",
             key: "title",
-            width: 260,
             render: (_, category) => (
                 <div className="sancai-category-title-cell">
                     <a
@@ -229,7 +228,6 @@ export const SancaiCategoryPanel = ({
                     pagination={false}
                     rowKey="id"
                     size="middle"
-                    scroll={{ x: 520 }}
                     sortable
                     onSort={submitSort}
                     onRow={(category) => ({

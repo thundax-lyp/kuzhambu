@@ -2,23 +2,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Splitter } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import type { Key } from "react";
-import { sm2 } from "sm-crypto";
-import { createLoginForm } from "@/auth/auth-service";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuPage } from "@/components";
+import { KuzhambuAlert, KuzhambuButton, KuzhambuPage } from "@/components";
 import { getCurrentUserInfo } from "@/service/current-user-service";
 import type { OptionsRecord } from "@/types/options";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { UserBatchActions } from "./user-batch-actions";
 import { ALL_DEPARTMENT_ID, UserDepartmentTree } from "./user-department-tree";
-import { UserEditDrawer, type UserFormValues } from "./user-edit-drawer";
+import { UserEditDrawer } from "./user-edit-drawer";
 import { UserFilterPanel } from "./user-filter-panel";
 import type { UserFilters, UserFilterStatus } from "./user-filter-panel";
 import { UserPageActions } from "./user-page-actions";
 import { UserTable } from "./user-table";
 import * as service from "./user-service";
-import type { PageQuery, SaveCommand, UserOptionKeys } from "./user-service";
+import type { PageQuery, UserOptionKeys } from "./user-service";
 import type { UserDepartmentNode, UserRecord } from "./user-types";
 import "./user-page.css";
 
@@ -53,6 +51,10 @@ const toEnableQueryValue = (enable: UserFilterStatus) => {
     return undefined;
 };
 
+const readErrorMessage = (error: unknown, fallback: string) => {
+    return error instanceof Error ? error.message : fallback;
+};
+
 export const UserPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
@@ -65,16 +67,12 @@ export const UserPage = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filters, setFilters] = useState<UserFilters>(DEFAULT_USER_FILTERS);
     const [selectedDepartmentId, setSelectedDepartmentId] = useState(ALL_DEPARTMENT_ID);
-    const [departments, setDepartments] = useState<UserDepartmentNode[]>(EMPTY_DEPARTMENTS);
-    const [departmentTreeFetching, setDepartmentTreeFetching] = useState(false);
-    const [departmentRefreshSignal, setDepartmentRefreshSignal] = useState(0);
     const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
     const [userEditDrawerOpen, setUserEditDrawerOpen] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const hasSelectedUsers = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(filters.loginName.trim()) || filters.enable !== "ALL";
     const canEditUser = hasPermission("sys:user:edit");
-    const isCreatingUser = userEditDrawerOpen && !editingUser?.id;
 
     const userPageQuery = useQuery({
         queryKey: ["user", "page", query],
@@ -91,10 +89,17 @@ export const UserPage = () => {
         queryFn: getCurrentUserInfo,
         retry: false
     });
+    const departmentQuery = useQuery({
+        queryKey: ["user", "department", "tree"],
+        queryFn: service.listDepartments,
+        retry: false
+    });
+    const canManageUser = canEditUser && currentUserQuery.isSuccess;
     const pageData = userPageQuery.data;
     const users = useMemo(() => pageData?.records ?? EMPTY_USERS, [pageData?.records]);
     const totalCount = pageData?.count ?? pageData?.totalCount ?? 0;
     const userOptions = userOptionsQuery.data ?? EMPTY_USER_OPTIONS;
+    const departments = departmentQuery.data ?? EMPTY_DEPARTMENTS;
     const statusLabelByValue = useMemo(() => {
         return new Map(userOptions.statusOptions.map((option) => [option.value, option.label]));
     }, [userOptions.statusOptions]);
@@ -132,54 +137,6 @@ export const UserPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "删除失败");
-        }
-    });
-
-    const avatarUploadMutation = useMutation({
-        mutationFn: ({ id, avatar }: { id: string; avatar: File }) =>
-            service.uploadAvatar(id, avatar),
-        onSuccess: async (_, variables) => {
-            const refreshedUsers = await userPageQuery.refetch();
-            const refreshedUser = refreshedUsers.data?.records?.find(
-                (user) => user.id === variables.id
-            );
-            if (refreshedUser) {
-                setEditingUser(refreshedUser);
-            }
-            messageApi.success("头像已更新");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "头像上传失败");
-        }
-    });
-    const updateMutation = useMutation({
-        mutationFn: service.changeInfo,
-        onSuccess: async (savedUser) => {
-            setEditingUser(savedUser);
-            await invalidatePage();
-            setUserEditDrawerOpen(false);
-            setEditingUser(null);
-            messageApi.success("用户已更新");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "更新失败");
-        }
-    });
-    const createMutation = useMutation({
-        mutationFn: async (form: UserFormValues) => {
-            const loginForm = await createLoginForm();
-            const encryptedPassword = sm2.doEncrypt(form.loginPass, loginForm.publicKey, 0);
-            return service.create(
-                toCreateSaveCommand(form, encryptedPassword, loginForm.loginToken)
-            );
-        },
-        onSuccess: async () => {
-            setUserEditDrawerOpen(false);
-            await invalidatePage();
-            messageApi.success("用户已新增");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "新增失败");
         }
     });
 
@@ -224,14 +181,6 @@ export const UserPage = () => {
         },
         [updateQuery]
     );
-
-    const updateDepartments = useCallback((nextDepartments: UserDepartmentNode[]) => {
-        setDepartments(nextDepartments);
-    }, []);
-
-    const updateDepartmentTreeFetching = useCallback((isFetching: boolean) => {
-        setDepartmentTreeFetching(isFetching);
-    }, []);
 
     const confirmDeleteUser = (user: UserRecord) => {
         confirm.danger({
@@ -286,77 +235,6 @@ export const UserPage = () => {
         setUserEditDrawerOpen(true);
     };
 
-    const toSaveCommand = (user: UserRecord, form: UserFormValues): SaveCommand => ({
-        id: user.id,
-        remarks: user.remarks,
-        loginName: normalizeSearch(form.loginName),
-        ranks: form.ranks,
-        name: normalizeSearch(form.name),
-        email: normalizeSearch(form.email),
-        mobile: normalizeSearch(form.mobile),
-        admin: form.admin,
-        enable: form.enable,
-        department: form.departmentId ? { id: form.departmentId } : null,
-        roles: form.roleIds.map((roleId) => ({ id: roleId }))
-    });
-
-    const toCreateSaveCommand = (
-        form: UserFormValues,
-        encryptedPassword: string,
-        token: string
-    ): SaveCommand => ({
-        loginName: normalizeSearch(form.loginName),
-        loginPass: encryptedPassword,
-        token,
-        ranks: form.ranks,
-        name: normalizeSearch(form.name),
-        email: normalizeSearch(form.email),
-        mobile: normalizeSearch(form.mobile),
-        admin: form.admin,
-        enable: form.enable,
-        department: form.departmentId ? { id: form.departmentId } : null,
-        roles: form.roleIds.map((roleId) => ({ id: roleId }))
-    });
-
-    const saveCreatingUser = (form: UserFormValues) => {
-        if (!normalizeSearch(form.loginName)) {
-            messageApi.error("请填写登录名");
-            return;
-        }
-        if (!form.loginPass) {
-            messageApi.error("请填写登录密码");
-            return;
-        }
-        if (!normalizeSearch(form.name)) {
-            messageApi.error("请填写姓名");
-            return;
-        }
-        if (!form.departmentId) {
-            messageApi.error("请选择部门");
-            return;
-        }
-        createMutation.mutate(form);
-    };
-
-    const saveEditingUser = (form: UserFormValues) => {
-        if (!editingUser) {
-            return;
-        }
-        if (!normalizeSearch(form.loginName)) {
-            messageApi.error("请填写登录名");
-            return;
-        }
-        if (!normalizeSearch(form.name)) {
-            messageApi.error("请填写姓名");
-            return;
-        }
-        if (!form.departmentId) {
-            messageApi.error("请选择部门");
-            return;
-        }
-        updateMutation.mutate(toSaveCommand(editingUser, form));
-    };
-
     return (
         <>
             <KuzhambuPage
@@ -368,18 +246,59 @@ export const UserPage = () => {
                         searchText={searchText}
                         filterOpen={isFilterOpen}
                         filterActive={hasActiveFilters}
-                        isRefreshing={userPageQuery.isFetching || departmentTreeFetching}
-                        canCreateUser={canEditUser}
+                        isRefreshing={
+                            userPageQuery.isFetching ||
+                            userOptionsQuery.isFetching ||
+                            currentUserQuery.isFetching ||
+                            departmentQuery.isFetching
+                        }
+                        canCreateUser={canManageUser}
                         onSearch={searchUsers}
                         onToggleFilter={() => setIsFilterOpen((open) => !open)}
                         onRefresh={() => {
-                            userPageQuery.refetch();
-                            setDepartmentRefreshSignal((currentSignal) => currentSignal + 1);
+                            void userPageQuery.refetch();
+                            void userOptionsQuery.refetch();
+                            void currentUserQuery.refetch();
+                            void departmentQuery.refetch();
                         }}
                         onCreate={openCreateUser}
                     />
                 }
             >
+                {currentUserQuery.isError ? (
+                    <KuzhambuAlert
+                        showIcon
+                        type="error"
+                        title="当前用户信息加载失败"
+                        description="用户管理操作已暂停，请重试后继续。"
+                        action={
+                            <KuzhambuButton
+                                ariaLabel="重试加载当前用户信息"
+                                testId="system-user-current-user-retry-button"
+                                onClick={() => void currentUserQuery.refetch()}
+                            >
+                                重试
+                            </KuzhambuButton>
+                        }
+                    />
+                ) : null}
+                {userOptionsQuery.isError ? (
+                    <KuzhambuAlert
+                        showIcon
+                        type="warning"
+                        title="用户选项加载失败"
+                        description="状态和等级名称可能显示为默认值。"
+                        action={
+                            <KuzhambuButton
+                                ariaLabel="重试加载用户选项"
+                                testId="system-user-options-retry-button"
+                                onClick={() => void userOptionsQuery.refetch()}
+                            >
+                                重试
+                            </KuzhambuButton>
+                        }
+                    />
+                ) : null}
                 <UserFilterPanel
                     open={isFilterOpen}
                     resetDisabled={!hasActiveFilters}
@@ -396,46 +315,74 @@ export const UserPage = () => {
                 <Splitter className="user-department-work-area">
                     <Splitter.Panel defaultSize={280} min={220} max={520}>
                         <UserDepartmentTree
-                            refreshSignal={departmentRefreshSignal}
+                            departments={departments}
+                            error={
+                                departmentQuery.isError
+                                    ? new Error(
+                                          readErrorMessage(departmentQuery.error, "部门加载失败")
+                                      )
+                                    : null
+                            }
+                            loading={departmentQuery.isFetching}
                             selectedDepartmentId={selectedDepartmentId}
-                            onDepartmentsChange={updateDepartments}
-                            onFetchingChange={updateDepartmentTreeFetching}
+                            onRetry={() => void departmentQuery.refetch()}
                             onSelectDepartment={selectDepartment}
                         />
                     </Splitter.Panel>
                     <Splitter.Panel className="user-work-panel">
-                        <UserTable
-                            users={users}
-                            loading={userPageQuery.isFetching}
-                            currentPage={query.pageNo || DEFAULT_PAGE_NO}
-                            pageSize={query.pageSize || DEFAULT_PAGE_SIZE}
-                            totalCount={totalCount}
-                            selectedRowKeys={selectedRowKeys}
-                            batchActions={
-                                <UserBatchActions
-                                    selectedCount={selectedRowKeys.length}
-                                    canEditUser={canEditUser}
-                                    statusPending={statusMutation.isPending}
-                                    deletePending={deleteMutation.isPending}
-                                    onDisable={() => batchUpdateStatus(false)}
-                                    onEnable={() => batchUpdateStatus(true)}
-                                    onDelete={batchDeleteUsers}
-                                />
-                            }
-                            statusPending={statusMutation.isPending}
-                            canEditUser={canEditUser}
-                            currentUser={currentUserQuery.data}
-                            statusLabelByValue={statusLabelByValue}
-                            rankLabelByValue={rankLabelByValue}
-                            onSelectedRowKeysChange={setSelectedRowKeys}
-                            onPageChange={(pageNo, pageSize) => updateQuery({ pageNo, pageSize })}
-                            onStatusChange={updateSingleStatus}
-                            onEdit={(user) => {
-                                setEditingUser(user);
-                                setUserEditDrawerOpen(true);
-                            }}
-                            onDelete={confirmDeleteUser}
-                        />
+                        {userPageQuery.isError ? (
+                            <KuzhambuAlert
+                                showIcon
+                                type="error"
+                                title="用户列表加载失败"
+                                description={readErrorMessage(userPageQuery.error, "请稍后重试")}
+                                action={
+                                    <KuzhambuButton
+                                        ariaLabel="重试加载用户列表"
+                                        testId="system-user-page-retry-button"
+                                        onClick={() => void userPageQuery.refetch()}
+                                    >
+                                        重试
+                                    </KuzhambuButton>
+                                }
+                            />
+                        ) : null}
+                        {pageData || !userPageQuery.isError ? (
+                            <UserTable
+                                users={users}
+                                loading={userPageQuery.isFetching}
+                                currentPage={query.pageNo || DEFAULT_PAGE_NO}
+                                pageSize={query.pageSize || DEFAULT_PAGE_SIZE}
+                                totalCount={totalCount}
+                                selectedRowKeys={selectedRowKeys}
+                                batchActions={
+                                    <UserBatchActions
+                                        selectedCount={selectedRowKeys.length}
+                                        canEditUser={canManageUser}
+                                        statusPending={statusMutation.isPending}
+                                        deletePending={deleteMutation.isPending}
+                                        onDisable={() => batchUpdateStatus(false)}
+                                        onEnable={() => batchUpdateStatus(true)}
+                                        onDelete={batchDeleteUsers}
+                                    />
+                                }
+                                statusPending={statusMutation.isPending}
+                                canEditUser={canManageUser}
+                                currentUser={currentUserQuery.data}
+                                statusLabelByValue={statusLabelByValue}
+                                rankLabelByValue={rankLabelByValue}
+                                onSelectedRowKeysChange={setSelectedRowKeys}
+                                onPageChange={(pageNo, pageSize) =>
+                                    updateQuery({ pageNo, pageSize })
+                                }
+                                onStatusChange={updateSingleStatus}
+                                onEdit={(user) => {
+                                    setEditingUser(user);
+                                    setUserEditDrawerOpen(true);
+                                }}
+                                onDelete={confirmDeleteUser}
+                            />
+                        ) : null}
                     </Splitter.Panel>
                 </Splitter>
             </KuzhambuPage>
@@ -443,24 +390,13 @@ export const UserPage = () => {
             <UserEditDrawer
                 key={`${userEditDrawerOpen ? "open" : "closed"}-${editingUser?.id || "create"}-${currentUserQuery.data?.ranks ?? "rank"}`}
                 open={userEditDrawerOpen}
-                title={isCreatingUser ? "新增用户" : "编辑用户"}
-                saveText="保存"
                 user={editingUser}
                 currentUser={currentUserQuery.data}
                 departments={departments}
                 rankOptions={userOptions.rankOptions}
-                saving={isCreatingUser ? createMutation.isPending : updateMutation.isPending}
                 onClose={() => {
                     setUserEditDrawerOpen(false);
                     setEditingUser(null);
-                }}
-                onCreate={saveCreatingUser}
-                onSave={saveEditingUser}
-                onAvatarUpload={(avatar) => {
-                    if (editingUser?.id) {
-                        return avatarUploadMutation.mutateAsync({ id: editingUser.id, avatar });
-                    }
-                    return undefined;
                 }}
             />
         </>

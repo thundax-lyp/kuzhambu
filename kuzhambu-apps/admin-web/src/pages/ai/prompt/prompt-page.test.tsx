@@ -119,6 +119,7 @@ const versions = [
         ...currentVersion,
         id: "2001",
         versionNo: 1,
+        messageTemplatesJson: '[{"role":"user","content":"回滚后的正文"}]',
         changeSummary: "initial"
     },
     currentVersion
@@ -259,6 +260,32 @@ describe("PromptPage", () => {
         expect(within(variableDialog).getByText("内容类型")).toBeInTheDocument();
         expect(within(variableDialog).queryByRole("columnheader", { name: "变量名" })).toBeNull();
         expect(screen.queryByText("变量快照 JSON")).not.toBeInTheDocument();
+    });
+
+    it("updates the editor after rolling back a prompt version", async () => {
+        vi.mocked(service.changePromptVersionRollback).mockResolvedValue(versions[0]);
+        renderPage();
+
+        await screen.findByText("摘要提示词");
+        fireEvent.click(screen.getByRole("button", { name: "编辑 摘要提示词" }));
+        expect(await screen.findByDisplayValue("{{title}}")).toBeInTheDocument();
+
+        const rollbackButtons = await screen.findAllByRole("button", { name: "回滚" });
+        fireEvent.click(rollbackButtons.find((button) => !button.hasAttribute("disabled"))!);
+        fireEvent.click(
+            within(screen.getByRole("dialog")).getByRole("button", { name: /回\s*滚/ })
+        );
+
+        expect(await screen.findByDisplayValue("回滚后的正文")).toBeInTheDocument();
+        const versionTable = screen.getByRole("table", { name: "提示词版本列表" });
+        const versionOneRow = within(versionTable).getByText("1").closest("tr");
+        const versionTwoRow = within(versionTable).getByText("2").closest("tr");
+        expect(versionOneRow).not.toBeNull();
+        expect(versionTwoRow).not.toBeNull();
+        expect(within(versionOneRow!).getByText("当前")).toBeInTheDocument();
+        expect(within(versionOneRow!).getByRole("button", { name: "回滚" })).toBeDisabled();
+        expect(within(versionTwoRow!).getByText("历史")).toBeInTheDocument();
+        expect(within(versionTwoRow!).getByRole("button", { name: "回滚" })).toBeEnabled();
     });
 
     it("updates create drawer variable modal content when capability changes", async () => {

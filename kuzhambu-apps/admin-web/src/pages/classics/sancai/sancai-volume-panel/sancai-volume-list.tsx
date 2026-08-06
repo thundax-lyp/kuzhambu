@@ -54,7 +54,6 @@ export const SancaiVolumeList = ({
         {
             title: "卷目",
             key: "title",
-            width: 260,
             render: (_, volume) => {
                 const title = readTitle(volume, "卷");
                 return (
@@ -114,7 +113,6 @@ export const SancaiVolumeList = ({
             pagination={false}
             rowKey="id"
             size="middle"
-            scroll={{ x: 520 }}
             sortable
             onSort={onSort}
             onRow={(volume) => ({

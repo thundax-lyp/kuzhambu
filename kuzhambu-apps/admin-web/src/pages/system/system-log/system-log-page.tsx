@@ -6,28 +6,30 @@ import {
     UserOutlined
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Empty, Input, Typography } from "antd";
-import { useMemo, useState } from "react";
+import { App, DatePicker, Empty, Input, Typography } from "antd";
+import type { Dayjs } from "dayjs";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import {
     KuzhambuListPage,
+    KuzhambuAlert,
+    KuzhambuButton,
+    KuzhambuDescriptions,
     KuzhambuSpace,
     KuzhambuTag,
+    KuzhambuTable,
     type KuzhambuTableProps
 } from "@/components";
 import * as service from "./system-log-service";
 import type { LogPageQuery } from "./system-log-service";
 import type { LogRecord } from "./system-log-types";
-import { KuzhambuButton } from "@/components";
-
 import "./system-log-page.css";
 
 const { Text } = Typography;
 
 const DEFAULT_COLUMN_WIDTHS = {
     createDate: 176,
-    title: 220,
     type: 104,
     method: 96,
     requestUri: 280,
@@ -36,8 +38,7 @@ const DEFAULT_COLUMN_WIDTHS = {
 };
 
 interface SystemLogFilters {
-    beginDate: string;
-    endDate: string;
+    period: [Dayjs | null, Dayjs | null] | null;
     remoteAddr: string;
     requestUri: string;
     userLoginName: string;
@@ -45,13 +46,15 @@ interface SystemLogFilters {
 }
 
 const DEFAULT_SYSTEM_LOG_FILTERS: SystemLogFilters = {
-    beginDate: "",
-    endDate: "",
+    period: null,
     remoteAddr: "",
     requestUri: "",
     userLoginName: "",
     userName: ""
 };
+
+const SYSTEM_LOG_DATE_TIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
+const SEARCH_DEBOUNCE_MS = 500;
 
 const normalizeSearch = (value?: string | null) => {
     const normalizedValue = value?.trim();
@@ -82,16 +85,17 @@ const methodTagType = (method?: string | null) => {
 };
 
 export const SystemLogPage = () => {
+    const { message: messageApi } = App.useApp();
     const canViewSystemLog = hasPermission("system:log:view");
     const [query, setQuery] = useState<LogPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
     });
     const [searchText, setSearchText] = useState("");
+    const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [filters, setFilters] = useState<SystemLogFilters>(DEFAULT_SYSTEM_LOG_FILTERS);
     const hasActiveFilters = Boolean(
-        filters.beginDate.trim() ||
-        filters.endDate.trim() ||
+        filters.period ||
         filters.remoteAddr.trim() ||
         filters.requestUri.trim() ||
         filters.userLoginName.trim() ||
@@ -110,6 +114,14 @@ export const SystemLogPage = () => {
     const totalCount = logPage?.count ?? logPage?.totalCount ?? 0;
     const currentPageNo = logPage?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = logPage?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
+
+    useEffect(() => {
+        return () => {
+            if (searchTimerRef.current) {
+                clearTimeout(searchTimerRef.current);
+            }
+        };
+    }, []);
 
     if (!canViewSystemLog) {
         return <Empty description="缺少 system:log:view 权限" />;
@@ -134,13 +146,23 @@ export const SystemLogPage = () => {
 
     const searchEvents = (value: string) => {
         setSearchText(value);
-        updateQuery({ title: normalizeSearch(value) });
+        if (searchTimerRef.current) {
+            clearTimeout(searchTimerRef.current);
+        }
+        searchTimerRef.current = setTimeout(() => {
+            updateQuery({ title: normalizeSearch(value) });
+        }, SEARCH_DEBOUNCE_MS);
     };
 
     const applyFilters = () => {
+        const [beginDate, endDate] = filters.period || [];
+        if (beginDate && endDate && endDate.isBefore(beginDate)) {
+            messageApi.error("结束时间不能早于开始时间");
+            return;
+        }
         updateQuery({
-            beginDate: normalizeSearch(filters.beginDate),
-            endDate: normalizeSearch(filters.endDate),
+            beginDate: beginDate?.format(SYSTEM_LOG_DATE_TIME_FORMAT),
+            endDate: endDate?.format(SYSTEM_LOG_DATE_TIME_FORMAT),
             remoteAddr: normalizeSearch(filters.remoteAddr),
             requestUri: normalizeSearch(filters.requestUri),
             userLoginName: normalizeSearch(filters.userLoginName),
@@ -177,7 +199,6 @@ export const SystemLogPage = () => {
             title: "标题",
             dataIndex: "title",
             key: "title",
-            width: DEFAULT_COLUMN_WIDTHS.title,
             ellipsis: true,
             render: (title?: string | null) => <Text strong>{title}</Text>
         },
@@ -232,7 +253,7 @@ export const SystemLogPage = () => {
             enableSearch
             searchShortcut="⌘K"
             searchValue={searchText}
-            searchPlaceholder="检索统计事件标题..."
+            searchPlaceholder="搜索系统日志标题..."
             onSearchChange={searchEvents}
             filterActive={hasActiveFilters}
             filterFields={[
@@ -308,34 +329,18 @@ export const SystemLogPage = () => {
                     )
                 },
                 {
-                    name: "beginDate",
-                    label: "开始时间",
+                    name: "period",
+                    label: "时间范围",
                     render: () => (
-                        <Input
-                            allowClear
-                            placeholder="2026-05-14 00:00:00"
-                            value={filters.beginDate}
-                            onChange={(event) =>
+                        <DatePicker.RangePicker
+                            aria-label="日志时间范围"
+                            format={SYSTEM_LOG_DATE_TIME_FORMAT}
+                            showTime
+                            value={filters.period}
+                            onChange={(period) =>
                                 setFilters((currentFilters) => ({
                                     ...currentFilters,
-                                    beginDate: event.target.value
-                                }))
-                            }
-                        />
-                    )
-                },
-                {
-                    name: "endDate",
-                    label: "结束时间",
-                    render: () => (
-                        <Input
-                            allowClear
-                            placeholder="2026-05-14 23:59:59"
-                            value={filters.endDate}
-                            onChange={(event) =>
-                                setFilters((currentFilters) => ({
-                                    ...currentFilters,
-                                    endDate: event.target.value
+                                    period
                                 }))
                             }
                         />
@@ -348,61 +353,97 @@ export const SystemLogPage = () => {
                 <KuzhambuButton
                     testId="system-system-log-system-log-refresh-button"
                     icon={<ReloadOutlined />}
-                    onClick={() => systemLogPageQuery.refetch()}
+                    loading={systemLogPageQuery.isFetching}
+                    onClick={() => void systemLogPageQuery.refetch()}
                 >
                     刷新
                 </KuzhambuButton>
             }
-            rowKey="id"
-            className="system-log-table"
-            columns={columns}
-            dataSource={logs}
-            loading={systemLogPageQuery.isFetching}
-            scroll={{ x: 1220 }}
-            expandable={{
-                expandedRowRender: (log) => (
-                    <div className="system-log-detail">
-                        <div>
-                            <span>请求参数</span>
-                            <Text>{log.requestParams || ""}</Text>
-                        </div>
-                        <div>
-                            <span>User-Agent</span>
-                            <Text>{log.userAgent || ""}</Text>
-                        </div>
-                        <div>
-                            <span>部门</span>
-                            <Text>
-                                {log.createUser?.department?.namePath ||
-                                    log.createUser?.department?.name ||
-                                    ""}
-                            </Text>
-                        </div>
-                        <div>
-                            <span>备注</span>
-                            <Text>{log.remarks || ""}</Text>
-                        </div>
-                    </div>
-                )
-            }}
-            pagination={{
-                current: currentPageNo,
-                pageSize: currentPageSize,
-                total: totalCount,
-                showTotal: (total) => `共 ${total} 条`,
-                onChange: (pageNo, pageSize) => {
-                    setQuery((currentQuery) => ({
-                        ...currentQuery,
-                        pageNo,
-                        pageSize
-                    }));
-                }
-            }}
-            locale={{
-                emptyText: systemLogPageQuery.isError
-                    ? "系统日志加载失败，请确认权限和接口状态。"
-                    : "暂无系统日志"
-            }}
+            content={
+                <>
+                    {systemLogPageQuery.isError ? (
+                        <KuzhambuAlert
+                            showIcon
+                            type="error"
+                            title="系统日志加载失败"
+                            description={
+                                logs.length > 0
+                                    ? "当前展示的是上次成功加载的数据，本次查询未更新。"
+                                    : systemLogPageQuery.error instanceof Error
+                                      ? systemLogPageQuery.error.message
+                                      : "请确认权限和接口状态后重试。"
+                            }
+                            action={
+                                <KuzhambuButton
+                                    ariaLabel="重试加载系统日志"
+                                    testId="system-system-log-retry-button"
+                                    onClick={() => void systemLogPageQuery.refetch()}
+                                >
+                                    重试
+                                </KuzhambuButton>
+                            }
+                        />
+                    ) : null}
+                    <KuzhambuTable<LogRecord>
+                        ariaLabel="日志列表"
+                        rowKey="id"
+                        className="system-log-table"
+                        columns={columns}
+                        dataSource={logs}
+                        loading={systemLogPageQuery.isFetching}
+                        scroll={{ x: 1220 }}
+                        expandable={{
+                            expandedRowRender: (log) => (
+                                <KuzhambuDescriptions
+                                    ariaLabel={`系统日志 ${log.id} 详情`}
+                                    className="system-log-detail"
+                                    column={1}
+                                    size="small"
+                                    items={[
+                                        {
+                                            key: "requestParams",
+                                            label: "请求参数",
+                                            children: log.requestParams || "-"
+                                        },
+                                        {
+                                            key: "userAgent",
+                                            label: "User-Agent",
+                                            children: log.userAgent || "-"
+                                        },
+                                        {
+                                            key: "department",
+                                            label: "部门",
+                                            children:
+                                                log.createUser?.department?.namePath ||
+                                                log.createUser?.department?.name ||
+                                                "-"
+                                        },
+                                        {
+                                            key: "remarks",
+                                            label: "备注",
+                                            children: log.remarks || "-"
+                                        }
+                                    ]}
+                                />
+                            )
+                        }}
+                        pagination={{
+                            current: currentPageNo,
+                            pageSize: currentPageSize,
+                            total: totalCount,
+                            showTotal: (total) => `共 ${total} 条`,
+                            onChange: (pageNo, pageSize) => {
+                                setQuery((currentQuery) => ({
+                                    ...currentQuery,
+                                    pageNo,
+                                    pageSize
+                                }));
+                            }
+                        }}
+                        locale={{ emptyText: "暂无系统日志" }}
+                    />
+                </>
+            }
         />
     );
 };
