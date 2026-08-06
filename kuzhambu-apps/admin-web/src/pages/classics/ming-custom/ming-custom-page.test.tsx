@@ -336,6 +336,14 @@ const installFetchMock = () => {
                 }
             ]);
         }
+        if (path.endsWith("/classics/content/ai-candidates/change")) {
+            return apiResponse({
+                contentType: "MING_CUSTOMS",
+                contentId: "500000000001",
+                versionId: "9003",
+                versionNo: 3
+            });
+        }
         if (path.endsWith("/classics/content/ai-candidates/batch/apply")) {
             return apiResponse({
                 failureCount: 1,
@@ -556,7 +564,23 @@ describe("MingCustomPage", () => {
             expect(screen.getByLabelText("明代习俗候选摘要")).toHaveValue("文献摘要候选")
         );
         await user.click(screen.getByTestId("classics-ming-customs-summary-ai-apply-button"));
-        expect(screen.getByLabelText("明代习俗概述")).toHaveValue("文献摘要候选");
+        await waitFor(() => {
+            expect(screen.getByLabelText("明代习俗概述")).toHaveValue("文献摘要候选");
+        });
+        expect(capturedCalls).toContainEqual({
+            body: {
+                candidateId: "6001",
+                contentId: "500000000001",
+                contentType: "MING_CUSTOMS",
+                capability: "CLASSICS_SUMMARY",
+                objectId: null,
+                resultFormat: "TEXT",
+                resultPayload: "文献摘要候选",
+                changeSummary: "AI 应用：摘要"
+            },
+            method: "POST",
+            path: "/classics/content/ai-candidates/change"
+        });
         await switchMingCustomsDrawerSection(user, "标签");
         await user.click(await screen.findByTestId("classics-common-content-tag-ai-button"));
         await user.click(await screen.findByTestId("classics-content-tag-ai-create-task-button"));

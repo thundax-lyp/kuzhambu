@@ -198,6 +198,7 @@ export const MingCustomsEditDrawer = ({
     const contentFormat = Form.useWatch("contentFormat", { form, preserve: true }) || "MARKDOWN";
     const [activeSection, setActiveSection] = useState<MingCustomsEditDrawerSection>("basic");
     const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+    const [summaryApplying, setSummaryApplying] = useState(false);
     const [summaryDraft, setSummaryDraft] = useState("");
     const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<string | null>(null);
     const entryId = mode === "edit" ? entry?.id : undefined;
@@ -275,10 +276,28 @@ export const MingCustomsEditDrawer = ({
         setSummaryDraft(candidate.resultPayload?.trim() || "");
     };
 
-    const applySummaryDraft = () => {
-        form.setFieldValue("summary", summaryDraft);
-        setSummaryModalOpen(false);
-        messageApi.success("摘要已写入基础信息");
+    const applySummaryDraft = async (candidate: AiCandidateRecord | null) => {
+        if (!entryId || !candidate) return;
+        setSummaryApplying(true);
+        try {
+            await aiCandidateService.apply({
+                candidateId: candidate.candidateIdText || candidate.candidateId,
+                contentId: entryId,
+                contentType: "MING_CUSTOMS",
+                capability: AI_BUSINESS_CAPABILITY.CLASSICS_SUMMARY,
+                objectId: candidate.objectId,
+                resultFormat: candidate.resultFormat?.trim() || "TEXT",
+                resultPayload: summaryDraft,
+                changeSummary: "AI 应用：摘要"
+            });
+            form.setFieldValue("summary", summaryDraft);
+            setSummaryModalOpen(false);
+            messageApi.success("摘要已写入基础信息");
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : "AI 候选应用失败");
+        } finally {
+            setSummaryApplying(false);
+        }
     };
 
     const basicContent = (
@@ -403,6 +422,7 @@ export const MingCustomsEditDrawer = ({
                 createTestId="classics-ming-customs-summary-ai-generate-button"
                 createText="生成摘要"
                 creating={summaryCreating}
+                applying={summaryApplying}
                 onCancel={() => setSummaryModalOpen(false)}
                 workflow={{
                     ...summaryTaskAdapter,
