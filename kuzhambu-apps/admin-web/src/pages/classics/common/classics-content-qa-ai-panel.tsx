@@ -1,12 +1,11 @@
 import { CloseCircleOutlined, PlusOutlined, RobotOutlined } from "@ant-design/icons";
-import { App, Empty, Typography } from "antd";
+import { App, Empty, Input } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     KuzhambuAlert,
     KuzhambuButton,
-    KuzhambuExpandableText,
     KuzhambuSpace,
     KuzhambuSyncTaskModal,
     KuzhambuTable,
@@ -276,6 +275,13 @@ const getCandidateStableId = (candidate: AiCandidateRecord) => {
     return candidate.candidateIdText || normalizeId(candidate.candidateId);
 };
 
+let candidateQaRowSequence = 0;
+
+const createCandidateQaRowId = () => {
+    candidateQaRowSequence += 1;
+    return `candidate-qa-${candidateQaRowSequence}`;
+};
+
 interface CandidateQaTableProps {
     candidate: AiCandidateRecord;
     disabled?: boolean;
@@ -301,55 +307,93 @@ const CandidateQaTable = ({
         onSubmitEnabledChange(candidateId, canSubmit);
     }, [candidateId, onPayloadChange, onSubmitEnabledChange, rows]);
 
-    if (!rows.length) {
-        return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="候选问答为空" />;
-    }
+    const updateRow = (rowId: string, field: "question" | "answer", value: string) => {
+        setRows((currentRows) =>
+            currentRows.map((row) => (row.id === rowId ? { ...row, [field]: value } : row))
+        );
+    };
 
     return (
-        <KuzhambuTable<CandidateQaPairRow>
-            ariaLabel="候选问答列表"
-            dataSource={rows}
-            pagination={false}
-            rowKey="id"
-            columns={[
-                {
-                    key: "qa",
-                    title: "生成问答",
-                    render: (_value, row) => (
-                        <KuzhambuSpace orientation="vertical" size={6} style={{ width: "100%" }}>
-                            <Typography.Text strong>{`问：${row.question || "-"}`}</Typography.Text>
-                            <div style={{ color: "rgba(0, 0, 0, 0.65)" }}>
-                                <KuzhambuExpandableText
-                                    content={`答：${row.answer || "-"}`}
-                                    collapsedRows={2}
-                                />
-                            </div>
-                        </KuzhambuSpace>
-                    )
-                },
-                {
-                    key: "actions",
-                    title: "操作",
-                    options: (row) => [
+        <KuzhambuSpace orientation="vertical" size={8} style={{ width: "100%" }}>
+            <KuzhambuButton
+                testId="classics-content-qa-ai-generated-add-button"
+                disabled={disabled}
+                icon={<PlusOutlined />}
+                onClick={() =>
+                    setRows((currentRows) => [
+                        ...currentRows,
+                        { id: createCandidateQaRowId(), question: "", answer: "" }
+                    ])
+                }
+            >
+                新增问答
+            </KuzhambuButton>
+            {rows.length ? (
+                <KuzhambuTable<CandidateQaPairRow>
+                    ariaLabel="候选问答列表"
+                    dataSource={rows}
+                    pagination={false}
+                    rowKey="id"
+                    columns={[
                         {
-                            key: "delete-divider",
-                            type: "divider"
+                            key: "qa",
+                            title: "生成问答",
+                            render: (_value, row, index) => (
+                                <KuzhambuSpace
+                                    orientation="vertical"
+                                    size={6}
+                                    style={{ width: "100%" }}
+                                >
+                                    <Input.TextArea
+                                        aria-label={`候选问题 ${index + 1}`}
+                                        value={row.question}
+                                        disabled={disabled}
+                                        autoSize={{ minRows: 1, maxRows: 4 }}
+                                        onChange={(event) =>
+                                            updateRow(row.id, "question", event.target.value)
+                                        }
+                                    />
+                                    <Input.TextArea
+                                        aria-label={`候选答案 ${index + 1}`}
+                                        value={row.answer}
+                                        disabled={disabled}
+                                        autoSize={{ minRows: 2, maxRows: 8 }}
+                                        onChange={(event) =>
+                                            updateRow(row.id, "answer", event.target.value)
+                                        }
+                                    />
+                                </KuzhambuSpace>
+                            )
                         },
                         {
-                            key: "delete",
-                            text: "删除",
-                            type: "danger",
-                            disabled,
-                            testId: `classics-content-qa-ai-generated-delete-${row.id}-button`,
-                            onClick: () =>
-                                setRows((currentRows) =>
-                                    currentRows.filter((currentRow) => currentRow.id !== row.id)
-                                )
+                            key: "actions",
+                            title: "操作",
+                            options: (row) => [
+                                {
+                                    key: "delete-divider",
+                                    type: "divider"
+                                },
+                                {
+                                    key: "delete",
+                                    text: "删除",
+                                    type: "danger",
+                                    disabled,
+                                    testId: `classics-content-qa-ai-generated-delete-${row.id}-button`,
+                                    onClick: () =>
+                                        setRows((currentRows) =>
+                                            currentRows.filter(
+                                                (currentRow) => currentRow.id !== row.id
+                                            )
+                                        )
+                                }
+                            ]
                         }
-                    ]
-                }
-            ]}
-        />
+                    ]}
+                />
+            ) : (
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="候选问答为空" />
+            )}
+        </KuzhambuSpace>
     );
 };
 

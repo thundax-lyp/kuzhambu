@@ -151,8 +151,13 @@ describe("ClassicsContentQaAiPanel", () => {
         );
 
         await user.click(screen.getByTestId("classics-common-content-qa-ai-button"));
-        await screen.findByText("问：问");
-        expect(screen.getByText("答：答")).toBeInTheDocument();
+        expect(await screen.findByLabelText("候选问题 1")).toHaveValue("问");
+        expect(screen.getByLabelText("候选答案 1")).toHaveValue("答");
+        await user.clear(screen.getByLabelText("候选问题 1"));
+        await user.type(screen.getByLabelText("候选问题 1"), "修改后的问题");
+        await user.click(screen.getByTestId("classics-content-qa-ai-generated-add-button"));
+        await user.type(screen.getByLabelText("候选问题 2"), "新增问题");
+        await user.type(screen.getByLabelText("候选答案 2"), "新增答案");
         await waitFor(() => {
             expect(screen.getByTestId("classics-content-qa-ai-append-button")).not.toBeDisabled();
         });
@@ -169,7 +174,12 @@ describe("ClassicsContentQaAiPanel", () => {
                         capability: "CLASSICS_QA",
                         contentId: "8",
                         contentType: "SANCAI_ENTRY",
-                        resultPayload: qaCandidate.resultPayload
+                        resultPayload: JSON.stringify({
+                            qaPairs: [
+                                { question: "修改后的问题", answer: "答" },
+                                { question: "新增问题", answer: "新增答案" }
+                            ]
+                        })
                     })
                 })
             );
