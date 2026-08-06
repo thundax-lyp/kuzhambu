@@ -10,12 +10,17 @@ const mocks = vi.hoisted(() => ({
     confirmDanger: vi.fn(),
     createQaSessionExport: vi.fn(),
     deleteQaSession: vi.fn(),
+    getCurrentUserInfo: vi.fn(),
     getKnowledgeHealth: vi.fn(),
     getQaSession: vi.fn(),
     pageQaSessions: vi.fn(),
     pageKnowledgeSyncItems: vi.fn(),
     rebuildKnowledge: vi.fn(),
     createKnowledgeSync: vi.fn()
+}));
+
+vi.mock("@/service/current-user-service", () => ({
+    getCurrentUserInfo: mocks.getCurrentUserInfo
 }));
 
 vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
@@ -80,6 +85,10 @@ describe("QaConsolePage", () => {
             knowledgeBaseName: "kuzhambu-qa",
             provider: "FASTGPT",
             status: "AVAILABLE"
+        });
+        mocks.getCurrentUserInfo.mockResolvedValue({
+            id: "9001",
+            loginName: "qa-admin"
         });
         mocks.getQaSession.mockResolvedValue({
             id: "2001",
@@ -266,7 +275,7 @@ describe("QaConsolePage", () => {
         await waitFor(() => {
             expect(mocks.createQaSessionExport.mock.calls[0]?.[0]).toEqual({
                 format: "CSV",
-                requesterUserId: "1001",
+                requesterUserId: "9001",
                 sessionId: "2001"
             });
         });
@@ -340,7 +349,7 @@ describe("QaConsolePage", () => {
         );
         await waitFor(() => {
             expect(mocks.deleteQaSession.mock.calls[0]?.[0]).toEqual({
-                requesterUserId: "1001",
+                requesterUserId: "9001",
                 sessionId: "2001"
             });
         });

@@ -1,12 +1,20 @@
-import { Table, Tag, Typography } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import type {
-    KnowledgeSyncItemPageRecord,
-    KnowledgeSyncItemRecord
-} from "@/pages/discovery/qa-console/qa-console-types";
-import { KuzhambuButton, KuzhambuSelect, KuzhambuSpace, KuzhambuCard } from "@/components";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { App, Tag, Typography } from "antd";
+import { useState } from "react";
+import {
+    KuzhambuButton,
+    KuzhambuCard,
+    KuzhambuSelect,
+    KuzhambuSpace,
+    KuzhambuTable,
+    type KuzhambuTableProps
+} from "@/components";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import * as service from "@/pages/discovery/qa-console/qa-console-service";
+import type { KnowledgeSyncItemRecord } from "@/pages/discovery/qa-console/qa-console-types";
 
 const { Text } = Typography;
+const DEFAULT_PAGE_SIZE = 10;
 
 const CONTENT_TYPE_OPTIONS = [{ label: "三才图会", value: "SANCAI_ENTRY" }];
 
@@ -61,42 +69,64 @@ const formatSyncItemKey = (record: KnowledgeSyncItemRecord) => {
     return record.sourceId ?? `${record.contentType ?? "UNKNOWN"}-${record.contentId ?? "0"}`;
 };
 
-interface QaSyncTableProps {
-    contentType?: string;
-    loading: boolean;
-    onContentTypeChange: (value?: string) => void;
-    onPageChange: (pageNo: number) => void;
-    onQuery: () => void;
-    onRebuild: () => void;
-    onSyncItem: (record: KnowledgeSyncItemRecord) => void;
-    onSyncStatusChange: (value?: string) => void;
-    pageData?: KnowledgeSyncItemPageRecord;
-    pageNo: number;
-    pageSize: number;
-    rebuildLoading: boolean;
-    syncItems: KnowledgeSyncItemRecord[];
-    syncLoading: boolean;
-    syncStatus?: string;
-}
+export const QaSyncTable = () => {
+    const { message: messageApi } = App.useApp();
+    const confirm = useKuzhambuConfirm();
+    const [contentType, setContentType] = useState<string | undefined>("SANCAI_ENTRY");
+    const [syncStatus, setSyncStatus] = useState<string | undefined>();
+    const [query, setQuery] = useState<service.KnowledgeSyncItemPageQuery>({
+        contentType: "SANCAI_ENTRY",
+        pageNo: 1,
+        pageSize: DEFAULT_PAGE_SIZE,
+        syncStatus: null
+    });
+    const syncPageQuery = useQuery({
+        queryFn: () => service.pageKnowledgeSyncItems(query),
+        queryKey: ["discovery-qa-console", "sync-page", query]
+    });
+    const syncKnowledgeMutation = useMutation({
+        mutationFn: service.createKnowledgeSync,
+        onSuccess: async () => {
+            await syncPageQuery.refetch();
+            messageApi.success("知识文档同步完成");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "知识文档同步失败");
+        }
+    });
+    const rebuildMutation = useMutation({
+        mutationFn: service.rebuildKnowledge,
+        onSuccess: async () => {
+            await syncPageQuery.refetch();
+            messageApi.success("知识库全量同步已完成");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "知识库全量同步失败");
+        }
+    });
+    const pageData = syncPageQuery.data;
+    const syncItems = pageData?.records ?? [];
 
-export const QaSyncTable = ({
-    contentType,
-    loading,
-    onContentTypeChange,
-    onPageChange,
-    onQuery,
-    onRebuild,
-    onSyncItem,
-    onSyncStatusChange,
-    pageData,
-    pageNo,
-    pageSize,
-    rebuildLoading,
-    syncItems,
-    syncLoading,
-    syncStatus
-}: QaSyncTableProps) => {
-    const columns: ColumnsType<KnowledgeSyncItemRecord> = [
+    const querySyncItems = () => {
+        setQuery({
+            contentType: contentType?.trim() || undefined,
+            pageNo: 1,
+            pageSize: DEFAULT_PAGE_SIZE,
+            syncStatus: syncStatus?.trim() || null
+        });
+    };
+
+    const confirmRebuild = () => {
+        confirm.danger({
+            title: "全量同步知识库",
+            message: "确认重新同步全部知识文档？",
+            description: "该操作会更新知识条目，并删除已不满足同步条件的 Provider 数据。",
+            okText: "全部同步",
+            onConfirm: () => rebuildMutation.mutateAsync({})
+        });
+    };
+
+    const columns: KuzhambuTableProps<KnowledgeSyncItemRecord>["columns"] = [
         {
             title: "内容类型",
             dataIndex: "contentType",
@@ -107,7 +137,6 @@ export const QaSyncTable = ({
         {
             title: "标题",
             key: "title",
-            width: 260,
             render: (_, record) => formatSyncTitle(record)
         },
         {
@@ -134,18 +163,21 @@ export const QaSyncTable = ({
             render: (value?: number | null) => formatDate(value)
         },
         {
-            fixed: "right",
             key: "actions",
-            render: (_, record) => (
-                <KuzhambuButton
-                    testId="discovery-qa-console-qa-console-sync-button"
-                    loading={syncLoading}
-                    onClick={() => onSyncItem(record)}
-                    size="small"
-                >
-                    同步
-                </KuzhambuButton>
-            )
+            options: (record) => [
+                {
+                    key: "sync",
+                    text: "同步",
+                    testId: "discovery-qa-console-qa-console-sync-button",
+                    disabled: syncKnowledgeMutation.isPending,
+                    onClick: () =>
+                        syncKnowledgeMutation.mutate({
+                            contentId: record.contentId ?? "",
+                            contentType: record.contentType ?? "",
+                            currentVersionNo: record.currentVersionNo ?? null
+                        })
+                }
+            ]
         }
     ];
 
@@ -166,7 +198,7 @@ export const QaSyncTable = ({
                                 options={CONTENT_TYPE_OPTIONS}
                                 placeholder="全部类型"
                                 value={contentType}
-                                onChange={onContentTypeChange}
+                                onChange={setContentType}
                                 style={{ width: 180 }}
                             />
                         </label>
@@ -178,14 +210,14 @@ export const QaSyncTable = ({
                                 options={SYNC_STATUS_OPTIONS}
                                 placeholder="全部状态"
                                 value={syncStatus}
-                                onChange={onSyncStatusChange}
+                                onChange={setSyncStatus}
                                 style={{ width: 160 }}
                             />
                         </label>
                         <KuzhambuButton
                             testId="discovery-qa-console-qa-console-query-sync-button"
-                            loading={loading}
-                            onClick={onQuery}
+                            loading={syncPageQuery.isFetching}
+                            onClick={querySyncItems}
                             type="primary"
                         >
                             查询
@@ -193,8 +225,8 @@ export const QaSyncTable = ({
                         <KuzhambuButton
                             testId="discovery-qa-console-qa-console-rebuild-knowledge-base-button"
                             danger
-                            loading={rebuildLoading}
-                            onClick={onRebuild}
+                            loading={rebuildMutation.isPending}
+                            onClick={confirmRebuild}
                         >
                             全部同步
                         </KuzhambuButton>
@@ -202,19 +234,20 @@ export const QaSyncTable = ({
                 </KuzhambuSpace>
             </KuzhambuCard>
             <KuzhambuCard title="同步记录" size="small">
-                <Table
-                    aria-label="知识同步表格"
+                <KuzhambuTable
+                    ariaLabel="知识同步表格"
                     columns={columns}
                     dataSource={syncItems}
                     pagination={{
-                        current: pageData?.pageNo ?? pageNo,
-                        onChange: onPageChange,
-                        pageSize,
+                        current: pageData?.pageNo ?? query.pageNo ?? 1,
+                        onChange: (pageNo) => setQuery((current) => ({ ...current, pageNo })),
+                        pageSize: DEFAULT_PAGE_SIZE,
                         showTotal: (total) => `共 ${total} 条`,
                         showSizeChanger: false,
                         total: pageData?.totalCount ?? pageData?.count ?? 0
                     }}
                     rowKey={formatSyncItemKey}
+                    loading={syncPageQuery.isFetching}
                     scroll={{ x: 900 }}
                     size="small"
                 />

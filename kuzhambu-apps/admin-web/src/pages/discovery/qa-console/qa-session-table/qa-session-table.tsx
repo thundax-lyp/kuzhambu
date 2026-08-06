@@ -1,15 +1,23 @@
-import { DatePicker, Input, Table, Tag, Typography } from "antd";
-import type { ColumnsType } from "antd/es/table";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { DatePicker, Input, Tag, Typography } from "antd";
 import type { Dayjs } from "dayjs";
-import { KuzhambuButton, KuzhambuSpace, KuzhambuCard } from "@/components";
-
-import type {
-    DiscoveryQaSessionDetailRecord,
-    DiscoveryQaSessionPageRecord
-} from "@/pages/discovery/qa-console/qa-console-types";
+import { useState } from "react";
+import {
+    KuzhambuButton,
+    KuzhambuCard,
+    KuzhambuSpace,
+    KuzhambuTable,
+    type KuzhambuTableProps
+} from "@/components";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import * as service from "@/pages/discovery/qa-console/qa-console-service";
+import type { DiscoveryQaSessionDetailRecord } from "@/pages/discovery/qa-console/qa-console-types";
+import * as currentUserService from "@/service/current-user-service";
+import { QaSessionDetailDrawer } from "@/pages/discovery/qa-console/qa-session-detail-drawer";
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
+const DEFAULT_PAGE_SIZE = 10;
 
 const formatSessionStatus = (value?: string | null) => {
     if (value === "OPEN") {
@@ -35,53 +43,92 @@ const formatDate = (value?: number | string | null) => {
     return `${year}-${month}-${day}`;
 };
 
-interface QaSessionTableProps {
-    deleteLoading: boolean;
-    exportLoading: boolean;
-    loading: boolean;
-    onDelete: (sessionId: string) => void;
-    onExport: (sessionId: string) => void;
-    onLoad: () => void;
-    onOpen: (sessionId: string) => void;
-    onPageChange: (pageNo: number) => void;
-    onRangeChange: (range: [Dayjs | null, Dayjs | null] | null) => void;
-    onTitleChange: (title: string) => void;
-    operationText: string | null;
-    pageData?: DiscoveryQaSessionPageRecord;
-    pageNo: number;
-    pageSize: number;
-    range: [Dayjs | null, Dayjs | null] | null;
-    rows: DiscoveryQaSessionDetailRecord[];
-    sessionLoading: boolean;
-    title: string;
-}
+export const QaSessionTable = () => {
+    const confirm = useKuzhambuConfirm();
+    const [title, setTitle] = useState("");
+    const [range, setRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+    const [query, setQuery] = useState<service.DiscoveryQaSessionPageQuery>({
+        openedAtEnd: null,
+        openedAtStart: null,
+        pageNo: 1,
+        pageSize: DEFAULT_PAGE_SIZE,
+        title: null
+    });
+    const [detailSessionId, setDetailSessionId] = useState<string | null>(null);
+    const [operationText, setOperationText] = useState<string | null>(null);
+    const currentUserQuery = useQuery({
+        queryFn: currentUserService.getCurrentUserInfo,
+        queryKey: ["current-user", "info"]
+    });
+    const requesterUserId = currentUserQuery.data?.id ?? null;
+    const sessionPageQuery = useQuery({
+        queryFn: () => service.pageQaSessions(query),
+        queryKey: ["discovery-qa-console", "session-page", query]
+    });
+    const deleteSessionMutation = useMutation({
+        mutationFn: service.deleteQaSession,
+        onSuccess: async (_, command) => {
+            if (detailSessionId === command.sessionId) {
+                setDetailSessionId(null);
+            }
+            setOperationText(`会话 ${command.sessionId} 已删除`);
+            await sessionPageQuery.refetch();
+        },
+        onError: (error) => {
+            setOperationText(error instanceof Error ? error.message : "会话删除失败");
+        }
+    });
+    const exportSessionMutation = useMutation({
+        mutationFn: service.createQaSessionExport,
+        onSuccess: (record, command) => {
+            const exportName = record.filename ?? record.exportStatus ?? "-";
+            setOperationText(`会话 ${command.sessionId} 导出已创建：${exportName}`);
+        },
+        onError: (error) => {
+            setOperationText(error instanceof Error ? error.message : "会话导出失败");
+        }
+    });
+    const pageData = sessionPageQuery.data;
+    const rows = pageData?.records ?? [];
 
-export const QaSessionTable = ({
-    deleteLoading,
-    exportLoading,
-    loading,
-    onDelete,
-    onExport,
-    onLoad,
-    onOpen,
-    onPageChange,
-    onRangeChange,
-    onTitleChange,
-    operationText,
-    pageData,
-    pageNo,
-    pageSize,
-    range,
-    rows,
-    sessionLoading,
-    title
-}: QaSessionTableProps) => {
-    const columns: ColumnsType<DiscoveryQaSessionDetailRecord> = [
+    const querySessions = () => {
+        setQuery({
+            openedAtEnd: range?.[1]?.endOf("day").toISOString() ?? null,
+            openedAtStart: range?.[0]?.startOf("day").toISOString() ?? null,
+            pageNo: 1,
+            pageSize: DEFAULT_PAGE_SIZE,
+            title: title.trim() || null
+        });
+        setDetailSessionId(null);
+    };
+
+    const confirmDeleteSession = (sessionId: string) => {
+        if (requesterUserId === null) {
+            setOperationText("当前管理员信息尚未加载完成");
+            return;
+        }
+        confirm.danger({
+            title: "删除问答会话",
+            message: `确认删除会话 ${sessionId}？`,
+            description: "删除后 Portal 不再展示该会话，Admin 仍保留审计查看和导出入口。",
+            okText: "删除",
+            onConfirm: () => deleteSessionMutation.mutateAsync({ requesterUserId, sessionId })
+        });
+    };
+
+    const exportSession = (sessionId: string) => {
+        if (requesterUserId === null) {
+            setOperationText("当前管理员信息尚未加载完成");
+            return;
+        }
+        exportSessionMutation.mutate({ format: "CSV", requesterUserId, sessionId });
+    };
+
+    const columns: KuzhambuTableProps<DiscoveryQaSessionDetailRecord>["columns"] = [
         {
             title: "标题",
             dataIndex: "title",
             key: "title",
-            width: 220,
             render: (value?: string | null) => value ?? "-"
         },
         {
@@ -110,47 +157,37 @@ export const QaSessionTable = ({
             )
         },
         {
-            fixed: "right",
             key: "actions",
-            render: (_, record) => (
-                <KuzhambuSpace size={8}>
-                    <KuzhambuButton
-                        testId="discovery-qa-console-qa-console-view-session-button"
-                        loading={sessionLoading}
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            onOpen(String(record.id ?? ""));
-                        }}
-                        size="small"
-                    >
-                        查看
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="discovery-qa-console-qa-console-export-session-button"
-                        loading={exportLoading}
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            onExport(String(record.id ?? ""));
-                        }}
-                        size="small"
-                    >
-                        导出
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="discovery-qa-console-qa-console-delete-session-button"
-                        danger
-                        disabled={record.status === "REMOVED"}
-                        loading={deleteLoading}
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            onDelete(String(record.id ?? ""));
-                        }}
-                        size="small"
-                    >
-                        删除
-                    </KuzhambuButton>
-                </KuzhambuSpace>
-            )
+            options: (record) => {
+                const sessionId = String(record.id ?? "");
+                return [
+                    {
+                        key: "view",
+                        text: "查看",
+                        testId: "discovery-qa-console-qa-console-view-session-button",
+                        onClick: () => setDetailSessionId(sessionId)
+                    },
+                    {
+                        key: "export",
+                        text: "导出",
+                        testId: "discovery-qa-console-qa-console-export-session-button",
+                        disabled: exportSessionMutation.isPending || requesterUserId === null,
+                        onClick: () => exportSession(sessionId)
+                    },
+                    { key: "delete-divider", type: "divider" },
+                    {
+                        key: "delete",
+                        text: "删除",
+                        type: "danger",
+                        testId: "discovery-qa-console-qa-console-delete-session-button",
+                        disabled:
+                            record.status === "REMOVED" ||
+                            deleteSessionMutation.isPending ||
+                            requesterUserId === null,
+                        onClick: () => confirmDeleteSession(sessionId)
+                    }
+                ];
+            }
         }
     ];
 
@@ -164,22 +201,18 @@ export const QaSessionTable = ({
                             allowClear
                             aria-label="标题"
                             value={title}
-                            onChange={(event) => onTitleChange(event.target.value)}
+                            onChange={(event) => setTitle(event.target.value)}
                             style={{ width: 220 }}
                         />
                     </label>
                     <label className="qa-console-form-item">
                         <Text type="secondary">创建时间</Text>
-                        <RangePicker
-                            aria-label="创建时间"
-                            value={range}
-                            onChange={(value) => onRangeChange(value)}
-                        />
+                        <RangePicker aria-label="创建时间" value={range} onChange={setRange} />
                     </label>
                     <KuzhambuButton
                         testId="discovery-qa-console-qa-console-load-session-button"
-                        loading={loading}
-                        onClick={onLoad}
+                        loading={sessionPageQuery.isFetching}
+                        onClick={querySessions}
                         type="primary"
                     >
                         查询
@@ -190,24 +223,29 @@ export const QaSessionTable = ({
             <KuzhambuCard title="会话记录" size="small">
                 <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                     {operationText ? <Text type="secondary">{operationText}</Text> : null}
-                    <Table
-                        aria-label="问答会话表格"
+                    <KuzhambuTable
+                        ariaLabel="问答会话表格"
                         columns={columns}
                         dataSource={rows}
                         pagination={{
-                            current: pageData?.pageNo ?? pageNo,
-                            onChange: onPageChange,
-                            pageSize,
+                            current: pageData?.pageNo ?? query.pageNo ?? 1,
+                            onChange: (pageNo) => setQuery((current) => ({ ...current, pageNo })),
+                            pageSize: DEFAULT_PAGE_SIZE,
                             showTotal: (total) => `共 ${total} 条`,
                             showSizeChanger: false,
                             total: pageData?.totalCount ?? pageData?.count ?? 0
                         }}
                         rowKey={(record) => record.id ?? "-"}
+                        loading={sessionPageQuery.isFetching}
                         scroll={{ x: 780 }}
                         size="small"
                     />
                 </KuzhambuSpace>
             </KuzhambuCard>
+            <QaSessionDetailDrawer
+                onClose={() => setDetailSessionId(null)}
+                sessionId={detailSessionId}
+            />
         </KuzhambuSpace>
     );
 };
