@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.ai.application.config.service;
 
 import com.thundax.kuzhambu.ai.application.config.command.BuildPromptOptimizationSuggestionCommand;
+import com.thundax.kuzhambu.ai.application.config.command.ChangePromptTemplateStatusCommand;
+import com.thundax.kuzhambu.ai.application.config.command.DeletePromptTemplateCommand;
 import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand;
 import com.thundax.kuzhambu.ai.application.config.command.RollbackPromptVersionCommand;
 import com.thundax.kuzhambu.ai.application.config.command.ValidatePromptVariablesCommand;
@@ -26,6 +28,10 @@ public interface PromptApplicationService {
     List<PromptTemplate> list(ListPromptsQuery query);
 
     PromptTemplateId save(PromptTemplateSaveCommand command);
+
+    void changeStatus(ChangePromptTemplateStatusCommand command);
+
+    void delete(DeletePromptTemplateCommand command);
 
     PromptVersionResult getCurrentVersion(GetCurrentPromptVersionQuery query);
 

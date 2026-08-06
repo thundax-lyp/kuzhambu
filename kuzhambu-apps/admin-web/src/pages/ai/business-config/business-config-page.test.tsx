@@ -67,6 +67,18 @@ const capabilities = [
 
 const models = [
     {
+        id: "900000",
+        apiSource: "OPENAI",
+        baseUrl: "https://example.test/v1",
+        modelName: "dall-e-3",
+        displayName: "DALL-E 3",
+        capabilities: ["image"],
+        defaultParamsJson: "{}",
+        description: "image only",
+        enabled: true,
+        registeredAt: "2026-07-01T00:00:00.000Z"
+    },
+    {
         id: "900001",
         apiSource: "OPENAI",
         baseUrl: "https://example.test/v1",
@@ -159,6 +171,34 @@ describe("BusinessConfigPage", () => {
                 expect.anything()
             );
         });
+    });
+
+    it("keeps a create draft when option data refreshes", async () => {
+        vi.mocked(service.listBusinessConfigCapabilities)
+            .mockResolvedValueOnce(capabilities)
+            .mockResolvedValue([
+                ...capabilities,
+                {
+                    capability: "CLASSICS_TRANSLATION",
+                    name: "古籍翻译",
+                    requiredTags: ["text"],
+                    outputMode: "TEXT",
+                    enabled: true,
+                    priority: 20
+                }
+            ]);
+        renderPage();
+        await screen.findByText("古籍摘要");
+
+        fireEvent.click(screen.getByRole("button", { name: /新增业务配置/ }));
+        const paramsInput = await screen.findByLabelText("默认参数 JSON");
+        fireEvent.change(paramsInput, { target: { value: '{"temperature":0.8}' } });
+        fireEvent.click(screen.getByTestId("ai-business-config-refresh-button"));
+
+        await waitFor(() => {
+            expect(service.listBusinessConfigCapabilities).toHaveBeenCalledTimes(2);
+        });
+        expect(paramsInput).toHaveValue('{"temperature":0.8}');
     });
 
     it("keeps business capability immutable while editing a config", async () => {

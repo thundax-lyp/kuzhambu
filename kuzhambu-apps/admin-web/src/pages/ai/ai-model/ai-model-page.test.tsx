@@ -7,20 +7,27 @@ import * as service from "./ai-model-service";
 
 vi.mock("./ai-model-service", () => ({
     changeAiModel: vi.fn(),
+    changeAiModels: vi.fn(),
     createAiModel: vi.fn(),
     deleteAiModel: vi.fn(),
+    deleteAiModels: vi.fn(),
     listAiModels: vi.fn()
 }));
 
 vi.mock("@/components/kuzhambu-drawer", () => {
     const mockDrawer = ({
         children,
-        footer,
+        footerActions,
         open,
         title
     }: {
         children: React.ReactNode;
-        footer?: React.ReactNode;
+        footerActions?: Array<{
+            action: () => void;
+            disabled?: boolean;
+            testId?: string;
+            title: React.ReactNode;
+        }>;
         open?: boolean;
         title?: React.ReactNode;
     }) =>
@@ -28,7 +35,17 @@ vi.mock("@/components/kuzhambu-drawer", () => {
             <div>
                 <h3>{title}</h3>
                 {children}
-                {footer}
+                {footerActions?.map((action) => (
+                    <button
+                        key={action.testId}
+                        type="button"
+                        data-testid={action.testId}
+                        disabled={action.disabled}
+                        onClick={action.action}
+                    >
+                        {action.title}
+                    </button>
+                ))}
             </div>
         ) : null;
 
@@ -101,7 +118,7 @@ describe("AiModelPage", () => {
         expect(screen.getByRole("button", { name: "编辑 GPT 4o" })).toBeDisabled();
     });
 
-    it("updates selected hidden models after search filtering", async () => {
+    it("clears selected models after search filtering", async () => {
         vi.mocked(service.listAiModels).mockResolvedValue([
             models[0],
             {
@@ -126,15 +143,76 @@ describe("AiModelPage", () => {
             target: { value: "Claude" }
         });
         expect(screen.queryByText("GPT 4o")).not.toBeInTheDocument();
+        expect(screen.getByTestId("ai-model-disable-button")).toBeDisabled();
 
         fireEvent.click(screen.getByTestId("ai-model-disable-button"));
 
+        expect(service.changeAiModel).not.toHaveBeenCalled();
+    });
+
+    it("keeps failed models selected after a partial batch status update", async () => {
+        const secondaryModel = {
+            id: "2002",
+            apiSource: "BYTEDANCE",
+            baseUrl: "https://api.secondary.example",
+            apiKeyConfigured: true,
+            modelName: "secondary-model",
+            displayName: "Secondary model",
+            capabilities: ["TEXT2TEXT"],
+            defaultParamsJson: "{}",
+            description: "secondary model",
+            enabled: true,
+            registeredAt: "2026-07-02T00:00:00.000Z"
+        };
+        vi.mocked(service.listAiModels).mockResolvedValue([models[0], secondaryModel]);
+        vi.mocked(service.changeAiModels).mockResolvedValue([
+            { status: "fulfilled", value: models[0] },
+            { status: "rejected", reason: new Error("update failed") }
+        ]);
+        renderPage();
+
+        await screen.findByText("Secondary model");
+        fireEvent.click(screen.getAllByRole("checkbox")[1]);
+        fireEvent.click(screen.getAllByRole("checkbox")[2]);
+        fireEvent.click(screen.getByTestId("ai-model-disable-button"));
+
         await waitFor(() => {
-            expect(service.changeAiModel).toHaveBeenCalledWith(
+            expect(service.changeAiModels).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    id: "2001",
-                    modelName: "gpt-4o",
-                    enabled: false
+                    commands: expect.arrayContaining([
+                        expect.objectContaining({ id: "2001", enabled: false }),
+                        expect.objectContaining({ id: "2002", enabled: false })
+                    ])
+                }),
+                expect.anything()
+            );
+            expect(screen.getByText("已选择 1 项")).toBeInTheDocument();
+        });
+        expect(await screen.findByText("批量禁用完成：成功 1，失败 1")).toBeInTheDocument();
+    });
+
+    it("owns create submission inside the edit drawer", async () => {
+        renderPage();
+
+        await screen.findByText("GPT 4o");
+        fireEvent.click(screen.getByRole("button", { name: /新增模型/ }));
+        fireEvent.change(screen.getByLabelText("AI模型名称"), {
+            target: { value: "New model" }
+        });
+        fireEvent.change(screen.getByLabelText("AI模型服务地址"), {
+            target: { value: "https://api.new.example/v1" }
+        });
+        fireEvent.change(screen.getByLabelText("AI模型标识"), {
+            target: { value: "new-model" }
+        });
+        fireEvent.click(screen.getByTestId("ai-model-save-button"));
+
+        await waitFor(() => {
+            expect(service.createAiModel).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    baseUrl: "https://api.new.example/v1",
+                    displayName: "New model",
+                    modelName: "new-model"
                 }),
                 expect.anything()
             );

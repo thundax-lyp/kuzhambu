@@ -1,16 +1,20 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.assembler;
 
 import com.thundax.kuzhambu.ai.application.config.command.BuildPromptOptimizationSuggestionCommand;
+import com.thundax.kuzhambu.ai.application.config.command.ChangePromptTemplateStatusCommand;
+import com.thundax.kuzhambu.ai.application.config.command.DeletePromptTemplateCommand;
 import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand;
 import com.thundax.kuzhambu.ai.application.config.command.RollbackPromptVersionCommand;
 import com.thundax.kuzhambu.ai.application.config.command.ValidatePromptVariablesCommand;
 import com.thundax.kuzhambu.ai.application.config.query.GetCurrentPromptVersionQuery;
 import com.thundax.kuzhambu.ai.application.config.query.GetPromptByCapabilityQuery;
 import com.thundax.kuzhambu.ai.application.config.query.GetPromptQuery;
+import com.thundax.kuzhambu.ai.application.config.query.ListPromptCapabilityVariablesQuery;
 import com.thundax.kuzhambu.ai.application.config.query.ListPromptVariablesQuery;
 import com.thundax.kuzhambu.ai.application.config.query.ListPromptVersionsQuery;
 import com.thundax.kuzhambu.ai.application.config.query.ListPromptsQuery;
 import com.thundax.kuzhambu.ai.application.config.query.PromptVersionCompareQuery;
+import com.thundax.kuzhambu.ai.application.config.result.PromptCapabilityVariableResult;
 import com.thundax.kuzhambu.ai.application.config.result.PromptVersionResult;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVariableIdCodec;
@@ -34,6 +38,20 @@ public final class PromptInterfaceAssembler {
 
     public static GetPromptQuery toGetPromptQuery(PromptTemplateId templateId) {
         return new GetPromptQuery(templateId);
+    }
+
+    public static ChangePromptTemplateStatusCommand toChangeStatusCommand(
+            PromptRequests.TemplateStatusRequest request) {
+        return new ChangePromptTemplateStatusCommand(toTemplateId(request.getId()), request.getEnabled());
+    }
+
+    public static DeletePromptTemplateCommand toDeleteCommand(PromptRequests.TemplateIdRequest request) {
+        return new DeletePromptTemplateCommand(toTemplateId(request.getId()));
+    }
+
+    public static ListPromptCapabilityVariablesQuery toListCapabilityVariablesQuery(
+            PromptRequests.CapabilityVariableListRequest request) {
+        return new ListPromptCapabilityVariablesQuery(toCapability(request.getCapability()));
     }
 
     public static GetPromptByCapabilityQuery toGetPromptByCapabilityQuery(PromptRequests.TemplateQueryRequest request) {
@@ -159,6 +177,14 @@ public final class PromptInterfaceAssembler {
                 .variableName(variable.getVariableName())
                 .required(variable.isRequired())
                 .description(variable.getDescription())
+                .build();
+    }
+
+    public static PromptResponses.CapabilityVariableResponse toResponse(PromptCapabilityVariableResult result) {
+        return PromptResponses.CapabilityVariableResponse.builder()
+                .variableName(result.variableName())
+                .required(result.required())
+                .description(result.description())
                 .build();
     }
 

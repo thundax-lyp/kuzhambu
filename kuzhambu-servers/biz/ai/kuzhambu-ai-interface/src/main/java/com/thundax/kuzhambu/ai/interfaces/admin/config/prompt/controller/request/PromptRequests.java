@@ -31,6 +31,38 @@ public final class PromptRequests {
 
     @Getter
     @Setter
+    @Schema(name = "PromptTemplateStatusRequest", description = "提示词模板状态请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TemplateStatusRequest implements Serializable {
+
+        @NotNull
+        @Schema(name = "id", description = "模板ID")
+        @JsonProperty(value = "id")
+        private Long id;
+
+        @NotNull
+        @Schema(name = "enabled", description = "是否启用")
+        @JsonProperty(value = "enabled")
+        private Boolean enabled;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "PromptCapabilityVariableListRequest", description = "能力变量目录请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class CapabilityVariableListRequest implements Serializable {
+
+        @NotBlank
+        @Size(max = 64)
+        @Schema(name = "capability", description = "能力编码")
+        @JsonProperty(value = "capability")
+        private String capability;
+    }
+
+    @Getter
+    @Setter
     @Schema(name = "PromptTemplateQueryRequest", description = "提示词模板查询请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

@@ -96,4 +96,21 @@ public final class PromptResponses {
         @JsonProperty(value = "description")
         private String description;
     }
+
+    @Getter
+    @Builder
+    @Schema(name = "PromptCapabilityVariableResponse", description = "能力变量目录响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class CapabilityVariableResponse implements Serializable {
+
+        @JsonProperty(value = "variableName")
+        private String variableName;
+
+        @JsonProperty(value = "required")
+        private Boolean required;
+
+        @JsonProperty(value = "description")
+        private String description;
+    }
 }

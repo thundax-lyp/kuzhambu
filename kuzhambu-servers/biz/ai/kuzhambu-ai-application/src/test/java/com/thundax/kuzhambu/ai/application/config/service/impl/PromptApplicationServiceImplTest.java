@@ -64,13 +64,74 @@ class PromptApplicationServiceImplTest {
         assertThat(repository.insertVersionCount).isEqualTo(1);
     }
 
+    @Test
+    void saveTemplateShouldRejectVariableOutsideCapabilityCatalog() {
+        PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(new RecordingPromptRepository());
+        PromptTemplateSaveCommand command = saveCommand();
+        command.setVariables(List.of(new PromptTemplateSaveCommand.VariableItem("unknownName", false, null, 1)));
+
+        assertThatThrownBy(() -> service.save(command))
+                .isInstanceOf(BizException.class)
+                .hasMessageContaining("Prompt variable is not supported by capability: unknownName");
+    }
+
+    @Test
+    void saveTemplateShouldCanonicalizeOptionalVariableInVersionSnapshot() {
+        RecordingPromptRepository repository = new RecordingPromptRepository();
+        PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(repository);
+        PromptTemplateSaveCommand command = saveCommand();
+        command.setMessageTemplatesJson("[{\"role\":\"user\",\"content\":\"{{contentType}} {{title}}\"}]");
+        command.setVariablesSnapshotJson("[{\"variableName\":\"title\",\"required\":true}]");
+        command.setVariables(List.of(
+                new PromptTemplateSaveCommand.VariableItem("contentType", true, "内容类型", 1),
+                new PromptTemplateSaveCommand.VariableItem("title", true, "wrong", 2)));
+
+        service.save(command);
+
+        assertThat(repository.lastInsertedVersion.getVariablesSnapshotJson())
+                .contains("\"variableName\":\"title\"")
+                .contains("\"required\":false")
+                .contains("\"description\":\"内容标题\"");
+    }
+
+    @Test
+    void saveTemplateShouldRejectMissingRequiredCapabilityVariable() {
+        PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(new RecordingPromptRepository());
+        PromptTemplateSaveCommand command = saveCommand();
+        command.setMessageTemplatesJson("[{\"role\":\"user\",\"content\":\"{{title}}\"}]");
+        command.setVariables(List.of(new PromptTemplateSaveCommand.VariableItem("title", false, null, 1)));
+
+        assertThatThrownBy(() -> service.save(command))
+                .isInstanceOf(BizException.class)
+                .hasMessageContaining("Prompt required capability variables are missing: [contentType]");
+    }
+
+    @Test
+    void saveTemplateShouldCanonicalizeSnapshotWhenVariablesAreOmitted() {
+        RecordingPromptRepository repository = new RecordingPromptRepository();
+        PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(repository);
+        PromptTemplateSaveCommand command = saveCommand();
+        command.setVariables(Collections.emptyList());
+        command.setVariablesSnapshotJson(
+                "[{\"variableName\":\"contentType\",\"required\":false,\"description\":\"wrong\",\"priority\":3}]");
+
+        service.save(command);
+
+        assertThat(repository.lastInsertedVersion.getVariablesSnapshotJson())
+                .contains("\"variableName\":\"contentType\"")
+                .contains("\"required\":true")
+                .contains("\"description\":\"内容类型\"")
+                .contains("\"priority\":3");
+    }
+
     private PromptTemplateSaveCommand saveCommand() {
         PromptTemplateSaveCommand command = new PromptTemplateSaveCommand();
         command.setId(PromptTemplateIdCodec.toDomain(1001L));
         command.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
         command.setName("summary prompt");
         command.setEnabled(true);
-        command.setMessageTemplatesJson("[{\"role\":\"user\",\"content\":\"请摘要\"}]");
+        command.setMessageTemplatesJson("[{\"role\":\"user\",\"content\":\"请摘要：{{contentType}}\"}]");
+        command.setVariables(List.of(new PromptTemplateSaveCommand.VariableItem("contentType", true, "内容类型", 1)));
         return command;
     }
 
@@ -144,10 +205,12 @@ class PromptApplicationServiceImplTest {
 
         private int insertVersionCount;
         private int replaceVariablesCount;
+        private PromptVersion lastInsertedVersion;
 
         @Override
         public PromptVersionId insertVersion(PromptVersion version) {
             insertVersionCount++;
+            lastInsertedVersion = version;
             return new PromptVersionId(2001L);
         }
 
