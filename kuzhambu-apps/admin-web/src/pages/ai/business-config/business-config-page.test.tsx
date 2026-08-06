@@ -157,7 +157,9 @@ describe("BusinessConfigPage", () => {
 
         fireEvent.click(screen.getByRole("button", { name: /新增业务配置/ }));
         expect(await screen.findByRole("heading", { name: "新增业务配置" })).toBeInTheDocument();
-        fireEvent.click(screen.getByRole("button", { name: /保存/ }));
+        const saveButton = screen.getByRole("button", { name: /保存/ });
+        await waitFor(() => expect(saveButton).toBeEnabled());
+        fireEvent.click(saveButton);
 
         await waitFor(() => {
             expect(service.createBusinessConfig).toHaveBeenCalledWith(
