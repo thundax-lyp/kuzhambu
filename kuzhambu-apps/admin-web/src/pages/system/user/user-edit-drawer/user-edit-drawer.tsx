@@ -293,7 +293,10 @@ export const UserEditDrawer = ({
         onSuccess: async (_, variables) => {
             await queryClient.refetchQueries({ queryKey: ["user", "page"] });
             const refreshedUser = queryClient
-                .getQueriesData<Page<UserRecord>>({ queryKey: ["user", "page"] })
+                .getQueriesData<Page<UserRecord>>({
+                    queryKey: ["user", "page"],
+                    type: "active"
+                })
                 .flatMap(([, page]) => page?.records ?? [])
                 .find((record) => record.id === variables.id);
             if (refreshedUser) {

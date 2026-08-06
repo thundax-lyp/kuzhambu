@@ -338,10 +338,12 @@ const PromptMarkdownEditor = ({
 
 const PromptVersionSection = ({
     canEdit,
-    template
+    template,
+    onRollback
 }: {
     canEdit: boolean;
     template: AiPromptTemplateRecord;
+    onRollback: (version: AiPromptVersionRecord) => void;
 }) => {
     const { message } = App.useApp();
     const confirm = useKuzhambuConfirm();
@@ -364,8 +366,9 @@ const PromptVersionSection = ({
     });
     const rollbackMutation = useMutation({
         mutationFn: service.changePromptVersionRollback,
-        onSuccess: async () => {
+        onSuccess: async (version) => {
             await queryClient.invalidateQueries({ queryKey: ["ai", "prompt"] });
+            onRollback(version);
             message.success("提示词版本已回滚");
         },
         onError: (error) => {
@@ -677,6 +680,17 @@ export const PromptEditDrawer = ({
         });
     };
 
+    const applyRolledBackVersion = (version: AiPromptVersionRecord) => {
+        const outputSchemaJson = formatJsonText(version.outputSchemaJson, TEXT_OUTPUT_SCHEMA);
+        form.setFieldsValue({
+            messageTemplatesJson: formatJsonText(version.messageTemplatesJson, EMPTY_JSON_ARRAY),
+            variablesSnapshotJson: formatJsonText(version.variablesSnapshotJson, EMPTY_JSON_ARRAY),
+            outputSchemaJson,
+            outputStructure: readPromptOutputStructure(outputSchemaJson),
+            changeSummary: ""
+        });
+    };
+
     const closeDrawer = () => {
         if (changeMutation.isPending) {
             return;
@@ -864,7 +878,13 @@ export const PromptEditDrawer = ({
                         </KuzhambuSpace>
                     </KuzhambuFormItem>
                 </KuzhambuForm>
-                {template ? <PromptVersionSection canEdit={canEdit} template={template} /> : null}
+                {template ? (
+                    <PromptVersionSection
+                        canEdit={canEdit}
+                        template={template}
+                        onRollback={applyRolledBackVersion}
+                    />
+                ) : null}
             </KuzhambuDrawer>
 
             <KuzhambuModal

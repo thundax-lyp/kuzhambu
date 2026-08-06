@@ -1,5 +1,5 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider, QueryObserver } from "@tanstack/react-query";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "antd";
@@ -101,6 +101,48 @@ describe("UserEditDrawer", () => {
 
         expect(screen.getByDisplayValue("草稿姓名")).toBeInTheDocument();
         expect(screen.queryByDisplayValue("服务端姓名")).not.toBeInTheDocument();
+    });
+
+    it("uses the refreshed active user page after avatar upload", async () => {
+        const queryClient = new QueryClient({
+            defaultOptions: { queries: { retry: false } }
+        });
+        const refreshedUser = { ...baseUser, avatar: "/avatar/new.png" };
+        queryClient.setQueryData(["user", "page", { pageNo: 1 }], {
+            records: [baseUser]
+        });
+        const activePageObserver = new QueryObserver(queryClient, {
+            queryKey: ["user", "page", { pageNo: 2 }],
+            queryFn: async () => ({ records: [refreshedUser] })
+        });
+        const unsubscribe = activePageObserver.subscribe(() => undefined);
+        vi.mocked(service.uploadAvatar).mockResolvedValue(true);
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <App>
+                    <UserEditDrawer
+                        open
+                        user={baseUser}
+                        currentUser={currentUser}
+                        departments={[baseUser.department!]}
+                        onClose={vi.fn()}
+                    />
+                </App>
+            </QueryClientProvider>
+        );
+
+        const fileInput = document.querySelector('input[type="file"]');
+        expect(fileInput).not.toBeNull();
+        fireEvent.change(fileInput!, {
+            target: { files: [new File(["avatar"], "avatar.png", { type: "image/png" })] }
+        });
+
+        await waitFor(() => expect(service.uploadAvatar).toHaveBeenCalledTimes(1));
+        await waitFor(() => {
+            expect(document.querySelector("img")?.getAttribute("src")).toContain("/avatar/new.png");
+        });
+        unsubscribe();
     });
 
     it("owns the edit mutation and closes after saving", async () => {

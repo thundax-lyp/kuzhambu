@@ -188,7 +188,11 @@ describe("AiModelPage", () => {
             );
             expect(screen.getByText("已选择 1 项")).toBeInTheDocument();
         });
-        expect(await screen.findByText("批量禁用完成：成功 1，失败 1")).toBeInTheDocument();
+        expect(
+            await screen.findByText(
+                "批量禁用完成：成功 1，失败 1；失败详情：Secondary model：update failed"
+            )
+        ).toBeInTheDocument();
     });
 
     it("owns create submission inside the edit drawer", async () => {
