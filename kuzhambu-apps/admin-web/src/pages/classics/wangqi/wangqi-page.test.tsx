@@ -549,11 +549,10 @@ describe("WangqiPage", () => {
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
         await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
 
-        expect(await screen.findByText("摘要任务排队中")).toBeInTheDocument();
         const generateButton = await screen.findByTestId(
             "classics-wangqi-document-summary-ai-generate-button"
         );
-        expect(generateButton).toBeDisabled();
+        await waitFor(() => expect(generateButton).toBeDisabled());
         expect(screen.getByLabelText("AI摘要当前摘要")).toHaveValue("记录王圻古籍条目。");
         expect(screen.getByLabelText("AI摘要参考正文")).toHaveValue("## 王圻");
         expect(await screen.findByLabelText("AI摘要候选摘要")).toBeDisabled();

@@ -322,6 +322,34 @@ describe("SancaiPage", () => {
         expect(taskButton.querySelector(".anticon-schedule")).toBeInTheDocument();
     }, 30000);
 
+    it("debounces entry searches before passing the keyword to the entry panel", async () => {
+        const user = userEvent.setup({ delay: null });
+
+        render(
+            <AdminQueryProvider>
+                <AntdApp>
+                    <SancaiPage />
+                </AntdApp>
+            </AdminQueryProvider>
+        );
+
+        await user.click(await screen.findByRole("link", { name: "打开门类 天文" }));
+        const volumeTable = await screen.findByLabelText("三才图会卷目表格");
+        await user.click(
+            await within(volumeTable).findByRole("link", { name: "打开卷目 天文卷一" })
+        );
+
+        const entryPanel = await screen.findByLabelText("三才图会条目面板");
+        expect(within(entryPanel).getByText("keyword:none")).toBeInTheDocument();
+
+        await user.type(screen.getByRole("textbox", { name: "搜索三才图会条目" }), "天地");
+
+        expect(within(entryPanel).getByText("keyword:none")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(within(entryPanel).getByText("keyword:天地")).toBeInTheDocument();
+        });
+    }, 30000);
+
     it("keeps entry batch selection scoped to the current page entries", async () => {
         const user = userEvent.setup();
         const firstPageEntries = [buildEntry("3001", "天地")];

@@ -184,7 +184,6 @@ export const SancaiEntryList = ({
         {
             title: "摘要",
             key: "summary",
-            width: 320,
             render: (_, entry) => <Text type="secondary">{readEntrySummary(entry)}</Text>
         },
         {
@@ -328,7 +327,6 @@ export const SancaiEntryList = ({
                 }}
                 rowKey={(entry) => String(entry.id ?? "")}
                 size="middle"
-                scroll={{ x: 760 }}
                 sortable
                 onSort={onSort}
             />

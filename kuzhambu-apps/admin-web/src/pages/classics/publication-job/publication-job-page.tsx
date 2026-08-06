@@ -1,17 +1,24 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import type { Key } from "react";
 import dayjs from "dayjs";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+    KuzhambuAlert,
     KuzhambuButton,
     KuzhambuListPage,
+    KuzhambuTable,
     type KuzhambuTableProps,
     KuzhambuTag
 } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { PublicationJobDetailDrawer } from "./publication-job-detail-drawer";
-import { readPublicationJobStatusLabel } from "./publication-job-constants";
+import {
+    PUBLICATION_JOB_RESULT_TAG_TYPES,
+    readPublicationContentTypeLabel,
+    readPublicationJobResultLabel,
+    readPublicationJobStatusLabel,
+    readPublicationJobTypeLabel
+} from "./publication-job-constants";
 import * as service from "./publication-job-service";
 import type { ClassicsPublicationJobQuery } from "./publication-job-service";
 import type { ClassicsPublicationJobRecord } from "./publication-job-types";
@@ -19,14 +26,7 @@ import type { ClassicsPublicationJobRecord } from "./publication-job-types";
 import "./publication-job-page.css";
 
 const normalizeKeyword = (value: string) => value.trim() || undefined;
-const JOB_TYPE_LABELS = { PUBLISH: "发布", OFFLINE: "下线" } as const;
-const RESULT_LABELS = { RUNNING: "执行中", FAILED: "失败", SUCCEEDED: "成功" } as const;
-const RESULT_TYPES = { RUNNING: "info", FAILED: "danger", SUCCEEDED: "success" } as const;
-const CONTENT_TYPE_LABELS = {
-    SANCAI_ENTRY: "三才图会",
-    WANGQI_DOCUMENT: "王琪",
-    MING_CUSTOMS: "明"
-} as const;
+const SEARCH_DEBOUNCE_MS = 500;
 const formatTime = (value?: string | null) =>
     value ? dayjs(value).format("YYYY-MM-DD HH:mm:ss") : "-";
 
@@ -37,16 +37,9 @@ export const PublicationJobPage = () => {
         pageSize: DEFAULT_PAGE_SIZE
     });
     const [detailJobId, setDetailJobId] = useState<string | null>(null);
-    const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const publicationJobPageQuery = useQuery({
         queryKey: ["classics", "publication-jobs", "page", query],
         queryFn: () => service.page(query),
-        retry: false
-    });
-    const publicationJobDetailQuery = useQuery({
-        queryKey: ["classics", "publication-jobs", "detail", detailJobId],
-        queryFn: () => service.get({ id: detailJobId || "" }),
-        enabled: detailJobId !== null,
         retry: false
     });
     const pageResult = publicationJobPageQuery.data;
@@ -56,30 +49,31 @@ export const PublicationJobPage = () => {
             {
                 title: "稿件",
                 key: "content",
-                width: 120,
                 render: (_, job) =>
-                    `${CONTENT_TYPE_LABELS[job.contentType]}｜${job.contentTitleSnapshot || `#${job.contentId}`}`
+                    `${readPublicationContentTypeLabel(job.contentType)}｜${job.contentTitleSnapshot || `#${job.contentId}`}`
             },
             {
                 title: "动作",
                 dataIndex: "jobType",
                 width: 80,
                 render: (value: ClassicsPublicationJobRecord["jobType"]) => (
-                    <KuzhambuTag type="accent">{JOB_TYPE_LABELS[value]}</KuzhambuTag>
+                    <KuzhambuTag type="accent">{readPublicationJobTypeLabel(value)}</KuzhambuTag>
                 )
             },
             {
                 title: "结果",
                 dataIndex: "jobResultStatus",
-                width: 60,
+                width: 100,
                 render: (value: ClassicsPublicationJobRecord["jobResultStatus"]) => (
-                    <KuzhambuTag type={RESULT_TYPES[value]}>{RESULT_LABELS[value]}</KuzhambuTag>
+                    <KuzhambuTag type={PUBLICATION_JOB_RESULT_TAG_TYPES[value]}>
+                        {readPublicationJobResultLabel(value)}
+                    </KuzhambuTag>
                 )
             },
             {
                 title: "里程碑",
                 dataIndex: "jobStatus",
-                width: 80,
+                width: 180,
                 render: (value: ClassicsPublicationJobRecord["jobStatus"]) => (
                     <KuzhambuTag type="info">{readPublicationJobStatusLabel(value)}</KuzhambuTag>
                 )
@@ -87,13 +81,13 @@ export const PublicationJobPage = () => {
             {
                 title: "尝试次数",
                 key: "attempts",
-                width: 60,
+                width: 100,
                 render: (_, job) => `${job.attemptCount}/${job.maxAttempts}`
             },
             {
                 title: "请求时间",
                 dataIndex: "requestedAt",
-                width: 80,
+                width: 180,
                 render: formatTime
             },
             {
@@ -112,6 +106,36 @@ export const PublicationJobPage = () => {
         []
     );
 
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            setQuery((currentQuery) => ({
+                ...currentQuery,
+                keyword: normalizeKeyword(searchText),
+                pageNo: DEFAULT_PAGE_NO
+            }));
+        }, SEARCH_DEBOUNCE_MS);
+        return () => window.clearTimeout(timeoutId);
+    }, [searchText]);
+
+    const table = (
+        <KuzhambuTable<ClassicsPublicationJobRecord>
+            dataSource={records}
+            rowKey="id"
+            pagination={{
+                current: pageResult?.pageNo || query.pageNo,
+                pageSize: pageResult?.pageSize || query.pageSize,
+                total: pageResult?.count ?? pageResult?.totalCount ?? 0,
+                pageSizeOptions: ["10", "20", "50", "100"],
+                showSizeChanger: true,
+                onChange: (pageNo, pageSize) =>
+                    setQuery((currentQuery) => ({ ...currentQuery, pageNo, pageSize }))
+            }}
+            columns={columns}
+            loading={publicationJobPageQuery.isFetching}
+            ariaLabel="发布任务列表"
+        />
+    );
+
     return (
         <>
             <KuzhambuListPage<ClassicsPublicationJobRecord>
@@ -124,11 +148,6 @@ export const PublicationJobPage = () => {
                 searchValue={searchText}
                 onSearchChange={(value) => {
                     setSearchText(value);
-                    setQuery((currentQuery) => ({
-                        ...currentQuery,
-                        keyword: normalizeKeyword(value),
-                        pageNo: DEFAULT_PAGE_NO
-                    }));
                 }}
                 pageActions={
                     <KuzhambuButton
@@ -140,29 +159,35 @@ export const PublicationJobPage = () => {
                         刷新
                     </KuzhambuButton>
                 }
-                dataSource={records}
-                rowKey="id"
-                rowSelection={{
-                    selectedRowKeys,
-                    onChange: setSelectedRowKeys
-                }}
-                pagination={{
-                    current: pageResult?.pageNo || query.pageNo,
-                    pageSize: pageResult?.pageSize || query.pageSize,
-                    total: pageResult?.count ?? pageResult?.totalCount ?? 0,
-                    pageSizeOptions: ["10", "20", "50", "100"],
-                    showSizeChanger: true,
-                    onChange: (pageNo, pageSize) =>
-                        setQuery((currentQuery) => ({ ...currentQuery, pageNo, pageSize }))
-                }}
-                columns={columns}
-                loading={publicationJobPageQuery.isLoading}
-                scroll={{ x: 1280 }}
-                ariaLabel="发布任务列表"
+                content={
+                    <>
+                        {publicationJobPageQuery.isError ? (
+                            <KuzhambuAlert
+                                showIcon
+                                type="error"
+                                title="发布任务加载失败"
+                                description={
+                                    publicationJobPageQuery.error instanceof Error
+                                        ? publicationJobPageQuery.error.message
+                                        : "请稍后重试"
+                                }
+                                action={
+                                    <KuzhambuButton
+                                        ariaLabel="重试加载发布任务"
+                                        testId="classics-publication-jobs-retry-button"
+                                        onClick={() => void publicationJobPageQuery.refetch()}
+                                    >
+                                        重试
+                                    </KuzhambuButton>
+                                }
+                            />
+                        ) : null}
+                        {pageResult || !publicationJobPageQuery.isError ? table : null}
+                    </>
+                }
             />
             <PublicationJobDetailDrawer
-                job={publicationJobDetailQuery.data}
-                loading={publicationJobDetailQuery.isLoading}
+                jobId={detailJobId}
                 open={detailJobId !== null}
                 onClose={() => setDetailJobId(null)}
             />

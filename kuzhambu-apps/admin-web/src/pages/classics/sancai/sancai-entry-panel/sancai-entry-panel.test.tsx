@@ -806,6 +806,15 @@ describe("SancaiEntryPanel batch operations", () => {
         expect(
             screen.queryByTestId("classics-sancai-sancai-entry-create-button")
         ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("classics-sancai-sancai-entry-image-upload-button")
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("classics-sancai-sancai-entry-ai-button")
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        ).not.toBeInTheDocument();
         expect(screen.getByText("标签")).toBeVisible();
         expect(screen.getByText("问答")).toBeVisible();
         expect(screen.getByText("版本")).toBeVisible();
@@ -815,11 +824,17 @@ describe("SancaiEntryPanel batch operations", () => {
         expect(
             screen.queryByTestId("classics-common-classics-content-tag-open-add-button")
         ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("classics-common-content-tag-ai-button")
+        ).not.toBeInTheDocument();
 
         await user.click(screen.getByText("问答"));
         expect(await screen.findByText("问：天地为何不变？")).toBeVisible();
         expect(
             screen.queryByTestId("classics-common-classics-content-qa-action-button")
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("classics-common-content-qa-ai-button")
         ).not.toBeInTheDocument();
     }, 30000);
 

@@ -91,6 +91,7 @@ interface SancaiEntrySummaryTextFieldProps {
     entryId?: string;
     getFormValues: () => SancaiEntryFormValues;
     mode: "create" | "edit";
+    readOnly?: boolean;
     value?: string;
     onChange?: (value: string) => void;
 }
@@ -99,6 +100,7 @@ export const SancaiEntrySummaryTextField = ({
     entryId,
     getFormValues,
     mode,
+    readOnly = false,
     value = "",
     onChange
 }: SancaiEntrySummaryTextFieldProps) => {
@@ -317,6 +319,9 @@ export const SancaiEntrySummaryTextField = ({
         setSummaryModalOpen(false);
     };
     const requestSummaryTask = () => {
+        if (readOnly) {
+            return false;
+        }
         if (!entryId) {
             return false;
         }
@@ -339,6 +344,9 @@ export const SancaiEntrySummaryTextField = ({
         return true;
     };
     const applySummaryDraft = () => {
+        if (readOnly) {
+            return;
+        }
         if (!entryId) {
             return;
         }
@@ -368,6 +376,8 @@ export const SancaiEntrySummaryTextField = ({
             <ClassicsSummaryFormControl
                 aiButtonTestId="classics-sancai-sancai-entry-ai-summary-button"
                 ariaLabel="三才图会摘要"
+                disabled={readOnly}
+                hideAiButton={readOnly}
                 mode={mode}
                 value={value}
                 onChange={(event) => onChange?.(event.target.value)}

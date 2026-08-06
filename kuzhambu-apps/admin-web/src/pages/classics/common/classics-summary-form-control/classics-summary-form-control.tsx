@@ -10,6 +10,7 @@ interface ClassicsSummaryFormControlProps {
     ariaLabel: string;
     mode: "create" | "edit";
     disabled?: boolean;
+    hideAiButton?: boolean;
     maxLength?: number;
     showCount?: boolean;
     value?: string;
@@ -22,6 +23,7 @@ export const ClassicsSummaryFormControl = ({
     ariaLabel,
     mode,
     disabled = false,
+    hideAiButton = false,
     maxLength,
     showCount = false,
     value,
@@ -38,7 +40,7 @@ export const ClassicsSummaryFormControl = ({
             value={value}
             onChange={onChange}
         />
-        {mode === "edit" ? (
+        {mode === "edit" && !hideAiButton ? (
             <KuzhambuButton
                 testId={aiButtonTestId}
                 className="classics-summary-form-control-ai-button"

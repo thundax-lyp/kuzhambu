@@ -94,6 +94,7 @@ interface SancaiEntryTranslationTextFieldProps {
     entryId?: string;
     getFormValues: () => SancaiEntryFormValues;
     mode: "create" | "edit";
+    readOnly?: boolean;
     value?: string;
     onChange?: (value: string) => void;
 }
@@ -102,6 +103,7 @@ export const SancaiEntryTranslationTextField = ({
     entryId,
     getFormValues,
     mode,
+    readOnly = false,
     value = "",
     onChange
 }: SancaiEntryTranslationTextFieldProps) => {
@@ -330,6 +332,9 @@ export const SancaiEntryTranslationTextField = ({
         setTranslationModalOpen(false);
     };
     const requestTranslationTask = () => {
+        if (readOnly) {
+            return false;
+        }
         if (!entryId) {
             return false;
         }
@@ -352,6 +357,9 @@ export const SancaiEntryTranslationTextField = ({
         return true;
     };
     const applyTranslationDraft = () => {
+        if (readOnly) {
+            return;
+        }
         if (!entryId) {
             return;
         }
@@ -384,7 +392,7 @@ export const SancaiEntryTranslationTextField = ({
                 autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
                 onChange={(event) => onChange?.(event.target.value)}
             />
-            {mode === "edit" ? (
+            {mode === "edit" && !readOnly ? (
                 <KuzhambuSpace wrap>
                     <KuzhambuButton
                         testId="classics-sancai-sancai-entry-ai-button"
