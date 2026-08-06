@@ -66,13 +66,13 @@ git diff main...HEAD
 
 本 skill 的主流程固定为 7 步，顺序不要跳：
 
-1. **解析 diff 并建立文件基线**：记录当前 `HEAD`，从 `git diff --name-status main...HEAD` 取得完整文件集并按模块归类。
+1. **解析 diff 并建立文件基线**：记录当前 `HEAD`、`main`、`git merge-base main HEAD` 和完整 diff hash，从 `git diff --name-status main...HEAD` 取得文件集并按模块归类。
 2. **识别系统承诺**：把 diff 转换成被改变的用户能力、接口语义、状态语义、数据语义、权限语义、验证语义或流程语义。
 3. **归类失效模式**：不要直接找 bug，先判断这个 PR 最可能落入哪些风险模型。
 4. **建立运行时模型和 contract surfaces**：为每条系统承诺、命中的风险模型和触发的强制专项检查建立可追踪的 contract surfaces。
 5. **审查并更新 ledger**：对账新增路径与被替换、删除、绕过或收窄的旧路径，并持续更新 changed-file 和 contract-surface 状态。
 6. **推演边界与时间线**：至少检查一组历史数据、异常路径、并发、刷新时序或治理失败路径。
-7. **重新取 diff 并关闭审查**：重新检查 `HEAD` 和 changed-file 集合；如有变化则重建 ledger，否则执行 closure gate 并输出 findings。
+7. **重新取 diff 并关闭审查**：重新计算完整基线元组；任一值变化都重建 ledger 并重新审查，否则执行 closure gate 并输出 findings。
 
 如果第 2 步没有识别出系统承诺，或第 4 步没有形成清晰的运行时模型，不要急着给结论。
 
@@ -319,7 +319,8 @@ git diff main...HEAD
 - 任何缺失条目、无终态条目或 `deferred` 条目都表示 coverage incomplete。
 - Coverage incomplete 时，禁止输出 `No actionable findings.`，禁止无条件建议合并；改为输出 `No confirmed findings, but review coverage is incomplete.`，并在 validation gaps 中列出未完成项。
 - 只有两个 ledger 全部闭合且不存在 `deferred` 时，才允许输出 `No actionable findings.`。
-- 输出前重新运行 `git diff --name-status main...HEAD` 并检查 `HEAD`；文件集或 `HEAD` 与基线不一致时，旧 ledger 作废，按新 diff 重新归类和审查。
+- 审查开始时记录基线元组：`HEAD`、`main`、`git merge-base main HEAD`、`git diff --binary main...HEAD | git hash-object --stdin` 和 `git diff --name-status main...HEAD` 文件集。
+- 输出前重新计算完整基线元组。即使 `HEAD` 和 changed-file 集合没有变化，只要 `main`、merge base 或完整 diff hash 任一变化，旧 ledger 也立即作废，必须按新 diff 重新归类和审查。
 
 ## 边界与时序推演清单
 
