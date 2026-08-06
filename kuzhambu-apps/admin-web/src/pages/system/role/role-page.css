@@ -1,12 +1,7 @@
 .role-page {
     --role-ink: #111827;
-    --role-copy: #52627a;
     --role-line: rgba(107, 124, 150, 0.24);
-    --role-line-strong: rgba(71, 91, 121, 0.34);
     --role-blue: #2563eb;
-    --role-blue-hover: #1d4ed8;
-    --role-blue-soft: rgba(37, 99, 235, 0.1);
-    --role-blue-line: rgba(37, 99, 235, 0.26);
     --role-cyan: #0891b2;
     --role-cyan-soft: rgba(8, 145, 178, 0.11);
     --role-cyan-line: rgba(8, 145, 178, 0.24);
@@ -14,10 +9,6 @@
     --role-green-soft: rgba(15, 118, 110, 0.1);
     --role-green-line: rgba(15, 118, 110, 0.24);
     --role-danger: #dc2626;
-    --role-danger-line: rgba(220, 38, 38, 0.24);
-    --role-blue-shadow: 0 10px 26px rgba(37, 99, 235, 0.2);
-    --role-button-bg: rgba(255, 255, 255, 0.64);
-    --role-field-bg: rgba(255, 255, 255, 0.7);
     --role-filter-bg-end: rgba(248, 251, 255, 0.48);
     --role-filter-bg-start: rgba(226, 235, 247, 0.62);
     --role-filter-inset: color-mix(in srgb, white 56%, transparent);
@@ -26,13 +17,8 @@
 
 html[data-theme="dark"] .role-page {
     --role-ink: #f8fbff;
-    --role-copy: #b8c4d8;
     --role-line: rgba(171, 191, 222, 0.16);
-    --role-line-strong: rgba(191, 207, 232, 0.28);
     --role-blue: #3b82f6;
-    --role-blue-hover: #60a5fa;
-    --role-blue-soft: rgba(59, 130, 246, 0.16);
-    --role-blue-line: rgba(59, 130, 246, 0.3);
     --role-cyan: #22d3ee;
     --role-cyan-soft: rgba(34, 211, 238, 0.12);
     --role-cyan-line: rgba(34, 211, 238, 0.26);
@@ -40,72 +26,9 @@ html[data-theme="dark"] .role-page {
     --role-green-soft: rgba(45, 212, 191, 0.13);
     --role-green-line: rgba(45, 212, 191, 0.28);
     --role-danger: #f87171;
-    --role-danger-line: rgba(248, 113, 113, 0.3);
-    --role-blue-shadow: 0 18px 42px rgba(37, 99, 235, 0.35);
-    --role-button-bg: rgba(17, 28, 46, 0.64);
-    --role-field-bg: rgba(12, 22, 38, 0.7);
     --role-filter-bg-end: rgba(12, 22, 38, 0.48);
     --role-filter-bg-start: rgba(48, 72, 110, 0.52);
     --role-filter-inset: rgba(185, 207, 238, 0.12);
-}
-
-.role-page .ant-typography-secondary {
-    color: var(--role-copy);
-}
-
-.role-page .ant-btn-primary {
-    background: linear-gradient(
-        135deg,
-        var(--role-blue),
-        color-mix(in srgb, var(--role-blue) 72%, #102542)
-    );
-    border-color: var(--role-blue);
-    box-shadow: var(--role-blue-shadow);
-}
-
-.role-page .ant-btn-primary:not(:disabled):hover {
-    background: linear-gradient(135deg, var(--role-blue-hover), var(--role-blue)) !important;
-    border-color: var(--role-blue-hover) !important;
-}
-
-.role-page .ant-btn-default {
-    color: var(--role-ink);
-    background: var(--role-button-bg);
-    border-color: var(--role-line);
-}
-
-.role-page .ant-btn-default:not(:disabled):hover {
-    color: var(--role-blue) !important;
-    background: var(--role-blue-soft) !important;
-    border-color: var(--role-blue-line) !important;
-}
-
-.role-page .ant-input-affix-wrapper,
-.role-page .ant-input,
-.role-page .ant-select-selector,
-.role-page .ant-tree {
-    color: var(--role-ink);
-    background: var(--role-field-bg) !important;
-    border-color: var(--role-line) !important;
-}
-
-.role-page .ant-input-affix-wrapper:hover,
-.role-page .ant-input:hover,
-.role-page .ant-select-selector:hover {
-    border-color: var(--role-line-strong) !important;
-}
-
-.role-page .ant-input-affix-wrapper:focus,
-.role-page .ant-input-affix-wrapper-focused,
-.role-page .ant-input:focus,
-.role-page .ant-select-focused .ant-select-selector {
-    border-color: var(--role-blue) !important;
-    box-shadow: 0 0 0 3px var(--role-blue-soft) !important;
-}
-
-.role-table-toolbar .ant-btn-dangerous:not(:disabled) {
-    color: var(--role-danger);
-    border-color: var(--role-danger-line);
 }
 
 .role-name-icon {
@@ -114,7 +37,4 @@ html[data-theme="dark"] .role-page {
 
 .role-drag-action {
     cursor: grab;
-}
-
-@media (max-width: 760px) {
 }

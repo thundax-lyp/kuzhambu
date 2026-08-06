@@ -4,8 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/ai-candidate-batch-drawer";
+import type { ClassicsContentQaTaskPair } from "@/pages/classics/common/classics-content-qa-ai-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
-import type { AiRefinementTaskCapability } from "@/pages/classics/common/ai-refinement-task-types";
+import type {
+    AiRefinementTaskCapability,
+    AiRefinementTaskRecord
+} from "@/pages/classics/common/ai-refinement-task-types";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
@@ -13,7 +17,6 @@ import type {
     ClassicsExportJobRecord,
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
-import { MingCustomsAiActions } from "./ming-customs-ai-actions";
 import { MingCustomsEditDrawer } from "./ming-customs-edit-drawer";
 import { MingCustomsExportActions } from "./ming-customs-export-actions";
 import { MingCustomsTable } from "./ming-customs-table";
@@ -23,6 +26,7 @@ import {
     type MingCustomsSelectedTagFilter
 } from "./ming-customs-toolbar";
 import { MingCustomsVersionPanel } from "./ming-customs-version-panel";
+import { MingCustomsRefinementSection } from "./ming-customs-refinement-section";
 import * as service from "./ming-custom-service";
 import type { MingCustomsCommand, MingCustomsQuery } from "./ming-custom-service";
 import type {
@@ -49,7 +53,16 @@ const DEFAULT_MING_CUSTOMS_FILTERS: MingCustomsFilters = {
     sortDirection: "DESC"
 };
 
-const buildInputPayloadJson = (entry: MingCustomsRecord, capability: string) => {
+interface RefinementTaskContext {
+    existingQaPairs?: ClassicsContentQaTaskPair[];
+    existingTags?: string[];
+}
+
+const buildInputPayloadJson = (
+    entry: MingCustomsRecord,
+    capability: string,
+    context: RefinementTaskContext = {}
+) => {
     const document = [entry.originalExcerpts, entry.content]
         .filter((value): value is string => Boolean(value?.trim()))
         .join("\n\n");
@@ -71,7 +84,9 @@ const buildInputPayloadJson = (entry: MingCustomsRecord, capability: string) => 
         originalText: entry.originalExcerpts || null,
         content: entry.content || null,
         bodyText: entry.content || null,
-        contentFormat: entry.contentFormat || null
+        contentFormat: entry.contentFormat || null,
+        existingQaPairs: context.existingQaPairs || [],
+        existingTags: context.existingTags || []
     });
 };
 
@@ -136,6 +151,9 @@ export const MingCustomPage = () => {
     const [exportJobsDrawerOpen, setExportJobsDrawerOpen] = useState(false);
     const [creatingRefinementCapability, setCreatingRefinementCapability] =
         useState<AiRefinementTaskCapability | null>(null);
+    const [summaryTrackingTask, setSummaryTrackingTask] = useState<AiRefinementTaskRecord | null>(
+        null
+    );
     const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
     const handledSucceededTaskIdsRef = useRef<Set<string>>(new Set());
     const hasActiveFilters = Boolean(
@@ -249,9 +267,19 @@ export const MingCustomPage = () => {
         "edit",
         hasPermission
     );
+    const canRejectAiCandidates = hasPermission("ai:invocation:edit");
     const refinementTasks = useMemo(
         () => refinementTasksQuery.data?.items || [],
         [refinementTasksQuery.data?.items]
+    );
+    const summaryRefinementTasks = useMemo(
+        () =>
+            refinementTasks.filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
+                    "summary"
+            ),
+        [refinementTasks]
     );
     const versionHistory = useMemo(() => versionsQuery.data || [], [versionsQuery.data]);
     const selectedVersion = mingCustomsVersionDetailQuery.data || null;
@@ -275,11 +303,6 @@ export const MingCustomPage = () => {
         ]);
     }, [editingEntryDetail?.id, queryClient]);
 
-    const invalidateMingCandidates = async () => {
-        await queryClient.invalidateQueries({
-            queryKey: ["ai", "candidates", "MING_CUSTOMS", editingEntryDetail?.id]
-        });
-    };
     const invalidateExportJobs = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "ming-customs", "exports", "jobs"]
@@ -382,7 +405,13 @@ export const MingCustomPage = () => {
     });
     const createRefinementTaskMutation = useMutation({
         mutationFn: aiRefinementTaskService.createTask,
-        onSuccess: async () => {
+        onSuccess: async (task, command) => {
+            if (
+                aiRefinementTaskService.getNormalizedTaskCapability(command.capability) ===
+                "summary"
+            ) {
+                setSummaryTrackingTask(task);
+            }
             await invalidateRefinementTasks();
             messageApi.success("明代习俗精修任务已创建");
         },
@@ -484,6 +513,7 @@ export const MingCustomPage = () => {
         setEditingEntry(null);
         setMingCustomsEditDrawerOpen(true);
         setSelectedVersionId(null);
+        setSummaryTrackingTask(null);
     };
 
     const openEditMingCustomsDrawer = (entry: MingCustomsRecord) => {
@@ -491,6 +521,7 @@ export const MingCustomPage = () => {
         setEditingEntry(entry);
         setMingCustomsEditDrawerOpen(true);
         setSelectedVersionId(null);
+        setSummaryTrackingTask(null);
     };
 
     const closeMingCustomsEditDrawer = () => {
@@ -500,6 +531,7 @@ export const MingCustomPage = () => {
         setMingCustomsEditDrawerOpen(false);
         setEditingEntry(null);
         setSelectedVersionId(null);
+        setSummaryTrackingTask(null);
         handledSucceededTaskIdsRef.current.clear();
     };
 
@@ -598,7 +630,8 @@ export const MingCustomPage = () => {
 
     const createRefinementTask = (
         entry: MingCustomsRecord,
-        capability: AiRefinementTaskCapability
+        capability: AiRefinementTaskCapability,
+        context: RefinementTaskContext = {}
     ) => {
         if (!entry.content?.trim() && !entry.originalExcerpts?.trim()) {
             messageApi.warning("正文与原文摘录均为空，无法创建 AI 精修任务");
@@ -613,7 +646,7 @@ export const MingCustomPage = () => {
             contentId: entry.id,
             requestId: createEventId(`ming-customs-${capability}-request`),
             traceId: createEventId(`ming-customs-${capability}-trace`),
-            inputPayloadJson: buildInputPayloadJson(entry, capabilityCode),
+            inputPayloadJson: buildInputPayloadJson(entry, capabilityCode, context),
             locale: "zh-CN"
         });
     };
@@ -725,31 +758,59 @@ export const MingCustomPage = () => {
                 mode={mingCustomsEditDrawerMode}
                 open={mingCustomsEditDrawerOpen}
                 saving={saveMutation.isPending}
+                canRejectSummaryCandidate={canRejectAiCandidates}
+                onChanged={invalidateMingCustoms}
                 onClose={closeMingCustomsEditDrawer}
                 onSave={(command) => saveMutation.mutate(command)}
-                afterForm={
-                    mingCustomsEditDrawerMode === "edit" && editingEntryDetail ? (
-                        <>
-                            <MingCustomsAiActions
-                                creatingRefinementCapability={creatingRefinementCapability}
-                                entry={editingEntryDetail}
-                                onCandidateApplied={invalidateMingCustoms}
-                                onCandidateRejected={invalidateMingCandidates}
-                                onContentChanged={invalidateMingCustoms}
-                                onCreateRefinementTask={createRefinementTask}
-                                refinementTasks={refinementTasks}
-                            />
-                            <MingCustomsVersionPanel
-                                currentEntry={editingEntryDetail}
-                                detailLoading={mingCustomsVersionDetailQuery.isLoading}
-                                listLoading={versionsQuery.isLoading}
-                                resetting={resetVersionMutation.isPending}
-                                selectedVersion={selectedVersion}
-                                versions={versionHistory}
-                                onSelectVersion={selectVersion}
-                                onResetVersion={confirmResetVersion}
-                            />
-                        </>
+                summaryCreating={creatingRefinementCapability === "summary"}
+                summaryTasks={summaryRefinementTasks}
+                summaryTrackingTask={summaryTrackingTask}
+                onCreateSummaryTask={() => {
+                    if (editingEntryDetail) {
+                        createRefinementTask(editingEntryDetail, "summary");
+                    }
+                }}
+                onSummaryTaskChange={setSummaryTrackingTask}
+                tagContent={
+                    editingEntryDetail ? (
+                        <MingCustomsRefinementSection
+                            creatingRefinementCapability={creatingRefinementCapability}
+                            entry={editingEntryDetail}
+                            refinementTasks={refinementTasks}
+                            section="tags"
+                            onChanged={invalidateMingCustoms}
+                            onCreateTask={(capability, context) =>
+                                createRefinementTask(editingEntryDetail, capability, context)
+                            }
+                        />
+                    ) : null
+                }
+                qaContent={
+                    editingEntryDetail ? (
+                        <MingCustomsRefinementSection
+                            creatingRefinementCapability={creatingRefinementCapability}
+                            entry={editingEntryDetail}
+                            refinementTasks={refinementTasks}
+                            section="qa"
+                            onChanged={invalidateMingCustoms}
+                            onCreateTask={(capability, context) =>
+                                createRefinementTask(editingEntryDetail, capability, context)
+                            }
+                        />
+                    ) : null
+                }
+                versionContent={
+                    editingEntryDetail ? (
+                        <MingCustomsVersionPanel
+                            currentEntry={editingEntryDetail}
+                            detailLoading={mingCustomsVersionDetailQuery.isLoading}
+                            listLoading={versionsQuery.isLoading}
+                            resetting={resetVersionMutation.isPending}
+                            selectedVersion={selectedVersion}
+                            versions={versionHistory}
+                            onSelectVersion={selectVersion}
+                            onResetVersion={confirmResetVersion}
+                        />
                     ) : null
                 }
             />

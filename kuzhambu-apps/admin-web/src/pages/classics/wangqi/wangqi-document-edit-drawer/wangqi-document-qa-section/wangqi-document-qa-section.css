@@ -1,0 +1,5 @@
+.wangqi-document-qa-section {
+    display: grid;
+    min-width: 0;
+    gap: 12px;
+}

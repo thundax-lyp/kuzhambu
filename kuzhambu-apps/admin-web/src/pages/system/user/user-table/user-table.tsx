@@ -140,8 +140,14 @@ export const UserTable = ({
                     <KuzhambuSpace size={10}>
                         <UserAvatar user={user} />
                         <div className="user-name-cell">
-                            <Text strong>{userName}</Text>
-                            {user.email ? <Text type="secondary">{user.email}</Text> : null}
+                            <Text className="user-name-cell-text" strong>
+                                {userName}
+                            </Text>
+                            {user.email ? (
+                                <Text className="user-name-cell-text" type="secondary">
+                                    {user.email}
+                                </Text>
+                            ) : null}
                         </div>
                     </KuzhambuSpace>
                 );

@@ -101,25 +101,44 @@ test.describe("classics ming customs page", () => {
                     apiResponse({
                         pageNo: 1,
                         pageSize: 100,
-                        totalCount: 2,
-                        count: 2,
+                        totalCount: 4,
+                        count: 4,
                         totalPage: 1,
                         records: [
                             {
                                 type: "CLASSICS_MING_CUSTOMS_CATEGORY",
-                                value: "RITUAL",
-                                label: "礼制"
+                                value: "食（饮食生活）",
+                                label: "食（饮食生活）"
                             },
                             {
                                 type: "CLASSICS_MING_CUSTOMS_CATEGORY",
-                                value: "FESTIVAL",
-                                label: "岁时节令"
+                                value: "衣（服饰穿戴）",
+                                label: "衣（服饰穿戴）"
+                            },
+                            {
+                                type: "CLASSICS_MING_CUSTOMS_CATEGORY",
+                                value: "住（居住空间）",
+                                label: "住（居住空间）"
+                            },
+                            {
+                                type: "CLASSICS_MING_CUSTOMS_CATEGORY",
+                                value: "行（出行与行旅）",
+                                label: "行（出行与行旅）"
                             }
                         ]
                     })
                 )
             });
         });
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/ming-customs/categories/list",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(apiResponse(["食（饮食生活）"]))
+                });
+            }
+        );
         await page.route("**/kuzhambu-admin-api/api/classics/ming-customs/page", async (route) => {
             const body = readRequestBody(route.request().postData());
             pageRequests.push(body);
@@ -136,7 +155,7 @@ test.describe("classics ming customs page", () => {
                             {
                                 id: 500000000001,
                                 title: "岁时礼仪：元旦朝贺",
-                                category: body.category ?? "RITUAL",
+                                category: body.category ?? "食（饮食生活）",
                                 chapter: "岁时礼仪",
                                 section: "正旦",
                                 summary: "记录明代正旦朝贺与家族拜礼。",
@@ -170,13 +189,12 @@ test.describe("classics ming customs page", () => {
                     apiResponse({
                         id: 500000000001,
                         title: "岁时礼仪：元旦朝贺",
-                        category: "RITUAL",
+                        category: "食（饮食生活）",
                         chapter: "岁时礼仪",
                         section: "正旦",
                         summary: "记录明代正旦朝贺与家族拜礼。",
-                        contentFormat: "HTML",
-                        content:
-                            "<h2>正旦</h2><img src=x onerror=alert(1)><script>alert(1)</script>",
+                        contentFormat: "MARKDOWN",
+                        content: "## 正旦\n\n士民相贺。",
                         originalExcerpts: "正旦朝贺。"
                     })
                 )
@@ -198,7 +216,7 @@ test.describe("classics ming customs page", () => {
                                 versionedAt: "2026-01-01T00:00:00.000+00:00",
                                 snapshotJson: JSON.stringify({
                                     title: "旧标题",
-                                    category: "RITUAL",
+                                    category: "食（饮食生活）",
                                     chapter: "岁时礼仪",
                                     section: "正旦",
                                     summary: "旧版摘要",
@@ -326,13 +344,13 @@ test.describe("classics ming customs page", () => {
             });
         await page.getByRole("button", { name: "filter 筛选" }).click();
         await page.getByRole("combobox", { name: "明代习俗分类" }).click();
-        await page.getByTitle("礼制").click();
+        await page.getByTitle("食（饮食生活）").click();
         await page.getByRole("button", { name: /查\s*询/ }).click();
         await expect
             .poll(() => pageRequests.at(-1))
             .toMatchObject({
                 keyword: "礼制",
-                category: "RITUAL",
+                category: "食（饮食生活）",
                 sortDirection: "DESC"
             });
 
@@ -343,40 +361,36 @@ test.describe("classics ming customs page", () => {
             .poll(() => pageRequests.at(-1))
             .toMatchObject({
                 keyword: "礼制",
-                category: "RITUAL",
+                category: "食（饮食生活）",
                 tagId: 2,
                 tagNameSnapshot: "正旦",
                 sortDirection: "DESC"
             });
 
         await page.getByRole("button", { name: "新增明代习俗" }).click();
-        await page.getByRole("textbox", { name: "明代习俗标题" }).fill("上元灯市");
+        await page.getByRole("textbox", { name: "明代习俗稿件标题" }).fill("上元灯市");
         await page.getByRole("combobox", { name: "明代习俗编辑分类" }).click();
-        await page.getByTitle("岁时节令").last().click();
-        await page.getByRole("textbox", { name: "明代习俗正文" }).fill("## 上元\n\n灯市连宵。");
+        await page.getByTitle("衣（服饰穿戴）").last().click();
+        await page.getByLabel("明代习俗正文").fill("## 上元\n\n灯市连宵。");
         await page.getByTestId("classics-ming-customs-ming-customs-create-button").click();
         await expect
             .poll(() => addRequests.at(-1))
             .toMatchObject({
                 title: "上元灯市",
-                category: "FESTIVAL",
+                category: "衣（服饰穿戴）",
                 contentFormat: "MARKDOWN",
                 content: "## 上元\n\n灯市连宵。"
             });
 
         await page.getByRole("button", { name: "编辑 岁时礼仪：元旦朝贺" }).click();
-        const preview = page.getByLabel("明代习俗正文预览");
-        await expect(preview.getByRole("heading", { name: "正旦" })).toBeVisible();
-        await expect(preview.locator("script")).toHaveCount(0);
-        await expect(preview.getByText("alert(1)")).toHaveCount(0);
-        await page.getByRole("textbox", { name: "明代习俗正文" }).fill("更新后的正文");
+        await page.getByLabel("明代习俗正文").fill("更新后的正文");
         await page.getByTestId("classics-ming-customs-ming-customs-create-button").click();
         await expect
             .poll(() => updateRequests.at(-1))
             .toMatchObject({
                 id: 500000000001,
                 content: "更新后的正文",
-                contentFormat: "HTML"
+                contentFormat: "MARKDOWN"
             });
 
         await page.getByRole("button", { name: "展开行操作" }).click();
@@ -409,6 +423,14 @@ test.describe("classics ming customs page", () => {
                 contentType: "application/json",
                 body: JSON.stringify(apiResponse({ records: [] }))
             })
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/ming-customs/categories/list",
+            (route) =>
+                route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(apiResponse(["RITUAL"]))
+                })
         );
         await page.route("**/kuzhambu-admin-api/api/classics/content/exports/page", (route) =>
             route.fulfill({

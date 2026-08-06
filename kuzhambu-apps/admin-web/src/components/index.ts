@@ -9,6 +9,7 @@ export * from "./kuzhambu-filter-panel";
 export * from "./kuzhambu-form";
 export * from "./kuzhambu-list";
 export * from "./kuzhambu-list-page";
+export * from "./kuzhambu-markdown-editor";
 export * from "./kuzhambu-modal";
 export * from "./kuzhambu-page";
 export * from "./kuzhambu-rich-content-viewer";

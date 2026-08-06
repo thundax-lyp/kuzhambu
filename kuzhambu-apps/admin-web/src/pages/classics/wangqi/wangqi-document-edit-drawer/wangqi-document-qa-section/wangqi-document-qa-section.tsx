@@ -1,12 +1,16 @@
-import { Typography } from "antd";
 import type { ReactNode } from "react";
-
-const { Text } = Typography;
+import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
+import { WangqiDocumentSectionOverview } from "../wangqi-document-section-overview";
+import "./wangqi-document-qa-section.css";
 
 interface WangqiDocumentQaSectionProps {
+    document: WangqiDocumentRecord;
     content?: ReactNode;
 }
 
-export const WangqiDocumentQaSection = ({ content }: WangqiDocumentQaSectionProps) => {
-    return content || <Text type="secondary">暂无问答</Text>;
-};
+export const WangqiDocumentQaSection = ({ document, content }: WangqiDocumentQaSectionProps) => (
+    <div className="wangqi-document-qa-section">
+        <WangqiDocumentSectionOverview document={document} variant="qa" />
+        {content}
+    </div>
+);

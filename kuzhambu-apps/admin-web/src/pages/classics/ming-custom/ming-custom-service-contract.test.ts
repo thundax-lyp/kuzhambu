@@ -50,12 +50,19 @@ const toSuccessResponse = () => {
                 records: [
                     {
                         type: "CLASSICS_MING_CUSTOMS_CATEGORY",
-                        value: "RITUAL",
-                        label: "礼制",
+                        value: "食（饮食生活）",
+                        label: "食（饮食生活）",
                         remarks: "明代习俗分类"
                     }
                 ]
             }
+        };
+    }
+    if (path === "/classics/ming-customs/categories/list") {
+        return {
+            code: "COMMON-00000",
+            message: "success",
+            data: { categories: ["食（饮食生活）", "RITUAL"] }
         };
     }
     return {
@@ -94,7 +101,7 @@ describe("ming customs service request contracts", () => {
             pageNo: 1,
             pageSize: 20,
             keyword: "元旦",
-            category: "RITUAL",
+            category: "食（饮食生活）",
             tagName: "礼制",
             sortDirection: "DESC"
         });
@@ -102,7 +109,7 @@ describe("ming customs service request contracts", () => {
             pageNo: 1,
             pageSize: 20,
             keyword: "元旦",
-            category: "RITUAL",
+            category: "食（饮食生活）",
             tagName: "礼制",
             sortDirection: "DESC"
         });
@@ -116,7 +123,7 @@ describe("ming customs service request contracts", () => {
     it("sends ming customs write requests", async () => {
         const command: service.MingCustomsCommand = {
             title: "岁时礼仪：元旦朝贺",
-            category: "RITUAL",
+            category: "食（饮食生活）",
             chapter: "岁时礼仪",
             section: "正旦",
             summary: "记录明代正旦朝贺与家族拜礼。",
@@ -164,11 +171,11 @@ describe("ming customs service request contracts", () => {
         expectLastCall("POST", "/classics/ming-customs/keyword-cloud/list", {});
 
         await service.listTagCloud({
-            category: "RITUAL",
+            category: "食（饮食生活）",
             keyword: "元旦"
         });
         expectLastCall("POST", "/classics/ming-customs/tag-cloud/list", {
-            category: "RITUAL",
+            category: "食（饮食生活）",
             keyword: "元旦"
         });
 
@@ -176,16 +183,17 @@ describe("ming customs service request contracts", () => {
         expectLastCall("POST", "/classics/ming-customs/tag-cloud/list", {});
 
         const options = await service.listCategoryOptions();
-        expectLastCall("POST", "/sys/dict/page", {
-            pageNo: 1,
-            pageSize: 100,
-            type: "CLASSICS_MING_CUSTOMS_CATEGORY"
-        });
+        expectLastCall("POST", "/classics/ming-customs/categories/list", {});
         expect(options).toEqual([
             {
                 type: "CLASSICS_MING_CUSTOMS_CATEGORY",
+                value: "食（饮食生活）",
+                label: "食（饮食生活）"
+            },
+            {
+                type: "CLASSICS_MING_CUSTOMS_CATEGORY",
                 value: "RITUAL",
-                label: "礼制"
+                label: "历史分类：RITUAL"
             }
         ]);
     });

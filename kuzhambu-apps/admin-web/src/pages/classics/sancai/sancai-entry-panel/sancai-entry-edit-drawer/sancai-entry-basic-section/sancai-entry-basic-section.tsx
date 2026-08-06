@@ -258,7 +258,7 @@ export const SancaiEntryBasicSection = ({
     return (
         <KuzhambuForm
             form={form}
-            className="sancai-detail-card sancai-entry-edit-drawer-form"
+            className="sancai-detail-card sancai-entry-basic-section-form"
             colon={false}
             component="div"
             disabled={readOnly}

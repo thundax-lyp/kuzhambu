@@ -1633,11 +1633,12 @@ describe("SancaiEntryPanel batch operations", () => {
             await waitFor(() => {
                 expect(visualPreviewService.listVisualAssets).toHaveBeenCalled();
             });
-            await user.click(
-                await screen.findByTestId(
-                    "classics-sancai-sancai-entry-preview-sancai-entry-button"
-                )
+            const previewButton = await screen.findByTestId(
+                "classics-sancai-sancai-entry-preview-sancai-entry-button"
             );
+            expect(previewButton).toHaveClass("ant-btn-text");
+            expect(previewButton.querySelector(".anticon-eye")).toBeInTheDocument();
+            await user.click(previewButton);
 
             await waitFor(() => {
                 expect(createObjectURL).toHaveBeenCalled();

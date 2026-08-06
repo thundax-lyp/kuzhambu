@@ -13,6 +13,7 @@ import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-edit-drawer-form-values";
+import "./sancai-entry-translation-modal.css";
 
 const MODAL_TITLE = "AI翻译";
 const TASK_LABEL = "翻译";
@@ -203,7 +204,7 @@ export const SancaiEntryTranslationModal = ({
                 creating || task ? (
                     <KuzhambuAlert
                         showIcon
-                        className="sancai-ai-text-task-alert"
+                        className="sancai-entry-translation-modal-task-alert"
                         type={creating ? "info" : readRefinementTaskAlertType(task?.status)}
                         title={
                             creating
@@ -223,9 +224,9 @@ export const SancaiEntryTranslationModal = ({
                 const isAiTextLoading = isAiTextGenerating || isAiTextCandidateFetching;
                 return (
                     <>
-                        <div className="sancai-detail-card sancai-entry-edit-drawer-form sancai-ai-text-modal-original">
-                            <div className="sancai-ai-text-modal-field">
-                                <label className="sancai-ai-text-modal-label">原文</label>
+                        <div className="sancai-detail-card sancai-entry-translation-modal-card sancai-entry-translation-modal-original">
+                            <div className="sancai-entry-translation-modal-field">
+                                <label className="sancai-entry-translation-modal-label">原文</label>
                                 <Input.TextArea
                                     aria-label={`${MODAL_TITLE}原文`}
                                     value={form.originalText}
@@ -234,10 +235,12 @@ export const SancaiEntryTranslationModal = ({
                                 />
                             </div>
                         </div>
-                        <div className="sancai-ai-text-modal-compare-grid">
-                            <div className="sancai-detail-card sancai-entry-edit-drawer-form">
-                                <div className="sancai-ai-text-modal-field">
-                                    <label className="sancai-ai-text-modal-label">当前译文</label>
+                        <div className="sancai-entry-translation-modal-compare-grid">
+                            <div className="sancai-detail-card sancai-entry-translation-modal-card">
+                                <div className="sancai-entry-translation-modal-field">
+                                    <label className="sancai-entry-translation-modal-label">
+                                        当前译文
+                                    </label>
                                     <Input.TextArea
                                         aria-label={`${MODAL_TITLE}当前译文`}
                                         value={form.translationText}
@@ -249,9 +252,11 @@ export const SancaiEntryTranslationModal = ({
                                     />
                                 </div>
                             </div>
-                            <div className="sancai-detail-card sancai-entry-edit-drawer-form">
-                                <div className="sancai-ai-text-modal-field">
-                                    <label className="sancai-ai-text-modal-label">AI译文</label>
+                            <div className="sancai-detail-card sancai-entry-translation-modal-card">
+                                <div className="sancai-entry-translation-modal-field">
+                                    <label className="sancai-entry-translation-modal-label">
+                                        AI译文
+                                    </label>
                                     <Input.TextArea
                                         aria-label={`${MODAL_TITLE}AI译文`}
                                         value={aiTextDraft}
@@ -283,7 +288,7 @@ export const SancaiEntryTranslationModal = ({
                         <KuzhambuTextCompare
                             baseline={form.translationText}
                             candidate={aiTextDraft}
-                            className="sancai-ai-text-modal-diff"
+                            className="sancai-entry-translation-modal-diff"
                             emptyText="当前译文与 AI 译文暂无差异"
                             testId="classics-sancai-sancai-entry-ai-translation-compare"
                             title="译文差异"

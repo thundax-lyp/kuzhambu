@@ -34,6 +34,14 @@ const apiResponse = (data: unknown) =>
         })
     );
 
+const findReadyViewButton = async () => {
+    const viewButton = await screen.findByRole("button", { name: "查看" });
+    await waitFor(() => {
+        expect(window.getComputedStyle(viewButton).pointerEvents).not.toBe("none");
+    });
+    return viewButton;
+};
+
 let pageRequestFails = false;
 let detailRequestFails = false;
 const pageRequestBodies: unknown[] = [];
@@ -98,7 +106,7 @@ describe("PublicationJobPage", () => {
             screen.queryByRole("button", { name: /重试|取消|清理|编辑/ })
         ).not.toBeInTheDocument();
 
-        await user.click(screen.getByRole("button", { name: "查看" }));
+        await user.click(await findReadyViewButton());
 
         expect(await screen.findByText("ES probe failed")).toBeInTheDocument();
         expect(screen.getAllByText("搜索索引已写入")).toHaveLength(3);
@@ -129,7 +137,7 @@ describe("PublicationJobPage", () => {
         expect(await screen.findByText("三才图会｜天地")).toBeInTheDocument();
 
         detailRequestFails = true;
-        await user.click(screen.getByRole("button", { name: "查看" }));
+        await user.click(await findReadyViewButton());
         expect(await screen.findByText("发布任务详情加载失败")).toBeInTheDocument();
         expect(screen.getByText("发布任务详情服务暂不可用")).toBeInTheDocument();
         detailRequestFails = false;

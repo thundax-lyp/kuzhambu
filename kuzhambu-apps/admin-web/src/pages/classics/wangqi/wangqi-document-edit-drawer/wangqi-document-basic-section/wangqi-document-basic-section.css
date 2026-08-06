@@ -1,0 +1,9 @@
+.wangqi-document-basic-section-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.wangqi-document-basic-section-date-picker {
+    width: 100%;
+}

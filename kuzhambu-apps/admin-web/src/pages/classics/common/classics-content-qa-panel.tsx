@@ -194,15 +194,6 @@ export const ClassicsContentQaPanel = ({
             {!readOnly ? (
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                     <KuzhambuSpaceCompact>
-                        {toolbarExtra}
-                        <KuzhambuButton
-                            testId="classics-common-classics-content-qa-action-button"
-                            icon={<PlusOutlined />}
-                            type={toolbarExtra ? "default" : "primary"}
-                            onClick={openCreate}
-                        >
-                            新增
-                        </KuzhambuButton>
                         <KuzhambuButton
                             testId="classics-common-classics-content-qa-refresh-button"
                             icon={<ReloadOutlined />}
@@ -210,6 +201,15 @@ export const ClassicsContentQaPanel = ({
                             onClick={refreshQaPairs}
                         >
                             刷新
+                        </KuzhambuButton>
+                        {toolbarExtra}
+                        <KuzhambuButton
+                            testId="classics-common-classics-content-qa-action-button"
+                            icon={<PlusOutlined />}
+                            type="primary"
+                            onClick={openCreate}
+                        >
+                            新增
                         </KuzhambuButton>
                     </KuzhambuSpaceCompact>
                 </div>

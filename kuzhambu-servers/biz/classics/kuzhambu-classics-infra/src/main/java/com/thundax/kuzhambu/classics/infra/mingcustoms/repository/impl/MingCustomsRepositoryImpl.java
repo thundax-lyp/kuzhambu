@@ -77,6 +77,11 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
     }
 
     @Override
+    public List<String> listCategories() {
+        return entryMapper.selectCategories();
+    }
+
+    @Override
     public MingCustomsEntryId insert(MingCustomsEntry entry) {
         MingCustomsEntryDO dataObject = MingCustomsPersistenceAssembler.toEntryObject(entry);
         entryMapper.insert(dataObject);

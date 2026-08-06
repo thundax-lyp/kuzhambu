@@ -31,6 +31,12 @@
     width: 100%;
 }
 
+.sancai-version-history-detail-actions {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
 .sancai-version-compare .ant-descriptions-item-label {
     width: 132px;
     color: var(--sancai-copy);

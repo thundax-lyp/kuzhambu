@@ -1,9 +1,6 @@
-import { FileTextOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Input } from "antd";
+import { App } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuButton, KuzhambuSpace } from "@/components";
 
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
@@ -12,9 +9,9 @@ import {
     AI_BUSINESS_CAPABILITY,
     type AiRefinementTaskRecord
 } from "@/pages/classics/common/ai-refinement-task-types";
+import { ClassicsSummaryFormControl } from "@/pages/classics/common/classics-summary-form-control";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-edit-drawer-form-values";
 import { SancaiEntrySummaryModal } from "./sancai-entry-summary-modal";
-import "./sancai-entry-summary-text-field.css";
 
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
 const SUMMARY_CANDIDATE_CAPABILITY = AI_BUSINESS_CAPABILITY.CLASSICS_SUMMARY;
@@ -375,25 +372,17 @@ export const SancaiEntrySummaryTextField = ({
     const formValues = getFormValues();
 
     return (
-        <div className="sancai-entry-summary-text-field">
-            <Input.TextArea
-                aria-label="三才图会摘要"
+        <div>
+            <ClassicsSummaryFormControl
+                aiButtonTestId="classics-sancai-sancai-entry-ai-summary-button"
+                ariaLabel="三才图会摘要"
+                disabled={readOnly}
+                hideAiButton={readOnly}
+                mode={mode}
                 value={value}
-                autoSize={resolveTextAreaAutoSize({ minRows: 3, maxRows: 6 })}
                 onChange={(event) => onChange?.(event.target.value)}
+                onOpenAiSummary={openSummaryModal}
             />
-            {mode === "edit" && !readOnly ? (
-                <KuzhambuSpace wrap>
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-ai-summary-button"
-                        className="sancai-entry-summary-text-field-button"
-                        icon={<FileTextOutlined />}
-                        onClick={openSummaryModal}
-                    >
-                        AI摘要
-                    </KuzhambuButton>
-                </KuzhambuSpace>
-            ) : null}
             <SancaiEntrySummaryModal
                 aiTextDraft={summaryDraft}
                 form={formValues}

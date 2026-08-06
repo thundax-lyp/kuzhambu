@@ -1,16 +1,18 @@
 import { Tooltip } from "antd";
-import { KuzhambuButton, KuzhambuSpaceCompact, KuzhambuCard } from "@/components";
+import { KuzhambuButton, KuzhambuSpaceCompact } from "@/components";
+import { hasPermission } from "@/auth/permission-storage";
 
-import { AiCandidatePanel } from "@/pages/classics/common/ai-candidate-panel";
 import type {
     AiRefinementTaskCapability,
     AiRefinementTaskRecord
 } from "@/pages/classics/common/ai-refinement-task-types";
+import {
+    ClassicsContentQaAiPanel,
+    type ClassicsContentQaTaskPair
+} from "@/pages/classics/common/classics-content-qa-ai-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/classics-content-qa-panel";
+import { ClassicsContentTagAiPanel } from "@/pages/classics/common/classics-content-tag-ai-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/classics-content-tag-panel";
-import type { WangqiQaTaskPair } from "@/pages/classics/wangqi/wangqi-qa-ai-modal";
-import { WangqiQaAiModal } from "@/pages/classics/wangqi/wangqi-qa-ai-modal";
-import { WangqiTagAiModal } from "@/pages/classics/wangqi/wangqi-tag-ai-modal";
 import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
 import "./wangqi-refinement-actions.css";
 
@@ -25,10 +27,9 @@ interface WangqiRefinementActionsProps {
     tagTasks: AiRefinementTaskRecord[];
     tagTrackingTask: AiRefinementTaskRecord | null;
     onChanged: () => void | Promise<void>;
-    onCreateQaTask: (existingQaPairs: WangqiQaTaskPair[]) => void;
+    onCreateQaTask: (existingQaPairs: ClassicsContentQaTaskPair[]) => void;
     onCreateTagTask: (existingTags: string[]) => void;
     onOpenSingleDocumentQa: (document: WangqiDocumentRecord) => void;
-    onRejectedCandidate: () => void | Promise<void>;
     onQaTaskChange?: (task: AiRefinementTaskRecord | null) => void;
     onTagTaskChange?: (task: AiRefinementTaskRecord | null) => void;
 }
@@ -47,95 +48,74 @@ export const WangqiRefinementActions = ({
     onCreateQaTask,
     onCreateTagTask,
     onOpenSingleDocumentQa,
-    onRejectedCandidate,
     onQaTaskChange,
     onTagTaskChange
 }: WangqiRefinementActionsProps) => {
+    const canApplyAiCandidates = hasPermission("classics:content:edit");
+    const canCreateAiRefinementTask = hasPermission("ai:refinement:edit");
+    const canRejectAiCandidates = hasPermission("ai:invocation:edit");
+    const canViewAiCandidates = hasPermission("ai:invocation:view");
+
     if (section === "tags") {
         return (
-            <div className="wangqi-page-drawer-panels">
-                <ClassicsContentTagPanel
-                    contentId={document.id}
-                    contentType="WANGQI_DOCUMENT"
-                    showHeader={false}
-                    toolbarExtra={
-                        <WangqiTagAiModal
-                            creatingTagTask={creatingRefinementCapability === "tags"}
-                            document={document}
-                            tagTasks={tagTasks}
-                            tagTrackingTask={tagTrackingTask}
-                            onChanged={onChanged}
-                            onCreateTagTask={onCreateTagTask}
-                            onTaskChange={onTagTaskChange}
-                        />
-                    }
-                    onChanged={onChanged}
-                />
-                <AiCandidatePanel
-                    capabilities={["tags"]}
-                    contentId={document.id}
-                    contentType="WANGQI_DOCUMENT"
-                    onApplied={onChanged}
-                    onRejected={onRejectedCandidate}
-                />
-            </div>
+            <ClassicsContentTagPanel
+                contentId={document.id}
+                contentType="WANGQI_DOCUMENT"
+                panelTitle="标签"
+                toolbarExtra={
+                    <ClassicsContentTagAiPanel
+                        canApplyCandidate={canApplyAiCandidates}
+                        canCreateTask={canCreateAiRefinementTask}
+                        canRejectCandidate={canRejectAiCandidates}
+                        canViewCandidate={canViewAiCandidates}
+                        contentId={document.id}
+                        contentType="WANGQI_DOCUMENT"
+                        creatingTask={creatingRefinementCapability === "tags"}
+                        tagTasks={tagTasks}
+                        trackingTask={tagTrackingTask}
+                        onChanged={onChanged}
+                        onCreateTask={onCreateTagTask}
+                        onTaskChange={onTagTaskChange}
+                    />
+                }
+                onChanged={onChanged}
+            />
         );
     }
 
     return (
-        <div className="wangqi-page-drawer-panels">
-            <KuzhambuCard
-                size="small"
-                title="问答生成"
-                extra={
-                    <KuzhambuSpaceCompact>
-                        <Tooltip title={singleDocumentQaDisabledReason}>
-                            <KuzhambuButton
-                                testId="classics-wangqi-wangqi-action-button-2"
-                                disabled={!document.id || !canOpenDiscoveryQa}
-                                onClick={() => onOpenSingleDocumentQa(document)}
-                            >
-                                单文档问答
-                            </KuzhambuButton>
-                        </Tooltip>
-                        <WangqiQaAiModal
-                            creatingQaTask={creatingRefinementCapability === "qa"}
-                            document={document}
-                            qaTasks={qaTasks}
-                            qaTrackingTask={qaTrackingTask}
-                            onChanged={onChanged}
-                            onCreateQaTask={onCreateQaTask}
-                            onTaskChange={onQaTaskChange}
-                        />
-                    </KuzhambuSpaceCompact>
-                }
-            >
-                <div className="wangqi-refinement-task-list">
-                    {qaTasks.length ? (
-                        qaTasks.slice(0, 3).map((task) => (
-                            <div key={task.taskId}>
-                                问答：{task.status}
-                                {task.resultPreview ? ` · ${task.resultPreview}` : ""}
-                            </div>
-                        ))
-                    ) : (
-                        <div>暂无问答任务</div>
-                    )}
-                </div>
-            </KuzhambuCard>
-            <AiCandidatePanel
-                capabilities={["qa"]}
-                contentId={document.id}
-                contentType="WANGQI_DOCUMENT"
-                onApplied={onChanged}
-                onRejected={onRejectedCandidate}
-            />
-            <ClassicsContentQaPanel
-                panelTitle="王圻问答对"
-                contentId={document.id}
-                contentType="WANGQI_DOCUMENT"
-                onChanged={onChanged}
-            />
-        </div>
+        <ClassicsContentQaPanel
+            contentId={document.id}
+            contentType="WANGQI_DOCUMENT"
+            panelTitle="王圻问答对"
+            toolbarExtra={
+                <KuzhambuSpaceCompact>
+                    <Tooltip title={singleDocumentQaDisabledReason}>
+                        <KuzhambuButton
+                            testId="classics-wangqi-wangqi-action-button-2"
+                            disabled={!document.id || !canOpenDiscoveryQa}
+                            onClick={() => onOpenSingleDocumentQa(document)}
+                        >
+                            单文档问答
+                        </KuzhambuButton>
+                    </Tooltip>
+                    <ClassicsContentQaAiPanel
+                        canApplyCandidate={canApplyAiCandidates}
+                        canCreateTask={canCreateAiRefinementTask}
+                        canRejectCandidate={canRejectAiCandidates}
+                        canViewCandidate={canViewAiCandidates}
+                        contentId={document.id}
+                        contentType="WANGQI_DOCUMENT"
+                        creatingTask={creatingRefinementCapability === "qa"}
+                        qaTasks={qaTasks}
+                        trackingTask={qaTrackingTask}
+                        onChanged={onChanged}
+                        onCreateTask={onCreateQaTask}
+                        onTaskChange={onQaTaskChange}
+                    />
+                </KuzhambuSpaceCompact>
+            }
+            onChanged={onChanged}
+        />
     );
 };

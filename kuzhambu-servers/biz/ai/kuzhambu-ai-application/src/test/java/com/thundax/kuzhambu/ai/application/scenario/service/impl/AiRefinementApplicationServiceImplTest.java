@@ -223,6 +223,28 @@ class AiRefinementApplicationServiceImplTest {
     }
 
     @Test
+    void refinementShouldResolvePromptAndModelFromServerConfigWhenSnapshotIsIncomplete() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        CapturingBusinessInvokeConfigResolver businessConfigResolver = new CapturingBusinessInvokeConfigResolver();
+        AiRefinementApplicationServiceImpl service =
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, businessConfigResolver);
+        AiRefinementRequestCommand command = command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_QA);
+        command.setPromptVariablesJson(null);
+        command.setOutputSchemaJson(null);
+
+        service.generateQa(command);
+        AiInvokeCommand capturedCommand = invocationService.capturedCommand();
+
+        assertEquals(1, businessConfigResolver.resolveCount());
+        assertEquals(new AiModelId(200L), capturedCommand.getModelId());
+        assertEquals(AiModelName.of("server-model"), capturedCommand.getModelName());
+        assertEquals(new PromptVersionId(300L), capturedCommand.getPromptVersionId());
+        assertEquals("[{\"role\":\"system\",\"content\":\"server prompt\"}]", capturedCommand.getPromptMessagesJson());
+        assertEquals("{\"title\":\"server variables\"}", capturedCommand.getPromptVariablesJson());
+        assertEquals("{\"type\":\"object\"}", capturedCommand.getOutputSchemaJson());
+    }
+
+    @Test
     void refinementShouldPreserveSubmittedPromptAndModelSnapshot() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         CapturingBusinessInvokeConfigResolver businessConfigResolver = new CapturingBusinessInvokeConfigResolver();
@@ -242,6 +264,27 @@ class AiRefinementApplicationServiceImplTest {
         assertEquals("[{\"role\":\"user\",\"content\":\"hello\"}]", capturedCommand.getPromptMessagesJson());
         assertEquals("{\"title\":\"submitted variables\"}", capturedCommand.getPromptVariablesJson());
         assertEquals("{\"type\":\"object\",\"required\":[\"qaPairs\"]}", capturedCommand.getOutputSchemaJson());
+    }
+
+    @Test
+    void refinementShouldPreserveSubmittedSnapshotWithoutOutputSchema() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        CapturingBusinessInvokeConfigResolver businessConfigResolver = new CapturingBusinessInvokeConfigResolver();
+        AiRefinementApplicationServiceImpl service =
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, businessConfigResolver);
+        AiRefinementRequestCommand command = command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_SUMMARY);
+        command.setPromptVariablesJson("{\"title\":\"submitted variables\"}");
+        command.setOutputSchemaJson(null);
+
+        service.summarize(command);
+        AiInvokeCommand capturedCommand = invocationService.capturedCommand();
+
+        assertEquals(0, businessConfigResolver.resolveCount());
+        assertEquals(new AiModelId(20L), capturedCommand.getModelId());
+        assertEquals(new PromptVersionId(30L), capturedCommand.getPromptVersionId());
+        assertEquals("[{\"role\":\"user\",\"content\":\"hello\"}]", capturedCommand.getPromptMessagesJson());
+        assertEquals("{\"title\":\"submitted variables\"}", capturedCommand.getPromptVariablesJson());
+        assertNull(capturedCommand.getOutputSchemaJson());
     }
 
     private AiRefinementRequestCommand command(String contentType, String operation, String capability) {
