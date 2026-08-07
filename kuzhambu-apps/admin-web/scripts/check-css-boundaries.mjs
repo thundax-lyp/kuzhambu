@@ -30,14 +30,6 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
     ["stores", "ADMIN_WEB_FORBID_BUCKET_DIR"]
 ]);
 const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
-    {
-        file: "src/pages/ai/business-config/business-config-edit-drawer/business-config-edit-drawer.css",
-        allowedAntdSelectorLines: 3
-    },
-    {
-        file: "src/pages/ai/prompt/prompt-edit-drawer/prompt-edit-drawer.css",
-        allowedAntdSelectorLines: 5
-    },
     { file: "src/pages/ai/prompt/prompt-page.css", allowedAntdSelectorLines: 1 },
     {
         file: "src/pages/audit/audit-log/audit-log-detail/audit-log-detail.css",

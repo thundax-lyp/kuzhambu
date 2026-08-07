@@ -4,19 +4,19 @@
     padding-top: 4px;
 }
 
-.business-config-edit-drawer-form-item-compact .ant-form-item-control {
+.business-config-edit-drawer-form-control-compact {
     max-width: 520px;
 }
 
-.business-config-edit-drawer-form-item-status .ant-form-item-control {
+.business-config-edit-drawer-form-control-status {
     max-width: 180px;
 }
 
-.business-config-edit-drawer-form-item-json .ant-form-item-control {
+.business-config-edit-drawer-form-control-json {
     max-width: 720px;
 }
 
-.business-config-edit-drawer-form-item-json textarea {
+.business-config-edit-drawer-form-control-json textarea {
     font-family:
         ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
         monospace;

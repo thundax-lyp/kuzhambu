@@ -31,8 +31,12 @@ export interface KuzhambuFormProps<Values = unknown> extends Omit<
     rowGutter?: RowProps["gutter"];
 }
 
-export interface KuzhambuFormItemProps extends Omit<FormItemProps, "labelCol" | "wrapperCol"> {
+export interface KuzhambuFormItemProps extends Omit<
+    FormItemProps,
+    "className" | "labelCol" | "wrapperCol"
+> {
     colProps?: Omit<ColProps, "lg" | "md" | "offset" | "sm" | "span" | "xl" | "xs" | "xxl">;
+    labelVerticalAlign?: "default" | "top";
     layoutSize?: KuzhambuFormItemLayoutSize;
 }
 
@@ -48,7 +52,7 @@ export interface KuzhambuFormPlaceholderItemProps {
 const KuzhambuFormLayoutTierContext = createContext<KuzhambuFormLayoutTier | undefined>(undefined);
 
 export const KuzhambuFormItem = ({
-    className,
+    labelVerticalAlign = "default",
     layoutSize = "middle",
     ...formItemProps
 }: KuzhambuFormItemProps) => {
@@ -60,7 +64,10 @@ export const KuzhambuFormItem = ({
     return (
         <Form.Item
             {...formItemProps}
-            className={["kuzhambu-form-item", className].filter(Boolean).join(" ")}
+            className={[
+                "kuzhambu-form-item",
+                `kuzhambu-form-item-label-${labelVerticalAlign}`
+            ].join(" ")}
             labelCol={labelCol}
             wrapperCol={wrapperCol}
         />

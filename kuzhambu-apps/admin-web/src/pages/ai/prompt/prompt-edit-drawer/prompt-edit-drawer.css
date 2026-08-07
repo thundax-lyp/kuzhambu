@@ -3,19 +3,19 @@
     gap: 12px;
 }
 
-.prompt-editor-item-compact .ant-form-item-control {
+.prompt-editor-control-compact {
     max-width: 360px;
 }
 
-.prompt-editor-item-status .ant-form-item-control {
+.prompt-editor-control-status {
     max-width: 180px;
 }
 
-.prompt-editor-item-wide .ant-form-item-control {
+.prompt-editor-control-wide {
     max-width: 760px;
 }
 
-.prompt-editor-item-full .ant-form-item-control {
+.prompt-editor-control-full {
     max-width: none;
 }
 
@@ -54,10 +54,6 @@
         ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
         monospace;
     line-height: 1.6;
-}
-
-.prompt-editor-item-top .ant-form-item-label {
-    align-self: flex-start;
 }
 
 .prompt-version-section {

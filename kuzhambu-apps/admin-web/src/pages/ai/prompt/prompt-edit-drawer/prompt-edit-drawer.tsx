@@ -754,63 +754,66 @@ export const PromptEditDrawer = ({
                         label="模板名称"
                         name="name"
                         layoutSize="middle"
-                        className="prompt-editor-item-compact"
                         rules={[{ required: true, message: "请输入模板名称" }]}
                     >
-                        <Input />
+                        <div className="prompt-editor-control-compact">
+                            <Input />
+                        </div>
                     </KuzhambuFormItem>
                     <KuzhambuFormItem
                         label="能力"
                         name="capability"
                         layoutSize="middle"
-                        className="prompt-editor-item-compact"
                         rules={[{ required: true, message: "请选择能力" }]}
                     >
-                        <KuzhambuSelect
-                            aria-label="提示词能力"
-                            disabled={Boolean(template)}
-                            options={capabilityOptions}
-                        />
+                        <div className="prompt-editor-control-compact">
+                            <KuzhambuSelect
+                                aria-label="提示词能力"
+                                disabled={Boolean(template)}
+                                options={capabilityOptions}
+                            />
+                        </div>
                     </KuzhambuFormItem>
-                    <KuzhambuFormItem
-                        label="变量"
-                        layoutSize="middle"
-                        className="prompt-editor-item-compact"
-                    >
-                        <KuzhambuButton
-                            testId="ai-prompt-prompt-view-variables-button"
-                            disabled={allowedVariableNames.length === 0}
-                            onClick={() => setVariableModalOpen(true)}
-                        >
-                            查看变量
-                        </KuzhambuButton>
+                    <KuzhambuFormItem label="变量" layoutSize="middle">
+                        <div className="prompt-editor-control-compact">
+                            <KuzhambuButton
+                                testId="ai-prompt-prompt-view-variables-button"
+                                disabled={allowedVariableNames.length === 0}
+                                onClick={() => setVariableModalOpen(true)}
+                            >
+                                查看变量
+                            </KuzhambuButton>
+                        </div>
                     </KuzhambuFormItem>
                     <KuzhambuFormItem
                         label="状态"
                         name="status"
                         layoutSize="middle"
                         valuePropName="checked"
-                        className="prompt-editor-item-status"
                     >
-                        <KuzhambuSwitch
-                            checkedChildren="启用"
-                            unCheckedChildren="禁用"
-                            aria-label="提示词模板状态"
-                        />
+                        <div className="prompt-editor-control-status">
+                            <KuzhambuSwitch
+                                checkedChildren="启用"
+                                unCheckedChildren="禁用"
+                                aria-label="提示词模板状态"
+                            />
+                        </div>
                     </KuzhambuFormItem>
                     <KuzhambuFormItem
                         label="说明"
                         name="description"
                         layoutSize="large"
-                        className="prompt-editor-item-full prompt-editor-item-top"
+                        labelVerticalAlign="top"
                     >
-                        <Input.TextArea rows={2} />
+                        <div className="prompt-editor-control-full">
+                            <Input.TextArea rows={2} />
+                        </div>
                     </KuzhambuFormItem>
                     <KuzhambuFormItem
                         label="正文"
                         name="messageTemplatesJson"
                         layoutSize="large"
-                        className="prompt-editor-item-top"
+                        labelVerticalAlign="top"
                         rules={[
                             { required: true, message: "请输入正文" },
                             { validator: (_, value) => assertJsonText(value, EMPTY_JSON_ARRAY) }
@@ -826,28 +829,25 @@ export const PromptEditDrawer = ({
                     >
                         <Input />
                     </KuzhambuFormHiddenItem>
-                    <KuzhambuFormItem
-                        label="输出格式"
-                        name="outputStructure"
-                        layoutSize="small"
-                        className="prompt-editor-item-compact"
-                    >
-                        <KuzhambuSelect
-                            aria-label="输出格式"
-                            options={[
-                                { label: "TEXT", value: "TEXT" },
-                                { label: "JSON", value: "JSON" }
-                            ]}
-                            onChange={(outputStructure: PromptOutputStructure) => {
-                                form.setFieldValue(
-                                    "outputSchemaJson",
-                                    outputSchemaForStructure(
-                                        outputStructure,
-                                        form.getFieldValue("outputSchemaJson")
-                                    )
-                                );
-                            }}
-                        />
+                    <KuzhambuFormItem label="输出格式" name="outputStructure" layoutSize="small">
+                        <div className="prompt-editor-control-compact">
+                            <KuzhambuSelect
+                                aria-label="输出格式"
+                                options={[
+                                    { label: "TEXT", value: "TEXT" },
+                                    { label: "JSON", value: "JSON" }
+                                ]}
+                                onChange={(outputStructure: PromptOutputStructure) => {
+                                    form.setFieldValue(
+                                        "outputSchemaJson",
+                                        outputSchemaForStructure(
+                                            outputStructure,
+                                            form.getFieldValue("outputSchemaJson")
+                                        )
+                                    );
+                                }}
+                            />
+                        </div>
                     </KuzhambuFormItem>
                     <KuzhambuFormHiddenItem
                         name="outputSchemaJson"
@@ -857,30 +857,25 @@ export const PromptEditDrawer = ({
                     >
                         <Input />
                     </KuzhambuFormHiddenItem>
-                    <KuzhambuFormItem
-                        label="变更说明"
-                        name="changeSummary"
-                        layoutSize="middle"
-                        className="prompt-editor-item-wide"
-                    >
-                        <Input />
+                    <KuzhambuFormItem label="变更说明" name="changeSummary" layoutSize="middle">
+                        <div className="prompt-editor-control-wide">
+                            <Input />
+                        </div>
                     </KuzhambuFormItem>
-                    <KuzhambuFormItem
-                        label="辅助操作"
-                        layoutSize="large"
-                        className="prompt-editor-item-wide"
-                    >
-                        <KuzhambuSpace wrap>
-                            <KuzhambuButton
-                                testId="ai-prompt-prompt-validate-variables-button"
-                                icon={<CheckCircleOutlined />}
-                                disabled={!currentTemplateId}
-                                loading={validateMutation.isPending}
-                                onClick={() => void validateVariables()}
-                            >
-                                校验变量
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
+                    <KuzhambuFormItem label="辅助操作" layoutSize="large">
+                        <div className="prompt-editor-control-wide">
+                            <KuzhambuSpace wrap>
+                                <KuzhambuButton
+                                    testId="ai-prompt-prompt-validate-variables-button"
+                                    icon={<CheckCircleOutlined />}
+                                    disabled={!currentTemplateId}
+                                    loading={validateMutation.isPending}
+                                    onClick={() => void validateVariables()}
+                                >
+                                    校验变量
+                                </KuzhambuButton>
+                            </KuzhambuSpace>
+                        </div>
                     </KuzhambuFormItem>
                 </KuzhambuForm>
                 {template ? (

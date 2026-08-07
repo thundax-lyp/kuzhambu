@@ -21,6 +21,10 @@
     letter-spacing: var(--kuzhambu-form-label-letter-spacing, inherit);
 }
 
+.kuzhambu-form .kuzhambu-form-item-label-top .ant-form-item-label {
+    align-self: flex-start;
+}
+
 @media (max-width: 760px) {
     .kuzhambu-form-mobile-item-block .kuzhambu-form-item {
         display: block;
