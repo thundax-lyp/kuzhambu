@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TagsOutlined } from "@ant-design/icons";
-import { Badge, Empty } from "antd";
+import { Empty } from "antd";
 import { KuzhambuDrawer, KuzhambuButton } from "@/components";
 import * as service from "@/pages/classics/ming-custom/ming-custom-service";
 import type { MingCustomsTagCloudItem } from "@/pages/classics/ming-custom/ming-custom-types";
@@ -73,10 +73,9 @@ export const MingCustomsTagCloud = ({ category, keyword, onSelect }: MingCustoms
                                 }}
                             >
                                 <span>{item.tagNameSnapshot}</span>
-                                <Badge
-                                    count={item.count}
-                                    color="var(--ming-customs-accent-color)"
-                                />
+                                <span className="ming-customs-keyword-cloud-count">
+                                    {item.count}
+                                </span>
                             </button>
                         ))}
                     </div>

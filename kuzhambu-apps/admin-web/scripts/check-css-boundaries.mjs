@@ -31,10 +31,6 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
 ]);
 const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     {
-        file: "src/pages/classics/ming-custom/ming-customs-keyword-cloud/ming-customs-keyword-cloud.css",
-        allowedAntdSelectorLines: 2
-    },
-    {
         file: "src/pages/classics/publication-job/publication-job-page.css",
         allowedAntdSelectorLines: 1
     },
