@@ -243,7 +243,7 @@ export const QaSyncTable = () => {
                     </KuzhambuSpace>
                 </KuzhambuSpace>
             </KuzhambuCard>
-            <KuzhambuCard title="同步记录" size="small">
+            <KuzhambuCard className="qa-console-card-spaced" title="同步记录" size="small">
                 <KuzhambuTable
                     ariaLabel="知识同步表格"
                     columns={columns}

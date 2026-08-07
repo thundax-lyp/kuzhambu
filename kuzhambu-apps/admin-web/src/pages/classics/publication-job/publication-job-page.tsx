@@ -29,6 +29,7 @@ const normalizeKeyword = (value: string) => value.trim() || undefined;
 const SEARCH_DEBOUNCE_MS = 500;
 const formatTime = (value?: string | null) =>
     value ? dayjs(value).format("YYYY-MM-DD HH:mm:ss") : "-";
+const middleCell = () => ({ className: "publication-job-table-cell" });
 
 export const PublicationJobPage = () => {
     const [searchText, setSearchText] = useState("");
@@ -49,6 +50,7 @@ export const PublicationJobPage = () => {
             {
                 title: "稿件",
                 key: "content",
+                onCell: middleCell,
                 render: (_, job) =>
                     `${readPublicationContentTypeLabel(job.contentType)}｜${job.contentTitleSnapshot || `#${job.contentId}`}`
             },
@@ -56,6 +58,7 @@ export const PublicationJobPage = () => {
                 title: "动作",
                 dataIndex: "jobType",
                 width: 80,
+                onCell: middleCell,
                 render: (value: ClassicsPublicationJobRecord["jobType"]) => (
                     <KuzhambuTag type="accent">{readPublicationJobTypeLabel(value)}</KuzhambuTag>
                 )
@@ -64,6 +67,7 @@ export const PublicationJobPage = () => {
                 title: "结果",
                 dataIndex: "jobResultStatus",
                 width: 100,
+                onCell: middleCell,
                 render: (value: ClassicsPublicationJobRecord["jobResultStatus"]) => (
                     <KuzhambuTag type={PUBLICATION_JOB_RESULT_TAG_TYPES[value]}>
                         {readPublicationJobResultLabel(value)}
@@ -74,6 +78,7 @@ export const PublicationJobPage = () => {
                 title: "里程碑",
                 dataIndex: "jobStatus",
                 width: 180,
+                onCell: middleCell,
                 render: (value: ClassicsPublicationJobRecord["jobStatus"]) => (
                     <KuzhambuTag type="info">{readPublicationJobStatusLabel(value)}</KuzhambuTag>
                 )
@@ -82,12 +87,14 @@ export const PublicationJobPage = () => {
                 title: "尝试次数",
                 key: "attempts",
                 width: 100,
+                onCell: middleCell,
                 render: (_, job) => `${job.attemptCount}/${job.maxAttempts}`
             },
             {
                 title: "请求时间",
                 dataIndex: "requestedAt",
                 width: 180,
+                onCell: middleCell,
                 render: formatTime
             },
             {

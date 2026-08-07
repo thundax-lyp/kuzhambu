@@ -30,78 +30,26 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
     ["stores", "ADMIN_WEB_FORBID_BUCKET_DIR"]
 ]);
 const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
-    { file: "src/pages/ai/prompt/prompt-page.css", allowedAntdSelectorLines: 1 },
-    { file: "src/pages/auth/login/login-page.css", allowedAntdSelectorLines: 8 },
-    {
-        file: "src/pages/classics/common/classics-content-tag-panel.css",
-        allowedAntdSelectorLines: 1
-    },
-    {
-        file: "src/pages/classics/ming-custom/ming-customs-keyword-cloud/ming-customs-keyword-cloud.css",
-        allowedAntdSelectorLines: 2
-    },
-    {
-        file: "src/pages/classics/publication-job/publication-job-page.css",
-        allowedAntdSelectorLines: 1
-    },
-    {
-        file: "src/pages/classics/sancai/sancai-catalog-tree-panel/sancai-catalog-tree-panel.css",
-        allowedAntdSelectorLines: 2
-    },
-    {
-        file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-basic-section/sancai-entry-image-field/sancai-entry-image-field.css",
-        allowedAntdSelectorLines: 5
-    },
-    {
-        file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-basic-section/sancai-entry-translation-text-field/sancai-entry-translation-text-field.css",
-        allowedAntdSelectorLines: 5
-    },
     {
         file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-panel.css",
         allowedAntdSelectorLines: 4
     },
-    { file: "src/pages/classics/sancai/sancai-page.css", allowedAntdSelectorLines: 3 },
     {
         file: "src/pages/classics/sancai-visual/sancai-entry-visual-section/sancai-entry-visual-section.css",
         allowedAntdSelectorLines: 14
     },
     {
-        file: "src/pages/classics/sancai-visual/sancai-visual-entry-context/sancai-visual-entry-context.css",
-        allowedAntdSelectorLines: 1
-    },
-    {
         file: "src/pages/classics/sancai-visual/sancai-visual-entry-picker-modal/sancai-visual-entry-picker-modal.css",
         allowedAntdSelectorLines: 7
     },
-    {
-        file: "src/pages/classics/wangqi/wangqi-document-edit-drawer/wangqi-document-edit-drawer.css",
-        allowedAntdSelectorLines: 1
-    },
     { file: "src/pages/classics/wangqi/wangqi-page.css", allowedAntdSelectorLines: 10 },
-    { file: "src/pages/dashboard/dashboard/dashboard-page.css", allowedAntdSelectorLines: 6 },
     {
         file: "src/pages/discovery/qa/qa-message-panel/qa-message-panel.css",
         allowedAntdSelectorLines: 17
     },
     {
-        file: "src/pages/discovery/qa/qa-session-table/qa-session-table.css",
-        allowedAntdSelectorLines: 2
-    },
-    { file: "src/pages/discovery/qa-console/qa-console-page.css", allowedAntdSelectorLines: 1 },
-    {
         file: "src/pages/discovery/search-statistic/search-statistic-page.css",
         allowedAntdSelectorLines: 16
-    },
-    {
-        file: "src/pages/knowledge/graph-extraction/graph-extraction-page.css",
-        allowedAntdSelectorLines: 1
-    },
-    { file: "src/pages/knowledge/graph-result/graph-result-page.css", allowedAntdSelectorLines: 1 },
-    { file: "src/pages/knowledge/lineage/lineage-page.css", allowedAntdSelectorLines: 2 },
-    { file: "src/pages/knowledge/taxonomy/taxonomy-page.css", allowedAntdSelectorLines: 1 },
-    {
-        file: "src/pages/operations/backup-restore/backup-restore-page.css",
-        allowedAntdSelectorLines: 1
     },
     {
         file: "src/pages/storage/storage-object/storage-object-page.css",

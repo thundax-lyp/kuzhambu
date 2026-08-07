@@ -480,6 +480,7 @@ export const GraphExtractionPage = () => {
                             />
                         ) : (
                             <Empty
+                                className="knowledge-graph-extraction-task-empty"
                                 description="当前还没有抽取任务，可以先从稿件树选择稿件并抽取图谱。"
                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                             />

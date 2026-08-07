@@ -85,7 +85,7 @@
     width: 100%;
 }
 
-.knowledge-lineage-canvas-summary .ant-alert {
+.knowledge-lineage-refresh-alert {
     grid-column: 1 / -1;
 }
 
@@ -93,7 +93,7 @@
     width: 100%;
 }
 
-.knowledge-lineage-detail-panel__sources .ant-list-item {
+.knowledge-lineage-detail-panel__source-item {
     padding: 4px 0;
 }
 

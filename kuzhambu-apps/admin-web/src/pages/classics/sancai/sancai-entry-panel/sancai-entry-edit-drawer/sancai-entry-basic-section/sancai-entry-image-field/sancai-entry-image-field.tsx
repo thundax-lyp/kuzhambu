@@ -1,5 +1,5 @@
 import { UploadOutlined } from "@ant-design/icons";
-import { Badge, Empty, Image, Typography, Upload } from "antd";
+import { Empty, Image, Typography, Upload } from "antd";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import {
     KuzhambuButton,
@@ -115,11 +115,15 @@ export const SancaiEntryImageField = ({
                                         const imageTitle = readImageTitle(image);
                                         const thumbnail = (
                                             <Image
-                                                className={
+                                                className="sancai-entry-image-thumbnail"
+                                                rootClassName={[
+                                                    "sancai-entry-image-preview",
                                                     image.currentUsed
                                                         ? "sancai-entry-image-cover-thumbnail"
-                                                        : undefined
-                                                }
+                                                        : ""
+                                                ]
+                                                    .filter(Boolean)
+                                                    .join(" ")}
                                                 width={132}
                                                 height={88}
                                                 src={resolveImagePreviewUrl(entryId, image)}
@@ -130,16 +134,25 @@ export const SancaiEntryImageField = ({
                                             <div className="sancai-entry-image-cell">
                                                 {image.currentUsed ? (
                                                     <span className="sancai-entry-image-cover">
-                                                        <Badge.Ribbon text="封面">
-                                                            {thumbnail}
-                                                        </Badge.Ribbon>
+                                                        <span className="sancai-entry-image-cover-label">
+                                                            封面
+                                                        </span>
+                                                        {thumbnail}
                                                     </span>
                                                 ) : (
                                                     thumbnail
                                                 )}
                                                 <span className="sancai-entry-image-meta">
-                                                    <Text strong>{imageTitle}</Text>
-                                                    <Text type="secondary">
+                                                    <Text
+                                                        strong
+                                                        className="sancai-entry-image-meta-text"
+                                                    >
+                                                        {imageTitle}
+                                                    </Text>
+                                                    <Text
+                                                        type="secondary"
+                                                        className="sancai-entry-image-meta-text sancai-secondary-text"
+                                                    >
                                                         {formatImageSize(image.size)}
                                                     </Text>
                                                 </span>

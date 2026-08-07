@@ -49,7 +49,7 @@ const toTreeData = (nodes: CatalogTreePanelItem[]): DataNode[] => {
                 <span className="sancai-catalog-tree-icon" aria-hidden>
                     {iconByType[node.nodeType]}
                 </span>
-                <Text>{node.title}</Text>
+                <Text className="sancai-catalog-tree-text">{node.title}</Text>
             </span>
         )
     }));
@@ -77,6 +77,7 @@ export const SancaiCatalogTreePanel = ({
         treeContent = (
             <Tree
                 blockNode
+                className="sancai-catalog-tree"
                 expandedKeys={expandedKeys}
                 selectedKeys={selectedKey ? [selectedKey] : []}
                 treeData={treeData}
@@ -95,7 +96,7 @@ export const SancaiCatalogTreePanel = ({
         <div className="sancai-catalog-tree-panel" aria-label="三才图会目录树">
             <div className="sancai-catalog-panel-head">
                 <KuzhambuSpace size={8}>
-                    <FolderOutlined />
+                    <FolderOutlined className="sancai-catalog-panel-title-icon" />
                     <Text strong>{title}</Text>
                 </KuzhambuSpace>
                 <KuzhambuButton

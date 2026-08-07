@@ -313,6 +313,7 @@ export const ClassicsContentTagPanel = ({
                 <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                     <KuzhambuSpaceCompact className="classics-content-tag-picker-search">
                         <Input
+                            className="classics-content-tag-picker-search-input"
                             aria-label="添加标签"
                             placeholder="输入标签名或搜索关键词"
                             value={tagKeywordInput}

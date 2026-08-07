@@ -25,7 +25,7 @@ html[data-theme="dark"] .sancai-form-field {
     --sancai-accent-line: rgba(45, 212, 191, 0.28);
 }
 
-.sancai-page .ant-typography-secondary {
+.sancai-secondary-text {
     color: var(--sancai-copy);
 }
 
@@ -110,8 +110,7 @@ html[data-theme="dark"] .sancai-form-field {
     border-radius: 8px;
 }
 
-.sancai-category-edit-modal .ant-input,
-.sancai-category-edit-modal .ant-select-selector {
+.sancai-category-edit-control {
     color: var(--sancai-ink);
     background: var(--sancai-panel) !important;
     border-color: var(--sancai-line) !important;

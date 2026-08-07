@@ -74,10 +74,18 @@ export const SancaiCategoryEditDrawerModal = ({
                 initialValues={initialValues}
             >
                 <KuzhambuFormItem name="title" label="门类标题" layoutSize="large">
-                    <Input aria-label="三才图会门类标题" placeholder="门类标题" />
+                    <Input
+                        className="sancai-category-edit-control"
+                        aria-label="三才图会门类标题"
+                        placeholder="门类标题"
+                    />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem name="categoryType" label="门类类型" layoutSize="large">
-                    <KuzhambuSelect aria-label="三才图会门类类型" options={categoryTypeOptions} />
+                    <KuzhambuSelect
+                        controlClassName="sancai-category-edit-control"
+                        aria-label="三才图会门类类型"
+                        options={categoryTypeOptions}
+                    />
                 </KuzhambuFormItem>
             </KuzhambuForm>
         </KuzhambuModal>

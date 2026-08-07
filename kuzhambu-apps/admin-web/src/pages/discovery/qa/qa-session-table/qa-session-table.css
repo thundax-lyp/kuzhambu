@@ -8,7 +8,7 @@
     padding: 18px 16px;
 }
 
-.discovery-qa-page__sidebar > .ant-btn-primary {
+.discovery-qa-page__create-session {
     background: var(--accent-blue);
     border-color: var(--accent-blue);
     border-radius: 8px;
@@ -65,7 +65,7 @@
     white-space: nowrap;
 }
 
-.discovery-qa-page__select-session.ant-btn-primary {
+.discovery-qa-page__select-session--active {
     background: color-mix(in srgb, var(--accent-blue) 14%, var(--surface-panel));
     border-color: color-mix(in srgb, var(--accent-blue) 42%, var(--line-subtle));
     color: var(--accent-blue);
