@@ -44,11 +44,19 @@ export const hasPermission = (permission: string) => {
 };
 
 export const subscribePermissionsChange = (listener: () => void) => {
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key !== PERMISSIONS_KEY && event.key !== null) {
+            return;
+        }
+        permissionSet = new Set(readStoredPermissions());
+        listener();
+    };
+
     window.addEventListener(PERMISSIONS_CHANGE_EVENT, listener);
-    window.addEventListener("storage", listener);
+    window.addEventListener("storage", handleStorageChange);
 
     return () => {
         window.removeEventListener(PERMISSIONS_CHANGE_EVENT, listener);
-        window.removeEventListener("storage", listener);
+        window.removeEventListener("storage", handleStorageChange);
     };
 };

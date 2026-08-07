@@ -87,6 +87,9 @@ public class KnowledgeGraphCandidateApplySupport {
         Instant appliedAt = Instant.now();
         GraphVersion version = ensureVersion(task, candidate, appliedAt);
         JsonNode payload = parsePayload(candidate.getResultPayload());
+        if (APPLY_MODE_OVERWRITE.equals(resolvedApplyMode)) {
+            clearVersionFacts(version, task);
+        }
         if (GraphExtractionTaskType.LINEAGE.equals(task.getTaskType())) {
             applyLineageNodes(version, payload, appliedAt, resolvedApplyMode);
             applyLineageRelations(version, payload, appliedAt, resolvedApplyMode);
@@ -103,13 +106,47 @@ public class KnowledgeGraphCandidateApplySupport {
     private String normalizeApplyMode(String applyMode) {
         String normalized =
                 StringUtils.defaultIfBlank(applyMode, APPLY_MODE_MERGE).trim().toUpperCase(Locale.ROOT);
-        if (APPLY_MODE_MERGE.equals(normalized) || APPLY_MODE_APPEND.equals(normalized)) {
+        if (APPLY_MODE_MERGE.equals(normalized)
+                || APPLY_MODE_APPEND.equals(normalized)
+                || APPLY_MODE_OVERWRITE.equals(normalized)) {
             return normalized;
         }
-        if (APPLY_MODE_OVERWRITE.equals(normalized)) {
-            throw new BizException("Knowledge graph overwrite apply mode is not supported yet");
-        }
         throw new BizException("Unsupported knowledge graph candidate apply mode: " + applyMode);
+    }
+
+    private void clearVersionFacts(GraphVersion version, GraphExtractionTask task) {
+        if (version == null || version.getId() == null) {
+            return;
+        }
+        if (GraphExtractionTaskType.LINEAGE.equals(task.getTaskType())) {
+            Collection<String> nodeKeys = keys(
+                    knowledgeLineageNodeRepository.listByVersionId(GraphVersionIdCodec.toValue(version.getId())),
+                    KnowledgeLineageNode::getNodeKey);
+            if (!nodeKeys.isEmpty()) {
+                knowledgeLineageNodeRepository.deleteByNodeKeys(nodeKeys);
+            }
+            Collection<String> relationKeys = keys(
+                    knowledgeLineageRelationRepository.listByVersionId(GraphVersionIdCodec.toValue(version.getId())),
+                    KnowledgeLineageRelation::getRelationKey);
+            if (!relationKeys.isEmpty()) {
+                knowledgeLineageRelationRepository.deleteByRelationKeys(relationKeys);
+            }
+            return;
+        }
+        if (GraphExtractionTaskType.RELATION.equals(task.getTaskType())
+                || GraphExtractionTaskType.GRAPH.equals(task.getTaskType())) {
+            Collection<String> entityKeys =
+                    keys(knowledgeEntityRepository.listByVersionId(version.getId()), KnowledgeEntity::getEntityKey);
+            if (!entityKeys.isEmpty()) {
+                knowledgeEntityRepository.deleteByEntityKeys(entityKeys);
+            }
+            Collection<String> relationKeys = keys(
+                    knowledgeRelationRepository.listByVersionId(GraphVersionIdCodec.toValue(version.getId())),
+                    KnowledgeRelation::getRelationKey);
+            if (!relationKeys.isEmpty()) {
+                knowledgeRelationRepository.deleteByRelationKeys(relationKeys);
+            }
+        }
     }
 
     private GraphVersion ensureVersion(GraphExtractionTask task, AiCandidateFacadeDto candidate, Instant appliedAt) {
@@ -285,6 +322,10 @@ public class KnowledgeGraphCandidateApplySupport {
                     .toList());
             return;
         }
+        if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
+            knowledgeEntityRepository.saveOrUpdateBatch(incoming);
+            return;
+        }
         for (KnowledgeEntity entity : incoming) {
             KnowledgeEntity existing = existingByKey.get(entity.getEntityKey());
             if (existing == null) {
@@ -311,6 +352,10 @@ public class KnowledgeGraphCandidateApplySupport {
             knowledgeRelationRepository.saveOrUpdateBatch(incoming.stream()
                     .filter(relation -> !existingByKey.containsKey(relation.getRelationKey()))
                     .toList());
+            return;
+        }
+        if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
+            knowledgeRelationRepository.saveOrUpdateBatch(incoming);
             return;
         }
         for (KnowledgeRelation relation : incoming) {
@@ -341,6 +386,10 @@ public class KnowledgeGraphCandidateApplySupport {
                     .toList());
             return;
         }
+        if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
+            knowledgeLineageNodeRepository.saveOrUpdateBatch(incoming);
+            return;
+        }
         for (KnowledgeLineageNode node : incoming) {
             KnowledgeLineageNode existing = existingByKey.get(node.getNodeKey());
             if (existing == null) {
@@ -367,6 +416,10 @@ public class KnowledgeGraphCandidateApplySupport {
             knowledgeLineageRelationRepository.saveOrUpdateBatch(incoming.stream()
                     .filter(relation -> !existingByKey.containsKey(relation.getRelationKey()))
                     .toList());
+            return;
+        }
+        if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
+            knowledgeLineageRelationRepository.saveOrUpdateBatch(incoming);
             return;
         }
         for (KnowledgeLineageRelation relation : incoming) {

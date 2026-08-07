@@ -4,6 +4,10 @@ import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { GraphExtractionPage } from "./graph-extraction-page";
 
+vi.mock("@/components/kuzhambu-graph", () =>
+    Object.fromEntries([["KuzhambuGraph", () => <div aria-label="当前图谱关系图" role="img" />]])
+);
+
 const serviceMocks = vi.hoisted(() => ({
     addTask: vi.fn(async () => ({ taskId: "9001", taskType: "GRAPH", status: "REQUESTED" })),
     applyTaskCandidate: vi.fn(async () => ({ taskId: "9001", status: "APPLIED" })),
@@ -350,9 +354,6 @@ describe("GraphExtractionPage", () => {
         expect(extractCommand).not.toHaveProperty("promptMessagesJson");
 
         expect(screen.getByRole("table", { name: "候选 SPO 列表" })).toBeInTheDocument();
-        expect(
-            screen.getByTestId("knowledge-graph-extraction-candidate-overwrite-apply-button")
-        ).toBeDisabled();
         await waitFor(() => {
             expect(serviceMocks.getTaskDetail).toHaveBeenCalledWith({ taskId: "9001" });
         });
@@ -363,12 +364,17 @@ describe("GraphExtractionPage", () => {
             expect(mergeButton).toBeEnabled();
         });
         expect(
+            screen.getByTestId("knowledge-graph-extraction-candidate-overwrite-apply-button")
+        ).toBeEnabled();
+        expect(
             screen.getByTestId("knowledge-graph-extraction-candidate-append-apply-button")
         ).toBeEnabled();
-        fireEvent.click(mergeButton);
+        fireEvent.click(
+            screen.getByTestId("knowledge-graph-extraction-candidate-overwrite-apply-button")
+        );
         await waitFor(() => {
             expect(workbenchServiceMocks.applyCandidate).toHaveBeenCalledWith({
-                applyMode: "MERGE",
+                applyMode: "OVERWRITE",
                 taskId: "9001"
             });
         });

@@ -141,6 +141,78 @@ class KnowledgeGraphCandidateApplySupportTest {
     }
 
     @Test
+    void overwriteShouldReplaceCurrentVersionFactsAndCandidateKeys() {
+        FakeGraphVersionRepository versionRepository = new FakeGraphVersionRepository();
+        FakeKnowledgeEntityRepository entityRepository = new FakeKnowledgeEntityRepository();
+        FakeKnowledgeRelationRepository relationRepository = new FakeKnowledgeRelationRepository();
+        GraphExtractionTask task = new GraphExtractionTask();
+        task.setId(GraphExtractionTaskIdCodec.toDomain(11L));
+        task.setTaskType(GraphExtractionTaskType.GRAPH);
+        task.setSourceContentType("SANCAI_ENTRY");
+        task.setSourceContentId(GraphExtractionSourceContentIdCodec.toDomain(1L));
+        GraphVersion existingVersion = new GraphVersion();
+        existingVersion.setId(GraphVersionIdCodec.toDomain(7L));
+        existingVersion.setTaskId(task.getId());
+        existingVersion.setCandidateId(new GraphExtractionAiCandidateId(22L));
+        existingVersion.setTaskType(GraphExtractionTaskType.GRAPH);
+        existingVersion.setSourceContentType("SANCAI_ENTRY");
+        existingVersion.setSourceContentId(GraphExtractionSourceContentIdCodec.toDomain(1L));
+        existingVersion.setVersionNo(1);
+        existingVersion.setStatus(GraphVersionStatus.APPLIED);
+        versionRepository.versions.add(existingVersion);
+        KnowledgeEntity staleEntity = new KnowledgeEntity();
+        staleEntity.setEntityKey(textKey("旧实体"));
+        staleEntity.setName("旧实体");
+        staleEntity.setLatestVersionId(existingVersion.getId());
+        entityRepository.store.put(staleEntity.getEntityKey(), staleEntity);
+        KnowledgeEntity confirmedEntity = new KnowledgeEntity();
+        confirmedEntity.setEntityKey(textKey("黄帝"));
+        confirmedEntity.setName("黄帝");
+        confirmedEntity.setDescription("人工确认描述");
+        confirmedEntity.setConfirmationStatus(KnowledgeConfirmationStatus.MANUAL_CONFIRMED);
+        confirmedEntity.setLatestVersionId(existingVersion.getId());
+        entityRepository.store.put(confirmedEntity.getEntityKey(), confirmedEntity);
+        KnowledgeRelation staleRelation = new KnowledgeRelation();
+        staleRelation.setRelationKey(relationKey("旧实体", "旧关系", "旧目标"));
+        staleRelation.setLatestVersionId(GraphVersionIdCodec.toValue(existingVersion.getId()));
+        relationRepository.store.put(staleRelation.getRelationKey(), staleRelation);
+        KnowledgeRelation confirmedRelation = new KnowledgeRelation();
+        confirmedRelation.setRelationKey(relationKey("黄帝", "建立", "制度"));
+        confirmedRelation.setEvidence("人工确认依据");
+        confirmedRelation.setConfirmationStatus("MANUAL_CONFIRMED");
+        confirmedRelation.setLatestVersionId(GraphVersionIdCodec.toValue(existingVersion.getId()));
+        relationRepository.store.put(confirmedRelation.getRelationKey(), confirmedRelation);
+        KnowledgeGraphCandidateApplySupport support = new KnowledgeGraphCandidateApplySupport(
+                versionRepository,
+                entityRepository,
+                relationRepository,
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository());
+        AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
+                .candidateId(22L)
+                .resultFormat("STRUCTURED")
+                .resultPayload("{\"entities\":[{\"name\":\"黄帝\",\"entityType\":\"PERSON\",\"description\":\"AI描述\"}],"
+                        + "\"relations\":[{\"sourceName\":\"黄帝\",\"targetName\":\"制度\",\"relationType\":\"建立\",\"evidence\":\"AI依据\"}],"
+                        + "\"entryRefs\":[{\"entryId\":1}]}")
+                .build();
+
+        support.apply(task, candidate, "OVERWRITE");
+
+        assertEquals(1, entityRepository.store.size());
+        assertEquals("AI描述", entityRepository.store.get(textKey("黄帝")).getDescription());
+        assertEquals(
+                KnowledgeConfirmationStatus.AI_EXTRACTED,
+                entityRepository.store.get(textKey("黄帝")).getConfirmationStatus());
+        assertEquals(1, relationRepository.store.size());
+        assertEquals(
+                "AI依据",
+                relationRepository.store.get(relationKey("黄帝", "建立", "制度")).getEvidence());
+        assertEquals(
+                "AI_EXTRACTED",
+                relationRepository.store.get(relationKey("黄帝", "建立", "制度")).getConfirmationStatus());
+    }
+
+    @Test
     void applyShouldAcceptSpoFieldNames() {
         FakeGraphVersionRepository versionRepository = new FakeGraphVersionRepository();
         FakeKnowledgeEntityRepository entityRepository = new FakeKnowledgeEntityRepository();

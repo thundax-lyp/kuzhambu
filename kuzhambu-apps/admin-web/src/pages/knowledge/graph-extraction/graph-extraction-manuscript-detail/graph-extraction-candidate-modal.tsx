@@ -30,7 +30,7 @@ interface GraphExtractionCandidateModalProps {
     extracting?: boolean;
     open: boolean;
     task?: GraphExtractionTaskRecord | null;
-    onApplyCandidate: (taskId: string, applyMode: "APPEND" | "MERGE") => void;
+    onApplyCandidate: (taskId: string, applyMode: "APPEND" | "MERGE" | "OVERWRITE") => void;
     onCancel: () => void;
     onFetchCandidate: (
         task: GraphExtractionTaskRecord | null
@@ -228,9 +228,14 @@ export const GraphExtractionCandidateModal = ({
                     <>
                         <KuzhambuButton
                             testId="knowledge-graph-extraction-candidate-overwrite-apply-button"
-                            disabled
+                            disabled={appendDisabled}
                             icon={<ImportOutlined />}
-                            title="覆盖需要稿件级安全清理能力，暂不开放"
+                            loading={applying}
+                            onClick={() => {
+                                if (taskId) {
+                                    onApplyCandidate(String(taskId), "OVERWRITE");
+                                }
+                            }}
                         >
                             覆盖
                         </KuzhambuButton>
