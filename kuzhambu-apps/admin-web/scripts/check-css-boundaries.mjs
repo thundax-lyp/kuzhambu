@@ -35,10 +35,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         allowedAntdSelectorLines: 5
     },
     {
-        file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-basic-section/sancai-entry-translation-text-field/sancai-entry-translation-text-field.css",
-        allowedAntdSelectorLines: 5
-    },
-    {
         file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-panel.css",
         allowedAntdSelectorLines: 4
     },
