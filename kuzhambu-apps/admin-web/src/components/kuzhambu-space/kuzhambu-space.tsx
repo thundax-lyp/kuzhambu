@@ -2,7 +2,7 @@ import { Space } from "antd";
 import type { SpaceProps } from "antd";
 import type { ComponentProps } from "react";
 
-export type KuzhambuSpaceProps = Omit<SpaceProps, "direction">;
+export type KuzhambuSpaceProps = Omit<SpaceProps, "direction" | "split">;
 export type KuzhambuSpaceCompactProps = Omit<ComponentProps<typeof Space.Compact>, "direction">;
 
 // AI NOTE: These spacing wrappers are the page-approved replacement for direct Ant Design Space imports.
