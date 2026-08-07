@@ -230,7 +230,7 @@ export const QaSessionTable = () => {
                 </KuzhambuSpace>
             </KuzhambuCard>
 
-            <KuzhambuCard title="会话记录" size="small">
+            <KuzhambuCard className="qa-console-card-spaced" title="会话记录" size="small">
                 <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                     {operationText ? <Text type="secondary">{operationText}</Text> : null}
                     <KuzhambuTable
