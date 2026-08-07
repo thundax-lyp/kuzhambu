@@ -31,10 +31,6 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
 ]);
 const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     { file: "src/pages/ai/prompt/prompt-page.css", allowedAntdSelectorLines: 1 },
-    {
-        file: "src/pages/audit/audit-log/audit-log-detail/audit-log-detail.css",
-        allowedAntdSelectorLines: 2
-    },
     { file: "src/pages/auth/login/login-page.css", allowedAntdSelectorLines: 8 },
     {
         file: "src/pages/classics/common/classics-content-tag-panel.css",
