@@ -15,11 +15,12 @@
     width: 100%;
 }
 
-.discovery-qa-page__chat-header .ant-typography {
+.discovery-qa-page__chat-title,
+.discovery-qa-page__chat-subtitle {
     margin: 0;
 }
 
-.discovery-qa-page__chat-header h2.ant-typography {
+.discovery-qa-page__chat-title {
     color: var(--text-primary);
     font-size: 24px;
     font-weight: 650;
@@ -27,7 +28,7 @@
     line-height: 1.25;
 }
 
-.discovery-qa-page__chat-header .ant-typography-secondary {
+.discovery-qa-page__chat-subtitle {
     color: var(--text-secondary);
     font-size: 13px;
 }
@@ -178,18 +179,19 @@
     text-align: center;
 }
 
-.discovery-qa-page__empty .ant-typography {
+.discovery-qa-page__empty-title,
+.discovery-qa-page__empty-subtitle {
     margin: 0;
 }
 
-.discovery-qa-page__empty h3.ant-typography {
+.discovery-qa-page__empty-title {
     color: var(--text-primary);
     font-size: 22px;
     font-weight: 650;
     line-height: 1.3;
 }
 
-.discovery-qa-page__empty .ant-typography-secondary {
+.discovery-qa-page__empty-subtitle {
     color: var(--text-secondary);
     font-size: 13px;
 }

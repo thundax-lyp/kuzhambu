@@ -81,7 +81,7 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     { file: "src/pages/dashboard/dashboard/dashboard-page.css", allowedAntdSelectorLines: 6 },
     {
         file: "src/pages/discovery/qa/qa-message-panel/qa-message-panel.css",
-        allowedAntdSelectorLines: 23
+        allowedAntdSelectorLines: 17
     },
     {
         file: "src/pages/discovery/qa/qa-session-table/qa-session-table.css",
