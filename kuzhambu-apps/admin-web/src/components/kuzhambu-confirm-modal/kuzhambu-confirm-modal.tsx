@@ -8,7 +8,16 @@ const { Text } = Typography;
 
 export type KuzhambuConfirmModalTone = "danger";
 
-export interface KuzhambuConfirmModalProps extends Omit<ModalProps, "children"> {
+export interface KuzhambuConfirmModalProps extends Omit<
+    ModalProps,
+    | "autoFocusButton"
+    | "bodyStyle"
+    | "children"
+    | "destroyOnClose"
+    | "focusTriggerAfterClose"
+    | "maskClosable"
+    | "maskStyle"
+> {
     description?: ReactNode;
     message: ReactNode;
     tone?: KuzhambuConfirmModalTone;

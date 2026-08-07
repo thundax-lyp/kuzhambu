@@ -1,7 +1,16 @@
 import { Modal } from "antd";
 import type { ModalProps } from "antd";
 
-export interface KuzhambuModalProps extends Omit<ModalProps, "data-testid"> {
+export interface KuzhambuModalProps extends Omit<
+    ModalProps,
+    | "autoFocusButton"
+    | "bodyStyle"
+    | "data-testid"
+    | "destroyOnClose"
+    | "focusTriggerAfterClose"
+    | "maskClosable"
+    | "maskStyle"
+> {
     testId: string;
 }
 
