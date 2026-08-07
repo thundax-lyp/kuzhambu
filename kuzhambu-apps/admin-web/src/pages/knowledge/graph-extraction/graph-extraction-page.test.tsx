@@ -1,20 +1,32 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { App as AntdApp } from "antd";
-import { replacePermissions } from "@/auth/permission-storage";
+import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { GraphExtractionPage } from "./graph-extraction-page";
 
 const serviceMocks = vi.hoisted(() => ({
     addTask: vi.fn(async () => ({ taskId: "9001", taskType: "GRAPH", status: "REQUESTED" })),
     applyTaskCandidate: vi.fn(async () => ({ taskId: "9001", status: "APPLIED" })),
     cancelBatchTask: vi.fn(async () => ({ batchJobId: "1001", status: "CANCELLED" })),
-    getTaskDetail: vi.fn(async () => ({
-        batchJobId: "1001",
-        selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
-        taskId: "8008",
-        triggerSource: "QUALITY_REPORT",
-        status: "SUCCEEDED"
-    })),
+    getTaskDetail: vi.fn(async (request: { taskId: string }) =>
+        request.taskId === "9001"
+            ? {
+                  aiCandidateId: "7001",
+                  sourceContentId: "1001",
+                  sourceContentType: "SANCAI_ENTRY",
+                  status: "SUCCEEDED",
+                  taskId: "9001",
+                  taskType: "GRAPH"
+              }
+            : {
+                  batchJobId: "1001",
+                  selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
+                  aiCandidateId: "7001",
+                  taskId: "8008",
+                  triggerSource: "QUALITY_REPORT",
+                  status: "SUCCEEDED"
+              }
+    ),
     pageTasks: vi.fn(async () => ({
         pageNo: 1,
         pageSize: 20,
@@ -60,7 +72,8 @@ const workbenchServiceMocks = vi.hoisted(() => ({
         status: "SUCCEEDED",
         sourceContentType: "SANCAI_ENTRY",
         sourceContentId: "1001",
-        candidatePayloadJson: '{"entities":[{"name":"黄帝"}]}'
+        candidatePayloadJson:
+            '{"entities":[{"name":"黄帝"},{"name":"制度"}],"relations":[{"sourceName":"黄帝","relationType":"建立","targetName":"制度"}]}'
     })),
     getManuscript: vi.fn(async () => ({
         sourceContentType: "SANCAI_ENTRY",
@@ -89,8 +102,39 @@ const workbenchServiceMocks = vi.hoisted(() => ({
             case "SOURCE_ROOT:SANCAI_ENTRY":
                 return [
                     {
-                        nodeKey: "MANUSCRIPT:SANCAI_ENTRY:1001",
+                        nodeKey: "CATEGORY:SANCAI_ENTRY:people",
                         parentKey: "SOURCE_ROOT:SANCAI_ENTRY",
+                        nodeType: "CATEGORY",
+                        title: "人物",
+                        sourceContentType: "SANCAI_ENTRY",
+                        children: [
+                            {
+                                nodeKey: "VOLUME:SANCAI_ENTRY:people:10",
+                                parentKey: "CATEGORY:SANCAI_ENTRY:people",
+                                nodeType: "VOLUME",
+                                title: "卷一",
+                                sourceContentType: "SANCAI_ENTRY",
+                                sourceContentId: "10"
+                            }
+                        ]
+                    }
+                ];
+            case "CATEGORY:SANCAI_ENTRY:people":
+                return [
+                    {
+                        nodeKey: "VOLUME:SANCAI_ENTRY:people:10",
+                        parentKey: "CATEGORY:SANCAI_ENTRY:people",
+                        nodeType: "VOLUME",
+                        title: "卷一",
+                        sourceContentType: "SANCAI_ENTRY",
+                        sourceContentId: "10"
+                    }
+                ];
+            case "VOLUME:SANCAI_ENTRY:people:10":
+                return [
+                    {
+                        nodeKey: "MANUSCRIPT:SANCAI_ENTRY:1001",
+                        parentKey: "VOLUME:SANCAI_ENTRY:people:10",
                         nodeType: "MANUSCRIPT",
                         title: "三才稿件",
                         sourceContentType: "SANCAI_ENTRY",
@@ -103,11 +147,50 @@ const workbenchServiceMocks = vi.hoisted(() => ({
                     {
                         nodeKey: "SOURCE_ROOT:SANCAI_ENTRY",
                         nodeType: "SOURCE_ROOT",
-                        title: "三才"
+                        title: "三才",
+                        children: [
+                            {
+                                nodeKey: "CATEGORY:SANCAI_ENTRY:people",
+                                parentKey: "SOURCE_ROOT:SANCAI_ENTRY",
+                                nodeType: "CATEGORY",
+                                title: "人物",
+                                sourceContentType: "SANCAI_ENTRY",
+                                children: [
+                                    {
+                                        nodeKey: "VOLUME:SANCAI_ENTRY:people:10",
+                                        parentKey: "CATEGORY:SANCAI_ENTRY:people",
+                                        nodeType: "VOLUME",
+                                        title: "卷一",
+                                        sourceContentType: "SANCAI_ENTRY",
+                                        sourceContentId: "10"
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 ];
         }
     })
+}));
+
+const graphResultServiceMocks = vi.hoisted(() => ({
+    pageRelations: vi.fn(async () => ({
+        pageNo: 1,
+        pageSize: 200,
+        totalCount: 1,
+        totalPage: 1,
+        count: 1,
+        records: [
+            {
+                relationId: "5001",
+                sourceName: "黄帝",
+                relationType: "建立",
+                targetName: "制度",
+                confirmationStatus: "CONFIRMED",
+                latestVersionId: "8001"
+            }
+        ]
+    }))
 }));
 
 vi.mock("./graph-extraction-service", () => ({
@@ -116,6 +199,10 @@ vi.mock("./graph-extraction-service", () => ({
 
 vi.mock("./graph-workbench-service", () => ({
     ...workbenchServiceMocks
+}));
+
+vi.mock("@/pages/knowledge/graph-result/graph-result-service", () => ({
+    ...graphResultServiceMocks
 }));
 
 const createTestQueryClient = () =>
@@ -139,14 +226,26 @@ const renderPage = () => {
 };
 
 const selectManuscriptTreeNode = async (title: string) => {
-    const titleElements = await screen.findAllByText(title);
-    const treeTitleElement = titleElements.find((element) => element.closest(".ant-tree"));
-    expect(treeTitleElement).toBeDefined();
-    if (!treeTitleElement) {
-        return;
-    }
+    await waitFor(() => expect(document.querySelector(".ant-tree")).toBeInTheDocument());
+    const tree = document.querySelector(".ant-tree") as HTMLElement;
+    const titleElements = await within(tree).findAllByText(title);
+    const treeTitleElement = titleElements[0];
 
     fireEvent.click(treeTitleElement.closest(".ant-tree-node-content-wrapper") || treeTitleElement);
+};
+
+const selectVolumeAndManuscript = async () => {
+    await selectManuscriptTreeNode("人物");
+    await selectManuscriptTreeNode("卷一");
+    const titleElements = await screen.findAllByText("三才稿件");
+    const tableTitleElement = titleElements.find((element) => element.closest(".ant-table"));
+    expect(tableTitleElement).toBeDefined();
+    if (!tableTitleElement) {
+        return;
+    }
+    const row = tableTitleElement.closest("tr") as HTMLElement;
+    const viewButton = within(row).getByRole("button", { name: /查\s*看/u });
+    fireEvent.click(viewButton);
 };
 
 describe("GraphExtractionPage", () => {
@@ -180,7 +279,7 @@ describe("GraphExtractionPage", () => {
         await waitFor(() => {
             expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledWith({});
         });
-        expect(await screen.findByText("三才稿件")).toBeInTheDocument();
+        expect(await screen.findByText("人物")).toBeInTheDocument();
         expect(screen.queryByText("王圻")).not.toBeInTheDocument();
         expect(screen.queryByText("明俗")).not.toBeInTheDocument();
 
@@ -200,7 +299,7 @@ describe("GraphExtractionPage", () => {
     it("runs manuscript workbench flow with automatic extraction and candidate apply", async () => {
         renderPage();
 
-        await selectManuscriptTreeNode("三才稿件");
+        await selectVolumeAndManuscript();
 
         await waitFor(() => {
             expect(workbenchServiceMocks.getManuscript).toHaveBeenCalledWith({
@@ -215,8 +314,30 @@ describe("GraphExtractionPage", () => {
                 taskType: "GRAPH"
             });
         });
+        await waitFor(() => {
+            expect(graphResultServiceMocks.pageRelations).toHaveBeenCalledWith({
+                pageNo: 1,
+                pageSize: 200,
+                versionId: "8001"
+            });
+        });
+        expect(await screen.findByText("当前图谱 #8001")).toBeInTheDocument();
+        expect(screen.getByRole("table", { name: "当前图谱 SPO 列表" })).toBeInTheDocument();
+        expect(screen.getAllByText("黄帝").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("建立").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("制度").length).toBeGreaterThan(0);
+        expect(screen.getByRole("img", { name: "当前图谱关系图" })).toBeInTheDocument();
+        expect(screen.queryByText("7001")).not.toBeInTheDocument();
 
         fireEvent.click(screen.getByRole("button", { name: "抽取图谱" }));
+        expect(await screen.findByText("图谱抽取")).toBeInTheDocument();
+        expect(await screen.findByRole("table", { name: "候选 SPO 列表" })).toBeInTheDocument();
+        expect(workbenchServiceMocks.extractManuscript).not.toHaveBeenCalled();
+        const regenerateButton = screen.getByTestId(
+            "knowledge-graph-extraction-candidate-extract-button"
+        );
+        await waitFor(() => expect(regenerateButton).toBeEnabled());
+        fireEvent.click(regenerateButton);
         await waitFor(() => {
             expect(workbenchServiceMocks.extractManuscript).toHaveBeenCalledWith({
                 sourceContentType: "SANCAI_ENTRY",
@@ -228,18 +349,25 @@ describe("GraphExtractionPage", () => {
         expect(extractCommand).not.toHaveProperty("inputPayloadJson");
         expect(extractCommand).not.toHaveProperty("promptMessagesJson");
 
-        fireEvent.click(screen.getByRole("button", { name: "应用候选" }));
+        expect(screen.getByRole("table", { name: "候选 SPO 列表" })).toBeInTheDocument();
+        expect(
+            screen.getByTestId("knowledge-graph-extraction-candidate-overwrite-apply-button")
+        ).toBeDisabled();
+        await waitFor(() => {
+            expect(serviceMocks.getTaskDetail).toHaveBeenCalledWith({ taskId: "9001" });
+        });
+        const mergeButton = screen.getByTestId(
+            "knowledge-graph-extraction-candidate-merge-apply-button"
+        );
+        await waitFor(() => {
+            expect(mergeButton).toBeEnabled();
+        });
+        fireEvent.click(mergeButton);
         await waitFor(() => {
             expect(workbenchServiceMocks.applyCandidate).toHaveBeenCalledWith({ taskId: "9001" });
         });
-        expect(screen.getByRole("link", { name: "查看结果" })).toHaveAttribute(
-            "href",
-            "/knowledge/graph-results?graphVersionId=8001"
-        );
-        expect(screen.getByRole("link", { name: "进入精修" })).toHaveAttribute(
-            "href",
-            "/knowledge/refinement?graphVersionId=8001"
-        );
+        expect(screen.queryByRole("link", { name: "查看结果" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("link", { name: "进入精修" })).not.toBeInTheDocument();
     });
 
     it("disables workbench write actions without edit and apply permissions", async () => {
@@ -247,7 +375,7 @@ describe("GraphExtractionPage", () => {
 
         renderPage();
 
-        await selectManuscriptTreeNode("三才稿件");
+        await selectVolumeAndManuscript();
 
         await waitFor(() => {
             expect(workbenchServiceMocks.getManuscript).toHaveBeenCalledWith({
@@ -258,15 +386,10 @@ describe("GraphExtractionPage", () => {
         const extractButton = screen.getByTestId(
             "knowledge-graph-extraction-manuscript-extract-button"
         );
-        const applyButton = screen.getByTestId(
-            "knowledge-graph-extraction-manuscript-apply-candidate-button"
-        );
         expect(extractButton).toBeDisabled();
-        expect(applyButton).toBeDisabled();
         expect(screen.queryByRole("link", { name: "进入精修" })).not.toBeInTheDocument();
 
         fireEvent.click(extractButton);
-        fireEvent.click(applyButton);
 
         expect(workbenchServiceMocks.extractManuscript).not.toHaveBeenCalled();
         expect(workbenchServiceMocks.applyCandidate).not.toHaveBeenCalled();
@@ -280,6 +403,22 @@ describe("GraphExtractionPage", () => {
         await waitFor(() => {
             expect(workbenchServiceMocks.listManuscriptTree).not.toHaveBeenCalled();
             expect(serviceMocks.pageTasks).not.toHaveBeenCalled();
+        });
+    });
+
+    it("loads workbench data after graph view permission arrives", async () => {
+        clearPermissions();
+
+        renderPage();
+
+        await waitFor(() => {
+            expect(workbenchServiceMocks.listManuscriptTree).not.toHaveBeenCalled();
+        });
+
+        replacePermissions(["knowledge:graph:view"]);
+
+        await waitFor(() => {
+            expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledWith({});
         });
     });
 

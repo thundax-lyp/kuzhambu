@@ -1,31 +1,36 @@
-import { UnorderedListOutlined } from "@ant-design/icons";
+import { RobotOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Empty, Splitter } from "antd";
+import { App, Empty, Splitter, Tag } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { hasPermission } from "@/auth/permission-storage";
+import { usePermission } from "@/auth/hooks/use-permission";
 import {
     KuzhambuSpace,
     KuzhambuPage,
     KuzhambuButton,
     KuzhambuAlert,
-    KuzhambuDrawer
+    KuzhambuDrawer,
+    KuzhambuTable
 } from "@/components";
 import { isPositiveDecimalId, normalizeId } from "@/types/id";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 
 import { GraphExtractionManuscriptDetail } from "./graph-extraction-manuscript-detail";
+import { GraphExtractionCandidateModal } from "./graph-extraction-manuscript-detail/graph-extraction-candidate-modal";
 import { GraphExtractionManuscriptTree } from "./graph-extraction-manuscript-tree";
 import { GraphExtractionTaskDetail } from "./graph-extraction-task-detail";
 import { GraphExtractionTaskTable } from "./graph-extraction-task-table";
 import * as service from "./graph-extraction-service";
+import * as graphResultService from "@/pages/knowledge/graph-result/graph-result-service";
 import type {
     GraphExtractionRegenerateCommand,
     GraphExtractionTaskPageQuery
 } from "./graph-extraction-service";
 import type {
+    GraphExtractionTaskType,
     GraphWorkbenchManuscriptNode,
     GraphExtractionTriggerSource,
-    GraphExtractionTaskRecord
+    GraphExtractionTaskRecord,
+    GraphWorkbenchStatus
 } from "./graph-extraction-types";
 import * as workbenchService from "./graph-workbench-service";
 import type { GraphWorkbenchSourceContentType } from "./graph-extraction-types";
@@ -84,13 +89,61 @@ const mergeLoadedNodeChildren = (
         };
     });
 
+const isManuscriptNode = (node?: GraphWorkbenchManuscriptNode | null) =>
+    node?.nodeType === "MANUSCRIPT" && node.sourceContentType && node.sourceContentId;
+
+const isVolumeNode = (node?: GraphWorkbenchManuscriptNode | null) => node?.nodeType === "VOLUME";
+
+const toTableManuscriptNode = (node: GraphWorkbenchManuscriptNode) => {
+    const tableNode = { ...node };
+    delete tableNode.children;
+    return tableNode;
+};
+
+const STATUS_LABELS = new Map<GraphWorkbenchStatus, string>([
+    ["NOT_EXTRACTED", "未抽取"],
+    ["EXTRACTING", "抽取中"],
+    ["EXTRACTION_FAILED", "未抽取"],
+    ["CANDIDATE_READY", "已抽取"],
+    ["APPLIED", "已抽取"],
+    ["REFINING", "抽取中"],
+    ["REFINED", "已抽取"],
+    ["QUALITY_ISSUE", "已抽取"]
+]);
+
+const STATUS_COLORS = new Map<GraphWorkbenchStatus, string>([
+    ["NOT_EXTRACTED", "default"],
+    ["EXTRACTING", "processing"],
+    ["EXTRACTION_FAILED", "default"],
+    ["CANDIDATE_READY", "success"],
+    ["APPLIED", "success"],
+    ["REFINING", "processing"],
+    ["REFINED", "success"],
+    ["QUALITY_ISSUE", "success"]
+]);
+
+const statusLabel = (status?: GraphWorkbenchStatus | null) =>
+    STATUS_LABELS.get(status || "") || status || "未知";
+
+const statusColor = (status?: GraphWorkbenchStatus | null) =>
+    STATUS_COLORS.get(status || "") || "default";
+
+type ExtractManuscriptVariables = {
+    node: GraphWorkbenchManuscriptNode;
+    taskType: GraphExtractionTaskType;
+};
+
+type BatchExtractManuscriptVariables = {
+    nodes: GraphWorkbenchManuscriptNode[];
+    taskType: GraphExtractionTaskType;
+};
+
 export const GraphExtractionPage = () => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
-    const canViewGraph = hasPermission("knowledge:graph:view");
-    const canEditGraph = hasPermission("knowledge:graph:edit");
-    const canApplyGraph = hasPermission("knowledge:graph:apply");
-    const canOpenRefinement = hasPermission("knowledge:refinement:edit");
+    const canViewGraph = usePermission("knowledge:graph:view");
+    const canEditGraph = usePermission("knowledge:graph:edit");
+    const canApplyGraph = usePermission("knowledge:graph:apply");
     const [handoffRegenerateCommand] = useState<GraphExtractionRegenerateCommand | null>(() =>
         readRegenerateCommandFromSearch()
     );
@@ -101,11 +154,18 @@ export const GraphExtractionPage = () => {
     const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
     const [taskDetailDrawerOpen, setTaskDetailDrawerOpen] = useState(false);
     const [taskListDrawerOpen, setTaskListDrawerOpen] = useState(false);
+    const [manuscriptDetailDrawerOpen, setManuscriptDetailDrawerOpen] = useState(false);
+    const [candidateModalOpen, setCandidateModalOpen] = useState(false);
+    const [candidateModalTask, setCandidateModalTask] = useState<GraphExtractionTaskRecord | null>(
+        null
+    );
     const [manuscriptChildrenByNodeKey, setManuscriptChildrenByNodeKey] = useState<
         Record<string, GraphWorkbenchManuscriptNode[]>
     >({});
     const [selectedManuscript, setSelectedManuscript] =
         useState<GraphWorkbenchManuscriptNode | null>(null);
+    const [selectedVolume, setSelectedVolume] = useState<GraphWorkbenchManuscriptNode | null>(null);
+    const [selectedManuscriptKeys, setSelectedManuscriptKeys] = useState<string[]>([]);
     const [treePanelSize, setTreePanelSize] = useState<number>(getInitialTreePanelSize);
     const [compactWorkArea, setCompactWorkArea] = useState(isCompactWorkArea);
     const loadedManuscriptNodeKeysRef = useRef<Set<string>>(new Set());
@@ -169,6 +229,15 @@ export const GraphExtractionPage = () => {
             Boolean(selectedManuscript?.sourceContentType && selectedManuscript.sourceContentId),
         retry: false
     });
+    const volumeManuscriptsQuery = useQuery({
+        queryKey: ["knowledge", "graph-workbench", "volume-manuscripts", selectedVolume?.nodeKey],
+        queryFn: () =>
+            workbenchService.listManuscriptTree({
+                parentKey: selectedVolume?.nodeKey || ""
+            }),
+        enabled: canViewGraph && Boolean(selectedVolume?.nodeKey),
+        retry: false
+    });
     const candidateQuery = useQuery({
         queryKey: [
             "knowledge",
@@ -189,10 +258,30 @@ export const GraphExtractionPage = () => {
             Boolean(selectedManuscript?.sourceContentType && selectedManuscript.sourceContentId),
         retry: false
     });
+    const latestGraphVersionId = manuscriptDetailQuery.data?.latestGraphVersion?.versionId;
+    const currentGraphRelationsQuery = useQuery({
+        queryKey: ["knowledge", "graph-results", "relations", latestGraphVersionId],
+        queryFn: () =>
+            graphResultService.pageRelations({
+                pageNo: DEFAULT_PAGE_NO,
+                pageSize: 200,
+                versionId: latestGraphVersionId || ""
+            }),
+        enabled: manuscriptDetailDrawerOpen && Boolean(latestGraphVersionId),
+        retry: false
+    });
 
     const visibleManuscriptTreeNodes = useMemo(
         () => mergeLoadedNodeChildren(manuscriptTreeQuery.data || [], manuscriptChildrenByNodeKey),
         [manuscriptChildrenByNodeKey, manuscriptTreeQuery.data]
+    );
+    const volumeManuscripts = useMemo(
+        () => (volumeManuscriptsQuery.data || []).map(toTableManuscriptNode),
+        [volumeManuscriptsQuery.data]
+    );
+    const selectedVolumeManuscripts = useMemo(
+        () => volumeManuscripts.filter((node) => selectedManuscriptKeys.includes(node.nodeKey)),
+        [selectedManuscriptKeys, volumeManuscripts]
     );
 
     const loadManuscriptChildren = useCallback(async (nodeKey: string) => {
@@ -223,15 +312,15 @@ export const GraphExtractionPage = () => {
     }, []);
 
     const extractManuscriptMutation = useMutation({
-        mutationFn: (taskType: string) => {
+        mutationFn: ({ node, taskType }: ExtractManuscriptVariables) => {
             return workbenchService.extractManuscript({
-                sourceContentType:
-                    selectedManuscript?.sourceContentType as GraphWorkbenchSourceContentType,
-                sourceContentId: selectedManuscript?.sourceContentId || "",
+                sourceContentType: node.sourceContentType as GraphWorkbenchSourceContentType,
+                sourceContentId: node.sourceContentId || "",
                 taskType
             });
         },
-        onSuccess: async () => {
+        onSuccess: async (task) => {
+            setCandidateModalTask(task);
             loadedManuscriptNodeKeysRef.current.clear();
             loadingManuscriptNodeKeysRef.current.clear();
             setManuscriptChildrenByNodeKey({});
@@ -243,10 +332,41 @@ export const GraphExtractionPage = () => {
                     queryKey: ["knowledge", "graph-workbench"]
                 })
             ]);
-            messageApi.success("稿件图谱抽取任务已创建");
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "稿件图谱抽取失败");
+        }
+    });
+    const batchExtractManuscriptMutation = useMutation({
+        mutationFn: async ({ nodes, taskType }: BatchExtractManuscriptVariables) => {
+            await Promise.all(
+                nodes.map((node) =>
+                    workbenchService.extractManuscript({
+                        sourceContentType:
+                            node.sourceContentType as GraphWorkbenchSourceContentType,
+                        sourceContentId: node.sourceContentId || "",
+                        taskType
+                    })
+                )
+            );
+        },
+        onSuccess: async (_result, variables) => {
+            loadedManuscriptNodeKeysRef.current.clear();
+            loadingManuscriptNodeKeysRef.current.clear();
+            setManuscriptChildrenByNodeKey({});
+            setSelectedManuscriptKeys([]);
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "graph-extraction", "tasks"]
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "graph-workbench"]
+                })
+            ]);
+            messageApi.success(`已创建 ${variables.nodes.length} 个稿件图谱抽取任务`);
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量稿件图谱抽取失败");
         }
     });
     const applyWorkbenchCandidateMutation = useMutation({
@@ -255,6 +375,7 @@ export const GraphExtractionPage = () => {
             loadedManuscriptNodeKeysRef.current.clear();
             loadingManuscriptNodeKeysRef.current.clear();
             setManuscriptChildrenByNodeKey({});
+            setCandidateModalOpen(false);
             await Promise.all([
                 queryClient.invalidateQueries({
                     queryKey: ["knowledge", "graph-extraction", "tasks"]
@@ -322,7 +443,7 @@ export const GraphExtractionPage = () => {
 
     const tasks = taskPageQuery.data?.records || [];
     const taskTotalCount = taskPageQuery.data?.totalCount || 0;
-    const selectedNodeKey = selectedManuscript?.nodeKey || null;
+    const selectedTreeNodeKey = selectedManuscript?.nodeKey || selectedVolume?.nodeKey || null;
 
     const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId).trim();
 
@@ -368,6 +489,45 @@ export const GraphExtractionPage = () => {
     const resizeWorkArea = useCallback((sizes: number[]) => {
         setTreePanelSize(sizes[0] ?? DEFAULT_TREE_PANEL_SIZE);
     }, []);
+
+    const selectTreeNode = (node: GraphWorkbenchManuscriptNode) => {
+        if (isVolumeNode(node)) {
+            setSelectedVolume(node);
+            setSelectedManuscript(null);
+            setSelectedManuscriptKeys([]);
+            setManuscriptDetailDrawerOpen(false);
+            setCandidateModalOpen(false);
+            setCandidateModalTask(null);
+            return;
+        }
+        if (isManuscriptNode(node)) {
+            setSelectedManuscript(node);
+        }
+    };
+
+    const openManuscriptDetail = (node: GraphWorkbenchManuscriptNode) => {
+        setSelectedManuscript(node);
+        setManuscriptDetailDrawerOpen(true);
+    };
+
+    const openCandidateModal = (node?: GraphWorkbenchManuscriptNode) => {
+        if (node) {
+            setSelectedManuscript(node);
+            setManuscriptDetailDrawerOpen(true);
+        }
+        setCandidateModalTask(null);
+        setCandidateModalOpen(true);
+    };
+
+    const extractSelectedVolumeManuscripts = () => {
+        if (!selectedVolumeManuscripts.length) {
+            return;
+        }
+        batchExtractManuscriptMutation.mutate({
+            nodes: selectedVolumeManuscripts,
+            taskType: "GRAPH"
+        });
+    };
 
     return (
         <KuzhambuPage
@@ -428,28 +588,169 @@ export const GraphExtractionPage = () => {
                             <GraphExtractionManuscriptTree
                                 loading={manuscriptTreeQuery.isLoading}
                                 nodes={visibleManuscriptTreeNodes}
-                                selectedNodeKey={selectedNodeKey}
+                                selectedNodeKey={selectedTreeNodeKey}
                                 onLoadChildren={loadManuscriptChildren}
-                                onSelectManuscript={setSelectedManuscript}
+                                onSelectManuscript={selectTreeNode}
                             />
                         </Splitter.Panel>
                         <Splitter.Panel className="knowledge-graph-extraction-detail-panel">
-                            <GraphExtractionManuscriptDetail
-                                applying={applyWorkbenchCandidateMutation.isPending}
-                                canApply={canApplyGraph}
-                                canEdit={canEditGraph}
-                                canOpenRefinement={canOpenRefinement}
-                                candidate={candidateQuery.data || null}
-                                candidateLoading={candidateQuery.isLoading}
-                                detail={manuscriptDetailQuery.data || null}
-                                extracting={extractManuscriptMutation.isPending}
-                                selectedNode={selectedManuscript}
-                                onApplyCandidate={applyWorkbenchCandidateMutation.mutate}
-                                onExtract={extractManuscriptMutation.mutate}
-                            />
+                            {selectedVolume ? (
+                                <KuzhambuTable<GraphWorkbenchManuscriptNode>
+                                    ariaLabel="卷目稿件列表"
+                                    rowKey="nodeKey"
+                                    className="graph-extraction-manuscript-table"
+                                    dataSource={volumeManuscripts}
+                                    loading={volumeManuscriptsQuery.isLoading}
+                                    pagination={{
+                                        defaultPageSize: DEFAULT_PAGE_SIZE,
+                                        showSizeChanger: true
+                                    }}
+                                    toolbar={{
+                                        leading: (
+                                            <span>
+                                                当前页已选 {selectedManuscriptKeys.length} 条
+                                            </span>
+                                        ),
+                                        actions: [
+                                            {
+                                                testId: "knowledge-graph-extraction-manuscript-batch-extract-button",
+                                                title: (
+                                                    <KuzhambuSpace size={6}>
+                                                        <RobotOutlined />
+                                                        抽取
+                                                    </KuzhambuSpace>
+                                                ),
+                                                type: "primary",
+                                                disabled:
+                                                    !canEditGraph ||
+                                                    !selectedVolumeManuscripts.length,
+                                                loading: batchExtractManuscriptMutation.isPending,
+                                                action: extractSelectedVolumeManuscripts
+                                            }
+                                        ]
+                                    }}
+                                    rowSelection={{
+                                        selectedRowKeys: selectedManuscriptKeys,
+                                        onChange: (keys) =>
+                                            setSelectedManuscriptKeys(keys.map(String))
+                                    }}
+                                    size="small"
+                                    columns={[
+                                        {
+                                            title: "稿件",
+                                            dataIndex: "title",
+                                            key: "title"
+                                        },
+                                        {
+                                            title: "图谱状态",
+                                            dataIndex: "graphStatus",
+                                            key: "graphStatus",
+                                            width: 120,
+                                            render: (status?: GraphWorkbenchStatus | null) => (
+                                                <Tag color={statusColor(status)}>
+                                                    {statusLabel(status)}
+                                                </Tag>
+                                            )
+                                        },
+                                        {
+                                            key: "actions",
+                                            options: (record) => [
+                                                {
+                                                    key: "view",
+                                                    text: "查看",
+                                                    testId: "knowledge-graph-extraction-manuscript-view-button",
+                                                    onClick: openManuscriptDetail
+                                                },
+                                                {
+                                                    key: "extract",
+                                                    text: "抽取",
+                                                    testId: "knowledge-graph-extraction-manuscript-table-extract-button",
+                                                    disabled:
+                                                        !canEditGraph ||
+                                                        extractManuscriptMutation.isPending ||
+                                                        batchExtractManuscriptMutation.isPending,
+                                                    onClick: () => openCandidateModal(record)
+                                                }
+                                            ]
+                                        }
+                                    ]}
+                                    locale={{
+                                        emptyText: selectedVolume
+                                            ? "当前卷目下没有稿件"
+                                            : "请选择左侧卷目"
+                                    }}
+                                />
+                            ) : (
+                                <Empty
+                                    description="请选择左侧卷目查看稿件"
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                />
+                            )}
                         </Splitter.Panel>
                     </Splitter>
                 </section>
+
+                <KuzhambuDrawer
+                    testId="knowledge-graph-extraction-manuscript-detail-drawer"
+                    title={selectedManuscript?.title || "稿件图谱详情"}
+                    open={manuscriptDetailDrawerOpen}
+                    size="large"
+                    onClose={() => {
+                        setManuscriptDetailDrawerOpen(false);
+                        setCandidateModalOpen(false);
+                    }}
+                >
+                    <GraphExtractionManuscriptDetail
+                        canEdit={canEditGraph}
+                        currentGraphLoading={currentGraphRelationsQuery.isLoading}
+                        currentGraphRelations={currentGraphRelationsQuery.data?.records || []}
+                        detail={manuscriptDetailQuery.data || null}
+                        selectedNode={selectedManuscript}
+                        onOpenExtractionDialog={() => openCandidateModal()}
+                    />
+                </KuzhambuDrawer>
+
+                <GraphExtractionCandidateModal
+                    applying={applyWorkbenchCandidateMutation.isPending}
+                    canApply={canApplyGraph}
+                    canEdit={canEditGraph}
+                    candidate={candidateQuery.data || null}
+                    candidateLoading={candidateQuery.isLoading}
+                    detail={manuscriptDetailQuery.data || null}
+                    extracting={
+                        extractManuscriptMutation.isPending &&
+                        extractManuscriptMutation.variables?.node.nodeKey ===
+                            selectedManuscript?.nodeKey
+                    }
+                    open={candidateModalOpen}
+                    task={candidateModalTask}
+                    onApplyCandidate={applyWorkbenchCandidateMutation.mutate}
+                    onCancel={() => setCandidateModalOpen(false)}
+                    onFetchCandidate={() => {
+                        if (
+                            !selectedManuscript?.sourceContentType ||
+                            !selectedManuscript.sourceContentId
+                        ) {
+                            return Promise.resolve(null);
+                        }
+                        return workbenchService.getLatestCandidate({
+                            sourceContentType:
+                                selectedManuscript.sourceContentType as GraphWorkbenchSourceContentType,
+                            sourceContentId: selectedManuscript.sourceContentId,
+                            taskType: "GRAPH"
+                        });
+                    }}
+                    onFetchTask={(taskId) => service.getTaskDetail({ taskId })}
+                    onExtract={(taskType) => {
+                        if (selectedManuscript) {
+                            extractManuscriptMutation.mutate({
+                                node: selectedManuscript,
+                                taskType
+                            });
+                        }
+                    }}
+                    onTaskChange={setCandidateModalTask}
+                />
 
                 <KuzhambuDrawer
                     testId="knowledge-graph-extraction-task-list-drawer"

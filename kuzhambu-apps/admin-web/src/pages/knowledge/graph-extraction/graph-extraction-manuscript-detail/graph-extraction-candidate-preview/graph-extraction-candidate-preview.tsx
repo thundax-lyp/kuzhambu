@@ -1,51 +1,168 @@
-import { Descriptions, Empty, Typography } from "antd";
+import { useMemo, useState } from "react";
+import { KuzhambuTable } from "@/components";
 
 import type { GraphWorkbenchCandidateRecord } from "@/pages/knowledge/graph-extraction/graph-extraction-types";
-import { KuzhambuCard } from "@/components";
 
 interface GraphExtractionCandidatePreviewProps {
     candidate?: GraphWorkbenchCandidateRecord | null;
     loading?: boolean;
 }
 
-const { Paragraph } = Typography;
+interface CandidateSpoRow {
+    object: string;
+    predicate: string;
+    rowKey: string;
+    subject: string;
+}
+
+const readString = (value: unknown) => {
+    return typeof value === "string" ? value.trim() : "";
+};
+
+const readRelationField = (relation: Record<string, unknown>, keys: string[]) => {
+    for (const key of keys) {
+        const value = readString(relation[key]);
+        if (value) {
+            return value;
+        }
+    }
+    return "";
+};
+
+const readCandidateRelations = (container: Record<string, unknown>) => {
+    if (Array.isArray(container.relations)) {
+        return container.relations;
+    }
+    if (Array.isArray(container.triples)) {
+        return container.triples;
+    }
+    if (Array.isArray(container.spo)) {
+        return container.spo;
+    }
+    return [];
+};
+
+const formatSpo = (row: CandidateSpoRow) => {
+    const subject = row.subject || "-";
+    const predicate = row.predicate || "-";
+    const object = row.object || "-";
+    return `${subject} -> ${predicate} -> ${object}`;
+};
+
+const parseCandidatePayload = (payload?: string | null): CandidateSpoRow[] => {
+    if (!payload?.trim()) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(payload) as unknown;
+        const container =
+            parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
+        const relations = readCandidateRelations(container);
+
+        return relations
+            .filter((relation): relation is Record<string, unknown> =>
+                Boolean(relation && typeof relation === "object")
+            )
+            .map((relation, index) => {
+                const subject = readRelationField(relation, [
+                    "subject",
+                    "source",
+                    "sourceName",
+                    "head",
+                    "from"
+                ]);
+                const predicate = readRelationField(relation, [
+                    "predicate",
+                    "relation",
+                    "relationType",
+                    "type",
+                    "label"
+                ]);
+                const object = readRelationField(relation, [
+                    "object",
+                    "target",
+                    "targetName",
+                    "tail",
+                    "to"
+                ]);
+                return {
+                    object,
+                    predicate,
+                    rowKey:
+                        readString(relation.id) ||
+                        readString(relation.relationId) ||
+                        `candidate-spo-${index}`,
+                    subject
+                };
+            })
+            .filter((relation) => relation.subject || relation.predicate || relation.object);
+    } catch {
+        return [];
+    }
+};
 
 export const GraphExtractionCandidatePreview = ({
     candidate,
     loading = false
 }: GraphExtractionCandidatePreviewProps) => {
-    if (!candidate && !loading) {
-        return (
-            <KuzhambuCard
-                className="graph-extraction-create-card"
-                title="AI 候选"
-                variant="borderless"
-            >
-                <Empty description="暂无 AI 候选" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-            </KuzhambuCard>
-        );
-    }
+    const parsedRows = useMemo(
+        () => parseCandidatePayload(candidate?.candidatePayloadJson),
+        [candidate?.candidatePayloadJson]
+    );
+    const candidateKey =
+        candidate?.aiCandidateId || candidate?.taskId || candidate?.candidatePayloadJson || "empty";
+    const [deletedRowKeysByCandidate, setDeletedRowKeysByCandidate] = useState<
+        Record<string, string[]>
+    >({});
+
+    const rows = useMemo(
+        () =>
+            parsedRows.filter(
+                (row) => !(deletedRowKeysByCandidate[candidateKey] || []).includes(row.rowKey)
+            ),
+        [candidateKey, deletedRowKeysByCandidate, parsedRows]
+    );
 
     return (
-        <KuzhambuCard
-            className="graph-extraction-create-card"
+        <KuzhambuTable<CandidateSpoRow>
+            ariaLabel="候选 SPO 列表"
+            dataSource={rows}
             loading={loading}
-            title="AI 候选"
-            variant="borderless"
-        >
-            <Descriptions column={1} size="small">
-                <Descriptions.Item label="任务 ID">{candidate?.taskId || "-"}</Descriptions.Item>
-                <Descriptions.Item label="候选 ID">
-                    {candidate?.aiCandidateId || "-"}
-                </Descriptions.Item>
-                <Descriptions.Item label="任务类型">{candidate?.taskType || "-"}</Descriptions.Item>
-                <Descriptions.Item label="候选状态">{candidate?.status || "-"}</Descriptions.Item>
-            </Descriptions>
-            {candidate?.candidatePayloadJson ? (
-                <Paragraph className="graph-extraction-candidate-payload" copyable>
-                    {candidate.candidatePayloadJson}
-                </Paragraph>
-            ) : null}
-        </KuzhambuCard>
+            pagination={false}
+            rowKey="rowKey"
+            size="small"
+            columns={[
+                {
+                    key: "spo",
+                    render: (_, record) => (
+                        <span style={{ whiteSpace: "nowrap" }}>{formatSpo(record)}</span>
+                    ),
+                    title: "SPO"
+                },
+                {
+                    key: "actions",
+                    options: (record) => [
+                        { key: "delete-divider", type: "divider" },
+                        {
+                            key: "delete",
+                            text: "删除",
+                            type: "danger",
+                            testId: "knowledge-graph-extraction-candidate-delete-spo-button",
+                            onClick: () =>
+                                setDeletedRowKeysByCandidate((current) => ({
+                                    ...current,
+                                    [candidateKey]: Array.from(
+                                        new Set([...(current[candidateKey] || []), record.rowKey])
+                                    )
+                                }))
+                        }
+                    ]
+                }
+            ]}
+            locale={{
+                emptyText: "暂无候选 SPO"
+            }}
+        />
     );
 };

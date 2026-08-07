@@ -93,3 +93,10 @@ export interface GraphWorkbenchCandidateApplyRecord {
     graphVersionId?: string | null;
     graphStatus?: GraphWorkbenchStatus | null;
 }
+
+export interface GraphWorkbenchRelationRecord {
+    relationId: string;
+    sourceName?: string | null;
+    relationType?: string | null;
+    targetName?: string | null;
+}

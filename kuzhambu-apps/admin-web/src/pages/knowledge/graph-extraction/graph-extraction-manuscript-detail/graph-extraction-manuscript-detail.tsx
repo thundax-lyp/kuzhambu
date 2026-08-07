@@ -1,51 +1,49 @@
-import { Descriptions, Empty, Tag, Typography } from "antd";
-import { KuzhambuButton, KuzhambuSpace, KuzhambuCard } from "@/components";
+import { Empty, Tag } from "antd";
+import {
+    KuzhambuButton,
+    KuzhambuSpace,
+    KuzhambuCard,
+    KuzhambuDescriptions,
+    KuzhambuExpandableText
+} from "@/components";
 
 import type {
-    GraphExtractionTaskType,
-    GraphWorkbenchCandidateRecord,
     GraphWorkbenchManuscriptNode,
     GraphWorkbenchManuscriptRecord,
+    GraphWorkbenchRelationRecord,
     GraphWorkbenchStatus
 } from "../graph-extraction-types";
-import { GraphExtractionCandidatePreview } from "./graph-extraction-candidate-preview";
+import { CurrentGraphPanel } from "./current-graph-panel";
 
 interface GraphExtractionManuscriptDetailProps {
-    applying?: boolean;
-    canApply?: boolean;
     canEdit?: boolean;
-    canOpenRefinement?: boolean;
-    candidate?: GraphWorkbenchCandidateRecord | null;
-    candidateLoading?: boolean;
+    currentGraphLoading?: boolean;
+    currentGraphRelations?: GraphWorkbenchRelationRecord[];
     detail?: GraphWorkbenchManuscriptRecord | null;
-    extracting?: boolean;
     selectedNode?: GraphWorkbenchManuscriptNode | null;
-    onApplyCandidate: (taskId: string) => void;
-    onExtract: (taskType: GraphExtractionTaskType) => void;
+    onOpenExtractionDialog: () => void;
 }
-
-const { Text } = Typography;
 
 const STATUS_LABELS = new Map<GraphWorkbenchStatus, string>([
     ["NOT_EXTRACTED", "未抽取"],
     ["EXTRACTING", "抽取中"],
-    ["EXTRACTION_FAILED", "抽取失败"],
-    ["CANDIDATE_READY", "待应用"],
-    ["APPLIED", "待精修"],
-    ["REFINING", "精修中"],
-    ["REFINED", "已精修"],
-    ["QUALITY_ISSUE", "质量异常"]
+    ["EXTRACTION_FAILED", "未抽取"],
+    ["CANDIDATE_READY", "已抽取"],
+    ["APPLIED", "已抽取"],
+    ["REFINING", "抽取中"],
+    ["REFINED", "已抽取"],
+    ["QUALITY_ISSUE", "已抽取"]
 ]);
 
 const STATUS_COLORS = new Map<GraphWorkbenchStatus, string>([
     ["NOT_EXTRACTED", "default"],
     ["EXTRACTING", "processing"],
-    ["EXTRACTION_FAILED", "error"],
-    ["CANDIDATE_READY", "warning"],
-    ["APPLIED", "blue"],
-    ["REFINING", "purple"],
+    ["EXTRACTION_FAILED", "default"],
+    ["CANDIDATE_READY", "success"],
+    ["APPLIED", "success"],
+    ["REFINING", "processing"],
     ["REFINED", "success"],
-    ["QUALITY_ISSUE", "error"]
+    ["QUALITY_ISSUE", "success"]
 ]);
 
 const statusLabel = (status?: GraphWorkbenchStatus | null) =>
@@ -54,21 +52,13 @@ const statusLabel = (status?: GraphWorkbenchStatus | null) =>
 const statusColor = (status?: GraphWorkbenchStatus | null) =>
     STATUS_COLORS.get(status || "") || "default";
 
-const hasCandidate = (candidate?: GraphWorkbenchCandidateRecord | null) =>
-    Boolean(candidate?.taskId && candidate.aiCandidateId);
-
 export const GraphExtractionManuscriptDetail = ({
-    applying = false,
-    canApply = false,
     canEdit = false,
-    canOpenRefinement = false,
-    candidate,
-    candidateLoading = false,
+    currentGraphLoading = false,
+    currentGraphRelations = [],
     detail,
-    extracting = false,
     selectedNode,
-    onApplyCandidate,
-    onExtract
+    onOpenExtractionDialog
 }: GraphExtractionManuscriptDetailProps) => {
     if (!selectedNode) {
         return (
@@ -82,14 +72,6 @@ export const GraphExtractionManuscriptDetail = ({
     }
 
     const latestVersionId = detail?.latestGraphVersion?.versionId;
-    const candidateTaskId = candidate?.taskId || detail?.latestExtractionTask?.taskId;
-    const normalizedCandidateTaskId =
-        candidateTaskId === null || candidateTaskId === undefined
-            ? ""
-            : String(candidateTaskId).trim();
-    const canApplyCandidate =
-        Boolean(normalizedCandidateTaskId) &&
-        (detail?.graphStatus === "CANDIDATE_READY" || candidate?.status === "SUCCEEDED");
 
     return (
         <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
@@ -104,77 +86,47 @@ export const GraphExtractionManuscriptDetail = ({
                 }
             >
                 <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
-                    <Descriptions column={{ xs: 1, md: 2 }} size="small">
-                        <Descriptions.Item label="来源类型">
-                            {detail?.sourceContentType || selectedNode.sourceContentType || "-"}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="来源 ID">
-                            {detail?.sourceContentId || selectedNode.sourceContentId || "-"}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="来源路径">
-                            {detail?.sourcePath || selectedNode.sourcePath || "-"}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="内容版本">
-                            {detail?.currentVersionNo || "-"}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="最近任务">
-                            {detail?.latestExtractionTask?.taskId || "-"}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="最新图谱版本">
-                            {latestVersionId || "-"}
-                        </Descriptions.Item>
-                    </Descriptions>
-                    {detail?.summary ? <Text type="secondary">{detail.summary}</Text> : null}
+                    <KuzhambuDescriptions
+                        ariaLabel="稿件图谱基础信息"
+                        column={{ xs: 1, md: 2 }}
+                        size="small"
+                        items={[
+                            {
+                                key: "path",
+                                label: "路径",
+                                children: detail?.sourcePath || selectedNode.sourcePath || "-"
+                            },
+                            {
+                                key: "version",
+                                label: "版本",
+                                children: detail?.currentVersionNo || latestVersionId || "-"
+                            }
+                        ]}
+                    />
+                    {detail?.summary ? (
+                        <KuzhambuExpandableText
+                            collapsedRows={2}
+                            content={detail.summary}
+                            testId="knowledge-graph-extraction-manuscript-summary"
+                        />
+                    ) : null}
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
                             testId="knowledge-graph-extraction-manuscript-extract-button"
                             disabled={!canEdit}
                             type="primary"
-                            loading={extracting}
-                            onClick={() => onExtract("GRAPH")}
+                            onClick={onOpenExtractionDialog}
                         >
                             抽取图谱
                         </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="knowledge-graph-extraction-manuscript-apply-candidate-button"
-                            disabled={!canApply || !canApplyCandidate || !hasCandidate(candidate)}
-                            loading={applying}
-                            onClick={() => onApplyCandidate(normalizedCandidateTaskId)}
-                        >
-                            应用候选
-                        </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="knowledge-graph-extraction-manuscript-view-version-button"
-                            disabled={!latestVersionId}
-                            href={
-                                latestVersionId
-                                    ? `/knowledge/graph-results?graphVersionId=${encodeURIComponent(
-                                          String(latestVersionId)
-                                      )}`
-                                    : undefined
-                            }
-                        >
-                            查看结果
-                        </KuzhambuButton>
-                        {canOpenRefinement ? (
-                            <KuzhambuButton
-                                testId="knowledge-graph-extraction-manuscript-refinement-button"
-                                disabled={!latestVersionId}
-                                href={
-                                    latestVersionId
-                                        ? `/knowledge/refinement?graphVersionId=${encodeURIComponent(
-                                              String(latestVersionId)
-                                          )}`
-                                        : undefined
-                                }
-                            >
-                                进入精修
-                            </KuzhambuButton>
-                        ) : null}
                     </KuzhambuSpace>
                 </KuzhambuSpace>
             </KuzhambuCard>
-            <GraphExtractionCandidatePreview candidate={candidate} loading={candidateLoading} />
+            <CurrentGraphPanel
+                loading={currentGraphLoading}
+                relations={currentGraphRelations}
+                versionId={latestVersionId}
+            />
         </KuzhambuSpace>
     );
 };
