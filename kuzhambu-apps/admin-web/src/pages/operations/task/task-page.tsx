@@ -351,7 +351,10 @@ export const OperationsTaskPage = () => {
                                 className="operations-tasks-shortcut"
                                 key={entry.to}
                             >
-                                <KuzhambuCard size="small">
+                                <KuzhambuCard
+                                    className="operations-tasks-shortcut-card"
+                                    size="small"
+                                >
                                     <KuzhambuSpace
                                         size={8}
                                         className="operations-tasks-shortcut-header"
