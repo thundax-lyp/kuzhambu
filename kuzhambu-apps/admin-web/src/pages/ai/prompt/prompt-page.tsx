@@ -21,6 +21,7 @@ import {
 } from "@/components";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { PromptEditDrawer } from "./prompt-edit-drawer";
+import { PromptVersionDrawer } from "./prompt-version-drawer";
 import {
     DEFAULT_PROMPT_FILTERS,
     readCapabilityDomainTag,
@@ -78,6 +79,7 @@ export const PromptPage = () => {
     const [filters, setFilters] = useState<PromptFilters>(DEFAULT_PROMPT_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const [editingTemplate, setEditingTemplate] = useState<AiPromptTemplateRecord | null>(null);
+    const [versionTemplate, setVersionTemplate] = useState<AiPromptTemplateRecord | null>(null);
     const [promptEditDrawerOpen, setPromptEditDrawerOpen] = useState(false);
     const hasSelectedPrompt = selectedRowKeys.length > 0;
     const hasActiveFilters =
@@ -214,6 +216,14 @@ export const PromptPage = () => {
     const openCreatePromptDrawer = () => {
         setEditingTemplate(null);
         setPromptEditDrawerOpen(true);
+    };
+
+    const openPromptVersionDrawer = (template: AiPromptTemplateRecord) => {
+        setVersionTemplate(template);
+    };
+
+    const closePromptVersionDrawer = () => {
+        setVersionTemplate(null);
     };
 
     const closePromptEditDrawer = () => {
@@ -360,6 +370,15 @@ export const PromptPage = () => {
                     )}`,
                     disabled: !canEditPrompt,
                     onClick: () => openEditPromptDrawer(template)
+                },
+                {
+                    key: "versions",
+                    text: "版本",
+                    ariaLabel: `查看 ${readPromptDisplayName(
+                        template,
+                        capabilityByCode.get(template.capability || "")?.name
+                    )} 版本`,
+                    onClick: () => openPromptVersionDrawer(template)
                 },
                 {
                     key: "delete-divider",
@@ -517,6 +536,14 @@ export const PromptPage = () => {
                 template={editingTemplate}
                 onClose={closePromptEditDrawer}
                 onSaved={handleSaved}
+            />
+            <PromptVersionDrawer
+                key={versionTemplate?.id || "closed"}
+                canEdit={canEditPrompt}
+                open={Boolean(versionTemplate)}
+                template={versionTemplate}
+                onClose={closePromptVersionDrawer}
+                onChanged={invalidatePrompt}
             />
         </>
     );
