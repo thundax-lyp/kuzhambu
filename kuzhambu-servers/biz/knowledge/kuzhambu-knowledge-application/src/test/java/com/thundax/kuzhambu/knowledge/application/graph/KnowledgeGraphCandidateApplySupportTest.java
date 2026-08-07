@@ -57,6 +57,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         task.setScopeJson("{\"entryIds\":[1]}");
         task.setSourceContentType("SANCAI_ENTRY");
         task.setSourceContentId(GraphExtractionSourceContentIdCodec.toDomain(1L));
+        task.setInputPayloadJson("{\"source\":{\"categoryPath\":\"天文\"}}");
         AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
                 .candidateId(22L)
                 .resultFormat("STRUCTURED")
@@ -69,6 +70,8 @@ class KnowledgeGraphCandidateApplySupportTest {
 
         assertNotNull(version.getId());
         assertEquals(1, version.getVersionNo());
+        assertEquals("天文", version.getSourceCategoryCode());
+        assertEquals("天文", version.getSourceCategoryName());
         assertEquals(1, entityRepository.saved.size());
         assertEquals(textKey("黄帝"), entityRepository.saved.get(0).getEntityKey());
         assertEquals(1, relationRepository.saved.size());

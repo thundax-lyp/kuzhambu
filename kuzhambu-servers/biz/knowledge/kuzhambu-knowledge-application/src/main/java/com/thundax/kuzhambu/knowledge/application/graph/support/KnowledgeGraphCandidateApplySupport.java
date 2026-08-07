@@ -45,6 +45,8 @@ public class KnowledgeGraphCandidateApplySupport {
     private static final String APPLY_MODE_APPEND = "APPEND";
     private static final String APPLY_MODE_MERGE = "MERGE";
     private static final String APPLY_MODE_OVERWRITE = "OVERWRITE";
+    private static final int SOURCE_CATEGORY_CODE_MAX_LENGTH = 64;
+    private static final int SOURCE_CATEGORY_NAME_MAX_LENGTH = 128;
 
     private final GraphVersionRepository graphVersionRepository;
     private final KnowledgeEntityRepository knowledgeEntityRepository;
@@ -118,6 +120,7 @@ public class KnowledgeGraphCandidateApplySupport {
         }
         GraphVersion latest = graphVersionRepository.findLatest(
                 task.getTaskType(), task.getSourceContentType(), task.getSourceContentId());
+        SourceCategory sourceCategory = resolveSourceCategory(task);
         GraphVersion version = new GraphVersion();
         version.setTaskId(task.getId());
         version.setCandidateId(GraphExtractionAiCandidateIdCodec.toDomain(candidate.getCandidateId()));
@@ -126,11 +129,37 @@ public class KnowledgeGraphCandidateApplySupport {
         version.setScopeJson(task.getScopeJson());
         version.setSourceContentType(task.getSourceContentType());
         version.setSourceContentId(task.getSourceContentId());
+        version.setSourceCategoryCode(sourceCategory.code());
+        version.setSourceCategoryName(sourceCategory.name());
         version.setVersionNo(latest == null || latest.getVersionNo() == null ? 1 : latest.getVersionNo() + 1);
         version.setStatus(GraphVersionStatus.APPLIED);
         version.setAppliedAt(appliedAt);
         version.setId(graphVersionRepository.save(version));
         return version;
+    }
+
+    private SourceCategory resolveSourceCategory(GraphExtractionTask task) {
+        JsonNode inputPayload = parseOptionalPayload(task.getInputPayloadJson());
+        String categoryCode = firstNonBlank(inputPayload, "sourceCategoryCode", "categoryCode");
+        JsonNode source = inputPayload == null ? null : inputPayload.get("source");
+        if (StringUtils.isBlank(categoryCode)) {
+            categoryCode = firstNonBlank(source, "sourceCategoryCode", "categoryCode");
+        }
+        String categoryName = firstNonBlank(inputPayload, "sourceCategoryName", "categoryName", "lineageHint");
+        if (StringUtils.isBlank(categoryName)) {
+            categoryName = firstNonBlank(source, "sourceCategoryName", "categoryName", "categoryPath");
+        }
+        if (StringUtils.isBlank(categoryName)) {
+            categoryName = firstNonBlank(parseOptionalPayload(task.getScopeJson()), "sourceCategoryName", "sourcePath");
+        }
+        if (StringUtils.isBlank(categoryCode)) {
+            categoryCode = StringUtils.defaultIfBlank(normalize(categoryName), task.getSourceContentType());
+        }
+        if (StringUtils.isBlank(categoryName)) {
+            categoryName = StringUtils.defaultIfBlank(task.getSourceContentType(), "UNKNOWN");
+        }
+        return new SourceCategory(
+                fit(categoryCode, SOURCE_CATEGORY_CODE_MAX_LENGTH), fit(categoryName, SOURCE_CATEGORY_NAME_MAX_LENGTH));
     }
 
     private String taskTypeValue(GraphExtractionTask task) {
@@ -368,6 +397,17 @@ public class KnowledgeGraphCandidateApplySupport {
         }
     }
 
+    private JsonNode parseOptionalPayload(String payload) {
+        if (StringUtils.isBlank(payload)) {
+            return null;
+        }
+        try {
+            return objectMapper.readTree(payload);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     private ArrayNode arrayOf(JsonNode payload, String fieldName) {
         JsonNode node = payload == null ? null : payload.get(fieldName);
         return node instanceof ArrayNode arrayNode ? arrayNode : objectMapper.createArrayNode();
@@ -457,6 +497,11 @@ public class KnowledgeGraphCandidateApplySupport {
         return StringUtils.defaultString(value).trim().replaceAll("\\s+", "_").toLowerCase(Locale.ROOT);
     }
 
+    private String fit(String value, int maxLength) {
+        String normalized = StringUtils.defaultString(value).trim();
+        return normalized.length() <= maxLength ? normalized : normalized.substring(0, maxLength);
+    }
+
     private <T> Map<String, T> mapByKey(List<T> items, KeyExtractor<T> keyExtractor) {
         Map<String, T> map = new LinkedHashMap<>();
         for (T item : items == null ? List.<T>of() : items) {
@@ -475,4 +520,6 @@ public class KnowledgeGraphCandidateApplySupport {
     private interface KeyExtractor<T> {
         String keyOf(T value);
     }
+
+    private record SourceCategory(String code, String name) {}
 }
