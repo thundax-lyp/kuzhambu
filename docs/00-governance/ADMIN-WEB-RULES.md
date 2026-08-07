@@ -121,6 +121,7 @@
 - `ADMIN_WEB_NAME_PAGE_CLASS_PREFIX`：页面根节点 class 使用页面域前缀；共享组件 class 使用 `kuzhambu-`。
 - `ADMIN_WEB_STYLE_COMPONENT_CLASS_LOCATION`：组件域 CSS class 只定义在对应组件 CSS 文件中。
 - `ADMIN_WEB_STYLE_PAGE_CLASS_LOCATION`：页面域 CSS class 只定义在对应页面 CSS 文件中。
+- `ADMIN_WEB_STYLE_NO_ANTD_SELECTOR_IN_PAGES`：`src/pages/**/*.css` 禁止新增 antd 组件内部的 `.ant-*` 选择器；存量选择器由 CSS 边界脚本中的显式 allowlist 约束，并应随迁移逐步清除。antd 内部样式覆盖只能放在全局 CSS 或 `src/components/**` 的封装组件 CSS 中；页面代码应通过项目封装组件、组件 props 或页面自有 class 表达样式需求。
 
 ### Service
 
@@ -209,6 +210,13 @@
 
 - 路由、登录态、权限、请求 hook、布局行为和关键页面加载行为优先覆盖在 `src/app.test.tsx`。
 - 页面交互复杂度明显上升时，可以新增同目录或测试目录下的聚焦测试。
+
+### Style
+
+- 审阅页面 CSS 时先判断样式归属：页面 CSS 只保留页面根布局、页面级分区和跨子组件的布局约束；子组件自身结构、状态和响应式样式应下沉到对应组件目录。
+- 页面 CSS 不应成为子组件样式桶。若样式只服务于一个页面私有组件，优先要求组件导入自己的 `*.css`，并从页面 CSS 移除对应 class。
+- 页面 CSS 不新增 antd 组件内部的 `.ant-*` 选择器；需要覆盖 antd 内部结构时，优先沉淀到 `src/components/**` 的项目封装组件，确属全局主题修正时放在全局 CSS。
+- 避免页面样式跨越组件边界选择子组件内部结构；确有跨组件布局需要时，选择器应表达页面级布局关系，而不是依赖子组件 DOM 细节。
 
 ### UI
 

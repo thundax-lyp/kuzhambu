@@ -6,6 +6,7 @@ const SOURCE_ROOT = path.resolve("src");
 const COMPONENT_ROOT = path.join(SOURCE_ROOT, "components");
 const OPTIONS_TYPE_FILE = path.join(SOURCE_ROOT, "types", "options.ts").split(path.sep).join("/");
 const CLASS_NAME_PATTERN = /\.((?:kuzhambu-[a-z0-9]+)(?:-[a-z0-9]+)*)/g;
+const ANTD_SELECTOR_LINE_PATTERN = /\.ant-[A-Za-z0-9_-]+/;
 const OPTION_RECORD_DECLARATION_PATTERN =
     /^\s*(?:export\s+)?(?:interface\s+[A-Za-z0-9_]*(?:OptionRecord|OptionsRecord)\b|type\s+[A-Za-z0-9_]*(?:OptionRecord|OptionsRecord)(?:<[^>]+>)?\s*=)/gm;
 const FORBIDDEN_DIRECTORY_RULES = new Map([
@@ -28,6 +29,138 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
     ["models", "ADMIN_WEB_FORBID_BUCKET_DIR"],
     ["stores", "ADMIN_WEB_FORBID_BUCKET_DIR"]
 ]);
+const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
+    {
+        file: "src/pages/ai/business-config/business-config-edit-drawer/business-config-edit-drawer.css",
+        allowedAntdSelectorLines: 4
+    },
+    {
+        file: "src/pages/ai/prompt/prompt-edit-drawer/prompt-edit-drawer.css",
+        allowedAntdSelectorLines: 6
+    },
+    { file: "src/pages/ai/prompt/prompt-page.css", allowedAntdSelectorLines: 1 },
+    {
+        file: "src/pages/audit/audit-log/audit-log-detail/audit-log-detail.css",
+        allowedAntdSelectorLines: 2
+    },
+    { file: "src/pages/audit/audit-log/audit-log-page.css", allowedAntdSelectorLines: 1 },
+    { file: "src/pages/auth/login/login-page.css", allowedAntdSelectorLines: 8 },
+    {
+        file: "src/pages/classics/common/classics-content-tag-panel.css",
+        allowedAntdSelectorLines: 1
+    },
+    {
+        file: "src/pages/classics/ming-custom/ming-customs-keyword-cloud/ming-customs-keyword-cloud.css",
+        allowedAntdSelectorLines: 2
+    },
+    {
+        file: "src/pages/classics/publication-job/publication-job-page.css",
+        allowedAntdSelectorLines: 1
+    },
+    {
+        file: "src/pages/classics/sancai/sancai-catalog-tree-panel/sancai-catalog-tree-panel.css",
+        allowedAntdSelectorLines: 2
+    },
+    {
+        file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-basic-section/sancai-entry-image-field/sancai-entry-image-field.css",
+        allowedAntdSelectorLines: 5
+    },
+    {
+        file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-basic-section/sancai-entry-translation-text-field/sancai-entry-translation-text-field.css",
+        allowedAntdSelectorLines: 5
+    },
+    {
+        file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-qa-section/sancai-entry-qa-section.css",
+        allowedAntdSelectorLines: 7
+    },
+    {
+        file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-tag-section/sancai-entry-tag-section.css",
+        allowedAntdSelectorLines: 7
+    },
+    {
+        file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-panel.css",
+        allowedAntdSelectorLines: 4
+    },
+    { file: "src/pages/classics/sancai/sancai-page.css", allowedAntdSelectorLines: 6 },
+    {
+        file: "src/pages/classics/sancai/sancai-versions-panel/sancai-versions-panel.css",
+        allowedAntdSelectorLines: 2
+    },
+    {
+        file: "src/pages/classics/sancai-visual/sancai-entry-visual-section/sancai-entry-visual-section.css",
+        allowedAntdSelectorLines: 14
+    },
+    {
+        file: "src/pages/classics/sancai-visual/sancai-visual-entry-context/sancai-visual-entry-context.css",
+        allowedAntdSelectorLines: 1
+    },
+    {
+        file: "src/pages/classics/sancai-visual/sancai-visual-entry-picker-modal/sancai-visual-entry-picker-modal.css",
+        allowedAntdSelectorLines: 7
+    },
+    {
+        file: "src/pages/classics/wangqi/wangqi-document-edit-drawer/wangqi-document-edit-drawer.css",
+        allowedAntdSelectorLines: 1
+    },
+    { file: "src/pages/classics/wangqi/wangqi-page.css", allowedAntdSelectorLines: 11 },
+    { file: "src/pages/dashboard/dashboard/dashboard-page.css", allowedAntdSelectorLines: 6 },
+    {
+        file: "src/pages/discovery/qa/qa-message-panel/qa-message-panel.css",
+        allowedAntdSelectorLines: 23
+    },
+    {
+        file: "src/pages/discovery/qa/qa-session-table/qa-session-table.css",
+        allowedAntdSelectorLines: 2
+    },
+    { file: "src/pages/discovery/qa-console/qa-console-page.css", allowedAntdSelectorLines: 1 },
+    { file: "src/pages/discovery/search/search-page.css", allowedAntdSelectorLines: 3 },
+    {
+        file: "src/pages/discovery/search-statistic/search-statistic-page.css",
+        allowedAntdSelectorLines: 16
+    },
+    {
+        file: "src/pages/knowledge/graph-extraction/graph-extraction-page.css",
+        allowedAntdSelectorLines: 1
+    },
+    { file: "src/pages/knowledge/graph-result/graph-result-page.css", allowedAntdSelectorLines: 1 },
+    { file: "src/pages/knowledge/lineage/lineage-page.css", allowedAntdSelectorLines: 2 },
+    { file: "src/pages/knowledge/taxonomy/taxonomy-page.css", allowedAntdSelectorLines: 1 },
+    {
+        file: "src/pages/operations/backup-restore/backup-restore-page.css",
+        allowedAntdSelectorLines: 1
+    },
+    { file: "src/pages/operations/cleanup/cleanup-page.css", allowedAntdSelectorLines: 1 },
+    { file: "src/pages/operations/dashboard/dashboard-page.css", allowedAntdSelectorLines: 5 },
+    { file: "src/pages/operations/health/health-page.css", allowedAntdSelectorLines: 2 },
+    { file: "src/pages/operations/report/report-page.css", allowedAntdSelectorLines: 3 },
+    { file: "src/pages/operations/task/task-page.css", allowedAntdSelectorLines: 2 },
+    {
+        file: "src/pages/storage/storage-object/storage-object-page.css",
+        allowedAntdSelectorLines: 16
+    },
+    { file: "src/pages/system/department/department-page.css", allowedAntdSelectorLines: 12 },
+    { file: "src/pages/system/menu/menu-page.css", allowedAntdSelectorLines: 10 },
+    {
+        file: "src/pages/system/role/role-edit-drawer/menu-tree-field/menu-tree-field.css",
+        allowedAntdSelectorLines: 2
+    },
+    {
+        file: "src/pages/system/user/user-department-tree/user-department-tree.css",
+        allowedAntdSelectorLines: 7
+    },
+    {
+        file: "src/pages/system/user/user-edit-drawer/user-avatar-field/user-avatar-field.css",
+        allowedAntdSelectorLines: 1
+    },
+    {
+        file: "src/pages/system/user/user-edit-drawer/user-edit-drawer.css",
+        allowedAntdSelectorLines: 2
+    },
+    { file: "src/pages/system/user/user-page.css", allowedAntdSelectorLines: 5 }
+];
+const pageCssAntdSelectorAllowanceByFile = new Map(
+    PAGE_CSS_ANTD_SELECTOR_ALLOWLIST.map((entry) => [entry.file, entry.allowedAntdSelectorLines])
+);
 
 const listFiles = (directory, predicate) => {
     if (!fs.existsSync(directory)) {
@@ -91,6 +224,27 @@ const cssFiles = listFiles(SOURCE_ROOT, (filePath) => filePath.endsWith(".css"))
 const sourceFiles = listFiles(SOURCE_ROOT, (filePath) => /\.(?:ts|tsx|css)$/.test(filePath));
 const violations = [];
 
+const countAntdSelectorLines = (content) => {
+    return content.split(/\r?\n/).filter((line) => ANTD_SELECTOR_LINE_PATTERN.test(line)).length;
+};
+
+const reportNewAntdSelectorLines = (filePath, content) => {
+    const normalizedFilePath = filePath.split(path.sep).join("/");
+    if (!/\/src\/pages\/.*\.css$/.test(normalizedFilePath)) {
+        return;
+    }
+
+    const repoRelativePath = path.relative(SOURCE_ROOT, filePath).split(path.sep).join("/");
+    const pageRelativePath = `src/${repoRelativePath}`;
+    const allowedCount = pageCssAntdSelectorAllowanceByFile.get(pageRelativePath) ?? 0;
+    const currentCount = countAntdSelectorLines(content);
+    if (currentCount > allowedCount) {
+        violations.push(
+            `${normalizedFilePath}: ADMIN_WEB_STYLE_NO_ANTD_SELECTOR_IN_PAGES allows ${allowedCount} existing antd selector line(s), but found ${currentCount}. Move new overrides to src/components/** or global CSS.`
+        );
+    }
+};
+
 listDirectories(SOURCE_ROOT).forEach((directoryPath) => {
     const directoryName = path.basename(directoryPath);
     const rule = FORBIDDEN_DIRECTORY_RULES.get(directoryName);
@@ -145,6 +299,8 @@ sourceFiles.forEach((filePath) => {
 cssFiles.forEach((filePath) => {
     const content = fs.readFileSync(filePath, "utf8");
     const normalizedFilePath = filePath.split(path.sep).join("/");
+
+    reportNewAntdSelectorLines(filePath, content);
 
     for (const match of content.matchAll(CLASS_NAME_PATTERN)) {
         const className = match[1];
