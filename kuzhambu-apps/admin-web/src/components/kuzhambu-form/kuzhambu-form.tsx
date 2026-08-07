@@ -6,16 +6,19 @@ import {
     createContext,
     isValidElement,
     useContext,
+    useEffect,
+    useRef,
+    useState,
     type ReactElement,
     type Key,
     type ReactNode
 } from "react";
 import {
     KUZHAMBU_FORM_ITEM_LAYOUTS,
+    readKuzhambuFormLayoutTier,
     type KuzhambuFormItemLayoutSize,
     type KuzhambuFormLayoutTier
 } from "./kuzhambu-form-layout";
-import { useKuzhambuFormLayoutTier } from "./hooks/use-kuzhambu-form-layout-tier";
 import "./kuzhambu-form.css";
 
 export type KuzhambuFormItemGap = "default" | "compact" | "none";
@@ -281,8 +284,25 @@ export const KuzhambuForm = <Values = unknown,>({
     style,
     ...formProps
 }: KuzhambuFormProps<Values>) => {
-    const { containerRef, layoutTier } = useKuzhambuFormLayoutTier();
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const [layoutTier, setLayoutTier] = useState<KuzhambuFormLayoutTier>("lg");
     const { hiddenItems, rows } = buildFormRows(children, layoutTier);
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) {
+            return undefined;
+        }
+
+        const updateLayoutTier = () => {
+            setLayoutTier(readKuzhambuFormLayoutTier(container.getBoundingClientRect().width));
+        };
+        updateLayoutTier();
+
+        const observer = new ResizeObserver(updateLayoutTier);
+        observer.observe(container);
+        return () => observer.disconnect();
+    }, []);
 
     return (
         <div
