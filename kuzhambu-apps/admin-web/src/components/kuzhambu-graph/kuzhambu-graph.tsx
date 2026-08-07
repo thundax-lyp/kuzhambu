@@ -9,6 +9,10 @@ import type { KuzhambuGraphHandle, KuzhambuGraphSpoItem } from "./kuzhambu-graph
 const GROUP_COLORS = ["#1677ff", "#52c41a", "#faad14", "#722ed1", "#eb2f96", "#13c2c2"];
 const FORCE_LINK_DISTANCE = 112;
 const FORCE_LINK_STRENGTH = 0.82;
+const FORCE_GROUP_MEMBER_LINK_DISTANCE = 76;
+const FORCE_GROUP_MEMBER_LINK_STRENGTH = 0.38;
+const FORCE_GROUP_LINK_DISTANCE = 220;
+const FORCE_GROUP_LINK_STRENGTH = 0.24;
 const FORCE_MANY_BODY_STRENGTH = -180;
 const FORCE_MANY_BODY_DISTANCE_MAX = 280;
 const FORCE_COLLIDE_RADIUS = 38;
@@ -23,12 +27,40 @@ const getNodeGroup = (node: NodeData) => {
     return String(node.data?.group || "default");
 };
 
+const getNodeLayoutGroup = (node: NodeData) => {
+    return String(node.data?.layoutGroup || getNodeGroup(node));
+};
+
+const isVirtualNode = (node: NodeData) => Boolean(node.data?.isVirtual);
+
 const getNodeLabel = (node: NodeData) => {
     return String(node.data?.label || node.id);
 };
 
+const isVirtualEdge = (edge: EdgeData) => Boolean(edge.data?.isVirtual);
+
 const getEdgeLabel = (edge: EdgeData) => {
     return String(edge.data?.label || "");
+};
+
+const getEdgeLinkDistance = (edge: EdgeData) => {
+    if (edge.data?.virtualType === "group-member") {
+        return FORCE_GROUP_MEMBER_LINK_DISTANCE;
+    }
+    if (edge.data?.virtualType === "group-link") {
+        return FORCE_GROUP_LINK_DISTANCE;
+    }
+    return FORCE_LINK_DISTANCE;
+};
+
+const getEdgeLinkStrength = (edge: EdgeData) => {
+    if (edge.data?.virtualType === "group-member") {
+        return FORCE_GROUP_MEMBER_LINK_STRENGTH;
+    }
+    if (edge.data?.virtualType === "group-link") {
+        return FORCE_GROUP_LINK_STRENGTH;
+    }
+    return FORCE_LINK_STRENGTH;
 };
 
 const getGroupColor = (group: string) => {
@@ -41,7 +73,7 @@ const getGroupColor = (group: string) => {
 
 const getGraphGroups = (graphData: GraphData) => {
     return Array.from(
-        new Set((graphData.nodes || []).map((node) => getNodeGroup(node)).filter(Boolean))
+        new Set((graphData.nodes || []).map((node) => getNodeLayoutGroup(node)).filter(Boolean))
     );
 };
 
@@ -55,7 +87,7 @@ const createGroupYResolver = (graphData: GraphData) => {
     const startY = -span / 2;
     const stepY = groups.length <= 1 ? 0 : span / (groups.length - 1);
 
-    return (node: NodeData) => startY + (groupIndexMap.get(getNodeGroup(node)) || 0) * stepY;
+    return (node: NodeData) => startY + (groupIndexMap.get(getNodeLayoutGroup(node)) || 0) * stepY;
 };
 
 const createForceLayout = (graphData: GraphData) => {
@@ -65,8 +97,8 @@ const createForceLayout = (graphData: GraphData) => {
         animation: true,
         iterations: FORCE_LAYOUT_ITERATIONS,
         link: {
-            distance: FORCE_LINK_DISTANCE,
-            strength: FORCE_LINK_STRENGTH
+            distance: getEdgeLinkDistance,
+            strength: getEdgeLinkStrength
         },
         manyBody: {
             strength: FORCE_MANY_BODY_STRENGTH,
@@ -162,6 +194,17 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
                 layout: createForceLayout(initialGraphData),
                 node: {
                     style: (node) => {
+                        if (isVirtualNode(node)) {
+                            return {
+                                size: 1,
+                                fill: "transparent",
+                                stroke: "transparent",
+                                opacity: 0,
+                                visibility: "hidden",
+                                lineWidth: 0,
+                                labelText: ""
+                            };
+                        }
                         const color = getGroupColor(getNodeGroup(node));
                         return {
                             size: 38,
@@ -176,17 +219,29 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
                     }
                 },
                 edge: {
-                    style: (edge) => ({
-                        stroke: "#94a3b8",
-                        lineWidth: 1.2,
-                        endArrow: true,
-                        labelText: getEdgeLabel(edge),
-                        labelFill: "#475569",
-                        labelFontSize: 11,
-                        labelBackground: true,
-                        labelBackgroundFill: "rgba(255, 255, 255, 0.82)",
-                        labelBackgroundRadius: 4
-                    })
+                    style: (edge) => {
+                        if (isVirtualEdge(edge)) {
+                            return {
+                                stroke: "transparent",
+                                opacity: 0,
+                                visibility: "hidden",
+                                lineWidth: 0,
+                                endArrow: false,
+                                labelText: ""
+                            };
+                        }
+                        return {
+                            stroke: "#94a3b8",
+                            lineWidth: 1.2,
+                            endArrow: true,
+                            labelText: getEdgeLabel(edge),
+                            labelFill: "#475569",
+                            labelFontSize: 11,
+                            labelBackground: true,
+                            labelBackgroundFill: "rgba(255, 255, 255, 0.82)",
+                            labelBackgroundRadius: 4
+                        };
+                    }
                 },
                 behaviors: [
                     "drag-canvas",
