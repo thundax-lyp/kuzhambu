@@ -1271,11 +1271,15 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         if (relation == null) {
             return null;
         }
+        KnowledgeEntity sourceEntity = knowledgeEntityRepository.getByEntityKey(relation.getSourceEntityKey());
+        KnowledgeEntity targetEntity = knowledgeEntityRepository.getByEntityKey(relation.getTargetEntityKey());
         return new KnowledgeRelationResult(
                 relation.getId(),
                 relation.getRelationKey(),
                 relation.getSourceName(),
+                sourceEntity == null ? null : sourceEntity.getEntityType(),
                 relation.getTargetName(),
+                targetEntity == null ? null : targetEntity.getEntityType(),
                 relation.getRelationType(),
                 relation.getEvidence(),
                 relation.getConfirmationStatus(),

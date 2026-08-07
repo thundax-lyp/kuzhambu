@@ -15,8 +15,10 @@ const toGraphSpoList = (relations: GraphWorkbenchRelationRecord[]) =>
         .filter((relation) => relation.sourceName && relation.relationType && relation.targetName)
         .map((relation) => ({
             subject: relation.sourceName || "",
+            subjectGroup: relation.sourceType || "其他",
             predicate: relation.relationType || "",
-            object: relation.targetName || ""
+            object: relation.targetName || "",
+            objectGroup: relation.targetType || "其他"
         }));
 
 export const CurrentGraphPanel = ({

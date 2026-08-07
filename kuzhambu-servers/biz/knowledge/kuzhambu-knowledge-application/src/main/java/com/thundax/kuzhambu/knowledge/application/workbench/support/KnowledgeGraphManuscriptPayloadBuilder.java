@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphEntityTypes;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -48,7 +49,7 @@ public class KnowledgeGraphManuscriptPayloadBuilder {
                 nextEventId("graph-trace"),
                 writePromptMessages(taskType),
                 writeInputPayload(manuscript, taskType),
-                null,
+                writeOutputSchema(),
                 true,
                 DEFAULT_LOCALE);
     }
@@ -69,8 +70,74 @@ public class KnowledgeGraphManuscriptPayloadBuilder {
 
     private String writePromptMessages(String taskType) {
         return writeJson(List.of(
-                Map.of("role", "system", "content", "你是知识图谱抽取助手。请从古籍稿件中抽取结构化实体、关系和世系信息。"),
-                Map.of("role", "user", "content", "请根据输入 payload 执行 " + taskType + " 抽取，并返回 JSON。")));
+                Map.of(
+                        "role",
+                        "system",
+                        "content",
+                        "你是知识图谱抽取助手。请从古籍稿件中抽取结构化实体、关系和世系信息。实体类型必须使用固定枚举："
+                                + String.join("、", KnowledgeGraphEntityTypes.VALUES)
+                                + "。无法判断实体类型时使用“"
+                                + KnowledgeGraphEntityTypes.OTHER
+                                + "”。"),
+                Map.of(
+                        "role",
+                        "user",
+                        "content",
+                        "请根据输入 payload 执行 "
+                                + taskType
+                                + " 抽取，并返回 JSON。entities 每一项必须包含 name/entityType/description，entityType 只能取固定枚举。")));
+    }
+
+    private String writeOutputSchema() {
+        return writeJson(Map.of(
+                "type",
+                "object",
+                "properties",
+                Map.of(
+                        "entities",
+                        Map.of(
+                                "type",
+                                "array",
+                                "items",
+                                Map.of(
+                                        "type",
+                                        "object",
+                                        "properties",
+                                        Map.of(
+                                                "name",
+                                                Map.of("type", "string"),
+                                                "entityType",
+                                                Map.of("type", "string", "enum", KnowledgeGraphEntityTypes.VALUES),
+                                                "description",
+                                                Map.of("type", "string")),
+                                        "required",
+                                        List.of("name", "entityType"))),
+                        "relations",
+                        Map.of(
+                                "type",
+                                "array",
+                                "items",
+                                Map.of(
+                                        "type",
+                                        "object",
+                                        "properties",
+                                        Map.of(
+                                                "sourceName",
+                                                Map.of("type", "string"),
+                                                "targetName",
+                                                Map.of("type", "string"),
+                                                "relationType",
+                                                Map.of("type", "string"),
+                                                "evidence",
+                                                Map.of("type", "string")),
+                                        "required",
+                                        List.of("sourceName", "targetName", "relationType"))),
+                        "entryRefs",
+                        Map.of("type", "array", "items", Map.of("type", "object")),
+                        "warnings",
+                        Map.of("type", "array", "items", Map.of("type", "string"))),
+                "required",
+                List.of("entities", "relations")));
     }
 
     private String writeInputPayload(ClassicsQaKnowledgeFacadeDto manuscript, String taskType) {

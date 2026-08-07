@@ -193,8 +193,14 @@ public final class GraphExtractionResponses {
         @JsonProperty("sourceName")
         private String sourceName;
 
+        @JsonProperty("sourceType")
+        private String sourceType;
+
         @JsonProperty("targetName")
         private String targetName;
+
+        @JsonProperty("targetType")
+        private String targetType;
 
         @JsonProperty("relationType")
         private String relationType;

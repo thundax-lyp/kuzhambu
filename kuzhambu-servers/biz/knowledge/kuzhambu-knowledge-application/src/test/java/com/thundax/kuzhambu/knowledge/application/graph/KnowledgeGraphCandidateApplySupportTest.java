@@ -74,6 +74,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         assertEquals("天文", version.getSourceCategoryName());
         assertEquals(1, entityRepository.saved.size());
         assertEquals(textKey("黄帝"), entityRepository.saved.get(0).getEntityKey());
+        assertEquals("人物", entityRepository.saved.get(0).getEntityType());
         assertEquals(1, relationRepository.saved.size());
         assertEquals(
                 relationKey("黄帝", "ANCESTOR", "伏羲"),
@@ -125,6 +126,7 @@ class KnowledgeGraphCandidateApplySupportTest {
 
         assertEquals(1, entityRepository.saved.size());
         assertEquals(textKey("炎帝"), entityRepository.saved.get(0).getEntityKey());
+        assertEquals("人物", entityRepository.saved.get(0).getEntityType());
         assertEquals("既有实体", entityRepository.store.get(textKey("黄帝")).getDescription());
         assertEquals(1, relationRepository.saved.size());
         assertEquals(
@@ -169,6 +171,33 @@ class KnowledgeGraphCandidateApplySupportTest {
                 relationKey("黄帝", "祖先", "伏羲"), relationRepository.saved.get(0).getRelationKey());
         assertEquals(textKey("黄帝"), relationRepository.saved.get(0).getSourceEntityKey());
         assertEquals(textKey("伏羲"), relationRepository.saved.get(0).getTargetEntityKey());
+    }
+
+    @Test
+    void applyShouldDefaultMissingEntityTypeToOther() {
+        FakeGraphVersionRepository versionRepository = new FakeGraphVersionRepository();
+        FakeKnowledgeEntityRepository entityRepository = new FakeKnowledgeEntityRepository();
+        KnowledgeGraphCandidateApplySupport support = new KnowledgeGraphCandidateApplySupport(
+                versionRepository,
+                entityRepository,
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository());
+        GraphExtractionTask task = new GraphExtractionTask();
+        task.setId(GraphExtractionTaskIdCodec.toDomain(11L));
+        task.setTaskType(GraphExtractionTaskType.GRAPH);
+        task.setSourceContentType("SANCAI_ENTRY");
+        task.setSourceContentId(GraphExtractionSourceContentIdCodec.toDomain(1L));
+        AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
+                .candidateId(22L)
+                .resultFormat("STRUCTURED")
+                .resultPayload("{\"entities\":[{\"name\":\"浑天仪\",\"description\":\"器物\"}],\"relations\":[]}")
+                .build();
+
+        support.apply(task, candidate);
+
+        assertEquals(1, entityRepository.saved.size());
+        assertEquals("其他", entityRepository.saved.get(0).getEntityType());
     }
 
     private static String relationKey(String subject, String predicate, String object) {

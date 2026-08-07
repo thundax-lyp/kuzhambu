@@ -97,6 +97,8 @@ export interface GraphWorkbenchCandidateApplyRecord {
 export interface GraphWorkbenchRelationRecord {
     relationId: string;
     sourceName?: string | null;
+    sourceType?: string | null;
     relationType?: string | null;
     targetName?: string | null;
+    targetType?: string | null;
 }

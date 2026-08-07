@@ -150,7 +150,18 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
         assertEquals("人物 / 三才", inputPayload.get("lineageHint").asText());
         assertNull(payload.modelId());
         assertNull(payload.modelName());
-        assertNull(payload.outputSchemaJson());
+        JsonNode outputSchema = OBJECT_MAPPER.readTree(payload.outputSchemaJson());
+        assertEquals(
+                "其他",
+                outputSchema
+                        .get("properties")
+                        .get("entities")
+                        .get("items")
+                        .get("properties")
+                        .get("entityType")
+                        .get("enum")
+                        .get(6)
+                        .asText());
     }
 
     @Test

@@ -13,7 +13,9 @@ public class KnowledgeRelationResult {
     private Long relationId;
     private String relationKey;
     private String sourceName;
+    private String sourceType;
     private String targetName;
+    private String targetType;
     private String relationType;
     private String evidence;
     private String confirmationStatus;

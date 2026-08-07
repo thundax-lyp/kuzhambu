@@ -31,7 +31,9 @@ export interface GraphRelationRecord {
     relationId: string;
     relationKey?: string | null;
     sourceName?: string | null;
+    sourceType?: string | null;
     targetName?: string | null;
+    targetType?: string | null;
     relationType?: string | null;
     evidence?: string | null;
     confirmationStatus?: string | null;

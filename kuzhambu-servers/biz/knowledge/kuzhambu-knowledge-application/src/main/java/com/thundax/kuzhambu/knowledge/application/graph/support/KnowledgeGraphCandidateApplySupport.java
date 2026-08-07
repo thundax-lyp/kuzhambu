@@ -174,10 +174,8 @@ public class KnowledgeGraphCandidateApplySupport {
         List<KnowledgeEntity> incoming = new ArrayList<>();
         for (JsonNode node : entityNodes) {
             String name = requiredText(node, "name");
-            String entityType = firstNonBlank(node, "entityType", "type", "category");
-            if (StringUtils.isBlank(entityType)) {
-                throw new BizException("Knowledge entity type is required");
-            }
+            String entityType =
+                    KnowledgeGraphEntityTypes.normalize(firstNonBlank(node, "entityType", "type", "category"));
             KnowledgeEntity entity = new KnowledgeEntity();
             entity.setEntityKey(textKey(name));
             entity.setName(name);
