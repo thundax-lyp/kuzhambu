@@ -25,9 +25,7 @@
     min-width: 320px;
 }
 
-.operations-reports-field .ant-select,
-.operations-reports-field .ant-picker,
-.operations-reports-field .ant-input-number {
+.operations-reports-control {
     width: 100%;
 }
 

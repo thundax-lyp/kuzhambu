@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Descriptions, Statistic, Typography } from "antd";
+import { App, Statistic, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -18,7 +18,8 @@ import {
     KuzhambuSelect,
     KuzhambuSpace,
     KuzhambuTag,
-    KuzhambuCard
+    KuzhambuCard,
+    KuzhambuDescriptions
 } from "@/components";
 import * as service from "./cleanup-service";
 import type { CleanupExecuteCommand, CleanupPageQuery } from "./cleanup-service";
@@ -426,7 +427,7 @@ export const CleanupPage = () => {
             >
                 {detailCleanupRecord ? (
                     <div className="operations-cleanup-detail">
-                        <Descriptions
+                        <KuzhambuDescriptions
                             bordered
                             column={1}
                             items={[

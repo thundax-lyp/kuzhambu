@@ -21,6 +21,7 @@ import {
 } from "@/components";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { PromptEditDrawer } from "./prompt-edit-drawer";
+import { PromptVersionDrawer } from "./prompt-version-drawer";
 import {
     DEFAULT_PROMPT_FILTERS,
     readCapabilityDomainTag,
@@ -42,6 +43,8 @@ const DEFAULT_COLUMN_WIDTHS = {
     enabled: 112,
     registeredAt: 120
 };
+
+const centerHeaderCell = () => ({ className: "prompt-table-header-cell" });
 
 const formatDate = (value?: string | null) => {
     if (!value) {
@@ -78,6 +81,7 @@ export const PromptPage = () => {
     const [filters, setFilters] = useState<PromptFilters>(DEFAULT_PROMPT_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const [editingTemplate, setEditingTemplate] = useState<AiPromptTemplateRecord | null>(null);
+    const [versionTemplate, setVersionTemplate] = useState<AiPromptTemplateRecord | null>(null);
     const [promptEditDrawerOpen, setPromptEditDrawerOpen] = useState(false);
     const hasSelectedPrompt = selectedRowKeys.length > 0;
     const hasActiveFilters =
@@ -216,6 +220,14 @@ export const PromptPage = () => {
         setPromptEditDrawerOpen(true);
     };
 
+    const openPromptVersionDrawer = (template: AiPromptTemplateRecord) => {
+        setVersionTemplate(template);
+    };
+
+    const closePromptVersionDrawer = () => {
+        setVersionTemplate(null);
+    };
+
     const closePromptEditDrawer = () => {
         setPromptEditDrawerOpen(false);
         setEditingTemplate(null);
@@ -284,6 +296,7 @@ export const PromptPage = () => {
             dataIndex: "name",
             key: "name",
             width: DEFAULT_COLUMN_WIDTHS.name,
+            onHeaderCell: centerHeaderCell,
             render: (_, template) => (
                 <Text strong>
                     {readPromptDisplayName(
@@ -298,6 +311,7 @@ export const PromptPage = () => {
             dataIndex: "capability",
             key: "capability",
             width: DEFAULT_COLUMN_WIDTHS.capability,
+            onHeaderCell: centerHeaderCell,
             render: (capability?: string | null) => {
                 const domainTag = readCapabilityDomainTag(capability);
                 return (
@@ -319,6 +333,7 @@ export const PromptPage = () => {
             key: "enabled",
             width: DEFAULT_COLUMN_WIDTHS.enabled,
             align: "center",
+            onHeaderCell: centerHeaderCell,
             render: (enabled: boolean | null | undefined, template) => (
                 <KuzhambuSwitch
                     checked={enabled !== false}
@@ -339,6 +354,7 @@ export const PromptPage = () => {
             key: "registeredAt",
             width: DEFAULT_COLUMN_WIDTHS.registeredAt,
             align: "center",
+            onHeaderCell: centerHeaderCell,
             render: formatDate
         },
         {
@@ -346,6 +362,7 @@ export const PromptPage = () => {
             dataIndex: "description",
             key: "description",
             ellipsis: true,
+            onHeaderCell: centerHeaderCell,
             render: (description?: string | null) => description || "-"
         },
         {
@@ -360,6 +377,15 @@ export const PromptPage = () => {
                     )}`,
                     disabled: !canEditPrompt,
                     onClick: () => openEditPromptDrawer(template)
+                },
+                {
+                    key: "versions",
+                    text: "版本",
+                    ariaLabel: `查看 ${readPromptDisplayName(
+                        template,
+                        capabilityByCode.get(template.capability || "")?.name
+                    )} 版本`,
+                    onClick: () => openPromptVersionDrawer(template)
                 },
                 {
                     key: "delete-divider",
@@ -517,6 +543,14 @@ export const PromptPage = () => {
                 template={editingTemplate}
                 onClose={closePromptEditDrawer}
                 onSaved={handleSaved}
+            />
+            <PromptVersionDrawer
+                key={versionTemplate?.id || "closed"}
+                canEdit={canEditPrompt}
+                open={Boolean(versionTemplate)}
+                template={versionTemplate}
+                onClose={closePromptVersionDrawer}
+                onChanged={invalidatePrompt}
             />
         </>
     );

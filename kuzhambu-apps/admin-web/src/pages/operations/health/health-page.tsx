@@ -279,6 +279,7 @@ export const OperationsHealthPage = () => {
                 <KuzhambuSpace className="operations-health-toolbar" size={8} wrap>
                     <Input
                         aria-label="组件"
+                        className="operations-health-keyword-input"
                         placeholder="组件"
                         value={componentKeyword}
                         onChange={(event) => setComponentKeyword(event.target.value)}
@@ -301,6 +302,7 @@ export const OperationsHealthPage = () => {
                     />
                     <Input
                         aria-label="探针目标"
+                        className="operations-health-keyword-input"
                         placeholder="探针目标"
                         value={probeTargetKeyword}
                         onChange={(event) => setProbeTargetKeyword(event.target.value)}

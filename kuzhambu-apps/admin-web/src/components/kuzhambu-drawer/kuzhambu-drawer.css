@@ -72,6 +72,22 @@ html[data-theme="dark"] .kuzhambu-drawer-root .ant-drawer-mask {
     padding: 20px;
 }
 
+.kuzhambu-drawer-root .kuzhambu-drawer-body-form .ant-drawer-body {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.kuzhambu-drawer-root .kuzhambu-drawer-body-editor .ant-drawer-body {
+    width: 100%;
+    max-width: 1320px;
+    margin: 0 auto;
+}
+
+.kuzhambu-drawer-root .kuzhambu-drawer-body-timeline .ant-drawer-body {
+    padding-top: 12px;
+}
+
 .kuzhambu-drawer-root .ant-drawer-footer {
     padding: 12px 20px;
 }

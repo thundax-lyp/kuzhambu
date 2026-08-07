@@ -3,7 +3,7 @@
     width: fit-content;
 }
 
-.user-avatar-field .ant-btn {
+.user-avatar-field-upload-button {
     position: absolute;
     right: -4px;
     bottom: -3px;

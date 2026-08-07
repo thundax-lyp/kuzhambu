@@ -1,7 +1,10 @@
 import { Steps } from "antd";
 import type { StepsProps } from "antd";
 
-export interface KuzhambuStepsProps extends Omit<StepsProps, "data-testid"> {
+export interface KuzhambuStepsProps extends Omit<
+    StepsProps,
+    "data-testid" | "direction" | "labelPlacement" | "progressDot"
+> {
     testId: string;
 }
 

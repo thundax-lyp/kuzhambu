@@ -29,7 +29,6 @@ export const SancaiEntryExportActions = ({
     return (
         <KuzhambuDrawer
             testId="classics-sancai-sancai-entry-panel-drawer"
-            destroyOnClose={false}
             open={open}
             size="large"
             title="导出任务"

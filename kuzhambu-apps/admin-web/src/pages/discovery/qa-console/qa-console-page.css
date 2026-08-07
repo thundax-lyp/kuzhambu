@@ -2,7 +2,7 @@
     display: block;
 }
 
-.qa-console-page .ant-card + .ant-card {
+.qa-console-card-spaced {
     margin-top: 12px;
 }
 

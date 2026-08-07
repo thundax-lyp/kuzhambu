@@ -2,6 +2,7 @@ import { Descriptions, Typography } from "antd";
 import { KuzhambuDrawer, KuzhambuSpace } from "@/components";
 
 import type { DiscoveryQaSessionRecord } from "@/pages/discovery/qa/qa-types";
+import "./qa-session-detail-drawer.css";
 
 const { Text } = Typography;
 
@@ -30,7 +31,7 @@ interface QaSessionDetailDrawerProps {
 export const QaSessionDetailDrawer = ({ onClose, open, session }: QaSessionDetailDrawerProps) => {
     return (
         <KuzhambuDrawer
-            destroyOnClose
+            destroyOnHidden
             onClose={onClose}
             open={open}
             size="large"
@@ -38,7 +39,11 @@ export const QaSessionDetailDrawer = ({ onClose, open, session }: QaSessionDetai
             title={session ? sessionTitle(session) : "会话详情"}
         >
             {session ? (
-                <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
+                <KuzhambuSpace
+                    className="discovery-qa-session-detail-drawer__content"
+                    orientation="vertical"
+                    size={12}
+                >
                     <Descriptions
                         bordered
                         column={2}

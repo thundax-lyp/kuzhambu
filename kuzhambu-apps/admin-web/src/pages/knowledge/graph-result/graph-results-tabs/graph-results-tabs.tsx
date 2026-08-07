@@ -130,6 +130,7 @@ export const GraphResultsTabs = ({
         <KuzhambuCard className="knowledge-graph-results-shell" variant="borderless">
             <Tabs
                 activeKey={activeTab}
+                tabBarStyle={{ marginBottom: 20 }}
                 onChange={(value) => onActiveTabChange(value as GraphResultsTabKey)}
                 items={[
                     {

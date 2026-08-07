@@ -246,8 +246,7 @@ describe("PromptPage", () => {
         fireEvent.click(screen.getByRole("button", { name: "编辑 摘要提示词" }));
 
         expect(await screen.findByRole("heading", { name: "编辑提示词" })).toBeInTheDocument();
-        expect(await screen.findByText("版本")).toBeInTheDocument();
-        expect(screen.getByRole("table", { name: "提示词版本列表" })).toBeInTheDocument();
+        expect(screen.queryByRole("table", { name: "提示词版本列表" })).not.toBeInTheDocument();
         expect(screen.getByRole("combobox", { name: "提示词能力" })).toBeDisabled();
         const variablesButton = screen.getByTestId("ai-prompt-prompt-view-variables-button");
         await waitFor(() => {
@@ -262,13 +261,13 @@ describe("PromptPage", () => {
         expect(screen.queryByText("变量快照 JSON")).not.toBeInTheDocument();
     });
 
-    it("updates the editor after rolling back a prompt version", async () => {
+    it("rolls back a prompt version from the version drawer", async () => {
         vi.mocked(service.changePromptVersionRollback).mockResolvedValue(versions[0]);
         renderPage();
 
         await screen.findByText("摘要提示词");
-        fireEvent.click(screen.getByRole("button", { name: "编辑 摘要提示词" }));
-        expect(await screen.findByDisplayValue("{{title}}")).toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: "查看 摘要提示词 版本" }));
+        expect(await screen.findByRole("heading", { name: "提示词版本" })).toBeInTheDocument();
 
         const rollbackButtons = await screen.findAllByRole("button", { name: "回滚" });
         fireEvent.click(rollbackButtons.find((button) => !button.hasAttribute("disabled"))!);
@@ -276,7 +275,15 @@ describe("PromptPage", () => {
             within(screen.getByRole("dialog")).getByRole("button", { name: /回\s*滚/ })
         );
 
-        expect(await screen.findByDisplayValue("回滚后的正文")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(service.changePromptVersionRollback).toHaveBeenCalledWith(
+                {
+                    id: "1001",
+                    versionNo: 1
+                },
+                expect.anything()
+            );
+        });
         const versionTable = screen.getByRole("table", { name: "提示词版本列表" });
         const versionOneRow = within(versionTable).getByText("1").closest("tr");
         const versionTwoRow = within(versionTable).getByText("2").closest("tr");
@@ -315,7 +322,7 @@ describe("PromptPage", () => {
 
         expect(await screen.findByRole("heading", { name: "新建提示词" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /创建模板/ })).toBeInTheDocument();
-        expect(screen.queryByText("版本")).not.toBeInTheDocument();
+        expect(screen.queryByRole("table", { name: "提示词版本列表" })).not.toBeInTheDocument();
     });
 
     it("preserves optional capability variables when creating a template", async () => {

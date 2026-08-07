@@ -1,8 +1,14 @@
-import { Avatar, Descriptions, Empty, Typography } from "antd";
+import { Avatar, Descriptions, Empty } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import { ADMIN_API_BASE_URL } from "@/api/http";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import { KuzhambuDrawer, KuzhambuSpace, KuzhambuTag } from "@/components";
+import {
+    KuzhambuDrawer,
+    KuzhambuParagraph,
+    KuzhambuSpace,
+    KuzhambuTag,
+    KuzhambuText
+} from "@/components";
 import * as service from "../audit-log-service";
 
 import type {
@@ -13,8 +19,6 @@ import type {
 } from "../audit-log-types";
 
 import "./audit-log-detail.css";
-
-const { Paragraph, Text } = Typography;
 
 const ADMIN_OPERATOR_TYPE = "USER";
 
@@ -76,18 +80,22 @@ const renderOperator = (log: AuditLogDetailRecord, accessToken: string | null) =
 
 const renderChangedFields = (fields?: AuditFieldRecord[] | null) => {
     if (!fields?.length) {
-        return <Text type="secondary">无字段变更</Text>;
+        return <KuzhambuText type="secondary">无字段变更</KuzhambuText>;
     }
 
     return (
         <div className="audit-log-field-list">
             {fields.map((field) => (
                 <div key={field.fieldName || field.fieldLabel} className="audit-log-field-row">
-                    <Text strong>{field.fieldLabel || field.fieldName}</Text>
+                    <KuzhambuText strong>{field.fieldLabel || field.fieldName}</KuzhambuText>
                     <div className="audit-log-field-values">
-                        <Text type="secondary">{field.beforeDisplayValue || "-"}</Text>
+                        <KuzhambuText className="audit-log-field-value" type="secondary">
+                            {field.beforeDisplayValue || "-"}
+                        </KuzhambuText>
                         <span>→</span>
-                        <Text>{field.afterDisplayValue || "-"}</Text>
+                        <KuzhambuText className="audit-log-field-value">
+                            {field.afterDisplayValue || "-"}
+                        </KuzhambuText>
                     </div>
                 </div>
             ))}
@@ -157,9 +165,9 @@ const renderSnapshotCompare = (
     return (
         <div className="audit-log-snapshot-compare">
             <div className="audit-log-snapshot-head">
-                <Text type="secondary">字段</Text>
-                <Text type="secondary">变更前</Text>
-                <Text type="secondary">变更后</Text>
+                <KuzhambuText type="secondary">字段</KuzhambuText>
+                <KuzhambuText type="secondary">变更前</KuzhambuText>
+                <KuzhambuText type="secondary">变更后</KuzhambuText>
             </div>
             {keys.map((key) => {
                 const beforeField = beforeFields.get(key);
@@ -177,13 +185,17 @@ const renderSnapshotCompare = (
                         }
                     >
                         <div className="audit-log-snapshot-field">
-                            <Text strong={changed}>
+                            <KuzhambuText strong={changed}>
                                 {beforeField?.fieldLabel || afterField?.fieldLabel || key}
-                            </Text>
+                            </KuzhambuText>
                             {changed ? <KuzhambuTag type="warning">已变更</KuzhambuTag> : null}
                         </div>
-                        <Text type="secondary">{beforeValue}</Text>
-                        <Text strong={changed}>{afterValue}</Text>
+                        <KuzhambuText className="audit-log-snapshot-value" type="secondary">
+                            {beforeValue}
+                        </KuzhambuText>
+                        <KuzhambuText className="audit-log-snapshot-value" strong={changed}>
+                            {afterValue}
+                        </KuzhambuText>
                     </div>
                 );
             })}
@@ -249,17 +261,17 @@ export const AuditLogDetail = ({ accessToken, auditLogId, onClose }: AuditLogDet
                     </Descriptions>
 
                     <section>
-                        <Text type="secondary">摘要</Text>
-                        <Paragraph>{auditLog.summary || "-"}</Paragraph>
+                        <KuzhambuText type="secondary">摘要</KuzhambuText>
+                        <KuzhambuParagraph>{auditLog.summary || "-"}</KuzhambuParagraph>
                     </section>
 
                     <section>
-                        <Text type="secondary">字段变更</Text>
+                        <KuzhambuText type="secondary">字段变更</KuzhambuText>
                         {renderChangedFields(auditLog.changedFields)}
                     </section>
 
                     <section>
-                        <Text type="secondary">快照对比</Text>
+                        <KuzhambuText type="secondary">快照对比</KuzhambuText>
                         {renderSnapshotCompare(
                             auditLog.beforeSnapshot,
                             auditLog.afterSnapshot,

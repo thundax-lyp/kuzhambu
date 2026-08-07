@@ -106,13 +106,20 @@ const SancaiVolumeForm = ({
             aria-label={volume ? "编辑卷目" : "新增卷目"}
             className="sancai-category-edit-modal sancai-editor-form"
             component="div"
+            itemGap="none"
+            mobileItemDisplay="block"
             initialValues={initialValues}
         >
             <KuzhambuFormItem name="title" label="卷目标题" layoutSize="large">
-                <Input aria-label="三才图会卷目标题" placeholder="卷目标题" />
+                <Input
+                    className="sancai-category-edit-control"
+                    aria-label="三才图会卷目标题"
+                    placeholder="卷目标题"
+                />
             </KuzhambuFormItem>
             <KuzhambuFormItem name="categoryId" label="所属门类" layoutSize="large">
                 <KuzhambuSelect
+                    controlClassName="sancai-category-edit-control"
                     aria-label="三才图会卷目所属门类"
                     placeholder="所属门类"
                     options={categories.map((category) => ({
@@ -122,7 +129,11 @@ const SancaiVolumeForm = ({
                 />
             </KuzhambuFormItem>
             <KuzhambuFormItem name="volumeType" label="卷目类型" layoutSize="large">
-                <KuzhambuSelect aria-label="三才图会卷目类型" options={volumeTypeItems} />
+                <KuzhambuSelect
+                    controlClassName="sancai-category-edit-control"
+                    aria-label="三才图会卷目类型"
+                    options={volumeTypeItems}
+                />
             </KuzhambuFormItem>
         </KuzhambuForm>
     );

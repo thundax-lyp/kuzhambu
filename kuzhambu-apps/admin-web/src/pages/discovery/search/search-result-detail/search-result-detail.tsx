@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Descriptions, Empty, Spin, Tag, Typography } from "antd";
-import { KuzhambuDrawer } from "@/components";
+import { Descriptions, Empty, Spin } from "antd";
+import { KuzhambuDrawer, KuzhambuParagraph, KuzhambuTag, KuzhambuTitle } from "@/components";
 import * as service from "@/pages/discovery/search/search-service";
 import type { SearchResultEntry } from "@/pages/discovery/search/search-result-table";
 
@@ -97,7 +97,7 @@ export const SearchResultDetail = ({ previewResult, onClose }: SearchResultDetai
 
     return (
         <KuzhambuDrawer
-            destroyOnClose
+            destroyOnHidden
             open={open}
             size="large"
             testId="discovery-search-preview-drawer"
@@ -121,28 +121,39 @@ export const SearchResultDetail = ({ previewResult, onClose }: SearchResultDetai
                         <Descriptions bordered column={1} items={previewMetaItems} size="small" />
                         {previewData.summary ? (
                             <section className="search-page-preview-section">
-                                <Typography.Title level={5}>摘要</Typography.Title>
-                                <Typography.Paragraph>{previewData.summary}</Typography.Paragraph>
+                                <KuzhambuTitle className="search-page-preview-title" level={5}>
+                                    摘要
+                                </KuzhambuTitle>
+                                <KuzhambuParagraph className="search-page-preview-paragraph">
+                                    {previewData.summary}
+                                </KuzhambuParagraph>
                             </section>
                         ) : null}
                         <section className="search-page-preview-section">
-                            <Typography.Title level={5}>正文</Typography.Title>
+                            <KuzhambuTitle className="search-page-preview-title" level={5}>
+                                正文
+                            </KuzhambuTitle>
                             {previewBodyParagraphs.length ? (
                                 previewBodyParagraphs.map((paragraph, index) => (
-                                    <Typography.Paragraph key={`preview-body-${index}`}>
+                                    <KuzhambuParagraph
+                                        className="search-page-preview-paragraph"
+                                        key={`preview-body-${index}`}
+                                    >
                                         {paragraph}
-                                    </Typography.Paragraph>
+                                    </KuzhambuParagraph>
                                 ))
                             ) : (
-                                <Typography.Paragraph>暂无正文。</Typography.Paragraph>
+                                <KuzhambuParagraph className="search-page-preview-paragraph">
+                                    暂无正文。
+                                </KuzhambuParagraph>
                             )}
                         </section>
                         {previewData.tagNames?.length ? (
                             <div className="search-page-preview-tags">
                                 {previewData.tagNames.map((tagName) => (
-                                    <Tag color="blue" key={tagName}>
+                                    <KuzhambuTag type="info" key={tagName}>
                                         {tagName}
-                                    </Tag>
+                                    </KuzhambuTag>
                                 ))}
                             </div>
                         ) : null}

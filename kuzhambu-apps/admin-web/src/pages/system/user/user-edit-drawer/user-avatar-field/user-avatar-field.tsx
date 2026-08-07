@@ -34,6 +34,7 @@ export const UserAvatarField = ({ user, onAvatarUpload }: UserAvatarFieldProps) 
                 <KuzhambuButton
                     testId="system-user-user-action-button-2"
                     ariaLabel={`上传 ${user.name || user.loginName || "用户"} 的头像`}
+                    className="user-avatar-field-upload-button"
                     size="small"
                     shape="circle"
                     icon={<CameraOutlined />}

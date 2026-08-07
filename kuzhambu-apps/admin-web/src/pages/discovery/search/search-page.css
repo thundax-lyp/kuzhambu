@@ -69,10 +69,6 @@
     margin-top: 8px;
 }
 
-.search-page-result-meta .ant-tag {
-    margin-inline-end: 0;
-}
-
 .search-page-pagination {
     display: flex;
     justify-content: flex-end;
@@ -99,11 +95,12 @@
     gap: 8px;
 }
 
-.search-page-preview-section .ant-typography {
+.search-page-preview-title,
+.search-page-preview-paragraph {
     margin: 0;
 }
 
-.search-page-preview-section p.ant-typography {
+.search-page-preview-paragraph {
     color: var(--text-secondary);
     line-height: 1.72;
     white-space: pre-wrap;

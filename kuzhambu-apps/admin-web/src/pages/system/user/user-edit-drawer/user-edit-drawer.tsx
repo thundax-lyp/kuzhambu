@@ -349,6 +349,7 @@ export const UserEditDrawer = ({
                 form={form}
                 className="user-edit-drawer-form"
                 component="div"
+                itemGap="compact"
                 initialValues={initialValues}
             >
                 {userRoleQuery.isError ? (

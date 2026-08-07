@@ -190,6 +190,7 @@ export const TagBatchMergePanel = ({
                 <div className="knowledge-taxonomy-tag-batch-field">
                     <Text strong>目标标签</Text>
                     <KuzhambuSelect
+                        className="knowledge-taxonomy-tag-batch-target"
                         aria-label="批量合并目标标签"
                         placeholder="选择接收治理结果的目标标签"
                         showSearch

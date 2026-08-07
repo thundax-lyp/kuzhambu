@@ -60,6 +60,7 @@ export const SancaiVisualEntryContext = ({
             </div>
             <KuzhambuButton
                 testId="classics-sancai-visual-entry-context-switch-button"
+                className="sancai-visual-entry-switch-button"
                 icon={<SwapOutlined />}
                 onClick={onSelectEntry}
             >

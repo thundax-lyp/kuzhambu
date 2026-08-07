@@ -11,3 +11,48 @@
 .kuzhambu-descriptions .ant-descriptions-view table {
     width: 100%;
 }
+
+.kuzhambu-descriptions-detail .ant-descriptions-row > th,
+.kuzhambu-descriptions-detail .ant-descriptions-row > td {
+    padding-bottom: 8px;
+}
+
+.kuzhambu-descriptions-detail .ant-descriptions-row:last-child > th,
+.kuzhambu-descriptions-detail .ant-descriptions-row:last-child > td {
+    padding-bottom: 0;
+}
+
+.kuzhambu-descriptions-detail .ant-descriptions-item-container {
+    align-items: baseline;
+    min-width: 0;
+    gap: 8px;
+}
+
+.kuzhambu-descriptions-detail .ant-descriptions-item-label,
+.kuzhambu-descriptions-compare .ant-descriptions-item-label {
+    color: var(--kuzhambu-descriptions-label-color, var(--color-text-secondary));
+    font-weight: 700;
+}
+
+.kuzhambu-descriptions-detail .ant-descriptions-item-label {
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: nowrap;
+}
+
+.kuzhambu-descriptions-detail .ant-descriptions-item-content {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--kuzhambu-descriptions-content-color, var(--color-text));
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.kuzhambu-descriptions-compare .ant-descriptions-item-label {
+    width: 132px;
+}
+
+.kuzhambu-descriptions-compare .is-changed .ant-descriptions-item-label {
+    color: var(--kuzhambu-descriptions-changed-label-color, var(--color-warning));
+    background: var(--kuzhambu-descriptions-changed-label-background, transparent);
+}

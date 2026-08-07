@@ -109,7 +109,7 @@ export const TagAliasList = ({
                                     : undefined
                             }
                         >
-                            <KuzhambuSpace split={<Text type="secondary">|</Text>} wrap>
+                            <KuzhambuSpace separator={<Text type="secondary">|</Text>} wrap>
                                 <Text>{alias.name || alias.id}</Text>
                                 <Text type="secondary">来源：{readSourceLabel(alias.source)}</Text>
                             </KuzhambuSpace>

@@ -184,7 +184,11 @@ export const SancaiEntryList = ({
         {
             title: "摘要",
             key: "summary",
-            render: (_, entry) => <Text type="secondary">{readEntrySummary(entry)}</Text>
+            render: (_, entry) => (
+                <Text type="secondary" className="sancai-secondary-text">
+                    {readEntrySummary(entry)}
+                </Text>
+            )
         },
         {
             title: "状态",
@@ -282,7 +286,9 @@ export const SancaiEntryList = ({
                 toolbar={{
                     leading: (
                         <KuzhambuSpace wrap>
-                            <Text type="secondary">当前页已选 {selectedEntries.length} 条</Text>
+                            <Text type="secondary" className="sancai-secondary-text">
+                                当前页已选 {selectedEntries.length} 条
+                            </Text>
                         </KuzhambuSpace>
                     ),
                     actions: [

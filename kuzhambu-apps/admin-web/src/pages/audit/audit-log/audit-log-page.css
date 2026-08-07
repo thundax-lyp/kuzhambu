@@ -12,6 +12,6 @@
     max-width: 100%;
 }
 
-.audit-log-operator-cell .ant-typography {
+.audit-log-operator-name {
     min-width: 0;
 }

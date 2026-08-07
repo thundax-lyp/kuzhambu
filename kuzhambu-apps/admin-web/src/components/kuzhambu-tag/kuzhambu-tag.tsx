@@ -4,7 +4,7 @@ import "./kuzhambu-tag.css";
 
 export type KuzhambuTagType = "neutral" | "info" | "accent" | "success" | "warning" | "danger";
 
-export interface KuzhambuTagProps extends Omit<TagProps, "className" | "color"> {
+export interface KuzhambuTagProps extends Omit<TagProps, "bordered" | "className" | "color"> {
     type?: KuzhambuTagType;
 }
 

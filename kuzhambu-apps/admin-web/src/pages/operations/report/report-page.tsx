@@ -230,6 +230,7 @@ export const OperationsReportPage = () => {
                             <Text type="secondary">报表类型</Text>
                             <KuzhambuSelect
                                 aria-label="报表类型"
+                                className="operations-reports-control"
                                 options={reportTypeOptions}
                                 value={filter.reportType || "ALL"}
                                 onChange={(value) => updateFilter({ reportType: value })}
@@ -239,6 +240,7 @@ export const OperationsReportPage = () => {
                             <Text type="secondary">导出格式</Text>
                             <KuzhambuSelect
                                 aria-label="导出格式"
+                                className="operations-reports-control"
                                 options={formatOptions}
                                 value={filter.format || "ALL"}
                                 onChange={(value) => updateFilter({ format: value })}
@@ -248,6 +250,7 @@ export const OperationsReportPage = () => {
                             <Text type="secondary">状态</Text>
                             <KuzhambuSelect
                                 aria-label="状态"
+                                className="operations-reports-control"
                                 options={statusOptions}
                                 value={filter.reportStatus || "ALL"}
                                 onChange={(value) => updateFilter({ reportStatus: value })}
@@ -257,6 +260,7 @@ export const OperationsReportPage = () => {
                             <Text type="secondary">请求人用户 ID</Text>
                             <Input
                                 aria-label="请求人用户 ID"
+                                className="operations-reports-control"
                                 status={
                                     requesterUserId && !isRequesterUserIdValid ? "error" : undefined
                                 }
@@ -272,6 +276,7 @@ export const OperationsReportPage = () => {
                             <Text type="secondary">统计周期</Text>
                             <RangePicker
                                 aria-label="统计周期"
+                                className="operations-reports-control"
                                 showTime
                                 onChange={(dates) => updateFilter(toIsoRange(dates))}
                             />
@@ -295,6 +300,7 @@ export const OperationsReportPage = () => {
                             <Text type="secondary">生成类型</Text>
                             <KuzhambuSelect
                                 aria-label="生成类型"
+                                className="operations-reports-control"
                                 options={reportTypeOptions.filter(
                                     (option) => option.value !== "ALL"
                                 )}
@@ -311,6 +317,7 @@ export const OperationsReportPage = () => {
                             <Text type="secondary">生成格式</Text>
                             <KuzhambuSelect
                                 aria-label="生成格式"
+                                className="operations-reports-control"
                                 options={formatOptions.filter((option) => option.value !== "ALL")}
                                 value={generateForm.format}
                                 onChange={(value: OperationsReportFormat) =>
@@ -325,6 +332,7 @@ export const OperationsReportPage = () => {
                             <Text type="secondary">生成周期</Text>
                             <RangePicker
                                 aria-label="生成周期"
+                                className="operations-reports-control"
                                 showTime
                                 onChange={(dates) => {
                                     const range = toIsoRange(dates);
@@ -460,7 +468,7 @@ export const OperationsReportPage = () => {
                 open={detailReportId !== null}
                 onClose={closeReportDetailDrawer}
                 size="middle"
-                destroyOnClose
+                destroyOnHidden
             >
                 {reportDetailQuery.isLoading ? <Spin /> : null}
                 {detailReportRecord ? (

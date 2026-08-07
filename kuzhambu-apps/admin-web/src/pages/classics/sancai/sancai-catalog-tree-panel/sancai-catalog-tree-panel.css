@@ -14,7 +14,7 @@
     border-bottom: 1px solid var(--sancai-line);
 }
 
-.sancai-catalog-panel-head .anticon {
+.sancai-catalog-panel-title-icon {
     color: var(--sancai-accent);
 }
 
@@ -30,7 +30,7 @@
     pointer-events: auto;
 }
 
-.sancai-catalog-tree-panel .ant-tree {
+.sancai-catalog-tree {
     color: var(--sancai-ink);
     background: transparent;
 }
@@ -48,7 +48,7 @@
     color: var(--sancai-accent);
 }
 
-.sancai-catalog-tree-title .ant-typography {
+.sancai-catalog-tree-text {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

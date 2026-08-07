@@ -29,7 +29,7 @@ const renderSourceRefs = (sourceRefs: LineageSourceRefRecord[] = []) => {
             className="knowledge-lineage-detail-panel__sources"
             dataSource={sourceRefs}
             renderItem={(sourceRef) => (
-                <List.Item>
+                <List.Item className="knowledge-lineage-detail-panel__source-item">
                     <List.Item.Meta
                         title={sourceRef.sourceTitle || sourceRef.sourceContentType || "来源"}
                         description={
