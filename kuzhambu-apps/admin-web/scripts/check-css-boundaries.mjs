@@ -31,10 +31,6 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
 ]);
 const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     {
-        file: "src/pages/classics/sancai/sancai-catalog-tree-panel/sancai-catalog-tree-panel.css",
-        allowedAntdSelectorLines: 2
-    },
-    {
         file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-edit-drawer/sancai-entry-basic-section/sancai-entry-image-field/sancai-entry-image-field.css",
         allowedAntdSelectorLines: 5
     },
