@@ -1,7 +1,10 @@
 import { Alert } from "antd";
 import type { AlertProps } from "antd";
 
-export interface KuzhambuAlertProps extends Omit<AlertProps, "message"> {
+export interface KuzhambuAlertProps extends Omit<
+    AlertProps,
+    "afterClose" | "closeIcon" | "closeText" | "message" | "onClose"
+> {
     title?: AlertProps["title"];
 }
 

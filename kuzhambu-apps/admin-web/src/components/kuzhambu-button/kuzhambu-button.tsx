@@ -4,7 +4,7 @@ import type { ButtonProps } from "antd";
 
 export interface KuzhambuButtonProps extends Omit<
     ButtonProps,
-    "aria-label" | "data-testid" | "name"
+    "aria-label" | "data-testid" | "iconPosition" | "name"
 > {
     ariaLabel?: string;
     testId: string;
