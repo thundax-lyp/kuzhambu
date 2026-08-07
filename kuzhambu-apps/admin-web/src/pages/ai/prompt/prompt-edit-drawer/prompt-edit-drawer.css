@@ -19,12 +19,6 @@
     max-width: none;
 }
 
-.prompt-edit-drawer .ant-drawer-body {
-    max-width: 1320px;
-    width: 100%;
-    margin: 0 auto;
-}
-
 .prompt-markdown-editor {
     display: grid;
     gap: 12px;

@@ -32,11 +32,11 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
 const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     {
         file: "src/pages/ai/business-config/business-config-edit-drawer/business-config-edit-drawer.css",
-        allowedAntdSelectorLines: 4
+        allowedAntdSelectorLines: 3
     },
     {
         file: "src/pages/ai/prompt/prompt-edit-drawer/prompt-edit-drawer.css",
-        allowedAntdSelectorLines: 6
+        allowedAntdSelectorLines: 5
     },
     { file: "src/pages/ai/prompt/prompt-page.css", allowedAntdSelectorLines: 1 },
     {
@@ -90,7 +90,7 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         file: "src/pages/classics/wangqi/wangqi-document-edit-drawer/wangqi-document-edit-drawer.css",
         allowedAntdSelectorLines: 1
     },
-    { file: "src/pages/classics/wangqi/wangqi-page.css", allowedAntdSelectorLines: 11 },
+    { file: "src/pages/classics/wangqi/wangqi-page.css", allowedAntdSelectorLines: 10 },
     { file: "src/pages/dashboard/dashboard/dashboard-page.css", allowedAntdSelectorLines: 6 },
     {
         file: "src/pages/discovery/qa/qa-message-panel/qa-message-panel.css",

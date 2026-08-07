@@ -5,6 +5,7 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./kuzhambu-drawer.css";
 
 export type KuzhambuDrawerSize = "full" | "large" | "middle" | "small";
+export type KuzhambuDrawerBodyLayout = "default" | "form" | "editor" | "timeline";
 
 export interface KuzhambuDrawerFooterAction {
     action: () => void;
@@ -20,6 +21,7 @@ export interface KuzhambuDrawerProps extends Omit<
     DrawerProps,
     "data-testid" | "destroyOnClose" | "footer" | "maskClosable" | "size" | "width"
 > {
+    bodyLayout?: KuzhambuDrawerBodyLayout;
     footerActions?: KuzhambuDrawerFooterAction[];
     size?: KuzhambuDrawerSize;
     testId: string;
@@ -34,6 +36,7 @@ const shouldExposeTestId = () => {
 // footerActions 只描述 Button 语义：testId、title、action、type、danger、disabled、loading；布局与按钮组件由这里统一控制。
 // 不要在这里加入分段切换或任务工作流行为；这些模式应该放在更高层 wrapper 中。
 export const KuzhambuDrawer = ({
+    bodyLayout = "default",
     className,
     footerActions,
     placement = "right",
@@ -49,7 +52,12 @@ export const KuzhambuDrawer = ({
         <Drawer
             {...drawerProps}
             {...testIdProps}
-            className={["kuzhambu-drawer", `kuzhambu-drawer-${size}`, className]
+            className={[
+                "kuzhambu-drawer",
+                `kuzhambu-drawer-${size}`,
+                `kuzhambu-drawer-body-${bodyLayout}`,
+                className
+            ]
                 .filter(Boolean)
                 .join(" ")}
             footer={

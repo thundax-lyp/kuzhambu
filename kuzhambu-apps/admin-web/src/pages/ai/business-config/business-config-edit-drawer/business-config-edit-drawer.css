@@ -4,12 +4,6 @@
     padding-top: 4px;
 }
 
-.business-config-edit-drawer .ant-drawer-body {
-    max-width: 960px;
-    width: 100%;
-    margin: 0 auto;
-}
-
 .business-config-edit-drawer-form-item-compact .ant-form-item-control {
     max-width: 520px;
 }

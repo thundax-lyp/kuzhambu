@@ -723,6 +723,7 @@ export const PromptEditDrawer = ({
         <>
             <KuzhambuDrawer
                 testId="ai-prompt-prompt-editor-1-drawer"
+                bodyLayout="editor"
                 className="prompt-edit-drawer"
                 open={open}
                 title={template ? "编辑提示词" : "新建提示词"}

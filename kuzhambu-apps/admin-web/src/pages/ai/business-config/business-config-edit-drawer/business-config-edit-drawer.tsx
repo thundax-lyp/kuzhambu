@@ -195,6 +195,7 @@ export const BusinessConfigEditDrawer = ({
     return (
         <KuzhambuDrawer
             testId="ai-business-config-business-config-edit-drawer"
+            bodyLayout="form"
             className="business-config-edit-drawer"
             open={open}
             title={config ? "编辑业务配置" : "新增业务配置"}
