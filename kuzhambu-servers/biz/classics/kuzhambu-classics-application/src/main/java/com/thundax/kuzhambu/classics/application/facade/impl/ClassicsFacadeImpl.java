@@ -104,6 +104,45 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
 
     @Override
     @Transactional(readOnly = true)
+    public ClassicsPublicContentsFacadeResponse listWorkbenchCategoryContents() {
+        return classicsFacadeAssembler.toPublicContentsFacadeResponse(
+                classicsSearchContentApplicationService.listWorkbenchCategoryContents());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ClassicsPublicContentsFacadeResponse listWorkbenchVolumeContents() {
+        return classicsFacadeAssembler.toPublicContentsFacadeResponse(
+                classicsSearchContentApplicationService.listWorkbenchVolumeContents());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ClassicsPublicContentsFacadeResponse listWorkbenchContents() {
+        return classicsFacadeAssembler.toPublicContentsFacadeResponse(
+                classicsSearchContentApplicationService.listWorkbenchContents());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ClassicsPublicContentsFacadeResponse listWorkbenchContents(String categoryCode, String volumeCode) {
+        return classicsFacadeAssembler.toPublicContentsFacadeResponse(
+                classicsSearchContentApplicationService.listWorkbenchContents(categoryCode, volumeCode));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ClassicsPublicContentFacadeResponse getWorkbenchContent(ClassicsPublicContentFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return classicsFacadeAssembler.toPublicContentFacadeResponse(
+                classicsSearchContentApplicationService.getWorkbenchContent(
+                        request.getContentType(), request.getContentId()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ClassicsQaKnowledgeFacadeResponse getQaKnowledge(ClassicsQaKnowledgeFacadeRequest request) {
         if (request == null
                 || request.getContentType() == null
@@ -128,6 +167,30 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
             case MING_CUSTOMS ->
                 classicsFacadeAssembler.toQaKnowledgeFacadeResponse(
                         getMingCustomsQaKnowledge(request.getContentType(), request.getContentId(), domainContentId));
+        };
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ClassicsQaKnowledgeFacadeResponse getWorkbenchQaKnowledge(ClassicsQaKnowledgeFacadeRequest request) {
+        if (request == null
+                || request.getContentType() == null
+                || request.getContentType().isBlank()
+                || request.getContentId() == null
+                || request.getContentId().isBlank()) {
+            return null;
+        }
+        Long contentId = parseContentId(request.getContentId());
+        if (contentId == null) {
+            return null;
+        }
+        ClassicsContentType contentType = ClassicsContentType.from(request.getContentType());
+        ClassicsContentId domainContentId = ClassicsContentIdCodec.toDomain(contentId);
+        return switch (contentType) {
+            case SANCAI_ENTRY ->
+                classicsFacadeAssembler.toQaKnowledgeFacadeResponse(getSancaiWorkbenchQaKnowledge(
+                        request.getContentType(), request.getContentId(), domainContentId));
+            case WANGQI_DOCUMENT, MING_CUSTOMS -> getQaKnowledge(request);
         };
     }
 
@@ -195,6 +258,23 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
     private ClassicsQaKnowledgeFacadeDto getSancaiQaKnowledge(
             String contentType, String contentId, ClassicsContentId domainContentId) {
         var sourceContent = classicsSearchContentApplicationService.getPublicContent(contentType, contentId);
+        if (sourceContent == null) {
+            return null;
+        }
+        SancaiEntry entry = sancaiApplicationService.getEntry(SancaiEntryIdCodec.toDomain(domainContentId.value()));
+        if (entry == null) {
+            return null;
+        }
+        List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(contentType, domainContentId);
+        List<ClassicsContentQaPair> qaPairs =
+                classicsContentApplicationService.listQaPairs(contentType, domainContentId);
+        return classicsFacadeAssembler.toQaKnowledgeFacadeDto(
+                sourceContent, entry.getOriginalText(), entry.getTranslationText(), null, null, tags, qaPairs);
+    }
+
+    private ClassicsQaKnowledgeFacadeDto getSancaiWorkbenchQaKnowledge(
+            String contentType, String contentId, ClassicsContentId domainContentId) {
+        var sourceContent = classicsSearchContentApplicationService.getWorkbenchContent(contentType, contentId);
         if (sourceContent == null) {
             return null;
         }

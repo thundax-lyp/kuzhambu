@@ -50,7 +50,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
 
         assertEquals(1, roots.size());
         assertEquals("SANCAI_ENTRY", roots.get(0).getSourceContentType());
-        verify(fixtures.classicsFacade, never()).listPublicContents();
+        verify(fixtures.classicsFacade, never()).listWorkbenchContents();
     }
 
     @Test
@@ -58,7 +58,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
         Fixtures fixtures = new Fixtures();
 
         var sancaiNodes =
-                fixtures.service.listManuscriptTree("SANCAI_ENTRY", "CATEGORY:SANCAI_ENTRY:sancai", null, null);
+                fixtures.service.listManuscriptTree("SANCAI_ENTRY", "VOLUME:SANCAI_ENTRY:sancai:11", null, null);
 
         assertEquals(2, sancaiNodes.size());
         assertEquals("三才稿件", sancaiNodes.get(0).getTitle());
@@ -119,7 +119,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
     @Test
     void payloadBuilderShouldExposePromptVariablesAndUseConfiguredOutputSchema() throws Exception {
         ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
-        when(classicsFacade.getQaKnowledge(any()))
+        when(classicsFacade.getWorkbenchQaKnowledge(any()))
                 .thenReturn(ClassicsQaKnowledgeFacadeResponse.builder()
                         .knowledge(ClassicsQaKnowledgeFacadeDto.builder()
                                 .sourceId("SANCAI_ENTRY:1001")
@@ -140,6 +140,8 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
         ManuscriptExtractionPayload payload = builder.build("SANCAI_ENTRY", 1001L, "GRAPH");
 
         JsonNode inputPayload = OBJECT_MAPPER.readTree(payload.inputPayloadJson());
+        assertEquals("三才稿件", inputPayload.get("title").asText());
+        assertEquals("正文\n\n原文\n\n译文\n\n摘录", inputPayload.get("content").asText());
         assertEquals("三才稿件", inputPayload.get("sourceTitle").asText());
         assertEquals("正文\n\n原文\n\n译文\n\n摘录", inputPayload.get("sourceText").asText());
         assertEquals(
@@ -148,7 +150,18 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
         assertEquals("人物 / 三才", inputPayload.get("lineageHint").asText());
         assertNull(payload.modelId());
         assertNull(payload.modelName());
-        assertNull(payload.outputSchemaJson());
+        JsonNode outputSchema = OBJECT_MAPPER.readTree(payload.outputSchemaJson());
+        assertEquals(
+                "其他",
+                outputSchema
+                        .get("properties")
+                        .get("entities")
+                        .get("items")
+                        .get("properties")
+                        .get("entityType")
+                        .get("enum")
+                        .get(6)
+                        .asText());
     }
 
     @Test
@@ -199,7 +212,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
     @Test
     void getManuscriptShouldPreferNewerExtractionTaskStatusOverExistingVersion() {
         Fixtures fixtures = new Fixtures();
-        when(fixtures.classicsFacade.getPublicContent(any()))
+        when(fixtures.classicsFacade.getWorkbenchContent(any()))
                 .thenReturn(ClassicsPublicContentFacadeResponse.builder()
                         .content(Fixtures.content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"))
                         .build());
@@ -234,7 +247,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
     @Test
     void getManuscriptShouldPreferLatestTaskLineageOverAppliedVersionTimestamp() {
         Fixtures fixtures = new Fixtures();
-        when(fixtures.classicsFacade.getPublicContent(any()))
+        when(fixtures.classicsFacade.getWorkbenchContent(any()))
                 .thenReturn(ClassicsPublicContentFacadeResponse.builder()
                         .content(Fixtures.content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"))
                         .build());
@@ -269,7 +282,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
     @Test
     void getManuscriptShouldIgnoreNewerNonGraphTaskWhenResolvingGraphStatus() {
         Fixtures fixtures = new Fixtures();
-        when(fixtures.classicsFacade.getPublicContent(any()))
+        when(fixtures.classicsFacade.getWorkbenchContent(any()))
                 .thenReturn(ClassicsPublicContentFacadeResponse.builder()
                         .content(Fixtures.content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"))
                         .build());
@@ -306,7 +319,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
         Fixtures fixtures = new Fixtures();
         when(fixtures.graphExtractionApplicationService.getTaskDetail(any()))
                 .thenReturn(taskResult("9001", "GRAPH", "SUCCEEDED"));
-        when(fixtures.graphExtractionApplicationService.applyTaskCandidate(any()))
+        when(fixtures.graphExtractionApplicationService.applyTaskCandidate(any(), eq("APPEND")))
                 .thenReturn(taskResult("9001", "GRAPH", "APPLIED"));
         when(fixtures.graphExtractionApplicationService.pageVersions(
                         eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
@@ -317,11 +330,12 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
                         java.util.List.of(new GraphVersionResult(
                                 8001L, "9001", null, "GRAPH", "SANCAI_ENTRY", 1001L, 1, "APPLIED", 99L))));
 
-        var result = fixtures.service.applyCandidate(9001L);
+        var result = fixtures.service.applyCandidate(9001L, "APPEND");
 
         assertEquals(9001L, result.getTaskId());
         assertEquals(8001L, result.getGraphVersionId());
         assertEquals("APPLIED", result.getGraphStatus());
+        verify(fixtures.graphExtractionApplicationService).applyTaskCandidate(any(), eq("APPEND"));
     }
 
     @Test
@@ -332,7 +346,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
 
         assertThrows(BizException.class, () -> fixtures.service.applyCandidate(9004L));
 
-        verify(fixtures.graphExtractionApplicationService, never()).applyTaskCandidate(any());
+        verify(fixtures.graphExtractionApplicationService, never()).applyTaskCandidate(any(), any());
     }
 
     private static GraphExtractionTaskResult taskResult(String taskId, String taskType, String status) {
@@ -411,13 +425,23 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
                         payloadBuilder);
 
         private Fixtures() {
-            when(classicsFacade.listPublicContents())
+            when(classicsFacade.listWorkbenchContents())
                     .thenReturn(ClassicsPublicContentsFacadeResponse.builder()
                             .contents(java.util.List.of(
                                     content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"),
                                     content("SANCAI_ENTRY", "1002", "sancai", "三才分类", "三才稿件二"),
                                     content("WANGQI_DOCUMENT", "2001", "wangqi", "王圻分类", "王圻稿件"),
                                     content("MING_CUSTOMS", "3001", "ming", "明俗分类", "明俗稿件")))
+                            .build());
+            when(classicsFacade.listWorkbenchContents("sancai", "11"))
+                    .thenReturn(ClassicsPublicContentsFacadeResponse.builder()
+                            .contents(java.util.List.of(
+                                    content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"),
+                                    content("SANCAI_ENTRY", "1002", "sancai", "三才分类", "三才稿件二")))
+                            .build());
+            when(classicsFacade.listWorkbenchVolumeContents())
+                    .thenReturn(ClassicsPublicContentsFacadeResponse.builder()
+                            .contents(java.util.List.of(content("SANCAI_ENTRY", "11", "sancai", "三才分类", "三才卷目")))
                             .build());
             when(graphExtractionApplicationService.pageTasks(any(), any(), any(), any(), any(), any(), any()))
                     .thenReturn(PageResult.of(1, 1, 0, java.util.List.of()));
@@ -432,6 +456,8 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
                     .contentId(contentId)
                     .categoryCode(categoryCode)
                     .categoryName(categoryName)
+                    .volumeCode("11")
+                    .volumeName("三才卷目")
                     .title(title)
                     .summary(title + "摘要")
                     .currentVersionNo(1)

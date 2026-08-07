@@ -430,7 +430,37 @@ class CleanupApplicationServiceImplTest {
         }
 
         @Override
+        public ClassicsPublicContentsFacadeResponse listWorkbenchCategoryContents() {
+            return null;
+        }
+
+        @Override
+        public ClassicsPublicContentsFacadeResponse listWorkbenchVolumeContents() {
+            return null;
+        }
+
+        @Override
+        public ClassicsPublicContentsFacadeResponse listWorkbenchContents() {
+            return null;
+        }
+
+        @Override
+        public ClassicsPublicContentsFacadeResponse listWorkbenchContents(String categoryCode, String volumeCode) {
+            return null;
+        }
+
+        @Override
+        public ClassicsPublicContentFacadeResponse getWorkbenchContent(ClassicsPublicContentFacadeRequest request) {
+            return null;
+        }
+
+        @Override
         public ClassicsQaKnowledgeFacadeResponse getQaKnowledge(ClassicsQaKnowledgeFacadeRequest request) {
+            return null;
+        }
+
+        @Override
+        public ClassicsQaKnowledgeFacadeResponse getWorkbenchQaKnowledge(ClassicsQaKnowledgeFacadeRequest request) {
             return null;
         }
 

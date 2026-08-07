@@ -134,6 +134,8 @@ public class ClassicsFacadeAssembler {
                 .knowledgeBase(content.getKnowledgeBase())
                 .categoryCode(content.getCategoryCode())
                 .categoryName(content.getCategoryName())
+                .volumeCode(content.getVolumeCode())
+                .volumeName(content.getVolumeName())
                 .title(content.getTitle())
                 .summary(content.getSummary())
                 .textSegments(content.getTextSegments())

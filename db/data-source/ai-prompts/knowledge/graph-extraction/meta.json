@@ -30,13 +30,56 @@
       "entities": {
         "type": "array",
         "items": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "entityType": {
+              "type": "string",
+              "enum": [
+                "人物",
+                "作品",
+                "地点",
+                "时间",
+                "事件",
+                "概念",
+                "其他"
+              ]
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "entityType"
+          ]
         }
       },
       "relations": {
         "type": "array",
         "items": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "sourceName": {
+              "type": "string"
+            },
+            "targetName": {
+              "type": "string"
+            },
+            "relationType": {
+              "type": "string"
+            },
+            "evidence": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "sourceName",
+            "targetName",
+            "relationType"
+          ]
         }
       },
       "entryRefs": {

@@ -96,5 +96,9 @@ public final class KnowledgeGraphWorkbenchRequests {
         @Schema(name = "taskId", description = "抽取任务ID")
         @JsonProperty("taskId")
         private Long taskId;
+
+        @Schema(name = "applyMode", description = "候选应用模式：MERGE 合并，APPEND 追加，OVERWRITE 覆盖")
+        @JsonProperty("applyMode")
+        private String applyMode;
     }
 }

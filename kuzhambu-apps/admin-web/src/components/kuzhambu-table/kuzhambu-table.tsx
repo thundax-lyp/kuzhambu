@@ -471,8 +471,13 @@ export const KuzhambuTable = <RecordType extends object = object>({
             index: number
         ) => {
             const actions = normalizeRowActions(actionsConfig, record, index);
-            const inlineLimit = isMobile ? 0 : (inlineLimitConfig ?? ACTION_INLINE_LIMIT);
             const actionCount = countActionButtons(actions);
+            let inlineLimit = inlineLimitConfig ?? ACTION_INLINE_LIMIT;
+            if (actionCount === 1) {
+                inlineLimit = 1;
+            } else if (isMobile) {
+                inlineLimit = 0;
+            }
             const { inlineActions, overflowActions } = splitActions(actions, inlineLimit);
 
             if (actionCount === 0) {

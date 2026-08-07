@@ -80,6 +80,7 @@ describe("SystemLogPage", () => {
 
         fireEvent.click(screen.getByRole("button", { name: /刷\s*新/ }));
 
+        await waitFor(() => expect(service.pageEvents).toHaveBeenCalledTimes(2));
         expect(await screen.findByText("系统日志加载失败")).toBeInTheDocument();
         expect(
             screen.getByText("当前展示的是上次成功加载的数据，本次查询未更新。")

@@ -37,6 +37,7 @@ export interface GraphWorkbenchCandidateQuery {
 }
 
 export interface GraphWorkbenchCandidateApplyCommand {
+    applyMode?: "APPEND" | "MERGE" | "OVERWRITE" | string;
     taskId: string;
 }
 

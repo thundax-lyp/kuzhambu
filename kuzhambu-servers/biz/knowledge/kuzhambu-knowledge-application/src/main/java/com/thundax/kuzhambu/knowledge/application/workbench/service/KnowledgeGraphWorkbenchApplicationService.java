@@ -19,5 +19,9 @@ public interface KnowledgeGraphWorkbenchApplicationService {
 
     CandidateSummaryResult getLatestCandidate(String sourceContentType, Long sourceContentId, String taskType);
 
-    CandidateApplyResult applyCandidate(Long taskId);
+    default CandidateApplyResult applyCandidate(Long taskId) {
+        return applyCandidate(taskId, null);
+    }
+
+    CandidateApplyResult applyCandidate(Long taskId, String applyMode);
 }

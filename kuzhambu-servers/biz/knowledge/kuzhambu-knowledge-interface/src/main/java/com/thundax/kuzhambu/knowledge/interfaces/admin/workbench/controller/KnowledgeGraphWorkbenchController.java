@@ -123,8 +123,8 @@ public class KnowledgeGraphWorkbenchController {
     @PostMapping("candidate/apply")
     public KnowledgeGraphWorkbenchResponses.CandidateApplyResponse applyCandidate(
             @Valid @RequestBody KnowledgeGraphWorkbenchRequests.CandidateApplyRequest request) {
-        return KnowledgeGraphWorkbenchInterfaceAssembler.toResponse(
-                workbenchApplicationService.applyCandidate(request == null ? null : request.getTaskId()));
+        return KnowledgeGraphWorkbenchInterfaceAssembler.toResponse(workbenchApplicationService.applyCandidate(
+                request == null ? null : request.getTaskId(), request == null ? null : request.getApplyMode()));
     }
 
     private Long currentActorId() {

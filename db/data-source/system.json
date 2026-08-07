@@ -845,7 +845,7 @@
           "perms": ["discovery:search:view"],
           "priority": 80,
           "icon": "open-api",
-          "url": "/discovery/search",
+          "url": null,
           "remarks": "知识库检索分组",
           "children": [
             {
@@ -874,7 +874,7 @@
           "perms": ["discovery:qa:view", "discovery:qa:edit"],
           "priority": 75,
           "icon": "open-api",
-          "url": "/discovery/qa",
+          "url": null,
           "remarks": "知识库问答分组",
           "children": [
             {

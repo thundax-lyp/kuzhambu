@@ -145,6 +145,68 @@ public final class KnowledgeGraphWorkbenchResponses {
         @Schema(name = "candidatePayloadJson", description = "候选结果JSON")
         @JsonProperty("candidatePayloadJson")
         private String candidatePayloadJson;
+
+        @Schema(name = "entities", description = "候选实体")
+        @JsonProperty("entities")
+        private List<CandidateEntityResponse> entities;
+
+        @Schema(name = "relations", description = "候选关系")
+        @JsonProperty("relations")
+        private List<CandidateRelationResponse> relations;
+
+        @Schema(name = "warnings", description = "候选警告")
+        @JsonProperty("warnings")
+        private List<String> warnings;
+    }
+
+    @Getter
+    @Builder
+    @Schema(name = "KnowledgeGraphWorkbenchCandidateEntityResponse", description = "知识图谱候选实体响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class CandidateEntityResponse implements Serializable {
+        @Schema(name = "name", description = "实体名称")
+        @JsonProperty("name")
+        private String name;
+
+        @Schema(name = "entityType", description = "实体类型")
+        @JsonProperty("entityType")
+        private String entityType;
+
+        @Schema(name = "description", description = "实体说明")
+        @JsonProperty("description")
+        private String description;
+    }
+
+    @Getter
+    @Builder
+    @Schema(name = "KnowledgeGraphWorkbenchCandidateRelationResponse", description = "知识图谱候选关系响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class CandidateRelationResponse implements Serializable {
+        @Schema(name = "sourceName", description = "来源实体名称")
+        @JsonProperty("sourceName")
+        private String sourceName;
+
+        @Schema(name = "sourceType", description = "来源实体类型")
+        @JsonProperty("sourceType")
+        private String sourceType;
+
+        @Schema(name = "relationType", description = "关系类型")
+        @JsonProperty("relationType")
+        private String relationType;
+
+        @Schema(name = "targetName", description = "目标实体名称")
+        @JsonProperty("targetName")
+        private String targetName;
+
+        @Schema(name = "targetType", description = "目标实体类型")
+        @JsonProperty("targetType")
+        private String targetType;
+
+        @Schema(name = "evidence", description = "证据")
+        @JsonProperty("evidence")
+        private String evidence;
     }
 
     @Getter

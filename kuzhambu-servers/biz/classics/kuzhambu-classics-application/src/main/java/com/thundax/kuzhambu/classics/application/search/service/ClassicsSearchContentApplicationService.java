@@ -8,4 +8,14 @@ public interface ClassicsSearchContentApplicationService {
     List<ClassicsSearchSourceContent> listPublicContents();
 
     ClassicsSearchSourceContent getPublicContent(String contentType, String contentId);
+
+    List<ClassicsSearchSourceContent> listWorkbenchCategoryContents();
+
+    List<ClassicsSearchSourceContent> listWorkbenchVolumeContents();
+
+    List<ClassicsSearchSourceContent> listWorkbenchContents();
+
+    List<ClassicsSearchSourceContent> listWorkbenchContents(String categoryCode, String volumeCode);
+
+    ClassicsSearchSourceContent getWorkbenchContent(String contentType, String contentId);
 }

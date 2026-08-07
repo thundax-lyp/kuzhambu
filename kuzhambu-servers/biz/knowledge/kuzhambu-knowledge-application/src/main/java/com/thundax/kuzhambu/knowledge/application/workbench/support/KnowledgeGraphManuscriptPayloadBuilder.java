@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphEntityTypes;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -48,14 +49,14 @@ public class KnowledgeGraphManuscriptPayloadBuilder {
                 nextEventId("graph-trace"),
                 writePromptMessages(taskType),
                 writeInputPayload(manuscript, taskType),
-                null,
+                writeOutputSchema(),
                 true,
                 DEFAULT_LOCALE);
     }
 
     private ClassicsQaKnowledgeFacadeDto loadManuscript(String sourceContentType, Long sourceContentId) {
         ClassicsQaKnowledgeFacadeResponse response =
-                classicsFacade.getQaKnowledge(ClassicsQaKnowledgeFacadeRequest.builder()
+                classicsFacade.getWorkbenchQaKnowledge(ClassicsQaKnowledgeFacadeRequest.builder()
                         .contentType(sourceContentType)
                         .contentId(String.valueOf(sourceContentId))
                         .build());
@@ -69,58 +70,124 @@ public class KnowledgeGraphManuscriptPayloadBuilder {
 
     private String writePromptMessages(String taskType) {
         return writeJson(List.of(
-                Map.of("role", "system", "content", "你是知识图谱抽取助手。请从古籍稿件中抽取结构化实体、关系和世系信息。"),
-                Map.of("role", "user", "content", "请根据输入 payload 执行 " + taskType + " 抽取，并返回 JSON。")));
+                Map.of(
+                        "role",
+                        "system",
+                        "content",
+                        "你是知识图谱抽取助手。请从古籍稿件中抽取结构化实体、关系和世系信息。实体类型必须使用固定枚举："
+                                + String.join("、", KnowledgeGraphEntityTypes.VALUES)
+                                + "。无法判断实体类型时使用“"
+                                + KnowledgeGraphEntityTypes.OTHER
+                                + "”。"),
+                Map.of(
+                        "role",
+                        "user",
+                        "content",
+                        "请根据输入 payload 执行 "
+                                + taskType
+                                + " 抽取，并返回 JSON。entities 每一项必须包含 name/entityType/description，entityType 只能取固定枚举。")));
+    }
+
+    private String writeOutputSchema() {
+        return writeJson(Map.of(
+                "type",
+                "object",
+                "properties",
+                Map.of(
+                        "entities",
+                        Map.of(
+                                "type",
+                                "array",
+                                "items",
+                                Map.of(
+                                        "type",
+                                        "object",
+                                        "properties",
+                                        Map.of(
+                                                "name",
+                                                Map.of("type", "string"),
+                                                "entityType",
+                                                Map.of("type", "string", "enum", KnowledgeGraphEntityTypes.VALUES),
+                                                "description",
+                                                Map.of("type", "string")),
+                                        "required",
+                                        List.of("name", "entityType"))),
+                        "relations",
+                        Map.of(
+                                "type",
+                                "array",
+                                "items",
+                                Map.of(
+                                        "type",
+                                        "object",
+                                        "properties",
+                                        Map.of(
+                                                "sourceName",
+                                                Map.of("type", "string"),
+                                                "targetName",
+                                                Map.of("type", "string"),
+                                                "relationType",
+                                                Map.of("type", "string"),
+                                                "evidence",
+                                                Map.of("type", "string")),
+                                        "required",
+                                        List.of("sourceName", "targetName", "relationType"))),
+                        "entryRefs",
+                        Map.of("type", "array", "items", Map.of("type", "object")),
+                        "warnings",
+                        Map.of("type", "array", "items", Map.of("type", "string"))),
+                "required",
+                List.of("entities", "relations")));
     }
 
     private String writeInputPayload(ClassicsQaKnowledgeFacadeDto manuscript, String taskType) {
-        return writeJson(Map.of(
-                "taskType",
-                taskType,
-                "sourceTitle",
-                nullToBlank(manuscript.getTitle()),
-                "sourceText",
-                sourceText(manuscript),
-                "entryRefs",
-                List.of(Map.of(
-                        "contentType",
-                        nullToBlank(manuscript.getContentType()),
-                        "contentId",
-                        nullToBlank(manuscript.getContentId()),
-                        "title",
-                        nullToBlank(manuscript.getTitle()))),
-                "knownEntities",
-                List.of(),
-                "lineageHint",
-                nullToBlank(manuscript.getCategoryPath()),
-                "source",
-                Map.of(
-                        "sourceId",
-                        nullToBlank(manuscript.getSourceId()),
-                        "contentType",
-                        nullToBlank(manuscript.getContentType()),
-                        "contentId",
-                        nullToBlank(manuscript.getContentId()),
-                        "title",
-                        nullToBlank(manuscript.getTitle()),
-                        "categoryPath",
-                        nullToBlank(manuscript.getCategoryPath()),
-                        "summary",
-                        nullToBlank(manuscript.getSummary())),
-                "text",
-                Map.of(
-                        "body",
-                        nullToBlank(manuscript.getBody()),
-                        "originalText",
-                        nullToBlank(manuscript.getOriginalText()),
-                        "translationText",
-                        nullToBlank(manuscript.getTranslationText()),
-                        "originalExcerpts",
-                        nullToBlank(manuscript.getOriginalExcerpts())),
-                "tags",
-                manuscript.getTags() == null ? List.of() : manuscript.getTags(),
-                "qaPairs",
-                manuscript.getQaPairs() == null ? List.of() : manuscript.getQaPairs()));
+        String sourceTitle = nullToBlank(manuscript.getTitle());
+        String sourceText = sourceText(manuscript);
+        return writeJson(Map.ofEntries(
+                Map.entry("taskType", taskType),
+                Map.entry("title", sourceTitle),
+                Map.entry("content", sourceText),
+                Map.entry("sourceTitle", sourceTitle),
+                Map.entry("sourceText", sourceText),
+                Map.entry(
+                        "entryRefs",
+                        List.of(Map.of(
+                                "contentType",
+                                nullToBlank(manuscript.getContentType()),
+                                "contentId",
+                                nullToBlank(manuscript.getContentId()),
+                                "title",
+                                nullToBlank(manuscript.getTitle())))),
+                Map.entry("knownEntities", List.of()),
+                Map.entry("lineageHint", nullToBlank(manuscript.getCategoryPath())),
+                Map.entry(
+                        "source",
+                        Map.of(
+                                "sourceId",
+                                nullToBlank(manuscript.getSourceId()),
+                                "contentType",
+                                nullToBlank(manuscript.getContentType()),
+                                "contentId",
+                                nullToBlank(manuscript.getContentId()),
+                                "title",
+                                nullToBlank(manuscript.getTitle()),
+                                "categoryPath",
+                                nullToBlank(manuscript.getCategoryPath()),
+                                "summary",
+                                nullToBlank(manuscript.getSummary()))),
+                Map.entry(
+                        "text",
+                        Map.of(
+                                "body",
+                                nullToBlank(manuscript.getBody()),
+                                "originalText",
+                                nullToBlank(manuscript.getOriginalText()),
+                                "translationText",
+                                nullToBlank(manuscript.getTranslationText()),
+                                "originalExcerpts",
+                                nullToBlank(manuscript.getOriginalExcerpts()))),
+                Map.entry("tags", manuscript.getTags() == null ? List.of() : manuscript.getTags()),
+                Map.entry("qaPairs", manuscript.getQaPairs() == null ? List.of() : manuscript.getQaPairs())));
     }
 
     private String sourceText(ClassicsQaKnowledgeFacadeDto manuscript) {

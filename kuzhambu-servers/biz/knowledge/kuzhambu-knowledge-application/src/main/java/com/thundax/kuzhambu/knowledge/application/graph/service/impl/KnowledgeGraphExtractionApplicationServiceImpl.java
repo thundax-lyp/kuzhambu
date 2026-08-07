@@ -23,6 +23,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphE
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.configure.KnowledgeGraphExtractionExecutorConfiguration;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -68,10 +69,15 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 @Transactional(readOnly = true)
@@ -101,9 +107,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     private final RefinementTaskRepository refinementTaskRepository;
     private final AiFacade aiFacade;
     private final KnowledgeGraphCandidateApplySupport candidateApplySupport;
+    private final Executor taskExecutor;
+    private final TransactionTemplate transactionTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
-    @Autowired
     public KnowledgeGraphExtractionApplicationServiceImpl(
             GraphExtractionTaskRepository repository,
             GraphVersionRepository graphVersionRepository,
@@ -113,7 +120,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             KnowledgeLineageRelationRepository knowledgeLineageRelationRepository,
             RefinementTaskRepository refinementTaskRepository,
             AiFacade aiFacade,
-            KnowledgeGraphCandidateApplySupport candidateApplySupport) {
+            KnowledgeGraphCandidateApplySupport candidateApplySupport,
+            @Qualifier(KnowledgeGraphExtractionExecutorConfiguration.TASK_EXECUTOR) Executor taskExecutor,
+            PlatformTransactionManager transactionManager) {
         this.repository = repository;
         this.graphVersionRepository = graphVersionRepository;
         this.knowledgeEntityRepository = knowledgeEntityRepository;
@@ -123,6 +132,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         this.refinementTaskRepository = refinementTaskRepository;
         this.aiFacade = aiFacade;
         this.candidateApplySupport = candidateApplySupport;
+        this.taskExecutor = taskExecutor;
+        this.transactionTemplate = transactionManager == null ? null : new TransactionTemplate(transactionManager);
     }
 
     @Override
@@ -536,7 +547,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId) {
+    public GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId, String applyMode) {
         GraphExtractionTask task = repository.getByTaskId(taskId);
         if (task == null) {
             throw new BizException("Graph extraction task not found: " + (taskId == null ? null : taskId.value()));
@@ -554,7 +565,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                         .contentId(GraphExtractionSourceContentIdCodec.toValue(task.getSourceContentId()))
                         .capability(resolveCapability(taskTypeValue(task)))
                         .build());
-        candidateApplySupport.apply(task, candidate);
+        candidateApplySupport.apply(task, candidate, applyMode);
         aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
                 .candidateId(candidate.getCandidateId())
                 .resultFormat(candidate.getResultFormat())
@@ -597,19 +608,20 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         if (targets.size() <= 1) {
             ExtractionTarget target = targets.get(0);
             validateTarget(sourceContentType, target.sourceContentId());
-            return requestTask(
+            GraphExtractionTask task = buildTask(
                     null,
-                    null,
+                    GraphExtractionTaskIdCodec.toDomain(parentTaskId),
                     taskType,
                     scopeType,
                     target.scopeJson(),
                     triggerSource,
                     selectionScopeJson,
                     replaceUnconfirmedOnly,
-                    parentTaskId,
                     sourceContentType,
                     target.sourceContentId(),
-                    requestedBy,
+                    requestedBy);
+            fillRequestSnapshot(
+                    task,
                     toAiRequest(
                             taskType,
                             scopeType,
@@ -630,9 +642,11 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                             inputPayloadJson,
                             outputSchemaJson,
                             forceJson,
-                            locale),
-                    operation,
-                    true);
+                            locale));
+            GraphExtractionTaskId taskId = repository.save(task);
+            task.setId(taskId);
+            scheduleTaskExecution(taskId);
+            return toResult(task);
         }
         if (aiFacade == null) {
             throw new BizException("AI batch job service is not ready");
@@ -821,19 +835,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             task.setId(taskId);
         }
         try {
-            KnowledgeAiExtractionFacadeResponse result = operation.invoke(aiRequest);
-            task.setAiCallId(GraphExtractionAiCallIdCodec.toDomain(result == null ? null : result.getCallId()));
-            task.setAiCandidateId(
-                    GraphExtractionAiCandidateIdCodec.toDomain(result == null ? null : result.getCandidateId()));
-            task.setStatus(
-                    result != null && STATUS_SUCCEEDED.equals(result.getStatus())
-                            ? GraphExtractionTaskStatus.SUCCEEDED
-                            : GraphExtractionTaskStatus.FAILED);
-            task.setErrorType(result == null ? "KNOWLEDGE_AI_EMPTY_RESULT" : result.getErrorType());
-            task.setErrorMessage(
-                    result == null ? "Knowledge AI extraction returned empty result" : result.getErrorMessage());
-            task.setCompletedAt(Instant.now());
-            repository.update(task);
+            executeTask(task, aiRequest, operation);
             updateBatchOnTaskFinished(batchJobId, task);
             return toResult(task);
         } catch (RuntimeException ex) {
@@ -848,6 +850,107 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             }
             return toResult(task);
         }
+    }
+
+    private GraphExtractionTask executeRequestedTask(GraphExtractionTask task, boolean rethrowOnFailure) {
+        if (task == null || !GraphExtractionTaskStatus.REQUESTED.equals(task.getStatus())) {
+            return task;
+        }
+        try {
+            KnowledgeAiExtractionFacadeRequest aiRequest = toAiRequest(task);
+            executeTask(task, aiRequest, resolveOperation(taskTypeValue(task)));
+            updateBatchOnTaskFinished(GraphExtractionBatchJobIdCodec.toValue(task.getBatchJobId()), task);
+        } catch (RuntimeException ex) {
+            task.setStatus(GraphExtractionTaskStatus.FAILED);
+            task.setErrorType("KNOWLEDGE_AI_EXTRACTION_FAILED");
+            task.setErrorMessage(ex.getMessage());
+            task.setCompletedAt(Instant.now());
+            repository.update(task);
+            updateBatchOnTaskFinished(GraphExtractionBatchJobIdCodec.toValue(task.getBatchJobId()), task);
+            if (rethrowOnFailure) {
+                throw ex;
+            }
+        }
+        return task;
+    }
+
+    private void scheduleTaskExecution(GraphExtractionTaskId taskId) {
+        if (taskExecutor == null || transactionTemplate == null || taskId == null) {
+            return;
+        }
+        Runnable submittedTask = () -> taskExecutor.execute(() -> executeScheduledTask(taskId));
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            submittedTask.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                submittedTask.run();
+            }
+        });
+    }
+
+    private void executeScheduledTask(GraphExtractionTaskId taskId) {
+        GraphExtractionTask task = transactionTemplate.execute(status -> {
+            GraphExtractionTask latestTask = repository.getByTaskId(taskId);
+            if (latestTask == null
+                    || !GraphExtractionTaskStatus.REQUESTED.equals(latestTask.getStatus())
+                    || latestTask.getAiCallId() != null
+                    || latestTask.getAiCandidateId() != null) {
+                return null;
+            }
+            latestTask.setStatus(GraphExtractionTaskStatus.RUNNING);
+            repository.update(latestTask);
+            return latestTask;
+        });
+        if (task == null) {
+            return;
+        }
+        try {
+            KnowledgeAiExtractionFacadeResponse result =
+                    resolveOperation(taskTypeValue(task)).invoke(toAiRequest(task));
+            task.setAiCallId(GraphExtractionAiCallIdCodec.toDomain(result == null ? null : result.getCallId()));
+            task.setAiCandidateId(
+                    GraphExtractionAiCandidateIdCodec.toDomain(result == null ? null : result.getCandidateId()));
+            task.setStatus(
+                    result != null && STATUS_SUCCEEDED.equals(result.getStatus())
+                            ? GraphExtractionTaskStatus.SUCCEEDED
+                            : GraphExtractionTaskStatus.FAILED);
+            task.setErrorType(result == null ? "KNOWLEDGE_AI_EMPTY_RESULT" : result.getErrorType());
+            task.setErrorMessage(
+                    result == null ? "Knowledge AI extraction returned empty result" : result.getErrorMessage());
+        } catch (RuntimeException ex) {
+            task.setStatus(GraphExtractionTaskStatus.FAILED);
+            task.setErrorType("KNOWLEDGE_AI_EXTRACTION_FAILED");
+            task.setErrorMessage(ex.getMessage());
+        }
+        task.setCompletedAt(Instant.now());
+        transactionTemplate.executeWithoutResult(status -> {
+            repository.update(task);
+            updateBatchOnTaskFinished(GraphExtractionBatchJobIdCodec.toValue(task.getBatchJobId()), task);
+        });
+    }
+
+    private void executeTask(
+            GraphExtractionTask task,
+            KnowledgeAiExtractionFacadeRequest aiRequest,
+            KnowledgeInvokeOperation operation) {
+        task.setStatus(GraphExtractionTaskStatus.RUNNING);
+        repository.update(task);
+        KnowledgeAiExtractionFacadeResponse result = operation.invoke(aiRequest);
+        task.setAiCallId(GraphExtractionAiCallIdCodec.toDomain(result == null ? null : result.getCallId()));
+        task.setAiCandidateId(
+                GraphExtractionAiCandidateIdCodec.toDomain(result == null ? null : result.getCandidateId()));
+        task.setStatus(
+                result != null && STATUS_SUCCEEDED.equals(result.getStatus())
+                        ? GraphExtractionTaskStatus.SUCCEEDED
+                        : GraphExtractionTaskStatus.FAILED);
+        task.setErrorType(result == null ? "KNOWLEDGE_AI_EMPTY_RESULT" : result.getErrorType());
+        task.setErrorMessage(
+                result == null ? "Knowledge AI extraction returned empty result" : result.getErrorMessage());
+        task.setCompletedAt(Instant.now());
+        repository.update(task);
     }
 
     private GraphExtractionTask buildTask(
@@ -972,6 +1075,29 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 .outputSchemaJson(outputSchemaJson)
                 .forceJson(forceJson)
                 .locale(locale)
+                .build();
+    }
+
+    private KnowledgeAiExtractionFacadeRequest toAiRequest(GraphExtractionTask task) {
+        return KnowledgeAiExtractionFacadeRequest.builder()
+                .taskType(taskTypeValue(task))
+                .scopeType(task.getScopeType())
+                .scopeJson(task.getScopeJson())
+                .sourceContentType(task.getSourceContentType())
+                .sourceContentId(GraphExtractionSourceContentIdCodec.toValue(task.getSourceContentId()))
+                .requestedBy(GraphExtractionRequesterIdCodec.toValue(task.getRequestedBy()))
+                .modelId(GraphExtractionModelIdCodec.toValue(task.getModelId()))
+                .modelName(GraphExtractionModelNameCodec.toValue(task.getModelName()))
+                .promptVersionId(GraphExtractionPromptVersionIdCodec.toValue(task.getPromptVersionId()))
+                .requestId(GraphExtractionRequestIdCodec.toValue(task.getRequestId()))
+                .traceId(GraphExtractionTraceIdCodec.toValue(task.getTraceId()))
+                .promptMessagesJson(task.getPromptMessagesJson())
+                .promptVariablesJson(task.getPromptVariablesJson())
+                .promptHash(task.getPromptHash())
+                .inputPayloadJson(task.getInputPayloadJson())
+                .outputSchemaJson(task.getOutputSchemaJson())
+                .forceJson(Boolean.TRUE.equals(task.getForceJson()))
+                .locale(task.getLocale())
                 .build();
     }
 
@@ -1119,11 +1245,15 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         if (relation == null) {
             return null;
         }
+        KnowledgeEntity sourceEntity = knowledgeEntityRepository.getByEntityKey(relation.getSourceEntityKey());
+        KnowledgeEntity targetEntity = knowledgeEntityRepository.getByEntityKey(relation.getTargetEntityKey());
         return new KnowledgeRelationResult(
                 relation.getId(),
                 relation.getRelationKey(),
                 relation.getSourceName(),
+                sourceEntity == null ? null : sourceEntity.getEntityType(),
                 relation.getTargetName(),
+                targetEntity == null ? null : targetEntity.getEntityType(),
                 relation.getRelationType(),
                 relation.getEvidence(),
                 relation.getConfirmationStatus(),

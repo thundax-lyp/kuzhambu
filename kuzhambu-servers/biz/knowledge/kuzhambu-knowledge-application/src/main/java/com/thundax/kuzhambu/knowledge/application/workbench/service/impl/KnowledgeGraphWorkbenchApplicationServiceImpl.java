@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.knowledge.application.workbench.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
@@ -17,9 +20,12 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationE
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphEntityTypes;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateApplyResult;
+import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateEntityResult;
+import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateRelationResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateSummaryResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.ManuscriptDetailResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.ManuscriptTreeNodeResult;
@@ -66,6 +72,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     private final AiFacade aiFacade;
     private final KnowledgeGraphManuscriptTreeAssembler treeAssembler;
     private final KnowledgeGraphManuscriptPayloadBuilder payloadBuilder;
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     public KnowledgeGraphWorkbenchApplicationServiceImpl(
             ClassicsFacade classicsFacade,
@@ -86,9 +93,9 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     @Transactional(readOnly = true)
     public List<ManuscriptTreeNodeResult> listManuscriptTree(
             String sourceContentType, String parentKey, String keyword, String graphStatus) {
-        List<ClassicsPublicContentFacadeDto> contents =
-                isBlank(parentKey) && isBlank(keyword) && isBlank(graphStatus) ? List.of() : listPublicContents();
-        Map<String, ManuscriptGraphSnapshot> snapshotsBySource = latestSnapshots(contents);
+        List<ClassicsPublicContentFacadeDto> contents = resolveTreeContents(parentKey, keyword, graphStatus);
+        Map<String, ManuscriptGraphSnapshot> snapshotsBySource =
+                needsGraphSnapshots(parentKey, keyword, graphStatus) ? latestSnapshots(contents) : Map.of();
         return treeAssembler.toTree(
                 contents,
                 sourceContentType,
@@ -104,7 +111,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     @Transactional(readOnly = true)
     public ManuscriptDetailResult getManuscript(String sourceContentType, Long sourceContentId) {
         validateManuscript(sourceContentType, sourceContentId);
-        ClassicsPublicContentFacadeDto manuscript = loadPublicContent(sourceContentType, sourceContentId);
+        ClassicsPublicContentFacadeDto manuscript = loadWorkbenchContent(sourceContentType, sourceContentId);
         GraphExtractionTaskResult latestTask = latestTask(TASK_TYPE_GRAPH, sourceContentType, sourceContentId);
         GraphVersionResult latestVersion = latestVersion(TASK_TYPE_GRAPH, sourceContentType, sourceContentId);
         return ManuscriptDetailResult.builder()
@@ -145,6 +152,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     public CandidateSummaryResult getLatestCandidate(String sourceContentType, Long sourceContentId, String taskType) {
         GraphExtractionTaskResult task = latestTask(normalizeTaskType(taskType), sourceContentType, sourceContentId);
         AiCandidateFacadeDto candidate = latestCandidate(task);
+        CandidatePayload candidatePayload =
+                parseCandidatePayload(candidate == null ? null : candidate.getResultPayload());
         return CandidateSummaryResult.builder()
                 .taskId(parseTaskId(task))
                 .aiCandidateId(task == null ? null : task.getAiCandidateId())
@@ -153,20 +162,23 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
                 .sourceContentType(sourceContentType)
                 .sourceContentId(sourceContentId)
                 .candidatePayloadJson(candidate == null ? null : candidate.getResultPayload())
+                .entities(candidatePayload.entities())
+                .relations(candidatePayload.relations())
+                .warnings(candidatePayload.warnings())
                 .build();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CandidateApplyResult applyCandidate(Long taskId) {
+    public CandidateApplyResult applyCandidate(Long taskId, String applyMode) {
         if (taskId == null) {
             throw new BizException("Knowledge graph candidate taskId is required");
         }
         GraphExtractionTaskResult detail =
                 graphExtractionApplicationService.getTaskDetail(GraphExtractionTaskIdCodec.toDomain(taskId));
         ensureSancaiSource(detail == null ? null : detail.getSourceContentType());
-        GraphExtractionTaskResult task =
-                graphExtractionApplicationService.applyTaskCandidate(GraphExtractionTaskIdCodec.toDomain(taskId));
+        GraphExtractionTaskResult task = graphExtractionApplicationService.applyTaskCandidate(
+                GraphExtractionTaskIdCodec.toDomain(taskId), applyMode);
         GraphVersionResult version =
                 latestVersion(task.getTaskType(), task.getSourceContentType(), task.getSourceContentId());
         return CandidateApplyResult.builder()
@@ -257,14 +269,90 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
                 payload.locale());
     }
 
-    private List<ClassicsPublicContentFacadeDto> listPublicContents() {
-        ClassicsPublicContentsFacadeResponse response = classicsFacade.listPublicContents();
+    private List<ClassicsPublicContentFacadeDto> resolveTreeContents(
+            String parentKey, String keyword, String graphStatus) {
+        if (isBlank(parentKey) && isBlank(keyword) && isBlank(graphStatus)) {
+            return listWorkbenchCatalogContents();
+        }
+        if (isSourceRootParent(parentKey) && isBlank(keyword) && isBlank(graphStatus)) {
+            return listWorkbenchCatalogContents();
+        }
+        if (isCategoryParent(parentKey) && isBlank(keyword) && isBlank(graphStatus)) {
+            return listWorkbenchVolumeContents();
+        }
+        NodeKey volumeParent = parseVolumeParent(parentKey);
+        if (volumeParent != null && isBlank(keyword) && isBlank(graphStatus)) {
+            return listWorkbenchContents(volumeParent.categoryCode(), volumeParent.volumeCode());
+        }
+        return listWorkbenchContents();
+    }
+
+    private List<ClassicsPublicContentFacadeDto> listWorkbenchCategoryContents() {
+        ClassicsPublicContentsFacadeResponse response = classicsFacade.listWorkbenchCategoryContents();
         return response == null || response.getContents() == null ? List.of() : response.getContents();
     }
 
-    private ClassicsPublicContentFacadeDto loadPublicContent(String sourceContentType, Long sourceContentId) {
+    private List<ClassicsPublicContentFacadeDto> listWorkbenchVolumeContents() {
+        ClassicsPublicContentsFacadeResponse response = classicsFacade.listWorkbenchVolumeContents();
+        return response == null || response.getContents() == null ? List.of() : response.getContents();
+    }
+
+    private List<ClassicsPublicContentFacadeDto> listWorkbenchCatalogContents() {
+        List<ClassicsPublicContentFacadeDto> contents = new java.util.ArrayList<>();
+        contents.addAll(listWorkbenchCategoryContents());
+        contents.addAll(listWorkbenchVolumeContents());
+        return contents;
+    }
+
+    private List<ClassicsPublicContentFacadeDto> listWorkbenchContents() {
+        ClassicsPublicContentsFacadeResponse response = classicsFacade.listWorkbenchContents();
+        return response == null || response.getContents() == null ? List.of() : response.getContents();
+    }
+
+    private List<ClassicsPublicContentFacadeDto> listWorkbenchContents(String categoryCode, String volumeCode) {
+        ClassicsPublicContentsFacadeResponse response = classicsFacade.listWorkbenchContents(categoryCode, volumeCode);
+        return response == null || response.getContents() == null ? List.of() : response.getContents();
+    }
+
+    private boolean needsGraphSnapshots(String parentKey, String keyword, String graphStatus) {
+        if (!isBlank(keyword) || !isBlank(graphStatus)) {
+            return true;
+        }
+        String normalizedParentKey = normalize(parentKey);
+        return normalizedParentKey != null
+                && normalizedParentKey.startsWith(KnowledgeGraphManuscriptTreeAssembler.NODE_TYPE_VOLUME + ":");
+    }
+
+    private boolean isSourceRootParent(String parentKey) {
+        String normalizedParentKey = normalize(parentKey);
+        return normalizedParentKey != null
+                && normalizedParentKey.startsWith(KnowledgeGraphManuscriptTreeAssembler.NODE_TYPE_SOURCE_ROOT + ":");
+    }
+
+    private boolean isCategoryParent(String parentKey) {
+        String normalizedParentKey = normalize(parentKey);
+        return normalizedParentKey != null
+                && normalizedParentKey.startsWith(KnowledgeGraphManuscriptTreeAssembler.NODE_TYPE_CATEGORY + ":");
+    }
+
+    private NodeKey parseVolumeParent(String parentKey) {
+        String normalizedParentKey = normalize(parentKey);
+        if (normalizedParentKey == null
+                || !normalizedParentKey.startsWith(KnowledgeGraphManuscriptTreeAssembler.NODE_TYPE_VOLUME + ":")) {
+            return null;
+        }
+        String[] parts = normalizedParentKey.split(":", 4);
+        if (parts.length < 4) {
+            return null;
+        }
+        return new NodeKey(parts[2], parts[3]);
+    }
+
+    private record NodeKey(String categoryCode, String volumeCode) {}
+
+    private ClassicsPublicContentFacadeDto loadWorkbenchContent(String sourceContentType, Long sourceContentId) {
         ClassicsPublicContentFacadeResponse response =
-                classicsFacade.getPublicContent(ClassicsPublicContentFacadeRequest.builder()
+                classicsFacade.getWorkbenchContent(ClassicsPublicContentFacadeRequest.builder()
                         .contentType(sourceContentType)
                         .contentId(String.valueOf(sourceContentId))
                         .build());
@@ -521,6 +609,92 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
         return Long.valueOf(task.getTaskId());
     }
 
+    private CandidatePayload parseCandidatePayload(String candidatePayloadJson) {
+        if (isBlank(candidatePayloadJson)) {
+            return CandidatePayload.empty();
+        }
+        try {
+            JsonNode payload = objectMapper.readTree(candidatePayloadJson);
+            List<CandidateEntityResult> entities = toCandidateEntities(arrayOf(payload, "entities"));
+            return new CandidatePayload(
+                    entities,
+                    toCandidateRelations(payload, entities),
+                    arrayOf(payload, "warnings")
+                            .valueStream()
+                            .map(JsonNode::asText)
+                            .toList());
+        } catch (Exception ex) {
+            return CandidatePayload.empty();
+        }
+    }
+
+    private List<CandidateEntityResult> toCandidateEntities(ArrayNode entityNodes) {
+        return entityNodes
+                .valueStream()
+                .filter(JsonNode::isObject)
+                .map(node -> CandidateEntityResult.builder()
+                        .name(textValue(node, "name"))
+                        .entityType(KnowledgeGraphEntityTypes.normalize(
+                                firstNonBlank(node, "entityType", "type", "category")))
+                        .description(firstNonBlank(node, "description", "summary"))
+                        .build())
+                .filter(entity -> !isBlank(entity.getName()))
+                .toList();
+    }
+
+    private List<CandidateRelationResult> toCandidateRelations(JsonNode payload, List<CandidateEntityResult> entities) {
+        Map<String, String> entityTypesByName = new HashMap<>();
+        entities.forEach(entity -> entityTypesByName.put(entity.getName(), entity.getEntityType()));
+        return candidateRelationNodes(payload)
+                .valueStream()
+                .filter(JsonNode::isObject)
+                .map(node -> {
+                    String sourceName = firstNonBlank(node, "sourceName", "source", "subject", "head", "from");
+                    String targetName = firstNonBlank(node, "targetName", "target", "object", "tail", "to");
+                    return CandidateRelationResult.builder()
+                            .sourceName(sourceName)
+                            .sourceType(entityTypesByName.getOrDefault(sourceName, KnowledgeGraphEntityTypes.OTHER))
+                            .relationType(firstNonBlank(node, "relationType", "relation", "predicate", "type", "label"))
+                            .targetName(targetName)
+                            .targetType(entityTypesByName.getOrDefault(targetName, KnowledgeGraphEntityTypes.OTHER))
+                            .evidence(firstNonBlank(node, "evidence", "summary"))
+                            .build();
+                })
+                .filter(relation -> !isBlank(relation.getSourceName())
+                        || !isBlank(relation.getRelationType())
+                        || !isBlank(relation.getTargetName()))
+                .toList();
+    }
+
+    private ArrayNode candidateRelationNodes(JsonNode payload) {
+        ArrayNode relations = arrayOf(payload, "relations");
+        if (!relations.isEmpty()) {
+            return relations;
+        }
+        ArrayNode triples = arrayOf(payload, "triples");
+        return triples.isEmpty() ? arrayOf(payload, "spo") : triples;
+    }
+
+    private ArrayNode arrayOf(JsonNode payload, String fieldName) {
+        JsonNode node = payload == null ? null : payload.get(fieldName);
+        return node instanceof ArrayNode arrayNode ? arrayNode : objectMapper.createArrayNode();
+    }
+
+    private String firstNonBlank(JsonNode node, String... fieldNames) {
+        for (String fieldName : fieldNames) {
+            String value = textValue(node, fieldName);
+            if (!isBlank(value)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private String textValue(JsonNode node, String fieldName) {
+        JsonNode value = node == null ? null : node.get(fieldName);
+        return value == null || value.isNull() ? null : value.asText();
+    }
+
     private Long parseContentId(String value) {
         return isBlank(value) ? null : Long.valueOf(value);
     }
@@ -559,5 +733,13 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private record CandidatePayload(
+            List<CandidateEntityResult> entities, List<CandidateRelationResult> relations, List<String> warnings) {
+
+        private static CandidatePayload empty() {
+            return new CandidatePayload(List.of(), List.of(), List.of());
+        }
     }
 }

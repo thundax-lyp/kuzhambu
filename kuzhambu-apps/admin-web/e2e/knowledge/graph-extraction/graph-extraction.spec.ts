@@ -71,8 +71,43 @@ const manuscriptTreeResponse = (requestBody: ApiPayload) => {
     if (requestBody.parentKey === "SOURCE_ROOT:SANCAI_ENTRY") {
         return [
             {
-                nodeKey: "MANUSCRIPT:SANCAI_ENTRY:1001",
+                nodeKey: "CATEGORY:SANCAI_ENTRY:people",
                 parentKey: "SOURCE_ROOT:SANCAI_ENTRY",
+                nodeType: "CATEGORY",
+                title: "人物",
+                sourceContentType: "SANCAI_ENTRY",
+                children: [
+                    {
+                        nodeKey: "VOLUME:SANCAI_ENTRY:people:10",
+                        parentKey: "CATEGORY:SANCAI_ENTRY:people",
+                        nodeType: "VOLUME",
+                        title: "卷一",
+                        sourceContentType: "SANCAI_ENTRY",
+                        sourceContentId: 10
+                    }
+                ]
+            }
+        ];
+    }
+
+    if (requestBody.parentKey === "CATEGORY:SANCAI_ENTRY:people") {
+        return [
+            {
+                nodeKey: "VOLUME:SANCAI_ENTRY:people:10",
+                parentKey: "CATEGORY:SANCAI_ENTRY:people",
+                nodeType: "VOLUME",
+                title: "卷一",
+                sourceContentType: "SANCAI_ENTRY",
+                sourceContentId: 10
+            }
+        ];
+    }
+
+    if (requestBody.parentKey === "VOLUME:SANCAI_ENTRY:people:10") {
+        return [
+            {
+                nodeKey: "MANUSCRIPT:SANCAI_ENTRY:1001",
+                parentKey: "VOLUME:SANCAI_ENTRY:people:10",
                 nodeType: "MANUSCRIPT",
                 title: "三才稿件",
                 sourceContentType: "SANCAI_ENTRY",
@@ -90,7 +125,26 @@ const manuscriptTreeResponse = (requestBody: ApiPayload) => {
         {
             nodeKey: "SOURCE_ROOT:SANCAI_ENTRY",
             nodeType: "SOURCE_ROOT",
-            title: "三才"
+            title: "三才",
+            children: [
+                {
+                    nodeKey: "CATEGORY:SANCAI_ENTRY:people",
+                    parentKey: "SOURCE_ROOT:SANCAI_ENTRY",
+                    nodeType: "CATEGORY",
+                    title: "人物",
+                    sourceContentType: "SANCAI_ENTRY",
+                    children: [
+                        {
+                            nodeKey: "VOLUME:SANCAI_ENTRY:people:10",
+                            parentKey: "CATEGORY:SANCAI_ENTRY:people",
+                            nodeType: "VOLUME",
+                            title: "卷一",
+                            sourceContentType: "SANCAI_ENTRY",
+                            sourceContentId: 10
+                        }
+                    ]
+                }
+            ]
         }
     ];
 };
@@ -230,7 +284,29 @@ const createGraphExtractionMockHandlers = async (page: Page) => {
                 status: "SUCCEEDED",
                 sourceContentType: "SANCAI_ENTRY",
                 sourceContentId: 1001,
-                candidatePayloadJson: '{"entities":[{"name":"黄帝"}]}'
+                candidatePayloadJson:
+                    '{"entities":[{"name":"黄帝"},{"name":"制度"}],"relations":[{"sourceName":"黄帝","relationType":"建立","targetName":"制度"}]}'
+            });
+        }
+    );
+    await page.route(
+        "**/kuzhambu-admin-api/api/knowledge/graph-extraction/relation/page",
+        async (route) => {
+            await fulfillSuccess(route, {
+                pageNo: 1,
+                pageSize: 200,
+                totalCount: 1,
+                count: 1,
+                records: [
+                    {
+                        relationId: 5001,
+                        sourceName: "黄帝",
+                        relationType: "建立",
+                        targetName: "制度",
+                        confirmationStatus: "CONFIRMED",
+                        latestVersionId: 8001
+                    }
+                ]
             });
         }
     );
@@ -272,15 +348,15 @@ const createGraphExtractionMockHandlers = async (page: Page) => {
 test.describe("admin graph extraction smoke", () => {
     test.beforeEach(async ({ page }) => {
         await mockShellApis(page);
-        await page.addInitScript((permissions) => {
+        await page.addInitScript(() => {
             window.localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
             window.localStorage.setItem("kuzhambu.admin.refreshToken", "refresh-token");
             window.localStorage.setItem(
                 "kuzhambu.admin.accessTokenExpireAt",
                 String(Date.now() + 3600 * 1000)
             );
-            window.localStorage.setItem("kuzhambu.admin.permissions", JSON.stringify(permissions));
-        }, ADMIN_PERMISSIONS);
+            window.localStorage.removeItem("kuzhambu.admin.permissions");
+        });
         await page.setViewportSize({ width: 1280, height: 900 });
     });
 
@@ -293,7 +369,7 @@ test.describe("admin graph extraction smoke", () => {
 
         await expect(page.getByRole("heading", { name: "知识抽取" })).toBeVisible();
         await expect(page.getByRole("textbox", { name: "搜索稿件" })).toHaveCount(0);
-        await expect(page.getByText("三才稿件")).toBeVisible();
+        await expect(page.getByText("人物")).toBeVisible();
         await expect(page.getByText("王圻稿件")).toHaveCount(0);
         await expect(page.getByText("明俗稿件")).toHaveCount(0);
         await expect(
@@ -303,11 +379,29 @@ test.describe("admin graph extraction smoke", () => {
         await expect.poll(() => mocks.getTreePayloads()[0]).toEqual({});
         await expect
             .poll(() => mocks.getTreePayloads().map((payload) => payload.parentKey))
-            .toEqual([undefined, "SOURCE_ROOT:SANCAI_ENTRY"]);
+            .toEqual([undefined]);
 
-        await page.getByText("三才稿件").click();
+        await page.getByText("人物").click();
+        await page.getByText("卷一").click();
+        await expect
+            .poll(() => mocks.getTreePayloads().map((payload) => payload.parentKey))
+            .toEqual([undefined, "VOLUME:SANCAI_ENTRY:people:10"]);
+        await expect(page.getByRole("cell", { name: "三才稿件" })).toBeVisible();
+        await expect(
+            page.locator(".graph-extraction-manuscript-table").locator(".ant-table-row-expand-icon")
+        ).toHaveCount(0);
+        await page
+            .getByRole("row", { name: /三才稿件/u })
+            .getByRole("button")
+            .last()
+            .click();
+        await page.getByRole("menuitem", { name: /查\s*看/u }).click();
         await expect(page.getByText("三才稿件摘要")).toBeVisible();
         await page.getByRole("button", { name: "抽取图谱" }).click();
+        await expect(
+            page.getByTestId("knowledge-graph-extraction-candidate-extract-button")
+        ).toBeVisible();
+        await page.getByTestId("knowledge-graph-extraction-candidate-extract-button").click();
         await expect
             .poll(() => mocks.getExtractPayload())
             .toEqual({
@@ -315,8 +409,24 @@ test.describe("admin graph extraction smoke", () => {
                 sourceContentId: 1001,
                 taskType: "GRAPH"
             });
-        await page.getByRole("button", { name: "应用候选" }).click();
+        await page.keyboard.press("Escape");
+        await expect(
+            page.getByTestId("knowledge-graph-extraction-candidate-extract-button")
+        ).toHaveCount(0);
+        await page.getByRole("button", { name: "抽取图谱" }).click();
+        await expect(
+            page.getByTestId("knowledge-graph-extraction-candidate-merge-apply-button")
+        ).toBeVisible();
+        await page.getByTestId("knowledge-graph-extraction-candidate-merge-apply-button").click();
         await expect.poll(() => mocks.getWorkbenchApplyPayload()).toEqual({ taskId: "9001" });
+        await expect(
+            page.getByTestId("knowledge-graph-extraction-candidate-merge-apply-button")
+        ).toHaveCount(0);
+        await page
+            .getByRole("dialog", { name: "三才稿件" })
+            .getByRole("button", { name: "关闭" })
+            .click();
+        await expect(page.getByRole("dialog", { name: "三才稿件" })).toHaveCount(0);
 
         await page.getByRole("button", { name: "任务列表(1)" }).click();
         await expect(page.getByText("8008")).toBeVisible();

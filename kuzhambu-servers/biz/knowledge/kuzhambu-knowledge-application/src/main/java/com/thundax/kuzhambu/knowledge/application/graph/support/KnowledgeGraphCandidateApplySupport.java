@@ -21,9 +21,13 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRep
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -38,6 +42,11 @@ public class KnowledgeGraphCandidateApplySupport {
     private static final String STATUS_AI_EXTRACTED = "AI_EXTRACTED";
     private static final String STATUS_MANUAL_CONFIRMED = "MANUAL_CONFIRMED";
     private static final String STATUS_APPLIED = "APPLIED";
+    private static final String APPLY_MODE_APPEND = "APPEND";
+    private static final String APPLY_MODE_MERGE = "MERGE";
+    private static final String APPLY_MODE_OVERWRITE = "OVERWRITE";
+    private static final int SOURCE_CATEGORY_CODE_MAX_LENGTH = 64;
+    private static final int SOURCE_CATEGORY_NAME_MAX_LENGTH = 128;
 
     private final GraphVersionRepository graphVersionRepository;
     private final KnowledgeEntityRepository knowledgeEntityRepository;
@@ -61,6 +70,10 @@ public class KnowledgeGraphCandidateApplySupport {
     }
 
     public GraphVersion apply(GraphExtractionTask task, AiCandidateFacadeDto candidate) {
+        return apply(task, candidate, APPLY_MODE_MERGE);
+    }
+
+    public GraphVersion apply(GraphExtractionTask task, AiCandidateFacadeDto candidate, String applyMode) {
         if (task == null || task.getId() == null || candidate == null || candidate.getCandidateId() == null) {
             throw new BizException("Knowledge graph apply target is incomplete");
         }
@@ -70,20 +83,70 @@ public class KnowledgeGraphCandidateApplySupport {
         if (StringUtils.isBlank(candidate.getResultPayload())) {
             throw new BizException("Knowledge graph candidate payload is empty");
         }
+        String resolvedApplyMode = normalizeApplyMode(applyMode);
         Instant appliedAt = Instant.now();
         GraphVersion version = ensureVersion(task, candidate, appliedAt);
         JsonNode payload = parsePayload(candidate.getResultPayload());
+        if (APPLY_MODE_OVERWRITE.equals(resolvedApplyMode)) {
+            clearVersionFacts(version, task);
+        }
         if (GraphExtractionTaskType.LINEAGE.equals(task.getTaskType())) {
-            applyLineageNodes(version, payload, appliedAt);
-            applyLineageRelations(version, payload, appliedAt);
+            applyLineageNodes(version, payload, appliedAt, resolvedApplyMode);
+            applyLineageRelations(version, payload, appliedAt, resolvedApplyMode);
         } else if (GraphExtractionTaskType.RELATION.equals(task.getTaskType())
                 || GraphExtractionTaskType.GRAPH.equals(task.getTaskType())) {
-            applyEntities(version, payload, appliedAt);
-            applyRelations(version, payload, appliedAt);
+            applyEntities(version, payload, appliedAt, resolvedApplyMode);
+            applyRelations(version, payload, appliedAt, resolvedApplyMode);
         } else {
             throw new BizException("Unsupported graph extraction task type: " + taskTypeValue(task));
         }
         return version;
+    }
+
+    private String normalizeApplyMode(String applyMode) {
+        String normalized =
+                StringUtils.defaultIfBlank(applyMode, APPLY_MODE_MERGE).trim().toUpperCase(Locale.ROOT);
+        if (APPLY_MODE_MERGE.equals(normalized)
+                || APPLY_MODE_APPEND.equals(normalized)
+                || APPLY_MODE_OVERWRITE.equals(normalized)) {
+            return normalized;
+        }
+        throw new BizException("Unsupported knowledge graph candidate apply mode: " + applyMode);
+    }
+
+    private void clearVersionFacts(GraphVersion version, GraphExtractionTask task) {
+        if (version == null || version.getId() == null) {
+            return;
+        }
+        if (GraphExtractionTaskType.LINEAGE.equals(task.getTaskType())) {
+            Collection<String> nodeKeys = keys(
+                    knowledgeLineageNodeRepository.listByVersionId(GraphVersionIdCodec.toValue(version.getId())),
+                    KnowledgeLineageNode::getNodeKey);
+            if (!nodeKeys.isEmpty()) {
+                knowledgeLineageNodeRepository.deleteByNodeKeys(nodeKeys);
+            }
+            Collection<String> relationKeys = keys(
+                    knowledgeLineageRelationRepository.listByVersionId(GraphVersionIdCodec.toValue(version.getId())),
+                    KnowledgeLineageRelation::getRelationKey);
+            if (!relationKeys.isEmpty()) {
+                knowledgeLineageRelationRepository.deleteByRelationKeys(relationKeys);
+            }
+            return;
+        }
+        if (GraphExtractionTaskType.RELATION.equals(task.getTaskType())
+                || GraphExtractionTaskType.GRAPH.equals(task.getTaskType())) {
+            Collection<String> entityKeys =
+                    keys(knowledgeEntityRepository.listByVersionId(version.getId()), KnowledgeEntity::getEntityKey);
+            if (!entityKeys.isEmpty()) {
+                knowledgeEntityRepository.deleteByEntityKeys(entityKeys);
+            }
+            Collection<String> relationKeys = keys(
+                    knowledgeRelationRepository.listByVersionId(GraphVersionIdCodec.toValue(version.getId())),
+                    KnowledgeRelation::getRelationKey);
+            if (!relationKeys.isEmpty()) {
+                knowledgeRelationRepository.deleteByRelationKeys(relationKeys);
+            }
+        }
     }
 
     private GraphVersion ensureVersion(GraphExtractionTask task, AiCandidateFacadeDto candidate, Instant appliedAt) {
@@ -94,6 +157,7 @@ public class KnowledgeGraphCandidateApplySupport {
         }
         GraphVersion latest = graphVersionRepository.findLatest(
                 task.getTaskType(), task.getSourceContentType(), task.getSourceContentId());
+        SourceCategory sourceCategory = resolveSourceCategory(task);
         GraphVersion version = new GraphVersion();
         version.setTaskId(task.getId());
         version.setCandidateId(GraphExtractionAiCandidateIdCodec.toDomain(candidate.getCandidateId()));
@@ -102,11 +166,37 @@ public class KnowledgeGraphCandidateApplySupport {
         version.setScopeJson(task.getScopeJson());
         version.setSourceContentType(task.getSourceContentType());
         version.setSourceContentId(task.getSourceContentId());
+        version.setSourceCategoryCode(sourceCategory.code());
+        version.setSourceCategoryName(sourceCategory.name());
         version.setVersionNo(latest == null || latest.getVersionNo() == null ? 1 : latest.getVersionNo() + 1);
         version.setStatus(GraphVersionStatus.APPLIED);
         version.setAppliedAt(appliedAt);
         version.setId(graphVersionRepository.save(version));
         return version;
+    }
+
+    private SourceCategory resolveSourceCategory(GraphExtractionTask task) {
+        JsonNode inputPayload = parseOptionalPayload(task.getInputPayloadJson());
+        String categoryCode = firstNonBlank(inputPayload, "sourceCategoryCode", "categoryCode");
+        JsonNode source = inputPayload == null ? null : inputPayload.get("source");
+        if (StringUtils.isBlank(categoryCode)) {
+            categoryCode = firstNonBlank(source, "sourceCategoryCode", "categoryCode");
+        }
+        String categoryName = firstNonBlank(inputPayload, "sourceCategoryName", "categoryName", "lineageHint");
+        if (StringUtils.isBlank(categoryName)) {
+            categoryName = firstNonBlank(source, "sourceCategoryName", "categoryName", "categoryPath");
+        }
+        if (StringUtils.isBlank(categoryName)) {
+            categoryName = firstNonBlank(parseOptionalPayload(task.getScopeJson()), "sourceCategoryName", "sourcePath");
+        }
+        if (StringUtils.isBlank(categoryCode)) {
+            categoryCode = StringUtils.defaultIfBlank(normalize(categoryName), task.getSourceContentType());
+        }
+        if (StringUtils.isBlank(categoryName)) {
+            categoryName = StringUtils.defaultIfBlank(task.getSourceContentType(), "UNKNOWN");
+        }
+        return new SourceCategory(
+                fit(categoryCode, SOURCE_CATEGORY_CODE_MAX_LENGTH), fit(categoryName, SOURCE_CATEGORY_NAME_MAX_LENGTH));
     }
 
     private String taskTypeValue(GraphExtractionTask task) {
@@ -115,18 +205,16 @@ public class KnowledgeGraphCandidateApplySupport {
                 : task.getTaskType().value();
     }
 
-    private void applyEntities(GraphVersion version, JsonNode payload, Instant appliedAt) {
+    private void applyEntities(GraphVersion version, JsonNode payload, Instant appliedAt, String applyMode) {
         ArrayNode entityNodes = arrayOf(payload, "entities");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeEntity> incoming = new ArrayList<>();
         for (JsonNode node : entityNodes) {
             String name = requiredText(node, "name");
-            String entityType = firstNonBlank(node, "entityType", "type", "category");
-            if (StringUtils.isBlank(entityType)) {
-                throw new BizException("Knowledge entity type is required");
-            }
+            String entityType =
+                    KnowledgeGraphEntityTypes.normalize(firstNonBlank(node, "entityType", "type", "category"));
             KnowledgeEntity entity = new KnowledgeEntity();
-            entity.setEntityKey(entityKey(name, entityType));
+            entity.setEntityKey(textKey(name));
             entity.setName(name);
             entity.setEntityType(entityType);
             entity.setDescription(optionalText(node, "description", "summary"));
@@ -137,25 +225,24 @@ public class KnowledgeGraphCandidateApplySupport {
             entity.setLastExtractedAt(appliedAt);
             incoming.add(entity);
         }
-        mergeEntities(incoming, appliedAt);
+        mergeEntities(incoming, appliedAt, applyMode);
     }
 
-    private void applyRelations(GraphVersion version, JsonNode payload, Instant appliedAt) {
+    private void applyRelations(GraphVersion version, JsonNode payload, Instant appliedAt, String applyMode) {
         ArrayNode relationNodes = arrayOf(payload, "relations");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeRelation> incoming = new ArrayList<>();
         for (JsonNode node : relationNodes) {
-            String sourceName = firstNonBlank(node, "sourceName", "source");
-            String targetName = firstNonBlank(node, "targetName", "target");
-            String relationType = firstNonBlank(node, "relationType", "type", "label");
+            String sourceName = firstNonBlank(node, "subject", "source", "sourceName", "head", "from");
+            String targetName = firstNonBlank(node, "object", "target", "targetName", "tail", "to");
+            String relationType = firstNonBlank(node, "predicate", "relation", "relationType", "type", "label");
             if (StringUtils.isAnyBlank(sourceName, targetName, relationType)) {
                 throw new BizException("Knowledge relation is incomplete");
             }
             KnowledgeRelation relation = new KnowledgeRelation();
-            relation.setSourceEntityKey(entityKey(sourceName, "AUTO"));
-            relation.setTargetEntityKey(entityKey(targetName, "AUTO"));
-            relation.setRelationKey(
-                    relationKey(relation.getSourceEntityKey(), relation.getTargetEntityKey(), relationType));
+            relation.setSourceEntityKey(textKey(sourceName));
+            relation.setTargetEntityKey(textKey(targetName));
+            relation.setRelationKey(relationKey(sourceName, relationType, targetName));
             relation.setSourceName(sourceName);
             relation.setTargetName(targetName);
             relation.setRelationType(relationType);
@@ -167,10 +254,10 @@ public class KnowledgeGraphCandidateApplySupport {
             relation.setLastExtractedAt(appliedAt);
             incoming.add(relation);
         }
-        mergeRelations(incoming, appliedAt);
+        mergeRelations(incoming, appliedAt, applyMode);
     }
 
-    private void applyLineageNodes(GraphVersion version, JsonNode payload, Instant appliedAt) {
+    private void applyLineageNodes(GraphVersion version, JsonNode payload, Instant appliedAt, String applyMode) {
         ArrayNode nodeArray = arrayOf(payload, "nodes");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeLineageNode> incoming = new ArrayList<>();
@@ -181,7 +268,7 @@ public class KnowledgeGraphCandidateApplySupport {
                 throw new BizException("Knowledge lineage node type is required");
             }
             KnowledgeLineageNode lineageNode = new KnowledgeLineageNode();
-            lineageNode.setNodeKey(nodeKey(name, nodeType));
+            lineageNode.setNodeKey(textKey(name));
             lineageNode.setName(name);
             lineageNode.setNodeType(nodeType);
             lineageNode.setGeneration(integerValue(node.get("generation")));
@@ -193,25 +280,24 @@ public class KnowledgeGraphCandidateApplySupport {
             lineageNode.setLastExtractedAt(appliedAt);
             incoming.add(lineageNode);
         }
-        mergeLineageNodes(incoming, appliedAt);
+        mergeLineageNodes(incoming, appliedAt, applyMode);
     }
 
-    private void applyLineageRelations(GraphVersion version, JsonNode payload, Instant appliedAt) {
+    private void applyLineageRelations(GraphVersion version, JsonNode payload, Instant appliedAt, String applyMode) {
         ArrayNode relationNodes = arrayOf(payload, "relations");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeLineageRelation> incoming = new ArrayList<>();
         for (JsonNode node : relationNodes) {
-            String sourceName = firstNonBlank(node, "sourceName", "source");
-            String targetName = firstNonBlank(node, "targetName", "target");
-            String relationType = firstNonBlank(node, "relationType", "type", "label");
+            String sourceName = firstNonBlank(node, "subject", "source", "sourceName", "head", "from");
+            String targetName = firstNonBlank(node, "object", "target", "targetName", "tail", "to");
+            String relationType = firstNonBlank(node, "predicate", "relation", "relationType", "type", "label");
             if (StringUtils.isAnyBlank(sourceName, targetName, relationType)) {
                 throw new BizException("Knowledge lineage relation is incomplete");
             }
             KnowledgeLineageRelation relation = new KnowledgeLineageRelation();
-            relation.setSourceNodeKey(nodeKey(sourceName, "AUTO"));
-            relation.setTargetNodeKey(nodeKey(targetName, "AUTO"));
-            relation.setRelationKey(
-                    relationKey(relation.getSourceNodeKey(), relation.getTargetNodeKey(), relationType));
+            relation.setSourceNodeKey(textKey(sourceName));
+            relation.setTargetNodeKey(textKey(targetName));
+            relation.setRelationKey(relationKey(sourceName, relationType, targetName));
             relation.setSourceName(sourceName);
             relation.setTargetName(targetName);
             relation.setRelationType(relationType);
@@ -223,13 +309,23 @@ public class KnowledgeGraphCandidateApplySupport {
             relation.setLastExtractedAt(appliedAt);
             incoming.add(relation);
         }
-        mergeLineageRelations(incoming, appliedAt);
+        mergeLineageRelations(incoming, appliedAt, applyMode);
     }
 
-    private void mergeEntities(List<KnowledgeEntity> incoming, Instant appliedAt) {
+    private void mergeEntities(List<KnowledgeEntity> incoming, Instant appliedAt, String applyMode) {
         Map<String, KnowledgeEntity> existingByKey = mapByKey(
                 knowledgeEntityRepository.listByEntityKeys(keys(incoming, KnowledgeEntity::getEntityKey)),
                 KnowledgeEntity::getEntityKey);
+        if (APPLY_MODE_APPEND.equals(applyMode)) {
+            knowledgeEntityRepository.saveOrUpdateBatch(incoming.stream()
+                    .filter(entity -> !existingByKey.containsKey(entity.getEntityKey()))
+                    .toList());
+            return;
+        }
+        if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
+            knowledgeEntityRepository.saveOrUpdateBatch(incoming);
+            return;
+        }
         for (KnowledgeEntity entity : incoming) {
             KnowledgeEntity existing = existingByKey.get(entity.getEntityKey());
             if (existing == null) {
@@ -248,10 +344,20 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeEntityRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeRelations(List<KnowledgeRelation> incoming, Instant appliedAt) {
+    private void mergeRelations(List<KnowledgeRelation> incoming, Instant appliedAt, String applyMode) {
         Map<String, KnowledgeRelation> existingByKey = mapByKey(
                 knowledgeRelationRepository.listByRelationKeys(keys(incoming, KnowledgeRelation::getRelationKey)),
                 KnowledgeRelation::getRelationKey);
+        if (APPLY_MODE_APPEND.equals(applyMode)) {
+            knowledgeRelationRepository.saveOrUpdateBatch(incoming.stream()
+                    .filter(relation -> !existingByKey.containsKey(relation.getRelationKey()))
+                    .toList());
+            return;
+        }
+        if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
+            knowledgeRelationRepository.saveOrUpdateBatch(incoming);
+            return;
+        }
         for (KnowledgeRelation relation : incoming) {
             KnowledgeRelation existing = existingByKey.get(relation.getRelationKey());
             if (existing == null) {
@@ -270,10 +376,20 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeRelationRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeLineageNodes(List<KnowledgeLineageNode> incoming, Instant appliedAt) {
+    private void mergeLineageNodes(List<KnowledgeLineageNode> incoming, Instant appliedAt, String applyMode) {
         Map<String, KnowledgeLineageNode> existingByKey = mapByKey(
                 knowledgeLineageNodeRepository.listByNodeKeys(keys(incoming, KnowledgeLineageNode::getNodeKey)),
                 KnowledgeLineageNode::getNodeKey);
+        if (APPLY_MODE_APPEND.equals(applyMode)) {
+            knowledgeLineageNodeRepository.saveOrUpdateBatch(incoming.stream()
+                    .filter(node -> !existingByKey.containsKey(node.getNodeKey()))
+                    .toList());
+            return;
+        }
+        if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
+            knowledgeLineageNodeRepository.saveOrUpdateBatch(incoming);
+            return;
+        }
         for (KnowledgeLineageNode node : incoming) {
             KnowledgeLineageNode existing = existingByKey.get(node.getNodeKey());
             if (existing == null) {
@@ -291,11 +407,21 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeLineageNodeRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeLineageRelations(List<KnowledgeLineageRelation> incoming, Instant appliedAt) {
+    private void mergeLineageRelations(List<KnowledgeLineageRelation> incoming, Instant appliedAt, String applyMode) {
         Map<String, KnowledgeLineageRelation> existingByKey = mapByKey(
                 knowledgeLineageRelationRepository.listByRelationKeys(
                         keys(incoming, KnowledgeLineageRelation::getRelationKey)),
                 KnowledgeLineageRelation::getRelationKey);
+        if (APPLY_MODE_APPEND.equals(applyMode)) {
+            knowledgeLineageRelationRepository.saveOrUpdateBatch(incoming.stream()
+                    .filter(relation -> !existingByKey.containsKey(relation.getRelationKey()))
+                    .toList());
+            return;
+        }
+        if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
+            knowledgeLineageRelationRepository.saveOrUpdateBatch(incoming);
+            return;
+        }
         for (KnowledgeLineageRelation relation : incoming) {
             KnowledgeLineageRelation existing = existingByKey.get(relation.getRelationKey());
             if (existing == null) {
@@ -319,6 +445,17 @@ public class KnowledgeGraphCandidateApplySupport {
             return objectMapper.readTree(payload);
         } catch (Exception ex) {
             throw new BizException("Knowledge graph candidate payload is invalid JSON");
+        }
+    }
+
+    private JsonNode parseOptionalPayload(String payload) {
+        if (StringUtils.isBlank(payload)) {
+            return null;
+        }
+        try {
+            return objectMapper.readTree(payload);
+        } catch (Exception ex) {
+            return null;
         }
     }
 
@@ -393,20 +530,27 @@ public class KnowledgeGraphCandidateApplySupport {
         return node == null || node.isNull() ? null : node.asInt();
     }
 
-    private String entityKey(String name, String entityType) {
-        return normalize(entityType) + ":" + normalize(name);
+    private String textKey(String text) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = digest.digest(normalize(text).getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(bytes);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new BizException("SHA-256 algorithm is not available");
+        }
     }
 
-    private String nodeKey(String name, String nodeType) {
-        return normalize(nodeType) + ":" + normalize(name);
-    }
-
-    private String relationKey(String sourceKey, String targetKey, String relationType) {
-        return sourceKey + "->" + targetKey + ":" + normalize(relationType);
+    private String relationKey(String sourceText, String predicateText, String targetText) {
+        return textKey(String.join("|", sourceText, predicateText, targetText));
     }
 
     private String normalize(String value) {
         return StringUtils.defaultString(value).trim().replaceAll("\\s+", "_").toLowerCase(Locale.ROOT);
+    }
+
+    private String fit(String value, int maxLength) {
+        String normalized = StringUtils.defaultString(value).trim();
+        return normalized.length() <= maxLength ? normalized : normalized.substring(0, maxLength);
     }
 
     private <T> Map<String, T> mapByKey(List<T> items, KeyExtractor<T> keyExtractor) {
@@ -427,4 +571,6 @@ public class KnowledgeGraphCandidateApplySupport {
     private interface KeyExtractor<T> {
         String keyOf(T value);
     }
+
+    private record SourceCategory(String code, String name) {}
 }

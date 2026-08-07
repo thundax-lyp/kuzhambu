@@ -19,7 +19,19 @@ public interface ClassicsFacade {
 
     ClassicsPublicContentFacadeResponse getPublicContent(ClassicsPublicContentFacadeRequest request);
 
+    ClassicsPublicContentsFacadeResponse listWorkbenchCategoryContents();
+
+    ClassicsPublicContentsFacadeResponse listWorkbenchVolumeContents();
+
+    ClassicsPublicContentsFacadeResponse listWorkbenchContents();
+
+    ClassicsPublicContentsFacadeResponse listWorkbenchContents(String categoryCode, String volumeCode);
+
+    ClassicsPublicContentFacadeResponse getWorkbenchContent(ClassicsPublicContentFacadeRequest request);
+
     ClassicsQaKnowledgeFacadeResponse getQaKnowledge(ClassicsQaKnowledgeFacadeRequest request);
+
+    ClassicsQaKnowledgeFacadeResponse getWorkbenchQaKnowledge(ClassicsQaKnowledgeFacadeRequest request);
 
     ClassicsCleanupTargetsFacadeResponse listCleanupTargets(ClassicsCleanupTargetsFacadeRequest request);
 

@@ -8,7 +8,7 @@
 请生成知识图谱候选，返回 JSON：
 {
   "entities": [
-    { "name": "实体名", "entityType": "实体类型", "description": "说明" }
+    { "name": "实体名", "entityType": "人物/作品/地点/时间/事件/概念/其他", "description": "说明" }
   ],
   "relations": [
     { "sourceName": "来源实体", "targetName": "目标实体", "relationType": "关系类型", "evidence": "证据" }
