@@ -148,7 +148,12 @@ export const LineagePage = () => {
                             </div>
                             <div className="knowledge-lineage-list-shell">
                                 {lineageQuery.isFetching && !lineageQuery.isLoading ? (
-                                    <KuzhambuAlert banner title="正在刷新世系画布" type="info" />
+                                    <KuzhambuAlert
+                                        banner
+                                        className="knowledge-lineage-refresh-alert"
+                                        title="正在刷新世系画布"
+                                        type="info"
+                                    />
                                 ) : null}
                                 <Tabs
                                     items={[

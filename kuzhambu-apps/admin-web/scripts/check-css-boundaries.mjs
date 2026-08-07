@@ -65,7 +65,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         allowedAntdSelectorLines: 16
     },
     { file: "src/pages/knowledge/graph-result/graph-result-page.css", allowedAntdSelectorLines: 1 },
-    { file: "src/pages/knowledge/lineage/lineage-page.css", allowedAntdSelectorLines: 2 },
     {
         file: "src/pages/storage/storage-object/storage-object-page.css",
         allowedAntdSelectorLines: 16
