@@ -23,6 +23,8 @@ export const MenuTreeField = ({
     return (
         <div className="menu-tree-field">
             <Tree
+                className="menu-tree-field-control"
+                classNames={{ itemTitle: "menu-tree-field-node-title" }}
                 key={expandedMenuIds.join(",")}
                 checkable
                 disabled={loading}

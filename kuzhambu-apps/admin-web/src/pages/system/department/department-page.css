@@ -77,10 +77,6 @@ html[data-theme="dark"] .department-page {
     min-width: 0;
 }
 
-.department-name-cell .ant-space-item:nth-child(2) {
-    min-width: 0;
-}
-
 .department-name-text,
 .department-path-text {
     display: inline-block;

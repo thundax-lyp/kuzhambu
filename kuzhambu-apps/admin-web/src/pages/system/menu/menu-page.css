@@ -76,10 +76,6 @@ html[data-theme="dark"] .menu-page {
     min-width: 0;
 }
 
-.menu-name-cell .ant-space-item:nth-child(2) {
-    min-width: 0;
-}
-
 .menu-name-text,
 .menu-path-text {
     display: inline-block;

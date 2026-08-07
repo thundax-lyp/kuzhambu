@@ -45,14 +45,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     },
     { file: "src/pages/system/department/department-page.css", allowedAntdSelectorLines: 11 },
     { file: "src/pages/system/menu/menu-page.css", allowedAntdSelectorLines: 10 },
-    {
-        file: "src/pages/system/role/role-edit-drawer/menu-tree-field/menu-tree-field.css",
-        allowedAntdSelectorLines: 2
-    },
-    {
-        file: "src/pages/system/user/user-department-tree/user-department-tree.css",
-        allowedAntdSelectorLines: 7
-    },
     { file: "src/pages/system/user/user-page.css", allowedAntdSelectorLines: 5 }
 ];
 const pageCssAntdSelectorAllowanceByFile = new Map(
