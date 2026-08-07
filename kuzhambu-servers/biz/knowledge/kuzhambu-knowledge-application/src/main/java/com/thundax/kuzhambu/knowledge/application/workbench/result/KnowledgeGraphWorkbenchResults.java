@@ -55,6 +55,30 @@ public final class KnowledgeGraphWorkbenchResults {
         private final String sourceContentType;
         private final Long sourceContentId;
         private final String candidatePayloadJson;
+        private final List<CandidateEntityResult> entities;
+        private final List<CandidateRelationResult> relations;
+        private final List<String> warnings;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class CandidateEntityResult {
+        private final String name;
+        private final String entityType;
+        private final String description;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class CandidateRelationResult {
+        private final String sourceName;
+        private final String sourceType;
+        private final String relationType;
+        private final String targetName;
+        private final String targetType;
+        private final String evidence;
     }
 
     @Getter

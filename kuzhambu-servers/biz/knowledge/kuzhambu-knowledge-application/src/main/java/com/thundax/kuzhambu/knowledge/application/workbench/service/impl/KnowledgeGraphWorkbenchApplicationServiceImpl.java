@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.knowledge.application.workbench.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
@@ -17,9 +20,12 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationE
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphEntityTypes;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateApplyResult;
+import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateEntityResult;
+import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateRelationResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateSummaryResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.ManuscriptDetailResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.ManuscriptTreeNodeResult;
@@ -66,6 +72,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     private final AiFacade aiFacade;
     private final KnowledgeGraphManuscriptTreeAssembler treeAssembler;
     private final KnowledgeGraphManuscriptPayloadBuilder payloadBuilder;
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     public KnowledgeGraphWorkbenchApplicationServiceImpl(
             ClassicsFacade classicsFacade,
@@ -145,6 +152,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     public CandidateSummaryResult getLatestCandidate(String sourceContentType, Long sourceContentId, String taskType) {
         GraphExtractionTaskResult task = latestTask(normalizeTaskType(taskType), sourceContentType, sourceContentId);
         AiCandidateFacadeDto candidate = latestCandidate(task);
+        CandidatePayload candidatePayload =
+                parseCandidatePayload(candidate == null ? null : candidate.getResultPayload());
         return CandidateSummaryResult.builder()
                 .taskId(parseTaskId(task))
                 .aiCandidateId(task == null ? null : task.getAiCandidateId())
@@ -153,6 +162,9 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
                 .sourceContentType(sourceContentType)
                 .sourceContentId(sourceContentId)
                 .candidatePayloadJson(candidate == null ? null : candidate.getResultPayload())
+                .entities(candidatePayload.entities())
+                .relations(candidatePayload.relations())
+                .warnings(candidatePayload.warnings())
                 .build();
     }
 
@@ -597,6 +609,92 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
         return Long.valueOf(task.getTaskId());
     }
 
+    private CandidatePayload parseCandidatePayload(String candidatePayloadJson) {
+        if (isBlank(candidatePayloadJson)) {
+            return CandidatePayload.empty();
+        }
+        try {
+            JsonNode payload = objectMapper.readTree(candidatePayloadJson);
+            List<CandidateEntityResult> entities = toCandidateEntities(arrayOf(payload, "entities"));
+            return new CandidatePayload(
+                    entities,
+                    toCandidateRelations(payload, entities),
+                    arrayOf(payload, "warnings")
+                            .valueStream()
+                            .map(JsonNode::asText)
+                            .toList());
+        } catch (Exception ex) {
+            return CandidatePayload.empty();
+        }
+    }
+
+    private List<CandidateEntityResult> toCandidateEntities(ArrayNode entityNodes) {
+        return entityNodes
+                .valueStream()
+                .filter(JsonNode::isObject)
+                .map(node -> CandidateEntityResult.builder()
+                        .name(textValue(node, "name"))
+                        .entityType(KnowledgeGraphEntityTypes.normalize(
+                                firstNonBlank(node, "entityType", "type", "category")))
+                        .description(firstNonBlank(node, "description", "summary"))
+                        .build())
+                .filter(entity -> !isBlank(entity.getName()))
+                .toList();
+    }
+
+    private List<CandidateRelationResult> toCandidateRelations(JsonNode payload, List<CandidateEntityResult> entities) {
+        Map<String, String> entityTypesByName = new HashMap<>();
+        entities.forEach(entity -> entityTypesByName.put(entity.getName(), entity.getEntityType()));
+        return candidateRelationNodes(payload)
+                .valueStream()
+                .filter(JsonNode::isObject)
+                .map(node -> {
+                    String sourceName = firstNonBlank(node, "sourceName", "source", "subject", "head", "from");
+                    String targetName = firstNonBlank(node, "targetName", "target", "object", "tail", "to");
+                    return CandidateRelationResult.builder()
+                            .sourceName(sourceName)
+                            .sourceType(entityTypesByName.getOrDefault(sourceName, KnowledgeGraphEntityTypes.OTHER))
+                            .relationType(firstNonBlank(node, "relationType", "relation", "predicate", "type", "label"))
+                            .targetName(targetName)
+                            .targetType(entityTypesByName.getOrDefault(targetName, KnowledgeGraphEntityTypes.OTHER))
+                            .evidence(firstNonBlank(node, "evidence", "summary"))
+                            .build();
+                })
+                .filter(relation -> !isBlank(relation.getSourceName())
+                        || !isBlank(relation.getRelationType())
+                        || !isBlank(relation.getTargetName()))
+                .toList();
+    }
+
+    private ArrayNode candidateRelationNodes(JsonNode payload) {
+        ArrayNode relations = arrayOf(payload, "relations");
+        if (!relations.isEmpty()) {
+            return relations;
+        }
+        ArrayNode triples = arrayOf(payload, "triples");
+        return triples.isEmpty() ? arrayOf(payload, "spo") : triples;
+    }
+
+    private ArrayNode arrayOf(JsonNode payload, String fieldName) {
+        JsonNode node = payload == null ? null : payload.get(fieldName);
+        return node instanceof ArrayNode arrayNode ? arrayNode : objectMapper.createArrayNode();
+    }
+
+    private String firstNonBlank(JsonNode node, String... fieldNames) {
+        for (String fieldName : fieldNames) {
+            String value = textValue(node, fieldName);
+            if (!isBlank(value)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private String textValue(JsonNode node, String fieldName) {
+        JsonNode value = node == null ? null : node.get(fieldName);
+        return value == null || value.isNull() ? null : value.asText();
+    }
+
     private Long parseContentId(String value) {
         return isBlank(value) ? null : Long.valueOf(value);
     }
@@ -635,5 +733,13 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private record CandidatePayload(
+            List<CandidateEntityResult> entities, List<CandidateRelationResult> relations, List<String> warnings) {
+
+        private static CandidatePayload empty() {
+            return new CandidatePayload(List.of(), List.of(), List.of());
+        }
     }
 }

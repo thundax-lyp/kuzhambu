@@ -14,6 +14,8 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateApplyResult;
+import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateEntityResult;
+import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateRelationResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateSummaryResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.ManuscriptDetailResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.ManuscriptTreeNodeResult;
@@ -112,6 +114,19 @@ class KnowledgeGraphWorkbenchControllerTest {
                         .sourceContentType("MING_CUSTOMS")
                         .sourceContentId(3001L)
                         .candidatePayloadJson("{\"lineageNodes\":[{\"name\":\"朱元璋\"}]}")
+                        .entities(List.of(CandidateEntityResult.builder()
+                                .name("朱元璋")
+                                .entityType("人物")
+                                .description("明太祖")
+                                .build()))
+                        .relations(List.of(CandidateRelationResult.builder()
+                                .sourceName("朱元璋")
+                                .sourceType("人物")
+                                .relationType("作者")
+                                .targetName("御制文集")
+                                .targetType("作品")
+                                .build()))
+                        .warnings(List.of("示例警告"))
                         .build());
 
         var response = controller.getLatestCandidate(request);
@@ -121,6 +136,9 @@ class KnowledgeGraphWorkbenchControllerTest {
         assertEquals(7003L, response.getAiCandidateId());
         assertEquals("LINEAGE", response.getTaskType());
         assertEquals("{\"lineageNodes\":[{\"name\":\"朱元璋\"}]}", response.getCandidatePayloadJson());
+        assertEquals("人物", response.getEntities().get(0).getEntityType());
+        assertEquals("作品", response.getRelations().get(0).getTargetType());
+        assertEquals("示例警告", response.getWarnings().get(0));
     }
 
     @Test

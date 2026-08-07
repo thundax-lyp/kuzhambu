@@ -70,7 +70,37 @@ public final class KnowledgeGraphWorkbenchInterfaceAssembler {
                 .sourceContentType(result == null ? null : result.getSourceContentType())
                 .sourceContentId(result == null ? null : result.getSourceContentId())
                 .candidatePayloadJson(result == null ? null : result.getCandidatePayloadJson())
+                .entities(
+                        result == null
+                                ? List.of()
+                                : safeList(result.getEntities()).stream()
+                                        .map(entity ->
+                                                KnowledgeGraphWorkbenchResponses.CandidateEntityResponse.builder()
+                                                        .name(entity.getName())
+                                                        .entityType(entity.getEntityType())
+                                                        .description(entity.getDescription())
+                                                        .build())
+                                        .toList())
+                .relations(
+                        result == null
+                                ? List.of()
+                                : safeList(result.getRelations()).stream()
+                                        .map(relation ->
+                                                KnowledgeGraphWorkbenchResponses.CandidateRelationResponse.builder()
+                                                        .sourceName(relation.getSourceName())
+                                                        .sourceType(relation.getSourceType())
+                                                        .relationType(relation.getRelationType())
+                                                        .targetName(relation.getTargetName())
+                                                        .targetType(relation.getTargetType())
+                                                        .evidence(relation.getEvidence())
+                                                        .build())
+                                        .toList())
+                .warnings(result == null ? List.of() : safeList(result.getWarnings()))
                 .build();
+    }
+
+    private static <T> List<T> safeList(List<T> values) {
+        return values == null ? List.of() : values;
     }
 
     public static KnowledgeGraphWorkbenchResponses.CandidateApplyResponse toResponse(CandidateApplyResult result) {

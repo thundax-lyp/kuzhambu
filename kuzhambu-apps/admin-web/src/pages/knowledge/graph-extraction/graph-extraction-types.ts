@@ -86,6 +86,24 @@ export interface GraphWorkbenchCandidateRecord {
     sourceContentType?: GraphWorkbenchSourceContentType | null;
     sourceContentId?: string | null;
     candidatePayloadJson?: string | null;
+    entities?: GraphWorkbenchCandidateEntityRecord[] | null;
+    relations?: GraphWorkbenchCandidateRelationRecord[] | null;
+    warnings?: string[] | null;
+}
+
+export interface GraphWorkbenchCandidateEntityRecord {
+    name?: string | null;
+    entityType?: string | null;
+    description?: string | null;
+}
+
+export interface GraphWorkbenchCandidateRelationRecord {
+    sourceName?: string | null;
+    sourceType?: string | null;
+    relationType?: string | null;
+    targetName?: string | null;
+    targetType?: string | null;
+    evidence?: string | null;
 }
 
 export interface GraphWorkbenchCandidateApplyRecord {

@@ -10,9 +10,11 @@ interface GraphExtractionCandidatePreviewProps {
 
 interface CandidateSpoRow {
     object: string;
+    objectType?: string;
     predicate: string;
     rowKey: string;
     subject: string;
+    subjectType?: string;
 }
 
 const readString = (value: unknown) => {
@@ -42,10 +44,15 @@ const readCandidateRelations = (container: Record<string, unknown>) => {
     return [];
 };
 
-const renderSpoTag = (label: string, value: string, type: "accent" | "info" | "neutral") => (
+const renderSpoTag = (
+    label: string,
+    value: string,
+    type: "accent" | "info" | "neutral",
+    entityType?: string
+) => (
     <KuzhambuTag
         type={type}
-        title={value || "-"}
+        title={entityType ? `${value || "-"} / ${entityType}` : value || "-"}
         style={{
             display: "inline-flex",
             gap: 6,
@@ -66,6 +73,7 @@ const renderSpoTag = (label: string, value: string, type: "accent" | "info" | "n
         >
             {value || "-"}
         </span>
+        {entityType ? <span style={{ color: "#98a2b3", fontSize: 12 }}>{entityType}</span> : null}
     </KuzhambuTag>
 );
 
@@ -78,13 +86,27 @@ const renderSpo = (row: CandidateSpoRow) => (
             whiteSpace: "nowrap"
         }}
     >
-        {renderSpoTag("S", row.subject, "neutral")}
+        {renderSpoTag("S", row.subject, "neutral", row.subjectType)}
         <span style={{ color: "#667085", fontWeight: 600 }}>→</span>
         {renderSpoTag("P", row.predicate, "accent")}
         <span style={{ color: "#667085", fontWeight: 600 }}>→</span>
-        {renderSpoTag("O", row.object, "info")}
+        {renderSpoTag("O", row.object, "info", row.objectType)}
     </span>
 );
+
+const readStructuredCandidateRelations = (
+    candidate?: GraphWorkbenchCandidateRecord | null
+): CandidateSpoRow[] =>
+    (candidate?.relations || [])
+        .map((relation, index) => ({
+            object: relation.targetName || "",
+            objectType: relation.targetType || undefined,
+            predicate: relation.relationType || "",
+            rowKey: `candidate-relation-${index}-${relation.sourceName || ""}-${relation.relationType || ""}-${relation.targetName || ""}`,
+            subject: relation.sourceName || "",
+            subjectType: relation.sourceType || undefined
+        }))
+        .filter((relation) => relation.subject || relation.predicate || relation.object);
 
 const parseCandidatePayload = (payload?: string | null): CandidateSpoRow[] => {
     if (!payload?.trim()) {
@@ -125,12 +147,14 @@ const parseCandidatePayload = (payload?: string | null): CandidateSpoRow[] => {
                 ]);
                 return {
                     object,
+                    objectType: readRelationField(relation, ["targetType", "objectType"]),
                     predicate,
                     rowKey:
                         readString(relation.id) ||
                         readString(relation.relationId) ||
                         `candidate-spo-${index}`,
-                    subject
+                    subject,
+                    subjectType: readRelationField(relation, ["sourceType", "subjectType"])
                 };
             })
             .filter((relation) => relation.subject || relation.predicate || relation.object);
@@ -143,10 +167,12 @@ export const GraphExtractionCandidatePreview = ({
     candidate,
     loading = false
 }: GraphExtractionCandidatePreviewProps) => {
-    const parsedRows = useMemo(
-        () => parseCandidatePayload(candidate?.candidatePayloadJson),
-        [candidate?.candidatePayloadJson]
-    );
+    const parsedRows = useMemo(() => {
+        const structuredRows = readStructuredCandidateRelations(candidate);
+        return structuredRows.length > 0
+            ? structuredRows
+            : parseCandidatePayload(candidate?.candidatePayloadJson);
+    }, [candidate]);
     const candidateKey =
         candidate?.aiCandidateId || candidate?.taskId || candidate?.candidatePayloadJson || "empty";
     const [deletedRowKeysByCandidate, setDeletedRowKeysByCandidate] = useState<
