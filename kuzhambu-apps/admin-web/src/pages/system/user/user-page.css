@@ -156,11 +156,11 @@ html[data-theme="dark"] .user-page {
         align-items: center;
     }
 
-    .user-page-actions .ant-space-item {
+    .user-page-action-item {
         min-width: 0;
     }
 
-    .user-page-actions .ant-space-item:has(.user-page-search) {
+    .user-page-action-item:has(.user-page-search) {
         grid-column: 1 / -1;
     }
 
@@ -176,11 +176,11 @@ html[data-theme="dark"] .user-page {
         overflow: hidden;
     }
 
-    .user-department-work-area > .ant-splitter-panel:first-child {
+    .user-department-work-area-panel {
         display: none !important;
     }
 
-    .user-department-work-area .ant-splitter-bar {
+    .user-department-work-area-dragger {
         display: none;
     }
 
@@ -191,7 +191,7 @@ html[data-theme="dark"] .user-page {
         padding-left: 0;
     }
 
-    .user-work-panel .ant-table-wrapper {
+    .user-table {
         width: 100%;
         max-width: 100%;
     }

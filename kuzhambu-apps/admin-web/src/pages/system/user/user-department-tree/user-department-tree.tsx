@@ -102,6 +102,12 @@ export const UserDepartmentTree = ({
             ) : null}
             {departments.length > 0 || !error ? (
                 <Tree
+                    className="user-department-tree-control"
+                    classNames={{
+                        item: "user-department-tree-node",
+                        itemSwitcher: "user-department-tree-switcher",
+                        itemTitle: "user-department-tree-title"
+                    }}
                     key={departmentTreeKeys.join(",")}
                     blockNode
                     disabled={loading}

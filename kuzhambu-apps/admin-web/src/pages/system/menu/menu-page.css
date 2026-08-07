@@ -31,38 +31,20 @@ html[data-theme="dark"] .menu-page {
     --menu-field-bg: rgba(12, 22, 38, 0.7);
 }
 
-.menu-page .ant-typography-secondary {
+.menu-secondary-text {
     color: var(--menu-copy);
 }
 
-.menu-page .ant-btn-default {
+.menu-action-button {
     color: var(--menu-ink);
     background: var(--menu-button-bg);
     border-color: var(--menu-line);
 }
 
-.menu-page .ant-btn-default:not(:disabled):hover {
+.menu-action-button:not(:disabled):hover {
     color: var(--menu-green) !important;
     background: var(--menu-green-soft) !important;
     border-color: var(--menu-green-line) !important;
-}
-
-.menu-page .ant-input-number,
-.menu-page .ant-input {
-    color: var(--menu-ink);
-    background: var(--menu-field-bg) !important;
-    border-color: var(--menu-line) !important;
-}
-
-.menu-page .ant-input-number:hover,
-.menu-page .ant-input:hover {
-    border-color: var(--menu-line-strong) !important;
-}
-
-.menu-page .ant-input-number-focused,
-.menu-page .ant-input:focus {
-    border-color: var(--menu-green) !important;
-    box-shadow: 0 0 0 3px var(--menu-green-soft) !important;
 }
 
 .menu-name-icon,
@@ -73,10 +55,6 @@ html[data-theme="dark"] .menu-page {
 .menu-name-cell {
     display: inline-flex;
     max-width: 100%;
-    min-width: 0;
-}
-
-.menu-name-cell .ant-space-item:nth-child(2) {
     min-width: 0;
 }
 

@@ -14,7 +14,7 @@
     border-radius: 8px;
 }
 
-.sancai-visual-entry-picker-tree .ant-tree {
+.sancai-visual-entry-picker-tree-control {
     max-width: 100%;
 }
 
@@ -22,29 +22,29 @@
     min-height: 22px;
 }
 
-.sancai-visual-entry-picker-modal .ant-modal-content {
+.sancai-visual-entry-picker-modal-content {
     max-height: calc(100vh - 48px);
     overflow: hidden;
 }
 
-.sancai-visual-entry-picker-modal .ant-modal-body {
+.sancai-visual-entry-picker-modal-body {
     overflow: visible;
 }
 
-.sancai-visual-entry-picker-modal .ant-modal-footer {
+.sancai-visual-entry-picker-modal-footer {
     margin-top: 12px;
 }
 
 @media (max-width: 700px) {
-    .sancai-visual-entry-picker-modal .ant-modal {
+    .sancai-visual-entry-picker-modal-wrapper {
         max-width: calc(100vw - 16px);
     }
 
-    .sancai-visual-entry-picker-modal .ant-modal-content {
+    .sancai-visual-entry-picker-modal-content {
         max-height: calc(100vh - 32px);
     }
 
-    .sancai-visual-entry-picker-modal .ant-modal-body {
+    .sancai-visual-entry-picker-modal-body {
         max-height: calc(100vh - 170px);
         overflow: auto;
         padding-inline: 16px;

@@ -53,13 +53,10 @@ export const SancaiVisualAssetMediaPanel = ({
                     <section className="sancai-visual-asset-image-stage">
                         {sourcePreviewUrl ? (
                             <Image
+                                className="sancai-visual-asset-image"
+                                rootClassName="sancai-visual-asset-image-root"
                                 src={sourcePreviewUrl}
                                 alt="三才图会视觉处理来源图片"
-                                style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "contain"
-                                }}
                             />
                         ) : (
                             <Empty
@@ -78,13 +75,10 @@ export const SancaiVisualAssetMediaPanel = ({
                     <section className="sancai-visual-asset-image-stage">
                         {generatedPreviewUrl ? (
                             <Image
+                                className="sancai-visual-asset-image"
+                                rootClassName="sancai-visual-asset-image-root"
                                 src={generatedPreviewUrl}
                                 alt="三才图会视觉处理生成图"
-                                style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "contain"
-                                }}
                             />
                         ) : (
                             <section

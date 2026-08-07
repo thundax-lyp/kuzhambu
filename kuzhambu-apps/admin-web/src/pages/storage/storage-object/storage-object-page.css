@@ -55,45 +55,39 @@ html[data-theme="dark"] .storage-object-page {
     --storage-object-filter-inset: rgba(185, 207, 238, 0.12);
 }
 
-.storage-object-page .ant-typography-secondary {
+.storage-object-secondary-text {
     color: var(--storage-object-copy);
 }
 
-.storage-object-page .ant-btn-default {
+.storage-object-action-button {
     color: var(--storage-object-ink);
     background: var(--storage-object-button-bg);
     border-color: var(--storage-object-line);
 }
 
-.storage-object-page .ant-btn-default:not(:disabled):hover {
+.storage-object-action-button:not(:disabled):hover {
     color: var(--storage-object-blue) !important;
     background: var(--storage-object-blue-soft) !important;
     border-color: var(--storage-object-blue-line) !important;
 }
 
-.storage-object-page .ant-input-affix-wrapper,
-.storage-object-page .ant-input,
-.storage-object-page .ant-select-selector {
+.storage-object-filter-control {
     color: var(--storage-object-ink);
     background: var(--storage-object-field-bg) !important;
     border-color: var(--storage-object-line) !important;
 }
 
-.storage-object-page .ant-input-affix-wrapper:hover,
-.storage-object-page .ant-input:hover,
-.storage-object-page .ant-select-selector:hover {
+.storage-object-filter-control:hover {
     border-color: var(--storage-object-line-strong) !important;
 }
 
-.storage-object-page .ant-input-affix-wrapper:focus,
-.storage-object-page .ant-input-affix-wrapper-focused,
-.storage-object-page .ant-input:focus,
-.storage-object-page .ant-select-focused .ant-select-selector {
+.storage-object-filter-control:focus,
+.storage-object-filter-control:focus-within {
     border-color: var(--storage-object-blue) !important;
     box-shadow: 0 0 0 3px var(--storage-object-blue-soft) !important;
 }
 
-.storage-object-table-toolbar .ant-btn-dangerous:not(:disabled) {
+.storage-object-danger-button:not(:disabled) {
     color: var(--storage-object-red);
     border-color: var(--storage-object-red-line);
 }
@@ -108,13 +102,13 @@ html[data-theme="dark"] .storage-object-page {
     gap: 2px;
 }
 
-.storage-object-name-cell > .ant-typography {
+.storage-object-name-text {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.storage-object-table .ant-typography code {
+.storage-object-code-text code {
     padding: 2px 7px;
     color: var(--storage-object-code);
     font-size: 12px;

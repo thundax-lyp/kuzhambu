@@ -29,44 +29,7 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
     ["models", "ADMIN_WEB_FORBID_BUCKET_DIR"],
     ["stores", "ADMIN_WEB_FORBID_BUCKET_DIR"]
 ]);
-const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
-    {
-        file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-panel.css",
-        allowedAntdSelectorLines: 4
-    },
-    {
-        file: "src/pages/classics/sancai-visual/sancai-entry-visual-section/sancai-entry-visual-section.css",
-        allowedAntdSelectorLines: 14
-    },
-    {
-        file: "src/pages/classics/sancai-visual/sancai-visual-entry-picker-modal/sancai-visual-entry-picker-modal.css",
-        allowedAntdSelectorLines: 7
-    },
-    { file: "src/pages/classics/wangqi/wangqi-page.css", allowedAntdSelectorLines: 10 },
-    {
-        file: "src/pages/discovery/qa/qa-message-panel/qa-message-panel.css",
-        allowedAntdSelectorLines: 17
-    },
-    {
-        file: "src/pages/discovery/search-statistic/search-statistic-page.css",
-        allowedAntdSelectorLines: 16
-    },
-    {
-        file: "src/pages/storage/storage-object/storage-object-page.css",
-        allowedAntdSelectorLines: 16
-    },
-    { file: "src/pages/system/department/department-page.css", allowedAntdSelectorLines: 11 },
-    { file: "src/pages/system/menu/menu-page.css", allowedAntdSelectorLines: 10 },
-    {
-        file: "src/pages/system/role/role-edit-drawer/menu-tree-field/menu-tree-field.css",
-        allowedAntdSelectorLines: 2
-    },
-    {
-        file: "src/pages/system/user/user-department-tree/user-department-tree.css",
-        allowedAntdSelectorLines: 7
-    },
-    { file: "src/pages/system/user/user-page.css", allowedAntdSelectorLines: 5 }
-];
+const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [];
 const pageCssAntdSelectorAllowanceByFile = new Map(
     PAGE_CSS_ANTD_SELECTOR_ALLOWLIST.map((entry) => [entry.file, entry.allowedAntdSelectorLines])
 );

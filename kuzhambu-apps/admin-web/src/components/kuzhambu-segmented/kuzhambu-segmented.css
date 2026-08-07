@@ -1,0 +1,17 @@
+.kuzhambu-segmented.ant-segmented .ant-segmented-item {
+    min-width: var(--kuzhambu-segmented-item-min-width, auto);
+    color: var(--kuzhambu-segmented-item-color, inherit);
+    font-size: var(--kuzhambu-segmented-item-font-size, inherit);
+    font-weight: var(--kuzhambu-segmented-item-font-weight, inherit);
+}
+
+.kuzhambu-segmented.ant-segmented .ant-segmented-item-selected {
+    color: var(--kuzhambu-segmented-selected-color, var(--kuzhambu-color-primary));
+    background: var(--kuzhambu-segmented-selected-bg, var(--kuzhambu-color-primary-bg));
+    box-shadow: var(--kuzhambu-segmented-selected-shadow, none);
+}
+
+.kuzhambu-segmented.ant-segmented .ant-segmented-item-label {
+    min-height: var(--kuzhambu-segmented-item-label-min-height, auto);
+    line-height: var(--kuzhambu-segmented-item-label-line-height, normal);
+}

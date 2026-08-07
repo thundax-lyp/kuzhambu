@@ -71,7 +71,7 @@ describe("WangqiTimeline", () => {
         expect(document.querySelector(".kuzhambu-drawer-large")).toBeTruthy();
         expect(timelineMock).toHaveBeenCalledWith(
             expect.objectContaining({
-                className: "wangqi-timeline",
+                className: "kuzhambu-timeline wangqi-timeline",
                 mode: "alternate"
             }),
             expect.anything()

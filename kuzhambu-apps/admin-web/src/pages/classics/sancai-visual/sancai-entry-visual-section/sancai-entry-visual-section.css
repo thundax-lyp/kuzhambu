@@ -13,43 +13,12 @@
     flex-wrap: wrap;
 }
 
-.sancai-visual-asset-picker {
-    display: grid;
-    min-width: 0;
-    gap: 8px;
-}
-
-.sancai-visual-asset-picker .ant-form-item {
-    margin-bottom: 0;
-}
-
-.sancai-visual-asset-picker .ant-form-item-row {
-    display: block;
+.sancai-visual-asset-source-select {
     width: 100%;
     min-width: 0;
 }
 
-.sancai-visual-asset-picker .ant-form-item-control {
-    max-width: 100%;
-    flex: 0 0 100%;
-}
-
-.sancai-visual-asset-picker .ant-form-item,
-.sancai-visual-asset-picker .ant-form-item-row,
-.sancai-visual-asset-picker .ant-form-item-control,
-.sancai-visual-asset-picker .ant-form-item-control-input,
-.sancai-visual-asset-picker .ant-form-item-control-input-content,
-.sancai-visual-asset-picker .ant-select {
-    width: 100%;
-    min-width: 0;
-}
-
-.sancai-visual-asset-picker .ant-select-selector {
-    min-width: 0;
-}
-
-.sancai-visual-asset-picker .ant-select-selection-item,
-.sancai-visual-asset-picker .ant-select-selection-placeholder {
+.sancai-visual-asset-source-select-content {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -127,7 +96,7 @@
     border-radius: 6px;
 }
 
-.sancai-visual-asset-image-frame .ant-image {
+.sancai-visual-asset-image-root {
     display: grid;
     width: 100% !important;
     height: 100%;
@@ -146,8 +115,7 @@
     overflow: hidden;
 }
 
-.sancai-visual-asset-image-frame .ant-image-img,
-.sancai-visual-asset-image-frame img {
+.sancai-visual-asset-image {
     width: 100%;
     height: 100% !important;
     max-height: 100%;

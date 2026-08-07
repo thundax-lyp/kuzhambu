@@ -114,29 +114,38 @@ export const SearchEventPanel = () => {
             <KuzhambuCard className="search-statistics-record-filter-card" size="small">
                 <KuzhambuSpace className="search-statistics-record-filter-form" wrap>
                     <label>
-                        <Text type="secondary">搜索词</Text>
+                        <Text className="search-statistics-filter-label" type="secondary">
+                            搜索词
+                        </Text>
                         <Input
                             allowClear
                             aria-label="搜索词"
+                            className="search-statistics-record-filter-input"
                             value={queryText}
                             onChange={(event) => setQueryText(event.target.value)}
                             style={{ width: 160 }}
                         />
                     </label>
                     <label>
-                        <Text type="secondary">状态</Text>
+                        <Text className="search-statistics-filter-label" type="secondary">
+                            状态
+                        </Text>
                         <Input
                             allowClear
                             aria-label="状态"
+                            className="search-statistics-record-filter-input"
                             value={searchStatuses}
                             onChange={(event) => setSearchStatuses(event.target.value)}
                             style={{ width: 136 }}
                         />
                     </label>
-                    <label>
-                        <Text type="secondary">时间范围</Text>
+                    <label className="search-statistics-record-filter-range-field">
+                        <Text className="search-statistics-filter-label" type="secondary">
+                            时间范围
+                        </Text>
                         <RangePicker
                             aria-label="检索记录时间范围"
+                            className="search-statistics-record-range-picker"
                             format={DATE_TIME_FORMAT}
                             showTime
                             value={dateRange}

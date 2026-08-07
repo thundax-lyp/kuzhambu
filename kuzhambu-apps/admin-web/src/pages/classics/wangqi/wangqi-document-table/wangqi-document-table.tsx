@@ -146,6 +146,7 @@ export const WangqiDocumentTable = ({
             sortDirections: ["descend", "ascend"],
             sortOrder: sortDirection === "ASC" ? "ascend" : "descend",
             width: DEFAULT_COLUMN_WIDTHS.documentTime,
+            align: "left",
             render: (_value, record) => readPrimaryEventTime(record)
         },
         {

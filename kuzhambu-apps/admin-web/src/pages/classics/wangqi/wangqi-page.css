@@ -93,11 +93,6 @@
     white-space: nowrap;
 }
 
-.wangqi-page .ant-table-thead > tr > th:nth-child(2),
-.wangqi-page .ant-table-tbody > tr > td:nth-child(2) {
-    text-align: left;
-}
-
 .wangqi-document-edit-drawer-storage-input {
     width: 100%;
 }
@@ -110,40 +105,24 @@
 }
 
 .wangqi-timeline {
-    padding: 12px 8px 4px;
-}
-
-.wangqi-timeline .ant-timeline-item-rail {
-    background-color: color-mix(
+    --kuzhambu-timeline-rail-bg: color-mix(
         in srgb,
         var(--wangqi-cinnabar-color) 58%,
         var(--wangqi-gold-color)
-    ) !important;
-}
-
-.wangqi-timeline .ant-timeline-item-icon {
-    background: radial-gradient(
+    );
+    --kuzhambu-timeline-icon-bg: radial-gradient(
         circle,
         var(--wangqi-gold-color) 0 36%,
         #f7e2a6 38% 58%,
         var(--wangqi-cinnabar-color) 60%
     );
-    border-color: var(--wangqi-cinnabar-color);
-    box-shadow:
-        0 0 0 3px rgba(196, 147, 69, 0.18),
-        0 0 0 7px rgba(159, 47, 45, 0.08);
-}
-
-.wangqi-timeline .ant-timeline-item {
-    padding-bottom: 22px;
-}
-
-.wangqi-timeline .ant-timeline-item-header {
-    width: calc(50% - 26px) !important;
-}
-
-.wangqi-timeline .ant-timeline-item-content {
-    width: calc(50% - 26px) !important;
+    --kuzhambu-timeline-icon-border-color: var(--wangqi-cinnabar-color);
+    --kuzhambu-timeline-icon-shadow:
+        0 0 0 3px rgba(196, 147, 69, 0.18), 0 0 0 7px rgba(159, 47, 45, 0.08);
+    --kuzhambu-timeline-item-padding-bottom: 22px;
+    --kuzhambu-timeline-item-header-width: calc(50% - 26px);
+    --kuzhambu-timeline-item-content-width: calc(50% - 26px);
+    padding: 12px 8px 4px;
 }
 
 .wangqi-timeline-item-date {
@@ -235,23 +214,14 @@ html[data-theme="dark"] .wangqi-timeline-item-summary {
 
 @media (max-width: 760px) {
     .wangqi-timeline {
+        --kuzhambu-timeline-mobile-item-padding-bottom: 16px;
+        --kuzhambu-timeline-mobile-item-header-width: calc(100% - 34px);
+        --kuzhambu-timeline-mobile-item-header-padding-inline-start: 0;
+        --kuzhambu-timeline-mobile-item-header-text-align: left;
+        --kuzhambu-timeline-mobile-item-content-width: calc(100% - 34px);
+        --kuzhambu-timeline-mobile-item-content-margin-inline-start: 34px;
+        --kuzhambu-timeline-mobile-item-content-text-align: left;
         padding-right: 0;
         padding-left: 0;
-    }
-
-    .wangqi-timeline .ant-timeline-item {
-        padding-bottom: 16px;
-    }
-
-    .wangqi-timeline .ant-timeline-item-header {
-        width: calc(100% - 34px) !important;
-        padding-inline-start: 0 !important;
-        text-align: left !important;
-    }
-
-    .wangqi-timeline .ant-timeline-item-content {
-        width: calc(100% - 34px) !important;
-        margin-inline-start: 34px !important;
-        text-align: left !important;
     }
 }
