@@ -30,7 +30,6 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
     ["stores", "ADMIN_WEB_FORBID_BUCKET_DIR"]
 ]);
 const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
-    { file: "src/pages/classics/wangqi/wangqi-page.css", allowedAntdSelectorLines: 10 },
     {
         file: "src/pages/discovery/qa/qa-message-panel/qa-message-panel.css",
         allowedAntdSelectorLines: 17

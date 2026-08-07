@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ClockCircleOutlined } from "@ant-design/icons";
-import { Empty, Timeline, Typography } from "antd";
-import { KuzhambuDrawer, KuzhambuButton } from "@/components";
+import { Empty, Typography } from "antd";
+import { KuzhambuDrawer, KuzhambuButton, KuzhambuTimeline as Timeline } from "@/components";
 import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
 
 const { Text } = Typography;
@@ -79,6 +79,7 @@ export const WangqiTimeline = ({
                     <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无王圻时间线" />
                 ) : (
                     <Timeline
+                        testId="classics-wangqi-wangqi-timeline"
                         mode="alternate"
                         className="wangqi-timeline"
                         items={dataSource.map((record) => ({
