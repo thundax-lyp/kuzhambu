@@ -185,7 +185,7 @@ export const SancaiEntryList = ({
             title: "摘要",
             key: "summary",
             render: (_, entry) => (
-                <Text type="secondary" className="sancai-secondary-text">
+                <Text type="secondary" className="sancai-secondary-text sancai-entry-summary-cell">
                     {readEntrySummary(entry)}
                 </Text>
             )

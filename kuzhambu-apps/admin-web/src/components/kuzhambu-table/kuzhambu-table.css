@@ -107,7 +107,7 @@ html[data-theme="dark"] .kuzhambu-table-shell {
     overflow: hidden;
     background: var(--kuzhambu-table-panel-bg);
     border: 1px solid var(--kuzhambu-table-line);
-    border-radius: 10px;
+    border-radius: var(--kuzhambu-table-border-radius, 10px);
 }
 
 .kuzhambu-table .ant-table-content,

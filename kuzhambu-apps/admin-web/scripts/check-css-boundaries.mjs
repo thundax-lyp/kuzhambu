@@ -30,18 +30,6 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
     ["stores", "ADMIN_WEB_FORBID_BUCKET_DIR"]
 ]);
 const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
-    {
-        file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-panel.css",
-        allowedAntdSelectorLines: 4
-    },
-    {
-        file: "src/pages/classics/sancai-visual/sancai-entry-visual-section/sancai-entry-visual-section.css",
-        allowedAntdSelectorLines: 14
-    },
-    {
-        file: "src/pages/classics/sancai-visual/sancai-visual-entry-picker-modal/sancai-visual-entry-picker-modal.css",
-        allowedAntdSelectorLines: 7
-    },
     { file: "src/pages/classics/wangqi/wangqi-page.css", allowedAntdSelectorLines: 10 },
     {
         file: "src/pages/discovery/qa/qa-message-panel/qa-message-panel.css",

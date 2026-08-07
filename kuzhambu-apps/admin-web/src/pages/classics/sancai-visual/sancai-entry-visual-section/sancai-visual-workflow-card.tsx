@@ -148,27 +148,31 @@ export const SancaiVisualWorkflowCard = ({
                             />
                             <section className="sancai-visual-workflow-step-form">
                                 {currentWorkflowStep.key === "source" ? (
-                                    <section className="sancai-visual-asset-picker">
-                                        <KuzhambuFormItem
-                                            name="sourceImageStorageObjectId"
-                                            layoutSize="large"
-                                        >
-                                            <KuzhambuSelect
-                                                aria-label="三才图会视觉处理来源图片"
-                                                disabled={!defaultSourceImage}
-                                                placeholder="选择来源图片"
-                                                options={entryImages.map((image) => ({
-                                                    disabled: !image.storageObjectId,
-                                                    label: readImageTitle(image),
-                                                    value:
-                                                        image.storageObjectId ?? `image:${image.id}`
-                                                }))}
-                                                onChange={(value) =>
-                                                    onSelectVisualSourceImageBySelectValue(value)
-                                                }
-                                            />
-                                        </KuzhambuFormItem>
-                                    </section>
+                                    <KuzhambuFormItem
+                                        name="sourceImageStorageObjectId"
+                                        layoutSize="large"
+                                    >
+                                        <KuzhambuSelect
+                                            className="sancai-visual-asset-source-select"
+                                            classNames={{
+                                                content:
+                                                    "sancai-visual-asset-source-select-content",
+                                                placeholder:
+                                                    "sancai-visual-asset-source-select-content"
+                                            }}
+                                            aria-label="三才图会视觉处理来源图片"
+                                            disabled={!defaultSourceImage}
+                                            placeholder="选择来源图片"
+                                            options={entryImages.map((image) => ({
+                                                disabled: !image.storageObjectId,
+                                                label: readImageTitle(image),
+                                                value: image.storageObjectId ?? `image:${image.id}`
+                                            }))}
+                                            onChange={(value) =>
+                                                onSelectVisualSourceImageBySelectValue(value)
+                                            }
+                                        />
+                                    </KuzhambuFormItem>
                                 ) : null}
                                 {currentWorkflowStep.key === "image_analysis" ? (
                                     <KuzhambuFormItem
