@@ -2,6 +2,7 @@ import {
     CloseOutlined,
     ImportOutlined,
     MergeCellsOutlined,
+    PlusOutlined,
     RobotOutlined
 } from "@ant-design/icons";
 import {
@@ -29,7 +30,7 @@ interface GraphExtractionCandidateModalProps {
     extracting?: boolean;
     open: boolean;
     task?: GraphExtractionTaskRecord | null;
-    onApplyCandidate: (taskId: string) => void;
+    onApplyCandidate: (taskId: string, applyMode: "APPEND" | "MERGE") => void;
     onCancel: () => void;
     onFetchCandidate: (
         task: GraphExtractionTaskRecord | null
@@ -45,11 +46,18 @@ const hasCandidate = (candidate?: GraphWorkbenchCandidateRecord | null) =>
     Boolean(candidate?.taskId && candidate.aiCandidateId);
 
 const hasUnappliedCandidate = (
-    detail?: GraphWorkbenchManuscriptRecord | null,
-    candidate?: GraphWorkbenchCandidateRecord | null
-) =>
-    detail?.graphStatus === "CANDIDATE_READY" &&
-    (hasCandidate(candidate) || Boolean(detail.latestExtractionTask?.aiCandidateId));
+    candidate?: GraphWorkbenchCandidateRecord | null,
+    task?: GraphExtractionTaskRecord | null,
+    detail?: GraphWorkbenchManuscriptRecord | null
+) => {
+    const status = candidate?.status || task?.status || detail?.latestExtractionTask?.status;
+    return (
+        status !== "APPLIED" &&
+        status !== "REJECTED" &&
+        (hasCandidate(candidate) ||
+            Boolean(task?.aiCandidateId || detail?.latestExtractionTask?.aiCandidateId))
+    );
+};
 
 const readTaskId = (task?: GraphExtractionTaskRecord | null) =>
     task?.taskId === null || task?.taskId === undefined ? "" : String(task.taskId).trim();
@@ -121,7 +129,30 @@ export const GraphExtractionCandidateModal = ({
     onExtract,
     onTaskChange
 }: GraphExtractionCandidateModalProps) => {
-    const unappliedCandidate = hasUnappliedCandidate(detail, candidate);
+    const unappliedCandidate = hasUnappliedCandidate(candidate, task, detail);
+    const readApplyTaskId = (
+        result?: GraphWorkbenchCandidateRecord | null,
+        stateTask?: GraphExtractionTaskRecord | null
+    ) => result?.taskId || candidate?.taskId || stateTask?.taskId || task?.taskId;
+    const isApplyDisabled = ({
+        result,
+        resultLoading,
+        task,
+        taskLoading,
+        tracking
+    }: {
+        result: GraphWorkbenchCandidateRecord | null;
+        resultLoading: boolean;
+        task: GraphExtractionTaskRecord | null;
+        taskLoading: boolean;
+        tracking: boolean;
+    }) =>
+        !canApply ||
+        !hasUnappliedCandidate(result || candidate, task || undefined, detail) ||
+        tracking ||
+        taskLoading ||
+        resultLoading ||
+        candidateLoading;
 
     return (
         <KuzhambuSyncTaskModal<GraphExtractionTaskRecord, GraphWorkbenchCandidateRecord>
@@ -136,14 +167,7 @@ export const GraphExtractionCandidateModal = ({
                     合并
                 </KuzhambuSpace>
             }
-            applyDisabled={(state) =>
-                !canApply ||
-                !hasUnappliedCandidate(detail, state.result || candidate) ||
-                state.tracking ||
-                state.taskLoading ||
-                state.resultLoading ||
-                candidateLoading
-            }
+            applyDisabled={isApplyDisabled}
             applyTestId="knowledge-graph-extraction-candidate-merge-apply-button"
             cancelTestId="knowledge-graph-extraction-candidate-cancel-button"
             cancelText={
@@ -165,9 +189,9 @@ export const GraphExtractionCandidateModal = ({
                 fetchTask: onFetchTask,
                 fetchResult: onFetchCandidate,
                 applyResult: (result) => {
-                    const taskId = result?.taskId || candidate?.taskId || task?.taskId;
+                    const taskId = readApplyTaskId(result);
                     if (taskId) {
-                        onApplyCandidate(String(taskId));
+                        onApplyCandidate(String(taskId), "MERGE");
                     }
                 },
                 onTaskChange,
@@ -197,16 +221,35 @@ export const GraphExtractionCandidateModal = ({
                     />
                 ) : null
             }
-            renderFooterActions={() => (
-                <KuzhambuButton
-                    testId="knowledge-graph-extraction-candidate-overwrite-apply-button"
-                    disabled
-                    icon={<ImportOutlined />}
-                    title="后端暂未支持覆盖模式"
-                >
-                    覆盖
-                </KuzhambuButton>
-            )}
+            renderFooterActions={(state) => {
+                const appendDisabled = isApplyDisabled(state);
+                const taskId = readApplyTaskId(state.result, state.task);
+                return (
+                    <>
+                        <KuzhambuButton
+                            testId="knowledge-graph-extraction-candidate-overwrite-apply-button"
+                            disabled
+                            icon={<ImportOutlined />}
+                            title="覆盖需要稿件级安全清理能力，暂不开放"
+                        >
+                            覆盖
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            testId="knowledge-graph-extraction-candidate-append-apply-button"
+                            disabled={appendDisabled}
+                            icon={<PlusOutlined />}
+                            loading={applying}
+                            onClick={() => {
+                                if (taskId) {
+                                    onApplyCandidate(String(taskId), "APPEND");
+                                }
+                            }}
+                        >
+                            追加
+                        </KuzhambuButton>
+                    </>
+                );
+            }}
             renderBody={({ result, resultLoading, tracking, taskLoading }) => (
                 <GraphExtractionCandidatePreview
                     candidate={result || candidate || null}

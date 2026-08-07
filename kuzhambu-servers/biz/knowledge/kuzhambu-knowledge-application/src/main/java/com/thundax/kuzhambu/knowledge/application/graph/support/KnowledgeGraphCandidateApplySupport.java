@@ -38,6 +38,9 @@ public class KnowledgeGraphCandidateApplySupport {
     private static final String STATUS_AI_EXTRACTED = "AI_EXTRACTED";
     private static final String STATUS_MANUAL_CONFIRMED = "MANUAL_CONFIRMED";
     private static final String STATUS_APPLIED = "APPLIED";
+    private static final String APPLY_MODE_APPEND = "APPEND";
+    private static final String APPLY_MODE_MERGE = "MERGE";
+    private static final String APPLY_MODE_OVERWRITE = "OVERWRITE";
 
     private final GraphVersionRepository graphVersionRepository;
     private final KnowledgeEntityRepository knowledgeEntityRepository;
@@ -61,6 +64,10 @@ public class KnowledgeGraphCandidateApplySupport {
     }
 
     public GraphVersion apply(GraphExtractionTask task, AiCandidateFacadeDto candidate) {
+        return apply(task, candidate, APPLY_MODE_MERGE);
+    }
+
+    public GraphVersion apply(GraphExtractionTask task, AiCandidateFacadeDto candidate, String applyMode) {
         if (task == null || task.getId() == null || candidate == null || candidate.getCandidateId() == null) {
             throw new BizException("Knowledge graph apply target is incomplete");
         }
@@ -70,20 +77,33 @@ public class KnowledgeGraphCandidateApplySupport {
         if (StringUtils.isBlank(candidate.getResultPayload())) {
             throw new BizException("Knowledge graph candidate payload is empty");
         }
+        String resolvedApplyMode = normalizeApplyMode(applyMode);
         Instant appliedAt = Instant.now();
         GraphVersion version = ensureVersion(task, candidate, appliedAt);
         JsonNode payload = parsePayload(candidate.getResultPayload());
         if (GraphExtractionTaskType.LINEAGE.equals(task.getTaskType())) {
-            applyLineageNodes(version, payload, appliedAt);
-            applyLineageRelations(version, payload, appliedAt);
+            applyLineageNodes(version, payload, appliedAt, resolvedApplyMode);
+            applyLineageRelations(version, payload, appliedAt, resolvedApplyMode);
         } else if (GraphExtractionTaskType.RELATION.equals(task.getTaskType())
                 || GraphExtractionTaskType.GRAPH.equals(task.getTaskType())) {
-            applyEntities(version, payload, appliedAt);
-            applyRelations(version, payload, appliedAt);
+            applyEntities(version, payload, appliedAt, resolvedApplyMode);
+            applyRelations(version, payload, appliedAt, resolvedApplyMode);
         } else {
             throw new BizException("Unsupported graph extraction task type: " + taskTypeValue(task));
         }
         return version;
+    }
+
+    private String normalizeApplyMode(String applyMode) {
+        String normalized =
+                StringUtils.defaultIfBlank(applyMode, APPLY_MODE_MERGE).trim().toUpperCase(Locale.ROOT);
+        if (APPLY_MODE_MERGE.equals(normalized) || APPLY_MODE_APPEND.equals(normalized)) {
+            return normalized;
+        }
+        if (APPLY_MODE_OVERWRITE.equals(normalized)) {
+            throw new BizException("Knowledge graph overwrite apply mode is not supported yet");
+        }
+        throw new BizException("Unsupported knowledge graph candidate apply mode: " + applyMode);
     }
 
     private GraphVersion ensureVersion(GraphExtractionTask task, AiCandidateFacadeDto candidate, Instant appliedAt) {
@@ -115,7 +135,7 @@ public class KnowledgeGraphCandidateApplySupport {
                 : task.getTaskType().value();
     }
 
-    private void applyEntities(GraphVersion version, JsonNode payload, Instant appliedAt) {
+    private void applyEntities(GraphVersion version, JsonNode payload, Instant appliedAt, String applyMode) {
         ArrayNode entityNodes = arrayOf(payload, "entities");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeEntity> incoming = new ArrayList<>();
@@ -137,10 +157,10 @@ public class KnowledgeGraphCandidateApplySupport {
             entity.setLastExtractedAt(appliedAt);
             incoming.add(entity);
         }
-        mergeEntities(incoming, appliedAt);
+        mergeEntities(incoming, appliedAt, applyMode);
     }
 
-    private void applyRelations(GraphVersion version, JsonNode payload, Instant appliedAt) {
+    private void applyRelations(GraphVersion version, JsonNode payload, Instant appliedAt, String applyMode) {
         ArrayNode relationNodes = arrayOf(payload, "relations");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeRelation> incoming = new ArrayList<>();
@@ -167,10 +187,10 @@ public class KnowledgeGraphCandidateApplySupport {
             relation.setLastExtractedAt(appliedAt);
             incoming.add(relation);
         }
-        mergeRelations(incoming, appliedAt);
+        mergeRelations(incoming, appliedAt, applyMode);
     }
 
-    private void applyLineageNodes(GraphVersion version, JsonNode payload, Instant appliedAt) {
+    private void applyLineageNodes(GraphVersion version, JsonNode payload, Instant appliedAt, String applyMode) {
         ArrayNode nodeArray = arrayOf(payload, "nodes");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeLineageNode> incoming = new ArrayList<>();
@@ -193,10 +213,10 @@ public class KnowledgeGraphCandidateApplySupport {
             lineageNode.setLastExtractedAt(appliedAt);
             incoming.add(lineageNode);
         }
-        mergeLineageNodes(incoming, appliedAt);
+        mergeLineageNodes(incoming, appliedAt, applyMode);
     }
 
-    private void applyLineageRelations(GraphVersion version, JsonNode payload, Instant appliedAt) {
+    private void applyLineageRelations(GraphVersion version, JsonNode payload, Instant appliedAt, String applyMode) {
         ArrayNode relationNodes = arrayOf(payload, "relations");
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeLineageRelation> incoming = new ArrayList<>();
@@ -223,13 +243,19 @@ public class KnowledgeGraphCandidateApplySupport {
             relation.setLastExtractedAt(appliedAt);
             incoming.add(relation);
         }
-        mergeLineageRelations(incoming, appliedAt);
+        mergeLineageRelations(incoming, appliedAt, applyMode);
     }
 
-    private void mergeEntities(List<KnowledgeEntity> incoming, Instant appliedAt) {
+    private void mergeEntities(List<KnowledgeEntity> incoming, Instant appliedAt, String applyMode) {
         Map<String, KnowledgeEntity> existingByKey = mapByKey(
                 knowledgeEntityRepository.listByEntityKeys(keys(incoming, KnowledgeEntity::getEntityKey)),
                 KnowledgeEntity::getEntityKey);
+        if (APPLY_MODE_APPEND.equals(applyMode)) {
+            knowledgeEntityRepository.saveOrUpdateBatch(incoming.stream()
+                    .filter(entity -> !existingByKey.containsKey(entity.getEntityKey()))
+                    .toList());
+            return;
+        }
         for (KnowledgeEntity entity : incoming) {
             KnowledgeEntity existing = existingByKey.get(entity.getEntityKey());
             if (existing == null) {
@@ -248,10 +274,16 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeEntityRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeRelations(List<KnowledgeRelation> incoming, Instant appliedAt) {
+    private void mergeRelations(List<KnowledgeRelation> incoming, Instant appliedAt, String applyMode) {
         Map<String, KnowledgeRelation> existingByKey = mapByKey(
                 knowledgeRelationRepository.listByRelationKeys(keys(incoming, KnowledgeRelation::getRelationKey)),
                 KnowledgeRelation::getRelationKey);
+        if (APPLY_MODE_APPEND.equals(applyMode)) {
+            knowledgeRelationRepository.saveOrUpdateBatch(incoming.stream()
+                    .filter(relation -> !existingByKey.containsKey(relation.getRelationKey()))
+                    .toList());
+            return;
+        }
         for (KnowledgeRelation relation : incoming) {
             KnowledgeRelation existing = existingByKey.get(relation.getRelationKey());
             if (existing == null) {
@@ -270,10 +302,16 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeRelationRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeLineageNodes(List<KnowledgeLineageNode> incoming, Instant appliedAt) {
+    private void mergeLineageNodes(List<KnowledgeLineageNode> incoming, Instant appliedAt, String applyMode) {
         Map<String, KnowledgeLineageNode> existingByKey = mapByKey(
                 knowledgeLineageNodeRepository.listByNodeKeys(keys(incoming, KnowledgeLineageNode::getNodeKey)),
                 KnowledgeLineageNode::getNodeKey);
+        if (APPLY_MODE_APPEND.equals(applyMode)) {
+            knowledgeLineageNodeRepository.saveOrUpdateBatch(incoming.stream()
+                    .filter(node -> !existingByKey.containsKey(node.getNodeKey()))
+                    .toList());
+            return;
+        }
         for (KnowledgeLineageNode node : incoming) {
             KnowledgeLineageNode existing = existingByKey.get(node.getNodeKey());
             if (existing == null) {
@@ -291,11 +329,17 @@ public class KnowledgeGraphCandidateApplySupport {
         knowledgeLineageNodeRepository.saveOrUpdateBatch(incoming);
     }
 
-    private void mergeLineageRelations(List<KnowledgeLineageRelation> incoming, Instant appliedAt) {
+    private void mergeLineageRelations(List<KnowledgeLineageRelation> incoming, Instant appliedAt, String applyMode) {
         Map<String, KnowledgeLineageRelation> existingByKey = mapByKey(
                 knowledgeLineageRelationRepository.listByRelationKeys(
                         keys(incoming, KnowledgeLineageRelation::getRelationKey)),
                 KnowledgeLineageRelation::getRelationKey);
+        if (APPLY_MODE_APPEND.equals(applyMode)) {
+            knowledgeLineageRelationRepository.saveOrUpdateBatch(incoming.stream()
+                    .filter(relation -> !existingByKey.containsKey(relation.getRelationKey()))
+                    .toList());
+            return;
+        }
         for (KnowledgeLineageRelation relation : incoming) {
             KnowledgeLineageRelation existing = existingByKey.get(relation.getRelationKey());
             if (existing == null) {

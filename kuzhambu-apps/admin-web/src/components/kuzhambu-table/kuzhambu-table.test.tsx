@@ -94,6 +94,10 @@ describe("KuzhambuTable", () => {
                         title: "操作",
                         options: [
                             {
+                                key: "delete-divider",
+                                type: "divider"
+                            },
+                            {
                                 key: "delete",
                                 text: "删除",
                                 testId: "kuzhambu-table-test-delete-button",

@@ -573,7 +573,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId) {
+    public GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId, String applyMode) {
         GraphExtractionTask task = repository.getByTaskId(taskId);
         if (task == null) {
             throw new BizException("Graph extraction task not found: " + (taskId == null ? null : taskId.value()));
@@ -591,7 +591,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                         .contentId(GraphExtractionSourceContentIdCodec.toValue(task.getSourceContentId()))
                         .capability(resolveCapability(taskTypeValue(task)))
                         .build());
-        candidateApplySupport.apply(task, candidate);
+        candidateApplySupport.apply(task, candidate, applyMode);
         aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
                 .candidateId(candidate.getCandidateId())
                 .resultFormat(candidate.getResultFormat())

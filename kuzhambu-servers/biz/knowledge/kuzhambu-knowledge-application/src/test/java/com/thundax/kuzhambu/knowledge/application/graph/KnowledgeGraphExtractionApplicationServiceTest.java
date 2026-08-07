@@ -2132,6 +2132,12 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         @Override
         public com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion apply(
                 GraphExtractionTask task, AiCandidateFacadeDto candidate) {
+            return apply(task, candidate, null);
+        }
+
+        @Override
+        public com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion apply(
+                GraphExtractionTask task, AiCandidateFacadeDto candidate, String applyMode) {
             appliedCandidateId = candidate == null ? null : candidate.getCandidateId();
             return null;
         }

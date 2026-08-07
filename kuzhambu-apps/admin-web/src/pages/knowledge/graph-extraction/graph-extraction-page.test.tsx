@@ -362,9 +362,15 @@ describe("GraphExtractionPage", () => {
         await waitFor(() => {
             expect(mergeButton).toBeEnabled();
         });
+        expect(
+            screen.getByTestId("knowledge-graph-extraction-candidate-append-apply-button")
+        ).toBeEnabled();
         fireEvent.click(mergeButton);
         await waitFor(() => {
-            expect(workbenchServiceMocks.applyCandidate).toHaveBeenCalledWith({ taskId: "9001" });
+            expect(workbenchServiceMocks.applyCandidate).toHaveBeenCalledWith({
+                applyMode: "MERGE",
+                taskId: "9001"
+            });
         });
         expect(screen.queryByRole("link", { name: "查看结果" })).not.toBeInTheDocument();
         expect(screen.queryByRole("link", { name: "进入精修" })).not.toBeInTheDocument();

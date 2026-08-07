@@ -158,15 +158,15 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CandidateApplyResult applyCandidate(Long taskId) {
+    public CandidateApplyResult applyCandidate(Long taskId, String applyMode) {
         if (taskId == null) {
             throw new BizException("Knowledge graph candidate taskId is required");
         }
         GraphExtractionTaskResult detail =
                 graphExtractionApplicationService.getTaskDetail(GraphExtractionTaskIdCodec.toDomain(taskId));
         ensureSancaiSource(detail == null ? null : detail.getSourceContentType());
-        GraphExtractionTaskResult task =
-                graphExtractionApplicationService.applyTaskCandidate(GraphExtractionTaskIdCodec.toDomain(taskId));
+        GraphExtractionTaskResult task = graphExtractionApplicationService.applyTaskCandidate(
+                GraphExtractionTaskIdCodec.toDomain(taskId), applyMode);
         GraphVersionResult version =
                 latestVersion(task.getTaskType(), task.getSourceContentType(), task.getSourceContentId());
         return CandidateApplyResult.builder()

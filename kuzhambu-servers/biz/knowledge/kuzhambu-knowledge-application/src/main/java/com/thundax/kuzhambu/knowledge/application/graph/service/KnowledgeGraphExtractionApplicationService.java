@@ -70,5 +70,9 @@ public interface KnowledgeGraphExtractionApplicationService {
 
     KnowledgeLineageRelationResult getLineageRelationDetail(Long relationId);
 
-    GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId);
+    default GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId) {
+        return applyTaskCandidate(taskId, null);
+    }
+
+    GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId, String applyMode);
 }

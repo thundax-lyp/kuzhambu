@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { KuzhambuTable } from "@/components";
+import { KuzhambuTable, KuzhambuTag } from "@/components";
 
 import type { GraphWorkbenchCandidateRecord } from "@/pages/knowledge/graph-extraction/graph-extraction-types";
 
@@ -42,12 +42,49 @@ const readCandidateRelations = (container: Record<string, unknown>) => {
     return [];
 };
 
-const formatSpo = (row: CandidateSpoRow) => {
-    const subject = row.subject || "-";
-    const predicate = row.predicate || "-";
-    const object = row.object || "-";
-    return `${subject} -> ${predicate} -> ${object}`;
-};
+const renderSpoTag = (label: string, value: string, type: "accent" | "info" | "neutral") => (
+    <KuzhambuTag
+        type={type}
+        title={value || "-"}
+        style={{
+            display: "inline-flex",
+            gap: 6,
+            marginInlineEnd: 0,
+            maxWidth: label === "P" ? 260 : 220,
+            verticalAlign: "middle"
+        }}
+    >
+        <span style={{ color: "#667085", fontSize: 12 }}>{label}</span>
+        <span
+            style={{
+                fontWeight: 500,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap"
+            }}
+            title={value || "-"}
+        >
+            {value || "-"}
+        </span>
+    </KuzhambuTag>
+);
+
+const renderSpo = (row: CandidateSpoRow) => (
+    <span
+        style={{
+            alignItems: "center",
+            display: "inline-flex",
+            gap: 8,
+            whiteSpace: "nowrap"
+        }}
+    >
+        {renderSpoTag("S", row.subject, "neutral")}
+        <span style={{ color: "#667085", fontWeight: 600 }}>→</span>
+        {renderSpoTag("P", row.predicate, "accent")}
+        <span style={{ color: "#667085", fontWeight: 600 }}>→</span>
+        {renderSpoTag("O", row.object, "info")}
+    </span>
+);
 
 const parseCandidatePayload = (payload?: string | null): CandidateSpoRow[] => {
     if (!payload?.trim()) {
@@ -135,9 +172,7 @@ export const GraphExtractionCandidatePreview = ({
             columns={[
                 {
                     key: "spo",
-                    render: (_, record) => (
-                        <span style={{ whiteSpace: "nowrap" }}>{formatSpo(record)}</span>
-                    ),
+                    render: (_, record) => renderSpo(record),
                     title: "SPO"
                 },
                 {

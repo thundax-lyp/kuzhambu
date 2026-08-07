@@ -308,7 +308,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
         Fixtures fixtures = new Fixtures();
         when(fixtures.graphExtractionApplicationService.getTaskDetail(any()))
                 .thenReturn(taskResult("9001", "GRAPH", "SUCCEEDED"));
-        when(fixtures.graphExtractionApplicationService.applyTaskCandidate(any()))
+        when(fixtures.graphExtractionApplicationService.applyTaskCandidate(any(), eq("APPEND")))
                 .thenReturn(taskResult("9001", "GRAPH", "APPLIED"));
         when(fixtures.graphExtractionApplicationService.pageVersions(
                         eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
@@ -319,11 +319,12 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
                         java.util.List.of(new GraphVersionResult(
                                 8001L, "9001", null, "GRAPH", "SANCAI_ENTRY", 1001L, 1, "APPLIED", 99L))));
 
-        var result = fixtures.service.applyCandidate(9001L);
+        var result = fixtures.service.applyCandidate(9001L, "APPEND");
 
         assertEquals(9001L, result.getTaskId());
         assertEquals(8001L, result.getGraphVersionId());
         assertEquals("APPLIED", result.getGraphStatus());
+        verify(fixtures.graphExtractionApplicationService).applyTaskCandidate(any(), eq("APPEND"));
     }
 
     @Test
@@ -334,7 +335,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
 
         assertThrows(BizException.class, () -> fixtures.service.applyCandidate(9004L));
 
-        verify(fixtures.graphExtractionApplicationService, never()).applyTaskCandidate(any());
+        verify(fixtures.graphExtractionApplicationService, never()).applyTaskCandidate(any(), any());
     }
 
     private static GraphExtractionTaskResult taskResult(String taskId, String taskType, String status) {

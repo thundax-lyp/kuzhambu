@@ -370,7 +370,8 @@ export const GraphExtractionPage = () => {
         }
     });
     const applyWorkbenchCandidateMutation = useMutation({
-        mutationFn: (taskId: string) => workbenchService.applyCandidate({ taskId }),
+        mutationFn: ({ applyMode, taskId }: { applyMode: string; taskId: string }) =>
+            workbenchService.applyCandidate({ applyMode, taskId }),
         onSuccess: async () => {
             loadedManuscriptNodeKeysRef.current.clear();
             loadingManuscriptNodeKeysRef.current.clear();
@@ -724,7 +725,9 @@ export const GraphExtractionPage = () => {
                     }
                     open={candidateModalOpen}
                     task={candidateModalTask}
-                    onApplyCandidate={applyWorkbenchCandidateMutation.mutate}
+                    onApplyCandidate={(taskId, applyMode) =>
+                        applyWorkbenchCandidateMutation.mutate({ applyMode, taskId })
+                    }
                     onCancel={() => setCandidateModalOpen(false)}
                     onFetchCandidate={() => {
                         if (

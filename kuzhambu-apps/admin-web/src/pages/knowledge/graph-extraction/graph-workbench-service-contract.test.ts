@@ -135,8 +135,9 @@ describe("knowledge graph workbench service request contracts", () => {
             taskType: "GRAPH"
         });
 
-        await service.applyCandidate({ taskId: "9001" });
+        await service.applyCandidate({ applyMode: "APPEND", taskId: "9001" });
         expectLastCall("POST", "/knowledge/graph-workbench/candidate/apply", {
+            applyMode: "APPEND",
             taskId: "9001"
         });
     });

@@ -72,6 +72,59 @@ class KnowledgeGraphCandidateApplySupportTest {
                 "auto:黄帝->auto:伏羲:ancestor", relationRepository.saved.get(0).getRelationKey());
     }
 
+    @Test
+    void appendShouldSkipExistingGraphFacts() {
+        FakeGraphVersionRepository versionRepository = new FakeGraphVersionRepository();
+        FakeKnowledgeEntityRepository entityRepository = new FakeKnowledgeEntityRepository();
+        FakeKnowledgeRelationRepository relationRepository = new FakeKnowledgeRelationRepository();
+        KnowledgeEntity existingEntity = new KnowledgeEntity();
+        existingEntity.setEntityKey("person:黄帝");
+        existingEntity.setName("黄帝");
+        existingEntity.setEntityType("PERSON");
+        existingEntity.setDescription("既有实体");
+        entityRepository.store.put(existingEntity.getEntityKey(), existingEntity);
+        KnowledgeRelation existingRelation = new KnowledgeRelation();
+        existingRelation.setRelationKey("auto:黄帝->auto:伏羲:ancestor");
+        existingRelation.setSourceName("黄帝");
+        existingRelation.setTargetName("伏羲");
+        existingRelation.setRelationType("ANCESTOR");
+        existingRelation.setEvidence("既有关系");
+        relationRepository.store.put(existingRelation.getRelationKey(), existingRelation);
+        KnowledgeGraphCandidateApplySupport support = new KnowledgeGraphCandidateApplySupport(
+                versionRepository,
+                entityRepository,
+                relationRepository,
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository());
+        GraphExtractionTask task = new GraphExtractionTask();
+        task.setId(GraphExtractionTaskIdCodec.toDomain(11L));
+        task.setTaskType(GraphExtractionTaskType.GRAPH);
+        task.setSourceContentType("SANCAI_ENTRY");
+        task.setSourceContentId(GraphExtractionSourceContentIdCodec.toDomain(1L));
+        AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
+                .candidateId(22L)
+                .resultFormat("STRUCTURED")
+                .resultPayload("{\"entities\":["
+                        + "{\"name\":\"黄帝\",\"entityType\":\"PERSON\",\"description\":\"候选覆盖\"},"
+                        + "{\"name\":\"炎帝\",\"entityType\":\"PERSON\",\"description\":\"新增实体\"}],"
+                        + "\"relations\":["
+                        + "{\"sourceName\":\"黄帝\",\"targetName\":\"伏羲\",\"relationType\":\"ANCESTOR\",\"evidence\":\"候选覆盖\"},"
+                        + "{\"sourceName\":\"炎帝\",\"targetName\":\"神农\",\"relationType\":\"ALIAS\",\"evidence\":\"新增关系\"}],"
+                        + "\"entryRefs\":[{\"entryId\":1}]}")
+                .build();
+
+        support.apply(task, candidate, "APPEND");
+
+        assertEquals(1, entityRepository.saved.size());
+        assertEquals("person:炎帝", entityRepository.saved.get(0).getEntityKey());
+        assertEquals("既有实体", entityRepository.store.get("person:黄帝").getDescription());
+        assertEquals(1, relationRepository.saved.size());
+        assertEquals("auto:炎帝->auto:神农:alias", relationRepository.saved.get(0).getRelationKey());
+        assertEquals(
+                "既有关系",
+                relationRepository.store.get("auto:黄帝->auto:伏羲:ancestor").getEvidence());
+    }
+
     private static final class FakeGraphVersionRepository implements GraphVersionRepository {
         private final List<GraphVersion> versions = new ArrayList<>();
 

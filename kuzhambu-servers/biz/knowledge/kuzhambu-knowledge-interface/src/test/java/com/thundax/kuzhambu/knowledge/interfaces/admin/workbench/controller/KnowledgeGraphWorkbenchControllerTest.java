@@ -130,7 +130,8 @@ class KnowledgeGraphWorkbenchControllerTest {
         KnowledgeGraphWorkbenchRequests.CandidateApplyRequest request =
                 new KnowledgeGraphWorkbenchRequests.CandidateApplyRequest();
         request.setTaskId(9001L);
-        when(service.applyCandidate(9001L))
+        request.setApplyMode("APPEND");
+        when(service.applyCandidate(9001L, "APPEND"))
                 .thenReturn(CandidateApplyResult.builder()
                         .taskId(9001L)
                         .graphVersionId(8001L)
@@ -139,7 +140,7 @@ class KnowledgeGraphWorkbenchControllerTest {
 
         var response = controller.applyCandidate(request);
 
-        verify(service).applyCandidate(eq(9001L));
+        verify(service).applyCandidate(eq(9001L), eq("APPEND"));
         assertEquals(9001L, response.getTaskId());
         assertEquals(8001L, response.getGraphVersionId());
         assertEquals("APPLIED", response.getGraphStatus());
