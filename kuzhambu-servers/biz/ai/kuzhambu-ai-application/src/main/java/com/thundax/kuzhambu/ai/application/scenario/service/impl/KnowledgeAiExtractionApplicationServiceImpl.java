@@ -80,7 +80,7 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
         invokeCommand.setLocale(command.getLocale());
         invokeCommand.setCreateCandidate(true);
         enrichBusinessInvokeConfig(invokeCommand);
-        AiInvokeResult result = invocationApplicationService.invoke(invokeCommand);
+        AiInvokeResult result = invocationApplicationService.stream(invokeCommand, null);
         return new KnowledgeAiExtractionResult(
                 result.getCallId(),
                 result.getCandidateId(),

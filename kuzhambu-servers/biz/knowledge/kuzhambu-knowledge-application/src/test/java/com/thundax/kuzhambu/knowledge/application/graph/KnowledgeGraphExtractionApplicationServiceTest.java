@@ -146,7 +146,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     @Test
-    void requestRelationExtractionShouldPersistTaskAndSyncAiResult() {
+    void requestRelationExtractionShouldPersistRequestedTaskWithoutRunningAi() {
         FakeRepository repository = new FakeRepository();
         FakeKnowledgeAiExtractionRepository aiService = new FakeKnowledgeAiExtractionRepository();
         KnowledgeGraphExtractionApplicationServiceImpl service = service(
@@ -166,11 +166,40 @@ class KnowledgeGraphExtractionApplicationServiceTest {
 
         assertNotNull(result);
         assertEquals("RELATION", result.getTaskType());
-        assertEquals("SUCCEEDED", result.getStatus());
-        assertEquals(301L, result.getAiCallId());
-        assertEquals(302L, result.getAiCandidateId());
-        assertEquals("RELATION", aiService.lastTaskType);
-        assertEquals("SANCAI_ENTRY", aiService.lastRequest.getSourceContentType());
+        assertEquals("REQUESTED", result.getStatus());
+        assertEquals(null, result.getAiCallId());
+        assertEquals(null, result.getAiCandidateId());
+        assertEquals(null, aiService.lastTaskType);
+        assertEquals("SANCAI_ENTRY", result.getSourceContentType());
+    }
+
+    @Test
+    void getTaskDetailShouldReturnRequestedTaskWithoutRunningAi() {
+        FakeRepository repository = new FakeRepository();
+        FakeKnowledgeAiExtractionRepository aiService = new FakeKnowledgeAiExtractionRepository();
+        KnowledgeGraphExtractionApplicationServiceImpl service = service(
+                repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                null,
+                aiService,
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+        GraphExtractionTaskResult requested = service.requestRelationExtraction(relationCommand());
+
+        GraphExtractionTaskResult result =
+                service.getTaskDetail(GraphExtractionTaskIdCodec.toDomain(Long.valueOf(requested.getTaskId())));
+
+        assertNotNull(result);
+        assertEquals("RELATION", result.getTaskType());
+        assertEquals("REQUESTED", result.getStatus());
+        assertEquals(null, result.getAiCallId());
+        assertEquals(null, result.getAiCandidateId());
+        assertEquals(null, aiService.lastTaskType);
     }
 
     @Test
@@ -265,11 +294,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
 
         assertNotNull(result);
         assertEquals("GRAPH", result.getTaskType());
-        assertEquals("SUCCEEDED", result.getStatus());
-        assertEquals("GRAPH", aiService.lastTaskType);
-        assertEquals("SANCAI_ENTRY", aiService.lastRequest.getSourceContentType());
-        assertEquals(null, aiService.lastRequest.getModelId());
-        assertEquals(null, aiService.lastRequest.getModelName());
+        assertEquals("REQUESTED", result.getStatus());
+        assertEquals(null, aiService.lastTaskType);
+        GraphExtractionTask persistedTask = repository.tasks.get(0);
+        assertEquals(null, GraphExtractionModelIdCodec.toValue(persistedTask.getModelId()));
+        assertEquals(null, GraphExtractionModelNameCodec.toValue(persistedTask.getModelName()));
     }
 
     @Test

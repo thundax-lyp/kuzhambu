@@ -42,6 +42,8 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         assertNull(capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, capturedCommand.getCapability());
         assertEquals("knowledge_graph", capturedCommand.getWorkerCapability());
+        assertEquals(0, invocationService.invokeCount());
+        assertEquals(1, invocationService.streamCount());
     }
 
     @Test
@@ -170,10 +172,24 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     private static class CapturingInvocationService implements AiWorkerInvocationApplicationService {
 
         private AiInvokeCommand captured;
+        private int invokeCount;
+        private int streamCount;
 
         @Override
         public AiInvokeResult invoke(AiInvokeCommand command) {
+            invokeCount++;
             captured = command;
+            return succeeded(command);
+        }
+
+        @Override
+        public AiInvokeResult stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+            streamCount++;
+            captured = command;
+            return succeeded(command);
+        }
+
+        private AiInvokeResult succeeded(AiInvokeCommand command) {
             AiInvokeResult result = new AiInvokeResult();
             result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(101L));
             result.setCandidateId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(102L));
@@ -186,13 +202,16 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
             return result;
         }
 
-        @Override
-        public AiInvokeResult stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
-            return null;
-        }
-
         public AiInvokeCommand capturedCommand() {
             return captured;
+        }
+
+        public int invokeCount() {
+            return invokeCount;
+        }
+
+        public int streamCount() {
+            return streamCount;
         }
     }
 
