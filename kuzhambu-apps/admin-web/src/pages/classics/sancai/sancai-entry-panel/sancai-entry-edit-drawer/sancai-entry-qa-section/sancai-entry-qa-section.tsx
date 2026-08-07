@@ -194,6 +194,7 @@ export const SancaiEntryQaSection = ({
                 column={3}
                 colon={false}
                 size="small"
+                variant="detail"
                 items={[
                     {
                         key: "category",
