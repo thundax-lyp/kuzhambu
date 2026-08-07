@@ -55,7 +55,7 @@ public class KnowledgeGraphManuscriptPayloadBuilder {
 
     private ClassicsQaKnowledgeFacadeDto loadManuscript(String sourceContentType, Long sourceContentId) {
         ClassicsQaKnowledgeFacadeResponse response =
-                classicsFacade.getQaKnowledge(ClassicsQaKnowledgeFacadeRequest.builder()
+                classicsFacade.getWorkbenchQaKnowledge(ClassicsQaKnowledgeFacadeRequest.builder()
                         .contentType(sourceContentType)
                         .contentId(String.valueOf(sourceContentId))
                         .build());
@@ -74,53 +74,53 @@ public class KnowledgeGraphManuscriptPayloadBuilder {
     }
 
     private String writeInputPayload(ClassicsQaKnowledgeFacadeDto manuscript, String taskType) {
-        return writeJson(Map.of(
-                "taskType",
-                taskType,
-                "sourceTitle",
-                nullToBlank(manuscript.getTitle()),
-                "sourceText",
-                sourceText(manuscript),
-                "entryRefs",
-                List.of(Map.of(
-                        "contentType",
-                        nullToBlank(manuscript.getContentType()),
-                        "contentId",
-                        nullToBlank(manuscript.getContentId()),
-                        "title",
-                        nullToBlank(manuscript.getTitle()))),
-                "knownEntities",
-                List.of(),
-                "lineageHint",
-                nullToBlank(manuscript.getCategoryPath()),
-                "source",
-                Map.of(
-                        "sourceId",
-                        nullToBlank(manuscript.getSourceId()),
-                        "contentType",
-                        nullToBlank(manuscript.getContentType()),
-                        "contentId",
-                        nullToBlank(manuscript.getContentId()),
-                        "title",
-                        nullToBlank(manuscript.getTitle()),
-                        "categoryPath",
-                        nullToBlank(manuscript.getCategoryPath()),
-                        "summary",
-                        nullToBlank(manuscript.getSummary())),
-                "text",
-                Map.of(
-                        "body",
-                        nullToBlank(manuscript.getBody()),
-                        "originalText",
-                        nullToBlank(manuscript.getOriginalText()),
-                        "translationText",
-                        nullToBlank(manuscript.getTranslationText()),
-                        "originalExcerpts",
-                        nullToBlank(manuscript.getOriginalExcerpts())),
-                "tags",
-                manuscript.getTags() == null ? List.of() : manuscript.getTags(),
-                "qaPairs",
-                manuscript.getQaPairs() == null ? List.of() : manuscript.getQaPairs()));
+        String sourceTitle = nullToBlank(manuscript.getTitle());
+        String sourceText = sourceText(manuscript);
+        return writeJson(Map.ofEntries(
+                Map.entry("taskType", taskType),
+                Map.entry("title", sourceTitle),
+                Map.entry("content", sourceText),
+                Map.entry("sourceTitle", sourceTitle),
+                Map.entry("sourceText", sourceText),
+                Map.entry(
+                        "entryRefs",
+                        List.of(Map.of(
+                                "contentType",
+                                nullToBlank(manuscript.getContentType()),
+                                "contentId",
+                                nullToBlank(manuscript.getContentId()),
+                                "title",
+                                nullToBlank(manuscript.getTitle())))),
+                Map.entry("knownEntities", List.of()),
+                Map.entry("lineageHint", nullToBlank(manuscript.getCategoryPath())),
+                Map.entry(
+                        "source",
+                        Map.of(
+                                "sourceId",
+                                nullToBlank(manuscript.getSourceId()),
+                                "contentType",
+                                nullToBlank(manuscript.getContentType()),
+                                "contentId",
+                                nullToBlank(manuscript.getContentId()),
+                                "title",
+                                nullToBlank(manuscript.getTitle()),
+                                "categoryPath",
+                                nullToBlank(manuscript.getCategoryPath()),
+                                "summary",
+                                nullToBlank(manuscript.getSummary()))),
+                Map.entry(
+                        "text",
+                        Map.of(
+                                "body",
+                                nullToBlank(manuscript.getBody()),
+                                "originalText",
+                                nullToBlank(manuscript.getOriginalText()),
+                                "translationText",
+                                nullToBlank(manuscript.getTranslationText()),
+                                "originalExcerpts",
+                                nullToBlank(manuscript.getOriginalExcerpts()))),
+                Map.entry("tags", manuscript.getTags() == null ? List.of() : manuscript.getTags()),
+                Map.entry("qaPairs", manuscript.getQaPairs() == null ? List.of() : manuscript.getQaPairs())));
     }
 
     private String sourceText(ClassicsQaKnowledgeFacadeDto manuscript) {

@@ -17,6 +17,8 @@ public class ClassicsSearchSourceContent {
     private String knowledgeBase;
     private String categoryCode;
     private String categoryName;
+    private String volumeCode;
+    private String volumeName;
     private String title;
     private String summary;
     private List<String> textSegments;
@@ -39,6 +41,7 @@ public class ClassicsSearchSourceContent {
             List<String> tagNames,
             String status,
             String visibility,
+            Integer currentVersionNo,
             Instant publishedAt,
             Instant updatedAt) {
         this(
@@ -47,6 +50,43 @@ public class ClassicsSearchSourceContent {
                 knowledgeBase,
                 categoryCode,
                 categoryName,
+                null,
+                null,
+                title,
+                summary,
+                textSegments,
+                tagNames,
+                status,
+                visibility,
+                currentVersionNo,
+                publishedAt,
+                updatedAt);
+    }
+
+    public ClassicsSearchSourceContent(
+            String contentType,
+            String contentId,
+            String knowledgeBase,
+            String categoryCode,
+            String categoryName,
+            String volumeCode,
+            String volumeName,
+            String title,
+            String summary,
+            List<String> textSegments,
+            List<String> tagNames,
+            String status,
+            String visibility,
+            Instant publishedAt,
+            Instant updatedAt) {
+        this(
+                contentType,
+                contentId,
+                knowledgeBase,
+                categoryCode,
+                categoryName,
+                volumeCode,
+                volumeName,
                 title,
                 summary,
                 textSegments,

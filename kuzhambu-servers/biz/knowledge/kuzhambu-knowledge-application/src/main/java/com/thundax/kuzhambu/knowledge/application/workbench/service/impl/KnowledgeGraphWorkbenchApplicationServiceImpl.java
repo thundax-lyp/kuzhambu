@@ -86,9 +86,9 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     @Transactional(readOnly = true)
     public List<ManuscriptTreeNodeResult> listManuscriptTree(
             String sourceContentType, String parentKey, String keyword, String graphStatus) {
-        List<ClassicsPublicContentFacadeDto> contents =
-                isBlank(parentKey) && isBlank(keyword) && isBlank(graphStatus) ? List.of() : listPublicContents();
-        Map<String, ManuscriptGraphSnapshot> snapshotsBySource = latestSnapshots(contents);
+        List<ClassicsPublicContentFacadeDto> contents = resolveTreeContents(parentKey, keyword, graphStatus);
+        Map<String, ManuscriptGraphSnapshot> snapshotsBySource =
+                needsGraphSnapshots(parentKey, keyword, graphStatus) ? latestSnapshots(contents) : Map.of();
         return treeAssembler.toTree(
                 contents,
                 sourceContentType,
@@ -104,7 +104,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     @Transactional(readOnly = true)
     public ManuscriptDetailResult getManuscript(String sourceContentType, Long sourceContentId) {
         validateManuscript(sourceContentType, sourceContentId);
-        ClassicsPublicContentFacadeDto manuscript = loadPublicContent(sourceContentType, sourceContentId);
+        ClassicsPublicContentFacadeDto manuscript = loadWorkbenchContent(sourceContentType, sourceContentId);
         GraphExtractionTaskResult latestTask = latestTask(TASK_TYPE_GRAPH, sourceContentType, sourceContentId);
         GraphVersionResult latestVersion = latestVersion(TASK_TYPE_GRAPH, sourceContentType, sourceContentId);
         return ManuscriptDetailResult.builder()
@@ -257,14 +257,90 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
                 payload.locale());
     }
 
-    private List<ClassicsPublicContentFacadeDto> listPublicContents() {
-        ClassicsPublicContentsFacadeResponse response = classicsFacade.listPublicContents();
+    private List<ClassicsPublicContentFacadeDto> resolveTreeContents(
+            String parentKey, String keyword, String graphStatus) {
+        if (isBlank(parentKey) && isBlank(keyword) && isBlank(graphStatus)) {
+            return listWorkbenchCatalogContents();
+        }
+        if (isSourceRootParent(parentKey) && isBlank(keyword) && isBlank(graphStatus)) {
+            return listWorkbenchCatalogContents();
+        }
+        if (isCategoryParent(parentKey) && isBlank(keyword) && isBlank(graphStatus)) {
+            return listWorkbenchVolumeContents();
+        }
+        NodeKey volumeParent = parseVolumeParent(parentKey);
+        if (volumeParent != null && isBlank(keyword) && isBlank(graphStatus)) {
+            return listWorkbenchContents(volumeParent.categoryCode(), volumeParent.volumeCode());
+        }
+        return listWorkbenchContents();
+    }
+
+    private List<ClassicsPublicContentFacadeDto> listWorkbenchCategoryContents() {
+        ClassicsPublicContentsFacadeResponse response = classicsFacade.listWorkbenchCategoryContents();
         return response == null || response.getContents() == null ? List.of() : response.getContents();
     }
 
-    private ClassicsPublicContentFacadeDto loadPublicContent(String sourceContentType, Long sourceContentId) {
+    private List<ClassicsPublicContentFacadeDto> listWorkbenchVolumeContents() {
+        ClassicsPublicContentsFacadeResponse response = classicsFacade.listWorkbenchVolumeContents();
+        return response == null || response.getContents() == null ? List.of() : response.getContents();
+    }
+
+    private List<ClassicsPublicContentFacadeDto> listWorkbenchCatalogContents() {
+        List<ClassicsPublicContentFacadeDto> contents = new java.util.ArrayList<>();
+        contents.addAll(listWorkbenchCategoryContents());
+        contents.addAll(listWorkbenchVolumeContents());
+        return contents;
+    }
+
+    private List<ClassicsPublicContentFacadeDto> listWorkbenchContents() {
+        ClassicsPublicContentsFacadeResponse response = classicsFacade.listWorkbenchContents();
+        return response == null || response.getContents() == null ? List.of() : response.getContents();
+    }
+
+    private List<ClassicsPublicContentFacadeDto> listWorkbenchContents(String categoryCode, String volumeCode) {
+        ClassicsPublicContentsFacadeResponse response = classicsFacade.listWorkbenchContents(categoryCode, volumeCode);
+        return response == null || response.getContents() == null ? List.of() : response.getContents();
+    }
+
+    private boolean needsGraphSnapshots(String parentKey, String keyword, String graphStatus) {
+        if (!isBlank(keyword) || !isBlank(graphStatus)) {
+            return true;
+        }
+        String normalizedParentKey = normalize(parentKey);
+        return normalizedParentKey != null
+                && normalizedParentKey.startsWith(KnowledgeGraphManuscriptTreeAssembler.NODE_TYPE_VOLUME + ":");
+    }
+
+    private boolean isSourceRootParent(String parentKey) {
+        String normalizedParentKey = normalize(parentKey);
+        return normalizedParentKey != null
+                && normalizedParentKey.startsWith(KnowledgeGraphManuscriptTreeAssembler.NODE_TYPE_SOURCE_ROOT + ":");
+    }
+
+    private boolean isCategoryParent(String parentKey) {
+        String normalizedParentKey = normalize(parentKey);
+        return normalizedParentKey != null
+                && normalizedParentKey.startsWith(KnowledgeGraphManuscriptTreeAssembler.NODE_TYPE_CATEGORY + ":");
+    }
+
+    private NodeKey parseVolumeParent(String parentKey) {
+        String normalizedParentKey = normalize(parentKey);
+        if (normalizedParentKey == null
+                || !normalizedParentKey.startsWith(KnowledgeGraphManuscriptTreeAssembler.NODE_TYPE_VOLUME + ":")) {
+            return null;
+        }
+        String[] parts = normalizedParentKey.split(":", 4);
+        if (parts.length < 4) {
+            return null;
+        }
+        return new NodeKey(parts[2], parts[3]);
+    }
+
+    private record NodeKey(String categoryCode, String volumeCode) {}
+
+    private ClassicsPublicContentFacadeDto loadWorkbenchContent(String sourceContentType, Long sourceContentId) {
         ClassicsPublicContentFacadeResponse response =
-                classicsFacade.getPublicContent(ClassicsPublicContentFacadeRequest.builder()
+                classicsFacade.getWorkbenchContent(ClassicsPublicContentFacadeRequest.builder()
                         .contentType(sourceContentType)
                         .contentId(String.valueOf(sourceContentId))
                         .build());

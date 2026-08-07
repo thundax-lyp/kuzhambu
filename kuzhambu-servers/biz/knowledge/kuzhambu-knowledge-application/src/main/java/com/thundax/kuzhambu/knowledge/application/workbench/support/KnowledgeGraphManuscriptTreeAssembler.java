@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.knowledge.application.workbench.support;
 
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.ManuscriptTreeNodeResult;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -16,6 +15,7 @@ public class KnowledgeGraphManuscriptTreeAssembler {
 
     public static final String NODE_TYPE_SOURCE_ROOT = "SOURCE_ROOT";
     public static final String NODE_TYPE_CATEGORY = "CATEGORY";
+    public static final String NODE_TYPE_VOLUME = "VOLUME";
     public static final String NODE_TYPE_MANUSCRIPT = "MANUSCRIPT";
     public static final String SOURCE_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
     public static final String SOURCE_TYPE_WANGQI_DOCUMENT = "WANGQI_DOCUMENT";
@@ -40,7 +40,7 @@ public class KnowledgeGraphManuscriptTreeAssembler {
                 return manuscriptMatches(
                         effectiveContents, sourceContentType, keyword, graphStatus, graphSnapshotResolver);
             }
-            return sourceRoots(sourceContentType);
+            return sourceRoots(effectiveContents, sourceContentType, graphSnapshotResolver);
         }
         NodeKey nodeKey = NodeKey.parse(normalizedParentKey);
         if (nodeKey == null || NODE_TYPE_SOURCE_ROOT.equals(nodeKey.nodeType())) {
@@ -48,10 +48,20 @@ public class KnowledgeGraphManuscriptTreeAssembler {
             return categoryNodes(effectiveContents, type, keyword, graphStatus, graphSnapshotResolver);
         }
         if (NODE_TYPE_CATEGORY.equals(nodeKey.nodeType())) {
+            return volumeNodes(
+                    effectiveContents,
+                    nodeKey.sourceContentType(),
+                    nodeKey.categoryCode(),
+                    keyword,
+                    graphStatus,
+                    graphSnapshotResolver);
+        }
+        if (NODE_TYPE_VOLUME.equals(nodeKey.nodeType())) {
             return manuscriptNodes(
                     effectiveContents,
                     nodeKey.sourceContentType(),
                     nodeKey.categoryCode(),
+                    nodeKey.volumeCode(),
                     keyword,
                     graphStatus,
                     graphSnapshotResolver);
@@ -65,7 +75,7 @@ public class KnowledgeGraphManuscriptTreeAssembler {
             String keyword,
             String graphStatus,
             Function<ClassicsPublicContentFacadeDto, ManuscriptGraphSnapshot> graphSnapshotResolver) {
-        return manuscriptNodes(contents, sourceContentType, null, keyword, graphStatus, graphSnapshotResolver);
+        return manuscriptNodes(contents, sourceContentType, null, null, keyword, graphStatus, graphSnapshotResolver);
     }
 
     public String sourceRootKey(String sourceContentType) {
@@ -80,7 +90,20 @@ public class KnowledgeGraphManuscriptTreeAssembler {
         return NODE_TYPE_MANUSCRIPT + NODE_KEY_SEPARATOR + sourceContentType + NODE_KEY_SEPARATOR + sourceContentId;
     }
 
-    private List<ManuscriptTreeNodeResult> sourceRoots(String sourceContentType) {
+    public String volumeKey(String sourceContentType, String categoryCode, String volumeCode) {
+        return NODE_TYPE_VOLUME
+                + NODE_KEY_SEPARATOR
+                + sourceContentType
+                + NODE_KEY_SEPARATOR
+                + categoryCode
+                + NODE_KEY_SEPARATOR
+                + volumeCode;
+    }
+
+    private List<ManuscriptTreeNodeResult> sourceRoots(
+            List<ClassicsPublicContentFacadeDto> contents,
+            String sourceContentType,
+            Function<ClassicsPublicContentFacadeDto, ManuscriptGraphSnapshot> graphSnapshotResolver) {
         String normalizedType = normalize(sourceContentType);
         return SOURCE_SPECS.stream()
                 .filter(spec ->
@@ -91,7 +114,7 @@ public class KnowledgeGraphManuscriptTreeAssembler {
                         .title(spec.title())
                         .sourceContentType(spec.sourceContentType())
                         .graphStatus(STATUS_NOT_EXTRACTED)
-                        .children(List.of())
+                        .children(categoryNodes(contents, spec.sourceContentType(), null, null, graphSnapshotResolver))
                         .build())
                 .toList();
     }
@@ -103,12 +126,11 @@ public class KnowledgeGraphManuscriptTreeAssembler {
             String graphStatus,
             Function<ClassicsPublicContentFacadeDto, ManuscriptGraphSnapshot> graphSnapshotResolver) {
         Map<String, ClassicsPublicContentFacadeDto> categorySamples = new LinkedHashMap<>();
-        for (ClassicsPublicContentFacadeDto content :
-                filteredContents(contents, sourceContentType, null, keyword, graphStatus, graphSnapshotResolver)) {
+        for (ClassicsPublicContentFacadeDto content : filteredContents(
+                contents, sourceContentType, null, null, keyword, graphStatus, graphSnapshotResolver)) {
             categorySamples.putIfAbsent(categoryCode(content), content);
         }
         return categorySamples.values().stream()
-                .sorted(Comparator.comparing(this::categoryTitle))
                 .map(content -> ManuscriptTreeNodeResult.builder()
                         .nodeKey(categoryKey(content.getContentType(), categoryCode(content)))
                         .parentKey(sourceRootKey(content.getContentType()))
@@ -116,6 +138,42 @@ public class KnowledgeGraphManuscriptTreeAssembler {
                         .title(categoryTitle(content))
                         .sourceContentType(content.getContentType())
                         .sourcePath(categoryTitle(content))
+                        .graphStatus(STATUS_NOT_EXTRACTED)
+                        .children(volumeNodes(
+                                contents,
+                                content.getContentType(),
+                                categoryCode(content),
+                                keyword,
+                                graphStatus,
+                                graphSnapshotResolver))
+                        .build())
+                .toList();
+    }
+
+    private List<ManuscriptTreeNodeResult> volumeNodes(
+            List<ClassicsPublicContentFacadeDto> contents,
+            String sourceContentType,
+            String categoryCode,
+            String keyword,
+            String graphStatus,
+            Function<ClassicsPublicContentFacadeDto, ManuscriptGraphSnapshot> graphSnapshotResolver) {
+        Map<String, ClassicsPublicContentFacadeDto> volumeSamples = new LinkedHashMap<>();
+        for (ClassicsPublicContentFacadeDto content : filteredContents(
+                contents, sourceContentType, categoryCode, null, keyword, graphStatus, graphSnapshotResolver)) {
+            if (!hasVolumeCode(content)) {
+                continue;
+            }
+            volumeSamples.putIfAbsent(volumeCode(content), content);
+        }
+        return volumeSamples.values().stream()
+                .map(content -> ManuscriptTreeNodeResult.builder()
+                        .nodeKey(volumeKey(content.getContentType(), categoryCode(content), volumeCode(content)))
+                        .parentKey(categoryKey(content.getContentType(), categoryCode(content)))
+                        .nodeType(NODE_TYPE_VOLUME)
+                        .title(volumeTitle(content))
+                        .sourceContentType(content.getContentType())
+                        .sourceContentId(parseContentId(content))
+                        .sourcePath(categoryTitle(content) + " / " + volumeTitle(content))
                         .graphStatus(STATUS_NOT_EXTRACTED)
                         .children(List.of())
                         .build())
@@ -126,18 +184,24 @@ public class KnowledgeGraphManuscriptTreeAssembler {
             List<ClassicsPublicContentFacadeDto> contents,
             String sourceContentType,
             String categoryCode,
+            String volumeCode,
             String keyword,
             String graphStatus,
             Function<ClassicsPublicContentFacadeDto, ManuscriptGraphSnapshot> graphSnapshotResolver) {
-        return filteredContents(contents, sourceContentType, categoryCode, keyword, graphStatus, graphSnapshotResolver)
+        return filteredContents(
+                        contents,
+                        sourceContentType,
+                        categoryCode,
+                        volumeCode,
+                        keyword,
+                        graphStatus,
+                        graphSnapshotResolver)
                 .stream()
-                .sorted(Comparator.comparing(
-                        ClassicsPublicContentFacadeDto::getTitle, Comparator.nullsLast(String::compareTo)))
                 .map(content -> {
                     ManuscriptGraphSnapshot snapshot = resolveSnapshot(content, graphSnapshotResolver);
                     return ManuscriptTreeNodeResult.builder()
                             .nodeKey(manuscriptKey(content.getContentType(), parseContentId(content)))
-                            .parentKey(categoryKey(content.getContentType(), categoryCode(content)))
+                            .parentKey(volumeKey(content.getContentType(), categoryCode(content), volumeCode(content)))
                             .nodeType(NODE_TYPE_MANUSCRIPT)
                             .title(content.getTitle())
                             .sourceContentType(content.getContentType())
@@ -156,11 +220,13 @@ public class KnowledgeGraphManuscriptTreeAssembler {
             List<ClassicsPublicContentFacadeDto> contents,
             String sourceContentType,
             String categoryCode,
+            String volumeCode,
             String keyword,
             String graphStatus,
             Function<ClassicsPublicContentFacadeDto, ManuscriptGraphSnapshot> graphSnapshotResolver) {
         String normalizedType = normalize(sourceContentType);
         String normalizedCategoryCode = normalize(categoryCode);
+        String normalizedVolumeCode = normalize(volumeCode);
         String normalizedKeyword = normalize(keyword);
         String normalizedGraphStatus = normalize(graphStatus);
         return contents.stream()
@@ -169,6 +235,7 @@ public class KnowledgeGraphManuscriptTreeAssembler {
                 .filter(content -> normalizedType == null || normalizedType.equals(content.getContentType()))
                 .filter(content ->
                         normalizedCategoryCode == null || normalizedCategoryCode.equals(categoryCode(content)))
+                .filter(content -> normalizedVolumeCode == null || normalizedVolumeCode.equals(volumeCode(content)))
                 .filter(content -> normalizedKeyword == null || matchesKeyword(content, normalizedKeyword))
                 .filter(content -> normalizedGraphStatus == null
                         || normalizedGraphStatus.equals(
@@ -214,10 +281,31 @@ public class KnowledgeGraphManuscriptTreeAssembler {
         return categoryName == null ? CATEGORY_FALLBACK : categoryName;
     }
 
+    private String volumeCode(ClassicsPublicContentFacadeDto content) {
+        String volumeCode = normalize(content == null ? null : content.getVolumeCode());
+        if (volumeCode != null) {
+            return volumeCode;
+        }
+        return volumeTitle(content);
+    }
+
+    private boolean hasVolumeCode(ClassicsPublicContentFacadeDto content) {
+        return normalize(content == null ? null : content.getVolumeCode()) != null;
+    }
+
+    private String volumeTitle(ClassicsPublicContentFacadeDto content) {
+        String volumeName = normalize(content == null ? null : content.getVolumeName());
+        return volumeName == null ? "未分卷" : volumeName;
+    }
+
     private String sourcePath(ClassicsPublicContentFacadeDto content) {
         String title = normalize(content == null ? null : content.getTitle());
         String category = categoryTitle(content);
-        return title == null ? category : category + " / " + title;
+        String volume = volumeTitle(content);
+        if (title == null) {
+            return category + " / " + volume;
+        }
+        return category + " / " + volume + " / " + title;
     }
 
     private Long parseContentId(ClassicsPublicContentFacadeDto content) {
@@ -243,13 +331,14 @@ public class KnowledgeGraphManuscriptTreeAssembler {
 
     private record SourceSpec(String sourceContentType, String title) {}
 
-    private record NodeKey(String nodeType, String sourceContentType, String categoryCode) {
+    private record NodeKey(String nodeType, String sourceContentType, String categoryCode, String volumeCode) {
         private static NodeKey parse(String nodeKey) {
-            String[] parts = nodeKey == null ? new String[0] : nodeKey.split(NODE_KEY_SEPARATOR, 3);
+            String[] parts = nodeKey == null ? new String[0] : nodeKey.split(NODE_KEY_SEPARATOR, 4);
             if (parts.length < 2) {
                 return null;
             }
-            return new NodeKey(parts[0], parts[1], parts.length > 2 ? parts[2] : null);
+            return new NodeKey(
+                    parts[0], parts[1], parts.length > 2 ? parts[2] : null, parts.length > 3 ? parts[3] : null);
         }
     }
 }

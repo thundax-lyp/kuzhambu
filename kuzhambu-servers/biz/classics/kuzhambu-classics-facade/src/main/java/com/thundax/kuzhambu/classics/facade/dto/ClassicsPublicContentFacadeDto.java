@@ -17,6 +17,8 @@ public class ClassicsPublicContentFacadeDto {
     private final String knowledgeBase;
     private final String categoryCode;
     private final String categoryName;
+    private final String volumeCode;
+    private final String volumeName;
     private final String title;
     private final String summary;
     private final List<String> textSegments;

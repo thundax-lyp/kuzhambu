@@ -72,7 +72,8 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 toPublicSancaiEntry(
                         sancaiApplicationService.getEntry(SancaiEntryIdCodec.toDomain(idValue)),
                         listSancaiCategoryMap(),
-                        listSancaiCategoryIdByVolumeId());
+                        listSancaiCategoryIdByVolumeId(),
+                        listSancaiVolumeMap());
             case WANGQI_DOCUMENT ->
                 toPublicWangqiDocument(wangqiDocumentApplicationService.get(WangqiDocumentIdCodec.toDomain(idValue)));
             case MING_CUSTOMS ->
@@ -80,9 +81,111 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         };
     }
 
+    @Override
+    public List<ClassicsSearchSourceContent> listWorkbenchCategoryContents() {
+        List<SancaiCategory> categories = sancaiApplicationService.listCategories();
+        if (categories == null || categories.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return categories.stream()
+                .filter(category -> category != null && category.getId() != null)
+                .map(category -> new ClassicsSearchSourceContent(
+                        ClassicsContentType.SANCAI_ENTRY.value(),
+                        null,
+                        "classics",
+                        String.valueOf(category.getId().value()),
+                        category.getTitle(),
+                        null,
+                        null,
+                        category.getTitle(),
+                        null,
+                        List.of(),
+                        List.of(),
+                        null,
+                        null,
+                        null,
+                        null))
+                .toList();
+    }
+
+    @Override
+    public List<ClassicsSearchSourceContent> listWorkbenchVolumeContents() {
+        List<SancaiCategory> categories = sancaiApplicationService.listCategories();
+        if (categories == null || categories.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<ClassicsSearchSourceContent> results = new ArrayList<>();
+        for (SancaiCategory category : categories) {
+            if (category == null || category.getId() == null) {
+                continue;
+            }
+            List<SancaiVolume> volumes = sancaiApplicationService.listVolumes(category.getId());
+            if (volumes == null || volumes.isEmpty()) {
+                continue;
+            }
+            for (SancaiVolume volume : volumes) {
+                if (volume == null || volume.getId() == null) {
+                    continue;
+                }
+                results.add(new ClassicsSearchSourceContent(
+                        ClassicsContentType.SANCAI_ENTRY.value(),
+                        String.valueOf(volume.getId().value()),
+                        "classics",
+                        String.valueOf(category.getId().value()),
+                        category.getTitle(),
+                        String.valueOf(volume.getId().value()),
+                        volume.getTitle(),
+                        volume.getTitle(),
+                        null,
+                        List.of(),
+                        List.of(),
+                        null,
+                        null,
+                        null,
+                        null));
+            }
+        }
+        return results;
+    }
+
+    @Override
+    public List<ClassicsSearchSourceContent> listWorkbenchContents() {
+        List<ClassicsSearchSourceContent> contents = new ArrayList<>();
+        contents.addAll(listWorkbenchSancaiEntries());
+        return contents;
+    }
+
+    @Override
+    public List<ClassicsSearchSourceContent> listWorkbenchContents(String categoryCode, String volumeCode) {
+        if (volumeCode == null || volumeCode.isBlank()) {
+            return listWorkbenchContents();
+        }
+        Long categoryId = parseId(categoryCode);
+        Long volumeId = parseId(volumeCode);
+        if (volumeId == null) {
+            return Collections.emptyList();
+        }
+        return listWorkbenchSancaiEntries(categoryId, volumeId);
+    }
+
+    @Override
+    public ClassicsSearchSourceContent getWorkbenchContent(String contentType, String contentId) {
+        Long idValue = Long.valueOf(contentId);
+        return switch (ClassicsContentType.from(contentType)) {
+            case SANCAI_ENTRY ->
+                toWorkbenchSancaiEntry(
+                        sancaiApplicationService.getEntry(SancaiEntryIdCodec.toDomain(idValue)),
+                        listSancaiCategoryMap(),
+                        listSancaiCategoryIdByVolumeId(),
+                        listSancaiVolumeMap());
+            case WANGQI_DOCUMENT, MING_CUSTOMS -> getPublicContent(contentType, contentId);
+        };
+    }
+
     private List<ClassicsSearchSourceContent> listPublicSancaiEntries() {
         Map<Long, SancaiCategory> categoryById = listSancaiCategoryMap();
         Map<Long, Long> categoryIdByVolumeId = listSancaiCategoryIdByVolumeId();
+        Map<Long, SancaiVolume> volumeById = listSancaiVolumeMap();
         List<SancaiEntry> entries = sancaiApplicationService.listEntries(new SancaiEntryPageQuery(
                 null, null, null, SancaiEntryLifecycleStatus.PUBLISHED, null, null, null, null, SortDirection.ASC));
         if (entries == null || entries.isEmpty()) {
@@ -90,12 +193,48 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         }
         List<ClassicsSearchSourceContent> results = new ArrayList<>(entries.size());
         for (SancaiEntry entry : entries) {
-            ClassicsSearchSourceContent content = toPublicSancaiEntry(entry, categoryById, categoryIdByVolumeId);
+            ClassicsSearchSourceContent content =
+                    toPublicSancaiEntry(entry, categoryById, categoryIdByVolumeId, volumeById);
             if (content != null) {
                 results.add(content);
             }
         }
         return results;
+    }
+
+    private List<ClassicsSearchSourceContent> listWorkbenchSancaiEntries() {
+        return listWorkbenchSancaiEntries(null, null);
+    }
+
+    private List<ClassicsSearchSourceContent> listWorkbenchSancaiEntries(Long categoryId, Long volumeId) {
+        Map<Long, SancaiCategory> categoryById = listSancaiCategoryMap();
+        Map<Long, Long> categoryIdByVolumeId = listSancaiCategoryIdByVolumeId();
+        Map<Long, SancaiVolume> volumeById = listSancaiVolumeMap();
+        List<SancaiEntry> entries = sancaiApplicationService.listEntries(
+                new SancaiEntryPageQuery(categoryId, volumeId, null, null, null, null, null, null, SortDirection.ASC));
+        if (entries == null || entries.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<ClassicsSearchSourceContent> results = new ArrayList<>(entries.size());
+        for (SancaiEntry entry : entries) {
+            ClassicsSearchSourceContent content =
+                    toWorkbenchSancaiEntry(entry, categoryById, categoryIdByVolumeId, volumeById);
+            if (content != null) {
+                results.add(content);
+            }
+        }
+        return results;
+    }
+
+    private Long parseId(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return Long.valueOf(value);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private List<ClassicsSearchSourceContent> listPublicWangqiDocuments() {
@@ -177,6 +316,29 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         return categoryIdByVolumeId;
     }
 
+    private Map<Long, SancaiVolume> listSancaiVolumeMap() {
+        List<SancaiCategory> categories = sancaiApplicationService.listCategories();
+        if (categories == null || categories.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<Long, SancaiVolume> volumeById = new HashMap<>();
+        for (SancaiCategory category : categories) {
+            if (category == null || category.getId() == null) {
+                continue;
+            }
+            List<SancaiVolume> volumes = sancaiApplicationService.listVolumes(category.getId());
+            if (volumes == null || volumes.isEmpty()) {
+                continue;
+            }
+            for (SancaiVolume volume : volumes) {
+                if (volume != null && volume.getId() != null) {
+                    volumeById.put(volume.getId().value(), volume);
+                }
+            }
+        }
+        return volumeById;
+    }
+
     private List<String> nonBlankSegments(String... values) {
         List<String> segments = new ArrayList<>();
         if (values == null) {
@@ -191,15 +353,38 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
     }
 
     private ClassicsSearchSourceContent toPublicSancaiEntry(
-            SancaiEntry entry, Map<Long, SancaiCategory> categoryById, Map<Long, Long> categoryIdByVolumeId) {
+            SancaiEntry entry,
+            Map<Long, SancaiCategory> categoryById,
+            Map<Long, Long> categoryIdByVolumeId,
+            Map<Long, SancaiVolume> volumeById) {
         if (entry == null
                 || entry.getId() == null
                 || entry.getLifecycleStatus() != SancaiEntryLifecycleStatus.PUBLISHED) {
             return null;
         }
+        return toSancaiEntry(entry, categoryById, categoryIdByVolumeId, volumeById);
+    }
+
+    private ClassicsSearchSourceContent toWorkbenchSancaiEntry(
+            SancaiEntry entry,
+            Map<Long, SancaiCategory> categoryById,
+            Map<Long, Long> categoryIdByVolumeId,
+            Map<Long, SancaiVolume> volumeById) {
+        if (entry == null || entry.getId() == null) {
+            return null;
+        }
+        return toSancaiEntry(entry, categoryById, categoryIdByVolumeId, volumeById);
+    }
+
+    private ClassicsSearchSourceContent toSancaiEntry(
+            SancaiEntry entry,
+            Map<Long, SancaiCategory> categoryById,
+            Map<Long, Long> categoryIdByVolumeId,
+            Map<Long, SancaiVolume> volumeById) {
         Long volumeId = entry.getVolumeId() == null ? null : entry.getVolumeId().value();
         Long categoryId = volumeId == null ? null : categoryIdByVolumeId.get(volumeId);
         SancaiCategory category = categoryId == null ? null : categoryById.get(categoryId);
+        SancaiVolume volume = volumeId == null ? null : volumeById.get(volumeId);
         String contentType = ClassicsContentType.SANCAI_ENTRY.value();
         String contentId = String.valueOf(entry.getId().value());
         List<String> textSegments =
@@ -211,6 +396,8 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 contentType,
                 categoryId == null ? null : String.valueOf(categoryId),
                 category == null ? null : category.getTitle(),
+                volumeId == null ? null : String.valueOf(volumeId),
+                volume == null ? null : volume.getTitle(),
                 entry.getTitle(),
                 entry.getSummary(),
                 textSegments,
@@ -236,6 +423,8 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 contentType,
                 contentId,
                 contentType,
+                null,
+                null,
                 null,
                 null,
                 document.getTitle(),
@@ -267,6 +456,8 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 contentType,
                 entry.getCategory(),
                 entry.getCategory(),
+                null,
+                null,
                 entry.getTitle(),
                 entry.getSummary(),
                 textSegments,
