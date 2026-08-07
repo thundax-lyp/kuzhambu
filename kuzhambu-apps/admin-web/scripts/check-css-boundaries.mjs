@@ -35,7 +35,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         file: "src/pages/audit/audit-log/audit-log-detail/audit-log-detail.css",
         allowedAntdSelectorLines: 2
     },
-    { file: "src/pages/audit/audit-log/audit-log-page.css", allowedAntdSelectorLines: 1 },
     { file: "src/pages/auth/login/login-page.css", allowedAntdSelectorLines: 8 },
     {
         file: "src/pages/classics/common/classics-content-tag-panel.css",

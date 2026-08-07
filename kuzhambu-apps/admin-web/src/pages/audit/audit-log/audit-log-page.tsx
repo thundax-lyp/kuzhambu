@@ -135,7 +135,9 @@ const renderOperator = (log: AuditLogRecord, accessToken: string | null) => {
             <Avatar size={28} src={avatarUrl}>
                 {getInitials(user.name)}
             </Avatar>
-            <Text ellipsis>{user.name}</Text>
+            <Text className="audit-log-operator-name" ellipsis>
+                {user.name}
+            </Text>
         </KuzhambuSpace>
     );
 };
