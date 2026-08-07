@@ -69,6 +69,8 @@ export const SancaiCategoryEditDrawerModal = ({
                 aria-label={category ? "编辑门类" : "新增门类"}
                 className="sancai-category-edit-modal sancai-editor-form"
                 component="div"
+                itemGap="none"
+                mobileItemDisplay="block"
                 initialValues={initialValues}
             >
                 <KuzhambuFormItem name="title" label="门类标题" layoutSize="large">

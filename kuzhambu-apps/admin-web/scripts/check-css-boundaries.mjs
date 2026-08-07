@@ -73,7 +73,7 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-panel.css",
         allowedAntdSelectorLines: 4
     },
-    { file: "src/pages/classics/sancai/sancai-page.css", allowedAntdSelectorLines: 6 },
+    { file: "src/pages/classics/sancai/sancai-page.css", allowedAntdSelectorLines: 3 },
     {
         file: "src/pages/classics/sancai-visual/sancai-entry-visual-section/sancai-entry-visual-section.css",
         allowedAntdSelectorLines: 14
@@ -139,10 +139,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     {
         file: "src/pages/system/user/user-edit-drawer/user-avatar-field/user-avatar-field.css",
         allowedAntdSelectorLines: 1
-    },
-    {
-        file: "src/pages/system/user/user-edit-drawer/user-edit-drawer.css",
-        allowedAntdSelectorLines: 2
     },
     { file: "src/pages/system/user/user-page.css", allowedAntdSelectorLines: 5 }
 ];

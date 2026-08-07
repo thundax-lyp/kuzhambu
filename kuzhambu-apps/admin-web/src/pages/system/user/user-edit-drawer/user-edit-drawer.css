@@ -1,14 +1,7 @@
 .user-edit-drawer-form {
     display: grid;
     gap: 0;
-}
-
-.user-edit-drawer-form .ant-form-item {
-    margin-bottom: 14px;
-}
-
-.user-edit-drawer-form .ant-form-item-label > label {
-    color: var(--user-copy);
-    font-size: 12px;
-    font-weight: 700;
+    --kuzhambu-form-label-color: var(--user-copy);
+    --kuzhambu-form-label-font-size: 12px;
+    --kuzhambu-form-label-font-weight: 700;
 }

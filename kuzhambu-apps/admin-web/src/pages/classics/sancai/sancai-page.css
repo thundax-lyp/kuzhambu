@@ -129,14 +129,11 @@ html[data-theme="dark"] .sancai-form-field {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.44);
 }
 
-.sancai-editor-form .ant-form-item {
-    margin-bottom: 0;
-}
-
-.sancai-editor-form .ant-form-item-label > label {
-    color: color-mix(in srgb, var(--sancai-ink) 82%, #7e2e25 18%);
-    font-weight: 700;
-    letter-spacing: 0;
+.sancai-editor-form,
+.sancai-entry-basic-section-form {
+    --kuzhambu-form-label-color: color-mix(in srgb, var(--sancai-ink) 82%, #7e2e25 18%);
+    --kuzhambu-form-label-font-weight: 700;
+    --kuzhambu-form-label-letter-spacing: 0;
 }
 
 .sancai-form-field {
@@ -192,9 +189,5 @@ html[data-theme="dark"] .sancai-form-field {
 
     .sancai-panel-scroll {
         overflow: visible;
-    }
-
-    .sancai-editor-form .ant-form-item {
-        display: block;
     }
 }
