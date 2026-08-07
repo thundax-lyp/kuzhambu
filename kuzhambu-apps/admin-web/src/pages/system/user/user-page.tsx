@@ -312,8 +312,18 @@ export const UserPage = () => {
                     }}
                     onReset={resetFilters}
                 />
-                <Splitter className="user-department-work-area">
-                    <Splitter.Panel defaultSize={280} min={220} max={520}>
+                <Splitter
+                    className="user-department-work-area"
+                    classNames={{
+                        dragger: "user-department-work-area-dragger"
+                    }}
+                >
+                    <Splitter.Panel
+                        className="user-department-work-area-panel"
+                        defaultSize={280}
+                        min={220}
+                        max={520}
+                    >
                         <UserDepartmentTree
                             departments={departments}
                             error={

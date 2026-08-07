@@ -44,8 +44,7 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         allowedAntdSelectorLines: 16
     },
     { file: "src/pages/system/department/department-page.css", allowedAntdSelectorLines: 11 },
-    { file: "src/pages/system/menu/menu-page.css", allowedAntdSelectorLines: 10 },
-    { file: "src/pages/system/user/user-page.css", allowedAntdSelectorLines: 5 }
+    { file: "src/pages/system/menu/menu-page.css", allowedAntdSelectorLines: 10 }
 ];
 const pageCssAntdSelectorAllowanceByFile = new Map(
     PAGE_CSS_ANTD_SELECTOR_ALLOWLIST.map((entry) => [entry.file, entry.allowedAntdSelectorLines])
