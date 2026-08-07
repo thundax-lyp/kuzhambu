@@ -21,9 +21,13 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRep
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -146,7 +150,7 @@ public class KnowledgeGraphCandidateApplySupport {
                 throw new BizException("Knowledge entity type is required");
             }
             KnowledgeEntity entity = new KnowledgeEntity();
-            entity.setEntityKey(entityKey(name, entityType));
+            entity.setEntityKey(textKey(name));
             entity.setName(name);
             entity.setEntityType(entityType);
             entity.setDescription(optionalText(node, "description", "summary"));
@@ -172,10 +176,10 @@ public class KnowledgeGraphCandidateApplySupport {
                 throw new BizException("Knowledge relation is incomplete");
             }
             KnowledgeRelation relation = new KnowledgeRelation();
-            relation.setSourceEntityKey(entityKey(sourceName, "AUTO"));
-            relation.setTargetEntityKey(entityKey(targetName, "AUTO"));
+            relation.setSourceEntityKey(textKey(sourceName));
+            relation.setTargetEntityKey(textKey(targetName));
             relation.setRelationKey(
-                    relationKey(relation.getSourceEntityKey(), relation.getTargetEntityKey(), relationType));
+                    relationKey(relation.getSourceEntityKey(), textKey(relationType), relation.getTargetEntityKey()));
             relation.setSourceName(sourceName);
             relation.setTargetName(targetName);
             relation.setRelationType(relationType);
@@ -201,7 +205,7 @@ public class KnowledgeGraphCandidateApplySupport {
                 throw new BizException("Knowledge lineage node type is required");
             }
             KnowledgeLineageNode lineageNode = new KnowledgeLineageNode();
-            lineageNode.setNodeKey(nodeKey(name, nodeType));
+            lineageNode.setNodeKey(textKey(name));
             lineageNode.setName(name);
             lineageNode.setNodeType(nodeType);
             lineageNode.setGeneration(integerValue(node.get("generation")));
@@ -228,10 +232,10 @@ public class KnowledgeGraphCandidateApplySupport {
                 throw new BizException("Knowledge lineage relation is incomplete");
             }
             KnowledgeLineageRelation relation = new KnowledgeLineageRelation();
-            relation.setSourceNodeKey(nodeKey(sourceName, "AUTO"));
-            relation.setTargetNodeKey(nodeKey(targetName, "AUTO"));
+            relation.setSourceNodeKey(textKey(sourceName));
+            relation.setTargetNodeKey(textKey(targetName));
             relation.setRelationKey(
-                    relationKey(relation.getSourceNodeKey(), relation.getTargetNodeKey(), relationType));
+                    relationKey(relation.getSourceNodeKey(), textKey(relationType), relation.getTargetNodeKey()));
             relation.setSourceName(sourceName);
             relation.setTargetName(targetName);
             relation.setRelationType(relationType);
@@ -437,16 +441,18 @@ public class KnowledgeGraphCandidateApplySupport {
         return node == null || node.isNull() ? null : node.asInt();
     }
 
-    private String entityKey(String name, String entityType) {
-        return normalize(entityType) + ":" + normalize(name);
+    private String textKey(String text) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = digest.digest(normalize(text).getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(bytes);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new BizException("SHA-256 algorithm is not available");
+        }
     }
 
-    private String nodeKey(String name, String nodeType) {
-        return normalize(nodeType) + ":" + normalize(name);
-    }
-
-    private String relationKey(String sourceKey, String targetKey, String relationType) {
-        return sourceKey + "->" + targetKey + ":" + normalize(relationType);
+    private String relationKey(String sourceKey, String predicateKey, String targetKey) {
+        return sourceKey + "->" + predicateKey + "->" + targetKey;
     }
 
     private String normalize(String value) {
