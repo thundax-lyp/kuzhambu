@@ -178,8 +178,7 @@ public class KnowledgeGraphCandidateApplySupport {
             KnowledgeRelation relation = new KnowledgeRelation();
             relation.setSourceEntityKey(textKey(sourceName));
             relation.setTargetEntityKey(textKey(targetName));
-            relation.setRelationKey(
-                    relationKey(relation.getSourceEntityKey(), textKey(relationType), relation.getTargetEntityKey()));
+            relation.setRelationKey(relationKey(sourceName, relationType, targetName));
             relation.setSourceName(sourceName);
             relation.setTargetName(targetName);
             relation.setRelationType(relationType);
@@ -234,8 +233,7 @@ public class KnowledgeGraphCandidateApplySupport {
             KnowledgeLineageRelation relation = new KnowledgeLineageRelation();
             relation.setSourceNodeKey(textKey(sourceName));
             relation.setTargetNodeKey(textKey(targetName));
-            relation.setRelationKey(
-                    relationKey(relation.getSourceNodeKey(), textKey(relationType), relation.getTargetNodeKey()));
+            relation.setRelationKey(relationKey(sourceName, relationType, targetName));
             relation.setSourceName(sourceName);
             relation.setTargetName(targetName);
             relation.setRelationType(relationType);
@@ -451,8 +449,8 @@ public class KnowledgeGraphCandidateApplySupport {
         }
     }
 
-    private String relationKey(String sourceKey, String predicateKey, String targetKey) {
-        return textKey(String.join("|", sourceKey, predicateKey, targetKey));
+    private String relationKey(String sourceText, String predicateText, String targetText) {
+        return textKey(String.join("|", sourceText, predicateText, targetText));
     }
 
     private String normalize(String value) {
