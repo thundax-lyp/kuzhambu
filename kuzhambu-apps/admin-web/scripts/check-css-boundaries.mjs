@@ -48,10 +48,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         allowedAntdSelectorLines: 17
     },
     {
-        file: "src/pages/discovery/qa/qa-session-table/qa-session-table.css",
-        allowedAntdSelectorLines: 2
-    },
-    {
         file: "src/pages/discovery/search-statistic/search-statistic-page.css",
         allowedAntdSelectorLines: 16
     },

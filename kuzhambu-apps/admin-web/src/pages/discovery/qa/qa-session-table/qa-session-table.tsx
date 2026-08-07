@@ -110,6 +110,7 @@ export const QaSessionTable = ({
         <aside className="discovery-qa-page__sidebar">
             <KuzhambuButton
                 block
+                className="discovery-qa-page__create-session"
                 testId="discovery-qa-create-session-button"
                 loading={opening}
                 type="primary"
@@ -129,7 +130,14 @@ export const QaSessionTable = ({
                             <div key={sessionId} className="discovery-qa-page__session-item">
                                 <KuzhambuButton
                                     block
-                                    className="discovery-qa-page__select-session"
+                                    className={[
+                                        "discovery-qa-page__select-session",
+                                        sessionId === selectedSessionId
+                                            ? "discovery-qa-page__select-session--active"
+                                            : ""
+                                    ]
+                                        .filter(Boolean)
+                                        .join(" ")}
                                     testId="discovery-qa-select-session-button"
                                     type={sessionId === selectedSessionId ? "primary" : "default"}
                                     onClick={() => onSelect(sessionId)}
