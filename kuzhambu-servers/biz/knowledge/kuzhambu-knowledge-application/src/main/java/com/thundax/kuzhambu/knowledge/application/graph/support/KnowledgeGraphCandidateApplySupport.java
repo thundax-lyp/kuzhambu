@@ -452,7 +452,7 @@ public class KnowledgeGraphCandidateApplySupport {
     }
 
     private String relationKey(String sourceKey, String predicateKey, String targetKey) {
-        return sourceKey + "->" + predicateKey + "->" + targetKey;
+        return textKey(String.join("|", sourceKey, predicateKey, targetKey));
     }
 
     private String normalize(String value) {

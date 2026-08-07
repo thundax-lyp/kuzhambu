@@ -136,7 +136,7 @@ class KnowledgeGraphCandidateApplySupportTest {
     }
 
     private static String relationKey(String subject, String predicate, String object) {
-        return textKey(subject) + "->" + textKey(predicate) + "->" + textKey(object);
+        return textKey(String.join("|", textKey(subject), textKey(predicate), textKey(object)));
     }
 
     private static String textKey(String text) {
