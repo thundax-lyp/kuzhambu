@@ -294,6 +294,7 @@ export const BackupRestorePage = () => {
                 <div className="backup-restore-page-summary">
                     <KuzhambuCard className="backup-restore-page-summary-card">
                         <Statistic
+                            className="backup-restore-page-summary-statistic"
                             prefix={<DatabaseOutlined />}
                             title="最近一次成功备份"
                             value={latestBackup?.fileName || "暂无"}
@@ -306,6 +307,7 @@ export const BackupRestorePage = () => {
                     </KuzhambuCard>
                     <KuzhambuCard className="backup-restore-page-summary-card">
                         <Statistic
+                            className="backup-restore-page-summary-statistic"
                             prefix={<HistoryOutlined />}
                             title="恢复记录总数"
                             value={restoreQuery.data?.count ?? restoreQuery.data?.totalCount ?? 0}
@@ -317,6 +319,7 @@ export const BackupRestorePage = () => {
                     </KuzhambuCard>
                     <KuzhambuCard className="backup-restore-page-summary-card">
                         <Statistic
+                            className="backup-restore-page-summary-statistic"
                             prefix={<SafetyCertificateOutlined />}
                             title="恢复演练"
                             value={countRestoreDrillsByStatus(restoreRecords, "SUCCEEDED")}
