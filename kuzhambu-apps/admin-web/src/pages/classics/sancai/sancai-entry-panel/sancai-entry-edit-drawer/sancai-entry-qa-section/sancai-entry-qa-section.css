@@ -6,38 +6,8 @@
 
 .sancai-entry-qa-section-basic {
     min-width: 0;
-}
-
-.sancai-entry-qa-section-basic .ant-descriptions-row > th,
-.sancai-entry-qa-section-basic .ant-descriptions-row > td {
-    padding-bottom: 8px;
-}
-
-.sancai-entry-qa-section-basic .ant-descriptions-row:last-child > th,
-.sancai-entry-qa-section-basic .ant-descriptions-row:last-child > td {
-    padding-bottom: 0;
-}
-
-.sancai-entry-qa-section-basic .ant-descriptions-item-container {
-    align-items: baseline;
-    min-width: 0;
-    gap: 8px;
-}
-
-.sancai-entry-qa-section-basic .ant-descriptions-item-label {
-    color: var(--sancai-copy);
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.45;
-    white-space: nowrap;
-}
-
-.sancai-entry-qa-section-basic .ant-descriptions-item-content {
-    color: var(--sancai-ink);
-    font-weight: 700;
-    line-height: 1.5;
-    min-width: 0;
-    overflow-wrap: anywhere;
+    --kuzhambu-descriptions-label-color: var(--sancai-copy);
+    --kuzhambu-descriptions-content-color: var(--sancai-ink);
 }
 
 .sancai-entry-qa-section-summary-text {

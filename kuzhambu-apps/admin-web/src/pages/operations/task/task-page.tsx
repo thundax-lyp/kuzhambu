@@ -1,6 +1,6 @@
 import { DashboardOutlined, SettingOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Descriptions, Input, Spin, Typography } from "antd";
+import { Input, Spin, Typography } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -13,7 +13,8 @@ import {
     KuzhambuSelect,
     KuzhambuSpace,
     KuzhambuTag,
-    KuzhambuCard
+    KuzhambuCard,
+    KuzhambuDescriptions
 } from "@/components";
 import * as service from "./task-service";
 import type { OperationsTaskPageQuery } from "./task-service";
@@ -351,7 +352,10 @@ export const OperationsTaskPage = () => {
                                 className="operations-tasks-shortcut"
                                 key={entry.to}
                             >
-                                <KuzhambuCard size="small">
+                                <KuzhambuCard
+                                    className="operations-tasks-shortcut-card"
+                                    size="small"
+                                >
                                     <KuzhambuSpace
                                         size={8}
                                         className="operations-tasks-shortcut-header"
@@ -381,37 +385,72 @@ export const OperationsTaskPage = () => {
                         <KuzhambuSpace size={4} orientation="vertical">
                             <Text strong>任务快照</Text>
                         </KuzhambuSpace>
-                        <Descriptions bordered size="small" column={1}>
-                            <Descriptions.Item label="来源域">
-                                <Text>{detailTaskRecord?.sourceDomain || "-"}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="任务类型">
-                                <Text>{detailTaskRecord?.taskType || "-"}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="状态">
-                                <KuzhambuTag type={toStatusTone(detailTaskRecord?.taskStatus)}>
-                                    {detailTaskRecord?.taskStatus || "-"}
-                                </KuzhambuTag>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="任务键值">
-                                <Text>{detailTaskRecord?.taskKey || "-"}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="执行结果">
-                                <Text>{`${detailTaskRecord?.successCount || 0}/${detailTaskRecord?.failedCount || 0}`}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="失败原因">
-                                <Text>{detailTaskRecord?.failureReason || "-"}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="发起用户">
-                                <Text>{detailTaskRecord?.requestedByUserId || "-"}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="开始时间">
-                                <Text>{formatDateTime(detailTaskRecord?.startedAt)}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="完成时间">
-                                <Text>{formatDateTime(detailTaskRecord?.completedAt)}</Text>
-                            </Descriptions.Item>
-                        </Descriptions>
+                        <KuzhambuDescriptions
+                            bordered
+                            size="small"
+                            column={1}
+                            items={[
+                                {
+                                    key: "sourceDomain",
+                                    label: "来源域",
+                                    children: <Text>{detailTaskRecord?.sourceDomain || "-"}</Text>
+                                },
+                                {
+                                    key: "taskType",
+                                    label: "任务类型",
+                                    children: <Text>{detailTaskRecord?.taskType || "-"}</Text>
+                                },
+                                {
+                                    key: "taskStatus",
+                                    label: "状态",
+                                    children: (
+                                        <KuzhambuTag
+                                            type={toStatusTone(detailTaskRecord?.taskStatus)}
+                                        >
+                                            {detailTaskRecord?.taskStatus || "-"}
+                                        </KuzhambuTag>
+                                    )
+                                },
+                                {
+                                    key: "taskKey",
+                                    label: "任务键值",
+                                    children: <Text>{detailTaskRecord?.taskKey || "-"}</Text>
+                                },
+                                {
+                                    key: "result",
+                                    label: "执行结果",
+                                    children: (
+                                        <Text>{`${detailTaskRecord?.successCount || 0}/${detailTaskRecord?.failedCount || 0}`}</Text>
+                                    )
+                                },
+                                {
+                                    key: "failureReason",
+                                    label: "失败原因",
+                                    children: <Text>{detailTaskRecord?.failureReason || "-"}</Text>
+                                },
+                                {
+                                    key: "requestedByUserId",
+                                    label: "发起用户",
+                                    children: (
+                                        <Text>{detailTaskRecord?.requestedByUserId || "-"}</Text>
+                                    )
+                                },
+                                {
+                                    key: "startedAt",
+                                    label: "开始时间",
+                                    children: (
+                                        <Text>{formatDateTime(detailTaskRecord?.startedAt)}</Text>
+                                    )
+                                },
+                                {
+                                    key: "completedAt",
+                                    label: "完成时间",
+                                    children: (
+                                        <Text>{formatDateTime(detailTaskRecord?.completedAt)}</Text>
+                                    )
+                                }
+                            ]}
+                        />
                         {taskDetailQuery.isLoading ? <Spin size="large" /> : null}
                         {isFailedTask(detailTaskRecord) ? (
                             <KuzhambuAlert

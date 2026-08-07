@@ -1,8 +1,3 @@
 .tag-alias-create-field-name {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-.tag-alias-create-field-action {
-    margin-bottom: 0;
+    min-width: 0;
 }

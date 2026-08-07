@@ -1,0 +1,32 @@
+.kuzhambu-form .kuzhambu-form-item {
+    margin-bottom: var(--kuzhambu-form-item-margin-bottom);
+}
+
+.kuzhambu-form-item-gap-default {
+    --kuzhambu-form-item-margin-bottom: 24px;
+}
+
+.kuzhambu-form-item-gap-compact {
+    --kuzhambu-form-item-margin-bottom: 14px;
+}
+
+.kuzhambu-form-item-gap-none {
+    --kuzhambu-form-item-margin-bottom: 0;
+}
+
+.kuzhambu-form .kuzhambu-form-item .ant-form-item-label > label {
+    color: var(--kuzhambu-form-label-color, inherit);
+    font-size: var(--kuzhambu-form-label-font-size, inherit);
+    font-weight: var(--kuzhambu-form-label-font-weight, inherit);
+    letter-spacing: var(--kuzhambu-form-label-letter-spacing, inherit);
+}
+
+.kuzhambu-form .kuzhambu-form-item-label-top .ant-form-item-label {
+    align-self: flex-start;
+}
+
+@media (max-width: 760px) {
+    .kuzhambu-form-mobile-item-block .kuzhambu-form-item {
+        display: block;
+    }
+}

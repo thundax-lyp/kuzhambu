@@ -1,4 +1,5 @@
-import { Empty, Pagination, Spin, Tag } from "antd";
+import { Empty, Pagination, Spin } from "antd";
+import { KuzhambuTag } from "@/components";
 import type {
     DiscoverySearchGroupRecord,
     DiscoverySearchItemRecord
@@ -148,11 +149,11 @@ export const SearchResultTable = ({
                                             <p className="search-page-result-summary">{summary}</p>
                                         ) : null}
                                         <div className="search-page-result-meta">
-                                            <Tag color="blue">
+                                            <KuzhambuTag type="info">
                                                 {result.group.groupTitle ||
                                                     result.group.groupKey ||
                                                     "未分组"}
-                                            </Tag>
+                                            </KuzhambuTag>
                                         </div>
                                     </article>
                                 );

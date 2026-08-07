@@ -1,8 +1,8 @@
 import { CheckCircleOutlined, ExclamationCircleOutlined, LoadingOutlined } from "@ant-design/icons";
 import { Bubble, Sender, type BubbleItemType } from "@ant-design/x";
-import { Input, Tag, Tooltip, Typography } from "antd";
+import { Input, Tag, Tooltip } from "antd";
 import { forwardRef, useMemo, type ComponentProps, type ElementRef, type ReactNode } from "react";
-import { KuzhambuSpace } from "@/components";
+import { KuzhambuSpace, KuzhambuText, KuzhambuTitle } from "@/components";
 import ancientReaderAvatar from "@/assets/ancient-reader-avatar-face.jpg";
 import ancientScholarAvatar from "@/assets/ancient-scholar-avatar-face.jpg";
 import type {
@@ -10,8 +10,6 @@ import type {
     DiscoveryQaSourceRecord
 } from "@/pages/discovery/qa/qa-types";
 import "./qa-message-panel.css";
-
-const { Text, Title } = Typography;
 
 const QaSenderInput = forwardRef<
     ElementRef<typeof Input.TextArea>,
@@ -148,7 +146,9 @@ export const QaMessagePanel = ({
                             </span>
                         </Tooltip>
                         {message.sources?.length ? (
-                            <Text type="secondary">{message.sources.length} 个来源</Text>
+                            <KuzhambuText type="secondary">
+                                {message.sources.length} 个来源
+                            </KuzhambuText>
                         ) : null}
                     </KuzhambuSpace>
                 ),
@@ -165,8 +165,12 @@ export const QaMessagePanel = ({
         <section className="discovery-qa-page__chat">
             <header className="discovery-qa-page__chat-header">
                 <div>
-                    <Title level={2}>知识助手</Title>
-                    <Text type="secondary">提问后，我会在知识库中查询并附上来源。</Text>
+                    <KuzhambuTitle className="discovery-qa-page__chat-title" level={2}>
+                        知识助手
+                    </KuzhambuTitle>
+                    <KuzhambuText className="discovery-qa-page__chat-subtitle" type="secondary">
+                        提问后，我会在知识库中查询并附上来源。
+                    </KuzhambuText>
                 </div>
                 {selectedSession ? (
                     <button
@@ -180,9 +184,9 @@ export const QaMessagePanel = ({
             </header>
 
             {operationMessage ? (
-                <Text className="discovery-qa-page__notice" type="secondary">
+                <KuzhambuText className="discovery-qa-page__notice" type="secondary">
                     {operationMessage}
-                </Text>
+                </KuzhambuText>
             ) : null}
 
             <div className="discovery-qa-page__messages" aria-label="问答消息">
@@ -203,8 +207,15 @@ export const QaMessagePanel = ({
                     />
                 ) : (
                     <div className="discovery-qa-page__empty">
-                        <Title level={3}>我能帮你解答什么？</Title>
-                        <Text type="secondary">问一个问题，开始新的对话。</Text>
+                        <KuzhambuTitle className="discovery-qa-page__empty-title" level={3}>
+                            我能帮你解答什么？
+                        </KuzhambuTitle>
+                        <KuzhambuText
+                            className="discovery-qa-page__empty-subtitle"
+                            type="secondary"
+                        >
+                            问一个问题，开始新的对话。
+                        </KuzhambuText>
                     </div>
                 )}
             </div>
@@ -217,15 +228,17 @@ export const QaMessagePanel = ({
                               className="discovery-qa-page__source"
                           >
                               <div className="discovery-qa-page__source-header">
-                                  <Text strong>{source.titleSnapshot ?? source.sourceId}</Text>
+                                  <KuzhambuText strong>
+                                      {source.titleSnapshot ?? source.sourceId}
+                                  </KuzhambuText>
                                   <Tag>{source.knowledgeBase ?? source.contentType ?? "-"}</Tag>
                               </div>
-                              <Text type="secondary">
+                              <KuzhambuText type="secondary">
                                   {source.snippet ??
                                       source.locationLabel ??
                                       source.sourcePath ??
                                       "-"}
-                              </Text>
+                              </KuzhambuText>
                           </article>
                       ))
                     : null}

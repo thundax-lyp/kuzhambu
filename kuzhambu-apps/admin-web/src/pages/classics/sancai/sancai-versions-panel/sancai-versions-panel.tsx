@@ -1,4 +1,4 @@
-import { Descriptions, Empty, Tag, Typography } from "antd";
+import { Empty, Tag, Typography } from "antd";
 import {
     KuzhambuList,
     KuzhambuListItem,
@@ -6,7 +6,8 @@ import {
     KuzhambuSpace,
     KuzhambuButton,
     KuzhambuAlert,
-    KuzhambuTextCompare
+    KuzhambuTextCompare,
+    KuzhambuDescriptions
 } from "@/components";
 
 import type {
@@ -173,28 +174,41 @@ export const SancaiVersionsPanel = ({
                             size="middle"
                             className="sancai-version-history-detail-stack"
                         >
-                            <Descriptions size="small" column={2} bordered>
-                                <Descriptions.Item label="版本号">
-                                    {selectedVersion.versionNo ?? "-"}
-                                </Descriptions.Item>
-                                <Descriptions.Item label="变更类型">
-                                    {selectedVersion.changeType || "-"}
-                                </Descriptions.Item>
-                                <Descriptions.Item label="版本时间">
-                                    {formatDateTime(selectedVersion.versionedAt)}
-                                </Descriptions.Item>
-                                <Descriptions.Item label="变更说明">
-                                    {selectedVersion.changeSummary || "-"}
-                                </Descriptions.Item>
-                            </Descriptions>
+                            <KuzhambuDescriptions
+                                size="small"
+                                column={2}
+                                bordered
+                                items={[
+                                    {
+                                        key: "versionNo",
+                                        label: "版本号",
+                                        children: selectedVersion.versionNo ?? "-"
+                                    },
+                                    {
+                                        key: "changeType",
+                                        label: "变更类型",
+                                        children: selectedVersion.changeType || "-"
+                                    },
+                                    {
+                                        key: "versionedAt",
+                                        label: "版本时间",
+                                        children: formatDateTime(selectedVersion.versionedAt)
+                                    },
+                                    {
+                                        key: "changeSummary",
+                                        label: "变更说明",
+                                        children: selectedVersion.changeSummary || "-"
+                                    }
+                                ]}
+                            />
                             {snapshot ? (
-                                <Descriptions
+                                <KuzhambuDescriptions
                                     className="sancai-version-compare"
                                     size="small"
                                     column={1}
                                     bordered
-                                >
-                                    {compareFields.map((field) => {
+                                    variant="compare"
+                                    items={compareFields.map((field) => {
                                         const currentValue = readCurrentValue(
                                             currentEntry,
                                             field.key
@@ -211,34 +225,29 @@ export const SancaiVersionsPanel = ({
                                             volumeOptions
                                         );
                                         const changed = currentDisplayValue !== historyDisplayValue;
-                                        return (
-                                            <Descriptions.Item
-                                                key={field.key}
-                                                label={field.label}
-                                                className={changed ? "is-changed" : undefined}
-                                            >
-                                                {field.textDiff ? (
-                                                    <KuzhambuTextCompare
-                                                        baseline={historyDisplayValue}
-                                                        candidate={currentDisplayValue}
-                                                        emptyText="历史版本与当前内容一致"
-                                                        testId={`classics-sancai-version-${field.key}-compare`}
-                                                        title={`${field.label}差异（历史 → 当前）`}
-                                                    />
-                                                ) : (
-                                                    <KuzhambuSpace orientation="vertical" size={2}>
-                                                        <Text>当前：{currentDisplayValue}</Text>
-                                                        <Text
-                                                            type={changed ? "warning" : "secondary"}
-                                                        >
-                                                            历史：{historyDisplayValue}
-                                                        </Text>
-                                                    </KuzhambuSpace>
-                                                )}
-                                            </Descriptions.Item>
-                                        );
+                                        return {
+                                            key: field.key,
+                                            label: field.label,
+                                            className: changed ? "is-changed" : undefined,
+                                            children: field.textDiff ? (
+                                                <KuzhambuTextCompare
+                                                    baseline={historyDisplayValue}
+                                                    candidate={currentDisplayValue}
+                                                    emptyText="历史版本与当前内容一致"
+                                                    testId={`classics-sancai-version-${field.key}-compare`}
+                                                    title={`${field.label}差异（历史 → 当前）`}
+                                                />
+                                            ) : (
+                                                <KuzhambuSpace orientation="vertical" size={2}>
+                                                    <Text>当前：{currentDisplayValue}</Text>
+                                                    <Text type={changed ? "warning" : "secondary"}>
+                                                        历史：{historyDisplayValue}
+                                                    </Text>
+                                                </KuzhambuSpace>
+                                            )
+                                        };
                                     })}
-                                </Descriptions>
+                                />
                             ) : (
                                 <KuzhambuAlert
                                     type="warning"

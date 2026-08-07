@@ -58,6 +58,7 @@ export const WangqiTimeline = ({
             <KuzhambuDrawer
                 testId="classics-wangqi-wangqi-timeline-drawer"
                 aria-label="王圻文档时间线"
+                bodyLayout="timeline"
                 className="wangqi-timeline-drawer"
                 destroyOnHidden
                 loading={loading}

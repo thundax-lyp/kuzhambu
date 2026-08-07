@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Empty, Tag, Typography } from "antd";
+import { App, Empty, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -13,6 +13,7 @@ import {
     KuzhambuButton,
     KuzhambuListPage,
     KuzhambuSpace,
+    KuzhambuTag,
     type KuzhambuTableProps,
     type KuzhambuTableSortPosition
 } from "@/components";
@@ -257,7 +258,9 @@ export const DepartmentPage = () => {
                     <span className="department-name-text" title={name}>
                         {name}
                     </span>
-                    {department.shortName ? <Tag>{department.shortName}</Tag> : null}
+                    {department.shortName ? (
+                        <KuzhambuTag type="warning">{department.shortName}</KuzhambuTag>
+                    ) : null}
                 </KuzhambuSpace>
             )
         },

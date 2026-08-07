@@ -16,17 +16,27 @@ import {
     type KuzhambuFormLayoutTier
 } from "./kuzhambu-form-layout";
 import { useKuzhambuFormLayoutTier } from "./hooks/use-kuzhambu-form-layout-tier";
+import "./kuzhambu-form.css";
+
+export type KuzhambuFormItemGap = "default" | "compact" | "none";
+export type KuzhambuFormMobileItemDisplay = "default" | "block";
 
 export interface KuzhambuFormProps<Values = unknown> extends Omit<
     FormProps<Values>,
     "children" | "layout"
 > {
     children?: ReactNode;
+    itemGap?: KuzhambuFormItemGap;
+    mobileItemDisplay?: KuzhambuFormMobileItemDisplay;
     rowGutter?: RowProps["gutter"];
 }
 
-export interface KuzhambuFormItemProps extends Omit<FormItemProps, "labelCol" | "wrapperCol"> {
+export interface KuzhambuFormItemProps extends Omit<
+    FormItemProps,
+    "className" | "labelCol" | "wrapperCol"
+> {
     colProps?: Omit<ColProps, "lg" | "md" | "offset" | "sm" | "span" | "xl" | "xs" | "xxl">;
+    labelVerticalAlign?: "default" | "top";
     layoutSize?: KuzhambuFormItemLayoutSize;
 }
 
@@ -42,6 +52,7 @@ export interface KuzhambuFormPlaceholderItemProps {
 const KuzhambuFormLayoutTierContext = createContext<KuzhambuFormLayoutTier | undefined>(undefined);
 
 export const KuzhambuFormItem = ({
+    labelVerticalAlign = "default",
     layoutSize = "middle",
     ...formItemProps
 }: KuzhambuFormItemProps) => {
@@ -50,7 +61,17 @@ export const KuzhambuFormItem = ({
     const labelCol = layoutTier ? layout.labelCol[layoutTier] : layout.labelCol;
     const wrapperCol = layoutTier ? layout.wrapperCol[layoutTier] : layout.wrapperCol;
 
-    return <Form.Item {...formItemProps} labelCol={labelCol} wrapperCol={wrapperCol} />;
+    return (
+        <Form.Item
+            {...formItemProps}
+            className={[
+                "kuzhambu-form-item",
+                `kuzhambu-form-item-label-${labelVerticalAlign}`
+            ].join(" ")}
+            labelCol={labelCol}
+            wrapperCol={wrapperCol}
+        />
+    );
 };
 
 export const KuzhambuFormHiddenItem = ({ ...formItemProps }: KuzhambuFormHiddenItemProps) => {
@@ -254,6 +275,8 @@ export const KuzhambuForm = <Values = unknown,>({
     children,
     className,
     colon = true,
+    itemGap = "default",
+    mobileItemDisplay = "default",
     rowGutter = 16,
     style,
     ...formProps
@@ -262,7 +285,18 @@ export const KuzhambuForm = <Values = unknown,>({
     const { hiddenItems, rows } = buildFormRows(children, layoutTier);
 
     return (
-        <div ref={containerRef} className={className} style={style}>
+        <div
+            ref={containerRef}
+            className={[
+                "kuzhambu-form",
+                `kuzhambu-form-item-gap-${itemGap}`,
+                `kuzhambu-form-mobile-item-${mobileItemDisplay}`,
+                className
+            ]
+                .filter(Boolean)
+                .join(" ")}
+            style={style}
+        >
             <KuzhambuFormLayoutTierContext.Provider value={layoutTier}>
                 <Form<Values> {...formProps} colon={colon} layout="horizontal">
                     {hiddenItems}

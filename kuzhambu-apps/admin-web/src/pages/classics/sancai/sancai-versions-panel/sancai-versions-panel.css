@@ -37,15 +37,10 @@
     width: 100%;
 }
 
-.sancai-version-compare .ant-descriptions-item-label {
-    width: 132px;
-    color: var(--sancai-copy);
-    font-weight: 700;
-}
-
-.sancai-version-compare .is-changed .ant-descriptions-item-label {
-    color: var(--sancai-accent);
-    background: var(--sancai-accent-soft);
+.sancai-version-compare {
+    --kuzhambu-descriptions-label-color: var(--sancai-copy);
+    --kuzhambu-descriptions-changed-label-color: var(--sancai-accent);
+    --kuzhambu-descriptions-changed-label-background: var(--sancai-accent-soft);
 }
 
 @media (max-width: 900px) {

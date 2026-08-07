@@ -36,10 +36,11 @@ export const TagAliasCreateField = ({
             form={form}
             className="tag-alias-create-field"
             component="div"
+            itemGap="none"
         >
             <KuzhambuFormItem
                 name="name"
-                className="tag-alias-create-field-name"
+                colProps={{ flex: "1 1 0", className: "tag-alias-create-field-name" }}
                 rules={[
                     { required: true, message: "请输入别名" },
                     { max: 128, message: "别名最多 128 个字符" },
@@ -71,7 +72,9 @@ export const TagAliasCreateField = ({
                     }}
                 />
             </KuzhambuFormItem>
-            <KuzhambuFormItem className="tag-alias-create-field-action">
+            <KuzhambuFormItem
+                colProps={{ flex: "0 0 auto", className: "tag-alias-create-field-action" }}
+            >
                 <KuzhambuButton
                     testId="knowledge-taxonomy-tag-alias-action-button"
                     type="primary"

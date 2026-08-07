@@ -174,7 +174,7 @@ export const SancaiVisualWorkflowCard = ({
                                     <KuzhambuFormItem
                                         name="imageAnalysisMarkdown"
                                         layoutSize="large"
-                                        className="sancai-entry-edit-drawer-form-item-top"
+                                        labelVerticalAlign="top"
                                     >
                                         <Input.TextArea
                                             aria-label="三才图会视觉处理图片理解"
@@ -211,7 +211,7 @@ export const SancaiVisualWorkflowCard = ({
                                             name="fusionDescription"
                                             label="图文融合"
                                             layoutSize="large"
-                                            className="sancai-entry-edit-drawer-form-item-top"
+                                            labelVerticalAlign="top"
                                         >
                                             <Input.TextArea
                                                 aria-label="三才图会视觉处理融合描述"
@@ -228,7 +228,7 @@ export const SancaiVisualWorkflowCard = ({
                                         name="visualDescription"
                                         label="视觉描述"
                                         layoutSize="large"
-                                        className="sancai-entry-edit-drawer-form-item-top"
+                                        labelVerticalAlign="top"
                                     >
                                         <Input.TextArea
                                             aria-label="三才图会视觉处理视觉描述"
@@ -244,7 +244,7 @@ export const SancaiVisualWorkflowCard = ({
                                         name="generationParamsJson"
                                         label="生成参数"
                                         layoutSize="large"
-                                        className="sancai-entry-edit-drawer-form-item-top"
+                                        labelVerticalAlign="top"
                                     >
                                         <Input.TextArea
                                             aria-label="三才图会视觉处理生成参数"

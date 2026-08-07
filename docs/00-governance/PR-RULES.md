@@ -75,6 +75,8 @@ PR 描述固定包含：
 - `Documentation, TODO And RUNBOOK Closure`: 确认需求、接口、readiness、治理文档是否同步；确认相关 TODO 已按 `TODO-RULES.md` 清理或收窄；确认临时 RUNBOOK 已删除，或证据已沉淀到指定 readiness/evidence 文档。
 - `Risks`: 说明剩余风险、运行时依赖或上线前仍需关注的事项。
 
+PR 描述只记录提交到 PR 的范围、远端 CI 状态、必要的本地验证命令和结果，以及明确的未覆盖项。不得暴露开发者本地环境状态、绝对路径、临时文件、未提交草稿、个人机器信息或 agent 执行过程。若某项工作未纳入 PR，只说明“本 PR 不包含该范围”及原因，不描述它在本地工作区中的存在状态。
+
 ## 7. Key Flow
 
 1. 开发者打开或更新 Pull Request。

@@ -106,6 +106,8 @@ const SancaiVolumeForm = ({
             aria-label={volume ? "编辑卷目" : "新增卷目"}
             className="sancai-category-edit-modal sancai-editor-form"
             component="div"
+            itemGap="none"
+            mobileItemDisplay="block"
             initialValues={initialValues}
         >
             <KuzhambuFormItem name="title" label="卷目标题" layoutSize="large">

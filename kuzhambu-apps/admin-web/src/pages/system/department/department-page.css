@@ -95,13 +95,6 @@ html[data-theme="dark"] .department-page {
     min-width: 0;
 }
 
-.department-table .ant-tag {
-    color: var(--department-amber);
-    background: var(--department-amber-soft);
-    border-color: var(--department-amber-line);
-    border-radius: 7px;
-}
-
 .department-drag-action {
     cursor: grab;
 }

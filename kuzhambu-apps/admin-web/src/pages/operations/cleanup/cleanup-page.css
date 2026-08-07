@@ -67,10 +67,6 @@
     gap: 12px;
 }
 
-.operations-cleanup-detail .ant-descriptions {
-    max-width: 100%;
-}
-
 .operations-cleanup-failure {
     display: grid;
     gap: 8px;

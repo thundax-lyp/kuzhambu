@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Avatar, Empty, Input, Tag, Typography } from "antd";
+import { Avatar, Empty, Input, Tag } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
@@ -18,6 +18,7 @@ import {
     KuzhambuSelect,
     KuzhambuSpace,
     KuzhambuTag,
+    KuzhambuText,
     type KuzhambuListPageFilterField,
     type KuzhambuTableProps,
     type OptionsRecord
@@ -28,8 +29,6 @@ import type { AuditLogPageQuery } from "./audit-log-service";
 import type { AuditLogRecord } from "./audit-log-types";
 
 import "./audit-log-page.css";
-
-const { Text } = Typography;
 
 const DEFAULT_COLUMN_WIDTHS = {
     occurredAt: 180,
@@ -135,7 +134,9 @@ const renderOperator = (log: AuditLogRecord, accessToken: string | null) => {
             <Avatar size={28} src={avatarUrl}>
                 {getInitials(user.name)}
             </Avatar>
-            <Text ellipsis>{user.name}</Text>
+            <KuzhambuText className="audit-log-operator-name" ellipsis>
+                {user.name}
+            </KuzhambuText>
         </KuzhambuSpace>
     );
 };
@@ -374,7 +375,7 @@ export const AuditLogPage = () => {
             ellipsis: true,
             render: (_, log) => (
                 <div className="audit-log-object-cell">
-                    <Text strong>{readObjectDisplay(log)}</Text>
+                    <KuzhambuText strong>{readObjectDisplay(log)}</KuzhambuText>
                     <KuzhambuSpace size={6} wrap>
                         <KuzhambuTag type="accent">{readObjectTypeLabel(log)}</KuzhambuTag>
                         {log.version ? <Tag>v{log.version}</Tag> : null}

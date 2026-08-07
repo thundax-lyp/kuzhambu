@@ -13,12 +13,8 @@ import {
     KuzhambuSpace,
     KuzhambuSpaceCompact,
     KuzhambuSwitch,
-    KuzhambuTable,
-    type KuzhambuTableProps,
-    KuzhambuTag,
     KuzhambuSelect
 } from "@/components";
-import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 
 import type { AiPromptTemplateChangeCommand } from "@/pages/ai/prompt/prompt-service";
 import * as service from "@/pages/ai/prompt/prompt-service";
@@ -26,8 +22,7 @@ import * as service from "@/pages/ai/prompt/prompt-service";
 import type {
     AiPromptTemplateRecord,
     AiPromptCapabilityVariableRecord,
-    AiPromptVariableRecord,
-    AiPromptVersionRecord
+    AiPromptVariableRecord
 } from "@/pages/ai/prompt/prompt-types";
 import "./prompt-edit-drawer.css";
 
@@ -198,25 +193,9 @@ const mergeVariableRows = (
     return placeholderRows.length > 0 ? placeholderRows : sourceRows;
 };
 
-const formatDate = (value?: string | null) => {
-    if (!value) {
-        return "-";
-    }
-    const timestamp = Date.parse(value);
-    if (Number.isNaN(timestamp)) {
-        return value;
-    }
-    const date = new Date(timestamp);
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${date.getFullYear()}-${month}-${day}`;
-};
-
 const statusFromEnabled = (enabled?: boolean | null) => enabled !== false;
 
 const enabledFromStatus = (status?: boolean | null) => status !== false;
-
-const versionTitle = (version: AiPromptVersionRecord) => `版本 ${version.versionNo ?? "-"}`;
 
 const toPromptMessages = (value?: string | null): PromptMessage[] => {
     try {
@@ -336,156 +315,6 @@ const PromptMarkdownEditor = ({
     );
 };
 
-const PromptVersionSection = ({
-    canEdit,
-    template,
-    onRollback
-}: {
-    canEdit: boolean;
-    template: AiPromptTemplateRecord;
-    onRollback: (version: AiPromptVersionRecord) => void;
-}) => {
-    const { message } = App.useApp();
-    const confirm = useKuzhambuConfirm();
-    const queryClient = useQueryClient();
-    const [viewVersion, setViewVersion] = useState<AiPromptVersionRecord | null>(null);
-    const [compareVersions, setCompareVersions] = useState<AiPromptVersionRecord[]>([]);
-    const templateId = template.id || null;
-    const versionsQuery = useQuery({
-        queryKey: ["ai", "prompt", "versions", templateId],
-        queryFn: () => service.listPromptVersions(templateId || ""),
-        enabled: Boolean(templateId),
-        retry: false
-    });
-    const compareMutation = useMutation({
-        mutationFn: service.previewPromptVersionCompare,
-        onSuccess: setCompareVersions,
-        onError: (error) => {
-            message.error(error instanceof Error ? error.message : "版本对比失败");
-        }
-    });
-    const rollbackMutation = useMutation({
-        mutationFn: service.changePromptVersionRollback,
-        onSuccess: async (version) => {
-            await queryClient.invalidateQueries({ queryKey: ["ai", "prompt"] });
-            onRollback(version);
-            message.success("提示词版本已回滚");
-        },
-        onError: (error) => {
-            message.error(error instanceof Error ? error.message : "提示词版本回滚失败");
-        }
-    });
-    const columns: KuzhambuTableProps<AiPromptVersionRecord>["columns"] = [
-        { title: "版本号", dataIndex: "versionNo", key: "versionNo", width: 96 },
-        {
-            title: "状态",
-            key: "current",
-            width: 96,
-            render: (_, record) => {
-                const current = record.versionNo === template.currentVersionNo;
-                return (
-                    <KuzhambuTag type={current ? "success" : "neutral"}>
-                        {current ? "当前" : "历史"}
-                    </KuzhambuTag>
-                );
-            }
-        },
-        {
-            title: "变更说明",
-            dataIndex: "changeSummary",
-            key: "changeSummary",
-            ellipsis: true,
-            render: (value?: string | null) => value || "-"
-        },
-        {
-            title: "日期",
-            dataIndex: "registeredAt",
-            key: "registeredAt",
-            width: 120,
-            render: formatDate
-        },
-        {
-            key: "actions",
-            options: (record) => {
-                const current = record.versionNo === template.currentVersionNo;
-                return [
-                    { key: "view", text: "查看", onClick: () => setViewVersion(record) },
-                    {
-                        key: "compare",
-                        text: "对比",
-                        disabled: !template.currentVersionNo,
-                        onClick: () => {
-                            if (templateId && record.versionNo && template.currentVersionNo) {
-                                compareMutation.mutate({
-                                    id: templateId,
-                                    leftVersionNo: record.versionNo,
-                                    rightVersionNo: template.currentVersionNo
-                                });
-                            }
-                        }
-                    },
-                    {
-                        key: "rollback",
-                        text: "回滚",
-                        type: "warning",
-                        disabled: !canEdit || current,
-                        onClick: () =>
-                            confirm.danger({
-                                title: "回滚版本",
-                                message: `确认回滚到版本 ${record.versionNo}？`,
-                                okText: "回滚",
-                                onConfirm: () =>
-                                    rollbackMutation.mutateAsync({
-                                        id: templateId || "",
-                                        versionNo: record.versionNo || 0
-                                    })
-                            })
-                    }
-                ];
-            }
-        }
-    ];
-
-    return (
-        <>
-            <div className="prompt-version-section">
-                <Typography.Title level={5}>版本</Typography.Title>
-                <KuzhambuTable<AiPromptVersionRecord>
-                    ariaLabel="提示词版本列表"
-                    rowKey={(record) => record.id || `${record.templateId}-${record.versionNo}`}
-                    columns={columns}
-                    dataSource={versionsQuery.data || []}
-                    loading={versionsQuery.isFetching}
-                    pagination={false}
-                    size="small"
-                />
-            </div>
-            <KuzhambuDrawer
-                testId="ai-prompt-prompt-editor-2-drawer"
-                open={Boolean(viewVersion)}
-                title={viewVersion ? versionTitle(viewVersion) : "版本详情"}
-                size="large"
-                onClose={() => setViewVersion(null)}
-            >
-                {viewVersion ? <VersionDetail version={viewVersion} /> : null}
-            </KuzhambuDrawer>
-            <KuzhambuDrawer
-                testId="ai-prompt-prompt-editor-3-drawer"
-                open={compareVersions.length > 0}
-                title="版本对比"
-                size="large"
-                onClose={() => setCompareVersions([])}
-            >
-                <div className="prompt-compare-grid">
-                    {compareVersions.map((version) => (
-                        <VersionDetail key={version.versionNo} version={version} />
-                    ))}
-                </div>
-            </KuzhambuDrawer>
-        </>
-    );
-};
-
 export const PromptEditDrawer = ({
     canEdit,
     capabilityOptions,
@@ -499,9 +328,6 @@ export const PromptEditDrawer = ({
     const [form] = Form.useForm<PromptFormValues>();
     const initializedFormRef = useRef(false);
     const [variableModalOpen, setVariableModalOpen] = useState(false);
-    const [activeVersionNo, setActiveVersionNo] = useState<number | null>(
-        template?.currentVersionNo ?? null
-    );
     const variablesSnapshotJson = Form.useWatch("variablesSnapshotJson", form);
     const messageTemplatesJson = Form.useWatch("messageTemplatesJson", form);
     const currentCapability = Form.useWatch("capability", form);
@@ -638,23 +464,20 @@ export const PromptEditDrawer = ({
         }
     });
 
-    const submitTemplate = async (overrideVersion?: AiPromptVersionRecord | null) => {
+    const submitTemplate = async () => {
         const values = await form.validateFields();
-        const messageTemplatesJson =
-            overrideVersion?.messageTemplatesJson || values.messageTemplatesJson;
-        const outputSchemaJson =
-            overrideVersion?.outputSchemaJson ||
-            outputSchemaForStructure(values.outputStructure, values.outputSchemaJson);
-        const variables = overrideVersion?.variablesSnapshotJson
-            ? toVariableRows(overrideVersion.variablesSnapshotJson)
-            : variableRows;
+        const messageTemplatesJson = values.messageTemplatesJson;
+        const outputSchemaJson = outputSchemaForStructure(
+            values.outputStructure,
+            values.outputSchemaJson
+        );
+        const variables = variableRows;
         const effectiveCapability = template?.capability || values.capability;
         const placeholderNames = extractPromptVariableNames(messageTemplatesJson);
         const submittedVariableNames = Array.from(
             new Set([...placeholderNames, ...variables.map((variable) => variable.variableName)])
         );
-        const variablesSnapshot =
-            overrideVersion?.variablesSnapshotJson || variablesToJson(variableRows);
+        const variablesSnapshot = variablesToJson(variableRows);
         await changeMutation.mutateAsync({
             id: values.id || null,
             capability: effectiveCapability,
@@ -664,8 +487,7 @@ export const PromptEditDrawer = ({
             messageTemplatesJson: normalizeJsonText(messageTemplatesJson, EMPTY_JSON_ARRAY),
             variablesSnapshotJson: normalizeJsonText(variablesSnapshot, EMPTY_JSON_ARRAY),
             outputSchemaJson: normalizeJsonText(outputSchemaJson, EMPTY_JSON_OBJECT),
-            changeSummary:
-                values.changeSummary || overrideVersion?.changeSummary || "保存提示词版本",
+            changeSummary: values.changeSummary || "保存提示词版本",
             variables: variables.filter((variable) =>
                 submittedVariableNames.includes(variable.variableName)
             )
@@ -680,18 +502,6 @@ export const PromptEditDrawer = ({
         await validateMutation.mutateAsync({
             id: currentTemplateId,
             providedNames: variableRows.map((variable) => variable.variableName)
-        });
-    };
-
-    const applyRolledBackVersion = (version: AiPromptVersionRecord) => {
-        const outputSchemaJson = formatJsonText(version.outputSchemaJson, TEXT_OUTPUT_SCHEMA);
-        setActiveVersionNo(version.versionNo ?? null);
-        form.setFieldsValue({
-            messageTemplatesJson: formatJsonText(version.messageTemplatesJson, EMPTY_JSON_ARRAY),
-            variablesSnapshotJson: formatJsonText(version.variablesSnapshotJson, EMPTY_JSON_ARRAY),
-            outputSchemaJson,
-            outputStructure: readPromptOutputStructure(outputSchemaJson),
-            changeSummary: ""
         });
     };
 
@@ -723,6 +533,7 @@ export const PromptEditDrawer = ({
         <>
             <KuzhambuDrawer
                 testId="ai-prompt-prompt-editor-1-drawer"
+                bodyLayout="editor"
                 className="prompt-edit-drawer"
                 open={open}
                 title={template ? "编辑提示词" : "新建提示词"}
@@ -753,31 +564,27 @@ export const PromptEditDrawer = ({
                         label="模板名称"
                         name="name"
                         layoutSize="middle"
-                        className="prompt-editor-item-compact"
                         rules={[{ required: true, message: "请输入模板名称" }]}
                     >
-                        <Input />
+                        <Input className="prompt-editor-control-compact" />
                     </KuzhambuFormItem>
                     <KuzhambuFormItem
                         label="能力"
                         name="capability"
                         layoutSize="middle"
-                        className="prompt-editor-item-compact"
                         rules={[{ required: true, message: "请选择能力" }]}
                     >
                         <KuzhambuSelect
                             aria-label="提示词能力"
+                            className="prompt-editor-control-compact"
                             disabled={Boolean(template)}
                             options={capabilityOptions}
                         />
                     </KuzhambuFormItem>
-                    <KuzhambuFormItem
-                        label="变量"
-                        layoutSize="middle"
-                        className="prompt-editor-item-compact"
-                    >
+                    <KuzhambuFormItem label="变量" layoutSize="middle">
                         <KuzhambuButton
                             testId="ai-prompt-prompt-view-variables-button"
+                            className="prompt-editor-control-compact"
                             disabled={allowedVariableNames.length === 0}
                             onClick={() => setVariableModalOpen(true)}
                         >
@@ -789,9 +596,9 @@ export const PromptEditDrawer = ({
                         name="status"
                         layoutSize="middle"
                         valuePropName="checked"
-                        className="prompt-editor-item-status"
                     >
                         <KuzhambuSwitch
+                            className="prompt-editor-control-status"
                             checkedChildren="启用"
                             unCheckedChildren="禁用"
                             aria-label="提示词模板状态"
@@ -801,15 +608,15 @@ export const PromptEditDrawer = ({
                         label="说明"
                         name="description"
                         layoutSize="large"
-                        className="prompt-editor-item-full prompt-editor-item-top"
+                        labelVerticalAlign="top"
                     >
-                        <Input.TextArea rows={2} />
+                        <Input.TextArea className="prompt-editor-control-full" rows={2} />
                     </KuzhambuFormItem>
                     <KuzhambuFormItem
                         label="正文"
                         name="messageTemplatesJson"
                         layoutSize="large"
-                        className="prompt-editor-item-top"
+                        labelVerticalAlign="top"
                         rules={[
                             { required: true, message: "请输入正文" },
                             { validator: (_, value) => assertJsonText(value, EMPTY_JSON_ARRAY) }
@@ -825,14 +632,10 @@ export const PromptEditDrawer = ({
                     >
                         <Input />
                     </KuzhambuFormHiddenItem>
-                    <KuzhambuFormItem
-                        label="输出格式"
-                        name="outputStructure"
-                        layoutSize="small"
-                        className="prompt-editor-item-compact"
-                    >
+                    <KuzhambuFormItem label="输出格式" name="outputStructure" layoutSize="small">
                         <KuzhambuSelect
                             aria-label="输出格式"
+                            className="prompt-editor-control-compact"
                             options={[
                                 { label: "TEXT", value: "TEXT" },
                                 { label: "JSON", value: "JSON" }
@@ -856,20 +659,11 @@ export const PromptEditDrawer = ({
                     >
                         <Input />
                     </KuzhambuFormHiddenItem>
-                    <KuzhambuFormItem
-                        label="变更说明"
-                        name="changeSummary"
-                        layoutSize="middle"
-                        className="prompt-editor-item-wide"
-                    >
-                        <Input />
+                    <KuzhambuFormItem label="变更说明" name="changeSummary" layoutSize="middle">
+                        <Input className="prompt-editor-control-wide" />
                     </KuzhambuFormItem>
-                    <KuzhambuFormItem
-                        label="辅助操作"
-                        layoutSize="large"
-                        className="prompt-editor-item-wide"
-                    >
-                        <KuzhambuSpace wrap>
+                    <KuzhambuFormItem label="辅助操作" layoutSize="large">
+                        <KuzhambuSpace className="prompt-editor-control-wide" wrap>
                             <KuzhambuButton
                                 testId="ai-prompt-prompt-validate-variables-button"
                                 icon={<CheckCircleOutlined />}
@@ -882,13 +676,6 @@ export const PromptEditDrawer = ({
                         </KuzhambuSpace>
                     </KuzhambuFormItem>
                 </KuzhambuForm>
-                {template ? (
-                    <PromptVersionSection
-                        canEdit={canEdit}
-                        template={{ ...template, currentVersionNo: activeVersionNo }}
-                        onRollback={applyRolledBackVersion}
-                    />
-                ) : null}
             </KuzhambuDrawer>
 
             <KuzhambuModal
@@ -912,19 +699,3 @@ export const PromptEditDrawer = ({
         </>
     );
 };
-
-const VersionDetail = ({ version }: { version: AiPromptVersionRecord }) => (
-    <div className="prompt-version-detail">
-        <Typography.Title level={5}>{versionTitle(version)}</Typography.Title>
-        <Typography.Text strong>消息模板 JSON</Typography.Text>
-        <pre>{formatJsonText(version.messageTemplatesJson, EMPTY_JSON_ARRAY)}</pre>
-        <Typography.Text strong>变量快照 JSON</Typography.Text>
-        <pre>{formatJsonText(version.variablesSnapshotJson, EMPTY_JSON_ARRAY)}</pre>
-        <Typography.Text strong>输出格式</Typography.Text>
-        <pre>{readPromptOutputStructure(version.outputSchemaJson)}</pre>
-        <Typography.Text strong>输出格式详情 JSON</Typography.Text>
-        <pre>{formatJsonText(version.outputSchemaJson, EMPTY_JSON_OBJECT)}</pre>
-        <Typography.Text strong>变更说明</Typography.Text>
-        <pre>{version.changeSummary || "-"}</pre>
-    </div>
-);

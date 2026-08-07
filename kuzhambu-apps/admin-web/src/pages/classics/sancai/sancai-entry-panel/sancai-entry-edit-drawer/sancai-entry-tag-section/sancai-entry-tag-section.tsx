@@ -192,6 +192,7 @@ export const SancaiEntryTagSection = forwardRef<HTMLDivElement, SancaiEntryTagSe
                         column={3}
                         colon={false}
                         size="small"
+                        variant="detail"
                         items={[
                             {
                                 key: "category",
