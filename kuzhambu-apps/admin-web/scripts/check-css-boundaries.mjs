@@ -55,7 +55,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         file: "src/pages/discovery/search-statistic/search-statistic-page.css",
         allowedAntdSelectorLines: 16
     },
-    { file: "src/pages/knowledge/graph-result/graph-result-page.css", allowedAntdSelectorLines: 1 },
     {
         file: "src/pages/storage/storage-object/storage-object-page.css",
         allowedAntdSelectorLines: 16
