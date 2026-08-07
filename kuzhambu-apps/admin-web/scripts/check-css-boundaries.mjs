@@ -31,10 +31,6 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
 ]);
 const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     {
-        file: "src/pages/classics/publication-job/publication-job-page.css",
-        allowedAntdSelectorLines: 1
-    },
-    {
         file: "src/pages/classics/sancai/sancai-catalog-tree-panel/sancai-catalog-tree-panel.css",
         allowedAntdSelectorLines: 2
     },
