@@ -35,10 +35,6 @@
     white-space: nowrap;
 }
 
-.wangqi-summary-modal .ant-modal-close {
-    top: 21px;
-}
-
 .wangqi-summary-modal-compare-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

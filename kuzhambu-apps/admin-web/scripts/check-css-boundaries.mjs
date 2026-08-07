@@ -42,10 +42,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         file: "src/pages/classics/sancai-visual/sancai-visual-entry-picker-modal/sancai-visual-entry-picker-modal.css",
         allowedAntdSelectorLines: 7
     },
-    {
-        file: "src/pages/classics/wangqi/wangqi-document-edit-drawer/wangqi-document-edit-drawer.css",
-        allowedAntdSelectorLines: 1
-    },
     { file: "src/pages/classics/wangqi/wangqi-page.css", allowedAntdSelectorLines: 10 },
     {
         file: "src/pages/discovery/qa/qa-message-panel/qa-message-panel.css",
