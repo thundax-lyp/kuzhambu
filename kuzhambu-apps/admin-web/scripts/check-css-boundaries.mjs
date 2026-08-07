@@ -52,7 +52,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         allowedAntdSelectorLines: 1
     },
     { file: "src/pages/classics/wangqi/wangqi-page.css", allowedAntdSelectorLines: 10 },
-    { file: "src/pages/dashboard/dashboard/dashboard-page.css", allowedAntdSelectorLines: 6 },
     {
         file: "src/pages/discovery/qa/qa-message-panel/qa-message-panel.css",
         allowedAntdSelectorLines: 17

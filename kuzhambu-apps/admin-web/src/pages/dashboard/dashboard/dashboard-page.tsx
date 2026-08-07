@@ -77,10 +77,11 @@ export const DashboardPage = () => {
                     {metricItems.map((metric) => (
                         <KuzhambuCard
                             className={`dashboard-metric-card dashboard-metric-card-${metric.tone}`}
+                            classNames={{ body: "dashboard-metric-card-content" }}
                             key={metric.label}
                         >
                             <div className="dashboard-metric-card-heading">
-                                <Text>{metric.label}</Text>
+                                <Text className="dashboard-metric-card-label">{metric.label}</Text>
                                 <span>{metric.icon}</span>
                             </div>
                             <div className="dashboard-metric-card-body">
@@ -107,14 +108,19 @@ export const DashboardPage = () => {
 
                 <section className="dashboard-campaign-board">
                     <div className="dashboard-section-title-row">
-                        <Title level={3}>今日治理事项</Title>
+                        <Title level={3} className="dashboard-section-title">
+                            今日治理事项
+                        </Title>
                         <button type="button">任务台</button>
                     </div>
                     <div className="dashboard-operation-columns">
                         {workColumns.map((column) => (
                             <div className="dashboard-operation-column" key={column.title}>
-                                <Text>
-                                    {column.title} <span>{column.count}</span>
+                                <Text className="dashboard-operation-column-title">
+                                    {column.title}{" "}
+                                    <span className="dashboard-operation-column-count">
+                                        {column.count}
+                                    </span>
                                 </Text>
                                 {column.items.map(([title, description]) => (
                                     <article className="dashboard-operation-card" key={title}>
