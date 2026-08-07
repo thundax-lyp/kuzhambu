@@ -23,4 +23,5 @@ export * from "./kuzhambu-table";
 export * from "./kuzhambu-tabs";
 export * from "./kuzhambu-tag";
 export * from "./kuzhambu-text-compare";
+export * from "./kuzhambu-typography";
 export type { OptionRecord, OptionsRecord } from "@/types/options";
