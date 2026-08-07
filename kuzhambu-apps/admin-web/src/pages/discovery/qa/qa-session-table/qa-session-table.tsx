@@ -5,6 +5,7 @@ import { KuzhambuButton } from "@/components";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import * as service from "@/pages/discovery/qa/qa-service";
 import type { DiscoveryQaSessionRecord } from "@/pages/discovery/qa/qa-types";
+import "./qa-session-table.css";
 
 const DEFAULT_PAGE_SIZE = 20;
 

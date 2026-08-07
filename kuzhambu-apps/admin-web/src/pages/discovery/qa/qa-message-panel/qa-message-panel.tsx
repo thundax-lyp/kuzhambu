@@ -9,6 +9,7 @@ import type {
     DiscoveryQaSessionRecord,
     DiscoveryQaSourceRecord
 } from "@/pages/discovery/qa/qa-types";
+import "./qa-message-panel.css";
 
 const { Text, Title } = Typography;
 
