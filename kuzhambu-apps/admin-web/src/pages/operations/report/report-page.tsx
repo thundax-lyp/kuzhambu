@@ -460,7 +460,7 @@ export const OperationsReportPage = () => {
                 open={detailReportId !== null}
                 onClose={closeReportDetailDrawer}
                 size="middle"
-                destroyOnClose
+                destroyOnHidden
             >
                 {reportDetailQuery.isLoading ? <Spin /> : null}
                 {detailReportRecord ? (

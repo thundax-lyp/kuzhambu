@@ -18,7 +18,7 @@ export interface KuzhambuDrawerFooterAction {
 
 export interface KuzhambuDrawerProps extends Omit<
     DrawerProps,
-    "data-testid" | "footer" | "size" | "width"
+    "data-testid" | "destroyOnClose" | "footer" | "maskClosable" | "size" | "width"
 > {
     footerActions?: KuzhambuDrawerFooterAction[];
     size?: KuzhambuDrawerSize;

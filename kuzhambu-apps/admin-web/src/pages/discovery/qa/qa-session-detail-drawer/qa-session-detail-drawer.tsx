@@ -30,7 +30,7 @@ interface QaSessionDetailDrawerProps {
 export const QaSessionDetailDrawer = ({ onClose, open, session }: QaSessionDetailDrawerProps) => {
     return (
         <KuzhambuDrawer
-            destroyOnClose
+            destroyOnHidden
             onClose={onClose}
             open={open}
             size="large"
