@@ -1,6 +1,6 @@
 ---
 name: kuzhambu-admin-page-review
-description: Use only when explicitly invoked to review a kuzhambu-apps/admin-web src/pages business page by page path or component name. The review evaluates page composition, component responsibility boundaries, data/API ownership, state ownership, sibling coordination, expression structure, layout wrappers, and whether proposed abstractions have a concrete ownership or complexity reason. Defaults to review-only and does not modify code unless the user separately asks to fix.
+description: Use only when explicitly invoked to review a kuzhambu-apps/admin-web src/pages business page by page path or component name. The review evaluates page composition, component responsibility boundaries, data/API ownership, state ownership, sibling coordination, expression structure, layout wrappers, admin table/action patterns, Drawer/Modal task flows, loading/empty/error states, accessibility/test anchors, and whether proposed abstractions have a concrete ownership or complexity reason. Defaults to review-only and does not modify code unless the user separately asks to fix.
 ---
 
 # Kuzhambu Admin Page Review
@@ -36,6 +36,26 @@ Default scope:
 - Shared components only at the call-site/API level, unless the suspected issue is caused by the shared component contract itself.
 
 Do not expand into unrelated pages or project-wide refactors without dependency evidence.
+
+## Required context
+
+Before reviewing code, read:
+
+1. `docs/AGENTS.md` for repository document routing.
+2. `docs/00-governance/ARCHITECTURE.md` for frontend application boundaries.
+3. `docs/00-governance/ADMIN-WEB-RULES.md` for admin-web architecture, UI, state, permission, and testing rules.
+
+Also read `docs/00-governance/UI-RULES.md` when the target involves:
+
+- visual layout, interaction controls, buttons, tables, Drawer, Modal, upload, status presentation, `testId`, `data-testid`, accessible names, or E2E selectors.
+
+Also read `references/admin-ux-ui-review.md` when the target involves:
+
+- page layout, toolbar, batch actions, data tables, action columns, Drawer, Modal, async task flows, AI candidate flows, loading, empty/error state, permission availability, status presentation, expression hierarchy, accessibility, test anchors, or E2E behavior.
+
+Read `references/review-output-format.md` before producing the final review result.
+
+For admin-web, review as a management console. Prefer consistency, density, predictable operations, and verifiable state over creative visual novelty. Do not recommend custom typography, brand color changes, decorative backgrounds, complex motion, or non-project UI systems unless the user explicitly asks for a redesign.
 
 ## Review workflow
 
@@ -198,45 +218,13 @@ When recommending or rejecting an abstraction, state the concrete reason. Useful
 - The logic needs independent unit testing.
 - The capability component is already the owner, and extraction would reduce complexity instead of just shortening the file.
 
+### 11. Review admin-web UX/UI contracts
+
+When the target involves visible admin UI or interaction behavior, read `references/admin-ux-ui-review.md` and apply it after the ownership and abstraction checks above. Treat it as the project-specific admin UX/UI contract. Do not substitute generic design advice for concrete project rules.
+
 ## Output format
 
-Use this structure:
-
-```text
-结论
-- 页面整体角色判断
-- 最大边界问题
-- 是否建议重构
-
-组件归类
-- <component>: <composition/capability/expression/primitive> — <reason>
-
-主要问题
-[P1/P2/P3] <title>
-- 位置: <file/component>
-- 触发: <concrete condition>
-- 问题: <why the boundary/ownership is wrong>
-- 建议: <where the logic/data/interface should move>
-- 抽象判断: <ownership/complexity/reuse reason, if an abstraction is involved>
-
-建议重构顺序
-1. <step>
-2. <step>
-
-不建议改动
-- <stable boundary or intentional exception>
-
-验证建议
-- <narrow validation commands or manual checks>
-```
-
-Severity guide:
-
-- **P1**: likely user-visible breakage, incorrect business behavior, or hard-to-maintain boundary that blocks safe changes.
-- **P2**: concrete responsibility leak, duplicated ownership, or unstable interface likely to cause bugs.
-- **P3**: maintainability/readability concern. Include only when useful for planned refactoring.
-
-If no actionable findings exist, say so and list residual risks or validation gaps.
+Use `references/review-output-format.md`.
 
 ## Fixing after review
 
