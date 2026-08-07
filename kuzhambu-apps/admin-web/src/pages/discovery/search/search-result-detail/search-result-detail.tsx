@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Descriptions, Empty, Spin, Tag, Typography } from "antd";
-import { KuzhambuDrawer } from "@/components";
+import { Descriptions, Empty, Spin, Typography } from "antd";
+import { KuzhambuDrawer, KuzhambuTag } from "@/components";
 import * as service from "@/pages/discovery/search/search-service";
 import type { SearchResultEntry } from "@/pages/discovery/search/search-result-table";
 
@@ -140,9 +140,9 @@ export const SearchResultDetail = ({ previewResult, onClose }: SearchResultDetai
                         {previewData.tagNames?.length ? (
                             <div className="search-page-preview-tags">
                                 {previewData.tagNames.map((tagName) => (
-                                    <Tag color="blue" key={tagName}>
+                                    <KuzhambuTag type="info" key={tagName}>
                                         {tagName}
-                                    </Tag>
+                                    </KuzhambuTag>
                                 ))}
                             </div>
                         ) : null}

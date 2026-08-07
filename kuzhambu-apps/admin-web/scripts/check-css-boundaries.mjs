@@ -93,7 +93,7 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         allowedAntdSelectorLines: 2
     },
     { file: "src/pages/discovery/qa-console/qa-console-page.css", allowedAntdSelectorLines: 1 },
-    { file: "src/pages/discovery/search/search-page.css", allowedAntdSelectorLines: 3 },
+    { file: "src/pages/discovery/search/search-page.css", allowedAntdSelectorLines: 2 },
     {
         file: "src/pages/discovery/search-statistic/search-statistic-page.css",
         allowedAntdSelectorLines: 16
@@ -118,7 +118,7 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         file: "src/pages/storage/storage-object/storage-object-page.css",
         allowedAntdSelectorLines: 16
     },
-    { file: "src/pages/system/department/department-page.css", allowedAntdSelectorLines: 12 },
+    { file: "src/pages/system/department/department-page.css", allowedAntdSelectorLines: 11 },
     { file: "src/pages/system/menu/menu-page.css", allowedAntdSelectorLines: 10 },
     {
         file: "src/pages/system/role/role-edit-drawer/menu-tree-field/menu-tree-field.css",

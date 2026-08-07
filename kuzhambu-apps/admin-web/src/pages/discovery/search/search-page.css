@@ -69,10 +69,6 @@
     margin-top: 8px;
 }
 
-.search-page-result-meta .ant-tag {
-    margin-inline-end: 0;
-}
-
 .search-page-pagination {
     display: flex;
     justify-content: flex-end;
