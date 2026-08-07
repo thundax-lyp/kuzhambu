@@ -110,7 +110,7 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         allowedAntdSelectorLines: 1
     },
     { file: "src/pages/operations/cleanup/cleanup-page.css", allowedAntdSelectorLines: 1 },
-    { file: "src/pages/operations/dashboard/dashboard-page.css", allowedAntdSelectorLines: 5 },
+    { file: "src/pages/operations/dashboard/dashboard-page.css", allowedAntdSelectorLines: 4 },
     { file: "src/pages/operations/health/health-page.css", allowedAntdSelectorLines: 2 },
     { file: "src/pages/operations/report/report-page.css", allowedAntdSelectorLines: 3 },
     { file: "src/pages/operations/task/task-page.css", allowedAntdSelectorLines: 2 },
@@ -127,10 +127,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     {
         file: "src/pages/system/user/user-department-tree/user-department-tree.css",
         allowedAntdSelectorLines: 7
-    },
-    {
-        file: "src/pages/system/user/user-edit-drawer/user-avatar-field/user-avatar-field.css",
-        allowedAntdSelectorLines: 1
     },
     { file: "src/pages/system/user/user-page.css", allowedAntdSelectorLines: 5 }
 ];

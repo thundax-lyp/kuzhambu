@@ -136,6 +136,7 @@ export const DashboardAlertDrawer = ({
                             <div className="operations-dashboard-alert-actions">
                                 <KuzhambuButton
                                     testId="operations-dashboard-dashboard-resolve-button"
+                                    className="operations-dashboard-alert-action-button"
                                     size="small"
                                 >
                                     <Link to={resolveAlertActionPath(alert)}>去处理</Link>
@@ -143,6 +144,7 @@ export const DashboardAlertDrawer = ({
                                 {canManageHealthAlert && alert.alertStatus === "ACTIVE" ? (
                                     <KuzhambuButton
                                         testId="operations-dashboard-dashboard-action-button"
+                                        className="operations-dashboard-alert-action-button"
                                         loading={isConfirmingAlert}
                                         onClick={() => onConfirmAlert(alert)}
                                         size="small"
@@ -153,6 +155,7 @@ export const DashboardAlertDrawer = ({
                                 {canManageHealthAlert ? (
                                     <KuzhambuButton
                                         testId="operations-dashboard-dashboard-action-button-2"
+                                        className="operations-dashboard-alert-action-button"
                                         loading={isRecoveringAlert}
                                         onClick={() => onRecoverAlert(alert)}
                                         size="small"
