@@ -16,6 +16,7 @@ export * from "./kuzhambu-rich-content-viewer";
 export * from "./kuzhambu-segmented-drawer";
 export * from "./kuzhambu-select";
 export * from "./kuzhambu-space";
+export * from "./kuzhambu-graph";
 export * from "./kuzhambu-steps";
 export * from "./kuzhambu-switch";
 export * from "./kuzhambu-sync-task-modal";
