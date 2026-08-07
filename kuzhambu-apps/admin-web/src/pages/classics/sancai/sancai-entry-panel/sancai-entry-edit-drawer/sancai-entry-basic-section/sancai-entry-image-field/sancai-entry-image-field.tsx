@@ -151,7 +151,7 @@ export const SancaiEntryImageField = ({
                                                     </Text>
                                                     <Text
                                                         type="secondary"
-                                                        className="sancai-entry-image-meta-text"
+                                                        className="sancai-entry-image-meta-text sancai-secondary-text"
                                                     >
                                                         {formatImageSize(image.size)}
                                                     </Text>

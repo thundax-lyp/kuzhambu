@@ -34,7 +34,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         file: "src/pages/classics/sancai/sancai-entry-panel/sancai-entry-panel.css",
         allowedAntdSelectorLines: 4
     },
-    { file: "src/pages/classics/sancai/sancai-page.css", allowedAntdSelectorLines: 3 },
     {
         file: "src/pages/classics/sancai-visual/sancai-entry-visual-section/sancai-entry-visual-section.css",
         allowedAntdSelectorLines: 14

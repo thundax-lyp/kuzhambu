@@ -158,7 +158,7 @@ export const SancaiVersionsPanel = ({
                                 description={
                                     <KuzhambuSpace orientation="vertical" size={2}>
                                         <Text>{version.changeSummary || "未填写变更说明"}</Text>
-                                        <Text type="secondary">
+                                        <Text type="secondary" className="sancai-secondary-text">
                                             {formatDateTime(version.versionedAt)}
                                         </Text>
                                     </KuzhambuSpace>
