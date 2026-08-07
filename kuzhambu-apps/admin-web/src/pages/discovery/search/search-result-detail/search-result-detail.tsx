@@ -97,7 +97,7 @@ export const SearchResultDetail = ({ previewResult, onClose }: SearchResultDetai
 
     return (
         <KuzhambuDrawer
-            destroyOnClose
+            destroyOnHidden
             open={open}
             size="large"
             testId="discovery-search-preview-drawer"

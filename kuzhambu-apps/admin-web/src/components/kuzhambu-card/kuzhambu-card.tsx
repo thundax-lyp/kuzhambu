@@ -1,7 +1,7 @@
 import { Card as AntdCard } from "antd";
 import type { CardProps } from "antd";
 
-export type KuzhambuCardProps = Omit<CardProps, "bodyStyle"> & {
+export type KuzhambuCardProps = Omit<CardProps, "bodyStyle" | "bordered" | "headStyle"> & {
     bodyStyle?: never;
 };
 

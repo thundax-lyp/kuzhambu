@@ -2,7 +2,10 @@ import { Descriptions } from "antd";
 import type { DescriptionsProps } from "antd";
 import "./kuzhambu-descriptions.css";
 
-export interface KuzhambuDescriptionsProps extends DescriptionsProps {
+export interface KuzhambuDescriptionsProps extends Omit<
+    DescriptionsProps,
+    "children" | "contentStyle" | "labelStyle"
+> {
     ariaLabel?: string;
     testId?: string;
 }

@@ -57,7 +57,7 @@ export const RefinementQualityAnnotationDrawer = ({
     return (
         <KuzhambuDrawer
             testId="knowledge-refinement-refinement-quality-annotation-drawer"
-            destroyOnClose
+            destroyOnHidden
             forceRender
             open={open}
             size="small"

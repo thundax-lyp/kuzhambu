@@ -45,7 +45,7 @@ export const QaSessionDetailDrawer = ({ onClose, sessionId }: QaSessionDetailDra
 
     return (
         <KuzhambuDrawer
-            destroyOnClose
+            destroyOnHidden
             onClose={onClose}
             open={sessionId !== null}
             loading={sessionDetailQuery.isFetching}
