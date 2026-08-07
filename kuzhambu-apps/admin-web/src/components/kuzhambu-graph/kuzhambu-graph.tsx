@@ -15,6 +15,9 @@ const FORCE_COLLIDE_RADIUS = 38;
 const FORCE_COLLIDE_STRENGTH = 0.9;
 const FORCE_CENTER_STRENGTH = 0.14;
 const FORCE_LAYOUT_ITERATIONS = 280;
+const FORCE_GROUP_Y_SPACING = 116;
+const FORCE_GROUP_Y_MAX_SPAN = 360;
+const FORCE_GROUP_Y_STRENGTH = 0.08;
 
 const getNodeGroup = (node: NodeData) => {
     return String(node.data?.group || "default");
@@ -34,6 +37,56 @@ const getGroupColor = (group: string) => {
         hash = (hash * 31 + char.charCodeAt(0)) % GROUP_COLORS.length;
     });
     return GROUP_COLORS[hash];
+};
+
+const getGraphGroups = (graphData: GraphData) => {
+    return Array.from(
+        new Set((graphData.nodes || []).map((node) => getNodeGroup(node)).filter(Boolean))
+    );
+};
+
+const createGroupYResolver = (graphData: GraphData) => {
+    const groups = getGraphGroups(graphData);
+    const groupIndexMap = new Map(groups.map((group, index) => [group, index]));
+    const span = Math.min(
+        FORCE_GROUP_Y_SPACING * Math.max(groups.length - 1, 0),
+        FORCE_GROUP_Y_MAX_SPAN
+    );
+    const startY = -span / 2;
+    const stepY = groups.length <= 1 ? 0 : span / (groups.length - 1);
+
+    return (node: NodeData) => startY + (groupIndexMap.get(getNodeGroup(node)) || 0) * stepY;
+};
+
+const createForceLayout = (graphData: GraphData) => {
+    const groups = getGraphGroups(graphData);
+    return {
+        type: "d3-force",
+        animation: true,
+        iterations: FORCE_LAYOUT_ITERATIONS,
+        link: {
+            distance: FORCE_LINK_DISTANCE,
+            strength: FORCE_LINK_STRENGTH
+        },
+        manyBody: {
+            strength: FORCE_MANY_BODY_STRENGTH,
+            distanceMax: FORCE_MANY_BODY_DISTANCE_MAX
+        },
+        collide: {
+            radius: FORCE_COLLIDE_RADIUS,
+            strength: FORCE_COLLIDE_STRENGTH
+        },
+        center: {
+            strength: FORCE_CENTER_STRENGTH
+        },
+        y:
+            groups.length > 1
+                ? {
+                      y: createGroupYResolver(graphData),
+                      strength: FORCE_GROUP_Y_STRENGTH
+                  }
+                : false
+    };
 };
 
 const fitGraphView = async (graph: Graph) => {
@@ -83,6 +136,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
                     dataRef.current = nextData;
 
                     graph.setData(nextData);
+                    graph.setLayout(createForceLayout(nextData));
                     await graph.render();
                     await fitGraphView(graph);
                 }
@@ -105,26 +159,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
                     easing: "ease-in-out"
                 },
                 data: initialGraphData,
-                layout: {
-                    type: "d3-force",
-                    animation: true,
-                    iterations: FORCE_LAYOUT_ITERATIONS,
-                    link: {
-                        distance: FORCE_LINK_DISTANCE,
-                        strength: FORCE_LINK_STRENGTH
-                    },
-                    manyBody: {
-                        strength: FORCE_MANY_BODY_STRENGTH,
-                        distanceMax: FORCE_MANY_BODY_DISTANCE_MAX
-                    },
-                    collide: {
-                        radius: FORCE_COLLIDE_RADIUS,
-                        strength: FORCE_COLLIDE_STRENGTH
-                    },
-                    center: {
-                        strength: FORCE_CENTER_STRENGTH
-                    }
-                },
+                layout: createForceLayout(initialGraphData),
                 node: {
                     style: (node) => {
                         const color = getGroupColor(getNodeGroup(node));
@@ -167,11 +202,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
             });
 
             const rerunForceLayout = async () => {
-                graph.setLayout((layout) => ({
-                    ...(Array.isArray(layout) ? layout[0] : layout),
-                    type: "d3-force",
-                    animation: true
-                }));
+                graph.setLayout(createForceLayout(dataRef.current));
                 await graph.render();
                 await fitGraphView(graph);
             };
@@ -203,6 +234,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
             }
 
             graph.setData(graphData);
+            graph.setLayout(createForceLayout(graphData));
             void graph.render().then(() => fitGraphView(graph));
         }, [graphData]);
 
