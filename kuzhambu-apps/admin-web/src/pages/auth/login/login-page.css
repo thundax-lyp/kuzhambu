@@ -56,8 +56,8 @@
 }
 
 .login-hero .login-logo,
-.login-hero h1.ant-typography,
-.login-hero .ant-typography:last-child {
+.login-hero-title,
+.login-hero-description {
     text-shadow: 0 1px 12px color-mix(in srgb, var(--surface-panel) 92%, transparent);
 }
 
@@ -79,14 +79,14 @@ html[data-theme="dark"] .login-page::before {
     filter: drop-shadow(0 16px 26px rgba(126, 42, 35, 0.22));
 }
 
-.login-hero h1.ant-typography {
+.login-hero-title {
     max-width: 460px;
     margin: 0 0 16px;
     font-size: 44px;
     line-height: 1.08;
 }
 
-.login-hero .ant-typography:last-child {
+.login-hero-description {
     max-width: 420px;
     color: var(--text-secondary);
     font-size: 16px;
@@ -105,7 +105,7 @@ html[data-theme="dark"] .login-page::before {
     width: 100%;
 }
 
-.login-card h2.ant-typography {
+.login-card-title {
     margin-bottom: 6px;
 }
 
@@ -114,7 +114,7 @@ html[data-theme="dark"] .login-page::before {
     width: 100%;
 }
 
-.login-captcha-row .ant-input {
+.login-captcha-input {
     flex: 1;
 }
 
@@ -145,7 +145,7 @@ html[data-theme="dark"] .login-page::before {
         padding: 48px 40px;
     }
 
-    .login-hero h1.ant-typography {
+    .login-hero-title {
         font-size: 38px;
     }
 }
@@ -162,7 +162,7 @@ html[data-theme="dark"] .login-page::before {
         padding: 32px 28px;
     }
 
-    .login-hero h1.ant-typography {
+    .login-hero-title {
         font-size: 32px;
     }
 

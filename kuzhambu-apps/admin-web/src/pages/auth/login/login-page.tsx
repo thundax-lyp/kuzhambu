@@ -101,14 +101,20 @@ export const LoginPage = () => {
             <main className="login-page">
                 <section className="login-hero">
                     <KuzhambuLogo className="login-logo" />
-                    <Title level={1}>KUZHAMBU WORKSPACE</Title>
-                    <Paragraph>使用后台账号和验证码进入工作区。</Paragraph>
+                    <Title level={1} className="login-hero-title">
+                        KUZHAMBU WORKSPACE
+                    </Title>
+                    <Paragraph className="login-hero-description">
+                        使用后台账号和验证码进入工作区。
+                    </Paragraph>
                 </section>
 
                 <KuzhambuCard className="login-card">
                     <KuzhambuSpace orientation="vertical" size={24} className="login-card-content">
                         <div>
-                            <Title level={2}>登录</Title>
+                            <Title level={2} className="login-card-title">
+                                登录
+                            </Title>
                             <Text type="secondary">请输入后台账号信息</Text>
                         </div>
 
@@ -170,7 +176,12 @@ export const LoginPage = () => {
                                 rules={[{ required: true, message: "请输入验证码" }]}
                             >
                                 <KuzhambuSpaceCompact className="login-captcha-row">
-                                    <Input size="large" placeholder="验证码" autoComplete="off" />
+                                    <Input
+                                        className="login-captcha-input"
+                                        size="large"
+                                        placeholder="验证码"
+                                        autoComplete="off"
+                                    />
                                     <button
                                         className="login-captcha-image-button"
                                         type="button"
