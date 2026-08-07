@@ -276,7 +276,9 @@ export const DepartmentPage = () => {
                         {namePath}
                     </span>
                 ) : (
-                    <Text type="secondary">根部门</Text>
+                    <Text type="secondary" className="department-secondary-text">
+                        根部门
+                    </Text>
                 )
         },
         {
@@ -285,7 +287,12 @@ export const DepartmentPage = () => {
             key: "remarks",
             width: DEFAULT_COLUMN_WIDTHS.remarks,
             ellipsis: true,
-            render: (remarks?: string | null) => remarks || <Text type="secondary">未填写</Text>
+            render: (remarks?: string | null) =>
+                remarks || (
+                    <Text type="secondary" className="department-secondary-text">
+                        未填写
+                    </Text>
+                )
         },
         {
             key: "actions",
@@ -342,6 +349,7 @@ export const DepartmentPage = () => {
                     <>
                         <KuzhambuButton
                             testId="system-department-department-refresh-button"
+                            className="department-action-button"
                             disabled={!canViewDepartment}
                             icon={<ReloadOutlined />}
                             onClick={() => {
@@ -385,7 +393,9 @@ export const DepartmentPage = () => {
                     ) : (
                         <KuzhambuSpace orientation="vertical" size={8}>
                             <BranchesOutlined className="department-empty-icon" />
-                            <Text type="secondary">暂无部门数据</Text>
+                            <Text type="secondary" className="department-secondary-text">
+                                暂无部门数据
+                            </Text>
                         </KuzhambuSpace>
                     )
                 }}

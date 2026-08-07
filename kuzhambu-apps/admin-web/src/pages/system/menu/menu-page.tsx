@@ -381,6 +381,7 @@ export const MenuPage = () => {
                     <>
                         <KuzhambuButton
                             testId="system-menu-menu-refresh-button"
+                            className="menu-action-button"
                             icon={<ReloadOutlined />}
                             disabled={!canViewMenu}
                             onClick={() => {
@@ -423,7 +424,9 @@ export const MenuPage = () => {
                     ) : (
                         <KuzhambuSpace orientation="vertical" size={8}>
                             <MenuOutlined className="menu-empty-icon" />
-                            <Text type="secondary">暂无菜单数据</Text>
+                            <Text type="secondary" className="menu-secondary-text">
+                                暂无菜单数据
+                            </Text>
                         </KuzhambuSpace>
                     )
                 }}

@@ -31,39 +31,20 @@ html[data-theme="dark"] .department-page {
     --department-field-bg: rgba(12, 22, 38, 0.7);
 }
 
-.department-page .ant-typography-secondary {
+.department-secondary-text {
     color: var(--department-copy);
 }
 
-.department-page .ant-btn-default {
+.department-action-button {
     color: var(--department-ink);
     background: var(--department-button-bg);
     border-color: var(--department-line);
 }
 
-.department-page .ant-btn-default:not(:disabled):hover {
+.department-action-button:not(:disabled):hover {
     color: var(--department-green) !important;
     background: var(--department-green-soft) !important;
     border-color: var(--department-green-line) !important;
-}
-
-.department-page .ant-input-affix-wrapper,
-.department-page .ant-input {
-    color: var(--department-ink);
-    background: var(--department-field-bg) !important;
-    border-color: var(--department-line) !important;
-}
-
-.department-page .ant-input-affix-wrapper:hover,
-.department-page .ant-input:hover {
-    border-color: var(--department-line-strong) !important;
-}
-
-.department-page .ant-input-affix-wrapper:focus,
-.department-page .ant-input-affix-wrapper-focused,
-.department-page .ant-input:focus {
-    border-color: var(--department-green) !important;
-    box-shadow: 0 0 0 3px var(--department-green-soft) !important;
 }
 
 .department-name-icon,

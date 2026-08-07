@@ -42,9 +42,7 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     {
         file: "src/pages/storage/storage-object/storage-object-page.css",
         allowedAntdSelectorLines: 16
-    },
-    { file: "src/pages/system/department/department-page.css", allowedAntdSelectorLines: 11 },
-    { file: "src/pages/system/menu/menu-page.css", allowedAntdSelectorLines: 10 }
+    }
 ];
 const pageCssAntdSelectorAllowanceByFile = new Map(
     PAGE_CSS_ANTD_SELECTOR_ALLOWLIST.map((entry) => [entry.file, entry.allowedAntdSelectorLines])
