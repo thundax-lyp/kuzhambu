@@ -1,6 +1,6 @@
-import { Segmented, Typography } from "antd";
+import { Typography } from "antd";
 import { useState } from "react";
-import { KuzhambuSpace } from "@/components";
+import { KuzhambuSegmented, KuzhambuSpace } from "@/components";
 import { SearchEventPanel } from "./search-event-panel";
 import { SearchIndexRebuildPanel } from "./search-index-rebuild-panel";
 import { SearchSummaryPanel } from "./search-summary-panel";
@@ -26,7 +26,8 @@ export const SearchStatisticPage = () => {
                 </header>
 
                 <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
-                    <Segmented
+                    <KuzhambuSegmented
+                        testId="discovery-search-statistics-section-segmented"
                         className="search-statistics-segmented"
                         options={[
                             { label: "统计摘要", value: "summary" },

@@ -33,10 +33,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     {
         file: "src/pages/discovery/qa/qa-message-panel/qa-message-panel.css",
         allowedAntdSelectorLines: 17
-    },
-    {
-        file: "src/pages/discovery/search-statistic/search-statistic-page.css",
-        allowedAntdSelectorLines: 16
     }
 ];
 const pageCssAntdSelectorAllowanceByFile = new Map(

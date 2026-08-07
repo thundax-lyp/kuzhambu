@@ -15,6 +15,7 @@ export * from "./kuzhambu-page";
 export * from "./kuzhambu-rich-content-viewer";
 export * from "./kuzhambu-segmented-drawer";
 export * from "./kuzhambu-select";
+export * from "./kuzhambu-segmented";
 export * from "./kuzhambu-space";
 export * from "./kuzhambu-graph";
 export * from "./kuzhambu-steps";

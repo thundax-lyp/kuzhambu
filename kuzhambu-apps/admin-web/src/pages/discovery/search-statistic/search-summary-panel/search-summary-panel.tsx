@@ -70,10 +70,13 @@ export const SearchSummaryPanel = () => {
             <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                 <KuzhambuCard size="small">
                     <KuzhambuSpace className="search-statistics-summary-filter" wrap>
-                        <label>
-                            <Text type="secondary">起始时间</Text>
+                        <label className="search-statistics-summary-filter-field">
+                            <Text className="search-statistics-filter-label" type="secondary">
+                                起始时间
+                            </Text>
                             <RangePicker
                                 aria-label="统计时间范围"
+                                className="search-statistics-summary-range-picker"
                                 format={DATE_TIME_FORMAT}
                                 showTime
                                 value={dateRange}
@@ -82,6 +85,7 @@ export const SearchSummaryPanel = () => {
                         </label>
                         <KuzhambuButton
                             ariaLabel="统计"
+                            className="search-statistics-summary-filter-button"
                             testId="discovery-search-statistics-search-statistics-action-button"
                             loading={summaryQuery.isFetching}
                             onClick={refreshSummary}
