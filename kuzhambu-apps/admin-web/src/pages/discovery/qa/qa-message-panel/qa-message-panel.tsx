@@ -1,8 +1,14 @@
 import { CheckCircleOutlined, ExclamationCircleOutlined, LoadingOutlined } from "@ant-design/icons";
-import { Bubble, Sender, type BubbleItemType } from "@ant-design/x";
+import type { BubbleItemType } from "@ant-design/x";
 import { Input, Tag, Tooltip } from "antd";
 import { forwardRef, useMemo, type ComponentProps, type ElementRef, type ReactNode } from "react";
-import { KuzhambuSpace, KuzhambuText, KuzhambuTitle } from "@/components";
+import {
+    KuzhambuSpace,
+    KuzhambuText,
+    KuzhambuTitle,
+    KuzhambuXBubbleList,
+    KuzhambuXSender
+} from "@/components";
 import ancientReaderAvatar from "@/assets/ancient-reader-avatar-face.jpg";
 import ancientScholarAvatar from "@/assets/ancient-scholar-avatar-face.jpg";
 import type {
@@ -191,8 +197,10 @@ export const QaMessagePanel = ({
 
             <div className="discovery-qa-page__messages" aria-label="问答消息">
                 {bubbleItems.length ? (
-                    <Bubble.List
+                    <KuzhambuXBubbleList
+                        testId="discovery-qa-message-list"
                         autoScroll
+                        className="discovery-qa-page__bubble-list"
                         items={bubbleItems}
                         role={{
                             ai: {
@@ -244,7 +252,8 @@ export const QaMessagePanel = ({
                     : null}
             </div>
 
-            <Sender
+            <KuzhambuXSender
+                testId="discovery-qa-message-sender"
                 autoSize={false}
                 className="discovery-qa-page__composer"
                 components={QA_SENDER_COMPONENTS}

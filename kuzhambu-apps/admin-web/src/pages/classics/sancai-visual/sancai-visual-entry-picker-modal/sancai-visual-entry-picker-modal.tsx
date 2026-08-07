@@ -47,6 +47,12 @@ export const SancaiVisualEntryPickerModal = ({
         <KuzhambuModal
             testId="classics-sancai-visual-entry-picker-modal"
             className="sancai-visual-entry-picker-modal"
+            classNames={{
+                body: "sancai-visual-entry-picker-modal-body",
+                container: "sancai-visual-entry-picker-modal-content",
+                footer: "sancai-visual-entry-picker-modal-footer",
+                wrapper: "sancai-visual-entry-picker-modal-wrapper"
+            }}
             width={760}
             title="选择视觉处理稿件"
             footer={
@@ -85,6 +91,7 @@ export const SancaiVisualEntryPickerModal = ({
                         <Skeleton active paragraph={{ rows: 10 }} />
                     ) : (
                         <Tree
+                            className="sancai-visual-entry-picker-tree-control"
                             blockNode
                             showIcon
                             expandedKeys={expandedKeys}

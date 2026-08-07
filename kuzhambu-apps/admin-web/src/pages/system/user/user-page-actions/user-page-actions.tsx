@@ -25,7 +25,12 @@ export const UserPageActions = ({
     onSearch,
     onToggleFilter
 }: UserPageActionsProps) => (
-    <KuzhambuSpace className="user-page-actions">
+    <KuzhambuSpace
+        className="user-page-actions"
+        classNames={{
+            item: "user-page-action-item"
+        }}
+    >
         <Input
             allowClear
             aria-label="搜索用户"

@@ -13,12 +13,12 @@
     gap: 12px;
 }
 
-.menu-tree-field .ant-tree {
+.menu-tree-field-control {
     max-height: 360px;
     overflow: auto;
     border-radius: 8px;
 }
 
-.menu-tree-field .ant-tree-node-content-wrapper {
+.menu-tree-field-node-title {
     min-width: 0;
 }

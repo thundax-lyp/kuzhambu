@@ -1,6 +1,10 @@
 import { Modal } from "antd";
 import type { ModalProps } from "antd";
 
+const joinClassNames = (...classNames: Array<string | false | null | undefined>) => {
+    return classNames.filter(Boolean).join(" ");
+};
+
 export interface KuzhambuModalProps extends Omit<
     ModalProps,
     | "autoFocusButton"
@@ -23,6 +27,7 @@ const shouldExposeTestId = () => {
 // Do not add workflow-specific state here; use a specialized component such as KuzhambuSyncTaskModal.
 export const KuzhambuModal = ({
     className,
+    classNames,
     rootClassName,
     testId,
     ...modalProps
@@ -33,8 +38,9 @@ export const KuzhambuModal = ({
         <Modal
             {...modalProps}
             {...testIdProps}
-            className={["kuzhambu-modal", className].filter(Boolean).join(" ")}
-            rootClassName={["kuzhambu-modal-root", rootClassName].filter(Boolean).join(" ")}
+            className={joinClassNames("kuzhambu-modal", className)}
+            classNames={classNames}
+            rootClassName={joinClassNames("kuzhambu-modal-root", rootClassName)}
         />
     );
 };

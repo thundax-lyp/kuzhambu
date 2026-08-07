@@ -4,22 +4,13 @@
     gap: 12px;
 }
 
-.sancai-entry-table .ant-table {
-    color: var(--sancai-ink);
-    background: var(--sancai-soft);
-    border: 1px solid var(--sancai-line);
-    border-radius: 8px;
-}
-
-.sancai-entry-table .ant-table-thead > tr > th {
-    color: var(--sancai-copy);
-    font-weight: 700;
-    background: var(--sancai-panel);
-    border-bottom-color: var(--sancai-line);
-}
-
-.sancai-entry-table .ant-table-tbody > tr > td {
-    border-bottom-color: var(--sancai-line);
+.sancai-entry-table {
+    --kuzhambu-table-border-radius: 8px;
+    --kuzhambu-table-head-bg: var(--sancai-panel);
+    --kuzhambu-table-head-ink: var(--sancai-copy);
+    --kuzhambu-table-ink: var(--sancai-ink);
+    --kuzhambu-table-line: var(--sancai-line);
+    --kuzhambu-table-panel-bg: var(--sancai-soft);
 }
 
 .sancai-entry-title-cell {
@@ -29,7 +20,7 @@
 }
 
 .sancai-entry-title-cell a,
-.sancai-entry-table .ant-table-cell .ant-typography-secondary {
+.sancai-entry-summary-cell {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
