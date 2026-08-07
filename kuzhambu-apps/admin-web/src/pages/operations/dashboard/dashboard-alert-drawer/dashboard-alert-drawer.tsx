@@ -104,6 +104,7 @@ export const DashboardAlertDrawer = ({
                             className="operations-dashboard-alert-card"
                             key={alert.alertId}
                             size="small"
+                            styles={{ body: { display: "grid", gap: 8 } }}
                         >
                             <div className="operations-dashboard-alert-card-header">
                                 <div>

@@ -765,7 +765,10 @@ export const OperationsDashboardPage = () => {
                                         key={entry.to}
                                         to={entry.to}
                                     >
-                                        <KuzhambuCard size="small">
+                                        <KuzhambuCard
+                                            size="small"
+                                            styles={{ body: { display: "grid", gap: 8 } }}
+                                        >
                                             <KuzhambuSpace size={8}>
                                                 {entry.icon}
                                                 <Text strong>{entry.title}</Text>

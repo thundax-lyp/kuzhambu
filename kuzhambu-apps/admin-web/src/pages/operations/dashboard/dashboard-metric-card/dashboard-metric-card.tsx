@@ -20,7 +20,10 @@ export const DashboardMetricCard = ({
     suffix
 }: DashboardMetricCardProps) => {
     return (
-        <KuzhambuCard className="operations-dashboard-metric-card">
+        <KuzhambuCard
+            className="operations-dashboard-metric-card"
+            styles={{ body: { display: "grid", gap: 10, minHeight: 128 } }}
+        >
             <Statistic title={title} value={value} suffix={suffix} prefix={prefix} />
             {secondaryText ? <Text type="secondary">{secondaryText}</Text> : null}
         </KuzhambuCard>

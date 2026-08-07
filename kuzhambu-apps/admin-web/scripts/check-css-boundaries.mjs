@@ -110,7 +110,7 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         allowedAntdSelectorLines: 1
     },
     { file: "src/pages/operations/cleanup/cleanup-page.css", allowedAntdSelectorLines: 1 },
-    { file: "src/pages/operations/dashboard/dashboard-page.css", allowedAntdSelectorLines: 4 },
+    { file: "src/pages/operations/dashboard/dashboard-page.css", allowedAntdSelectorLines: 1 },
     { file: "src/pages/operations/health/health-page.css", allowedAntdSelectorLines: 2 },
     { file: "src/pages/operations/report/report-page.css", allowedAntdSelectorLines: 3 },
     { file: "src/pages/operations/task/task-page.css", allowedAntdSelectorLines: 2 },

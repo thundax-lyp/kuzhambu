@@ -34,12 +34,6 @@
     border-radius: 8px;
 }
 
-.operations-dashboard-metric-card .ant-card-body {
-    display: grid;
-    gap: 10px;
-    min-height: 128px;
-}
-
 .operations-dashboard-trend-bars {
     display: grid;
     gap: 10px;
@@ -128,7 +122,6 @@
     border-radius: 8px;
 }
 
-.operations-dashboard-alert-card .ant-card-body,
 .operations-dashboard-alert-card-header,
 .operations-dashboard-alert-meta {
     display: grid;
@@ -187,11 +180,6 @@
 .operations-dashboard-entry {
     color: inherit;
     text-decoration: none;
-}
-
-.operations-dashboard-entry .ant-card-body {
-    display: grid;
-    gap: 8px;
 }
 
 .operations-dashboard-health-detail {
