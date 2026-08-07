@@ -6,7 +6,7 @@
     width: 100%;
 }
 
-.prompt-table .ant-table-thead > tr > th {
+.prompt-table-header-cell {
     text-align: center;
 }
 
