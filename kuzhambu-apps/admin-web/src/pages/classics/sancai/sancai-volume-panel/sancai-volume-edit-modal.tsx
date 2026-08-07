@@ -119,7 +119,7 @@ const SancaiVolumeForm = ({
             </KuzhambuFormItem>
             <KuzhambuFormItem name="categoryId" label="所属门类" layoutSize="large">
                 <KuzhambuSelect
-                    className="sancai-category-edit-control"
+                    controlClassName="sancai-category-edit-control"
                     aria-label="三才图会卷目所属门类"
                     placeholder="所属门类"
                     options={categories.map((category) => ({
@@ -130,7 +130,7 @@ const SancaiVolumeForm = ({
             </KuzhambuFormItem>
             <KuzhambuFormItem name="volumeType" label="卷目类型" layoutSize="large">
                 <KuzhambuSelect
-                    className="sancai-category-edit-control"
+                    controlClassName="sancai-category-edit-control"
                     aria-label="三才图会卷目类型"
                     options={volumeTypeItems}
                 />

@@ -82,7 +82,7 @@ export const SancaiCategoryEditDrawerModal = ({
                 </KuzhambuFormItem>
                 <KuzhambuFormItem name="categoryType" label="门类类型" layoutSize="large">
                     <KuzhambuSelect
-                        className="sancai-category-edit-control"
+                        controlClassName="sancai-category-edit-control"
                         aria-label="三才图会门类类型"
                         options={categoryTypeOptions}
                     />
