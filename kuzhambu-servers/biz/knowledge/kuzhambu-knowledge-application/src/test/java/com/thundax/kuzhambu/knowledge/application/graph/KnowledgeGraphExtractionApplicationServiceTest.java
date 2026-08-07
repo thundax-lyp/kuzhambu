@@ -142,7 +142,9 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                         aiBatchJobApplicationService,
                         knowledgeAiExtractionRepository,
                         aiCandidateDomainService),
-                candidateApplySupport);
+                candidateApplySupport,
+                null,
+                null);
     }
 
     @Test

@@ -71,7 +71,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -112,31 +111,6 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     private final TransactionTemplate transactionTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
-    public KnowledgeGraphExtractionApplicationServiceImpl(
-            GraphExtractionTaskRepository repository,
-            GraphVersionRepository graphVersionRepository,
-            KnowledgeEntityRepository knowledgeEntityRepository,
-            KnowledgeRelationRepository knowledgeRelationRepository,
-            KnowledgeLineageNodeRepository knowledgeLineageNodeRepository,
-            KnowledgeLineageRelationRepository knowledgeLineageRelationRepository,
-            RefinementTaskRepository refinementTaskRepository,
-            AiFacade aiFacade,
-            KnowledgeGraphCandidateApplySupport candidateApplySupport) {
-        this(
-                repository,
-                graphVersionRepository,
-                knowledgeEntityRepository,
-                knowledgeRelationRepository,
-                knowledgeLineageNodeRepository,
-                knowledgeLineageRelationRepository,
-                refinementTaskRepository,
-                aiFacade,
-                candidateApplySupport,
-                null,
-                null);
-    }
-
-    @Autowired
     public KnowledgeGraphExtractionApplicationServiceImpl(
             GraphExtractionTaskRepository repository,
             GraphVersionRepository graphVersionRepository,
