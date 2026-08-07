@@ -70,7 +70,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     },
     { file: "src/pages/knowledge/graph-result/graph-result-page.css", allowedAntdSelectorLines: 1 },
     { file: "src/pages/knowledge/lineage/lineage-page.css", allowedAntdSelectorLines: 2 },
-    { file: "src/pages/knowledge/taxonomy/taxonomy-page.css", allowedAntdSelectorLines: 1 },
     {
         file: "src/pages/operations/backup-restore/backup-restore-page.css",
         allowedAntdSelectorLines: 1
