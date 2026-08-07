@@ -131,6 +131,9 @@ export const PromptVersionDrawer = ({
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const [viewVersion, setViewVersion] = useState<AiPromptVersionRecord | null>(null);
     const [compareVersions, setCompareVersions] = useState<AiPromptVersionRecord[]>([]);
+    const [currentVersionNo, setCurrentVersionNo] = useState<number | null>(
+        template?.currentVersionNo ?? null
+    );
     const templateId = template?.id || null;
     const versionsQuery = useQuery({
         queryKey: ["ai", "prompt", "versions", templateId],
@@ -154,7 +157,8 @@ export const PromptVersionDrawer = ({
     });
     const rollbackMutation = useMutation({
         mutationFn: service.changePromptVersionRollback,
-        onSuccess: async () => {
+        onSuccess: async (version) => {
+            setCurrentVersionNo(version.versionNo ?? null);
             await queryClient.invalidateQueries({ queryKey: ["ai", "prompt"] });
             await versionsQuery.refetch();
             setSelectedRowKeys([]);
@@ -185,7 +189,7 @@ export const PromptVersionDrawer = ({
             key: "current",
             width: 96,
             render: (_, record) => {
-                const current = record.versionNo === template?.currentVersionNo;
+                const current = record.versionNo === currentVersionNo;
                 return (
                     <KuzhambuTag type={current ? "success" : "neutral"}>
                         {current ? "当前" : "历史"}
@@ -210,7 +214,7 @@ export const PromptVersionDrawer = ({
         {
             key: "actions",
             options: (record) => {
-                const current = record.versionNo === template?.currentVersionNo;
+                const current = record.versionNo === currentVersionNo;
                 return [
                     { key: "view", text: "查看", onClick: () => setViewVersion(record) },
                     {
