@@ -38,10 +38,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
     {
         file: "src/pages/discovery/search-statistic/search-statistic-page.css",
         allowedAntdSelectorLines: 16
-    },
-    {
-        file: "src/pages/storage/storage-object/storage-object-page.css",
-        allowedAntdSelectorLines: 16
     }
 ];
 const pageCssAntdSelectorAllowanceByFile = new Map(

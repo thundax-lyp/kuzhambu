@@ -278,9 +278,16 @@ export const StorageObjectPage = () => {
                 <KuzhambuSpace size={10}>
                     <FileOutlined className="storage-object-file-icon" />
                     <div className="storage-object-name-cell">
-                        <Text strong>{readFilename(storage)}</Text>
+                        <Text strong className="storage-object-name-text">
+                            {readFilename(storage)}
+                        </Text>
                         {formatFileSize(storage.size) ? (
-                            <Text type="secondary">{formatFileSize(storage.size)}</Text>
+                            <Text
+                                type="secondary"
+                                className="storage-object-secondary-text storage-object-name-text"
+                            >
+                                {formatFileSize(storage.size)}
+                            </Text>
                         ) : null}
                     </div>
                 </KuzhambuSpace>
@@ -293,7 +300,11 @@ export const StorageObjectPage = () => {
             width: DEFAULT_COLUMN_WIDTHS.contentType,
             ellipsis: true,
             render: (contentType?: string | null) =>
-                contentType ? <Text code>{contentType}</Text> : null
+                contentType ? (
+                    <Text code className="storage-object-code-text">
+                        {contentType}
+                    </Text>
+                ) : null
         },
         {
             title: "大小",
@@ -344,9 +355,17 @@ export const StorageObjectPage = () => {
 
                 return (
                     <KuzhambuSpace orientation="vertical" size={2}>
-                        {referenceOwnerType ? <Text code>{referenceOwnerType}</Text> : null}
+                        {referenceOwnerType ? (
+                            <Text code className="storage-object-code-text">
+                                {referenceOwnerType}
+                            </Text>
+                        ) : null}
                         {referenceOwnerId ? (
-                            <Text type="secondary" title={referenceOwnerId}>
+                            <Text
+                                type="secondary"
+                                className="storage-object-secondary-text"
+                                title={referenceOwnerId}
+                            >
                                 {referenceOwnerId}
                             </Text>
                         ) : null}
@@ -427,6 +446,7 @@ export const StorageObjectPage = () => {
                         label: "文件名",
                         render: () => (
                             <Input
+                                className="storage-object-filter-control"
                                 allowClear
                                 placeholder="文件名"
                                 value={filters.originalFilename}
@@ -444,6 +464,7 @@ export const StorageObjectPage = () => {
                         label: "MIME",
                         render: () => (
                             <Input
+                                className="storage-object-filter-control"
                                 allowClear
                                 placeholder="image/png"
                                 value={filters.contentType}
@@ -461,6 +482,7 @@ export const StorageObjectPage = () => {
                         label: "对象状态",
                         render: () => (
                             <KuzhambuSelect<StorageObjectStatusFilter>
+                                controlClassName="storage-object-filter-control"
                                 value={filters.objectStatus}
                                 options={[
                                     { value: "ALL", label: "全部" },
@@ -482,6 +504,7 @@ export const StorageObjectPage = () => {
                         label: "引用状态",
                         render: () => (
                             <KuzhambuSelect<StorageReferenceStatusFilter>
+                                controlClassName="storage-object-filter-control"
                                 value={filters.referenceStatus}
                                 options={[
                                     { value: "ALL", label: "全部" },
@@ -502,6 +525,7 @@ export const StorageObjectPage = () => {
                         label: "引用归属类型",
                         render: () => (
                             <Input
+                                className="storage-object-filter-control"
                                 allowClear
                                 placeholder="reference_owner_type"
                                 value={filters.referenceOwnerType}
@@ -519,6 +543,7 @@ export const StorageObjectPage = () => {
                         label: "引用归属ID",
                         render: () => (
                             <Input
+                                className="storage-object-filter-control"
                                 allowClear
                                 placeholder="123e4567-e89b-12d3-a456-426614174000"
                                 value={filters.referenceOwnerId}
@@ -536,6 +561,7 @@ export const StorageObjectPage = () => {
                         label: "备注",
                         render: () => (
                             <Input
+                                className="storage-object-filter-control"
                                 allowClear
                                 placeholder="业务说明"
                                 value={filters.remarks}
@@ -559,6 +585,7 @@ export const StorageObjectPage = () => {
                         />
                         <KuzhambuButton
                             testId="storage-storage-object-storage-object-refresh-button"
+                            className="storage-object-action-button"
                             icon={<ReloadOutlined />}
                             loading={storageObjectPageQuery.isFetching}
                             onClick={() => storageObjectPageQuery.refetch()}
@@ -573,6 +600,7 @@ export const StorageObjectPage = () => {
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
                             testId="storage-storage-object-storage-object-batch-delete-button"
+                            className="storage-object-action-button storage-object-danger-button"
                             danger
                             icon={<DeleteOutlined />}
                             disabled={!hasSelectedStorages || !canEditStorage}
