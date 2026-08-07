@@ -88,7 +88,6 @@ const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
         allowedAntdSelectorLines: 2
     },
     { file: "src/pages/discovery/qa-console/qa-console-page.css", allowedAntdSelectorLines: 1 },
-    { file: "src/pages/discovery/search/search-page.css", allowedAntdSelectorLines: 2 },
     {
         file: "src/pages/discovery/search-statistic/search-statistic-page.css",
         allowedAntdSelectorLines: 16
