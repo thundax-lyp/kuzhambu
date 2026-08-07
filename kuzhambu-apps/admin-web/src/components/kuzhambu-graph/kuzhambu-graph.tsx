@@ -7,6 +7,14 @@ import "./kuzhambu-graph.css";
 import type { KuzhambuGraphHandle, KuzhambuGraphSpoItem } from "./kuzhambu-graph-types";
 
 const GROUP_COLORS = ["#1677ff", "#52c41a", "#faad14", "#722ed1", "#eb2f96", "#13c2c2"];
+const FORCE_LINK_DISTANCE = 112;
+const FORCE_LINK_STRENGTH = 0.82;
+const FORCE_MANY_BODY_STRENGTH = -180;
+const FORCE_MANY_BODY_DISTANCE_MAX = 280;
+const FORCE_COLLIDE_RADIUS = 38;
+const FORCE_COLLIDE_STRENGTH = 0.9;
+const FORCE_CENTER_STRENGTH = 0.14;
+const FORCE_LAYOUT_ITERATIONS = 280;
 
 const getNodeGroup = (node: NodeData) => {
     return String(node.data?.group || "default");
@@ -100,20 +108,21 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
                 layout: {
                     type: "d3-force",
                     animation: true,
-                    iterations: 260,
+                    iterations: FORCE_LAYOUT_ITERATIONS,
                     link: {
-                        distance: 130,
-                        strength: 0.75
+                        distance: FORCE_LINK_DISTANCE,
+                        strength: FORCE_LINK_STRENGTH
                     },
                     manyBody: {
-                        strength: -360
+                        strength: FORCE_MANY_BODY_STRENGTH,
+                        distanceMax: FORCE_MANY_BODY_DISTANCE_MAX
                     },
                     collide: {
-                        radius: 44,
-                        strength: 1
+                        radius: FORCE_COLLIDE_RADIUS,
+                        strength: FORCE_COLLIDE_STRENGTH
                     },
                     center: {
-                        strength: 0.08
+                        strength: FORCE_CENTER_STRENGTH
                     }
                 },
                 node: {
@@ -164,6 +173,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
                     animation: true
                 }));
                 await graph.render();
+                await fitGraphView(graph);
             };
 
             graph.on(NodeEvent.DRAG_END, rerunForceLayout);
