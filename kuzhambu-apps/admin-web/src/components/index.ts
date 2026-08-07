@@ -27,4 +27,5 @@ export * from "./kuzhambu-tag";
 export * from "./kuzhambu-text-compare";
 export * from "./kuzhambu-timeline";
 export * from "./kuzhambu-typography";
+export * from "./kuzhambu-x-chat";
 export type { OptionRecord, OptionsRecord } from "@/types/options";

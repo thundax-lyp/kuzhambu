@@ -1,0 +1,83 @@
+.kuzhambu-x-bubble-list.ant-bubble-list {
+    max-width: var(--kuzhambu-x-bubble-list-max-width, none);
+}
+
+.kuzhambu-x-bubble-list.ant-bubble-list .ant-bubble {
+    margin-bottom: var(--kuzhambu-x-bubble-margin-bottom, 0);
+}
+
+.kuzhambu-x-bubble-list.ant-bubble-list .ant-bubble-content {
+    padding: var(--kuzhambu-x-bubble-content-padding);
+    font-size: var(--kuzhambu-x-bubble-content-font-size, inherit);
+    line-height: var(--kuzhambu-x-bubble-content-line-height, inherit);
+    border-radius: var(--kuzhambu-x-bubble-content-border-radius, inherit);
+}
+
+.kuzhambu-x-bubble-list.ant-bubble-list .ant-bubble-footer {
+    margin-top: var(--kuzhambu-x-bubble-footer-margin-top, 0);
+    color: var(--kuzhambu-x-bubble-footer-color, inherit);
+    font-size: var(--kuzhambu-x-bubble-footer-font-size, inherit);
+}
+
+.kuzhambu-x-bubble-list.ant-bubble-list .ant-bubble-avatar {
+    flex: 0 0 var(--kuzhambu-x-bubble-avatar-size, auto);
+    width: var(--kuzhambu-x-bubble-avatar-size, auto);
+}
+
+.kuzhambu-x-bubble-list.ant-bubble-list .ant-bubble-start .ant-bubble-avatar {
+    margin-right: var(--kuzhambu-x-bubble-start-avatar-margin, 0);
+}
+
+.kuzhambu-x-bubble-list.ant-bubble-list .ant-bubble-end .ant-bubble-avatar {
+    margin-left: var(--kuzhambu-x-bubble-end-avatar-margin, 0);
+}
+
+.kuzhambu-x-sender.ant-sender .ant-sender-input {
+    max-height: var(--kuzhambu-x-sender-input-max-height, none);
+    min-height: var(--kuzhambu-x-sender-input-min-height, auto);
+    padding: var(--kuzhambu-x-sender-input-padding);
+    color: var(--kuzhambu-x-sender-input-color, inherit);
+    font-size: var(--kuzhambu-x-sender-input-font-size, inherit);
+    line-height: var(--kuzhambu-x-sender-input-line-height, inherit);
+    background: var(--kuzhambu-x-sender-input-bg);
+}
+
+.kuzhambu-x-sender.ant-sender .ant-sender-input:focus {
+    border-color: var(--kuzhambu-x-sender-input-focus-border-color, transparent);
+    outline: var(--kuzhambu-x-sender-input-focus-outline, none);
+    box-shadow: var(--kuzhambu-x-sender-input-focus-shadow, none);
+}
+
+.kuzhambu-x-sender.ant-sender .ant-sender-input::placeholder {
+    color: var(--kuzhambu-x-sender-input-placeholder-color);
+}
+
+.kuzhambu-x-sender.ant-sender .ant-sender-actions .ant-btn,
+.kuzhambu-x-sender.ant-sender .ant-sender-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--kuzhambu-x-sender-action-size, auto);
+    height: var(--kuzhambu-x-sender-action-size, auto);
+    color: var(--kuzhambu-x-sender-action-color, inherit);
+    background: var(--kuzhambu-x-sender-action-bg);
+    border-color: var(--kuzhambu-x-sender-action-border-color);
+    box-shadow: var(--kuzhambu-x-sender-action-shadow, none);
+    transition: var(--kuzhambu-x-sender-action-transition, none);
+}
+
+.kuzhambu-x-sender.ant-sender .ant-sender-actions .ant-btn:hover,
+.kuzhambu-x-sender.ant-sender .ant-sender-actions button:hover {
+    color: var(--kuzhambu-x-sender-action-hover-color, inherit);
+    background: var(--kuzhambu-x-sender-action-hover-bg);
+    border-color: var(--kuzhambu-x-sender-action-hover-border-color);
+    transform: var(--kuzhambu-x-sender-action-hover-transform, none);
+}
+
+.kuzhambu-x-sender.ant-sender .ant-sender-actions .ant-btn:disabled,
+.kuzhambu-x-sender.ant-sender .ant-sender-actions button:disabled {
+    color: var(--kuzhambu-x-sender-action-disabled-color, inherit);
+    background: var(--kuzhambu-x-sender-action-disabled-bg);
+    border-color: var(--kuzhambu-x-sender-action-disabled-border-color);
+    transform: none;
+}

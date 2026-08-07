@@ -29,12 +29,7 @@ const FORBIDDEN_DIRECTORY_RULES = new Map([
     ["models", "ADMIN_WEB_FORBID_BUCKET_DIR"],
     ["stores", "ADMIN_WEB_FORBID_BUCKET_DIR"]
 ]);
-const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [
-    {
-        file: "src/pages/discovery/qa/qa-message-panel/qa-message-panel.css",
-        allowedAntdSelectorLines: 17
-    }
-];
+const PAGE_CSS_ANTD_SELECTOR_ALLOWLIST = [];
 const pageCssAntdSelectorAllowanceByFile = new Map(
     PAGE_CSS_ANTD_SELECTOR_ALLOWLIST.map((entry) => [entry.file, entry.allowedAntdSelectorLines])
 );
