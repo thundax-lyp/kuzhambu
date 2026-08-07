@@ -169,9 +169,9 @@ public class KnowledgeGraphCandidateApplySupport {
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeRelation> incoming = new ArrayList<>();
         for (JsonNode node : relationNodes) {
-            String sourceName = firstNonBlank(node, "sourceName", "source");
-            String targetName = firstNonBlank(node, "targetName", "target");
-            String relationType = firstNonBlank(node, "relationType", "type", "label");
+            String sourceName = firstNonBlank(node, "subject", "source", "sourceName", "head", "from");
+            String targetName = firstNonBlank(node, "object", "target", "targetName", "tail", "to");
+            String relationType = firstNonBlank(node, "predicate", "relation", "relationType", "type", "label");
             if (StringUtils.isAnyBlank(sourceName, targetName, relationType)) {
                 throw new BizException("Knowledge relation is incomplete");
             }
@@ -224,9 +224,9 @@ public class KnowledgeGraphCandidateApplySupport {
         String sourceRefsJson = sharedSourceRefsJson(payload);
         List<KnowledgeLineageRelation> incoming = new ArrayList<>();
         for (JsonNode node : relationNodes) {
-            String sourceName = firstNonBlank(node, "sourceName", "source");
-            String targetName = firstNonBlank(node, "targetName", "target");
-            String relationType = firstNonBlank(node, "relationType", "type", "label");
+            String sourceName = firstNonBlank(node, "subject", "source", "sourceName", "head", "from");
+            String targetName = firstNonBlank(node, "object", "target", "targetName", "tail", "to");
+            String relationType = firstNonBlank(node, "predicate", "relation", "relationType", "type", "label");
             if (StringUtils.isAnyBlank(sourceName, targetName, relationType)) {
                 throw new BizException("Knowledge lineage relation is incomplete");
             }

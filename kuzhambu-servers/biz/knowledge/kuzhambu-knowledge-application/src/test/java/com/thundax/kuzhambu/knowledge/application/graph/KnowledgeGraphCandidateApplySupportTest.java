@@ -135,6 +135,39 @@ class KnowledgeGraphCandidateApplySupportTest {
                         .getEvidence());
     }
 
+    @Test
+    void applyShouldAcceptSpoFieldNames() {
+        FakeGraphVersionRepository versionRepository = new FakeGraphVersionRepository();
+        FakeKnowledgeEntityRepository entityRepository = new FakeKnowledgeEntityRepository();
+        FakeKnowledgeRelationRepository relationRepository = new FakeKnowledgeRelationRepository();
+        KnowledgeGraphCandidateApplySupport support = new KnowledgeGraphCandidateApplySupport(
+                versionRepository,
+                entityRepository,
+                relationRepository,
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository());
+        GraphExtractionTask task = new GraphExtractionTask();
+        task.setId(GraphExtractionTaskIdCodec.toDomain(11L));
+        task.setTaskType(GraphExtractionTaskType.GRAPH);
+        task.setSourceContentType("SANCAI_ENTRY");
+        task.setSourceContentId(GraphExtractionSourceContentIdCodec.toDomain(1L));
+        AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
+                .candidateId(22L)
+                .resultFormat("STRUCTURED")
+                .resultPayload("{\"entities\":[],"
+                        + "\"relations\":[{\"subject\":\"黄帝\",\"predicate\":\"祖先\",\"object\":\"伏羲\"}],"
+                        + "\"entryRefs\":[{\"entryId\":1}]}")
+                .build();
+
+        support.apply(task, candidate);
+
+        assertEquals(1, relationRepository.saved.size());
+        assertEquals(
+                relationKey("黄帝", "祖先", "伏羲"), relationRepository.saved.get(0).getRelationKey());
+        assertEquals(textKey("黄帝"), relationRepository.saved.get(0).getSourceEntityKey());
+        assertEquals(textKey("伏羲"), relationRepository.saved.get(0).getTargetEntityKey());
+    }
+
     private static String relationKey(String subject, String predicate, String object) {
         return textKey(String.join("|", subject, predicate, object));
     }
