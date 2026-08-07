@@ -29,7 +29,7 @@
 
 .operations-dashboard-metric-card,
 .operations-dashboard-section-card,
-.operations-dashboard-entry .ant-card {
+.operations-dashboard-entry-card {
     height: 100%;
     border-radius: 8px;
 }

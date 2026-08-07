@@ -766,6 +766,7 @@ export const OperationsDashboardPage = () => {
                                         to={entry.to}
                                     >
                                         <KuzhambuCard
+                                            className="operations-dashboard-entry-card"
                                             size="small"
                                             styles={{ body: { display: "grid", gap: 8 } }}
                                         >
