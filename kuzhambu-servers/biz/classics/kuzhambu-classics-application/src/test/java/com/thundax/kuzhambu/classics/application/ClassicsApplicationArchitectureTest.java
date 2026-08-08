@@ -10,26 +10,12 @@ import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleS
 import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
 
     private static final String BASE_PACKAGE = "com.thundax.kuzhambu.classics";
-    private static final List<String> LEGACY_IMPL_CLASSES =
-            List.of("com.thundax.kuzhambu.classics.application.publication.service.impl"
-                    + ".ClassicsPublicationReconcileApplicationServiceImpl");
-    private static final List<String> LEGACY_IMPL_DEPENDENCIES = List.of(
-            ImplContractArchitectureRuleSupport.dependency(
-                    "com.thundax.kuzhambu.classics.application.publication.scheduler"
-                            + ".ClassicsPublicationFailureReconcileScheduler",
-                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
-                            + ".ClassicsPublicationReconcileApplicationServiceImpl"),
-            ImplContractArchitectureRuleSupport.dependency(
-                    "com.thundax.kuzhambu.classics.application.publication.scheduler"
-                            + ".ClassicsPublicationSuccessReconcileScheduler",
-                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
-                            + ".ClassicsPublicationReconcileApplicationServiceImpl"));
 
     @Test
     void applicationLayerShouldKeepArchitectureBoundary() throws Exception {
@@ -40,9 +26,9 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
         AnnotationBoundaryArchitectureRuleSupport.assertApplicationNoHttpAnnotations(classes, BASE_PACKAGE);
         TransactionArchitectureRuleSupport.assertTransactionalOnlyOnApplicationServiceUseCases(classes, BASE_PACKAGE);
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
-        ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, LEGACY_IMPL_CLASSES);
+        ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptyList());
         ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
-                classes, LEGACY_IMPL_DEPENDENCIES);
+                classes, Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationServicesUseApplicationServiceSuffix(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
