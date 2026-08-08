@@ -1,9 +1,11 @@
 package com.thundax.kuzhambu.operations.application;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
+import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
@@ -12,6 +14,9 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
     void applicationContractsShouldStayInDedicatedPackages() {
         JavaClasses classes = importPackages("com.thundax.kuzhambu.operations.application");
 
+        ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptySet());
+        ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
+                classes, Collections.emptySet());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
     }
 }

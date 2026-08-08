@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.AnnotationBoundaryArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SortableArchitectureRuleSupport;
@@ -9,11 +10,66 @@ import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleS
 import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
 
     private static final String BASE_PACKAGE = "com.thundax.kuzhambu.classics";
+    private static final List<String> LEGACY_IMPL_CLASSES = List.of(
+            "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                    + ".ClassicsPublicationCleanupApplicationServiceImpl",
+            "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                    + ".ClassicsPublicationContentCommitApplicationServiceImpl",
+            "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                    + ".ClassicsPublicationCreationApplicationServiceImpl",
+            "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                    + ".ClassicsPublicationExecutionApplicationServiceImpl",
+            "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                    + ".ClassicsPublicationReconcileApplicationServiceImpl",
+            "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                    + ".ClassicsPublicationSnapshotBindApplicationServiceImpl");
+    private static final List<String> LEGACY_IMPL_DEPENDENCIES = List.of(
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                            + ".ClassicsPublicationApplicationServiceImpl",
+                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                            + ".ClassicsPublicationCreationApplicationServiceImpl"),
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                            + ".ClassicsPublicationStepExecutorImpl",
+                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                            + ".ClassicsPublicationSnapshotBindApplicationServiceImpl"),
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                            + ".ClassicsPublicationStepExecutorImpl",
+                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                            + ".ClassicsPublicationContentCommitApplicationServiceImpl"),
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.classics.application.publication.scheduler"
+                            + ".ClassicsPublicationDispatchScheduler",
+                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                            + ".ClassicsPublicationExecutionApplicationServiceImpl"),
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.classics.application.publication.scheduler"
+                            + ".ClassicsPublicationEsCleanupScheduler",
+                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                            + ".ClassicsPublicationCleanupApplicationServiceImpl"),
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.classics.application.publication.scheduler"
+                            + ".ClassicsPublicationFailureReconcileScheduler",
+                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                            + ".ClassicsPublicationReconcileApplicationServiceImpl"),
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.classics.application.publication.scheduler"
+                            + ".ClassicsPublicationFastGptCleanupScheduler",
+                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                            + ".ClassicsPublicationCleanupApplicationServiceImpl"),
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.classics.application.publication.scheduler"
+                            + ".ClassicsPublicationSuccessReconcileScheduler",
+                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
+                            + ".ClassicsPublicationReconcileApplicationServiceImpl"));
 
     @Test
     void applicationLayerShouldKeepArchitectureBoundary() throws Exception {
@@ -24,6 +80,9 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
         AnnotationBoundaryArchitectureRuleSupport.assertApplicationNoHttpAnnotations(classes, BASE_PACKAGE);
         TransactionArchitectureRuleSupport.assertTransactionalOnlyOnApplicationServiceUseCases(classes, BASE_PACKAGE);
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
+        ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, LEGACY_IMPL_CLASSES);
+        ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
+                classes, LEGACY_IMPL_DEPENDENCIES);
         NamingArchitectureRuleSupport.assertApplicationServicesUseApplicationServiceSuffix(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);

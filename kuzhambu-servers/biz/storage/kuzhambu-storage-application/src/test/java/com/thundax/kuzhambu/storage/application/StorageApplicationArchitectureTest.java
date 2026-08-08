@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.storage.application;
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.AnnotationBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.CrossApplicationIsolationArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
@@ -11,11 +12,30 @@ import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleS
 import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
 
     private static final String BASE_PACKAGE = "com.thundax.kuzhambu.storage";
+    private static final List<String> LEGACY_IMPL_CLASSES =
+            List.of("com.thundax.kuzhambu.storage.application.service.impl.StorageApplicationServiceImpl");
+    private static final List<String> LEGACY_IMPL_DEPENDENCIES = List.of(
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.storage.application.service.impl.StorageContentApplicationServiceImpl",
+                    "com.thundax.kuzhambu.storage.application.service.impl.StorageApplicationServiceImpl"),
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.storage.application.service.impl.MultipartUploadApplicationServiceImpl",
+                    "com.thundax.kuzhambu.storage.application.service.impl.StorageApplicationServiceImpl"),
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.storage.application.service.impl.StorageObjectApplicationServiceImpl",
+                    "com.thundax.kuzhambu.storage.application.service.impl.StorageApplicationServiceImpl"),
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.storage.application.service.impl.StorageReferenceApplicationServiceImpl",
+                    "com.thundax.kuzhambu.storage.application.service.impl.StorageApplicationServiceImpl"),
+            ImplContractArchitectureRuleSupport.dependency(
+                    "com.thundax.kuzhambu.storage.application.service.impl.StorageUploadApplicationServiceImpl",
+                    "com.thundax.kuzhambu.storage.application.service.impl.StorageApplicationServiceImpl"));
 
     @Test
     void applicationLayerShouldKeepArchitectureBoundary() throws Exception {
@@ -30,6 +50,9 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
         LayerArchitectureRuleSupport.assertServiceBoundaryTypesClean(classes);
         LayerArchitectureRuleSupport.assertApplicationServiceUseCaseMethodShapeClean(classes);
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
+        ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, LEGACY_IMPL_CLASSES);
+        ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
+                classes, LEGACY_IMPL_DEPENDENCIES);
         NamingArchitectureRuleSupport.assertApplicationServicesUseApplicationServiceSuffix(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
