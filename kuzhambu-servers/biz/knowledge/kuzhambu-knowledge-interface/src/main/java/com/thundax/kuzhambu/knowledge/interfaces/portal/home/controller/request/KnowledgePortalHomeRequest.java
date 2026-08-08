@@ -7,4 +7,4 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class KnowledgePortalHomeQuery {}
+public class KnowledgePortalHomeRequest {}

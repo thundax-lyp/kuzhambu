@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.home.assembler.KnowledgePortalHomeInterfaceAssembler;
-import com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.request.KnowledgePortalHomeQuery;
+import com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.request.KnowledgePortalHomeRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response.KnowledgePortalHomeResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +27,7 @@ public class KnowledgePortalHomeController {
 
     @Operation(summary = "获取知识门户首页", description = "Portal 首页")
     @PostMapping("get")
-    public KnowledgePortalHomeResponse getHome(@Valid @RequestBody KnowledgePortalHomeQuery request) {
+    public KnowledgePortalHomeResponse getHome(@Valid @RequestBody KnowledgePortalHomeRequest request) {
         return KnowledgePortalHomeInterfaceAssembler.toResponse(knowledgePortalReadApplicationService.getHome());
     }
 }

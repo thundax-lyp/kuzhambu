@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalQualityResult;
-import com.thundax.kuzhambu.knowledge.interfaces.portal.quality.controller.request.KnowledgePortalQualityQuery;
+import com.thundax.kuzhambu.knowledge.interfaces.portal.quality.controller.request.KnowledgePortalQualityRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.quality.controller.response.KnowledgePortalQualityResponse;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -25,12 +25,12 @@ class KnowledgePortalQualityControllerTest {
     void routesShouldKeepPortalApiPaths() throws Exception {
         assertRequestMapping(KnowledgePortalQualityController.class, "/api/portal/knowledge/quality");
         assertPostMapping(
-                KnowledgePortalQualityController.class, "getQuality", "get", KnowledgePortalQualityQuery.class);
+                KnowledgePortalQualityController.class, "getQuality", "get", KnowledgePortalQualityRequest.class);
     }
 
     @Test
     void queryAndResponseJsonFieldsShouldRemainStable() throws Exception {
-        KnowledgePortalQualityQuery query = OBJECT_MAPPER.readValue(
+        KnowledgePortalQualityRequest query = OBJECT_MAPPER.readValue(
                 """
                 {
                   "date": "2026-06-01",
@@ -38,7 +38,7 @@ class KnowledgePortalQualityControllerTest {
                   "knowledgeBase": "SANCAI_ENTRY"
                 }
                 """,
-                KnowledgePortalQualityQuery.class);
+                KnowledgePortalQualityRequest.class);
         assertEquals("2026-06-01", query.getDate());
         var queryNode = OBJECT_MAPPER.valueToTree(query);
         assertTrue(queryNode.has("date"));
@@ -83,7 +83,7 @@ class KnowledgePortalQualityControllerTest {
                         List.of(new KnowledgePortalQualityResult.SourceDetailItem(
                                 "SANCAI_ENTRY", "三才图会", 1L, "APPLIED", "/knowledge/atlas"))));
 
-        var response = controller.getQuality(new KnowledgePortalQualityQuery());
+        var response = controller.getQuality(new KnowledgePortalQualityRequest());
 
         verify(service).getQuality();
         assertEquals("50%", response.getQualityStats().get(0).getValue());
