@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
-import com.thundax.kuzhambu.classics.application.publication.internal.ClassicsPublicationContentCommitApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationPayload;
+import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationContentCommitApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationSnapshotBindApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationStepExecutor;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationFastGptGateway;
@@ -31,7 +31,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
     private final ClassicsPublicationPayloadAssembler payloadAssembler;
     private final Clock clock;
     private final ClassicsPublicationSnapshotBindApplicationService snapshotBindService;
-    private final ClassicsPublicationContentCommitApplicationServiceImpl contentCommitService;
+    private final ClassicsPublicationContentCommitApplicationService contentCommitService;
 
     public ClassicsPublicationStepExecutorImpl(
             ClassicsPublicationJobRepository jobRepository,
@@ -41,7 +41,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
             ClassicsPublicationPayloadAssembler payloadAssembler,
             Clock clock,
             ClassicsPublicationSnapshotBindApplicationService snapshotBindService,
-            ClassicsPublicationContentCommitApplicationServiceImpl contentCommitService) {
+            ClassicsPublicationContentCommitApplicationService contentCommitService) {
         this.jobRepository = jobRepository;
         this.contentRepository = contentRepository;
         this.searchFacade = searchFacade;
