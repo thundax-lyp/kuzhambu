@@ -16,27 +16,15 @@ import org.junit.jupiter.api.Test;
 class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
 
     private static final String BASE_PACKAGE = "com.thundax.kuzhambu.classics";
-    private static final List<String> LEGACY_IMPL_CLASSES = List.of(
-            "com.thundax.kuzhambu.classics.application.publication.service.impl"
-                    + ".ClassicsPublicationCleanupApplicationServiceImpl",
-            "com.thundax.kuzhambu.classics.application.publication.service.impl"
+    private static final List<String> LEGACY_IMPL_CLASSES =
+            List.of("com.thundax.kuzhambu.classics.application.publication.service.impl"
                     + ".ClassicsPublicationReconcileApplicationServiceImpl");
     private static final List<String> LEGACY_IMPL_DEPENDENCIES = List.of(
-            ImplContractArchitectureRuleSupport.dependency(
-                    "com.thundax.kuzhambu.classics.application.publication.scheduler"
-                            + ".ClassicsPublicationEsCleanupScheduler",
-                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
-                            + ".ClassicsPublicationCleanupApplicationServiceImpl"),
             ImplContractArchitectureRuleSupport.dependency(
                     "com.thundax.kuzhambu.classics.application.publication.scheduler"
                             + ".ClassicsPublicationFailureReconcileScheduler",
                     "com.thundax.kuzhambu.classics.application.publication.service.impl"
                             + ".ClassicsPublicationReconcileApplicationServiceImpl"),
-            ImplContractArchitectureRuleSupport.dependency(
-                    "com.thundax.kuzhambu.classics.application.publication.scheduler"
-                            + ".ClassicsPublicationFastGptCleanupScheduler",
-                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
-                            + ".ClassicsPublicationCleanupApplicationServiceImpl"),
             ImplContractArchitectureRuleSupport.dependency(
                     "com.thundax.kuzhambu.classics.application.publication.scheduler"
                             + ".ClassicsPublicationSuccessReconcileScheduler",

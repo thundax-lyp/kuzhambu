@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.application.publication.scheduler;
 
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
-import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationCleanupApplicationServiceImpl;
+import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationCleanupApplicationService;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.discovery.facade.DiscoverySearchPublicationFacade;
@@ -16,14 +16,14 @@ import org.springframework.stereotype.Component;
 public class ClassicsPublicationEsCleanupScheduler {
     private final ClassicsPublicationProperties properties;
     private final ClassicsPublicationJobRepository jobRepository;
-    private final ClassicsPublicationCleanupApplicationServiceImpl transactionService;
+    private final ClassicsPublicationCleanupApplicationService transactionService;
     private final DiscoverySearchPublicationFacade searchFacade;
     private final Clock clock;
 
     public ClassicsPublicationEsCleanupScheduler(
             ClassicsPublicationProperties properties,
             ClassicsPublicationJobRepository jobRepository,
-            ClassicsPublicationCleanupApplicationServiceImpl transactionService,
+            ClassicsPublicationCleanupApplicationService transactionService,
             DiscoverySearchPublicationFacade searchFacade,
             Clock clock) {
         this.properties = properties;
