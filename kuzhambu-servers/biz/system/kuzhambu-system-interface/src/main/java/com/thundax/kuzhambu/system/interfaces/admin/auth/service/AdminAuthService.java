@@ -2,46 +2,46 @@ package com.thundax.kuzhambu.system.interfaces.admin.auth.service;
 
 import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.query.AdminAuthQuery;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenQueryResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenRefreshResult;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthAccessTokenDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenQueryDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenRefreshDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthLookup;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthOperation;
 import org.springframework.lang.NonNull;
 
 public interface AdminAuthService {
 
     @NonNull
-    AuthAccessTokenResult createAccessToken(AdminAuthCommand command);
+    AuthAccessTokenDTO createAccessToken(AdminAuthOperation operation);
 
-    AuthAccessTokenResult getAccessToken(AdminAuthQuery query);
+    AuthAccessTokenDTO getAccessToken(AdminAuthLookup lookup);
 
-    int deleteAccessTokensByUserId(AdminAuthCommand command);
+    int deleteAccessTokensByUserId(AdminAuthOperation operation);
 
-    boolean validateToken(AdminAuthCommand command);
+    boolean validateToken(AdminAuthOperation operation);
 
-    void activeAccessToken(AdminAuthCommand command);
+    void activeAccessToken(AdminAuthOperation operation);
 
-    void deleteAccessToken(AdminAuthCommand command);
+    void deleteAccessToken(AdminAuthOperation operation);
 
-    AuthTokenQueryResult getTokenInfo(AdminAuthQuery query);
+    AuthTokenQueryDTO getTokenInfo(AdminAuthLookup lookup);
 
-    AuthTokenRefreshResult refreshAccessToken(AdminAuthCommand command);
+    AuthTokenRefreshDTO refreshAccessToken(AdminAuthOperation operation);
 
-    void invalidateSessionByToken(AdminAuthCommand command);
+    void invalidateSessionByToken(AdminAuthOperation operation);
 
     @LayerPublicApi(reason = "账号状态变化时按用户维度失效在线会话的业务入口")
-    int invalidateSessionsByUserId(AdminAuthCommand command);
+    int invalidateSessionsByUserId(AdminAuthOperation operation);
 
-    User authenticatePassword(AdminAuthCommand command);
+    User authenticatePassword(AdminAuthOperation operation);
 
-    User authenticateSms(AdminAuthCommand command);
+    User authenticateSms(AdminAuthOperation operation);
 
-    User authenticateWecom(AdminAuthCommand command);
+    User authenticateWecom(AdminAuthOperation operation);
 
-    User authenticateGithub(AdminAuthCommand command);
+    User authenticateGithub(AdminAuthOperation operation);
 
-    void recordLoginFailed(AdminAuthCommand command);
+    void recordLoginFailed(AdminAuthOperation operation);
 
-    void validatePassword(AdminAuthCommand command);
+    void validatePassword(AdminAuthOperation operation);
 }

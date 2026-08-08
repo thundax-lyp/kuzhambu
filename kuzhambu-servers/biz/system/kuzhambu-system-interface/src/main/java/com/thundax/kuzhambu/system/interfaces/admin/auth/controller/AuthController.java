@@ -29,7 +29,6 @@ import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionT
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
-import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.assembler.AuthInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.AuthLoginFormRefreshRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.AuthLoginRequest;
@@ -43,9 +42,8 @@ import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.Aut
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.AuthLoginFormResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.TokenVerifyResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.query.AdminAuthQuery;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthAccessTokenDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthHelper;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -128,7 +126,7 @@ public class AuthController {
         if (!validateCaptcha(request.getLoginToken(), request.getCaptcha())) {
             createCaptcha(request.getLoginToken());
             writeLog(currentRequest, "验证码失败", request);
-            authService.recordLoginFailed(loginFailedCommand(
+            authService.recordLoginFailed(AdminAuthHelper.loginFailedOperation(
                     PrincipalAuthenticationMethod.PASSWORD,
                     PrincipalIdentityType.USER_ACCOUNT,
                     currentRequest,
@@ -142,7 +140,8 @@ public class AuthController {
 
         User user;
         try {
-            user = authService.authenticatePassword(passwordCommand(request.getUsername(), password, currentRequest));
+            user = authService.authenticatePassword(
+                    AdminAuthHelper.passwordOperation(request.getUsername(), password, currentRequest));
         } catch (KuzhambuException e) {
             if (e.getMessage() != null && e.getMessage().contains("锁定")) {
                 writeLog(currentRequest, "用户锁定", request);
@@ -158,7 +157,7 @@ public class AuthController {
 
         releasePreAuthSession(request.getLoginToken());
 
-        authService.deleteAccessTokensByUserId(userIdCommand(user.getId()));
+        authService.deleteAccessTokensByUserId(AdminAuthHelper.userIdOperation(user.getId()));
 
         return loginSuccess(
                 user,
@@ -175,14 +174,14 @@ public class AuthController {
     public AuthAccessTokenResponse loginBySms(@Valid @RequestBody SmsLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
         if (!validateSmsValidateCode(request.getLoginToken(), request.getMobile(), request.getValidateCode())) {
-            authService.recordLoginFailed(loginFailedCommand(
+            authService.recordLoginFailed(AdminAuthHelper.loginFailedOperation(
                     PrincipalAuthenticationMethod.SMS_CODE,
                     PrincipalIdentityType.USER_MOBILE,
                     currentRequest,
                     PrincipalLoginEvent.REASON_CAPTCHA_INVALID));
             throw new InvalidCaptchaException();
         }
-        User user = authService.authenticateSms(mobileCommand(request.getMobile(), currentRequest));
+        User user = authService.authenticateSms(AdminAuthHelper.mobileOperation(request.getMobile(), currentRequest));
         return loginSuccess(
                 user,
                 request.getMobile(),
@@ -197,7 +196,7 @@ public class AuthController {
     @SysLogger(value = "企业微信登录")
     public AuthAccessTokenResponse loginByWecom(@Valid @RequestBody WecomLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
-        User user = authService.authenticateWecom(codeCommand(request.getCode(), currentRequest));
+        User user = authService.authenticateWecom(AdminAuthHelper.codeOperation(request.getCode(), currentRequest));
         return loginSuccess(
                 user, "wecom", "企业微信登录成功", PrincipalAuthenticationMethod.WECOM, PrincipalIdentityType.USER_WECOM);
     }
@@ -208,7 +207,7 @@ public class AuthController {
     @SysLogger(value = "GitHub登录")
     public AuthAccessTokenResponse loginByGithub(@Valid @RequestBody GithubLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
-        User user = authService.authenticateGithub(codeCommand(request.getCode(), currentRequest));
+        User user = authService.authenticateGithub(AdminAuthHelper.codeOperation(request.getCode(), currentRequest));
         return loginSuccess(
                 user, "github", "GitHub登录成功", PrincipalAuthenticationMethod.GITHUB, PrincipalIdentityType.USER_GITHUB);
     }
@@ -222,13 +221,13 @@ public class AuthController {
             throw AdminResponseExceptions.invalidToken();
         }
 
-        AuthAccessTokenResult accessToken = authService.getAccessToken(tokenQuery(request.getToken()));
+        AuthAccessTokenDTO accessToken = authService.getAccessToken(AdminAuthHelper.tokenLookup(request.getToken()));
         if (accessToken == null) {
             throw AdminResponseExceptions.invalidToken();
         }
 
         HttpServletRequest currentRequest = currentRequest();
-        authService.deleteAccessToken(accessTokenCommand(accessToken, currentRequest));
+        authService.deleteAccessToken(AdminAuthHelper.accessTokenOperation(accessToken, currentRequest));
 
         return true;
     }
@@ -238,7 +237,8 @@ public class AuthController {
     @PostMapping(value = "token/verify")
     @IgnoreSysLogger
     public TokenVerifyResponse verifyToken(@Valid @RequestBody AuthTokenRequest request) {
-        return AuthInterfaceAssembler.toTokenVerifyResponse(authService.getTokenInfo(tokenQuery(request.getToken())));
+        return AuthInterfaceAssembler.toTokenVerifyResponse(
+                authService.getTokenInfo(AdminAuthHelper.tokenLookup(request.getToken())));
     }
 
     @Operation(summary = "刷新 token")
@@ -246,8 +246,9 @@ public class AuthController {
     @PostMapping(value = "token/refresh")
     @IgnoreSysLogger
     public AuthAccessTokenResponse refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
-        return AuthInterfaceAssembler.toAccessTokenResponse(authService.refreshAccessToken(
-                refreshTokenCommand(request.getClientId(), request.getRefreshToken(), currentRequest())));
+        return AuthInterfaceAssembler.toAccessTokenResponse(
+                authService.refreshAccessToken(AdminAuthHelper.refreshTokenOperation(
+                        request.getClientId(), request.getRefreshToken(), currentRequest())));
     }
 
     private PreAuthSession createPreAuthSession() {
@@ -390,23 +391,17 @@ public class AuthController {
             String logTitle,
             PrincipalAuthenticationMethod authenticationMethod,
             PrincipalIdentityType identityType) {
-        authService.deleteAccessTokensByUserId(userIdCommand(user.getId()));
+        authService.deleteAccessTokensByUserId(AdminAuthHelper.userIdOperation(user.getId()));
         HttpServletRequest currentRequest = currentRequest();
         writeLog(currentRequest, logTitle, user, loginName);
-        AdminAuthCommand command = accessTokenCommand(user.getId(), loginName, currentRequest);
-        command.setAuthenticationMethod(authenticationMethod);
-        command.setIdentityType(identityType);
-        return AuthInterfaceAssembler.toAccessTokenResponse(authService.createAccessToken(command));
+        var operation = AdminAuthHelper.accessTokenOperation(user.getId(), loginName, currentRequest);
+        operation.setAuthenticationMethod(authenticationMethod);
+        operation.setIdentityType(identityType);
+        return AuthInterfaceAssembler.toAccessTokenResponse(authService.createAccessToken(operation));
     }
 
     private HttpServletRequest currentRequest() {
         return ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-    }
-
-    private AdminAuthQuery tokenQuery(String token) {
-        AdminAuthQuery query = new AdminAuthQuery();
-        query.setToken(token);
-        return query;
     }
 
     private PreAuthSessionQuery preAuthSessionQuery(PreAuthSessionId id) {
@@ -419,70 +414,5 @@ public class AuthController {
 
     private PreAuthSessionQuery preAuthSessionRefreshTokenQuery(String refreshToken) {
         return new PreAuthSessionQuery(null, null, PreAuthSessionToken.of(refreshToken));
-    }
-
-    private AdminAuthCommand passwordCommand(String loginName, String plainPassword, HttpServletRequest request) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setLoginName(loginName);
-        command.setPlainPassword(plainPassword);
-        return withRequestContext(command, request);
-    }
-
-    private AdminAuthCommand accessTokenCommand(UserId userId, String loginName, HttpServletRequest request) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setUserId(userId);
-        command.setLoginName(loginName);
-        return withRequestContext(command, request);
-    }
-
-    private AdminAuthCommand userIdCommand(UserId userId) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setUserId(userId);
-        return command;
-    }
-
-    private AdminAuthCommand mobileCommand(String mobile, HttpServletRequest request) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setMobile(mobile);
-        return withRequestContext(command, request);
-    }
-
-    private AdminAuthCommand codeCommand(String code, HttpServletRequest request) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setCode(code);
-        return withRequestContext(command, request);
-    }
-
-    private AdminAuthCommand accessTokenCommand(AuthAccessTokenResult accessToken, HttpServletRequest request) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setAccessToken(accessToken);
-        return withRequestContext(command, request);
-    }
-
-    private AdminAuthCommand refreshTokenCommand(String clientId, String refreshToken, HttpServletRequest request) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setClientId(clientId);
-        command.setRefreshToken(refreshToken);
-        return withRequestContext(command, request);
-    }
-
-    private AdminAuthCommand loginFailedCommand(
-            PrincipalAuthenticationMethod authenticationMethod,
-            PrincipalIdentityType identityType,
-            HttpServletRequest request,
-            String reason) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setAuthenticationMethod(authenticationMethod);
-        command.setIdentityType(identityType);
-        command.setReason(reason);
-        return withRequestContext(command, request);
-    }
-
-    private AdminAuthCommand withRequestContext(AdminAuthCommand command, HttpServletRequest request) {
-        command.setIp(RequestIpUtils.getIpAddr(request));
-        if (request != null) {
-            command.setUserAgent(request.getHeader("user-agent"));
-        }
-        return command;
     }
 }

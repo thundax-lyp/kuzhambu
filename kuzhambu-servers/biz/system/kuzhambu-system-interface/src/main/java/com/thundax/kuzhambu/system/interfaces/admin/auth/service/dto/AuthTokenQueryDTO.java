@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.system.interfaces.admin.auth.service.result;
+package com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto;
 
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AuthTokenQueryResult {
+public class AuthTokenQueryDTO {
     private boolean active;
     private String token;
     private PrincipalAuthSession session;
@@ -16,14 +16,14 @@ public class AuthTokenQueryResult {
     private User user;
     private String username;
 
-    public static AuthTokenQueryResult inactive(String token) {
-        AuthTokenQueryResult result = new AuthTokenQueryResult();
+    public static AuthTokenQueryDTO inactive(String token) {
+        AuthTokenQueryDTO result = new AuthTokenQueryDTO();
         result.setToken(token);
         return result;
     }
 
-    public static AuthTokenQueryResult active(String token, PrincipalAuthSession session, User user, String username) {
-        AuthTokenQueryResult result = new AuthTokenQueryResult();
+    public static AuthTokenQueryDTO active(String token, PrincipalAuthSession session, User user, String username) {
+        AuthTokenQueryDTO result = new AuthTokenQueryDTO();
         result.setActive(true);
         result.setToken(token);
         result.setSession(session);
@@ -32,18 +32,18 @@ public class AuthTokenQueryResult {
         return result;
     }
 
-    public static AuthTokenQueryResult active(
+    public static AuthTokenQueryDTO active(
             String token, PrincipalAccessToken principalAccessToken, User user, String username) {
         return active(token, principalAccessToken, null, user, username);
     }
 
-    public static AuthTokenQueryResult active(
+    public static AuthTokenQueryDTO active(
             String token,
             PrincipalAccessToken principalAccessToken,
             PrincipalAuthSession session,
             User user,
             String username) {
-        AuthTokenQueryResult result = new AuthTokenQueryResult();
+        AuthTokenQueryDTO result = new AuthTokenQueryDTO();
         result.setActive(true);
         result.setToken(token);
         result.setPrincipalAccessToken(principalAccessToken);

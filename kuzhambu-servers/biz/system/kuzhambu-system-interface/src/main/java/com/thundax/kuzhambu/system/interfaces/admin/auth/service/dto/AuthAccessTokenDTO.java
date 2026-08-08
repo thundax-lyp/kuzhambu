@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.system.interfaces.admin.auth.service.result;
+package com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto;
 
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class AuthAccessTokenResult {
+public class AuthAccessTokenDTO {
     private final String token;
     private final String refreshToken;
     private final PrincipalAccessToken principalAccessToken;

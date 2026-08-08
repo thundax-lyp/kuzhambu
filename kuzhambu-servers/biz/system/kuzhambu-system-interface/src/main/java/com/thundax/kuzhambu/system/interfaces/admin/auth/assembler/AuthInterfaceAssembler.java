@@ -4,9 +4,9 @@ import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.AuthAccessTokenResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.AuthLoginFormResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.TokenVerifyResponse;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenQueryResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenRefreshResult;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthAccessTokenDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenQueryDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenRefreshDTO;
 import org.springframework.lang.NonNull;
 
 public final class AuthInterfaceAssembler {
@@ -28,7 +28,7 @@ public final class AuthInterfaceAssembler {
     }
 
     @NonNull
-    public static AuthAccessTokenResponse toAccessTokenResponse(AuthAccessTokenResult entity) {
+    public static AuthAccessTokenResponse toAccessTokenResponse(AuthAccessTokenDTO entity) {
         if (entity == null) {
             return AuthAccessTokenResponse.builder().build();
         }
@@ -40,7 +40,7 @@ public final class AuthInterfaceAssembler {
     }
 
     @NonNull
-    public static AuthAccessTokenResponse toAccessTokenResponse(AuthTokenRefreshResult result) {
+    public static AuthAccessTokenResponse toAccessTokenResponse(AuthTokenRefreshDTO result) {
         if (result == null || result.getAccessToken() == null) {
             return AuthAccessTokenResponse.builder().build();
         }
@@ -51,7 +51,7 @@ public final class AuthInterfaceAssembler {
                 .build();
     }
 
-    private static Long accessTokenExpireAt(AuthAccessTokenResult result) {
+    private static Long accessTokenExpireAt(AuthAccessTokenDTO result) {
         return result == null
                         || result.getPrincipalAccessToken() == null
                         || result.getPrincipalAccessToken().getExpireAt() == null
@@ -60,7 +60,7 @@ public final class AuthInterfaceAssembler {
     }
 
     @NonNull
-    public static TokenVerifyResponse toTokenVerifyResponse(AuthTokenQueryResult result) {
+    public static TokenVerifyResponse toTokenVerifyResponse(AuthTokenQueryDTO result) {
         return TokenVerifyResponse.builder()
                 .active(result != null && result.isActive())
                 .build();
