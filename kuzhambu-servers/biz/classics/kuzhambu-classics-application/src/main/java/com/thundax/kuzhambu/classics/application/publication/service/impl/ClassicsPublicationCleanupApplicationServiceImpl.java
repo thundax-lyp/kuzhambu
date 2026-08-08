@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationCleanupApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationContent;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ClassicsPublicationCleanupApplicationServiceImpl {
+public class ClassicsPublicationCleanupApplicationServiceImpl implements ClassicsPublicationCleanupApplicationService {
     private final ClassicsPublicationJobRepository jobRepository;
     private final ClassicsContentRepository contentRepository;
 
@@ -22,16 +23,19 @@ public class ClassicsPublicationCleanupApplicationServiceImpl {
         this.contentRepository = contentRepository;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean claimEs(ClassicsPublicationJob job, String token, Instant now, Instant expiresAt) {
         return jobRepository.claimEsCleanup(job.getId(), token, now, expiresAt) == 1;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean claimFastGpt(ClassicsPublicationJob job, String token, Instant now, Instant expiresAt) {
         return jobRepository.claimFastGptCleanup(job.getId(), token, now, expiresAt) == 1;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean qualify(ClassicsPublicationJob claimedJob, String token, boolean es) {
         ClassicsPublicationContent content = contentRepository.lockPublicationContent(
@@ -50,6 +54,7 @@ public class ClassicsPublicationCleanupApplicationServiceImpl {
         return eligible;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean complete(ClassicsPublicationJob job, String token, boolean es) {
         return (es
@@ -58,6 +63,7 @@ public class ClassicsPublicationCleanupApplicationServiceImpl {
                 == 1;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean fail(ClassicsPublicationJob job, String token, boolean es, String detailJson) {
         return (es

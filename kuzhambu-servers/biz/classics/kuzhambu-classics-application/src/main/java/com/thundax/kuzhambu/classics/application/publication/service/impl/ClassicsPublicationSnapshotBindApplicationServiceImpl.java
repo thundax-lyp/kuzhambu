@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationSnapshotBindApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationPayloadAssembler;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
@@ -21,7 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ClassicsPublicationSnapshotBindApplicationServiceImpl {
+public class ClassicsPublicationSnapshotBindApplicationServiceImpl
+        implements ClassicsPublicationSnapshotBindApplicationService {
     private final ClassicsContentRepository contentRepository;
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsPublicationJobRepository jobRepository;
@@ -38,6 +40,7 @@ public class ClassicsPublicationSnapshotBindApplicationServiceImpl {
         this.payloadAssembler = payloadAssembler;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean bind(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
         ClassicsContentId contentId = new ClassicsContentId(job.getContentId());

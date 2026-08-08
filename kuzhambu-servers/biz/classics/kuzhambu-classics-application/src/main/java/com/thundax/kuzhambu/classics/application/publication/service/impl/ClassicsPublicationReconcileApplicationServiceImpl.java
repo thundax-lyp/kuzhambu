@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationReconcileApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationContent;
@@ -12,7 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ClassicsPublicationReconcileApplicationServiceImpl {
+public class ClassicsPublicationReconcileApplicationServiceImpl
+        implements ClassicsPublicationReconcileApplicationService {
     private final ClassicsPublicationJobRepository jobRepository;
     private final ClassicsContentRepository contentRepository;
 
@@ -22,11 +24,13 @@ public class ClassicsPublicationReconcileApplicationServiceImpl {
         this.contentRepository = contentRepository;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean succeed(ClassicsPublicationJob job, Instant finishedAt) {
         return jobRepository.markSucceeded(job.getId(), finishedAt) == 1;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean reconcileFailure(ClassicsPublicationJob job) {
         ClassicsPublicationContent content = contentRepository.lockPublicationContent(

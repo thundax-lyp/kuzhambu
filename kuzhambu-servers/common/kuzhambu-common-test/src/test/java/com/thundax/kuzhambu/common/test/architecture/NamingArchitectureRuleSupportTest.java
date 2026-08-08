@@ -3,9 +3,16 @@ package com.thundax.kuzhambu.common.test.architecture;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.importer.ClassFileImporter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -271,6 +278,225 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
+    void implContractGateShouldRejectImplWithoutNamedInterface() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/application/core/service/impl");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleApplicationServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service.impl;
+
+                public class SampleApplicationServiceImpl {
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(
+                        compileAndImport(tempDir.resolve("src/main/java")), Collections.emptySet()));
+    }
+
+    @Test
+    void implContractGateShouldAllowImplWithNamedInterface() throws Exception {
+        Path service = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/application/core/service");
+        Path impl = service.resolve("impl");
+        Files.createDirectories(impl);
+        Files.writeString(
+                service.resolve("SampleApplicationService.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service;
+
+                public interface SampleApplicationService {
+                }
+                """);
+        Files.writeString(
+                impl.resolve("SampleApplicationServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service.impl;
+
+                import com.thundax.kuzhambu.sample.application.core.service.SampleApplicationService;
+
+                public class SampleApplicationServiceImpl implements SampleApplicationService {
+                }
+                """);
+
+        assertDoesNotThrow(() -> ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(
+                compileAndImport(tempDir.resolve("src/main/java")), Collections.emptySet()));
+    }
+
+    @Test
+    void implContractGateShouldRejectProductionDependencyOnImplType() throws Exception {
+        Path service = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/application/core/service");
+        Path impl = service.resolve("impl");
+        Files.createDirectories(impl);
+        Files.writeString(
+                service.resolve("SampleApplicationService.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service;
+
+                public interface SampleApplicationService {
+                }
+                """);
+        Files.writeString(
+                impl.resolve("SampleApplicationServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service.impl;
+
+                import com.thundax.kuzhambu.sample.application.core.service.SampleApplicationService;
+
+                public class SampleApplicationServiceImpl implements SampleApplicationService {
+                }
+                """);
+        Files.writeString(
+                service.resolve("SampleConsumer.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service;
+
+                import com.thundax.kuzhambu.sample.application.core.service.impl.SampleApplicationServiceImpl;
+
+                public class SampleConsumer {
+
+                    private final SampleApplicationServiceImpl service;
+
+                    public SampleConsumer(SampleApplicationServiceImpl service) {
+                        this.service = service;
+                    }
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
+                        compileAndImport(tempDir.resolve("src/main/java")), Collections.emptySet()));
+    }
+
+    @Test
+    void implContractGateShouldAllowNestedContractOnImplType() throws Exception {
+        Path service = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/application/core/service");
+        Path impl = service.resolve("impl");
+        Files.createDirectories(impl);
+        Files.writeString(
+                service.resolve("SampleApplicationService.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service;
+
+                public interface SampleApplicationService {
+                }
+                """);
+        Files.writeString(
+                impl.resolve("SampleApplicationServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service.impl;
+
+                import com.thundax.kuzhambu.sample.application.core.service.SampleApplicationService;
+
+                public class SampleApplicationServiceImpl implements SampleApplicationService {
+                    public interface CacheChangedListener {
+                    }
+                }
+                """);
+        Files.writeString(
+                service.resolve("SampleConsumer.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service;
+
+                import com.thundax.kuzhambu.sample.application.core.service.impl.SampleApplicationServiceImpl;
+
+                public class SampleConsumer implements SampleApplicationServiceImpl.CacheChangedListener {
+                }
+                """);
+
+        ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
+                compileAndImport(tempDir.resolve("src/main/java")), Collections.emptySet());
+    }
+
+    @Test
+    void implContractGateShouldRejectNestedClassDependingOnImplType() throws Exception {
+        Path service = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/application/core/service");
+        Path impl = service.resolve("impl");
+        Files.createDirectories(impl);
+        Files.writeString(
+                service.resolve("SampleApplicationService.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service;
+
+                public interface SampleApplicationService {
+                }
+                """);
+        Files.writeString(
+                impl.resolve("SampleApplicationServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service.impl;
+
+                import com.thundax.kuzhambu.sample.application.core.service.SampleApplicationService;
+
+                public class SampleApplicationServiceImpl implements SampleApplicationService {
+                }
+                """);
+        Files.writeString(
+                service.resolve("SampleConsumer.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service;
+
+                import com.thundax.kuzhambu.sample.application.core.service.impl.SampleApplicationServiceImpl;
+
+                public class SampleConsumer {
+
+                    static class NestedConsumer {
+
+                        private final SampleApplicationServiceImpl service;
+
+                        NestedConsumer(SampleApplicationServiceImpl service) {
+                            this.service = service;
+                        }
+                    }
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
+                        compileAndImport(tempDir.resolve("src/main/java")), Collections.emptySet()));
+    }
+
+    @Test
+    void implContractGateShouldAllowNestedClassDependingOnOwnEnclosingImplType() throws Exception {
+        Path service = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/application/core/service");
+        Path impl = service.resolve("impl");
+        Files.createDirectories(impl);
+        Files.writeString(
+                service.resolve("SampleApplicationService.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service;
+
+                public interface SampleApplicationService {
+                }
+                """);
+        Files.writeString(
+                impl.resolve("SampleApplicationServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service.impl;
+
+                import com.thundax.kuzhambu.sample.application.core.service.SampleApplicationService;
+
+                public class SampleApplicationServiceImpl implements SampleApplicationService {
+
+                    class NestedWorker {
+
+                        private final SampleApplicationServiceImpl service;
+
+                        NestedWorker() {
+                            this.service = SampleApplicationServiceImpl.this;
+                        }
+                    }
+                }
+                """);
+
+        ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
+                compileAndImport(tempDir.resolve("src/main/java")), Collections.emptySet());
+    }
+
+    @Test
     void applicationContractPackageGateShouldRejectMismatchedDeclaredPackage() throws Exception {
         Path source = applicationSourceRoot().resolve("com/thundax/kuzhambu/sample/application/core/command");
         Files.createDirectories(source);
@@ -297,5 +523,25 @@ class NamingArchitectureRuleSupportTest {
 
     private Path applicationSourceRoot() {
         return tempDir.resolve("kuzhambu-sample-application/src/main/java");
+    }
+
+    private JavaClasses compileAndImport(Path sourceRoot) throws Exception {
+        Path classesRoot = tempDir.resolve("target/test-classes");
+        Files.createDirectories(classesRoot);
+        List<String> sourceFiles;
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            sourceFiles = paths.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".java"))
+                    .map(Path::toString)
+                    .collect(Collectors.toList());
+        }
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        org.junit.jupiter.api.Assertions.assertNotNull(compiler, "JDK compiler is required");
+        List<String> args = new java.util.ArrayList<String>();
+        args.add("-d");
+        args.add(classesRoot.toString());
+        args.addAll(sourceFiles);
+        org.junit.jupiter.api.Assertions.assertEquals(0, compiler.run(null, null, null, args.toArray(new String[0])));
+        return new ClassFileImporter().importPath(classesRoot);
     }
 }

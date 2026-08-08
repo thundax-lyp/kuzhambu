@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationContentCommitApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationContent;
@@ -12,7 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ClassicsPublicationContentCommitApplicationServiceImpl {
+public class ClassicsPublicationContentCommitApplicationServiceImpl
+        implements ClassicsPublicationContentCommitApplicationService {
     private final ClassicsContentRepository contentRepository;
     private final ClassicsPublicationJobRepository jobRepository;
 
@@ -22,6 +24,7 @@ public class ClassicsPublicationContentCommitApplicationServiceImpl {
         this.jobRepository = jobRepository;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean commit(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
         ClassicsContentId contentId = new ClassicsContentId(job.getContentId());

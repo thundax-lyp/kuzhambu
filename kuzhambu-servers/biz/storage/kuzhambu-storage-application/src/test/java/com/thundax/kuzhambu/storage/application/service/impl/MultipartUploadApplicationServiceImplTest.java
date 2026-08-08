@@ -104,7 +104,9 @@ class MultipartUploadApplicationServiceImplTest {
             storage.setAccessEndpoint("/api/storage/object/11/content");
             return storage;
         });
-        when(storageApplicationService.create(any())).thenReturn(StoredObjectIdCodec.toDomain(11L));
+        StoredObject createdStorage = new StoredObject();
+        createdStorage.setId(StoredObjectIdCodec.toDomain(11L));
+        when(storageApplicationService.create(any())).thenReturn(createdStorage);
 
         StoredObject storage =
                 service.complete(new CompleteMultipartUploadCommand(UPLOAD_ID_REF, null, null, null, null));

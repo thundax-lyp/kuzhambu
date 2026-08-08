@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.storage.application.command.CreateStorageCommand;
 import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
 import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
@@ -38,12 +39,12 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
 
     private final MultipartUploadRepository multipartUploadRepository;
     private final StoredObjectContentRepository storedObjectContentRepository;
-    private final StorageApplicationServiceImpl storageApplicationService;
+    private final StorageApplicationService storageApplicationService;
 
     public MultipartUploadApplicationServiceImpl(
             MultipartUploadRepository multipartUploadRepository,
             StoredObjectContentRepository storedObjectContentRepository,
-            StorageApplicationServiceImpl storageApplicationService) {
+            StorageApplicationService storageApplicationService) {
         this.multipartUploadRepository = multipartUploadRepository;
         this.storedObjectContentRepository = storedObjectContentRepository;
         this.storageApplicationService = storageApplicationService;
@@ -114,7 +115,8 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
 
         StoredObject storage = toCompletedStorage(session, command);
         persistCompletedMultipartStorage(session, parts, storage);
-        storage.setId(storageApplicationService.create(toCreateStorageCommand(storage)));
+        StoredObject createdStorage = storageApplicationService.create(toCreateStorageCommand(storage));
+        storage.setId(createdStorage == null ? null : createdStorage.getId());
 
         Instant now = Instant.now();
         session.setUploadStatus(MultipartUploadStatus.COMPLETED);

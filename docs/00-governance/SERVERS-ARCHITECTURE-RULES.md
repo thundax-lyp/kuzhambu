@@ -50,6 +50,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_NAMING_REQUEST_RESPONSE`：接口层请求模型必须以 `Request` 结尾并位于 `request/` 包；响应模型必须以 `Response` 结尾并位于 `response/` 包。
 - `SERVERS_NAMING_APPLICATION_SERVICE`：用例编排入口必须以 `ApplicationService` 结尾；接口位于 `application/{domain}/service/`，实现位于 `application/{domain}/service/impl/`；接口和实现均不得命名为通用 `Manager`、`Processor` 或 `Handler`。
 - `SERVERS_APPLICATION_SERVICE_SUFFIX_ONLY`：业务域 `application` 层内以 `Service` 或 `ServiceImpl` 结尾的类型必须分别以 `ApplicationService` 或 `ApplicationServiceImpl` 结尾，内部辅助组件不得使用泛化 `*Service` 命名。
+- `SERVERS_IMPL_CONTRACT`：生产代码中命名为 `XxxImpl` 的类必须实现对应的 `Xxx` 接口；生产代码不得在字段、构造器参数、方法参数或泛型依赖参数中直接使用 `XxxImpl` 类型。仅内部协作组件不得使用 `Impl` 后缀；存量违规只能通过架构测试 allowlist 暂存，并且 allowlist 只能收缩。
 - `SERVERS_NAMING_APPLICATION_INPUT`：应用层写入输入模型必须以 `Command` 结尾；读取输入模型必须以 `Query` 或 `PageQuery` 结尾。
 - `SERVERS_APPLICATION_COMMAND_PACKAGE`：`*-application` 模块中的 `*Command` 必须位于 `application/**/command/`。
 - `SERVERS_APPLICATION_QUERY_PACKAGE`：`*-application` 模块中的 `*Query` 必须位于 `application/**/query/`。

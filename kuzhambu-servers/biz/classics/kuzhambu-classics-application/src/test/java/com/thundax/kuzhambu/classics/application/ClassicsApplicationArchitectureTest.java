@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.AnnotationBoundaryArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SortableArchitectureRuleSupport;
@@ -9,6 +10,7 @@ import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleS
 import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
@@ -24,6 +26,9 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
         AnnotationBoundaryArchitectureRuleSupport.assertApplicationNoHttpAnnotations(classes, BASE_PACKAGE);
         TransactionArchitectureRuleSupport.assertTransactionalOnlyOnApplicationServiceUseCases(classes, BASE_PACKAGE);
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
+        ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptyList());
+        ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
+                classes, Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationServicesUseApplicationServiceSuffix(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
