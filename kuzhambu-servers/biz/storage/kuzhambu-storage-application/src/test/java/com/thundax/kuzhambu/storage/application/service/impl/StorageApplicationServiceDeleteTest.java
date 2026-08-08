@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.storage.application.command.RemoveStorageObjectCommand;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
@@ -31,7 +32,9 @@ class StorageApplicationServiceDeleteTest {
         when(repository.getById(StoredObjectIdCodec.toDomain(100L)))
                 .thenReturn(storage(StoredObjectIdCodec.toDomain(100L), StoredObjectReferenceStatus.REFERENCED));
 
-        assertThrows(BizException.class, () -> service.remove(StoredObjectIdCodec.toDomain(100L)));
+        assertThrows(
+                BizException.class,
+                () -> service.remove(new RemoveStorageObjectCommand(StoredObjectIdCodec.toDomain(100L))));
         verify(repository, never()).deleteById(any());
         verify(referenceRepository, never()).deleteByObjectId(any());
     }
@@ -46,7 +49,7 @@ class StorageApplicationServiceDeleteTest {
                 .thenReturn(storage(StoredObjectIdCodec.toDomain(100L), StoredObjectReferenceStatus.UNREFERENCED));
         when(repository.deleteById(StoredObjectIdCodec.toDomain(100L))).thenReturn(1);
 
-        int deleted = service.remove(StoredObjectIdCodec.toDomain(100L));
+        int deleted = service.remove(new RemoveStorageObjectCommand(StoredObjectIdCodec.toDomain(100L)));
         assertEquals(1, deleted);
         InOrder inOrder = inOrder(repository, referenceRepository);
         inOrder.verify(repository).deleteById(StoredObjectIdCodec.toDomain(100L));
@@ -63,7 +66,7 @@ class StorageApplicationServiceDeleteTest {
                 .thenReturn(storage(StoredObjectIdCodec.toDomain(100L), StoredObjectReferenceStatus.UNREFERENCED));
         when(repository.deleteById(StoredObjectIdCodec.toDomain(100L))).thenReturn(0);
 
-        int deleted = service.remove(StoredObjectIdCodec.toDomain(100L));
+        int deleted = service.remove(new RemoveStorageObjectCommand(StoredObjectIdCodec.toDomain(100L)));
 
         assertEquals(0, deleted);
         verify(repository).deleteById(StoredObjectIdCodec.toDomain(100L));

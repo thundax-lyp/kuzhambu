@@ -13,11 +13,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.storage.application.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
+import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
+import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
@@ -312,11 +313,10 @@ class StorageApplicationServiceUploadTest {
                         any(), any(), any(), any(), any(), any(), any(), any(), any(Integer.class), any(Integer.class)))
                 .thenReturn(new PageResult<>());
 
-        StorageQuery query = new StorageQuery();
-        query.setReferenceOwnerType("BOOK");
-        query.setReferenceOwnerId("owner-9");
+        StorageObjectPageQuery query = new StorageObjectPageQuery();
+        query.setReferenceOwnerRef(StorageOwnerRef.of(StorageOwnerType.USER, "owner-9"));
 
-        service.page(query, new PageQuery(1, 20));
+        service.page(query);
 
         verify(storageRepository)
                 .page(
@@ -324,7 +324,7 @@ class StorageApplicationServiceUploadTest {
                         any(),
                         any(),
                         any(),
-                        argThat((StorageReferenceOwnerType value) -> value != null && "BOOK".equals(value.value())),
+                        argThat((StorageReferenceOwnerType value) -> value != null && "USER".equals(value.value())),
                         any(),
                         any(),
                         any(),
@@ -342,7 +342,10 @@ class StorageApplicationServiceUploadTest {
         StoredObject storage = storage(StoredObjectIdCodec.toDomain(100L), StoredObjectStatus.DELETING);
         when(storageRepository.getById(StoredObjectIdCodec.toDomain(100L))).thenReturn(storage);
 
-        assertThrows(RuntimeException.class, () -> service.openReadableContent(StoredObjectIdCodec.toDomain(100L)));
+        assertThrows(
+                RuntimeException.class,
+                () -> service.openReadableContent(
+                        new OpenReadableStorageContentQuery(StoredObjectIdCodec.toDomain(100L))));
     }
 
     private static StoredObject storage(StoredObjectId id, StoredObjectStatus status) {
