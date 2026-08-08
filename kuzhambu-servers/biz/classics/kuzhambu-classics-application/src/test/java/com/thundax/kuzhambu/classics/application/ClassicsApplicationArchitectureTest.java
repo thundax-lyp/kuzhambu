@@ -24,15 +24,8 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
             "com.thundax.kuzhambu.classics.application.publication.service.impl"
                     + ".ClassicsPublicationExecutionApplicationServiceImpl",
             "com.thundax.kuzhambu.classics.application.publication.service.impl"
-                    + ".ClassicsPublicationReconcileApplicationServiceImpl",
-            "com.thundax.kuzhambu.classics.application.publication.service.impl"
-                    + ".ClassicsPublicationSnapshotBindApplicationServiceImpl");
+                    + ".ClassicsPublicationReconcileApplicationServiceImpl");
     private static final List<String> LEGACY_IMPL_DEPENDENCIES = List.of(
-            ImplContractArchitectureRuleSupport.dependency(
-                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
-                            + ".ClassicsPublicationStepExecutorImpl",
-                    "com.thundax.kuzhambu.classics.application.publication.service.impl"
-                            + ".ClassicsPublicationSnapshotBindApplicationServiceImpl"),
             ImplContractArchitectureRuleSupport.dependency(
                     "com.thundax.kuzhambu.classics.application.publication.service.impl"
                             + ".ClassicsPublicationStepExecutorImpl",
