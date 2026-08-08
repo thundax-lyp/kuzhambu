@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPubli
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationCreateResult;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationJobView;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
+import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationCreationApplicationService;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
@@ -18,11 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ClassicsPublicationApplicationServiceImpl implements ClassicsPublicationApplicationService {
-    private final ClassicsPublicationCreationApplicationServiceImpl creationService;
+    private final ClassicsPublicationCreationApplicationService creationService;
     private final ClassicsPublicationJobRepository jobRepository;
 
     public ClassicsPublicationApplicationServiceImpl(
-            ClassicsPublicationCreationApplicationServiceImpl creationService,
+            ClassicsPublicationCreationApplicationService creationService,
             ClassicsPublicationJobRepository jobRepository) {
         this.creationService = creationService;
         this.jobRepository = jobRepository;

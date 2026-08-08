@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
 import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationCreateCommand;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationCreateResult;
+import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationCreationApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationContent;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
@@ -21,7 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ClassicsPublicationCreationApplicationServiceImpl {
+public class ClassicsPublicationCreationApplicationServiceImpl
+        implements ClassicsPublicationCreationApplicationService {
     private static final int MAX_ATTEMPTS = 4;
 
     private final ClassicsContentRepository contentRepository;
@@ -33,6 +35,7 @@ public class ClassicsPublicationCreationApplicationServiceImpl {
         this.jobRepository = jobRepository;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsPublicationCreateResult create(ClassicsPublicationCreateCommand command) {
         requireCommand(command);
