@@ -460,6 +460,43 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
+    void implContractGateShouldAllowNestedClassDependingOnOwnEnclosingImplType() throws Exception {
+        Path service = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/application/core/service");
+        Path impl = service.resolve("impl");
+        Files.createDirectories(impl);
+        Files.writeString(
+                service.resolve("SampleApplicationService.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service;
+
+                public interface SampleApplicationService {
+                }
+                """);
+        Files.writeString(
+                impl.resolve("SampleApplicationServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service.impl;
+
+                import com.thundax.kuzhambu.sample.application.core.service.SampleApplicationService;
+
+                public class SampleApplicationServiceImpl implements SampleApplicationService {
+
+                    class NestedWorker {
+
+                        private final SampleApplicationServiceImpl service;
+
+                        NestedWorker() {
+                            this.service = SampleApplicationServiceImpl.this;
+                        }
+                    }
+                }
+                """);
+
+        ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
+                compileAndImport(tempDir.resolve("src/main/java")), Collections.emptySet());
+    }
+
+    @Test
     void applicationContractPackageGateShouldRejectMismatchedDeclaredPackage() throws Exception {
         Path source = applicationSourceRoot().resolve("com/thundax/kuzhambu/sample/application/core/command");
         Files.createDirectories(source);

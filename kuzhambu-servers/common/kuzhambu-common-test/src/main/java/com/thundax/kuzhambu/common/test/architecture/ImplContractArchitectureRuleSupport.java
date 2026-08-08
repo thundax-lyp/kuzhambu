@@ -46,7 +46,7 @@ public final class ImplContractArchitectureRuleSupport {
                 JavaClass targetClass = dependency.getTargetClass();
                 if (!isImplTypeReference(targetClass)
                         || javaClass.equals(targetClass)
-                        || isOwnNestedType(javaClass, targetClass)) {
+                        || isOwnNestedOrEnclosingType(javaClass, targetClass)) {
                     continue;
                 }
                 String dependencyName = dependencyName(javaClass, targetClass);
@@ -91,8 +91,9 @@ public final class ImplContractArchitectureRuleSupport {
         return javaClass.getName().contains("$");
     }
 
-    private static boolean isOwnNestedType(JavaClass originClass, JavaClass targetClass) {
-        return targetClass.getName().startsWith(originClass.getName() + "$");
+    private static boolean isOwnNestedOrEnclosingType(JavaClass originClass, JavaClass targetClass) {
+        return targetClass.getName().startsWith(originClass.getName() + "$")
+                || originClass.getName().startsWith(targetClass.getName() + "$");
     }
 
     private static String expectedInterfaceSimpleName(JavaClass javaClass) {
