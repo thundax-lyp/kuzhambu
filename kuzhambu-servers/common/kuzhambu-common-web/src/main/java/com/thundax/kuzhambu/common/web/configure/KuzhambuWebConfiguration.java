@@ -10,7 +10,6 @@ import com.thundax.kuzhambu.common.web.exception.ExceptionTranslator;
 import com.thundax.kuzhambu.common.web.exception.GlobalExceptionHandler;
 import com.thundax.kuzhambu.common.web.i18n.I18nMessageResolver;
 import com.thundax.kuzhambu.common.web.restore.RestoreWriteBlockFilter;
-import com.thundax.kuzhambu.common.web.restore.RestoreWriteBlockProperties;
 import com.thundax.kuzhambu.common.web.restore.RestoreWriteBlockState;
 import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;

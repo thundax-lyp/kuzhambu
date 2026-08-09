@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.common.web.restore;
+package com.thundax.kuzhambu.common.web.configure;
 
 import java.util.ArrayList;
 import java.util.Collections;
