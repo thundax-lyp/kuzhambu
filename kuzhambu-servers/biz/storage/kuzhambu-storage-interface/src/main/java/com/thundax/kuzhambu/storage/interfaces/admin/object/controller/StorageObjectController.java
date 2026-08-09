@@ -186,7 +186,9 @@ public class StorageObjectController {
     public InitMultipartUploadResponse initiate(@Valid @RequestBody InitMultipartUploadRequest request) {
         MultipartUploadSession session =
                 storageMultipartUploadApplicationService.init(toInitMultipartUploadCommand(request));
-        return StorageInterfaceAssembler.toResponse(session);
+        return session == null
+                ? InitMultipartUploadResponse.builder().build()
+                : StorageInterfaceAssembler.toResponse(session);
     }
 
     @Operation(summary = "上传分片", description = "storage:object:edit")
@@ -206,7 +208,9 @@ public class StorageObjectController {
         try {
             MultipartUploadPart part =
                     storageMultipartUploadApplicationService.uploadPart(toUploadMultipartPartCommand(request, file));
-            return StorageInterfaceAssembler.toResponse(part);
+            return part == null
+                    ? UploadMultipartPartResponse.builder().build()
+                    : StorageInterfaceAssembler.toResponse(part);
         } catch (IOException exception) {
             throw AdminResponseExceptions.system(exception.getMessage());
         }
@@ -227,7 +231,9 @@ public class StorageObjectController {
         StoredObject storage =
                 storageMultipartUploadApplicationService.complete(toCompleteMultipartUploadCommand(request));
         applyDefaultAccessEndpoint(storage);
-        return StorageInterfaceAssembler.toResponse(storage, request.getUploadId());
+        return storage == null
+                ? CompleteMultipartUploadResponse.builder().build()
+                : StorageInterfaceAssembler.toResponse(storage, request);
     }
 
     @Operation(summary = "中止分片上传", description = "storage:object:edit")
@@ -243,7 +249,7 @@ public class StorageObjectController {
     @PostMapping(value = "multipart/abort")
     public AbortMultipartUploadResponse abort(@Valid @RequestBody AbortMultipartUploadRequest request) {
         storageMultipartUploadApplicationService.abort(toAbortMultipartUploadCommand(request));
-        return StorageInterfaceAssembler.toResponse(request.getUploadId());
+        return StorageInterfaceAssembler.toResponse(request);
     }
 
     @Operation(summary = "上传存储对象", description = "storage:object:edit")
@@ -274,7 +280,9 @@ public class StorageObjectController {
                     null,
                     null));
             applyDefaultAccessEndpoint(storage);
-            return StorageInterfaceAssembler.toResponse(storage);
+            return storage == null
+                    ? StorageObjectResponse.builder().build()
+                    : StorageInterfaceAssembler.toResponse(storage);
         } catch (BizException exception) {
             if (!isUploadValidationFailure(exception)) {
                 throw AdminResponseExceptions.system(exception.getMessage());
