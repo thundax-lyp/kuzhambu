@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
@@ -57,7 +58,9 @@ public class DiscoverySearchStatisticsController {
     public PageResponse<DiscoverySearchEventResponse> pageEvents(
             @Valid @RequestBody DiscoverySearchEventPageRequest request) {
         return PageResponseHelper.fromPageResult(
-                searchApplicationService.pageEvents(DiscoverySearchStatisticsInterfaceAssembler.toQuery(request)),
+                searchApplicationService.pageEvents(
+                        DiscoverySearchStatisticsInterfaceAssembler.toQuery(request),
+                        PageInterfaceAssembler.toPageQuery(request)),
                 DiscoverySearchStatisticsInterfaceAssembler::toResponse);
     }
 

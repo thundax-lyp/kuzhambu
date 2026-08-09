@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
@@ -17,7 +18,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchEventQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchStatisticsSummaryQuery;
@@ -606,8 +607,10 @@ class SearchApplicationServiceImplTest {
                                 "trace-1",
                                 Instant.ofEpochMilli(1_718_000_000_000L)))));
 
-        var result = service.pageEvents(new SearchEventPageQuery(
-                "黄帝", List.of("ENTITY", "KEYWORD"), List.of("SUCCEEDED", "FAILED"), "user-1", null, null, 1, 20));
+        var result = service.pageEvents(
+                new SearchEventQuery(
+                        "黄帝", List.of("ENTITY", "KEYWORD"), List.of("SUCCEEDED", "FAILED"), "user-1", null, null),
+                new PageQuery(1, 20));
 
         verify(searchEventRepository).page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20);
         assertEquals(1, result.getRecords().size());

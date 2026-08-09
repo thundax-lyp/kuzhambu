@@ -1,8 +1,9 @@
 package com.thundax.kuzhambu.discovery.application.search.service;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchEventQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchStatisticsSummaryQuery;
@@ -18,7 +19,7 @@ public interface SearchApplicationService {
 
     Boolean recordClick(SearchClickEventCreateCommand command);
 
-    PageResult<SearchEventResult> pageEvents(SearchEventPageQuery query);
+    PageResult<SearchEventResult> pageEvents(SearchEventQuery query, PageQuery pageQuery);
 
     SearchEventResult getEvent(Long id);
 

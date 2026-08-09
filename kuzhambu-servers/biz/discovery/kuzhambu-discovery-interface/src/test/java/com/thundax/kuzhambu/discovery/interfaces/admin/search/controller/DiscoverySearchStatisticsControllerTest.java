@@ -144,7 +144,7 @@ class DiscoverySearchStatisticsControllerTest {
         DiscoverySearchEventPageRequest request = new DiscoverySearchEventPageRequest();
         request.setPageNo(1);
         request.setPageSize(20);
-        when(service.pageEvents(any()))
+        when(service.pageEvents(any(), any()))
                 .thenReturn(PageResult.of(
                         1,
                         20,
@@ -169,7 +169,7 @@ class DiscoverySearchStatisticsControllerTest {
 
         var response = controller.pageEvents(request);
 
-        verify(service).pageEvents(any());
+        verify(service).pageEvents(any(), any());
         assertEquals(1, response.getRecords().size());
         assertEquals("1", response.getRecords().get(0).getId());
     }

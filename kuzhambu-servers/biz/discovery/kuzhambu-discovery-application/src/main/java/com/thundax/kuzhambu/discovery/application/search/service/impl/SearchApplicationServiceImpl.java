@@ -4,11 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchEventQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchStatisticsSummaryQuery;
@@ -155,16 +156,17 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     @Override
-    public PageResult<SearchEventResult> pageEvents(SearchEventPageQuery query) {
+    public PageResult<SearchEventResult> pageEvents(SearchEventQuery query, PageQuery pageQuery) {
         if (query == null) {
             throw new BizException("Search event page query is required");
         }
-        int pageNo = searchDomainService.normalizePageNo(query.getPageNo());
-        int pageSize = searchDomainService.normalizePageSize(query.getPageSize());
-        String intentType = firstOrNull(query.getIntentTypes());
-        String searchStatus = firstOrNull(query.getSearchStatuses());
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        int pageNo = searchDomainService.normalizePageNo(effectivePage.getPageNo());
+        int pageSize = searchDomainService.normalizePageSize(effectivePage.getPageSize());
+        String intentType = firstOrNull(query.intentTypes());
+        String searchStatus = firstOrNull(query.searchStatuses());
         PageResult<SearchEvent> pageResult = searchEventRepository.page(
-                query.getQueryText(), intentType, searchStatus, query.getOperatorId(), pageNo, pageSize);
+                query.queryText(), intentType, searchStatus, query.operatorId(), pageNo, pageSize);
         List<SearchEventResult> records = pageResult.getRecords() == null
                 ? Collections.emptyList()
                 : pageResult.getRecords().stream()

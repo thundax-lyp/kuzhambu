@@ -35,8 +35,6 @@ final class DiscoveryApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCategoryAggregationQuery"),
