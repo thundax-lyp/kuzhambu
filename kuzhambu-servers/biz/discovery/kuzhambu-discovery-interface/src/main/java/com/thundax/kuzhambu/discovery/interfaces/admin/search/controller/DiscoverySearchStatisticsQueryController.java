@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchClickEventRequest;
@@ -45,8 +46,9 @@ public class DiscoverySearchStatisticsQueryController {
                 dataTypeClass = String.class),
     })
     public DiscoverySearchResponse search(@Valid @RequestBody DiscoverySearchRequest request) {
-        return DiscoverySearchStatisticsInterfaceAssembler.toSearchResponse(
-                searchApplicationService.search(DiscoverySearchStatisticsInterfaceAssembler.toQuery(request)));
+        return DiscoverySearchStatisticsInterfaceAssembler.toSearchResponse(searchApplicationService.search(
+                DiscoverySearchStatisticsInterfaceAssembler.toQuery(request),
+                PageInterfaceAssembler.toPageQuery(request)));
     }
 
     @Operation(summary = "预览后台搜索命中", description = "读取搜索索引中的命中内容")

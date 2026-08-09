@@ -49,8 +49,6 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 request.getTagNames(),
                 parseDate(request.getDateFrom(), "dateFrom"),
                 parseDate(request.getDateTo(), "dateTo"),
-                request.getPageNo() == null ? 1 : request.getPageNo(),
-                request.getPageSize() == null ? 20 : request.getPageSize(),
                 ADMIN_OPERATOR_TYPE,
                 KuzhambuContextHolder.currentSubjectId(),
                 RequestIdCodec.toDomain(newRequestId()),

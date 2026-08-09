@@ -42,8 +42,6 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 request.getTagNames(),
                 parseDateFrom(request.getDateFrom()),
                 parseDateTo(request.getDateTo()),
-                request.getPageNo() == null ? 1 : request.getPageNo(),
-                request.getPageSize() == null ? 20 : request.getPageSize(),
                 PORTAL_OPERATOR_TYPE,
                 null,
                 RequestIdCodec.toDomain(newRequestId()),

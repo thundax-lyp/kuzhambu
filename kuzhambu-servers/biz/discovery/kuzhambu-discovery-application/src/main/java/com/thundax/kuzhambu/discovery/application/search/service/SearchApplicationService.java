@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchStatistics
 
 public interface SearchApplicationService {
 
-    SearchEventResult search(SearchQuery query);
+    SearchEventResult search(SearchQuery query, PageQuery pageQuery);
 
     SearchPreviewResult getPreview(SearchPreviewQuery query);
 

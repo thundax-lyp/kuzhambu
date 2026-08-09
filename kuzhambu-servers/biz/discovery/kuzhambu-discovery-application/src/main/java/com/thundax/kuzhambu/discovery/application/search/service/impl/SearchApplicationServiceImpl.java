@@ -68,9 +68,10 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     @Override
-    public SearchEventResult search(SearchQuery query) {
+    public SearchEventResult search(SearchQuery query, PageQuery pageQuery) {
         validateSearchQuery(query);
         normalizeSearchQuery(query);
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         long startNanos = System.nanoTime();
         QueryUnderstandingResult understandingResult = null;
         String normalizedQueryText =
@@ -81,8 +82,8 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             var keyword = searchDomainService.normalizeKeyword(resolveSearchText(query, understandingResult));
             normalizedQueryText = keyword.getNormalizedText();
             scope = searchDomainService.normalizeScope(toSearchScope(query));
-            int pageNo = searchDomainService.normalizePageNo(query.getPageNo());
-            int pageSize = searchDomainService.normalizePageSize(query.getPageSize());
+            int pageNo = searchDomainService.normalizePageNo(effectivePage.getPageNo());
+            int pageSize = searchDomainService.normalizePageSize(effectivePage.getPageSize());
             SearchPageResult searchPage = searchIndexGateway.search(keyword, scope, pageNo, pageSize);
             List<SearchGroupResult> groups = searchPage.safeGroups();
             SearchEvent searchEvent = buildSucceededSearchEvent(
