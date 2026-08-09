@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,6 +26,8 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CallIdRequest;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateIdRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateListRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateMarkAppliedRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateRejectRequest;
@@ -116,6 +119,30 @@ class AiInvocationControllerTest {
         assertEquals("TEXT", response.getResultFormat());
         assertEquals("existing", response.getResultPayload());
         assertEquals("APPLIED", response.getStatus());
+    }
+
+    @Test
+    void getInvocationLogShouldReturnEmptyResponseWhenLogIsMissing() {
+        AiInvocationController controller =
+                new AiInvocationController(noRepository(), noBatchService(), noDomainService());
+        CallIdRequest request = new CallIdRequest();
+        request.setCallId(701L);
+
+        var response = controller.getInvocationLog(request);
+
+        assertNull(response.getCallId());
+    }
+
+    @Test
+    void getCandidateShouldReturnEmptyResponseWhenCandidateIsMissing() {
+        AiInvocationController controller =
+                new AiInvocationController(noRepository(), noBatchService(), noDomainService());
+        CandidateIdRequest request = new CandidateIdRequest();
+        request.setCandidateId(801L);
+
+        var response = controller.getCandidate(request);
+
+        assertNull(response.getCandidateId());
     }
 
     @Test

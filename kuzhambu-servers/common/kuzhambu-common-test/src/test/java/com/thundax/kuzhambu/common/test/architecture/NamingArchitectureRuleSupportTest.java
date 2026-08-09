@@ -687,6 +687,212 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
+    void boundaryAssemblerNullnessGateShouldAllowSpringNonNullImport() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/assembler");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleInterfaceAssembler.java"),
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.assembler;
+
+                import java.util.Objects;
+                import org.springframework.lang.NonNull;
+
+                public class SampleInterfaceAssembler {
+                    public @NonNull String toResponse(@NonNull String result) {
+                        Objects.requireNonNull(result, "result must not be null");
+                        return result;
+                    }
+                }
+                """);
+
+        assertDoesNotThrow(() -> NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+                List.of(tempDir.resolve("src/main/java")), Collections.emptyList()));
+    }
+
+    @Test
+    void boundaryAssemblerNullnessGateShouldAllowFullyQualifiedSpringNonNull() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/assembler");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleInterfaceAssembler.java"),
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.assembler;
+
+                import java.util.Objects;
+
+                public class SampleInterfaceAssembler {
+                    public @org.springframework.lang.NonNull String toResponse(
+                            @org.springframework.lang.NonNull String result) {
+                        Objects.requireNonNull(result, "result must not be null");
+                        return result;
+                    }
+                }
+                """);
+
+        assertDoesNotThrow(() -> NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+                List.of(tempDir.resolve("src/main/java")), Collections.emptyList()));
+    }
+
+    @Test
+    void boundaryAssemblerNullnessGateShouldRejectNonSpringNonNullImport() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/assembler");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleInterfaceAssembler.java"),
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.assembler;
+
+                import java.util.Objects;
+                import lombok.NonNull;
+
+                public class SampleInterfaceAssembler {
+                    public @NonNull String toResponse(@NonNull String result) {
+                        Objects.requireNonNull(result, "result must not be null");
+                        return result;
+                    }
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+                        List.of(tempDir.resolve("src/main/java")), Collections.emptyList()));
+    }
+
+    @Test
+    void boundaryAssemblerNullnessGateShouldRejectIndirectNullReturnExpressions() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/assembler");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleInterfaceAssembler.java"),
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.assembler;
+
+                import java.util.Objects;
+                import org.springframework.lang.NonNull;
+
+                public class SampleInterfaceAssembler {
+                    public @NonNull String toResponse(@NonNull String result) {
+                        Objects.requireNonNull(result, "result must not be null");
+                        return result.length() < 1 ? (null) : result;
+                    }
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+                        List.of(tempDir.resolve("src/main/java")), Collections.emptyList()));
+    }
+
+    @Test
+    void boundaryAssemblerNullnessGateShouldRejectCastedNullReturnExpressions() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/assembler");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleInterfaceAssembler.java"),
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.assembler;
+
+                import java.util.Objects;
+                import org.springframework.lang.NonNull;
+
+                public class SampleInterfaceAssembler {
+                    public @NonNull String toResponse(@NonNull String result) {
+                        Objects.requireNonNull(result, "result must not be null");
+                        return (String) null;
+                    }
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+                        List.of(tempDir.resolve("src/main/java")), Collections.emptyList()));
+    }
+
+    @Test
+    void boundaryAssemblerNullnessGateShouldRejectCastedNullableOperandReturnExpressions() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/assembler");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleInterfaceAssembler.java"),
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.assembler;
+
+                import java.util.Objects;
+                import org.springframework.lang.NonNull;
+
+                public class SampleInterfaceAssembler {
+                    public @NonNull String toResponse(@NonNull String result) {
+                        Objects.requireNonNull(result, "result must not be null");
+                        return (String) (result.length() < 1 ? null : result);
+                    }
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+                        List.of(tempDir.resolve("src/main/java")), Collections.emptyList()));
+    }
+
+    @Test
+    void boundaryAssemblerNullnessGateShouldRejectSwitchNullReturnExpressions() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/assembler");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleInterfaceAssembler.java"),
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.assembler;
+
+                import java.util.Objects;
+                import org.springframework.lang.NonNull;
+
+                public class SampleInterfaceAssembler {
+                    public @NonNull String toResponse(@NonNull String result) {
+                        Objects.requireNonNull(result, "result must not be null");
+                        return switch (result) {
+                            case "" -> (String) null;
+                            default -> result;
+                        };
+                    }
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+                        List.of(tempDir.resolve("src/main/java")), Collections.emptyList()));
+    }
+
+    @Test
+    void boundaryAssemblerLegacyClassesShouldNotScanCurrentSourceViolations() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/assembler");
+        Files.createDirectories(source);
+        Path assembler = source.resolve("SampleInterfaceAssembler.java");
+        Files.writeString(
+                assembler,
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.assembler;
+
+                public class SampleInterfaceAssembler {
+                    public String existing(String result) {
+                        return result;
+                    }
+                }
+                """);
+        List<ArchitectureRuleAllowance> allowances = BoundaryAssemblerNullnessAllowances.legacyClasses(
+                "com.thundax.kuzhambu.sample.interfaces.admin.assembler.SampleInterfaceAssembler");
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+                        List.of(tempDir.resolve("src/main/java")), allowances));
+    }
+
+    @Test
     void domainServiceGateShouldRejectConcreteDomainServiceClassInInterfacePackage() throws Exception {
         Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service");
         Files.createDirectories(source);

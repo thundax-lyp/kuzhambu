@@ -10,15 +10,16 @@ import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthPageResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthSummaryResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthTrendResponse;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class OperationsHealthInterfaceAssembler {
 
     private OperationsHealthInterfaceAssembler() {}
 
-    public static OperationsHealthQuery toQuery(OperationsHealthPageRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsHealthQuery toQuery(@NonNull OperationsHealthPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsHealthQuery(
                 request.getComponent(),
                 request.getHealthStatus(),
@@ -28,10 +29,9 @@ public final class OperationsHealthInterfaceAssembler {
                 request.getCheckedAtEnd());
     }
 
-    public static OperationsHealthTrendQuery toQuery(OperationsHealthTrendRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsHealthTrendQuery toQuery(@NonNull OperationsHealthTrendRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsHealthTrendQuery(
                 request.getComponent(),
                 request.getProbeSource(),
@@ -40,10 +40,9 @@ public final class OperationsHealthInterfaceAssembler {
                 request.getBucketType());
     }
 
-    public static OperationsHealthSummaryResponse toResponse(OperationsHealthSummaryResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsHealthSummaryResponse toResponse(@NonNull OperationsHealthSummaryResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsHealthSummaryResponse.builder()
                 .checkId(
                         result.getCheckId() == null ? null : result.getCheckId().value())
@@ -57,10 +56,9 @@ public final class OperationsHealthInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsHealthPageResponse toResponse(OperationsHealthPageResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsHealthPageResponse toResponse(@NonNull OperationsHealthPageResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsHealthPageResponse.builder()
                 .checkId(
                         result.getCheckId() == null ? null : result.getCheckId().value())
@@ -75,10 +73,9 @@ public final class OperationsHealthInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsHealthTrendResponse toResponse(OperationsHealthTrendResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsHealthTrendResponse toResponse(@NonNull OperationsHealthTrendResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsHealthTrendResponse.builder()
                 .bucket(result.getBucket())
                 .upCount(result.getUpCount())

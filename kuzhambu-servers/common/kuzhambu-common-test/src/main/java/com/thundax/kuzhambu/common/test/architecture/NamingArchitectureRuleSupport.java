@@ -52,6 +52,11 @@ public final class NamingArchitectureRuleSupport {
                     + "(?:(?:static|final|synchronized|abstract|native|strictfp)\\s+)*"
                     + "(?:<[^>]+>\\s+)?(?:[\\w<>?,.\\[\\]]+\\.)?([A-Z][A-Za-z0-9_]*(?:Command|Query))\\s+"
                     + "(\\w+)\\s*\\([^;{}]*\\)\\s*(?:throws\\s+[^;{]+)?\\{");
+    private static final Pattern PUBLIC_METHOD_DECLARATION_PATTERN =
+            Pattern.compile("(?m)^\\s*(?:@[\\w.]+(?:\\([^\\n]*\\))?\\s*)*public\\s+"
+                    + "(?:(?:@[\\w.]+(?:\\([^\\n]*\\))?|static|final|synchronized)\\s+)*"
+                    + "(?:<[^>]+>\\s+)?([\\w<>?,.\\[\\] ]+)\\s+"
+                    + "(\\w+)\\s*\\(([^;{}]*)\\)\\s*(?:throws\\s+[^;{]+)?\\{");
     private static final Pattern QUERY_PAGE_FIELD_PATTERN =
             Pattern.compile("\\b(?:pageNo|pageSize|pageNum|offset|limit)\\b");
     private static final Pattern EMBEDDED_PAGE_QUERY_PATTERN =
@@ -101,6 +106,8 @@ public final class NamingArchitectureRuleSupport {
     private static final Pattern LOMBOK_ANNOTATION_PATTERN =
             Pattern.compile("(?m)^\\s*@(Getter|Setter|Data|Builder|NoArgsConstructor|AllArgsConstructor|"
                     + "RequiredArgsConstructor|Value|With)\\b");
+    private static final Set<String> PRIMITIVE_TYPES =
+            Set.of("boolean", "byte", "char", "short", "int", "long", "float", "double");
     private static final Pattern DOMAIN_REPOSITORY_IMPORT_PATTERN =
             Pattern.compile("(?m)^\\s*import\\s+(com\\.thundax\\.kuzhambu\\.[\\w.]+\\.domain\\.[\\w.]+\\.repository\\."
                     + "(\\w+Repository))\\s*;");
@@ -365,6 +372,46 @@ public final class NamingArchitectureRuleSupport {
                 violations.isEmpty() && staleAllowances.isEmpty());
     }
 
+    public static void assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+            Collection<Path> sourceRoots, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        Map<String, ArchitectureRuleAllowance> allowlist = architectureAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
+        List<String> violations = new ArrayList<String>();
+
+        for (Path sourceRoot : sourceRoots) {
+            if (!Files.exists(sourceRoot)) {
+                continue;
+            }
+            try (Stream<Path> paths = Files.walk(sourceRoot)) {
+                paths.filter(Files::isRegularFile)
+                        .filter(path -> path.getFileName().toString().endsWith(".java"))
+                        .filter(NamingArchitectureRuleSupport::isBoundaryAssemblerSource)
+                        .forEach(path -> collectBoundaryAssemblerNonNullContractViolations(
+                                root, path, violations, allowlist, matchedAllowances));
+            } catch (IOException e) {
+                throw new IllegalStateException(
+                        "Failed to scan boundary assembler nullness contracts under " + sourceRoot, e);
+            }
+        }
+
+        List<String> staleAllowances = allowlist.keySet().stream()
+                .filter(key -> !matchedAllowances.contains(key))
+                .toList();
+
+        assertTrue(
+                "Interface, facade and application assembler public methods must use non-null contracts. Public "
+                        + "assembler methods must be annotated with org.springframework.lang.NonNull, must not return "
+                        + "null, and each reference parameter must be annotated with org.springframework.lang.NonNull "
+                        + "and guarded with "
+                        + "Objects.requireNonNull(parameter, ...). Null-as-default behavior must be explicit and "
+                        + "allowlisted until migrated. Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
+    }
+
     public static void assertApplicationQueriesDoNotOwnPageState(
             Path sourceRoot, Collection<ArchitectureRuleAllowance> legacyAllowances) {
         Path root = ArchitectureSourceSupport.repositoryRoot();
@@ -584,6 +631,139 @@ public final class NamingArchitectureRuleSupport {
         }
     }
 
+    private static void collectBoundaryAssemblerNonNullContractViolations(
+            Path root,
+            Path path,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        String ownerTypeName = sourceTypeName(source, path);
+        Matcher matcher = PUBLIC_METHOD_DECLARATION_PATTERN.matcher(source);
+        Map<String, Integer> returnAnnotationOccurrenceCounts = new HashMap<String, Integer>();
+        Map<String, Integer> nullReturnOccurrenceCounts = new HashMap<String, Integer>();
+        Map<String, Integer> parameterOccurrenceCounts = new HashMap<String, Integer>();
+        while (matcher.find()) {
+            String returnType = compactType(matcher.group(1));
+            String methodName = matcher.group(2);
+            String parameters = matcher.group(3);
+            String declaration = matcher.group(0);
+            int bodyStart = matcher.end() - 1;
+            String body = methodBody(source, bodyStart);
+            if (body == null) {
+                continue;
+            }
+            collectBoundaryAssemblerReturnAnnotationViolation(
+                    root,
+                    path,
+                    violations,
+                    allowlist,
+                    matchedAllowances,
+                    ownerTypeName,
+                    methodName,
+                    returnType,
+                    returnAnnotationOccurrenceCounts,
+                    declaration,
+                    source);
+            collectBoundaryAssemblerNullReturnViolation(
+                    root,
+                    path,
+                    violations,
+                    allowlist,
+                    matchedAllowances,
+                    ownerTypeName,
+                    methodName,
+                    returnType,
+                    nullReturnOccurrenceCounts,
+                    body);
+            collectBoundaryAssemblerNullableParameterViolations(
+                    root,
+                    path,
+                    violations,
+                    allowlist,
+                    matchedAllowances,
+                    ownerTypeName,
+                    methodName,
+                    parameterOccurrenceCounts,
+                    parameters,
+                    body,
+                    source);
+        }
+    }
+
+    private static void collectBoundaryAssemblerNullReturnViolation(
+            Path root,
+            Path path,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances,
+            String ownerTypeName,
+            String methodName,
+            String returnType,
+            Map<String, Integer> occurrenceCounts,
+            String body) {
+        if ("void".equals(returnType) || !containsNullReturnExpression(body)) {
+            return;
+        }
+        int occurrence = occurrenceCounts.merge(methodName + ":" + returnType, 1, Integer::sum);
+        String key = boundaryAssemblerNullReturnKey(ownerTypeName, methodName, returnType, occurrence);
+        if (isAllowlisted(key, allowlist, matchedAllowances)) {
+            return;
+        }
+        violations.add(key + " in " + ArchitectureSourceSupport.repositoryPath(root, path));
+    }
+
+    private static void collectBoundaryAssemblerReturnAnnotationViolation(
+            Path root,
+            Path path,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances,
+            String ownerTypeName,
+            String methodName,
+            String returnType,
+            Map<String, Integer> occurrenceCounts,
+            String declaration,
+            String source) {
+        if ("void".equals(returnType) || hasNonNullAnnotation(methodHeader(declaration), source)) {
+            return;
+        }
+        int occurrence = occurrenceCounts.merge(methodName + ":" + returnType, 1, Integer::sum);
+        String key = boundaryAssemblerNullReturnKey(ownerTypeName, methodName, returnType, occurrence);
+        if (isAllowlisted(key, allowlist, matchedAllowances)) {
+            return;
+        }
+        violations.add(key + " in " + ArchitectureSourceSupport.repositoryPath(root, path)
+                + " lacks org.springframework.lang.NonNull");
+    }
+
+    private static void collectBoundaryAssemblerNullableParameterViolations(
+            Path root,
+            Path path,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances,
+            String ownerTypeName,
+            String methodName,
+            Map<String, Integer> occurrenceCounts,
+            String parameters,
+            String body,
+            String source) {
+        for (MethodParameter parameter : parseMethodParameters(parameters, source)) {
+            if (parameter.referenceType()
+                    && (!parameter.nonNullAnnotated() || !containsRequireNonNullGuard(body, parameter.name()))) {
+                int occurrence = occurrenceCounts.merge(
+                        methodName + ":" + parameter.name() + ":" + parameter.type(), 1, Integer::sum);
+                String key = boundaryAssemblerNullableParameterKey(
+                        ownerTypeName, methodName, parameter.name(), parameter.type(), occurrence);
+                if (isAllowlisted(key, allowlist, matchedAllowances)) {
+                    continue;
+                }
+                violations.add(key + " in " + ArchitectureSourceSupport.repositoryPath(root, path));
+            }
+        }
+    }
+
     private static void collectAllowlistedViolation(
             String key,
             String description,
@@ -609,6 +789,11 @@ public final class NamingArchitectureRuleSupport {
     }
 
     private static boolean methodBodyContainsReturnNull(String source, int openingBraceIndex) {
+        String body = methodBody(source, openingBraceIndex);
+        return body != null && containsNullReturnExpression(body);
+    }
+
+    private static String methodBody(String source, int openingBraceIndex) {
         int depth = 0;
         for (int index = openingBraceIndex; index < source.length(); index++) {
             char current = source.charAt(index);
@@ -619,14 +804,208 @@ public final class NamingArchitectureRuleSupport {
             if (current == '}') {
                 depth--;
                 if (depth == 0) {
-                    String body = source.substring(openingBraceIndex + 1, index);
-                    return Pattern.compile("\\breturn\\s+null\\s*;")
-                            .matcher(body)
-                            .find();
+                    return source.substring(openingBraceIndex + 1, index);
                 }
             }
         }
+        return null;
+    }
+
+    private static boolean containsNullReturnExpression(String body) {
+        Matcher matcher = Pattern.compile("\\breturn\\b").matcher(body);
+        while (matcher.find()) {
+            int semicolon = findReturnSemicolon(body, matcher.end());
+            if (semicolon < 0) {
+                continue;
+            }
+            if (expressionCanEvaluateToNull(body.substring(matcher.end(), semicolon))) {
+                return true;
+            }
+        }
         return false;
+    }
+
+    private static int findReturnSemicolon(String body, int start) {
+        int braceDepth = 0;
+        int bracketDepth = 0;
+        int parenDepth = 0;
+        boolean inSingleQuotedString = false;
+        boolean inDoubleQuotedString = false;
+        boolean escaped = false;
+        for (int index = start; index < body.length(); index++) {
+            char current = body.charAt(index);
+            if (escaped) {
+                escaped = false;
+                continue;
+            }
+            if (current == '\\') {
+                escaped = inSingleQuotedString || inDoubleQuotedString;
+                continue;
+            }
+            if (inSingleQuotedString) {
+                if (current == '\'') {
+                    inSingleQuotedString = false;
+                }
+                continue;
+            }
+            if (inDoubleQuotedString) {
+                if (current == '"') {
+                    inDoubleQuotedString = false;
+                }
+                continue;
+            }
+            if (current == '\'') {
+                inSingleQuotedString = true;
+                continue;
+            }
+            if (current == '"') {
+                inDoubleQuotedString = true;
+                continue;
+            }
+            if (current == '{') {
+                braceDepth++;
+            } else if (current == '}' && braceDepth > 0) {
+                braceDepth--;
+            } else if (current == '[') {
+                bracketDepth++;
+            } else if (current == ']' && bracketDepth > 0) {
+                bracketDepth--;
+            } else if (current == '(') {
+                parenDepth++;
+            } else if (current == ')' && parenDepth > 0) {
+                parenDepth--;
+            } else if (current == ';' && braceDepth == 0 && bracketDepth == 0 && parenDepth == 0) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private static boolean expressionCanEvaluateToNull(String expression) {
+        String normalized = stripOuterParentheses(expression.trim());
+        if ("null".equals(normalized)) {
+            return true;
+        }
+        if (castExpressionCanEvaluateToNull(normalized) || switchExpressionCanEvaluateToNull(normalized)) {
+            return true;
+        }
+        int questionIndex = findTopLevelCharacter(normalized, '?', 0);
+        if (questionIndex < 0) {
+            return false;
+        }
+        int colonIndex = findMatchingTernaryColon(normalized, questionIndex + 1);
+        return colonIndex > questionIndex
+                && (expressionCanEvaluateToNull(normalized.substring(questionIndex + 1, colonIndex))
+                        || expressionCanEvaluateToNull(normalized.substring(colonIndex + 1)));
+    }
+
+    private static boolean castExpressionCanEvaluateToNull(String expression) {
+        if (!expression.startsWith("(")) {
+            return false;
+        }
+        int closingIndex = skipNestedExpression(expression, 0);
+        if (closingIndex <= 0 || closingIndex >= expression.length() - 1) {
+            return false;
+        }
+        String castType = expression.substring(1, closingIndex).trim();
+        String operand = expression.substring(closingIndex + 1).trim();
+        return !castType.isBlank() && expressionCanEvaluateToNull(operand);
+    }
+
+    private static boolean switchExpressionCanEvaluateToNull(String expression) {
+        if (!expression.startsWith("switch")) {
+            return false;
+        }
+        int bodyStart = expression.indexOf('{');
+        if (bodyStart < 0) {
+            return false;
+        }
+        int bodyEnd = skipNestedExpression(expression, bodyStart);
+        String body = expression.substring(bodyStart + 1, bodyEnd);
+        if (Pattern.compile("->\\s*(?:\\([^;{}]+\\)\\s*)?null\\b").matcher(body).find()) {
+            return true;
+        }
+        Matcher matcher = Pattern.compile("\\byield\\b").matcher(body);
+        while (matcher.find()) {
+            int semicolon = findReturnSemicolon(body, matcher.end());
+            if (semicolon >= 0 && expressionCanEvaluateToNull(body.substring(matcher.end(), semicolon))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String stripOuterParentheses(String expression) {
+        String normalized = expression;
+        while (normalized.startsWith("(") && normalized.endsWith(")") && wrapsWholeExpression(normalized)) {
+            normalized = normalized.substring(1, normalized.length() - 1).trim();
+        }
+        return normalized;
+    }
+
+    private static boolean wrapsWholeExpression(String expression) {
+        int depth = 0;
+        for (int index = 0; index < expression.length(); index++) {
+            char current = expression.charAt(index);
+            if (current == '(') {
+                depth++;
+            } else if (current == ')') {
+                depth--;
+                if (depth == 0 && index < expression.length() - 1) {
+                    return false;
+                }
+            }
+        }
+        return depth == 0;
+    }
+
+    private static int findMatchingTernaryColon(String expression, int start) {
+        int nestedTernaryDepth = 0;
+        for (int index = start; index < expression.length(); index++) {
+            char current = expression.charAt(index);
+            if (current == '?') {
+                nestedTernaryDepth++;
+            } else if (current == ':') {
+                if (nestedTernaryDepth == 0) {
+                    return index;
+                }
+                nestedTernaryDepth--;
+            } else if (current == '(' || current == '[' || current == '{') {
+                index = skipNestedExpression(expression, index);
+            }
+        }
+        return -1;
+    }
+
+    private static int findTopLevelCharacter(String expression, char target, int start) {
+        for (int index = start; index < expression.length(); index++) {
+            char current = expression.charAt(index);
+            if (current == target) {
+                return index;
+            }
+            if (current == '(' || current == '[' || current == '{') {
+                index = skipNestedExpression(expression, index);
+            }
+        }
+        return -1;
+    }
+
+    private static int skipNestedExpression(String expression, int openingIndex) {
+        char opening = expression.charAt(openingIndex);
+        char closing = opening == '(' ? ')' : opening == '[' ? ']' : '}';
+        int depth = 0;
+        for (int index = openingIndex; index < expression.length(); index++) {
+            char current = expression.charAt(index);
+            if (current == opening) {
+                depth++;
+            } else if (current == closing) {
+                depth--;
+                if (depth == 0) {
+                    return index;
+                }
+            }
+        }
+        return expression.length() - 1;
     }
 
     public static String commandQueryAssemblerNullReturnKey(
@@ -639,6 +1018,109 @@ public final class NamingArchitectureRuleSupport {
                 + returnType
                 + ":"
                 + occurrence;
+    }
+
+    public static String boundaryAssemblerNullReturnKey(
+            String ownerTypeName, String methodName, String returnType, int occurrence) {
+        return "BOUNDARY_ASSEMBLER_NULL_RETURN:"
+                + ownerTypeName
+                + "#"
+                + methodName
+                + ":"
+                + returnType
+                + ":"
+                + occurrence;
+    }
+
+    public static String boundaryAssemblerNullableParameterKey(
+            String ownerTypeName, String methodName, String parameterName, String parameterType, int occurrence) {
+        return "BOUNDARY_ASSEMBLER_NULL_PARAMETER:"
+                + ownerTypeName
+                + "#"
+                + methodName
+                + ":"
+                + parameterName
+                + ":"
+                + parameterType
+                + ":"
+                + occurrence;
+    }
+
+    public static List<String> boundaryAssemblerNonNullContractViolationKeysForClasses(String... classNames) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        return boundaryAssemblerNonNullContractViolationKeysForClasses(List.of(root), classNames);
+    }
+
+    public static List<String> boundaryAssemblerNonNullContractViolationKeysForClasses(
+            Collection<Path> sourceRoots, String... classNames) {
+        List<String> keys = new ArrayList<String>();
+        for (String className : classNames) {
+            Path sourcePath = findSourcePath(sourceRoots, className);
+            if (sourcePath == null) {
+                throw new IllegalArgumentException("Can not find boundary assembler source for " + className);
+            }
+            keys.addAll(boundaryAssemblerNonNullContractViolationKeys(sourcePath));
+        }
+        return keys;
+    }
+
+    private static Path findSourcePath(Collection<Path> sourceRoots, String className) {
+        String suffix = className.replace('.', '/') + ".java";
+        for (Path sourceRoot : sourceRoots) {
+            if (!Files.exists(sourceRoot)) {
+                continue;
+            }
+            try (Stream<Path> paths = Files.walk(sourceRoot)) {
+                Optional<Path> sourcePath = paths.filter(Files::isRegularFile)
+                        .filter(path ->
+                                ArchitectureSourceSupport.normalizePath(path).endsWith(suffix))
+                        .findFirst();
+                if (sourcePath.isPresent()) {
+                    return sourcePath.get();
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to find boundary assembler source for " + className, e);
+            }
+        }
+        return null;
+    }
+
+    private static List<String> boundaryAssemblerNonNullContractViolationKeys(Path path) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        String ownerTypeName = sourceTypeName(source, path);
+        Matcher matcher = PUBLIC_METHOD_DECLARATION_PATTERN.matcher(source);
+        Map<String, Integer> returnAnnotationOccurrenceCounts = new HashMap<String, Integer>();
+        Map<String, Integer> nullReturnOccurrenceCounts = new HashMap<String, Integer>();
+        Map<String, Integer> parameterOccurrenceCounts = new HashMap<String, Integer>();
+        Set<String> keys = new LinkedHashSet<String>();
+        while (matcher.find()) {
+            String returnType = compactType(matcher.group(1));
+            String methodName = matcher.group(2);
+            String parameters = matcher.group(3);
+            String declaration = matcher.group(0);
+            String body = methodBody(source, matcher.end() - 1);
+            if (body == null) {
+                continue;
+            }
+            if (!"void".equals(returnType) && !hasNonNullAnnotation(methodHeader(declaration), source)) {
+                int occurrence = returnAnnotationOccurrenceCounts.merge(methodName + ":" + returnType, 1, Integer::sum);
+                keys.add(boundaryAssemblerNullReturnKey(ownerTypeName, methodName, returnType, occurrence));
+            }
+            if (!"void".equals(returnType) && containsNullReturnExpression(body)) {
+                int occurrence = nullReturnOccurrenceCounts.merge(methodName + ":" + returnType, 1, Integer::sum);
+                keys.add(boundaryAssemblerNullReturnKey(ownerTypeName, methodName, returnType, occurrence));
+            }
+            for (MethodParameter parameter : parseMethodParameters(parameters, source)) {
+                if (parameter.referenceType()
+                        && (!parameter.nonNullAnnotated() || !containsRequireNonNullGuard(body, parameter.name()))) {
+                    int occurrence = parameterOccurrenceCounts.merge(
+                            methodName + ":" + parameter.name() + ":" + parameter.type(), 1, Integer::sum);
+                    keys.add(boundaryAssemblerNullableParameterKey(
+                            ownerTypeName, methodName, parameter.name(), parameter.type(), occurrence));
+                }
+            }
+        }
+        return new ArrayList<String>(keys);
     }
 
     private static String applicationCommandQueryTypeName(String source, Path path) {
@@ -674,10 +1156,25 @@ public final class NamingArchitectureRuleSupport {
     private static boolean isAllowlisted(
             String key, Map<String, ArchitectureRuleAllowance> allowlist, Set<String> matchedAllowances) {
         if (!allowlist.containsKey(key)) {
-            return false;
+            return isWildcardAllowlisted(key, allowlist, matchedAllowances);
         }
         matchedAllowances.add(key);
         return true;
+    }
+
+    private static boolean isWildcardAllowlisted(
+            String key, Map<String, ArchitectureRuleAllowance> allowlist, Set<String> matchedAllowances) {
+        for (String allowanceKey : allowlist.keySet()) {
+            if (!allowanceKey.contains("*")) {
+                continue;
+            }
+            String pattern = Pattern.quote(allowanceKey).replace("*", "\\E.*\\Q");
+            if (Pattern.compile(pattern).matcher(key).matches()) {
+                matchedAllowances.add(allowanceKey);
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void assertBaseIdTypes(JavaClasses classes, String basePackage) {
@@ -1510,6 +2007,114 @@ public final class NamingArchitectureRuleSupport {
         }
 
         assertTrue("InterfaceAssembler must not wrap EntityId conversion: " + violations, violations.isEmpty());
+    }
+
+    private static List<MethodParameter> parseMethodParameters(String parameters, String source) {
+        List<MethodParameter> result = new ArrayList<MethodParameter>();
+        for (String parameter : splitTopLevel(parameters)) {
+            MethodParameter parsed = parseMethodParameter(parameter, source);
+            if (parsed != null) {
+                result.add(parsed);
+            }
+        }
+        return result;
+    }
+
+    private static List<String> splitTopLevel(String value) {
+        List<String> parts = new ArrayList<String>();
+        int depth = 0;
+        int start = 0;
+        for (int index = 0; index < value.length(); index++) {
+            char current = value.charAt(index);
+            if (current == '<') {
+                depth++;
+            } else if (current == '>') {
+                depth--;
+            } else if (current == ',' && depth == 0) {
+                parts.add(value.substring(start, index).trim());
+                start = index + 1;
+            }
+        }
+        String tail = value.substring(start).trim();
+        if (!tail.isEmpty()) {
+            parts.add(tail);
+        }
+        return parts;
+    }
+
+    private static MethodParameter parseMethodParameter(String parameter, String source) {
+        String normalized = parameter.replace('\n', ' ').replaceAll("\\s+", " ").trim();
+        if (normalized.isEmpty()) {
+            return null;
+        }
+        boolean nonNullAnnotated = hasNonNullAnnotation(normalized, source);
+        normalized = normalized.replaceAll("@[\\w.]+(?:\\([^)]*\\))?\\s*", "");
+        normalized = normalized.replaceAll("\\bfinal\\s+", "");
+        int separator = normalized.lastIndexOf(' ');
+        if (separator < 0 || separator == normalized.length() - 1) {
+            return null;
+        }
+        String type = compactType(normalized.substring(0, separator).replace("...", "[]"));
+        String name = normalized.substring(separator + 1).trim();
+        return new MethodParameter(type, name, nonNullAnnotated);
+    }
+
+    private static String methodHeader(String declaration) {
+        int parameterStart = declaration.indexOf('(');
+        return parameterStart < 0 ? declaration : declaration.substring(0, parameterStart);
+    }
+
+    private static boolean hasNonNullAnnotation(String value, String source) {
+        if (Pattern.compile("@org\\.springframework\\.lang\\.NonNull\\b")
+                .matcher(value)
+                .find()) {
+            return true;
+        }
+        return Pattern.compile("@NonNull\\b").matcher(value).find() && importsSpringNonNull(source);
+    }
+
+    private static boolean importsSpringNonNull(String source) {
+        return Pattern.compile("(?m)^\\s*import\\s+org\\.springframework\\.lang\\.NonNull\\s*;")
+                .matcher(source)
+                .find();
+    }
+
+    private static boolean containsRequireNonNullGuard(String body, String parameterName) {
+        return Pattern.compile("\\b(?:java\\.util\\.)?Objects\\.requireNonNull\\s*\\(\\s*"
+                        + Pattern.quote(parameterName)
+                        + "\\b")
+                .matcher(body)
+                .find();
+    }
+
+    private static String compactType(String value) {
+        return value.replaceAll("\\s+", "");
+    }
+
+    private static boolean isBoundaryAssemblerSource(Path path) {
+        String value = ArchitectureSourceSupport.normalizePath(path);
+        String fileName = path.getFileName().toString();
+        if (!fileName.endsWith("Assembler.java")) {
+            return false;
+        }
+        if (value.contains("/interfaces/")
+                && value.contains("/assembler/")
+                && fileName.endsWith("InterfaceAssembler.java")) {
+            return true;
+        }
+        if (value.contains("/application/")
+                && value.contains("/facade/assembler/")
+                && fileName.endsWith("FacadeAssembler.java")) {
+            return true;
+        }
+        return value.contains("/application/") && value.contains("/assembler/");
+    }
+
+    private record MethodParameter(String type, String name, boolean nonNullAnnotated) {
+
+        boolean referenceType() {
+            return !PRIMITIVE_TYPES.contains(type);
+        }
     }
 
     private static boolean isToolPackage(JavaClass javaClass) {

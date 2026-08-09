@@ -45,6 +45,8 @@ class AiApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
                 List.of(Path.of("src/main/java"), Path.of("../kuzhambu-ai-interface/src/main/java")),
                 Collections.emptyList());
+        NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+                Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationQueriesDoNotOwnPageState(
                 Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));

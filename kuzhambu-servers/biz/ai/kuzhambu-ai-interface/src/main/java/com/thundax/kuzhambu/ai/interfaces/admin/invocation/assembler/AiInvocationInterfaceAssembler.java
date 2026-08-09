@@ -29,19 +29,20 @@ import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.A
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.springframework.lang.NonNull;
 
 public final class AiInvocationInterfaceAssembler {
 
     private AiInvocationInterfaceAssembler() {}
 
-    public static AiBatchJobCreateCommand toCreateCommand(AiInvocationRequests.BatchCreateRequest request) {
+    @NonNull
+    public static AiBatchJobCreateCommand toCreateCommand(@NonNull AiInvocationRequests.BatchCreateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new AiBatchJobCreateCommand(
                 request.getScope(),
                 AiBusinessCapability.from(request.getCapability()),
@@ -50,15 +51,20 @@ public final class AiInvocationInterfaceAssembler {
                 request.getFailureSummaryJson());
     }
 
-    public static RejectAiCandidateCommand toRejectCommand(AiInvocationRequests.CandidateRejectRequest request) {
+    @NonNull
+    public static RejectAiCandidateCommand toRejectCommand(
+            @NonNull AiInvocationRequests.CandidateRejectRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RejectAiCandidateCommand(
                 AiCandidateIdCodec.toDomain(request.getCandidateId()),
                 request.getErrorType(),
                 request.getErrorMessage());
     }
 
+    @NonNull
     public static ApplyAiCandidateCommand toMarkAppliedCommand(
-            AiInvocationRequests.CandidateMarkAppliedRequest request) {
+            @NonNull AiInvocationRequests.CandidateMarkAppliedRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ApplyAiCandidateCommand(
                 AiCandidateIdCodec.toDomain(request.getCandidateId()),
                 request.getResultFormat(),
@@ -66,32 +72,43 @@ public final class AiInvocationInterfaceAssembler {
                 null);
     }
 
-    public static GetAiBatchJobQuery toGetBatchQuery(AiInvocationRequests.BatchIdRequest request) {
+    @NonNull
+    public static GetAiBatchJobQuery toGetBatchQuery(@NonNull AiInvocationRequests.BatchIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(request.getBatchId()));
     }
 
-    public static CancelAiBatchJobCommand toCancelBatchCommand(AiInvocationRequests.BatchIdRequest request) {
+    @NonNull
+    public static CancelAiBatchJobCommand toCancelBatchCommand(@NonNull AiInvocationRequests.BatchIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new CancelAiBatchJobCommand(AiBatchJobIdCodec.toDomain(request.getBatchId()));
     }
 
-    public static RecordAiBatchJobCommand toRecordBatchSuccessCommand(AiInvocationRequests.BatchIdRequest request) {
+    @NonNull
+    public static RecordAiBatchJobCommand toRecordBatchSuccessCommand(
+            @NonNull AiInvocationRequests.BatchIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RecordAiBatchJobCommand(AiBatchJobIdCodec.toDomain(request.getBatchId()));
     }
 
+    @NonNull
     public static RecordAiBatchJobFailureCommand toRecordBatchFailureCommand(
-            AiInvocationRequests.BatchFailureRequest request) {
+            @NonNull AiInvocationRequests.BatchFailureRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RecordAiBatchJobFailureCommand(
                 AiBatchJobIdCodec.toDomain(request.getBatchId()), request.getFailureSummaryJson());
     }
 
-    public static CanDispatchNextAiBatchUnitQuery toCanDispatchBatchQuery(AiInvocationRequests.BatchIdRequest request) {
+    @NonNull
+    public static CanDispatchNextAiBatchUnitQuery toCanDispatchBatchQuery(
+            @NonNull AiInvocationRequests.BatchIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new CanDispatchNextAiBatchUnitQuery(AiBatchJobIdCodec.toDomain(request.getBatchId()));
     }
 
-    public static AiInvocationResponses.InvocationLogResponse toResponse(AiInvocationLog invocationLog) {
-        if (invocationLog == null) {
-            return AiInvocationResponses.InvocationLogResponse.builder().build();
-        }
+    @NonNull
+    public static AiInvocationResponses.InvocationLogResponse toResponse(@NonNull AiInvocationLog invocationLog) {
+        Objects.requireNonNull(invocationLog, "invocationLog must not be null");
         AiUsageSnapshot usage = AiUsageSnapshot.orEmpty(invocationLog.getUsage());
         Long callId = AiCallIdCodec.toValue(invocationLog.getCallId());
         return AiInvocationResponses.InvocationLogResponse.builder()
@@ -133,9 +150,12 @@ public final class AiInvocationInterfaceAssembler {
                 .build();
     }
 
+    @NonNull
     public static AiInvocationResponses.InvocationSummaryResponse toSummaryResponse(
-            Instant periodStart, Instant periodEnd, List<AiInvocationLog> records) {
-        List<AiInvocationLog> safeRecords = records == null ? Collections.emptyList() : records;
+            @NonNull AiInvocationRequests.InvocationSummaryRequest request, @NonNull List<AiInvocationLog> records) {
+        Objects.requireNonNull(request, "request must not be null");
+        Objects.requireNonNull(records, "records must not be null");
+        List<AiInvocationLog> safeRecords = records;
         long invocationCount = safeRecords.size();
         long succeededInvocationCount = safeRecords.stream()
                 .filter(record -> AiInvocationStatus.SUCCEEDED == record.getStatus())
@@ -166,8 +186,8 @@ public final class AiInvocationInterfaceAssembler {
                         .build())
                 .collect(Collectors.toList());
         return AiInvocationResponses.InvocationSummaryResponse.builder()
-                .periodStart(periodStart)
-                .periodEnd(periodEnd)
+                .periodStart(request.getPeriodStart())
+                .periodEnd(request.getPeriodEnd())
                 .invocationCount(invocationCount)
                 .succeededInvocationCount(succeededInvocationCount)
                 .failedInvocationCount(failedInvocationCount)
@@ -177,10 +197,9 @@ public final class AiInvocationInterfaceAssembler {
                 .build();
     }
 
-    public static AiInvocationResponses.CandidateResponse toResponse(AiCandidate candidate) {
-        if (candidate == null) {
-            return AiInvocationResponses.CandidateResponse.builder().build();
-        }
+    @NonNull
+    public static AiInvocationResponses.CandidateResponse toResponse(@NonNull AiCandidate candidate) {
+        Objects.requireNonNull(candidate, "candidate must not be null");
         Long candidateId = AiCandidateIdCodec.toValue(candidate.getId());
         Long callId = AiCallIdCodec.toValue(candidate.getCallId());
         Long batchId = AiBatchJobIdCodec.toValue(candidate.getBatchId());
@@ -212,10 +231,9 @@ public final class AiInvocationInterfaceAssembler {
                 .build();
     }
 
-    public static AiInvocationResponses.BatchJobResponse toResponse(AiBatchJobResult result) {
-        if (result == null) {
-            return AiInvocationResponses.BatchJobResponse.builder().build();
-        }
+    @NonNull
+    public static AiInvocationResponses.BatchJobResponse toResponse(@NonNull AiBatchJobResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return AiInvocationResponses.BatchJobResponse.builder()
                 .batchId(AiBatchJobIdCodec.toValue(result.getBatchId()))
                 .scope(result.getScope())
@@ -237,19 +255,8 @@ public final class AiInvocationInterfaceAssembler {
                 .build();
     }
 
-    public static AiInvocationRequests.CandidateMarkAppliedRequest toMarkAppliedRequest(
-            Long candidateId, String resultFormat, String resultPayload) {
-        AiInvocationRequests.CandidateMarkAppliedRequest request =
-                new AiInvocationRequests.CandidateMarkAppliedRequest();
-        request.setCandidateId(candidateId);
-        request.setResultFormat(resultFormat);
-        request.setResultPayload(resultPayload);
-        return request;
-    }
-
-    public static BigDecimal cost(AiInvocationLog invocationLog) {
-        return AiUsageSnapshot.orEmpty(invocationLog == null ? null : invocationLog.getUsage())
-                .getCostAmount();
+    private static BigDecimal cost(AiInvocationLog invocationLog) {
+        return AiUsageSnapshot.orEmpty(invocationLog.getUsage()).getCostAmount();
     }
 
     private static String longText(Long value) {

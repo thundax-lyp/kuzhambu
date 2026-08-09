@@ -28,17 +28,18 @@ import com.thundax.kuzhambu.storage.facade.response.CompleteMultipartUploadFacad
 import com.thundax.kuzhambu.storage.facade.response.InitMultipartUploadFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadMultipartPartFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
+import java.util.Objects;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StorageUploadFacadeAssembler {
 
-    public UploadStorageObjectCommand toUploadStorageObjectCommand(UploadStorageFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public UploadStorageObjectCommand toUploadStorageObjectCommand(@NonNull UploadStorageFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new UploadStorageObjectCommand(
                 request.getInputStream(),
                 request.getOriginalFilename(),
@@ -51,10 +52,9 @@ public class StorageUploadFacadeAssembler {
                 request.getRemarks());
     }
 
-    public InitMultipartUploadCommand toInitMultipartUploadCommand(InitMultipartUploadFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public InitMultipartUploadCommand toInitMultipartUploadCommand(@NonNull InitMultipartUploadFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new InitMultipartUploadCommand(
                 toMultipartUploadId(request.getUploadId()),
                 StorageOwnerRef.ofNullable(toOwnerType(request.getOwnerType()), request.getOwnerId()),
@@ -68,33 +68,34 @@ public class StorageUploadFacadeAssembler {
                 toMultipartPartSize(request.getPartSize()));
     }
 
-    public UploadMultipartPartCommand toUploadMultipartPartCommand(UploadMultipartPartFacadeRequest request) {
-        return request == null
-                ? null
-                : new UploadMultipartPartCommand(
-                        toMultipartUploadId(request.getUploadId()),
-                        toMultipartPartNumber(request.getPartNumber()),
-                        request.getEtag(),
-                        toStorageByteSize(request.getSize()),
-                        request.getInputStream());
+    @NonNull
+    public UploadMultipartPartCommand toUploadMultipartPartCommand(@NonNull UploadMultipartPartFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new UploadMultipartPartCommand(
+                toMultipartUploadId(request.getUploadId()),
+                toMultipartPartNumber(request.getPartNumber()),
+                request.getEtag(),
+                toStorageByteSize(request.getSize()),
+                request.getInputStream());
     }
 
+    @NonNull
     public CompleteMultipartUploadCommand toCompleteMultipartUploadCommand(
-            CompleteMultipartUploadFacadeRequest request) {
-        return request == null
-                ? null
-                : new CompleteMultipartUploadCommand(
-                        toMultipartUploadId(request.getUploadId()), null, null, null, null);
+            @NonNull CompleteMultipartUploadFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new CompleteMultipartUploadCommand(toMultipartUploadId(request.getUploadId()), null, null, null, null);
     }
 
-    public AbortMultipartUploadCommand toAbortMultipartUploadCommand(AbortMultipartUploadFacadeRequest request) {
-        return request == null ? null : new AbortMultipartUploadCommand(toMultipartUploadId(request.getUploadId()));
+    @NonNull
+    public AbortMultipartUploadCommand toAbortMultipartUploadCommand(
+            @NonNull AbortMultipartUploadFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new AbortMultipartUploadCommand(toMultipartUploadId(request.getUploadId()));
     }
 
-    public InitMultipartUploadFacadeResponse toResponse(MultipartUploadSession session) {
-        if (session == null) {
-            return null;
-        }
+    @NonNull
+    public InitMultipartUploadFacadeResponse toResponse(@NonNull MultipartUploadSession session) {
+        Objects.requireNonNull(session, "session must not be null");
         return InitMultipartUploadFacadeResponse.builder()
                 .uploadId(session.getUploadId())
                 .providerUploadId(session.getProviderUploadId())
@@ -112,11 +113,10 @@ public class StorageUploadFacadeAssembler {
                 .build();
     }
 
+    @NonNull
     public UploadMultipartPartFacadeResponse toResponse(
-            com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart part) {
-        if (part == null) {
-            return null;
-        }
+            @NonNull com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart part) {
+        Objects.requireNonNull(part, "part must not be null");
         return UploadMultipartPartFacadeResponse.builder()
                 .uploadId(part.getUploadId())
                 .partNumber(part.getPartNumber())
@@ -125,14 +125,15 @@ public class StorageUploadFacadeAssembler {
                 .build();
     }
 
-    public CompleteMultipartUploadFacadeResponse toResponse(StoredObject storage, String uploadId) {
-        if (storage == null) {
-            return null;
-        }
+    @NonNull
+    public CompleteMultipartUploadFacadeResponse toResponse(
+            @NonNull StoredObject storage, @NonNull CompleteMultipartUploadFacadeRequest request) {
+        Objects.requireNonNull(storage, "storage must not be null");
+        Objects.requireNonNull(request, "request must not be null");
         return CompleteMultipartUploadFacadeResponse.builder()
                 .storageObjectId(
                         storage.getId() == null ? null : storage.getId().value())
-                .uploadId(uploadId)
+                .uploadId(request.getUploadId())
                 .businessType(null)
                 .originalFilename(storage.getOriginalFilename())
                 .mimeType(storage.getMimeType())
@@ -146,35 +147,32 @@ public class StorageUploadFacadeAssembler {
                 .build();
     }
 
-    public AbortMultipartUploadFacadeResponse toResponse(String uploadId) {
+    @NonNull
+    public AbortMultipartUploadFacadeResponse toResponse(@NonNull AbortMultipartUploadFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return AbortMultipartUploadFacadeResponse.builder()
-                .uploadId(uploadId)
+                .uploadId(request.getUploadId())
                 .uploadStatus(MultipartUploadStatus.ABORTED.value())
                 .build();
     }
 
-    public StorageOwnerType toOwnerType(UploadStorageFacadeRequest request) {
-        if (request == null || StringUtils.isBlank(request.getOwnerType())) {
-            return null;
-        }
-        return toOwnerType(request.getOwnerType());
+    private StorageOwnerType toOwnerType(UploadStorageFacadeRequest request) {
+        return StringUtils.isBlank(request.getOwnerType()) ? null : toOwnerType(request.getOwnerType());
     }
 
-    public StoredObjectStatus toObjectStatus(UploadStorageFacadeRequest request) {
-        if (request == null || StringUtils.isBlank(request.getObjectStatus())) {
-            return null;
-        }
-        return StoredObjectStatus.from(request.getObjectStatus());
+    private StoredObjectStatus toObjectStatus(UploadStorageFacadeRequest request) {
+        return StringUtils.isBlank(request.getObjectStatus())
+                ? null
+                : StoredObjectStatus.from(request.getObjectStatus());
     }
 
-    public StoredObjectReferenceStatus toReferenceStatus(UploadStorageFacadeRequest request) {
-        if (request == null || StringUtils.isBlank(request.getReferenceStatus())) {
-            return null;
-        }
-        return StoredObjectReferenceStatus.from(request.getReferenceStatus());
+    private StoredObjectReferenceStatus toReferenceStatus(UploadStorageFacadeRequest request) {
+        return StringUtils.isBlank(request.getReferenceStatus())
+                ? null
+                : StoredObjectReferenceStatus.from(request.getReferenceStatus());
     }
 
-    public StorageOwnerType toOwnerType(String value) {
+    private StorageOwnerType toOwnerType(String value) {
         if (StringUtils.isBlank(value)) {
             return null;
         }
@@ -221,10 +219,9 @@ public class StorageUploadFacadeAssembler {
         }
     }
 
-    public UploadStorageFacadeResponse toResponse(StoredObject storage) {
-        if (storage == null) {
-            return null;
-        }
+    @NonNull
+    public UploadStorageFacadeResponse toResponse(@NonNull StoredObject storage) {
+        Objects.requireNonNull(storage, "storage must not be null");
         return UploadStorageFacadeResponse.builder()
                 .storageObjectId(
                         storage.getId() == null ? null : storage.getId().value())

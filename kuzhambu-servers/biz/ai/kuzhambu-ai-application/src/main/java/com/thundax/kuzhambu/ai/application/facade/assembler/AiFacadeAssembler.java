@@ -54,15 +54,15 @@ import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AiFacadeAssembler {
 
-    public AiInvocationLogFacadeDto toFacadeDto(AiInvocationLog invocationLog) {
-        if (invocationLog == null) {
-            return null;
-        }
+    @NonNull
+    public AiInvocationLogFacadeDto toFacadeDto(@NonNull AiInvocationLog invocationLog) {
+        Objects.requireNonNull(invocationLog, "invocationLog must not be null");
         return AiInvocationLogFacadeDto.builder()
                 .callId(AiCallIdCodec.toValue(invocationLog.getCallId()))
                 .batchId(AiBatchJobIdCodec.toValue(invocationLog.getBatchId()))
@@ -93,14 +93,13 @@ public class AiFacadeAssembler {
                 .warningsJson(invocationLog.getWarningsJson())
                 .requestedAt(invocationLog.getRequestedAt())
                 .completedAt(invocationLog.getCompletedAt())
-                .usage(toFacadeDto(invocationLog.getUsage()))
+                .usage(invocationLog.getUsage() == null ? null : toFacadeDto(invocationLog.getUsage()))
                 .build();
     }
 
-    public AiCandidateFacadeDto toFacadeDto(AiCandidate candidate) {
-        if (candidate == null) {
-            return null;
-        }
+    @NonNull
+    public AiCandidateFacadeDto toFacadeDto(@NonNull AiCandidate candidate) {
+        Objects.requireNonNull(candidate, "candidate must not be null");
         return AiCandidateFacadeDto.builder()
                 .candidateId(AiCandidateIdCodec.toValue(candidate.getId()))
                 .callId(AiCallIdCodec.toValue(candidate.getCallId()))
@@ -130,10 +129,9 @@ public class AiFacadeAssembler {
                 .build();
     }
 
-    public AiUsageSnapshotFacadeDto toFacadeDto(AiUsageSnapshot usage) {
-        if (usage == null) {
-            return null;
-        }
+    @NonNull
+    public AiUsageSnapshotFacadeDto toFacadeDto(@NonNull AiUsageSnapshot usage) {
+        Objects.requireNonNull(usage, "usage must not be null");
         int promptTokens = usage.getInputTokens();
         int completionTokens = usage.getOutputTokens();
         return AiUsageSnapshotFacadeDto.builder()
@@ -146,7 +144,8 @@ public class AiFacadeAssembler {
                 .build();
     }
 
-    public DiscoveryAiCommand toDiscoveryAiCommand(DiscoveryAiFacadeRequest request) {
+    @NonNull
+    public DiscoveryAiCommand toDiscoveryAiCommand(@NonNull DiscoveryAiFacadeRequest request) {
         Objects.requireNonNull(request, "request must not be null");
         return new DiscoveryAiCommand(
                 request.getServiceId(),
@@ -166,10 +165,9 @@ public class AiFacadeAssembler {
                 request.getLocale());
     }
 
-    public DiscoveryAiFacadeResponse toFacadeResponse(DiscoveryAiInvokeResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public DiscoveryAiFacadeResponse toFacadeResponse(@NonNull DiscoveryAiInvokeResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return DiscoveryAiFacadeResponse.builder()
                 .callId(com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec.toValue(result.getCallId()))
                 .candidateId(com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec.toValue(
@@ -186,7 +184,9 @@ public class AiFacadeAssembler {
                 .build();
     }
 
-    public KnowledgeAiExtractionCommand toKnowledgeAiExtractionCommand(KnowledgeAiExtractionFacadeRequest request) {
+    @NonNull
+    public KnowledgeAiExtractionCommand toKnowledgeAiExtractionCommand(
+            @NonNull KnowledgeAiExtractionFacadeRequest request) {
         Objects.requireNonNull(request, "request must not be null");
         return new KnowledgeAiExtractionCommand(
                 request.getTaskType(),
@@ -211,10 +211,9 @@ public class AiFacadeAssembler {
                 request.getLocale());
     }
 
-    public KnowledgeAiExtractionFacadeResponse toFacadeResponse(KnowledgeAiExtractionResult record) {
-        if (record == null) {
-            return null;
-        }
+    @NonNull
+    public KnowledgeAiExtractionFacadeResponse toFacadeResponse(@NonNull KnowledgeAiExtractionResult record) {
+        Objects.requireNonNull(record, "record must not be null");
         return KnowledgeAiExtractionFacadeResponse.builder()
                 .callId(AiCallIdCodec.toValue(record.getCallId()))
                 .candidateId(AiCandidateIdCodec.toValue(record.getCandidateId()))
@@ -230,17 +229,18 @@ public class AiFacadeAssembler {
                 .build();
     }
 
-    public AiReportSummaryQuery toReportSummaryQuery(AiReportSummaryFacadeRequest request) {
+    @NonNull
+    public AiReportSummaryQuery toReportSummaryQuery(@NonNull AiReportSummaryFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new AiReportSummaryQuery(
                 request.getPeriodStart(),
                 request.getPeriodEnd(),
                 request.getBucketType() == null ? null : AiReportBucketType.from(request.getBucketType()));
     }
 
-    public AiReportSummaryFacadeResponse toFacadeResponse(AiReportSummaryResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public AiReportSummaryFacadeResponse toFacadeResponse(@NonNull AiReportSummaryResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return AiReportSummaryFacadeResponse.builder()
                 .periodStart(result.getPeriodStart())
                 .periodEnd(result.getPeriodEnd())
@@ -253,11 +253,15 @@ public class AiFacadeAssembler {
                 .build();
     }
 
-    public GetAiBatchJobQuery toGetBatchJobQuery(Long batchId) {
+    @NonNull
+    public GetAiBatchJobQuery toGetBatchJobQuery(@NonNull Long batchId) {
+        Objects.requireNonNull(batchId, "batchId must not be null");
         return new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(batchId));
     }
 
-    public AiBatchJobCreateCommand toCreateBatchJobCommand(CreateAiBatchJobFacadeRequest request) {
+    @NonNull
+    public AiBatchJobCreateCommand toCreateBatchJobCommand(@NonNull CreateAiBatchJobFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new AiBatchJobCreateCommand(
                 request.getScope(),
                 AiBusinessCapability.from(request.getCapability()),
@@ -266,27 +270,35 @@ public class AiFacadeAssembler {
                 request.getFailureSummaryJson());
     }
 
-    public CanDispatchNextAiBatchUnitQuery toCanDispatchNextBatchUnitQuery(Long batchId) {
+    @NonNull
+    public CanDispatchNextAiBatchUnitQuery toCanDispatchNextBatchUnitQuery(@NonNull Long batchId) {
+        Objects.requireNonNull(batchId, "batchId must not be null");
         return new CanDispatchNextAiBatchUnitQuery(AiBatchJobIdCodec.toDomain(batchId));
     }
 
-    public RecordAiBatchJobCommand toRecordBatchJobCommand(Long batchId) {
+    @NonNull
+    public RecordAiBatchJobCommand toRecordBatchJobCommand(@NonNull Long batchId) {
+        Objects.requireNonNull(batchId, "batchId must not be null");
         return new RecordAiBatchJobCommand(AiBatchJobIdCodec.toDomain(batchId));
     }
 
-    public RecordAiBatchJobFailureCommand toRecordBatchJobFailureCommand(AiBatchJobFailureFacadeRequest request) {
+    @NonNull
+    public RecordAiBatchJobFailureCommand toRecordBatchJobFailureCommand(
+            @NonNull AiBatchJobFailureFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RecordAiBatchJobFailureCommand(
                 AiBatchJobIdCodec.toDomain(request.getBatchId()), request.getFailureSummaryJson());
     }
 
-    public CancelAiBatchJobCommand toCancelBatchJobCommand(Long batchId) {
+    @NonNull
+    public CancelAiBatchJobCommand toCancelBatchJobCommand(@NonNull Long batchId) {
+        Objects.requireNonNull(batchId, "batchId must not be null");
         return new CancelAiBatchJobCommand(AiBatchJobIdCodec.toDomain(batchId));
     }
 
-    public AiBatchJobFacadeResponse toFacadeResponse(AiBatchJobResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public AiBatchJobFacadeResponse toFacadeResponse(@NonNull AiBatchJobResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return AiBatchJobFacadeResponse.builder()
                 .batchId(AiBatchJobIdCodec.toValue(result.getBatchId()))
                 .scope(result.getScope())
@@ -308,15 +320,16 @@ public class AiFacadeAssembler {
                 .build();
     }
 
-    public AiBatchJobActionFacadeResponse toActionResponse(Long batchId) {
-        if (batchId == null) {
-            return null;
-        }
+    @NonNull
+    public AiBatchJobActionFacadeResponse toActionResponse(@NonNull Long batchId) {
+        Objects.requireNonNull(batchId, "batchId must not be null");
         return AiBatchJobActionFacadeResponse.builder().batchId(batchId).build();
     }
 
+    @NonNull
     public RequireAiCandidateForApplyQuery toRequirePendingCandidateQuery(
-            RequirePendingAiCandidateFacadeRequest request) {
+            @NonNull RequirePendingAiCandidateFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RequireAiCandidateForApplyQuery(
                 AiCandidateIdCodec.toDomain(request.getCandidateId()),
                 AiContentRef.ofNullable(request.getContentType(), request.getContentId()),
@@ -324,7 +337,9 @@ public class AiFacadeAssembler {
                 AiTargetObjectIdCodec.toDomain(request.getObjectId()));
     }
 
-    public ApplyAiCandidateCommand toApplyCandidateCommand(MarkAiCandidateAppliedFacadeRequest request) {
+    @NonNull
+    public ApplyAiCandidateCommand toApplyCandidateCommand(@NonNull MarkAiCandidateAppliedFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ApplyAiCandidateCommand(
                 AiCandidateIdCodec.toDomain(request.getCandidateId()),
                 request.getResultFormat(),
@@ -332,7 +347,9 @@ public class AiFacadeAssembler {
                 request.getAppliedAt());
     }
 
-    public RejectAiCandidateCommand toRejectCandidateCommand(RejectAiCandidateFacadeRequest request) {
+    @NonNull
+    public RejectAiCandidateCommand toRejectCandidateCommand(@NonNull RejectAiCandidateFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RejectAiCandidateCommand(
                 AiCandidateIdCodec.toDomain(request.getCandidateId()),
                 request.getErrorType(),

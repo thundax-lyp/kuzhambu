@@ -44,7 +44,10 @@ public class OperationsDashboardAdminController {
     })
     public OperationsDashboardOverviewResponse overview(
             @Valid @RequestBody OperationsDashboardOverviewRequest request) {
-        return OperationsDashboardInterfaceAssembler.toResponse(
-                operationsDashboardApplicationService.overview(OperationsDashboardInterfaceAssembler.toQuery(request)));
+        var result =
+                operationsDashboardApplicationService.overview(OperationsDashboardInterfaceAssembler.toQuery(request));
+        return result == null
+                ? OperationsDashboardOverviewResponse.builder().build()
+                : OperationsDashboardInterfaceAssembler.toResponse(result);
     }
 }

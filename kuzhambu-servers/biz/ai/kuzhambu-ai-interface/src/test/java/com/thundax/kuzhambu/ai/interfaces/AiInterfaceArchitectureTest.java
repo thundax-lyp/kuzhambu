@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSuppo
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
@@ -43,5 +44,7 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
                 Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertApiModelsDoNotExposePriority(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertSortRequestsUseOrderedIdsOnly(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+                Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
     }
 }

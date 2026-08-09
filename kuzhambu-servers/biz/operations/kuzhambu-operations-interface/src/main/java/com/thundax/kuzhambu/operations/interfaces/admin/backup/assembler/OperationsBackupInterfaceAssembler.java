@@ -15,37 +15,35 @@ import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.response.OperationsBackupDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.response.OperationsBackupExecuteResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.response.OperationsBackupPageResponse;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class OperationsBackupInterfaceAssembler {
 
     private OperationsBackupInterfaceAssembler() {}
 
-    public static OperationsBackupExecuteCommand toCommand(OperationsBackupExecuteRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsBackupExecuteCommand toCommand(@NonNull OperationsBackupExecuteRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsBackupExecuteCommand(currentAdminUserId());
     }
 
-    public static OperationsBackupQuery toQuery(OperationsBackupPageRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsBackupQuery toQuery(@NonNull OperationsBackupPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsBackupQuery(
                 request.getBackupType(), request.getBackupStatus(), request.getRequesterUserId());
     }
 
-    public static OperationsBackupDetailQuery toQuery(OperationsBackupDetailRequest request) {
-        if (request == null || request.getBackupId() == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsBackupDetailQuery toQuery(@NonNull OperationsBackupDetailRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsBackupDetailQuery(BackupIdCodec.toDomain(request.getBackupId()));
     }
 
-    public static OperationsBackupExecuteResponse toResponse(OperationsBackupExecuteResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsBackupExecuteResponse toResponse(@NonNull OperationsBackupExecuteResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsBackupExecuteResponse.builder()
                 .backupId(
                         result.getBackupId() == null
@@ -63,10 +61,9 @@ public final class OperationsBackupInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsBackupPageResponse toResponse(OperationsBackupPageResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsBackupPageResponse toResponse(@NonNull OperationsBackupPageResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsBackupPageResponse.builder()
                 .backupId(
                         result.getBackupId() == null
@@ -85,10 +82,9 @@ public final class OperationsBackupInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsBackupDetailResponse toDetailResponse(OperationsBackupDetailResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsBackupDetailResponse toDetailResponse(@NonNull OperationsBackupDetailResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsBackupDetailResponse.builder()
                 .backupId(
                         result.getBackupId() == null

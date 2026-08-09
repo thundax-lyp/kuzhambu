@@ -20,23 +20,23 @@ import com.thundax.kuzhambu.operations.interfaces.admin.dashboard.controller.res
 import com.thundax.kuzhambu.operations.interfaces.admin.health.assembler.OperationsHealthInterfaceAssembler;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthAlertSummaryResponse;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class OperationsDashboardInterfaceAssembler {
 
     private OperationsDashboardInterfaceAssembler() {}
 
-    public static OperationsDashboardOverviewQuery toQuery(OperationsDashboardOverviewRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsDashboardOverviewQuery toQuery(@NonNull OperationsDashboardOverviewRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsDashboardOverviewQuery(
                 request.getPeriodType(), request.getPeriodStart(), request.getPeriodEnd());
     }
 
-    public static OperationsDashboardOverviewResponse toResponse(OperationsDashboardOverviewResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsDashboardOverviewResponse toResponse(@NonNull OperationsDashboardOverviewResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsDashboardOverviewResponse.builder()
                 .periodStart(result.getPeriodStart())
                 .periodEnd(result.getPeriodEnd())
@@ -69,7 +69,9 @@ public final class OperationsDashboardInterfaceAssembler {
                         result.getHealthSummaries() == null
                                 ? null
                                 : result.getHealthSummaries().stream()
-                                        .map(OperationsHealthInterfaceAssembler::toResponse)
+                                        .map(item -> item == null
+                                                ? null
+                                                : OperationsHealthInterfaceAssembler.toResponse(item))
                                         .toList())
                 .taskStatusSummaries(
                         result.getTaskStatusSummaries() == null

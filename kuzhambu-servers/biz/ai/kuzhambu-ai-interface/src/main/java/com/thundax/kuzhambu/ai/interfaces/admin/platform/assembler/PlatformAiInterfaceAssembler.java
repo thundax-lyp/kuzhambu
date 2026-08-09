@@ -13,12 +13,16 @@ import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.request.Plat
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.response.PlatformAiResponses;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class PlatformAiInterfaceAssembler {
 
     private PlatformAiInterfaceAssembler() {}
 
-    public static PlatformAiInvokeCommand toCommand(PlatformAiRequests.InvokeRequest request) {
+    @NonNull
+    public static PlatformAiInvokeCommand toCommand(@NonNull PlatformAiRequests.InvokeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new PlatformAiInvokeCommand(
                 AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()),
                 AiTargetObjectIdCodec.toDomain(request.getObjectId()),
@@ -40,10 +44,9 @@ public final class PlatformAiInterfaceAssembler {
                 request.getCreateCandidate());
     }
 
-    public static PlatformAiResponses.InvokeResponse toResponse(AiInvokeResult result) {
-        if (result == null) {
-            return PlatformAiResponses.InvokeResponse.builder().build();
-        }
+    @NonNull
+    public static PlatformAiResponses.InvokeResponse toResponse(@NonNull AiInvokeResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return PlatformAiResponses.InvokeResponse.builder()
                 .callId(AiCallIdCodec.toValue(result.getCallId()))
                 .candidateId(AiCandidateIdCodec.toValue(result.getCandidateId()))

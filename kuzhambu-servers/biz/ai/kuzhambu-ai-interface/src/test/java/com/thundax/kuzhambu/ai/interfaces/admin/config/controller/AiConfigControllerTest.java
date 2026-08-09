@@ -1,13 +1,16 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.thundax.kuzhambu.ai.application.config.query.ListAiCapabilitiesQuery;
 import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.AiCapabilityCatalogApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests.BusinessConfigIdRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests.CapabilityQueryRequest;
+import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests.ModelIdRequest;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -45,8 +48,54 @@ class AiConfigControllerTest {
                 AiBusinessCapability.CLASSICS_TRANSLATE.value(), response.get(0).getCapability());
     }
 
+    @Test
+    void getModelShouldReturnEmptyResponseWhenModelIsMissing() {
+        AiConfigController controller =
+                new AiConfigController(missingModelService(), noCapabilityService(), noBusinessConfigService());
+        ModelIdRequest request = new ModelIdRequest();
+        request.setId(99L);
+
+        var response = controller.getModel(request);
+
+        assertNull(response.getId());
+    }
+
+    @Test
+    void getCapabilityShouldReturnEmptyResponseWhenCapabilityIsMissing() {
+        AiConfigController controller =
+                new AiConfigController(noModelService(), missingCapabilityService(), noBusinessConfigService());
+        CapabilityQueryRequest request = new CapabilityQueryRequest();
+        request.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE.value());
+
+        var response = controller.getCapability(request);
+
+        assertNull(response.getCapability());
+    }
+
+    @Test
+    void getBusinessConfigShouldReturnEmptyResponseWhenConfigIsMissing() {
+        AiConfigController controller =
+                new AiConfigController(noModelService(), noCapabilityService(), missingBusinessConfigService());
+        BusinessConfigIdRequest request = new BusinessConfigIdRequest();
+        request.setId(88L);
+
+        var response = controller.getBusinessConfig(request);
+
+        assertNull(response.getId());
+    }
+
     private static AiModelApplicationService noModelService() {
         return proxy(AiModelApplicationService.class, noOpInvocationHandler("model service"));
+    }
+
+    private static AiModelApplicationService missingModelService() {
+        return proxy(AiModelApplicationService.class, (proxy, method, args) -> {
+            if ("get".equals(method.getName())) {
+                return null;
+            }
+            throw new UnsupportedOperationException(
+                    "model service should not be called in this test: " + method.getName());
+        });
     }
 
     private static AiCapabilityCatalogApplicationService capabilityListService() {
@@ -60,8 +109,32 @@ class AiConfigControllerTest {
         });
     }
 
+    private static AiCapabilityCatalogApplicationService noCapabilityService() {
+        return proxy(AiCapabilityCatalogApplicationService.class, noOpInvocationHandler("capability service"));
+    }
+
+    private static AiCapabilityCatalogApplicationService missingCapabilityService() {
+        return proxy(AiCapabilityCatalogApplicationService.class, (proxy, method, args) -> {
+            if ("get".equals(method.getName())) {
+                return null;
+            }
+            throw new UnsupportedOperationException(
+                    "capability service should not be called in this test: " + method.getName());
+        });
+    }
+
     private static AiBusinessConfigApplicationService noBusinessConfigService() {
         return proxy(AiBusinessConfigApplicationService.class, noOpInvocationHandler("business config service"));
+    }
+
+    private static AiBusinessConfigApplicationService missingBusinessConfigService() {
+        return proxy(AiBusinessConfigApplicationService.class, (proxy, method, args) -> {
+            if ("get".equals(method.getName())) {
+                return null;
+            }
+            throw new UnsupportedOperationException(
+                    "business config service should not be called in this test: " + method.getName());
+        });
     }
 
     @SuppressWarnings("unchecked")

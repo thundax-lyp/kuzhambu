@@ -28,45 +28,61 @@ import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.request
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.response.PromptResponses;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class PromptInterfaceAssembler {
 
     private PromptInterfaceAssembler() {}
 
-    public static GetPromptQuery toGetPromptQuery(PromptRequests.TemplateIdRequest request) {
-        return new GetPromptQuery(toTemplateId(request == null ? null : request.getId()));
+    @NonNull
+    public static GetPromptQuery toGetPromptQuery(@NonNull PromptRequests.TemplateIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new GetPromptQuery(toTemplateId(request.getId()));
     }
 
-    public static GetPromptQuery toGetPromptQuery(PromptTemplateId templateId) {
+    @NonNull
+    public static GetPromptQuery toGetPromptQuery(@NonNull PromptTemplateId templateId) {
+        Objects.requireNonNull(templateId, "templateId must not be null");
         return new GetPromptQuery(templateId);
     }
 
+    @NonNull
     public static ChangePromptTemplateStatusCommand toChangeStatusCommand(
-            PromptRequests.TemplateStatusRequest request) {
+            @NonNull PromptRequests.TemplateStatusRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ChangePromptTemplateStatusCommand(toTemplateId(request.getId()), request.getEnabled());
     }
 
-    public static DeletePromptTemplateCommand toDeleteCommand(PromptRequests.TemplateIdRequest request) {
+    @NonNull
+    public static DeletePromptTemplateCommand toDeleteCommand(@NonNull PromptRequests.TemplateIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new DeletePromptTemplateCommand(toTemplateId(request.getId()));
     }
 
+    @NonNull
     public static ListPromptCapabilityVariablesQuery toListCapabilityVariablesQuery(
-            PromptRequests.CapabilityVariableListRequest request) {
+            @NonNull PromptRequests.CapabilityVariableListRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ListPromptCapabilityVariablesQuery(toCapability(request.getCapability()));
     }
 
-    public static GetPromptByCapabilityQuery toGetPromptByCapabilityQuery(PromptRequests.TemplateQueryRequest request) {
-        return new GetPromptByCapabilityQuery(toCapability(request == null ? null : request.getCapability()));
+    @NonNull
+    public static GetPromptByCapabilityQuery toGetPromptByCapabilityQuery(
+            @NonNull PromptRequests.TemplateQueryRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new GetPromptByCapabilityQuery(toCapability(request.getCapability()));
     }
 
-    public static ListPromptsQuery toListPromptsQuery(PromptRequests.TemplateQueryRequest request) {
-        if (request == null) {
-            return new ListPromptsQuery(null, null);
-        }
+    @NonNull
+    public static ListPromptsQuery toListPromptsQuery(@NonNull PromptRequests.TemplateQueryRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ListPromptsQuery(toCapability(request.getCapability()), request.getEnabled());
     }
 
-    public static PromptTemplateSaveCommand toSaveCommand(PromptRequests.TemplateSaveRequest request) {
+    @NonNull
+    public static PromptTemplateSaveCommand toSaveCommand(@NonNull PromptRequests.TemplateSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new PromptTemplateSaveCommand(
                 PromptTemplateIdCodec.toDomain(request.getId()),
                 AiBusinessCapability.from(request.getCapability()),
@@ -80,62 +96,67 @@ public final class PromptInterfaceAssembler {
                 toVariableItems(request.getVariables()));
     }
 
+    @NonNull
     public static GetCurrentPromptVersionQuery toGetCurrentPromptVersionQuery(
-            PromptRequests.TemplateIdRequest request) {
-        return new GetCurrentPromptVersionQuery(toTemplateId(request == null ? null : request.getId()));
+            @NonNull PromptRequests.TemplateIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new GetCurrentPromptVersionQuery(toTemplateId(request.getId()));
     }
 
-    public static ListPromptVersionsQuery toListPromptVersionsQuery(PromptRequests.TemplateIdRequest request) {
-        return new ListPromptVersionsQuery(toTemplateId(request == null ? null : request.getId()));
+    @NonNull
+    public static ListPromptVersionsQuery toListPromptVersionsQuery(@NonNull PromptRequests.TemplateIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new ListPromptVersionsQuery(toTemplateId(request.getId()));
     }
 
-    public static PromptVersionCompareQuery toCompareQuery(PromptRequests.VersionCompareRequest request) {
+    @NonNull
+    public static PromptVersionCompareQuery toCompareQuery(@NonNull PromptRequests.VersionCompareRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new PromptVersionCompareQuery(
                 PromptTemplateIdCodec.toDomain(request.getId()),
                 request.getLeftVersionNo(),
                 request.getRightVersionNo());
     }
 
+    @NonNull
     public static RollbackPromptVersionCommand toRollbackPromptVersionCommand(
-            PromptRequests.VersionRollbackRequest request) {
-        if (request == null) {
-            return new RollbackPromptVersionCommand(null, 0);
-        }
+            @NonNull PromptRequests.VersionRollbackRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RollbackPromptVersionCommand(toTemplateId(request.getId()), request.getVersionNo());
     }
 
-    public static ListPromptVariablesQuery toListPromptVariablesQuery(PromptRequests.TemplateIdRequest request) {
-        return new ListPromptVariablesQuery(toTemplateId(request == null ? null : request.getId()));
+    @NonNull
+    public static ListPromptVariablesQuery toListPromptVariablesQuery(
+            @NonNull PromptRequests.TemplateIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new ListPromptVariablesQuery(toTemplateId(request.getId()));
     }
 
+    @NonNull
     public static ValidatePromptVariablesCommand toValidatePromptVariablesCommand(
-            PromptRequests.VariableValidateRequest request) {
-        if (request == null) {
-            return new ValidatePromptVariablesCommand(null, null);
-        }
+            @NonNull PromptRequests.VariableValidateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ValidatePromptVariablesCommand(toTemplateId(request.getId()), request.getProvidedNames());
     }
 
+    @NonNull
     public static BuildPromptOptimizationSuggestionCommand toBuildOptimizationSuggestionCommand(
-            PromptRequests.OptimizationRequest request) {
-        if (request == null) {
-            return new BuildPromptOptimizationSuggestionCommand(null, null);
-        }
+            @NonNull PromptRequests.OptimizationRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new BuildPromptOptimizationSuggestionCommand(toTemplateId(request.getId()), request.getChangeSummary());
     }
 
-    public static PromptTemplateId toTemplateId(Long value) {
+    private static PromptTemplateId toTemplateId(Long value) {
         return PromptTemplateIdCodec.toDomain(value);
     }
 
-    public static AiBusinessCapability toCapability(String value) {
+    private static AiBusinessCapability toCapability(String value) {
         return isBlank(value) ? null : AiBusinessCapability.from(value);
     }
 
-    public static PromptResponses.TemplateResponse toResponse(PromptTemplate template) {
-        if (template == null) {
-            return PromptResponses.TemplateResponse.builder().build();
-        }
+    @NonNull
+    public static PromptResponses.TemplateResponse toResponse(@NonNull PromptTemplate template) {
+        Objects.requireNonNull(template, "template must not be null");
         return PromptResponses.TemplateResponse.builder()
                 .id(PromptTemplateIdCodec.toValue(template.getId()))
                 .capability(
@@ -150,10 +171,9 @@ public final class PromptInterfaceAssembler {
                 .build();
     }
 
-    public static PromptResponses.VersionResponse toResponse(PromptVersionResult result) {
-        if (result == null) {
-            return PromptResponses.VersionResponse.builder().build();
-        }
+    @NonNull
+    public static PromptResponses.VersionResponse toResponse(@NonNull PromptVersionResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return PromptResponses.VersionResponse.builder()
                 .id(PromptVersionIdCodec.toValue(result.getId()))
                 .templateId(PromptTemplateIdCodec.toValue(result.getTemplateId()))
@@ -166,10 +186,9 @@ public final class PromptInterfaceAssembler {
                 .build();
     }
 
-    public static PromptResponses.VariableResponse toResponse(PromptVariable variable) {
-        if (variable == null) {
-            return PromptResponses.VariableResponse.builder().build();
-        }
+    @NonNull
+    public static PromptResponses.VariableResponse toResponse(@NonNull PromptVariable variable) {
+        Objects.requireNonNull(variable, "variable must not be null");
         return PromptResponses.VariableResponse.builder()
                 .id(PromptVariableIdCodec.toValue(variable.getId()))
                 .templateId(PromptTemplateIdCodec.toValue(variable.getTemplateId()))
@@ -179,7 +198,10 @@ public final class PromptInterfaceAssembler {
                 .build();
     }
 
-    public static PromptResponses.CapabilityVariableResponse toResponse(PromptCapabilityVariableResult result) {
+    @NonNull
+    public static PromptResponses.CapabilityVariableResponse toResponse(
+            @NonNull PromptCapabilityVariableResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return PromptResponses.CapabilityVariableResponse.builder()
                 .variableName(result.variableName())
                 .required(result.required())

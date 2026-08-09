@@ -28,26 +28,34 @@ import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConf
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class AiConfigInterfaceAssembler {
 
     private AiConfigInterfaceAssembler() {}
 
-    public static GetAiModelQuery toGetModelQuery(Long value) {
+    @NonNull
+    public static GetAiModelQuery toGetModelQuery(@NonNull Long value) {
+        Objects.requireNonNull(value, "value must not be null");
         return new GetAiModelQuery(AiModelIdCodec.toDomain(value));
     }
 
-    public static GetAiModelQuery toGetModelQuery(AiModelId value) {
+    @NonNull
+    public static GetAiModelQuery toGetModelQuery(@NonNull AiModelId value) {
+        Objects.requireNonNull(value, "value must not be null");
         return new GetAiModelQuery(value);
     }
 
-    public static ListAiModelsQuery toListModelsQuery(AiConfigRequests.ModelListRequest request) {
-        return new ListAiModelsQuery(
-                toApiSource(request == null ? null : request.getApiSource()),
-                request == null ? null : request.getEnabled());
+    @NonNull
+    public static ListAiModelsQuery toListModelsQuery(@NonNull AiConfigRequests.ModelListRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new ListAiModelsQuery(toApiSource(request.getApiSource()), request.getEnabled());
     }
 
-    public static CreateAiModelCommand toCreateModelCommand(AiConfigRequests.ModelSaveRequest request) {
+    @NonNull
+    public static CreateAiModelCommand toCreateModelCommand(@NonNull AiConfigRequests.ModelSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new CreateAiModelCommand(
                 AiModelIdCodec.toDomain(request.getId()),
                 AiApiSource.from(request.getApiSource()),
@@ -61,7 +69,9 @@ public final class AiConfigInterfaceAssembler {
                 request.getEnabled());
     }
 
-    public static UpdateAiModelCommand toUpdateModelCommand(AiConfigRequests.ModelSaveRequest request) {
+    @NonNull
+    public static UpdateAiModelCommand toUpdateModelCommand(@NonNull AiConfigRequests.ModelSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new UpdateAiModelCommand(
                 AiModelIdCodec.toDomain(request.getId()),
                 AiApiSource.from(request.getApiSource()),
@@ -75,39 +85,54 @@ public final class AiConfigInterfaceAssembler {
                 request.getEnabled());
     }
 
-    public static DeleteAiModelCommand toDeleteModelCommand(Long value) {
+    @NonNull
+    public static DeleteAiModelCommand toDeleteModelCommand(@NonNull Long value) {
+        Objects.requireNonNull(value, "value must not be null");
         return new DeleteAiModelCommand(AiModelIdCodec.toDomain(value));
     }
 
-    public static GetAiCapabilityQuery toGetCapabilityQuery(AiConfigRequests.CapabilityQueryRequest request) {
-        return new GetAiCapabilityQuery(toBusinessCapability(request == null ? null : request.getCapability()));
+    @NonNull
+    public static GetAiCapabilityQuery toGetCapabilityQuery(@NonNull AiConfigRequests.CapabilityQueryRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new GetAiCapabilityQuery(toBusinessCapability(request.getCapability()));
     }
 
-    public static ListAiCapabilitiesQuery toListCapabilitiesQuery(AiConfigRequests.CapabilityQueryRequest request) {
-        return new ListAiCapabilitiesQuery(request == null ? null : request.getEnabled());
+    @NonNull
+    public static ListAiCapabilitiesQuery toListCapabilitiesQuery(
+            @NonNull AiConfigRequests.CapabilityQueryRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new ListAiCapabilitiesQuery(request.getEnabled());
     }
 
-    public static GetAiBusinessConfigQuery toGetBusinessConfigQuery(Long value) {
+    @NonNull
+    public static GetAiBusinessConfigQuery toGetBusinessConfigQuery(@NonNull Long value) {
+        Objects.requireNonNull(value, "value must not be null");
         return new GetAiBusinessConfigQuery(AiBusinessConfigIdCodec.toDomain(value));
     }
 
-    public static GetAiBusinessConfigQuery toGetBusinessConfigQuery(AiBusinessConfigId value) {
+    @NonNull
+    public static GetAiBusinessConfigQuery toGetBusinessConfigQuery(@NonNull AiBusinessConfigId value) {
+        Objects.requireNonNull(value, "value must not be null");
         return new GetAiBusinessConfigQuery(value);
     }
 
-    public static GetAiBusinessConfigByCapabilityQuery toGetBusinessConfigByCapabilityQuery(String value) {
+    @NonNull
+    public static GetAiBusinessConfigByCapabilityQuery toGetBusinessConfigByCapabilityQuery(@NonNull String value) {
+        Objects.requireNonNull(value, "value must not be null");
         return new GetAiBusinessConfigByCapabilityQuery(toBusinessCapability(value));
     }
 
+    @NonNull
     public static ListAiBusinessConfigsQuery toListBusinessConfigsQuery(
-            AiConfigRequests.BusinessConfigListRequest request) {
-        return new ListAiBusinessConfigsQuery(
-                toBusinessCapability(request == null ? null : request.getCapability()),
-                request == null ? null : request.getEnabled());
+            @NonNull AiConfigRequests.BusinessConfigListRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new ListAiBusinessConfigsQuery(toBusinessCapability(request.getCapability()), request.getEnabled());
     }
 
+    @NonNull
     public static CreateAiBusinessConfigCommand toCreateBusinessConfigCommand(
-            AiConfigRequests.BusinessConfigSaveRequest request) {
+            @NonNull AiConfigRequests.BusinessConfigSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new CreateAiBusinessConfigCommand(
                 AiBusinessConfigIdCodec.toDomain(request.getId()),
                 AiBusinessCapability.from(request.getCapability()),
@@ -117,8 +142,10 @@ public final class AiConfigInterfaceAssembler {
                 request.getEnabled());
     }
 
+    @NonNull
     public static UpdateAiBusinessConfigCommand toUpdateBusinessConfigCommand(
-            AiConfigRequests.BusinessConfigSaveRequest request) {
+            @NonNull AiConfigRequests.BusinessConfigSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new UpdateAiBusinessConfigCommand(
                 AiBusinessConfigIdCodec.toDomain(request.getId()),
                 AiBusinessCapability.from(request.getCapability()),
@@ -128,18 +155,19 @@ public final class AiConfigInterfaceAssembler {
                 request.getEnabled());
     }
 
-    public static DeleteAiBusinessConfigCommand toDeleteBusinessConfigCommand(Long value) {
+    @NonNull
+    public static DeleteAiBusinessConfigCommand toDeleteBusinessConfigCommand(@NonNull Long value) {
+        Objects.requireNonNull(value, "value must not be null");
         return new DeleteAiBusinessConfigCommand(AiBusinessConfigIdCodec.toDomain(value));
     }
 
-    public static AiBusinessCapability toBusinessCapability(String value) {
+    private static AiBusinessCapability toBusinessCapability(String value) {
         return isBlank(value) ? null : AiBusinessCapability.from(value);
     }
 
-    public static AiConfigResponses.ModelResponse toResponse(AiModel model) {
-        if (model == null) {
-            return AiConfigResponses.ModelResponse.builder().build();
-        }
+    @NonNull
+    public static AiConfigResponses.ModelResponse toResponse(@NonNull AiModel model) {
+        Objects.requireNonNull(model, "model must not be null");
         return AiConfigResponses.ModelResponse.builder()
                 .id(AiModelIdCodec.toValue(model.getId()))
                 .apiSource(
@@ -158,10 +186,9 @@ public final class AiConfigInterfaceAssembler {
                 .build();
     }
 
-    public static AiConfigResponses.CapabilityResponse toResponse(AiBusinessCapability capability) {
-        if (capability == null) {
-            return AiConfigResponses.CapabilityResponse.builder().build();
-        }
+    @NonNull
+    public static AiConfigResponses.CapabilityResponse toResponse(@NonNull AiBusinessCapability capability) {
+        Objects.requireNonNull(capability, "capability must not be null");
         return AiConfigResponses.CapabilityResponse.builder()
                 .capability(capability.value())
                 .name(capability.value())
@@ -173,10 +200,9 @@ public final class AiConfigInterfaceAssembler {
                 .build();
     }
 
-    public static AiConfigResponses.BusinessConfigResponse toResponse(AiBusinessConfig config) {
-        if (config == null) {
-            return AiConfigResponses.BusinessConfigResponse.builder().build();
-        }
+    @NonNull
+    public static AiConfigResponses.BusinessConfigResponse toResponse(@NonNull AiBusinessConfig config) {
+        Objects.requireNonNull(config, "config must not be null");
         return AiConfigResponses.BusinessConfigResponse.builder()
                 .id(AiBusinessConfigIdCodec.toValue(config.getId()))
                 .capability(

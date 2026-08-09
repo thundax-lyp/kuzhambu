@@ -49,8 +49,10 @@ public class OperationsBackupAdminController {
                 dataTypeClass = String.class),
     })
     public OperationsBackupExecuteResponse execute(@Valid @RequestBody OperationsBackupExecuteRequest request) {
-        return OperationsBackupInterfaceAssembler.toResponse(
-                backupApplicationService.execute(OperationsBackupInterfaceAssembler.toCommand(request)));
+        var result = backupApplicationService.execute(OperationsBackupInterfaceAssembler.toCommand(request));
+        return result == null
+                ? OperationsBackupExecuteResponse.builder().build()
+                : OperationsBackupInterfaceAssembler.toResponse(result);
     }
 
     @Operation(summary = "分页查询备份任务", description = "operations:backup:view")
@@ -84,7 +86,7 @@ public class OperationsBackupAdminController {
                 dataTypeClass = String.class),
     })
     public OperationsBackupDetailResponse detail(@Valid @RequestBody OperationsBackupDetailRequest request) {
-        return OperationsBackupInterfaceAssembler.toDetailResponse(
-                backupApplicationService.detail(OperationsBackupInterfaceAssembler.toQuery(request)));
+        var result = backupApplicationService.detail(OperationsBackupInterfaceAssembler.toQuery(request));
+        return result == null ? null : OperationsBackupInterfaceAssembler.toDetailResponse(result);
     }
 }

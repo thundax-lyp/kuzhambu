@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadComma
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageOwnerBindingFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageReadableContentFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageUploadFacadeAssembler;
+import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageReferencesQuery;
 import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageMultipartUploadApplicationService;
@@ -124,6 +125,62 @@ class StorageFacadeImplTest {
         verify(storageReferenceApplicationService).addReferences(any(AddStorageReferencesCommand.class));
         verify(storageReferenceApplicationService)
                 .changeReferenceStatus(any(ChangeStorageReferenceStatusCommand.class));
+    }
+
+    @Test
+    void listShouldKeepNullRequestAsUnfilteredQuery() {
+        StorageObjectApplicationService storageObjectApplicationService = mock(StorageObjectApplicationService.class);
+        StorageFacadeImpl facade =
+                facade(storageObjectApplicationService, mock(StorageReferenceApplicationService.class));
+        when(storageObjectApplicationService.list(any(ListStorageObjectsQuery.class)))
+                .thenReturn(List.of(storage(7001L)));
+
+        var response = facade.list(null);
+
+        assertEquals(1, response.getStoredObjects().size());
+        assertEquals(7001L, response.getStoredObjects().get(0).getId());
+        ArgumentCaptor<ListStorageObjectsQuery> queryCaptor = ArgumentCaptor.forClass(ListStorageObjectsQuery.class);
+        verify(storageObjectApplicationService).list(queryCaptor.capture());
+        assertNull(queryCaptor.getValue().getObjectStatus());
+        assertNull(queryCaptor.getValue().getReferenceStatus());
+        assertNull(queryCaptor.getValue().getReferenceOwnerRef());
+        assertNull(queryCaptor.getValue().getRemarks());
+    }
+
+    @Test
+    void unbindOwnerShouldKeepNullRequestAsNoOp() {
+        StorageReferenceApplicationService storageReferenceApplicationService =
+                mock(StorageReferenceApplicationService.class);
+        StorageFacadeImpl facade =
+                facade(mock(StorageObjectApplicationService.class), storageReferenceApplicationService);
+
+        facade.unbindOwner(null);
+
+        verify(storageReferenceApplicationService, never()).removeReferences(any());
+    }
+
+    @Test
+    void markInUseShouldKeepNullRequestAsNoOp() {
+        StorageReferenceApplicationService storageReferenceApplicationService =
+                mock(StorageReferenceApplicationService.class);
+        StorageFacadeImpl facade =
+                facade(mock(StorageObjectApplicationService.class), storageReferenceApplicationService);
+
+        facade.markInUse(null);
+
+        verify(storageReferenceApplicationService, never()).changeReferenceStatus(any());
+    }
+
+    @Test
+    void markUnusedShouldKeepNullRequestAsNoOp() {
+        StorageReferenceApplicationService storageReferenceApplicationService =
+                mock(StorageReferenceApplicationService.class);
+        StorageFacadeImpl facade =
+                facade(mock(StorageObjectApplicationService.class), storageReferenceApplicationService);
+
+        facade.markUnused(null);
+
+        verify(storageReferenceApplicationService, never()).changeReferenceStatus(any());
     }
 
     @Test

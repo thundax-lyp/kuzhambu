@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.backup.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -128,6 +129,19 @@ class OperationsBackupAdminControllerTest {
                 .detail(argThat(query -> query != null
                         && query.getBackupId() != null
                         && query.getBackupId().value().equals(9001L)));
+    }
+
+    @Test
+    void detailShouldPreserveNullResultForMissingBackup() {
+        BackupApplicationService service = mock(BackupApplicationService.class);
+        OperationsBackupAdminController controller = new OperationsBackupAdminController(service);
+        OperationsBackupDetailRequest request = new OperationsBackupDetailRequest();
+        request.setBackupId(9001L);
+
+        var response = controller.detail(request);
+
+        assertNull(response);
+        verify(service).detail(any());
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {

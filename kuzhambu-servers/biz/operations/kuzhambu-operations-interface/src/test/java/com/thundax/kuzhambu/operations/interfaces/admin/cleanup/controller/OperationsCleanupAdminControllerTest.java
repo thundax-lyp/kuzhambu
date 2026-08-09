@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -139,6 +140,19 @@ class OperationsCleanupAdminControllerTest {
                 .detail(argThat(query -> query != null
                         && query.getCleanupId() != null
                         && query.getCleanupId().value().equals(9101L)));
+    }
+
+    @Test
+    void detailShouldPreserveNullResultForMissingCleanupJob() {
+        CleanupApplicationService service = mock(CleanupApplicationService.class);
+        OperationsCleanupAdminController controller = new OperationsCleanupAdminController(service);
+        OperationsCleanupDetailRequest request = new OperationsCleanupDetailRequest();
+        request.setCleanupId(9101L);
+
+        var response = controller.detail(request);
+
+        assertNull(response);
+        verify(service).detail(any());
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {

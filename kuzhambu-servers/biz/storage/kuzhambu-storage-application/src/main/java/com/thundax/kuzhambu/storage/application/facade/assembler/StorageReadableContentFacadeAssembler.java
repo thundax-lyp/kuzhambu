@@ -16,19 +16,19 @@ import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.ListStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StorageReadableContentFacadeAssembler {
 
-    public GetReadableStorageContentQuery toReadableContentQuery(OpenStorageFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public GetReadableStorageContentQuery toReadableContentQuery(@NonNull OpenStorageFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new GetReadableStorageContentQuery(
                 toStoredObjectId(request),
                 StringUtils.isBlank(request.getReferenceStatus())
@@ -37,21 +37,22 @@ public class StorageReadableContentFacadeAssembler {
                 toOwnerRef(request.getOwnerType(), request.getOwnerId()));
     }
 
-    public OpenReadableStorageContentQuery toOpenReadableContentQuery(OpenStorageFacadeRequest request) {
-        return request == null ? null : new OpenReadableStorageContentQuery(toStoredObjectId(request));
+    @NonNull
+    public OpenReadableStorageContentQuery toOpenReadableContentQuery(@NonNull OpenStorageFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new OpenReadableStorageContentQuery(toStoredObjectId(request));
     }
 
-    public StoredObjectId toStoredObjectId(OpenStorageFacadeRequest request) {
-        if (request == null || request.getStorageObjectId() == null) {
+    private StoredObjectId toStoredObjectId(OpenStorageFacadeRequest request) {
+        if (request.getStorageObjectId() == null) {
             return null;
         }
         return StoredObjectIdCodec.toDomain(request.getStorageObjectId());
     }
 
-    public ListStorageObjectsQuery toListStorageObjectsQuery(ListStorageFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public ListStorageObjectsQuery toListStorageObjectsQuery(@NonNull ListStorageFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ListStorageObjectsQuery(
                 null,
                 null,
@@ -67,27 +68,26 @@ public class StorageReadableContentFacadeAssembler {
                 null);
     }
 
-    public OpenStorageFacadeResponse toResponse(StoredObjectContentResult content) {
-        if (content == null) {
-            return null;
-        }
+    @NonNull
+    public OpenStorageFacadeResponse toResponse(@NonNull StoredObjectContentResult content) {
+        Objects.requireNonNull(content, "content must not be null");
         return OpenStorageFacadeResponse.builder()
-                .storedObject(toDto(content.getStorage()))
+                .storedObject(content.getStorage() == null ? null : toDto(content.getStorage()))
                 .inputStream(content.getInputStream())
                 .build();
     }
 
-    public ListStorageFacadeResponse toListResponse(List<StoredObject> storages) {
-        List<StorageObjectFacadeDto> storedObjects = storages == null
-                ? Collections.emptyList()
-                : storages.stream().map(this::toDto).collect(Collectors.toList());
+    @NonNull
+    public ListStorageFacadeResponse toListResponse(@NonNull List<StoredObject> storages) {
+        Objects.requireNonNull(storages, "storages must not be null");
+        List<StorageObjectFacadeDto> storedObjects =
+                storages.stream().map(this::toDto).collect(Collectors.toList());
         return ListStorageFacadeResponse.builder().storedObjects(storedObjects).build();
     }
 
-    public StorageObjectFacadeDto toDto(StoredObject storage) {
-        if (storage == null) {
-            return null;
-        }
+    @NonNull
+    public StorageObjectFacadeDto toDto(@NonNull StoredObject storage) {
+        Objects.requireNonNull(storage, "storage must not be null");
         return StorageObjectFacadeDto.builder()
                 .id(storage.getId() == null ? null : storage.getId().value())
                 .originalFilename(storage.getOriginalFilename())

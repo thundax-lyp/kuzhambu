@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
@@ -69,7 +71,7 @@ public class AiInvocationController {
     @SysLogger(value = "调用读取")
     @PostMapping(value = "invocation-log/get")
     public InvocationLogResponse getInvocationLog(@Valid @RequestBody AiInvocationRequests.CallIdRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(
+        return toInvocationLogResponse(
                 invocationRepository.getInvocationLog(AiCallIdCodec.toDomain(request.getCallId())));
     }
 
@@ -117,8 +119,7 @@ public class AiInvocationController {
     public InvocationSummaryResponse summarizeInvocationLogs(
             @Valid @RequestBody AiInvocationRequests.InvocationSummaryRequest request) {
         return AiInvocationInterfaceAssembler.toSummaryResponse(
-                request.getPeriodStart(),
-                request.getPeriodEnd(),
+                request,
                 invocationRepository.listInvocationLogs(
                         request.getScope(),
                         toCapability(request.getCapability()),
@@ -139,7 +140,7 @@ public class AiInvocationController {
     @SysLogger(value = "候选读取")
     @PostMapping(value = "candidate/get")
     public CandidateResponse getCandidate(@Valid @RequestBody AiInvocationRequests.CandidateIdRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(
+        return toCandidateResponse(
                 invocationRepository.getCandidate(AiCandidateIdCodec.toDomain(request.getCandidateId())));
     }
 
@@ -311,5 +312,17 @@ public class AiInvocationController {
     @PostMapping(value = "batch/can-dispatch")
     public Boolean canDispatchBatch(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
         return batchJobService.canDispatchNextUnit(AiInvocationInterfaceAssembler.toCanDispatchBatchQuery(request));
+    }
+
+    private static InvocationLogResponse toInvocationLogResponse(AiInvocationLog invocationLog) {
+        return invocationLog == null
+                ? InvocationLogResponse.builder().build()
+                : AiInvocationInterfaceAssembler.toResponse(invocationLog);
+    }
+
+    private static CandidateResponse toCandidateResponse(AiCandidate candidate) {
+        return candidate == null
+                ? CandidateResponse.builder().build()
+                : AiInvocationInterfaceAssembler.toResponse(candidate);
     }
 }

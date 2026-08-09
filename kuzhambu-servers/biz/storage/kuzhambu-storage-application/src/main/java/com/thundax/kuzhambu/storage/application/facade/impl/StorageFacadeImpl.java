@@ -86,20 +86,32 @@ public class StorageFacadeImpl implements StorageFacade {
         if (!exists(request)) {
             return null;
         }
-        StoredObjectId storedObjectId = readableContentFacadeAssembler.toStoredObjectId(request);
+        StoredObjectId storedObjectId = toStoredObjectId(request);
         if (storedObjectId == null) {
             return null;
         }
         StoredObjectContentResult content = storageContentApplicationService.openReadableContent(
                 readableContentFacadeAssembler.toOpenReadableContentQuery(request));
+        if (content == null) {
+            return null;
+        }
         return readableContentFacadeAssembler.toResponse(content);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ListStorageFacadeResponse list(ListStorageFacadeRequest request) {
+        ListStorageFacadeRequest effectiveRequest =
+                request == null ? ListStorageFacadeRequest.builder().build() : request;
         return readableContentFacadeAssembler.toListResponse(storageObjectApplicationService.list(
-                readableContentFacadeAssembler.toListStorageObjectsQuery(request)));
+                readableContentFacadeAssembler.toListStorageObjectsQuery(effectiveRequest)));
+    }
+
+    private StoredObjectId toStoredObjectId(OpenStorageFacadeRequest request) {
+        if (request.getStorageObjectId() == null) {
+            return null;
+        }
+        return StoredObjectIdCodec.toDomain(request.getStorageObjectId());
     }
 
     @Override
@@ -108,38 +120,52 @@ public class StorageFacadeImpl implements StorageFacade {
         if (request == null) {
             return null;
         }
-        return uploadFacadeAssembler.toResponse(
-                storageUploadApplicationService.upload(uploadFacadeAssembler.toUploadStorageObjectCommand(request)));
+        StoredObject storage =
+                storageUploadApplicationService.upload(uploadFacadeAssembler.toUploadStorageObjectCommand(request));
+        return storage == null ? null : uploadFacadeAssembler.toResponse(storage);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public InitMultipartUploadFacadeResponse initMultipartUpload(InitMultipartUploadFacadeRequest request) {
-        return uploadFacadeAssembler.toResponse(storageMultipartUploadApplicationService.init(
-                uploadFacadeAssembler.toInitMultipartUploadCommand(request)));
+        if (request == null) {
+            return null;
+        }
+        var session = storageMultipartUploadApplicationService.init(
+                uploadFacadeAssembler.toInitMultipartUploadCommand(request));
+        return session == null ? null : uploadFacadeAssembler.toResponse(session);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UploadMultipartPartFacadeResponse uploadPart(UploadMultipartPartFacadeRequest request) {
-        return uploadFacadeAssembler.toResponse(storageMultipartUploadApplicationService.uploadPart(
-                uploadFacadeAssembler.toUploadMultipartPartCommand(request)));
+        if (request == null) {
+            return null;
+        }
+        var part = storageMultipartUploadApplicationService.uploadPart(
+                uploadFacadeAssembler.toUploadMultipartPartCommand(request));
+        return part == null ? null : uploadFacadeAssembler.toResponse(part);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CompleteMultipartUploadFacadeResponse completeMultipart(CompleteMultipartUploadFacadeRequest request) {
-        return uploadFacadeAssembler.toResponse(
-                storageMultipartUploadApplicationService.complete(
-                        uploadFacadeAssembler.toCompleteMultipartUploadCommand(request)),
-                request == null ? null : request.getUploadId());
+        if (request == null) {
+            return null;
+        }
+        StoredObject storage = storageMultipartUploadApplicationService.complete(
+                uploadFacadeAssembler.toCompleteMultipartUploadCommand(request));
+        return storage == null ? null : uploadFacadeAssembler.toResponse(storage, request);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AbortMultipartUploadFacadeResponse abortMultipart(AbortMultipartUploadFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
         storageMultipartUploadApplicationService.abort(uploadFacadeAssembler.toAbortMultipartUploadCommand(request));
-        return uploadFacadeAssembler.toResponse(request == null ? null : request.getUploadId());
+        return uploadFacadeAssembler.toResponse(request);
     }
 
     @Override
@@ -166,6 +192,9 @@ public class StorageFacadeImpl implements StorageFacade {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void unbindOwner(UnbindStorageOwnerFacadeRequest request) {
+        if (request == null) {
+            return;
+        }
         storageReferenceApplicationService.removeReferences(
                 ownerBindingFacadeAssembler.toRemoveReferencesCommand(request));
     }
@@ -173,6 +202,9 @@ public class StorageFacadeImpl implements StorageFacade {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void markInUse(MarkStorageUsageFacadeRequest request) {
+        if (request == null) {
+            return;
+        }
         storageReferenceApplicationService.changeReferenceStatus(
                 ownerBindingFacadeAssembler.toReferencedCommand(request));
     }
@@ -180,6 +212,9 @@ public class StorageFacadeImpl implements StorageFacade {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void markUnused(MarkStorageUsageFacadeRequest request) {
+        if (request == null) {
+            return;
+        }
         storageReferenceApplicationService.changeReferenceStatus(
                 ownerBindingFacadeAssembler.toUnreferencedCommand(request));
     }
@@ -189,13 +224,20 @@ public class StorageFacadeImpl implements StorageFacade {
             return;
         }
         requireStoredObject(storageObjectId);
-        StorageOwnerType ownerType = ownerBindingFacadeAssembler.toOwnerType(request);
+        StorageOwnerType ownerType = toOwnerType(request);
         String ownerId = request.getOwnerId();
         addReferenceIfAbsent(storageObjectId, ownerType, ownerId, request.getOwnerParams());
         storageReferenceApplicationService.changeReferenceStatus(
                 ownerBindingFacadeAssembler.toReferencedCommand(MarkStorageUsageFacadeRequest.builder()
                         .storageObjectId(storageObjectId)
                         .build()));
+    }
+
+    private StorageOwnerType toOwnerType(BindStorageOwnerFacadeRequest request) {
+        if (request.getOwnerType() == null || request.getOwnerType().isBlank()) {
+            return null;
+        }
+        return StorageOwnerType.from(request.getOwnerType());
     }
 
     private StoredObject requireStoredObject(Long storageObjectId) {

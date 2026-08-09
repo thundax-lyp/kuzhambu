@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.configuration.AiRefinementExecutorConfiguration;
+import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
@@ -80,7 +81,7 @@ public class AiRefinementTaskController {
     @PostMapping(value = "get")
     public AiRefinementResponses.TaskDetailResponse getTask(
             @Valid @RequestBody AiRefinementRequests.TaskIdRequest request) {
-        return AiRefinementInterfaceAssembler.toTaskDetailResponse(
+        return toTaskDetailResponse(
                 taskApplicationService.get(AiRefinementInterfaceAssembler.toGetTaskQuery(request.getTaskId())));
     }
 
@@ -144,7 +145,7 @@ public class AiRefinementTaskController {
     @PostMapping(value = "cancel")
     public AiRefinementResponses.TaskCancelResponse cancelTask(
             @Valid @RequestBody AiRefinementRequests.TaskCancelRequest request) {
-        return AiRefinementInterfaceAssembler.toTaskCancelResponse(
+        return toTaskCancelResponse(
                 taskApplicationService.cancel(AiRefinementInterfaceAssembler.toCancelTaskCommand(request.getTaskId())));
     }
 
@@ -196,6 +197,18 @@ public class AiRefinementTaskController {
             @Valid @RequestBody AiRefinementRequests.BatchIdRequest request) {
         return toBatchResponse(
                 batchJobApplicationService.cancel(AiRefinementInterfaceAssembler.toCancelBatchCommand(request)));
+    }
+
+    private static AiRefinementResponses.TaskDetailResponse toTaskDetailResponse(AiRefinementTaskResult task) {
+        return task == null
+                ? AiRefinementResponses.TaskDetailResponse.builder().build()
+                : AiRefinementInterfaceAssembler.toTaskDetailResponse(task);
+    }
+
+    private static AiRefinementResponses.TaskCancelResponse toTaskCancelResponse(AiRefinementTaskResult task) {
+        return task == null
+                ? AiRefinementResponses.TaskCancelResponse.builder().build()
+                : AiRefinementInterfaceAssembler.toTaskCancelResponse(task);
     }
 
     private static AiRefinementResponses.BatchJobResponse toBatchResponse(
