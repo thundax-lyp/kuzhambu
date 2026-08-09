@@ -5,13 +5,14 @@ import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCo
 import com.thundax.kuzhambu.ai.application.invocation.command.ExpireRunningAiBatchJobsCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsByCapabilitiesQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
-import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsByCapabilitiesQuery;
-import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 
 public interface AiBatchJobApplicationService {
@@ -20,10 +21,10 @@ public interface AiBatchJobApplicationService {
     AiBatchJobResult get(GetAiBatchJobQuery query);
 
     @LayerPublicApi(reason = "AI 批任务后台查询入口")
-    PageResult<AiBatchJobResult> page(PageAiBatchJobsQuery query);
+    PageResult<AiBatchJobResult> page(AiBatchJobsQuery query, PageQuery pageQuery);
 
     @LayerPublicApi(reason = "AI 精修任务按能力集合查询自有批任务入口")
-    PageResult<AiBatchJobResult> pageByCapabilities(PageAiBatchJobsByCapabilitiesQuery query);
+    PageResult<AiBatchJobResult> pageByCapabilities(AiBatchJobsByCapabilitiesQuery query, PageQuery pageQuery);
 
     @LayerPublicApi(reason = "Knowledge 图谱抽取按批量选择范围创建 AI 批任务的跨模块入口")
     AiBatchJobId create(AiBatchJobCreateCommand command);

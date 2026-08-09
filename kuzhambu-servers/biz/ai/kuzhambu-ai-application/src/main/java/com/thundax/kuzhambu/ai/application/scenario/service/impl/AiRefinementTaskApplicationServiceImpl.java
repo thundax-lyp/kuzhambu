@@ -7,9 +7,9 @@ import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCo
 import com.thundax.kuzhambu.ai.application.invocation.command.ExpireRunningAiBatchJobsCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsByCapabilitiesQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
-import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsByCapabilitiesQuery;
-import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
@@ -17,8 +17,8 @@ import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestC
 import com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand;
 import com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand;
 import com.thundax.kuzhambu.ai.application.scenario.configuration.AiRefinementExecutorConfiguration;
+import com.thundax.kuzhambu.ai.application.scenario.query.AiRefinementTasksQuery;
 import com.thundax.kuzhambu.ai.application.scenario.query.GetAiRefinementTaskQuery;
-import com.thundax.kuzhambu.ai.application.scenario.query.PageAiRefinementTasksQuery;
 import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
@@ -129,16 +129,19 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     @Override
-    public PageResult<AiRefinementTaskResult> page(PageAiRefinementTasksQuery query) {
+    public PageResult<AiRefinementTaskResult> page(AiRefinementTasksQuery query, PageQuery pageQuery) {
         AiBusinessCapability capability = query == null ? null : query.capability();
         AiBatchJobStatus status = query == null ? null : query.status();
         AiContentRef contentRef = query == null ? null : query.contentRef();
-        PageQuery pageQuery = query == null ? null : query.pageQuery();
         PageResult<AiBatchJobResult> page = capability == null
-                ? batchJobApplicationService.pageByCapabilities(new PageAiBatchJobsByCapabilitiesQuery(
-                        REFINEMENT_SCOPE, REFINEMENT_CAPABILITIES, status, contentRef, pageQuery))
-                : batchJobApplicationService.page(new PageAiBatchJobsQuery(
-                        REFINEMENT_SCOPE, validateRefinementCapability(capability), status, contentRef, pageQuery));
+                ? batchJobApplicationService.pageByCapabilities(
+                        new AiBatchJobsByCapabilitiesQuery(
+                                REFINEMENT_SCOPE, REFINEMENT_CAPABILITIES, status, contentRef),
+                        pageQuery)
+                : batchJobApplicationService.page(
+                        new AiBatchJobsQuery(
+                                REFINEMENT_SCOPE, validateRefinementCapability(capability), status, contentRef),
+                        pageQuery);
         Map<Long, AiInvocationLog> invocationLogsByBatch = latestInvocationLogsByBatch(page.getRecords(), contentRef);
         Map<Long, AiCandidate> candidatesByBatch = latestCandidatesByBatch(page.getRecords(), contentRef);
         List<AiRefinementTaskResult> records = new ArrayList<>();

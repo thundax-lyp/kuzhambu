@@ -8,23 +8,24 @@ import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCo
 import com.thundax.kuzhambu.ai.application.invocation.command.ExpireRunningAiBatchJobsCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsByCapabilitiesQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
-import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsByCapabilitiesQuery;
-import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand;
 import com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.query.AiRefinementTasksQuery;
 import com.thundax.kuzhambu.ai.application.scenario.query.GetAiRefinementTaskQuery;
-import com.thundax.kuzhambu.ai.application.scenario.query.PageAiRefinementTasksQuery;
 import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import java.lang.reflect.Method;
@@ -178,12 +179,13 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
-        public PageResult<AiBatchJobResult> page(PageAiBatchJobsQuery query) {
+        public PageResult<AiBatchJobResult> page(AiBatchJobsQuery query, PageQuery pageQuery) {
             return PageResult.of(1, 10, 0, List.of());
         }
 
         @Override
-        public PageResult<AiBatchJobResult> pageByCapabilities(PageAiBatchJobsByCapabilitiesQuery query) {
+        public PageResult<AiBatchJobResult> pageByCapabilities(
+                AiBatchJobsByCapabilitiesQuery query, PageQuery pageQuery) {
             return PageResult.of(1, 10, 0, List.of());
         }
 
@@ -250,7 +252,7 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
-        public PageResult<AiRefinementTaskResult> page(PageAiRefinementTasksQuery query) {
+        public PageResult<AiRefinementTaskResult> page(AiRefinementTasksQuery query, PageQuery pageQuery) {
             return PageResult.of(1, 10, 1, List.of(get(new GetAiRefinementTaskQuery(new AiBatchJobId(7001L)))));
         }
 
