@@ -45,10 +45,11 @@ class AiWorkerModelConfigResolverTest {
 
     @Test
     void resolveShouldRejectMissingModelId() {
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setScope("classics");
-        command.setCapability(com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(
-                AiBusinessCapability.CLASSICS_TRANSLATE.value()));
+        AiInvokeCommand command = command(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(
+                        AiBusinessCapability.CLASSICS_TRANSLATE.value()),
+                null,
+                null);
 
         AiWorkerModelConfigResolver resolver = newResolver(new FakeModelRepository());
 
@@ -64,14 +65,14 @@ class AiWorkerModelConfigResolverTest {
                 new FakeBusinessConfigRepository(AiModelIdCodec.toDomain(2001L), null);
         AiWorkerModelConfigResolver resolver = newResolver(businessConfigService, modelService);
 
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setScope("classics");
-        command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_TRANSLATE"));
+        AiInvokeCommand command = command(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_TRANSLATE"),
+                null,
+                null);
 
         AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
 
-        assertThat(command.getModelId().value()).isEqualTo(2001L);
+        assertThat(resolved.modelId().value()).isEqualTo(2001L);
         assertThat(resolved.modelName().value()).isEqualTo("gpt-4o");
     }
 
@@ -83,10 +84,10 @@ class AiWorkerModelConfigResolverTest {
                 new FakeBusinessConfigRepository(AiModelIdCodec.toDomain(2001L), "{\"temperature\":0.7}");
         AiWorkerModelConfigResolver resolver = newResolver(businessConfigService, modelService);
 
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setScope("classics");
-        command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_TRANSLATE"));
+        AiInvokeCommand command = command(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_TRANSLATE"),
+                null,
+                null);
 
         AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
 
@@ -102,15 +103,15 @@ class AiWorkerModelConfigResolverTest {
                 new FakeBusinessConfigRepository(AiModelIdCodec.toDomain(2001L), "{\"temperature\":0.7}");
         AiWorkerModelConfigResolver resolver = newResolver(businessConfigService, modelService);
 
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setScope("classics");
-        command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_TRANSLATE"));
+        AiInvokeCommand command = command(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_TRANSLATE"),
+                null,
+                null);
 
-        resolver.resolve(command);
+        AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
         AiWorkerModelConfigResolver.ResolvedModelConfig resolvedAgain = resolver.resolve(command);
 
-        assertThat(command.getModelId().value()).isEqualTo(2001L);
+        assertThat(resolved.modelId().value()).isEqualTo(2001L);
         assertThat(resolvedAgain.parameters().get("temperature").asDouble()).isEqualTo(0.7);
         assertThat(resolvedAgain.parameters().get("max_tokens").asInt()).isEqualTo(4096);
     }
@@ -125,10 +126,36 @@ class AiWorkerModelConfigResolverTest {
     }
 
     private static AiInvokeCommand command() {
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setServiceRole("PRIMARY");
-        command.setModelId(new AiModelId(2001L));
-        return command;
+        return command(null, new AiModelId(2001L), "PRIMARY");
+    }
+
+    private static AiInvokeCommand command(AiBusinessCapability capability, AiModelId modelId, String serviceRole) {
+        return new AiInvokeCommand(
+                null,
+                "classics",
+                capability,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                serviceRole,
+                modelId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                false,
+                null,
+                false,
+                true);
     }
 
     private static class FakeModelRepository implements AiModelRepository {

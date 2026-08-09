@@ -69,7 +69,7 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         validateCommand(command);
         DiscoveryAiWorkerUsecaseSpec spec = resolver.resolve(usecase);
         AiInvokeCommand invokeCommand = toInvokeCommand(command, spec);
-        enrichBusinessInvokeConfig(invokeCommand);
+        invokeCommand = enrichBusinessInvokeConfig(invokeCommand);
         AiInvokeResult result = spec.stream()
                 ? invocationApplicationService.stream(
                         invokeCommand, eventConsumer == null ? event -> {} : eventConsumer)
@@ -78,39 +78,66 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
     }
 
     private AiInvokeCommand toInvokeCommand(DiscoveryAiCommand command, DiscoveryAiWorkerUsecaseSpec spec) {
-        AiInvokeCommand invokeCommand = new AiInvokeCommand();
-        invokeCommand.setScope(SCOPE_DISCOVERY);
-        invokeCommand.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(spec.capability()));
-        invokeCommand.setWorkerCapability(spec.workerCapability());
-        invokeCommand.setOperation(spec.operation());
-        invokeCommand.setWorkerPath(spec.workerPath());
-        invokeCommand.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
-                CONTENT_TYPE_DISCOVERY_QUERY, null));
-        invokeCommand.setServiceId(command.serviceId());
-        invokeCommand.setServiceRole(command.serviceRole());
-        invokeCommand.setModelId(command.modelId());
-        invokeCommand.setModelName(command.modelName());
-        invokeCommand.setPromptVersionId(command.promptVersionId());
-        invokeCommand.setRequestId(command.requestId());
-        invokeCommand.setTraceId(command.traceId());
-        invokeCommand.setPromptMessagesJson(command.promptMessagesJson());
-        invokeCommand.setPromptVariablesJson(command.promptVariablesJson());
-        invokeCommand.setPromptHash(command.promptHash());
-        invokeCommand.setInputPayloadJson(command.inputPayloadJson());
-        invokeCommand.setOutputSchemaJson(command.outputSchemaJson());
-        invokeCommand.setStream(spec.stream() || command.stream());
-        invokeCommand.setForceJson(command.forceJson());
-        invokeCommand.setLocale(command.locale());
-        invokeCommand.setCreateCandidate(false);
-        return invokeCommand;
+        return new AiInvokeCommand(
+                null,
+                SCOPE_DISCOVERY,
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(spec.capability()),
+                spec.workerCapability(),
+                spec.operation(),
+                spec.workerPath(),
+                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
+                        CONTENT_TYPE_DISCOVERY_QUERY, null),
+                null,
+                command.serviceId(),
+                command.serviceRole(),
+                command.modelId(),
+                command.modelName(),
+                command.promptVersionId(),
+                command.requestId(),
+                command.traceId(),
+                command.promptMessagesJson(),
+                command.promptVariablesJson(),
+                command.promptHash(),
+                command.inputPayloadJson(),
+                command.outputSchemaJson(),
+                spec.stream() || command.stream(),
+                command.forceJson(),
+                command.locale(),
+                false,
+                false);
     }
 
-    private void enrichBusinessInvokeConfig(AiInvokeCommand command) {
+    private AiInvokeCommand enrichBusinessInvokeConfig(AiInvokeCommand command) {
         if (businessInvokeConfigResolver == null || command == null) {
-            return;
+            return command;
         }
-        businessInvokeConfigResolver.resolve(command);
+        var resolved = businessInvokeConfigResolver.resolve(command);
+        return new AiInvokeCommand(
+                command.batchId(),
+                command.scope(),
+                command.capability(),
+                command.workerCapability(),
+                command.operation(),
+                command.workerPath(),
+                command.contentRef(),
+                command.targetObjectId(),
+                resolved.serviceId(),
+                resolved.serviceRole(),
+                resolved.modelId(),
+                resolved.modelName(),
+                resolved.promptVersionId(),
+                command.requestId(),
+                command.traceId(),
+                resolved.promptMessagesJson(),
+                resolved.promptVariablesJson(),
+                command.promptHash(),
+                command.inputPayloadJson(),
+                resolved.outputSchemaJson(),
+                command.stream(),
+                command.forceJson(),
+                command.locale(),
+                command.allowFallback(),
+                command.createCandidate());
     }
 
     private void validateCommand(DiscoveryAiCommand command) {

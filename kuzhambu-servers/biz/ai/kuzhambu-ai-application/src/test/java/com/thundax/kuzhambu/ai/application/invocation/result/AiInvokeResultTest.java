@@ -9,23 +9,21 @@ import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import org.junit.jupiter.api.Test;
 
 class AiInvokeResultTest {
 
     @Test
     void toCandidateShouldKeepMarkdownResultPayloadForImageAnalysis() {
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setBatchId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(1L));
-        command.setCapability(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE);
-        command.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
-                "SANCAI_ENTRY", 10L));
-        command.setTargetObjectId(
-                new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId(20L));
-        command.setPromptVersionId(new PromptVersionId(30L));
-        command.setModelName(AiModelName.of("model-a"));
-        command.setStream(true);
+        AiInvokeCommand command = command(
+                AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE,
+                AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
+                new AiTargetObjectId(20L),
+                new PromptVersionId(30L),
+                true);
 
         AiInvokeResult result = new AiInvokeResult();
         result.setResultFormat("MARKDOWN");
@@ -55,12 +53,8 @@ class AiInvokeResultTest {
 
     @Test
     void toCandidateShouldKeepFailureSnapshot() {
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setBatchId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(1L));
-        command.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE);
-        command.setContentRef(
-                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("ENTRY", 10L));
-        command.setModelName(AiModelName.of("model-a"));
+        AiInvokeCommand command = command(
+                AiBusinessCapability.CLASSICS_TRANSLATE, AiContentRef.ofNullable("ENTRY", 10L), null, null, false);
 
         AiInvokeResult result = new AiInvokeResult();
         result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.FAILED);
@@ -77,5 +71,39 @@ class AiInvokeResultTest {
         assertEquals("bad", candidate.getErrorMessage());
         assertEquals("TEXT", candidate.getResultFormat());
         assertEquals("bad-payload", candidate.getResultPayload());
+    }
+
+    private AiInvokeCommand command(
+            AiBusinessCapability capability,
+            AiContentRef contentRef,
+            AiTargetObjectId targetObjectId,
+            PromptVersionId promptVersionId,
+            boolean stream) {
+        return new AiInvokeCommand(
+                new AiBatchJobId(1L),
+                null,
+                capability,
+                null,
+                null,
+                null,
+                contentRef,
+                targetObjectId,
+                null,
+                null,
+                null,
+                AiModelName.of("model-a"),
+                promptVersionId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                stream,
+                false,
+                null,
+                false,
+                false);
     }
 }

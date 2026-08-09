@@ -37,16 +37,16 @@ class AiBusinessInvokeConfigResolverTest {
                 List.of(variable("contentType", true), variable("sourceText", true), variable("tone", false))));
         AiInvokeCommand command = command();
 
-        resolver.resolve(command);
+        AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved = resolver.resolve(command);
 
-        JsonNode messages = objectMapper.readTree(command.getPromptMessagesJson());
-        JsonNode variables = objectMapper.readTree(command.getPromptVariablesJson());
+        JsonNode messages = objectMapper.readTree(resolved.promptMessagesJson());
+        JsonNode variables = objectMapper.readTree(resolved.promptVariablesJson());
 
-        assertThat(command.getModelId().value()).isEqualTo(2001L);
-        assertThat(command.getServiceRole()).isEqualTo("PRIMARY");
-        assertThat(command.getModelName().value()).isEqualTo("gpt-4o");
-        assertThat(command.getPromptVersionId().value()).isEqualTo(6L);
-        assertThat(command.getOutputSchemaJson()).isEqualTo("{\"type\":\"text\"}");
+        assertThat(resolved.modelId().value()).isEqualTo(2001L);
+        assertThat(resolved.serviceRole()).isEqualTo("PRIMARY");
+        assertThat(resolved.modelName().value()).isEqualTo("gpt-4o");
+        assertThat(resolved.promptVersionId().value()).isEqualTo(6L);
+        assertThat(resolved.outputSchemaJson()).isEqualTo("{\"type\":\"text\"}");
         assertThat(messages.get(1).get("content").asText())
                 .contains("SANCAI_ENTRY")
                 .contains("天地玄黄");
@@ -78,8 +78,7 @@ class AiBusinessInvokeConfigResolverTest {
     void validatePromptVersionEnabledShouldRejectDisabledPromptTemplate() {
         AiBusinessInvokeConfigResolver resolver = newResolver(
                 promptRepository(List.of(variable("contentType", true), variable("sourceText", true)), null, false));
-        AiInvokeCommand command = command();
-        command.setPromptVersionId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(6L));
+        AiInvokeCommand command = command(new PromptVersionId(6L));
 
         assertThatThrownBy(() -> resolver.validatePromptVersionEnabled(command))
                 .isInstanceOf(BizException.class)
@@ -99,9 +98,9 @@ class AiBusinessInvokeConfigResolverTest {
                 newResolver(promptRepository(List.of(variable("latestText", true)), variablesSnapshotJson));
         AiInvokeCommand command = command();
 
-        resolver.resolve(command);
+        AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved = resolver.resolve(command);
 
-        JsonNode variables = objectMapper.readTree(command.getPromptVariablesJson());
+        JsonNode variables = objectMapper.readTree(resolved.promptVariablesJson());
         assertThat(variables.get("sourceText").asText()).isEqualTo("天地玄黄");
         assertThat(variables.has("latestText")).isFalse();
     }
@@ -119,9 +118,9 @@ class AiBusinessInvokeConfigResolverTest {
                 newResolver(promptRepository(List.of(variable("latestText", true)), variablesSnapshotJson));
         AiInvokeCommand command = command();
 
-        resolver.resolve(command);
+        AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved = resolver.resolve(command);
 
-        JsonNode variables = objectMapper.readTree(command.getPromptVariablesJson());
+        JsonNode variables = objectMapper.readTree(resolved.promptVariablesJson());
         assertThat(variables.get("contentType").asText()).isEqualTo("SANCAI_ENTRY");
         assertThat(variables.get("sourceText").asText()).isEqualTo("天地玄黄");
     }
@@ -135,13 +134,37 @@ class AiBusinessInvokeConfigResolverTest {
     }
 
     private static AiInvokeCommand command() {
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setScope("classics");
-        command.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
-        command.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
-                "SANCAI_ENTRY", 300000000001L));
-        command.setInputPayloadJson("{\"sourceText\":\"天地玄黄\"}");
-        return command;
+        return command(null);
+    }
+
+    private static AiInvokeCommand command(PromptVersionId promptVersionId) {
+        return new AiInvokeCommand(
+                null,
+                "classics",
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                null,
+                null,
+                null,
+                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
+                        "SANCAI_ENTRY", 300000000001L),
+                null,
+                null,
+                null,
+                null,
+                null,
+                promptVersionId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "{\"sourceText\":\"天地玄黄\"}",
+                null,
+                false,
+                false,
+                null,
+                false,
+                true);
     }
 
     private static PromptVariable variable(String name, boolean required) {

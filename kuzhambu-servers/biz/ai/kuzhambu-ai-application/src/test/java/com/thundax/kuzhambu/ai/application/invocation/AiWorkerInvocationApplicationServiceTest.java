@@ -54,8 +54,8 @@ class AiWorkerInvocationApplicationServiceTest {
             public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
                 AiStreamEventResult event = new AiStreamEventResult();
                 event.setEventType("delta");
-                event.setRequestId(command.getRequestId());
-                event.setTraceId(command.getTraceId());
+                event.setRequestId(command.requestId());
+                event.setTraceId(command.traceId());
                 event.setStatus(AiInvocationStatus.RUNNING);
                 eventConsumer.accept(event);
             }
@@ -92,8 +92,8 @@ class AiWorkerInvocationApplicationServiceTest {
             public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
                 AiStreamEventResult event = new AiStreamEventResult();
                 event.setEventType("error");
-                event.setRequestId(command.getRequestId());
-                event.setTraceId(command.getTraceId());
+                event.setRequestId(command.requestId());
+                event.setTraceId(command.traceId());
                 event.setErrorType("WORKER_PROTOCOL_FAILURE");
                 event.setErrorMessage("bad stream");
                 event.setFailureStage("WORKER_STREAM");
@@ -107,8 +107,7 @@ class AiWorkerInvocationApplicationServiceTest {
         };
         AiWorkerInvocationApplicationServiceImpl service =
                 new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
-        AiInvokeCommand command = command();
-        command.setCreateCandidate(true);
+        AiInvokeCommand command = withCreateCandidate(command());
 
         AiInvokeResult result = service.stream(command, event -> {});
 
@@ -129,10 +128,10 @@ class AiWorkerInvocationApplicationServiceTest {
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 capturedCommand.set(command);
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(command.getRequestId());
-                result.setTraceId(command.getTraceId());
+                result.setRequestId(command.requestId());
+                result.setTraceId(command.traceId());
                 result.setStatus(AiInvocationStatus.SUCCEEDED);
-                result.setCapability(command.getCapability());
+                result.setCapability(command.capability());
                 result.setResultFormat("text");
                 result.setResultPayload("candidate-result");
                 result.setUsage(AiUsageSnapshot.empty());
@@ -152,17 +151,13 @@ class AiWorkerInvocationApplicationServiceTest {
         AiWorkerInvocationApplicationServiceImpl service =
                 new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
 
-        AiInvokeCommand command = command();
-        command.setOperation("CLASSICS_SANCAI_SUMMARY");
-        command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_SUMMARY"));
-        command.setWorkerCapability("summary");
-        command.setCreateCandidate(true);
+        AiInvokeCommand command = withCreateCandidate(withRouting(
+                command(), AiBusinessCapability.from("CLASSICS_SUMMARY"), "summary", "CLASSICS_SANCAI_SUMMARY"));
 
         AiInvokeResult result = service.invoke(command);
 
-        assertEquals("CLASSICS_SANCAI_SUMMARY", capturedCommand.get().getOperation());
-        assertFalse(capturedCommand.get().isStream());
+        assertEquals("CLASSICS_SANCAI_SUMMARY", capturedCommand.get().operation());
+        assertFalse(capturedCommand.get().stream());
         assertEquals(AiBusinessCapability.CLASSICS_SUMMARY, result.getCapability());
         assertEquals(new AiCallId(100L), result.getCallId());
         assertEquals("text", repository.updatedInvocationLog.get().getResultFormat());
@@ -181,10 +176,10 @@ class AiWorkerInvocationApplicationServiceTest {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(command.getRequestId());
-                result.setTraceId(command.getTraceId());
+                result.setRequestId(command.requestId());
+                result.setTraceId(command.traceId());
                 result.setStatus(AiInvocationStatus.FAILED);
-                result.setCapability(command.getCapability());
+                result.setCapability(command.capability());
                 result.setResultFormat("TEXT");
                 result.setResultPayload("should-be-persisted");
                 result.setErrorType("WORKER_PROTOCOL_FAILURE");
@@ -207,8 +202,7 @@ class AiWorkerInvocationApplicationServiceTest {
         AiWorkerInvocationApplicationServiceImpl service =
                 new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
 
-        AiInvokeCommand command = command();
-        command.setCreateCandidate(true);
+        AiInvokeCommand command = withCreateCandidate(command());
         AiInvokeResult result = service.invoke(command);
 
         assertEquals(AiInvocationStatus.FAILED, result.getStatus());
@@ -251,8 +245,7 @@ class AiWorkerInvocationApplicationServiceTest {
         };
         AiWorkerInvocationApplicationServiceImpl service =
                 new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
-        AiInvokeCommand command = command();
-        command.setCreateCandidate(true);
+        AiInvokeCommand command = withCreateCandidate(command());
 
         AiInvokeResult result = service.invoke(command);
 
@@ -294,8 +287,7 @@ class AiWorkerInvocationApplicationServiceTest {
         };
         AiWorkerInvocationApplicationServiceImpl service =
                 new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
-        AiInvokeCommand command = command();
-        command.setCreateCandidate(true);
+        AiInvokeCommand command = withCreateCandidate(command());
 
         AiInvokeResult result = service.stream(command, event -> {});
 
@@ -334,8 +326,7 @@ class AiWorkerInvocationApplicationServiceTest {
         };
         AiWorkerInvocationApplicationServiceImpl service = new AiWorkerInvocationApplicationServiceImpl(
                 repository, aiWorkerGateway, storageFacadeReturningUpload());
-        AiInvokeCommand command = command();
-        command.setCreateCandidate(true);
+        AiInvokeCommand command = withCreateCandidate(command());
 
         AiInvokeResult result = service.invoke(command);
 
@@ -353,10 +344,10 @@ class AiWorkerInvocationApplicationServiceTest {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(command.getRequestId());
-                result.setTraceId(command.getTraceId());
+                result.setRequestId(command.requestId());
+                result.setTraceId(command.traceId());
                 result.setStatus(AiInvocationStatus.SUCCEEDED);
-                result.setCapability(command.getCapability());
+                result.setCapability(command.capability());
                 result.setResultPayload("{\"ok\":true}");
                 result.setUsage(AiUsageSnapshot.empty());
                 return result;
@@ -375,9 +366,7 @@ class AiWorkerInvocationApplicationServiceTest {
         AiWorkerInvocationApplicationServiceImpl service =
                 new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
 
-        AiInvokeCommand command = command();
-        command.setForceJson(true);
-        command.setCreateCandidate(true);
+        AiInvokeCommand command = withOutputContract(command(), command().capability(), true, null);
         AiInvokeResult result = service.invoke(command);
 
         assertEquals(AiInvocationStatus.SUCCEEDED, result.getStatus());
@@ -393,10 +382,10 @@ class AiWorkerInvocationApplicationServiceTest {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(command.getRequestId());
-                result.setTraceId(command.getTraceId());
+                result.setRequestId(command.requestId());
+                result.setTraceId(command.traceId());
                 result.setStatus(AiInvocationStatus.SUCCEEDED);
-                result.setCapability(command.getCapability());
+                result.setCapability(command.capability());
                 result.setResultFormat("STRUCTURED");
                 result.setResultPayload("{\"entities\":{\"name\":\"礼\"},\"relations\":[]}");
                 result.setUsage(AiUsageSnapshot.empty());
@@ -416,11 +405,10 @@ class AiWorkerInvocationApplicationServiceTest {
         AiWorkerInvocationApplicationServiceImpl service =
                 new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
 
-        AiInvokeCommand command = command();
-        command.setCapability(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT);
-        command.setCreateCandidate(true);
-        command.setForceJson(true);
-        command.setOutputSchemaJson(
+        AiInvokeCommand command = withOutputContract(
+                command(),
+                AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
+                true,
                 "{\"type\":\"object\",\"properties\":{\"entities\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"relations\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}}},\"required\":[\"entities\",\"relations\"]}");
         AiInvokeResult result = service.invoke(command);
 
@@ -442,10 +430,10 @@ class AiWorkerInvocationApplicationServiceTest {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(command.getRequestId());
-                result.setTraceId(command.getTraceId());
+                result.setRequestId(command.requestId());
+                result.setTraceId(command.traceId());
                 result.setStatus(AiInvocationStatus.SUCCEEDED);
-                result.setCapability(command.getCapability());
+                result.setCapability(command.capability());
                 result.setResultFormat("STRUCTURED");
                 result.setResultPayload("{\"tags\":[]}");
                 result.setUsage(AiUsageSnapshot.empty());
@@ -465,11 +453,10 @@ class AiWorkerInvocationApplicationServiceTest {
         AiWorkerInvocationApplicationServiceImpl service =
                 new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
 
-        AiInvokeCommand command = command();
-        command.setCapability(AiBusinessCapability.CLASSICS_TAG_EXTRACT);
-        command.setCreateCandidate(true);
-        command.setForceJson(true);
-        command.setOutputSchemaJson(
+        AiInvokeCommand command = withOutputContract(
+                command(),
+                AiBusinessCapability.CLASSICS_TAG_EXTRACT,
+                true,
                 "{\"type\":\"object\",\"properties\":{\"tags\":{\"type\":\"array\",\"minItems\":3,\"maxItems\":8,\"items\":{\"type\":\"object\"}}},\"required\":[\"tags\"]}");
         AiInvokeResult result = service.invoke(command);
 
@@ -488,10 +475,10 @@ class AiWorkerInvocationApplicationServiceTest {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(command.getRequestId());
-                result.setTraceId(command.getTraceId());
+                result.setRequestId(command.requestId());
+                result.setTraceId(command.traceId());
                 result.setStatus(AiInvocationStatus.SUCCEEDED);
-                result.setCapability(command.getCapability());
+                result.setCapability(command.capability());
                 result.setResultFormat("STRUCTURED");
                 result.setResultPayload("{\"qaPairs\":[{},{},{},{},{},{}]}");
                 result.setUsage(AiUsageSnapshot.empty());
@@ -511,11 +498,10 @@ class AiWorkerInvocationApplicationServiceTest {
         AiWorkerInvocationApplicationServiceImpl service =
                 new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
 
-        AiInvokeCommand command = command();
-        command.setCapability(AiBusinessCapability.CLASSICS_QA);
-        command.setCreateCandidate(true);
-        command.setForceJson(true);
-        command.setOutputSchemaJson(
+        AiInvokeCommand command = withOutputContract(
+                command(),
+                AiBusinessCapability.CLASSICS_QA,
+                true,
                 "{\"type\":\"object\",\"properties\":{\"qaPairs\":{\"type\":\"array\",\"minItems\":3,\"maxItems\":5,\"items\":{\"type\":\"object\"}}},\"required\":[\"qaPairs\"]}");
         AiInvokeResult result = service.invoke(command);
 
@@ -528,29 +514,111 @@ class AiWorkerInvocationApplicationServiceTest {
     }
 
     private AiInvokeCommand command() {
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setScope("classics");
-        command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_TRANSLATE"));
-        command.setOperation("translate");
-        command.setContentRef(
-                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("entry", 10L));
-        command.setModelId(new AiModelId(20L));
-        command.setModelName(AiModelName.of("model-a"));
-        command.setRequestId(new RequestId("req-1"));
-        command.setTraceId(new TraceId("trace-1"));
-        command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
-        command.setInputPayloadJson("{\"text\":\"hello\"}");
-        command.setCreateCandidate(false);
-        return command;
+        return new AiInvokeCommand(
+                null,
+                "classics",
+                AiBusinessCapability.from("CLASSICS_TRANSLATE"),
+                null,
+                "translate",
+                null,
+                AiContentRef.ofNullable("entry", 10L),
+                null,
+                null,
+                null,
+                new AiModelId(20L),
+                AiModelName.of("model-a"),
+                null,
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
+                "[{\"role\":\"user\",\"content\":\"hello\"}]",
+                null,
+                null,
+                "{\"text\":\"hello\"}",
+                null,
+                false,
+                false,
+                null,
+                false,
+                false);
+    }
+
+    private AiInvokeCommand withCreateCandidate(AiInvokeCommand command) {
+        return copyCommand(
+                command,
+                command.capability(),
+                command.workerCapability(),
+                command.operation(),
+                command.outputSchemaJson(),
+                command.forceJson(),
+                true);
+    }
+
+    private AiInvokeCommand withRouting(
+            AiInvokeCommand command, AiBusinessCapability capability, String workerCapability, String operation) {
+        return copyCommand(
+                command,
+                capability,
+                workerCapability,
+                operation,
+                command.outputSchemaJson(),
+                command.forceJson(),
+                command.createCandidate());
+    }
+
+    private AiInvokeCommand withOutputContract(
+            AiInvokeCommand command, AiBusinessCapability capability, boolean forceJson, String outputSchemaJson) {
+        return copyCommand(
+                command,
+                capability,
+                command.workerCapability(),
+                command.operation(),
+                outputSchemaJson,
+                forceJson,
+                true);
+    }
+
+    private AiInvokeCommand copyCommand(
+            AiInvokeCommand command,
+            AiBusinessCapability capability,
+            String workerCapability,
+            String operation,
+            String outputSchemaJson,
+            boolean forceJson,
+            boolean createCandidate) {
+        return new AiInvokeCommand(
+                command.batchId(),
+                command.scope(),
+                capability,
+                workerCapability,
+                operation,
+                command.workerPath(),
+                command.contentRef(),
+                command.targetObjectId(),
+                command.serviceId(),
+                command.serviceRole(),
+                command.modelId(),
+                command.modelName(),
+                command.promptVersionId(),
+                command.requestId(),
+                command.traceId(),
+                command.promptMessagesJson(),
+                command.promptVariablesJson(),
+                command.promptHash(),
+                command.inputPayloadJson(),
+                outputSchemaJson,
+                command.stream(),
+                forceJson,
+                command.locale(),
+                command.allowFallback(),
+                createCandidate);
     }
 
     private AiInvokeResult partialResult(AiInvokeCommand command) {
         AiInvokeResult result = new AiInvokeResult();
-        result.setRequestId(command.getRequestId());
-        result.setTraceId(command.getTraceId());
+        result.setRequestId(command.requestId());
+        result.setTraceId(command.traceId());
         result.setStatus(AiInvocationStatus.PARTIAL);
-        result.setCapability(command.getCapability());
+        result.setCapability(command.capability());
         result.setResultFormat("TEXT");
         result.setResultPayload("partial result");
         result.setFailureStage("WORKER_RESULT");

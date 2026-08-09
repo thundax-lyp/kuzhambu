@@ -127,7 +127,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
             Consumer<AiStreamEventResult> eventConsumer) {
         AiInvokeCommand invokeCommand = prepareInvokeCommand(command, capability);
         if (isStreamingCapability(capability)) {
-            invokeCommand.setStream(true);
+            invokeCommand = withStream(invokeCommand, true);
         }
         AiInvokeResult result = isStreamingCapability(capability)
                 ? invocationApplicationService.stream(
@@ -140,39 +140,40 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         validateCommand(command);
         var spec = classicsAiWorkerUsecaseResolver.resolve(command.contentRef().contentType(), capability.value());
         AiInvokeCommand invokeCommand = toInvokeCommand(command, capability);
-        invokeCommand.setOperation(spec.operation());
-        invokeCommand.setWorkerPath(spec.workerPath());
-        invokeCommand.setWorkerCapability(spec.workerCapability());
+        invokeCommand = withWorkerUsecase(invokeCommand, spec.workerCapability(), spec.operation(), spec.workerPath());
         if (!hasResolvedInvokeConfig(invokeCommand)) {
-            enrichBusinessInvokeConfig(invokeCommand);
+            invokeCommand = enrichBusinessInvokeConfig(invokeCommand);
         }
         return invokeCommand;
     }
 
     private AiInvokeCommand toInvokeCommand(AiRefinementRequestCommand source, AiBusinessCapability capability) {
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setBatchId(source.batchId());
-        command.setScope(source.scope());
-        command.setCapability(capability);
-        command.setOperation(source.operation());
-        command.setContentRef(source.contentRef());
-        command.setTargetObjectId(source.targetObjectId());
-        command.setServiceId(source.serviceId());
-        command.setServiceRole(source.serviceRole());
-        command.setModelId(source.modelId());
-        command.setModelName(source.modelName());
-        command.setPromptVersionId(source.promptVersionId());
-        command.setRequestId(source.requestId());
-        command.setTraceId(source.traceId());
-        command.setPromptMessagesJson(source.promptMessagesJson());
-        command.setPromptVariablesJson(source.promptVariablesJson());
-        command.setPromptHash(source.promptHash());
-        command.setInputPayloadJson(source.inputPayloadJson());
-        command.setOutputSchemaJson(source.outputSchemaJson());
-        command.setForceJson(source.forceJson());
-        command.setLocale(source.locale());
-        command.setCreateCandidate(true);
-        return command;
+        return new AiInvokeCommand(
+                source.batchId(),
+                source.scope(),
+                capability,
+                null,
+                source.operation(),
+                null,
+                source.contentRef(),
+                source.targetObjectId(),
+                source.serviceId(),
+                source.serviceRole(),
+                source.modelId(),
+                source.modelName(),
+                source.promptVersionId(),
+                source.requestId(),
+                source.traceId(),
+                source.promptMessagesJson(),
+                source.promptVariablesJson(),
+                source.promptHash(),
+                source.inputPayloadJson(),
+                source.outputSchemaJson(),
+                false,
+                source.forceJson(),
+                source.locale(),
+                false,
+                true);
     }
 
     private boolean isStreamingCapability(AiBusinessCapability capability) {
@@ -180,19 +181,19 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
                 || AiBusinessCapability.CLASSICS_IMAGE_GENERATE == capability;
     }
 
-    private void enrichBusinessInvokeConfig(AiInvokeCommand command) {
+    private AiInvokeCommand enrichBusinessInvokeConfig(AiInvokeCommand command) {
         if (businessInvokeConfigResolver == null || command == null) {
-            return;
+            return command;
         }
-        businessInvokeConfigResolver.resolve(command);
+        return withResolvedConfig(command, businessInvokeConfigResolver.resolve(command));
     }
 
     private boolean hasResolvedInvokeConfig(AiInvokeCommand command) {
         return command != null
-                && command.getModelId() != null
-                && command.getPromptVersionId() != null
-                && !isBlank(command.getPromptMessagesJson())
-                && !isBlank(command.getPromptVariablesJson());
+                && command.modelId() != null
+                && command.promptVersionId() != null
+                && !isBlank(command.promptMessagesJson())
+                && !isBlank(command.promptVariablesJson());
     }
 
     private AiRefinementRequestCommand toResolvedCommand(
@@ -204,20 +205,109 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
                 command.operation(),
                 command.contentRef(),
                 command.targetObjectId(),
-                invokeCommand.getServiceId(),
-                invokeCommand.getServiceRole(),
-                invokeCommand.getModelId(),
-                invokeCommand.getModelName(),
-                invokeCommand.getPromptVersionId(),
+                invokeCommand.serviceId(),
+                invokeCommand.serviceRole(),
+                invokeCommand.modelId(),
+                invokeCommand.modelName(),
+                invokeCommand.promptVersionId(),
                 command.requestId(),
                 command.traceId(),
-                invokeCommand.getPromptMessagesJson(),
-                invokeCommand.getPromptVariablesJson(),
+                invokeCommand.promptMessagesJson(),
+                invokeCommand.promptVariablesJson(),
                 command.promptHash(),
                 command.inputPayloadJson(),
-                invokeCommand.getOutputSchemaJson(),
+                invokeCommand.outputSchemaJson(),
                 command.forceJson(),
                 command.locale());
+    }
+
+    private AiInvokeCommand withWorkerUsecase(
+            AiInvokeCommand command, String workerCapability, String operation, String workerPath) {
+        return new AiInvokeCommand(
+                command.batchId(),
+                command.scope(),
+                command.capability(),
+                workerCapability,
+                operation,
+                workerPath,
+                command.contentRef(),
+                command.targetObjectId(),
+                command.serviceId(),
+                command.serviceRole(),
+                command.modelId(),
+                command.modelName(),
+                command.promptVersionId(),
+                command.requestId(),
+                command.traceId(),
+                command.promptMessagesJson(),
+                command.promptVariablesJson(),
+                command.promptHash(),
+                command.inputPayloadJson(),
+                command.outputSchemaJson(),
+                command.stream(),
+                command.forceJson(),
+                command.locale(),
+                command.allowFallback(),
+                command.createCandidate());
+    }
+
+    private AiInvokeCommand withStream(AiInvokeCommand command, boolean stream) {
+        return new AiInvokeCommand(
+                command.batchId(),
+                command.scope(),
+                command.capability(),
+                command.workerCapability(),
+                command.operation(),
+                command.workerPath(),
+                command.contentRef(),
+                command.targetObjectId(),
+                command.serviceId(),
+                command.serviceRole(),
+                command.modelId(),
+                command.modelName(),
+                command.promptVersionId(),
+                command.requestId(),
+                command.traceId(),
+                command.promptMessagesJson(),
+                command.promptVariablesJson(),
+                command.promptHash(),
+                command.inputPayloadJson(),
+                command.outputSchemaJson(),
+                stream,
+                command.forceJson(),
+                command.locale(),
+                command.allowFallback(),
+                command.createCandidate());
+    }
+
+    private AiInvokeCommand withResolvedConfig(
+            AiInvokeCommand command, AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved) {
+        return new AiInvokeCommand(
+                command.batchId(),
+                command.scope(),
+                command.capability(),
+                command.workerCapability(),
+                command.operation(),
+                command.workerPath(),
+                command.contentRef(),
+                command.targetObjectId(),
+                resolved.serviceId(),
+                resolved.serviceRole(),
+                resolved.modelId(),
+                resolved.modelName(),
+                resolved.promptVersionId(),
+                command.requestId(),
+                command.traceId(),
+                resolved.promptMessagesJson(),
+                resolved.promptVariablesJson(),
+                command.promptHash(),
+                command.inputPayloadJson(),
+                resolved.outputSchemaJson(),
+                command.stream(),
+                command.forceJson(),
+                command.locale(),
+                command.allowFallback(),
+                command.createCandidate());
     }
 
     private void validateCommand(AiRefinementRequestCommand command) {

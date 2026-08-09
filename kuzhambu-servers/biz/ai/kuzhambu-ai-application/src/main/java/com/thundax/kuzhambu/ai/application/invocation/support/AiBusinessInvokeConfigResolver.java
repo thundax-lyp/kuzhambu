@@ -44,41 +44,47 @@ public class AiBusinessInvokeConfigResolver {
         this.objectMapper = objectMapper;
     }
 
-    public void resolve(AiInvokeCommand command) {
-        if (command == null || command.getCapability() == null) {
+    public ResolvedBusinessInvokeConfig resolve(AiInvokeCommand command) {
+        if (command == null || command.capability() == null) {
             throw new BizException("AI business capability is required");
         }
-        AiBusinessConfig config = resolveBusinessConfig(command.getCapability());
+        AiBusinessConfig config = resolveBusinessConfig(command.capability());
         PromptVersion promptVersion = resolveCurrentPromptVersion(config);
-        ObjectNode inputPayload = withCommandMetadata(parseInputPayload(command.getInputPayloadJson()), command);
+        ObjectNode inputPayload = withCommandMetadata(parseInputPayload(command.inputPayloadJson()), command);
         List<PromptVariable> variables = resolvePromptVariables(config, promptVersion);
         ObjectNode promptVariables = buildPromptVariables(variables, inputPayload);
+        String promptMessagesJson = renderPromptMessages(promptVersion.getMessageTemplatesJson(), promptVariables);
+        String promptVariablesJson = toJson(promptVariables, "AI prompt variables is not valid JSON");
+        String outputSchemaJson =
+                isBlank(command.outputSchemaJson()) ? promptVersion.getOutputSchemaJson() : command.outputSchemaJson();
 
-        command.setModelId(config.getModelId());
-        command.setPromptVersionId(promptVersion.getId());
-        command.setPromptMessagesJson(renderPromptMessages(promptVersion.getMessageTemplatesJson(), promptVariables));
-        command.setPromptVariablesJson(toJson(promptVariables, "AI prompt variables is not valid JSON"));
-        if (isBlank(command.getOutputSchemaJson())) {
-            command.setOutputSchemaJson(promptVersion.getOutputSchemaJson());
-        }
-
-        var resolved = modelConfigResolver.resolve(command);
-        command.setServiceId(resolved.serviceId());
-        command.setServiceRole(resolved.serviceRole());
-        command.setModelId(resolved.modelId());
-        command.setModelName(resolved.modelName());
+        var resolved = modelConfigResolver.resolve(
+                command.capability(),
+                command.serviceId(),
+                command.serviceRole(),
+                config.getModelId(),
+                command.modelName());
+        return new ResolvedBusinessInvokeConfig(
+                resolved.serviceId(),
+                resolved.serviceRole(),
+                resolved.modelId(),
+                resolved.modelName(),
+                promptVersion.getId(),
+                promptMessagesJson,
+                promptVariablesJson,
+                outputSchemaJson);
     }
 
     public void validatePromptVersionEnabled(AiInvokeCommand command) {
-        if (command == null || command.getCapability() == null || command.getPromptVersionId() == null) {
+        if (command == null || command.capability() == null || command.promptVersionId() == null) {
             throw new BizException("AI prompt version is required");
         }
-        PromptVersion promptVersion = promptRepository.getVersion(command.getPromptVersionId());
+        PromptVersion promptVersion = promptRepository.getVersion(command.promptVersionId());
         if (promptVersion == null || promptVersion.getTemplateId() == null) {
-            throw new BizException("AI prompt version is not configured: " + command.getPromptVersionId());
+            throw new BizException("AI prompt version is not configured: " + command.promptVersionId());
         }
         PromptTemplate promptTemplate = promptRepository.get(promptVersion.getTemplateId());
-        AiBusinessCapability capability = command.getCapability();
+        AiBusinessCapability capability = command.capability();
         if (promptTemplate == null || !promptTemplate.isEnabled() || promptTemplate.getCapability() != capability) {
             throw new BizException("AI business config prompt template is disabled or mismatched: "
                     + PromptTemplateIdCodec.toValue(promptVersion.getTemplateId()));
@@ -194,23 +200,23 @@ public class AiBusinessInvokeConfigResolver {
 
     private ObjectNode withCommandMetadata(ObjectNode inputPayload, AiInvokeCommand command) {
         ObjectNode payload = inputPayload.deepCopy();
-        putIfAbsent(payload, "scope", command.getScope());
-        putIfAbsent(payload, "capability", command.getCapability().value());
+        putIfAbsent(payload, "scope", command.scope());
+        putIfAbsent(payload, "capability", command.capability().value());
         putIfAbsent(
                 payload,
                 "contentType",
-                command.getContentRef() == null ? null : command.getContentRef().contentType());
+                command.contentRef() == null ? null : command.contentRef().contentType());
         putIfAbsent(
                 payload,
                 "contentId",
-                command.getContentRef() == null ? null : command.getContentRef().contentId());
+                command.contentRef() == null ? null : command.contentRef().contentId());
         putIfAbsent(
                 payload,
                 "objectId",
-                command.getTargetObjectId() == null
+                command.targetObjectId() == null
                         ? null
-                        : command.getTargetObjectId().value());
-        putIfAbsent(payload, "locale", command.getLocale());
+                        : command.targetObjectId().value());
+        putIfAbsent(payload, "locale", command.locale());
         return payload;
     }
 
@@ -300,4 +306,14 @@ public class AiBusinessInvokeConfigResolver {
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }
+
+    public record ResolvedBusinessInvokeConfig(
+            Long serviceId,
+            String serviceRole,
+            com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId modelId,
+            com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName modelName,
+            com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId promptVersionId,
+            String promptMessagesJson,
+            String promptVariablesJson,
+            String outputSchemaJson) {}
 }

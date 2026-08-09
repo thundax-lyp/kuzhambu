@@ -45,9 +45,9 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("CLASSICS_SANCAI_SUMMARY", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.from(CAPABILITY_SUMMARY), capturedCommand.getCapability());
+        assertEquals("CLASSICS_SANCAI_SUMMARY", capturedCommand.operation());
+        assertNull(capturedCommand.workerPath());
+        assertEquals(AiBusinessCapability.from(CAPABILITY_SUMMARY), capturedCommand.capability());
     }
 
     @Test
@@ -61,9 +61,9 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("CLASSICS_WANGQI_SUMMARY", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.from(CAPABILITY_SUMMARY), capturedCommand.getCapability());
+        assertEquals("CLASSICS_WANGQI_SUMMARY", capturedCommand.operation());
+        assertNull(capturedCommand.workerPath());
+        assertEquals(AiBusinessCapability.from(CAPABILITY_SUMMARY), capturedCommand.capability());
     }
 
     @Test
@@ -76,9 +76,9 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("CLASSICS_MING_CUSTOMS_SUMMARY", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.from(CAPABILITY_SUMMARY), capturedCommand.getCapability());
+        assertEquals("CLASSICS_MING_CUSTOMS_SUMMARY", capturedCommand.operation());
+        assertNull(capturedCommand.workerPath());
+        assertEquals(AiBusinessCapability.from(CAPABILITY_SUMMARY), capturedCommand.capability());
     }
 
     @Test
@@ -92,9 +92,9 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("CLASSICS_WANGQI_TAGS", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.from(CAPABILITY_TAGS), capturedCommand.getCapability());
+        assertEquals("CLASSICS_WANGQI_TAGS", capturedCommand.operation());
+        assertNull(capturedCommand.workerPath());
+        assertEquals(AiBusinessCapability.from(CAPABILITY_TAGS), capturedCommand.capability());
     }
 
     @Test
@@ -107,9 +107,9 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("CLASSICS_MING_CUSTOMS_QA", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.from(CAPABILITY_QA), capturedCommand.getCapability());
+        assertEquals("CLASSICS_MING_CUSTOMS_QA", capturedCommand.operation());
+        assertNull(capturedCommand.workerPath());
+        assertEquals(AiBusinessCapability.from(CAPABILITY_QA), capturedCommand.capability());
     }
 
     @Test
@@ -123,9 +123,9 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("CLASSICS_SANCAI_TRANSLATE", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.from(CAPABILITY_TRANSLATE), capturedCommand.getCapability());
+        assertEquals("CLASSICS_SANCAI_TRANSLATE", capturedCommand.operation());
+        assertNull(capturedCommand.workerPath());
+        assertEquals(AiBusinessCapability.from(CAPABILITY_TRANSLATE), capturedCommand.capability());
     }
 
     @Test
@@ -139,9 +139,9 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("CLASSICS_SANCAI_VISUAL_DESCRIPTION", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.from(CAPABILITY_VISUAL), capturedCommand.getCapability());
+        assertEquals("CLASSICS_SANCAI_VISUAL_DESCRIPTION", capturedCommand.operation());
+        assertNull(capturedCommand.workerPath());
+        assertEquals(AiBusinessCapability.from(CAPABILITY_VISUAL), capturedCommand.capability());
     }
 
     @Test
@@ -154,9 +154,9 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("CLASSICS_SANCAI_SPLIT", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.from(CAPABILITY_SPLIT), capturedCommand.getCapability());
+        assertEquals("CLASSICS_SANCAI_SPLIT", capturedCommand.operation());
+        assertNull(capturedCommand.workerPath());
+        assertEquals(AiBusinessCapability.from(CAPABILITY_SPLIT), capturedCommand.capability());
     }
 
     @Test
@@ -172,11 +172,11 @@ class AiRefinementApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("MARKDOWN", result.getResultFormat());
         assertEquals("image-analysis-body", result.getResultPayload());
-        assertEquals("CLASSICS_SANCAI_IMAGE_ANALYSIS", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.from(CAPABILITY_IMAGE_ANALYSIS), capturedCommand.getCapability());
-        assertEquals(true, capturedCommand.isStream());
-        assertEquals(true, capturedCommand.isCreateCandidate());
+        assertEquals("CLASSICS_SANCAI_IMAGE_ANALYSIS", capturedCommand.operation());
+        assertNull(capturedCommand.workerPath());
+        assertEquals(AiBusinessCapability.from(CAPABILITY_IMAGE_ANALYSIS), capturedCommand.capability());
+        assertEquals(true, capturedCommand.stream());
+        assertEquals(true, capturedCommand.createCandidate());
         assertEquals(true, invocationService.streamInvoked());
     }
 
@@ -191,10 +191,10 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("CLASSICS_SANCAI_IMAGE_GEN", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.from(CAPABILITY_IMAGE_GEN), capturedCommand.getCapability());
-        assertEquals(true, capturedCommand.isStream());
+        assertEquals("CLASSICS_SANCAI_IMAGE_GEN", capturedCommand.operation());
+        assertNull(capturedCommand.workerPath());
+        assertEquals(AiBusinessCapability.from(CAPABILITY_IMAGE_GEN), capturedCommand.capability());
+        assertEquals(true, capturedCommand.stream());
         assertEquals(true, invocationService.streamInvoked());
     }
 
@@ -211,12 +211,12 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals(1, businessConfigResolver.resolveCount());
-        assertEquals(new AiModelId(200L), capturedCommand.getModelId());
-        assertEquals(AiModelName.of("server-model"), capturedCommand.getModelName());
-        assertEquals(new PromptVersionId(300L), capturedCommand.getPromptVersionId());
-        assertEquals("[{\"role\":\"system\",\"content\":\"server prompt\"}]", capturedCommand.getPromptMessagesJson());
-        assertEquals("{\"title\":\"server variables\"}", capturedCommand.getPromptVariablesJson());
-        assertEquals("{\"type\":\"object\"}", capturedCommand.getOutputSchemaJson());
+        assertEquals(new AiModelId(200L), capturedCommand.modelId());
+        assertEquals(AiModelName.of("server-model"), capturedCommand.modelName());
+        assertEquals(new PromptVersionId(300L), capturedCommand.promptVersionId());
+        assertEquals("[{\"role\":\"system\",\"content\":\"server prompt\"}]", capturedCommand.promptMessagesJson());
+        assertEquals("{\"title\":\"server variables\"}", capturedCommand.promptVariablesJson());
+        assertEquals("{\"type\":\"object\"}", capturedCommand.outputSchemaJson());
     }
 
     @Test
@@ -240,12 +240,12 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals(1, businessConfigResolver.resolveCount());
-        assertEquals(new AiModelId(200L), capturedCommand.getModelId());
-        assertEquals(AiModelName.of("server-model"), capturedCommand.getModelName());
-        assertEquals(new PromptVersionId(300L), capturedCommand.getPromptVersionId());
-        assertEquals("[{\"role\":\"system\",\"content\":\"server prompt\"}]", capturedCommand.getPromptMessagesJson());
-        assertEquals("{\"title\":\"server variables\"}", capturedCommand.getPromptVariablesJson());
-        assertEquals("{\"type\":\"object\"}", capturedCommand.getOutputSchemaJson());
+        assertEquals(new AiModelId(200L), capturedCommand.modelId());
+        assertEquals(AiModelName.of("server-model"), capturedCommand.modelName());
+        assertEquals(new PromptVersionId(300L), capturedCommand.promptVersionId());
+        assertEquals("[{\"role\":\"system\",\"content\":\"server prompt\"}]", capturedCommand.promptMessagesJson());
+        assertEquals("{\"title\":\"server variables\"}", capturedCommand.promptVariablesJson());
+        assertEquals("{\"type\":\"object\"}", capturedCommand.outputSchemaJson());
     }
 
     @Test
@@ -269,12 +269,12 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals(0, businessConfigResolver.resolveCount());
-        assertEquals(new AiModelId(20L), capturedCommand.getModelId());
-        assertEquals(AiModelName.of("model-a"), capturedCommand.getModelName());
-        assertEquals(new PromptVersionId(30L), capturedCommand.getPromptVersionId());
-        assertEquals("[{\"role\":\"user\",\"content\":\"hello\"}]", capturedCommand.getPromptMessagesJson());
-        assertEquals("{\"title\":\"submitted variables\"}", capturedCommand.getPromptVariablesJson());
-        assertEquals("{\"type\":\"object\",\"required\":[\"qaPairs\"]}", capturedCommand.getOutputSchemaJson());
+        assertEquals(new AiModelId(20L), capturedCommand.modelId());
+        assertEquals(AiModelName.of("model-a"), capturedCommand.modelName());
+        assertEquals(new PromptVersionId(30L), capturedCommand.promptVersionId());
+        assertEquals("[{\"role\":\"user\",\"content\":\"hello\"}]", capturedCommand.promptMessagesJson());
+        assertEquals("{\"title\":\"submitted variables\"}", capturedCommand.promptVariablesJson());
+        assertEquals("{\"type\":\"object\",\"required\":[\"qaPairs\"]}", capturedCommand.outputSchemaJson());
     }
 
     @Test
@@ -298,11 +298,11 @@ class AiRefinementApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals(0, businessConfigResolver.resolveCount());
-        assertEquals(new AiModelId(20L), capturedCommand.getModelId());
-        assertEquals(new PromptVersionId(30L), capturedCommand.getPromptVersionId());
-        assertEquals("[{\"role\":\"user\",\"content\":\"hello\"}]", capturedCommand.getPromptMessagesJson());
-        assertEquals("{\"title\":\"submitted variables\"}", capturedCommand.getPromptVariablesJson());
-        assertNull(capturedCommand.getOutputSchemaJson());
+        assertEquals(new AiModelId(20L), capturedCommand.modelId());
+        assertEquals(new PromptVersionId(30L), capturedCommand.promptVersionId());
+        assertEquals("[{\"role\":\"user\",\"content\":\"hello\"}]", capturedCommand.promptMessagesJson());
+        assertEquals("{\"title\":\"submitted variables\"}", capturedCommand.promptVariablesJson());
+        assertNull(capturedCommand.outputSchemaJson());
     }
 
     private AiRefinementRequestCommand command(String contentType, String operation, String capability) {
@@ -363,10 +363,10 @@ class AiRefinementApplicationServiceImplTest {
             result.setRequestId(new com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId("req-1"));
             result.setTraceId(new com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId("trace-1"));
             result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
-            result.setCapability(command.getCapability());
+            result.setCapability(command.capability());
             result.setResultFormat("MARKDOWN");
             result.setResultPayload("image-analysis-body");
-            result.setStreamCompleted(command.isStream());
+            result.setStreamCompleted(command.stream());
             return result;
         }
 
@@ -394,15 +394,17 @@ class AiRefinementApplicationServiceImplTest {
         }
 
         @Override
-        public void resolve(AiInvokeCommand command) {
+        public ResolvedBusinessInvokeConfig resolve(AiInvokeCommand command) {
             resolveCount++;
-            command.setModelId(new AiModelId(200L));
-            command.setModelName(AiModelName.of("server-model"));
-            command.setPromptVersionId(new PromptVersionId(300L));
-            command.setServiceRole("SERVER");
-            command.setPromptMessagesJson("[{\"role\":\"system\",\"content\":\"server prompt\"}]");
-            command.setPromptVariablesJson("{\"title\":\"server variables\"}");
-            command.setOutputSchemaJson("{\"type\":\"object\"}");
+            return new ResolvedBusinessInvokeConfig(
+                    null,
+                    "SERVER",
+                    new AiModelId(200L),
+                    AiModelName.of("server-model"),
+                    new PromptVersionId(300L),
+                    "[{\"role\":\"system\",\"content\":\"server prompt\"}]",
+                    "{\"title\":\"server variables\"}",
+                    "{\"type\":\"object\"}");
         }
 
         int resolveCount() {

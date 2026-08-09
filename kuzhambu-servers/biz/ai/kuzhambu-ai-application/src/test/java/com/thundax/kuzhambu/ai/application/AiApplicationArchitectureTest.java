@@ -38,7 +38,7 @@ class AiApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
-                Path.of("src/main/java"), AiApplicationCommandQueryRecordAllowances.legacyAllowances());
+                Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
                 List.of(Path.of("src/main/java"), Path.of("../kuzhambu-ai-interface/src/main/java")),
                 Collections.emptyList());

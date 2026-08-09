@@ -58,7 +58,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     @Override
     public AiInvokeResult invoke(AiInvokeCommand command) {
         validateCommand(command);
-        command.setStream(false);
+        command = withStream(command, false);
         AiInvocationLog invocationLog = toRunningInvocationLog(command);
         AiCallId callId = aiInvocationRepository.insertInvocationLog(invocationLog);
         invocationLog.setCallId(callId);
@@ -67,11 +67,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             result = aiWorkerGateway.invoke(command);
         } catch (RuntimeException ex) {
             result = AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
-                    "WORKER_UNAVAILABLE",
-                    ex.getMessage(),
-                    "WORKER_REQUEST");
+                    command.requestId(), command.traceId(), "WORKER_UNAVAILABLE", ex.getMessage(), "WORKER_REQUEST");
         }
         return completeCall(command, invocationLog, normalizeResult(command, result));
     }
@@ -79,7 +75,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     @Override
     public AiInvokeResult stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
         validateCommand(command);
-        command.setStream(true);
+        command = withStream(command, true);
         AiInvocationLog invocationLog = toRunningInvocationLog(command);
         AiCallId callId = aiInvocationRepository.insertInvocationLog(invocationLog);
         invocationLog.setCallId(callId);
@@ -90,8 +86,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             completedResult.compareAndSet(
                     null,
                     AiInvokeResult.failed(
-                            command.getRequestId(),
-                            command.getTraceId(),
+                            command.requestId(),
+                            command.traceId(),
                             "WORKER_UNAVAILABLE",
                             ex.getMessage(),
                             "WORKER_STREAM"));
@@ -99,8 +95,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         AiInvokeResult result = completedResult.get();
         if (result == null) {
             result = AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
+                    command.requestId(),
+                    command.traceId(),
                     "WORKER_PROTOCOL_FAILURE",
                     "Worker stream ended without completed event",
                     "WORKER_STREAM");
@@ -110,19 +106,19 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
 
     private AiInvocationLog toRunningInvocationLog(AiInvokeCommand command) {
         AiInvocationLog invocationLog = new AiInvocationLog();
-        invocationLog.setBatchId(command.getBatchId());
-        invocationLog.setScope(command.getScope());
-        invocationLog.setCapability(command.getCapability());
-        invocationLog.setContentRef(command.getContentRef());
-        invocationLog.setTargetObjectId(command.getTargetObjectId());
-        invocationLog.setServiceId(command.getServiceId());
-        invocationLog.setServiceRole(command.getServiceRole());
-        invocationLog.setModelId(command.getModelId());
-        invocationLog.setModelName(command.getModelName());
-        invocationLog.setPromptVersionId(command.getPromptVersionId());
-        invocationLog.setRequestId(command.getRequestId());
-        invocationLog.setTraceId(command.getTraceId());
-        invocationLog.setStreamUsed(command.isStream());
+        invocationLog.setBatchId(command.batchId());
+        invocationLog.setScope(command.scope());
+        invocationLog.setCapability(command.capability());
+        invocationLog.setContentRef(command.contentRef());
+        invocationLog.setTargetObjectId(command.targetObjectId());
+        invocationLog.setServiceId(command.serviceId());
+        invocationLog.setServiceRole(command.serviceRole());
+        invocationLog.setModelId(command.modelId());
+        invocationLog.setModelName(command.modelName());
+        invocationLog.setPromptVersionId(command.promptVersionId());
+        invocationLog.setRequestId(command.requestId());
+        invocationLog.setTraceId(command.traceId());
+        invocationLog.setStreamUsed(command.stream());
         invocationLog.setRequestedAt(Instant.now());
         return invocationLog;
     }
@@ -159,7 +155,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         if (result.isSucceeded()) {
             invocationLog.markSucceeded(result.getUsage(), completedAt);
             aiInvocationRepository.updateInvocationLog(invocationLog);
-            if (command.isCreateCandidate()) {
+            if (command.createCandidate()) {
                 AiCandidateId candidateId =
                         aiInvocationRepository.insertCandidate(result.toCandidate(command, invocationLog.getCallId()));
                 result.setCandidateId(candidateId);
@@ -168,7 +164,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             invocationLog.recordFailureStage(result.getFailureStage());
             invocationLog.markPartial(result.getErrorType(), result.getErrorMessage(), result.getUsage(), completedAt);
             aiInvocationRepository.updateInvocationLog(invocationLog);
-            if (command.isCreateCandidate()) {
+            if (command.createCandidate()) {
                 AiCandidateId candidateId =
                         aiInvocationRepository.insertCandidate(result.toCandidate(command, invocationLog.getCallId()));
                 result.setCandidateId(candidateId);
@@ -176,7 +172,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         } else {
             invocationLog.recordFailureStage(result.getFailureStage());
             invocationLog.markFailed(result.getErrorType(), result.getErrorMessage(), result.getUsage(), completedAt);
-            if (command.isCreateCandidate() && !command.isStream()) {
+            if (command.createCandidate() && !command.stream()) {
                 AiCandidate candidate = result.toCandidate(command, invocationLog.getCallId());
                 candidate.reject(
                         result.getErrorType(), result.getErrorMessage(), result.getFailureStage(), completedAt);
@@ -192,20 +188,20 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     private AiInvokeResult normalizeResult(AiInvokeCommand command, AiInvokeResult result) {
         if (result == null) {
             return AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
+                    command.requestId(),
+                    command.traceId(),
                     "WORKER_PROTOCOL_FAILURE",
                     "Worker returned empty result",
                     "WORKER_RESULT");
         }
         if (result.getRequestId() == null) {
-            result.setRequestId(command.getRequestId());
+            result.setRequestId(command.requestId());
         }
         if (result.getTraceId() == null) {
-            result.setTraceId(command.getTraceId());
+            result.setTraceId(command.traceId());
         }
-        if (command.getCapability() != null) {
-            result.setCapability(command.getCapability());
+        if (command.capability() != null) {
+            result.setCapability(command.capability());
         }
         if (isBlank(result.getResultFormat())) {
             result.setResultFormat(defaultResultFormat(command, result));
@@ -220,12 +216,12 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
 
     private void validateCommand(AiInvokeCommand command) {
         if (command == null
-                || isBlank(command.getScope())
-                || command.getCapability() == null
-                || command.getRequestId() == null
-                || command.getTraceId() == null
-                || isBlank(command.getPromptMessagesJson())
-                || isBlank(command.getInputPayloadJson())) {
+                || isBlank(command.scope())
+                || command.capability() == null
+                || command.requestId() == null
+                || command.traceId() == null
+                || isBlank(command.promptMessagesJson())
+                || isBlank(command.inputPayloadJson())) {
             throw new BizException("AI invoke command is incomplete");
         }
     }
@@ -238,7 +234,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         if (result != null && !isBlank(result.getArtifactReferenceJson())) {
             return "ARTIFACT";
         }
-        return command != null && command.isForceJson() ? "JSON" : "TEXT";
+        return command != null && command.forceJson() ? "JSON" : "TEXT";
     }
 
     private AiInvokeResult validateStructuredResult(AiInvokeCommand command, AiInvokeResult result) {
@@ -249,9 +245,9 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             return result;
         }
         try {
-            JsonNode schema = isBlank(command.getOutputSchemaJson())
+            JsonNode schema = isBlank(command.outputSchemaJson())
                     ? objectMapper.createObjectNode()
-                    : objectMapper.readTree(command.getOutputSchemaJson());
+                    : objectMapper.readTree(command.outputSchemaJson());
             if (!shouldValidateStructuredResult(command, result, schema)) {
                 return result;
             }
@@ -261,23 +257,19 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             return result;
         } catch (JsonProcessingException | IllegalArgumentException ex) {
             return AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
-                    "OUTPUT_FORMAT_FAILURE",
-                    ex.getMessage(),
-                    "WORKER_RESULT");
+                    command.requestId(), command.traceId(), "OUTPUT_FORMAT_FAILURE", ex.getMessage(), "WORKER_RESULT");
         }
     }
 
     private boolean couldRequireStructuredValidation(AiInvokeCommand command, AiInvokeResult result) {
         return "STRUCTURED".equalsIgnoreCase(result.getResultFormat())
-                || command.isForceJson()
-                || !isBlank(command.getOutputSchemaJson());
+                || command.forceJson()
+                || !isBlank(command.outputSchemaJson());
     }
 
     private boolean shouldValidateStructuredResult(AiInvokeCommand command, AiInvokeResult result, JsonNode schema) {
         return "STRUCTURED".equalsIgnoreCase(result.getResultFormat())
-                || command.isForceJson()
+                || command.forceJson()
                 || !"text".equalsIgnoreCase(schema.path("type").asText(""));
     }
 
@@ -395,8 +387,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         try {
             JsonNode artifactReference = objectMapper.readTree(result.getArtifactReferenceJson());
             DownloadedArtifact artifact = aiWorkerGateway.downloadArtifact(
-                    command.getRequestId(),
-                    command.getTraceId(),
+                    command.requestId(),
+                    command.traceId(),
                     artifactReference.path("downloadPath").asText());
             result.setResultPayload(
                     artifact.sizeBytes() > MULTIPART_THRESHOLD_BYTES
@@ -405,17 +397,13 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             return result;
         } catch (ArtifactDownloadException ex) {
             AiInvokeResult failed = AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
-                    "WORKER_UNAVAILABLE",
-                    ex.getMessage(),
-                    "ARTIFACT_DOWNLOAD");
+                    command.requestId(), command.traceId(), "WORKER_UNAVAILABLE", ex.getMessage(), "ARTIFACT_DOWNLOAD");
             failed.setArtifactReferenceJson(result.getArtifactReferenceJson());
             return failed;
         } catch (JsonProcessingException ex) {
             AiInvokeResult failed = AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
+                    command.requestId(),
+                    command.traceId(),
                     "WORKER_PROTOCOL_FAILURE",
                     ex.getMessage(),
                     "ARTIFACT_DOWNLOAD");
@@ -423,11 +411,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             return failed;
         } catch (RuntimeException ex) {
             AiInvokeResult failed = AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
-                    "INTERNAL_FAILURE",
-                    ex.getMessage(),
-                    "STORAGE_PERSIST");
+                    command.requestId(), command.traceId(), "INTERNAL_FAILURE", ex.getMessage(), "STORAGE_PERSIST");
             failed.setArtifactReferenceJson(result.getArtifactReferenceJson());
             return failed;
         }
@@ -493,5 +477,34 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                 .objectKey(init.getObjectKey())
                 .size(artifact.sizeBytes())
                 .build());
+    }
+
+    private AiInvokeCommand withStream(AiInvokeCommand command, boolean stream) {
+        return new AiInvokeCommand(
+                command.batchId(),
+                command.scope(),
+                command.capability(),
+                command.workerCapability(),
+                command.operation(),
+                command.workerPath(),
+                command.contentRef(),
+                command.targetObjectId(),
+                command.serviceId(),
+                command.serviceRole(),
+                command.modelId(),
+                command.modelName(),
+                command.promptVersionId(),
+                command.requestId(),
+                command.traceId(),
+                command.promptMessagesJson(),
+                command.promptVariablesJson(),
+                command.promptHash(),
+                command.inputPayloadJson(),
+                command.outputSchemaJson(),
+                stream,
+                command.forceJson(),
+                command.locale(),
+                command.allowFallback(),
+                command.createCandidate());
     }
 }

@@ -43,46 +43,70 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
         validateCommand(command);
         PlatformAiWorkerUsecaseSpec spec = resolver.resolve(usecase);
         AiInvokeCommand invokeCommand = toInvokeCommand(command, spec);
-        enrichBusinessInvokeConfig(invokeCommand);
+        invokeCommand = enrichBusinessInvokeConfig(invokeCommand);
         return invocationApplicationService.invoke(invokeCommand);
     }
 
     private AiInvokeCommand toInvokeCommand(PlatformAiInvokeCommand source, PlatformAiWorkerUsecaseSpec spec) {
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setScope("platform");
-        command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(spec.capability()));
-        command.setWorkerCapability(spec.workerCapability());
-        command.setOperation(spec.operation());
-        command.setWorkerPath(spec.workerPath());
-        command.setContentRef(source.contentRef());
-        command.setTargetObjectId(source.targetObjectId());
-        command.setServiceId(source.serviceId());
-        command.setServiceRole(source.serviceRole());
-        command.setModelId(source.modelId());
-        command.setModelName(source.modelName());
-        command.setPromptVersionId(source.promptVersionId());
-        command.setRequestId(source.requestId());
-        command.setTraceId(source.traceId());
-        command.setPromptMessagesJson(source.promptMessagesJson());
-        command.setPromptVariablesJson(source.promptVariablesJson());
-        command.setPromptHash(source.promptHash());
-        command.setInputPayloadJson(source.inputPayloadJson());
-        command.setOutputSchemaJson(source.outputSchemaJson());
-        command.setStream(false);
-        command.setForceJson(source.forceJson());
-        command.setLocale(source.locale());
-        command.setAllowFallback(source.allowFallback());
-        command.setCreateCandidate(
+        return new AiInvokeCommand(
+                null,
+                "platform",
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(spec.capability()),
+                spec.workerCapability(),
+                spec.operation(),
+                spec.workerPath(),
+                source.contentRef(),
+                source.targetObjectId(),
+                source.serviceId(),
+                source.serviceRole(),
+                source.modelId(),
+                source.modelName(),
+                source.promptVersionId(),
+                source.requestId(),
+                source.traceId(),
+                source.promptMessagesJson(),
+                source.promptVariablesJson(),
+                source.promptHash(),
+                source.inputPayloadJson(),
+                source.outputSchemaJson(),
+                false,
+                source.forceJson(),
+                source.locale(),
+                source.allowFallback(),
                 source.createCandidate() == null ? spec.defaultCreateCandidate() : source.createCandidate());
-        return command;
     }
 
-    private void enrichBusinessInvokeConfig(AiInvokeCommand command) {
+    private AiInvokeCommand enrichBusinessInvokeConfig(AiInvokeCommand command) {
         if (businessInvokeConfigResolver == null || command == null) {
-            return;
+            return command;
         }
-        businessInvokeConfigResolver.resolve(command);
+        var resolved = businessInvokeConfigResolver.resolve(command);
+        return new AiInvokeCommand(
+                command.batchId(),
+                command.scope(),
+                command.capability(),
+                command.workerCapability(),
+                command.operation(),
+                command.workerPath(),
+                command.contentRef(),
+                command.targetObjectId(),
+                resolved.serviceId(),
+                resolved.serviceRole(),
+                resolved.modelId(),
+                resolved.modelName(),
+                resolved.promptVersionId(),
+                command.requestId(),
+                command.traceId(),
+                resolved.promptMessagesJson(),
+                resolved.promptVariablesJson(),
+                command.promptHash(),
+                command.inputPayloadJson(),
+                resolved.outputSchemaJson(),
+                command.stream(),
+                command.forceJson(),
+                command.locale(),
+                command.allowFallback(),
+                command.createCandidate());
     }
 
     private void validateCommand(PlatformAiInvokeCommand command) {
