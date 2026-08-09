@@ -73,6 +73,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         validateSearchQuery(query);
         normalizeSearchQuery(query);
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
         long startNanos = System.nanoTime();
         QueryUnderstandingResult understandingResult = null;
         String normalizedQueryText =
@@ -163,6 +164,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             throw new BizException("Search event page query is required");
         }
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
         int pageNo = effectivePage.getPageNo();
         int pageSize = normalizePageSize(effectivePage.getPageSize());
         String intentType = firstOrNull(query.intentTypes());

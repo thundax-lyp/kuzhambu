@@ -182,6 +182,33 @@ class SearchApplicationServiceImplTest {
     }
 
     @Test
+    void searchShouldNormalizeMutablePageQueryBeforeCallingGateway() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchQueryNormalizer(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        SearchQuery query =
+                new SearchQuery("黄帝", List.of(), List.of(), List.of(), null, null, "ANONYMOUS", null, null, null);
+        PageQuery pageQuery = new PageQuery();
+        pageQuery.setPageNo(0);
+        pageQuery.setPageSize(0);
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
+        when(searchIndexGateway.search(any(), any(), eq(1), eq(10))).thenReturn(searchPageResult(0));
+
+        service.search(query, pageQuery);
+
+        verify(searchIndexGateway).search(any(), any(), eq(1), eq(10));
+    }
+
+    @Test
     void searchShouldAllowBlankQueryForDefaultPublishedContentList() {
         SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
         SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
@@ -647,6 +674,29 @@ class SearchApplicationServiceImplTest {
         service.pageEvents(new SearchEventQuery(null, null, null, null, null, null), new PageQuery(1, 10_000));
 
         verify(searchEventRepository).page(null, null, null, null, 1, 200);
+    }
+
+    @Test
+    void pageEventsShouldNormalizeMutablePageQueryBeforeCallingRepository() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchQueryNormalizer(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        PageQuery pageQuery = new PageQuery();
+        pageQuery.setPageNo(0);
+        pageQuery.setPageSize(0);
+        when(searchEventRepository.page(null, null, null, null, 1, 10)).thenReturn(PageResult.of(1, 10, 0, List.of()));
+
+        service.pageEvents(new SearchEventQuery(null, null, null, null, null, null), pageQuery);
+
+        verify(searchEventRepository).page(null, null, null, null, 1, 10);
     }
 
     @Test
