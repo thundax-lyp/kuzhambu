@@ -59,7 +59,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
-import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersioningService;
+import com.thundax.kuzhambu.classics.domain.content.support.ClassicsContentVersioningSupport;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
@@ -130,7 +130,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final WorkerRenderClient workerRenderClient;
     private final StorageFacade storageFacade;
     private final ObjectMapper objectMapper;
-    private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
+    private final ClassicsContentVersioningSupport versioningSupport = new ClassicsContentVersioningSupport();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
     private final AiFacade aiFacade;
     private final ClassicsAiCandidatePayloadParser aiCandidatePayloadParser;
@@ -395,20 +395,20 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             return null;
         }
         repository.lockContentForVersion(content.contentType(), content.contentId());
-        if (!versioningService.needsVersion(content)) {
+        if (!versioningSupport.needsVersion(content)) {
             return repository.latestVersion(content.contentType(), content.contentId());
         }
 
-        ClassicsContentVersion version = versioningService.newVersion(
+        ClassicsContentVersion version = versioningSupport.newVersion(
                 content,
-                versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
+                versioningSupport.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
                 Instant.now(),
                 snapshotJson(content),
                 changeType,
                 changeSummary);
         ClassicsContentVersionId versionId = repository.insertVersion(version);
         version.setId(versionId);
-        versioningService.markVersioned(content, version);
+        versioningSupport.markVersioned(content, version);
         return version;
     }
 
@@ -1514,16 +1514,16 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private ClassicsContentVersion createRestoredVersion(Versionable content, ClassicsContentVersion restoredFrom) {
         repository.lockContentForVersion(content.contentType(), content.contentId());
-        ClassicsContentVersion version = versioningService.newVersion(
+        ClassicsContentVersion version = versioningSupport.newVersion(
                 content,
-                versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
+                versioningSupport.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
                 Instant.now(),
                 snapshotJson(content),
                 ClassicsContentChangeType.HISTORY_RESTORED,
                 "恢复历史版本 v" + restoredFrom.getVersionNo());
         ClassicsContentVersionId versionId = repository.insertVersion(version);
         version.setId(versionId);
-        versioningService.markVersioned(content, version);
+        versioningSupport.markVersioned(content, version);
         return version;
     }
 

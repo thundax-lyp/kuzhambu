@@ -9,5 +9,6 @@ class OperationsDomainArchitectureTest {
     @Test
     void valueObjectIdsShouldDeclareNoStaticMethods() {
         NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(Path.of("src/main/java"));
     }
 }

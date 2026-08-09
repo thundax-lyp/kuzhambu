@@ -70,7 +70,7 @@
 - 应用层输入：`Command` / `Query` / `PageQuery`
 - 应用层输出：本域 domain entity / 强类型值对象 / `Result` / `DTO` / `PageResult`
 - 应用层内部复用：`Helper` / `Factory` / `Resolver` / `Executor`
-- 核心领域规则：`DomainService`
+- Repository-backed 核心领域规则：`DomainService`
 - 领域读写端口：`Repository`
 - 仓储实现：`RepositoryImpl`
 - 数据库访问：`Mapper`
@@ -89,7 +89,7 @@
 - 当某个业务域需要为其他业务域暴露稳定的单体内跨域接口时，应新增独立 `*-facade` 模块；该模块扮演微服务 `interface` 的等价物，对外提供统一 `*Facade` 边界。
 - `*Facade` 只服务外域调用；提供方本域内部继续直接使用本域 `ApplicationService`、`DomainService`、`Repository` 等分层对象，不把 facade 当作本域内部默认入口。
 - `*Facade` 按外域视角收敛成统一门面；不要把同一业务域对外边界机械拆成多个按内部 helper 或 use case 命名的 facade。
-- 复杂跨域业务沉淀为稳定 `DomainService` 语义，由调用方 application 通过该 `DomainService` 完成读取、校验或状态变更。
+- 复杂跨域业务沉淀为稳定 `DomainService` 语义，由调用方 application 通过该 `DomainService` 完成读取、校验或状态变更；不碰本域 `Repository` 的纯计算、默认值、归一化、对象构造或辅助逻辑不得命名为 `DomainService`。
 - 跨域调用不得直接访问对端 `infra`、`mapper`、`dataobject`、`repository.impl` 或底层表。
 - 对端 `ApplicationService` 不作为默认跨域防腐接口；复杂跨域业务定义明确业务语义的 `DomainService`，再由 application 编排事务和用户用例。
 
@@ -219,7 +219,7 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 - `domain/<subdomain>/model/enums/`：领域层枚举；`{module}-domain` 内所有 enum 必须位于对应业务子域的此包。
 - `domain/<subdomain>/model/valueobject/`：强类型 ID、Key、Code、Token、Ref、Snapshot 等领域值对象；`application`、`interfaces`、`infra` 不得定义 `valueobject` 包。
 - `domain/<subdomain>/model/`：聚合、实体和领域模型。
-- `domain/service/`：无法自然归入单个领域对象的领域规则。
+- `domain/service/`：无法自然归入单个领域对象、且需要协同本域 `Repository` 读写或校验聚合状态的领域规则。
 - `domain/<subdomain>/repository/`：业务域持久化端口，只表达聚合读写语义。
 - `domain/event/`：领域事件。
 - `infra/<subdomain>/repository/impl/`：`domain.<subdomain>.repository` 的持久化实现。
