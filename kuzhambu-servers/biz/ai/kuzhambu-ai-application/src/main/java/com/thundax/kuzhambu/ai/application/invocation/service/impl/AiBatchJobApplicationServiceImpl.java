@@ -105,7 +105,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobResult recordSuccess(RecordAiBatchJobCommand command) {
-        AiBatchJobId batchId = command == null ? null : command.getBatchId();
+        AiBatchJobId batchId = command == null ? null : command.batchId();
         AiBatchJob job = getRequired(batchId);
         if (AiBatchJobStatus.CANCELLED == job.getStatus()) {
             consumeCancelledSlot(job);
@@ -122,15 +122,15 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobResult recordSuccessIfRunning(RecordAiBatchJobCommand command) {
-        return recordIfRunning(command == null ? null : command.getBatchId(), AiBatchJob::recordSuccess);
+        return recordIfRunning(command == null ? null : command.batchId(), AiBatchJob::recordSuccess);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobResult recordFailure(RecordAiBatchJobFailureCommand command) {
-        AiBatchJobId batchId = command == null ? null : command.getBatchId();
+        AiBatchJobId batchId = command == null ? null : command.batchId();
         AiBatchJob job = getRequired(batchId);
-        String failureSummaryJson = command == null ? null : command.getFailureSummaryJson();
+        String failureSummaryJson = command == null ? null : command.failureSummaryJson();
         job.setFailureSummaryJson(failureSummaryJson);
         if (AiBatchJobStatus.CANCELLED == job.getStatus()) {
             consumeCancelledSlot(job);
@@ -147,8 +147,8 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobResult recordFailureIfRunning(RecordAiBatchJobFailureCommand command) {
-        AiBatchJobId batchId = command == null ? null : command.getBatchId();
-        String failureSummaryJson = command == null ? null : command.getFailureSummaryJson();
+        AiBatchJobId batchId = command == null ? null : command.batchId();
+        String failureSummaryJson = command == null ? null : command.failureSummaryJson();
         return recordIfRunning(batchId, job -> {
             job.setFailureSummaryJson(failureSummaryJson);
             job.recordFailure();
@@ -158,8 +158,8 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobResult recordPartialIfRunning(RecordAiBatchJobFailureCommand command) {
-        AiBatchJobId batchId = command == null ? null : command.getBatchId();
-        String failureSummaryJson = command == null ? null : command.getFailureSummaryJson();
+        AiBatchJobId batchId = command == null ? null : command.batchId();
+        String failureSummaryJson = command == null ? null : command.failureSummaryJson();
         return recordIfRunning(batchId, job -> {
             job.setFailureSummaryJson(failureSummaryJson);
             job.recordPartial();
@@ -169,14 +169,14 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int expireRunning(ExpireRunningAiBatchJobsCommand command) {
-        Instant requestedBefore = command == null ? null : command.getRequestedBefore();
+        Instant requestedBefore = command == null ? null : command.requestedBefore();
         if (requestedBefore == null) {
             throw new BizException("AI batch job expire cutoff is required");
         }
         int expiredCount = 0;
         for (AiBatchJob job : aiBatchJobRepository.listRunningJobsRequestedBefore(
-                command.getScope(), command.getCapabilities(), requestedBefore, command.getLimit())) {
-            job.setFailureSummaryJson(command.getFailureSummaryJson());
+                command.scope(), command.capabilities(), requestedBefore, command.limit())) {
+            job.setFailureSummaryJson(command.failureSummaryJson());
             job.recordFailure();
             expiredCount += aiBatchJobRepository.updateIfStatus(job, AiBatchJobStatus.RUNNING);
         }

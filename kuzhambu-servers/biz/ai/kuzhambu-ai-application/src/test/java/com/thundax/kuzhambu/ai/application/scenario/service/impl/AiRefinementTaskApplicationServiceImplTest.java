@@ -523,7 +523,7 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public AiBatchJobResult recordSuccess(RecordAiBatchJobCommand command) {
-            AiBatchJobId batchId = command == null ? null : command.getBatchId();
+            AiBatchJobId batchId = command == null ? null : command.batchId();
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "SUCCEEDED", 1, 0, null);
             replace(updated);
@@ -532,7 +532,7 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public AiBatchJobResult recordSuccessIfRunning(RecordAiBatchJobCommand command) {
-            AiBatchJobId batchId = command == null ? null : command.getBatchId();
+            AiBatchJobId batchId = command == null ? null : command.batchId();
             AiBatchJobResult job = get(batchId);
             if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
@@ -542,8 +542,8 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public AiBatchJobResult recordFailure(RecordAiBatchJobFailureCommand command) {
-            AiBatchJobId batchId = command == null ? null : command.getBatchId();
-            String failureSummaryJson = command == null ? null : command.getFailureSummaryJson();
+            AiBatchJobId batchId = command == null ? null : command.batchId();
+            String failureSummaryJson = command == null ? null : command.failureSummaryJson();
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "FAILED", 0, 1, failureSummaryJson);
             replace(updated);
@@ -552,7 +552,7 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public AiBatchJobResult recordFailureIfRunning(RecordAiBatchJobFailureCommand command) {
-            AiBatchJobId batchId = command == null ? null : command.getBatchId();
+            AiBatchJobId batchId = command == null ? null : command.batchId();
             AiBatchJobResult job = get(batchId);
             if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
@@ -562,8 +562,8 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public AiBatchJobResult recordPartialIfRunning(RecordAiBatchJobFailureCommand command) {
-            AiBatchJobId batchId = command == null ? null : command.getBatchId();
-            String failureSummaryJson = command == null ? null : command.getFailureSummaryJson();
+            AiBatchJobId batchId = command == null ? null : command.batchId();
+            String failureSummaryJson = command == null ? null : command.failureSummaryJson();
             AiBatchJobResult job = get(batchId);
             if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
@@ -578,11 +578,10 @@ class AiRefinementTaskApplicationServiceImplTest {
             int expiredCount = 0;
             for (AiBatchJobResult job : List.copyOf(jobs)) {
                 if (AiBatchJobStatus.RUNNING == job.getStatus()
-                        && command.getScope().equals(job.getScope())
-                        && command.getCapabilities().contains(job.getCapability())
-                        && job.getRequestedAt().isBefore(command.getRequestedBefore())) {
-                    recordFailure(
-                            new RecordAiBatchJobFailureCommand(job.getBatchId(), command.getFailureSummaryJson()));
+                        && command.scope().equals(job.getScope())
+                        && command.capabilities().contains(job.getCapability())
+                        && job.getRequestedAt().isBefore(command.requestedBefore())) {
+                    recordFailure(new RecordAiBatchJobFailureCommand(job.getBatchId(), command.failureSummaryJson()));
                     expiredCount++;
                 }
             }
