@@ -29,7 +29,7 @@ class KnowledgeGraphRefinementControllerTest {
         request.setPageNo(1);
         request.setPageSize(10);
         request.setTaskType("GRAPH");
-        when(service.pageTasks(any()))
+        when(service.pageTasks(any(), any()))
                 .thenReturn(PageResult.of(
                         1,
                         10,
@@ -49,7 +49,7 @@ class KnowledgeGraphRefinementControllerTest {
 
         var response = controller.pageTasks(request);
 
-        verify(service).pageTasks(any());
+        verify(service).pageTasks(any(), any());
         assertEquals(1, response.getRecords().size());
         assertEquals(31L, response.getRecords().get(0).getRefinementTaskId());
         assertEquals("myth", response.getRecords().get(0).getSourceCategoryCode());

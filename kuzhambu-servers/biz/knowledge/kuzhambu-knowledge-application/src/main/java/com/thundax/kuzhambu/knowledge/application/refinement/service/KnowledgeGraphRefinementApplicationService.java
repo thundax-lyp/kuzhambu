@@ -18,7 +18,7 @@ import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefin
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery;
-import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualitySummaryResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementApplyResult;
@@ -31,7 +31,7 @@ import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementWo
 
 public interface KnowledgeGraphRefinementApplicationService {
 
-    PageResult<RefinementWorkbenchItemResult> pageTasks(RefinementWorkbenchPageQuery query);
+    PageResult<RefinementWorkbenchItemResult> pageTasks(RefinementWorkbenchQuery query, PageQuery pageQuery);
 
     RefinementDetailResult openTask(Long graphVersionId, Long openedBy);
 

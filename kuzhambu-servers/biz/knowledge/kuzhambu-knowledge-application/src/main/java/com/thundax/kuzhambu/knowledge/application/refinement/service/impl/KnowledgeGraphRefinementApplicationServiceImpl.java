@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.common.core.page.PageRules;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementEntityCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageRelationCommand;
@@ -22,7 +21,7 @@ import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefin
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery;
-import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualitySummaryResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementApplyResult;
@@ -118,19 +117,18 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     @Transactional(readOnly = true)
-    public PageResult<RefinementWorkbenchItemResult> pageTasks(RefinementWorkbenchPageQuery query) {
-        RefinementWorkbenchPageQuery effective = query == null
-                ? new RefinementWorkbenchPageQuery(
-                        null, null, null, null, null, PageRules.firstPageIndex(), PageRules.defaultPageSize())
-                : query;
+    public PageResult<RefinementWorkbenchItemResult> pageTasks(RefinementWorkbenchQuery query, PageQuery pageQuery) {
+        RefinementWorkbenchQuery effective =
+                query == null ? new RefinementWorkbenchQuery(null, null, null, null, null) : query;
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         PageResult<RefinementTask> page = refinementTaskRepository.page(
-                effective.getTaskType(),
-                effective.getSourceContentType(),
-                effective.getSourceContentId(),
-                effective.getSourceCategoryCode(),
-                effective.getStatus(),
-                effective.getPageNo(),
-                effective.getPageSize());
+                effective.taskType(),
+                effective.sourceContentType(),
+                effective.sourceContentId(),
+                effective.sourceCategoryCode(),
+                effective.status(),
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize());
         return PageResult.of(
                 page.getPageNo(),
                 page.getPageSize(),

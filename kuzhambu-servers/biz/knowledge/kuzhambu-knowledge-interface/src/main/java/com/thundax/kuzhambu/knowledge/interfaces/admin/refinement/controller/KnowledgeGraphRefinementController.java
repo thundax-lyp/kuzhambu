@@ -46,7 +46,9 @@ public class KnowledgeGraphRefinementController {
     public PageResponse<RefinementResponses.WorkbenchItemResponse> pageTasks(
             @Valid @RequestBody RefinementRequests.TaskPageRequest request) {
         return PageResponseHelper.fromPageResult(
-                refinementService.pageTasks(KnowledgeGraphRefinementInterfaceAssembler.toPageQuery(request)),
+                refinementService.pageTasks(
+                        KnowledgeGraphRefinementInterfaceAssembler.toTaskQuery(request),
+                        PageInterfaceAssembler.toPageQuery(request)),
                 KnowledgeGraphRefinementInterfaceAssembler::toResponse);
     }
 
