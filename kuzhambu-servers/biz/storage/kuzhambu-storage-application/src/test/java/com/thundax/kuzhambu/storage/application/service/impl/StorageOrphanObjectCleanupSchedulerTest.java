@@ -281,7 +281,7 @@ class StorageOrphanObjectCleanupSchedulerTest {
         }
 
         @Override
-        public int physicalDeleteById(StoredObjectId id) {
+        public int deleteByIdPermanently(StoredObjectId id) {
             physicalDeletedIds.add(id);
             return 1;
         }

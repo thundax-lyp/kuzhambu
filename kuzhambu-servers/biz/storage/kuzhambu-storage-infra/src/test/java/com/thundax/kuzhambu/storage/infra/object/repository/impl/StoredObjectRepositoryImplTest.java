@@ -57,7 +57,7 @@ class StoredObjectRepositoryImplTest {
         StoredObjectRepositoryImpl repository = new StoredObjectRepositoryImpl(mapper, referenceMapper, cacheSupport);
         when(mapper.deleteById(1001L)).thenReturn(1);
 
-        int count = repository.physicalDeleteById(StoredObjectIdCodec.toDomain(1001L));
+        int count = repository.deleteByIdPermanently(StoredObjectIdCodec.toDomain(1001L));
 
         assertEquals(1, count);
         verify(referenceMapper).delete(any(Wrapper.class));
@@ -72,7 +72,7 @@ class StoredObjectRepositoryImplTest {
         StorageCacheSupport cacheSupport = mock(StorageCacheSupport.class);
         StoredObjectRepositoryImpl repository = new StoredObjectRepositoryImpl(mapper, referenceMapper, cacheSupport);
 
-        assertEquals(0, repository.physicalDeleteById(null));
+        assertEquals(0, repository.deleteByIdPermanently(null));
     }
 
     @Test
@@ -83,7 +83,7 @@ class StoredObjectRepositoryImplTest {
         StoredObjectRepositoryImpl repository = new StoredObjectRepositoryImpl(mapper, referenceMapper, cacheSupport);
         when(mapper.deleteById(1002L)).thenReturn(0);
 
-        int count = repository.physicalDeleteById(StoredObjectIdCodec.toDomain(1002L));
+        int count = repository.deleteByIdPermanently(StoredObjectIdCodec.toDomain(1002L));
 
         assertEquals(0, count);
         verify(referenceMapper).delete(any(Wrapper.class));

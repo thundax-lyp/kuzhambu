@@ -122,7 +122,7 @@ class MultipartUploadApplicationServiceImplTest {
         verify(contentRepository).save(any(), any());
         verify(storageApplicationService).create(any());
         verify(contentRepository, times(3)).delete(any());
-        verify(multipartUploadRepository).deleteMultipartParts(UPLOAD_ID_REF);
+        verify(multipartUploadRepository).deleteByUploadId(UPLOAD_ID_REF);
     }
 
     @Test

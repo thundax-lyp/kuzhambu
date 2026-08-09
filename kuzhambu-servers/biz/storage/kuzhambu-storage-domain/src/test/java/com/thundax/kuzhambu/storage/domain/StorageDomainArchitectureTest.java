@@ -29,5 +29,7 @@ class StorageDomainArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertDomainEnumPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertRepositoryPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertRepositoryInterfaceMethodNames(classes);
+        NamingArchitectureRuleSupport.assertRepositoryTypeNamesUseRepositorySuffix(classes);
     }
 }

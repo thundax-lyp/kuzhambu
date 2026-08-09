@@ -24,5 +24,5 @@ public interface PrincipalRefreshTokenRepository {
 
     int updateStatus(PrincipalRefreshToken refreshToken);
 
-    int markUsedIfActive(PrincipalRefreshToken refreshToken, Instant now);
+    int updateUsedIfActive(PrincipalRefreshToken refreshToken, Instant now);
 }

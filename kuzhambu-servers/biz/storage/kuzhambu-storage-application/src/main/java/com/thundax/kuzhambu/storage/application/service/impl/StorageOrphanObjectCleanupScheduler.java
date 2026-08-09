@@ -56,7 +56,7 @@ public class StorageOrphanObjectCleanupScheduler {
                 continue;
             }
             delete(candidate);
-            count += repository.physicalDeleteById(candidate.getId());
+            count += repository.deleteByIdPermanently(candidate.getId());
         }
         return count;
     }
