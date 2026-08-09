@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ai-infra worker gateway properties`：迁移 AI worker gateway 配置属性注册
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/gateway/AiWorkerGatewayProperties.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/configure/AiWorkerGatewayProperties.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/configure/AiWorkerGatewayConfiguration.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/gateway/AiWorkerHttpGateway.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/test/java/com/thundax/kuzhambu/ai/infra/invocation/gateway/AiWorkerHttpGatewayTest.java`
-    - 处理动作：按 RUNBOOK Step 1 将 `AiWorkerGatewayProperties` 移入 `infra.invocation.configure` 并改为 `@ConfigurationProperties` 注册
-    - 验收点：`AiWorkerGatewayProperties` 不再使用 `@Component` 或字段级 `@Value`，`AiWorkerGatewayConfiguration` 使用 `@EnableConfigurationProperties(AiWorkerGatewayProperties.class)`，生产和测试 import 指向新包
-    - 重要度：8/10
-
 - [ ] `classics-infra worker render properties`：迁移 classics render worker 配置属性注册
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`
