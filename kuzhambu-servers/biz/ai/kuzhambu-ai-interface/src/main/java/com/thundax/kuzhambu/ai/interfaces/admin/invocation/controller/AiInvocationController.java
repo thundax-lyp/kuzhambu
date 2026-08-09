@@ -117,8 +117,7 @@ public class AiInvocationController {
     public InvocationSummaryResponse summarizeInvocationLogs(
             @Valid @RequestBody AiInvocationRequests.InvocationSummaryRequest request) {
         return AiInvocationInterfaceAssembler.toSummaryResponse(
-                request.getPeriodStart(),
-                request.getPeriodEnd(),
+                request,
                 invocationRepository.listInvocationLogs(
                         request.getScope(),
                         toCapability(request.getCapability()),
