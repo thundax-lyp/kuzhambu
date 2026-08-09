@@ -4,5 +4,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties(OperationsExternalHealthProbeProperties.class)
+@EnableConfigurationProperties({
+    OperationsExternalHealthProbeProperties.class,
+    OperationsHealthAlertPolicyProperties.class
+})
 public class OperationsExternalHealthProbeConfiguration {}

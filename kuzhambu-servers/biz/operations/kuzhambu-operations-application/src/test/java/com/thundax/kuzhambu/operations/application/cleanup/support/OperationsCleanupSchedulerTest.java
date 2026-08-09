@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.command.OperationsCleanupExecuteCommand;
+import com.thundax.kuzhambu.operations.application.cleanup.configure.OperationsCleanupScheduleProperties;
 import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupDetailQuery;
 import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupQuery;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
@@ -42,7 +43,7 @@ class OperationsCleanupSchedulerTest {
     void executeDailyCleanupShouldExecuteEnabledPoliciesInOrder() {
         CountingCleanupApplicationService cleanupApplicationService = new CountingCleanupApplicationService();
         OperationsCleanupScheduleProperties properties = properties(true, true);
-        properties.setExpiredShareEnabled(false);
+        properties.getPolicies().getExpiredShare().setEnabled(false);
         OperationsCleanupScheduler scheduler = new OperationsCleanupScheduler(cleanupApplicationService, properties);
 
         scheduler.executeDailyCleanup();
@@ -86,27 +87,6 @@ class OperationsCleanupSchedulerTest {
         properties.setStartupEnabled(startupEnabled);
         properties.setDailyCron("0 30 3 * * ?");
         properties.setDefaultLimit(200);
-        properties.setExpiredBackupEnabled(true);
-        properties.setExpiredBackupRetentionDays(30);
-        properties.setExpiredBackupLimit(200);
-        properties.setExpiredExportEnabled(true);
-        properties.setExpiredExportRetentionDays(7);
-        properties.setExpiredExportLimit(200);
-        properties.setExpiredShareEnabled(true);
-        properties.setExpiredShareRetentionDays(90);
-        properties.setExpiredShareLimit(200);
-        properties.setExpiredDraftEnabled(true);
-        properties.setExpiredDraftRetentionDays(30);
-        properties.setExpiredDraftLimit(200);
-        properties.setExpiredReportEnabled(true);
-        properties.setExpiredReportRetentionDays(90);
-        properties.setExpiredReportLimit(200);
-        properties.setExpiredHealthCheckEnabled(true);
-        properties.setExpiredHealthCheckRetentionDays(30);
-        properties.setExpiredHealthCheckLimit(500);
-        properties.setExpiredLongTaskEnabled(true);
-        properties.setExpiredLongTaskRetentionDays(90);
-        properties.setExpiredLongTaskLimit(200);
         return properties;
     }
 
