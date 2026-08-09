@@ -1,11 +1,13 @@
 package com.thundax.kuzhambu.common.web.configure;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+@Getter
+@Setter
 @ConfigurationProperties(prefix = "kuzhambu.web.restore-write-block")
 public class RestoreWriteBlockProperties {
 
@@ -29,24 +31,4 @@ public class RestoreWriteBlockProperties {
             "/api/auth/captcha",
             "/api/auth/captcha/refresh",
             "/actuator/health"));
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public List<String> getAllowedPaths() {
-        return Collections.unmodifiableList(allowedPaths);
-    }
-
-    public void setAllowedPaths(List<String> allowedPaths) {
-        if (allowedPaths == null) {
-            this.allowedPaths = new ArrayList<>();
-            return;
-        }
-        this.allowedPaths = allowedPaths.stream().filter(Objects::nonNull).toList();
-    }
 }

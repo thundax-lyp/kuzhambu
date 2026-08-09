@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.common.web.restore;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.web.configure.RestoreWriteBlockProperties;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -92,14 +90,17 @@ public class RestoreWriteBlockFilterTest {
     }
 
     @Test
-    public void shouldExposeAllowedPathsAsImmutableListWithoutNullElements() {
+    public void shouldIgnoreNullAllowedPaths() throws ServletException, IOException {
         RestoreWriteBlockProperties properties = new RestoreWriteBlockProperties();
         properties.setAllowedPaths(java.util.Arrays.asList("/api/auth/captcha", null));
+        RestoreWriteBlockFilter filter = filter(blockedState(), properties);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        CountingFilterChain chain = new CountingFilterChain();
 
-        assertEquals(List.of("/api/auth/captcha"), properties.getAllowedPaths());
-        assertThrows(
-                UnsupportedOperationException.class,
-                () -> properties.getAllowedPaths().clear());
+        filter.doFilter(new MockHttpServletRequest("POST", "/api/classics/sancai/save"), response, chain);
+
+        assertFalse(chain.invoked);
+        assertEquals(HttpStatus.LOCKED.value(), response.getStatus());
     }
 
     private RestoreWriteBlockFilter filter(RestoreWriteBlockState state, RestoreWriteBlockProperties properties) {

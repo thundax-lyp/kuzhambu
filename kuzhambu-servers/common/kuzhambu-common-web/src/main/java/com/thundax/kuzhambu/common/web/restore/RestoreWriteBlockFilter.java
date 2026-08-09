@@ -21,13 +21,15 @@ public class RestoreWriteBlockFilter extends OncePerRequestFilter {
     public static final String WRITE_BLOCKED_MESSAGE = "系统正在执行恢复，请稍后重试。";
 
     private final RestoreWriteBlockState state;
-    private final RestoreWriteBlockProperties properties;
+    private final boolean enabled;
+    private final RestoreWriteBlockAllowedPathPolicy allowedPathPolicy;
     private final ObjectMapper objectMapper;
 
     public RestoreWriteBlockFilter(
             RestoreWriteBlockState state, RestoreWriteBlockProperties properties, ObjectMapper objectMapper) {
         this.state = state;
-        this.properties = properties;
+        this.enabled = properties != null && properties.isEnabled();
+        this.allowedPathPolicy = RestoreWriteBlockAllowedPathPolicy.from(properties);
         this.objectMapper = objectMapper;
     }
 
@@ -46,7 +48,7 @@ public class RestoreWriteBlockFilter extends OncePerRequestFilter {
     }
 
     private boolean shouldBlock(HttpServletRequest request) {
-        return properties.isEnabled()
+        return enabled
                 && state.isBlocked()
                 && isWriteMethod(request.getMethod())
                 && !isAllowedPath(request.getRequestURI());
@@ -61,9 +63,6 @@ public class RestoreWriteBlockFilter extends OncePerRequestFilter {
     }
 
     private boolean isAllowedPath(String requestUri) {
-        if (requestUri == null) {
-            return false;
-        }
-        return properties.getAllowedPaths().stream().anyMatch(requestUri::equals);
+        return allowedPathPolicy.matches(requestUri);
     }
 }
