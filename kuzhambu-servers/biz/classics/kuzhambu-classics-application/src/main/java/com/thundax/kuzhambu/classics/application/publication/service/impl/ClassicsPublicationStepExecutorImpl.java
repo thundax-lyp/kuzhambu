@@ -19,9 +19,9 @@ import com.thundax.kuzhambu.discovery.facade.DiscoverySearchPublicationFacade;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationReferenceFacadeRequest;
 import java.time.Clock;
 import java.util.Objects;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationStepExecutor {
     private static final long REMOTE_CALL_SAFETY_SECONDS = 5;
     private final ClassicsPublicationJobRepository jobRepository;

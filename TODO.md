@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics publication properties and executor stereotype`：收敛 classics publication 配置注册和执行器 stereotype
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/publication/configure/ClassicsPublicationProperties.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/publication/configure/ClassicsPublicationExecutorConfiguration.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/publication/service/impl/ClassicsPublicationStepExecutorImpl.java`
-    - 处理动作：按 RUNBOOK Step 7 和 Step 8 删除 `ClassicsPublicationProperties` 的 `@Component` 并将 `ClassicsPublicationStepExecutorImpl` 改为 `@Service`
-    - 验收点：`ClassicsPublicationExecutorConfiguration` 使用 `@EnableConfigurationProperties(ClassicsPublicationProperties.class)`，`ClassicsPublicationProperties` 无 `@Component`，`ClassicsPublicationStepExecutorImpl` 使用 `@Service` 且无 `@Component`
-    - 重要度：8/10
-
 - [ ] `component stereotype cleanup closure`：执行组件注解清理验证和现场清理
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`
