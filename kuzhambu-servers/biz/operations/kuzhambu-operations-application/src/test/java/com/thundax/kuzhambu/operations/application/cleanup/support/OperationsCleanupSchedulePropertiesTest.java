@@ -28,8 +28,8 @@ class OperationsCleanupSchedulePropertiesTest {
                     OperationsCleanupScheduleProperties properties =
                             context.getBean(OperationsCleanupScheduleProperties.class);
 
-                    OperationsCleanupScheduleProperties.CleanupPolicy policy =
-                            properties.policyFor(OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_BACKUP);
+                    OperationsCleanupPolicies.CleanupPolicy policy = OperationsCleanupPolicies.policyFor(
+                            properties, OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_BACKUP);
 
                     assertFalse(policy.enabled());
                     assertEquals(60, policy.retentionDays());
@@ -50,7 +50,7 @@ class OperationsCleanupSchedulePropertiesTest {
         properties.getPolicies().getExpiredHealthCheck().setLimit(500);
         properties.getPolicies().getExpiredLongTask().setLimit(0);
 
-        List<OperationsCleanupScheduleProperties.CleanupPolicy> policies = properties.orderedPolicies();
+        List<OperationsCleanupPolicies.CleanupPolicy> policies = OperationsCleanupPolicies.orderedPolicies(properties);
 
         assertEquals(
                 OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_BACKUP,

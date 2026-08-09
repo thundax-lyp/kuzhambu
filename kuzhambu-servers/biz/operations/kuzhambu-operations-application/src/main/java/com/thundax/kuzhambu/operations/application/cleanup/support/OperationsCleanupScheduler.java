@@ -43,7 +43,7 @@ public class OperationsCleanupScheduler implements ApplicationListener<Applicati
 
     private void executeEnabledPolicies() {
         Instant requestedAt = Instant.now();
-        for (OperationsCleanupScheduleProperties.CleanupPolicy policy : properties.orderedPolicies()) {
+        for (OperationsCleanupPolicies.CleanupPolicy policy : OperationsCleanupPolicies.orderedPolicies(properties)) {
             if (!policy.enabled()) {
                 continue;
             }
@@ -51,7 +51,7 @@ public class OperationsCleanupScheduler implements ApplicationListener<Applicati
         }
     }
 
-    private void executePolicy(OperationsCleanupScheduleProperties.CleanupPolicy policy, Instant requestedAt) {
+    private void executePolicy(OperationsCleanupPolicies.CleanupPolicy policy, Instant requestedAt) {
         try {
             cleanupApplicationService.executeScheduled(new OperationsCleanupExecuteCommand(
                     policy.cleanupType(), null, requestedAt, policy.retentionDays(), policy.limit()));

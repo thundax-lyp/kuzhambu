@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
 import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.SourceHardRuleArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -16,7 +17,7 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
     private static final String BASE_PACKAGE = "com.thundax.kuzhambu.operations";
 
     @Test
-    void applicationContractsShouldStayInDedicatedPackages() {
+    void applicationContractsShouldStayInDedicatedPackages() throws Exception {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".application");
 
         LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(
@@ -38,6 +39,8 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
+        SourceHardRuleArchitectureRuleSupport.assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(
+                Path.of("src/main/java"));
     }
 
     private static List<ArchitectureRuleAllowance> legacyApplicationServiceBoundaryAllowances() {

@@ -28,6 +28,8 @@ public final class SourceHardRuleArchitectureRuleSupport {
     private static final Pattern ILLEGAL_ARGUMENT_EXCEPTION_VARIABLE_PATTERN =
             Pattern.compile("(?:java\\.lang\\.)?IllegalArgumentException\\s+(\\w+)\\b");
     private static final Pattern THROW_VARIABLE_PATTERN = Pattern.compile("\\bthrow\\s+(\\w+)\\s*;");
+    private static final Pattern CONFIGURATION_PROPERTIES_BUSINESS_CONTROL_FLOW_PATTERN =
+            Pattern.compile("(?s)@ConfigurationProperties\\s*\\([^)]*\\).*?\\b(?:if|switch|for|while|throw)\\b");
     private static final Pattern COMMENTS_AND_LITERALS_PATTERN =
             Pattern.compile("(?s)/\\*.*?\\*/|//[^\\r\\n]*|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'");
 
@@ -53,6 +55,14 @@ public final class SourceHardRuleArchitectureRuleSupport {
                 sourceRoot,
                 SourceHardRuleArchitectureRuleSupport::hasIllegalArgumentExceptionBusinessExit,
                 "Application and repository implementation sources must not throw IllegalArgumentException");
+    }
+
+    public static void assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(Path sourceRoot)
+            throws IOException {
+        assertNoSourceMatches(
+                sourceRoot,
+                CONFIGURATION_PROPERTIES_BUSINESS_CONTROL_FLOW_PATTERN,
+                "ConfigurationProperties sources must not declare business control flow");
     }
 
     private static void assertNoSourceMatches(Path sourceRoot, Pattern pattern, String message) throws IOException {

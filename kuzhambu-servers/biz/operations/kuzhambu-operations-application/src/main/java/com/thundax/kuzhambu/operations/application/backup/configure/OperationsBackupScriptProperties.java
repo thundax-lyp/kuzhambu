@@ -41,25 +41,4 @@ public class OperationsBackupScriptProperties {
         String envPath = System.getenv("KUZHAMBU_BACKUP_ROOT_PATH");
         return StringUtils.defaultIfBlank(envPath, "/backup/kuzhambu");
     }
-
-    public MysqlConnectionSettings resolveMysqlConnectionSettings() {
-        if (datasourceUrl == null || !datasourceUrl.startsWith("jdbc:mysql://")) {
-            throw new IllegalStateException(
-                    "Unsupported datasource url for operations backup scripts: " + datasourceUrl);
-        }
-        java.net.URI uri = java.net.URI.create(datasourceUrl.substring("jdbc:".length()));
-        String databaseName = uri.getPath();
-        if (databaseName == null || databaseName.isBlank() || "/".equals(databaseName)) {
-            throw new IllegalStateException("Missing database name in datasource url: " + datasourceUrl);
-        }
-        return new MysqlConnectionSettings(
-                uri.getHost(),
-                uri.getPort() > 0 ? String.valueOf(uri.getPort()) : "3306",
-                databaseName.startsWith("/") ? databaseName.substring(1) : databaseName,
-                datasourceUsername,
-                datasourcePassword == null ? "" : datasourcePassword);
-    }
-
-    public record MysqlConnectionSettings(
-            String host, String port, String databaseName, String username, String password) {}
 }
