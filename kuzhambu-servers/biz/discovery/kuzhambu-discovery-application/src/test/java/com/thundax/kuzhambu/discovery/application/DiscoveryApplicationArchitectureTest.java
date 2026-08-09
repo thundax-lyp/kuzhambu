@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAl
 import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -22,6 +23,8 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
 
         LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(
                 classes, legacyApplicationServiceBoundaryAllowances());
+        NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
+        PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
         ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptySet());
         ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
                 classes, Collections.emptySet());
