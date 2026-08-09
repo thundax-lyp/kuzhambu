@@ -69,7 +69,9 @@ public final class OperationsDashboardInterfaceAssembler {
                         result.getHealthSummaries() == null
                                 ? null
                                 : result.getHealthSummaries().stream()
-                                        .map(OperationsHealthInterfaceAssembler::toResponse)
+                                        .map(item -> item == null
+                                                ? null
+                                                : OperationsHealthInterfaceAssembler.toResponse(item))
                                         .toList())
                 .taskStatusSummaries(
                         result.getTaskStatusSummaries() == null
