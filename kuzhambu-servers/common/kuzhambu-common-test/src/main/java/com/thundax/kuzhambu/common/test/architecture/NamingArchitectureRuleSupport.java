@@ -104,6 +104,8 @@ public final class NamingArchitectureRuleSupport {
     private static final Pattern DOMAIN_REPOSITORY_IMPORT_PATTERN =
             Pattern.compile("(?m)^\\s*import\\s+(com\\.thundax\\.kuzhambu\\.[\\w.]+\\.domain\\.[\\w.]+\\.repository\\."
                     + "(\\w+Repository))\\s*;");
+    private static final Pattern TYPE_DECLARATION_NAME_PATTERN =
+            Pattern.compile("\\b(?:class|interface|enum|record|@interface)\\s+([A-Z][A-Za-z0-9_]*)\\b");
 
     private NamingArchitectureRuleSupport() {}
 
@@ -809,6 +811,9 @@ public final class NamingArchitectureRuleSupport {
         boolean domainServiceName = simpleName.endsWith("DomainService");
         boolean domainServiceImplName = simpleName.endsWith("DomainServiceImpl");
 
+        collectNestedDomainServiceNameViolations(
+                root, path, source, packageName, simpleName, violations, allowlist, matchedAllowances);
+
         boolean allowedDomainServiceShape = isAllowedDomainServiceShape(source, packageName, simpleName);
         if (servicePackage && !allowedDomainServiceShape) {
             collectAllowlistedViolation(
@@ -840,6 +845,38 @@ public final class NamingArchitectureRuleSupport {
                     violations,
                     allowlist,
                     matchedAllowances);
+        }
+    }
+
+    private static void collectNestedDomainServiceNameViolations(
+            Path root,
+            Path path,
+            String source,
+            String packageName,
+            String fileSimpleName,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        if (isDomainServicePackage(packageName)) {
+            return;
+        }
+        Matcher matcher = TYPE_DECLARATION_NAME_PATTERN.matcher(source);
+        while (matcher.find()) {
+            String declaredName = matcher.group(1);
+            if (declaredName.equals(fileSimpleName)) {
+                continue;
+            }
+            if (declaredName.endsWith("DomainService") || declaredName.endsWith("DomainServiceImpl")) {
+                collectAllowlistedViolation(
+                        domainServiceShapeKey(packageName + "." + declaredName),
+                        ArchitectureSourceSupport.repositoryPath(root, path)
+                                + " declares nested "
+                                + declaredName
+                                + " outside domain/service or domain/service/impl",
+                        violations,
+                        allowlist,
+                        matchedAllowances);
+            }
         }
     }
 
