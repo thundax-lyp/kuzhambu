@@ -18,8 +18,6 @@ final class DiscoveryApplicationPageQueryAllowances {
         return List.of(
                 pageQueryType("com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery"),
                 pageFields("com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery"),
-                pageQueryType("com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery"),
-                pageFields("com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery"),
                 pageFields("com.thundax.kuzhambu.discovery.application.search.query.SearchQuery"));
     }
 

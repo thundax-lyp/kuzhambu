@@ -5,13 +5,14 @@ import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery;
-import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeSyncApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
@@ -141,7 +142,7 @@ public class DiscoveryQaAdminController {
     public PageResponse<DiscoveryQaAdminResponses.QaSessionResponse> pageSessions(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionPageRequest request) {
         return PageResponseHelper.fromPageResult(
-                qaApplicationService.pageSessions(toSessionPageQuery(request)),
+                qaApplicationService.pageSessions(toSessionQuery(request), PageInterfaceAssembler.toPageQuery(request)),
                 DiscoveryQaAdminInterfaceAssembler::toSessionResponse);
     }
 
@@ -208,16 +209,11 @@ public class DiscoveryQaAdminController {
                 true);
     }
 
-    private static QaSessionPageQuery toSessionPageQuery(DiscoveryQaAdminRequests.QaSessionPageRequest request) {
+    private static QaSessionQuery toSessionQuery(DiscoveryQaAdminRequests.QaSessionPageRequest request) {
         if (request == null) {
-            return new QaSessionPageQuery(null, null, null, 0, 0);
+            return new QaSessionQuery(null, null, null);
         }
-        return new QaSessionPageQuery(
-                request.getTitle(),
-                request.getOpenedAtStart(),
-                request.getOpenedAtEnd(),
-                Objects.requireNonNullElse(request.getPageNo(), 0),
-                Objects.requireNonNullElse(request.getPageSize(), 0));
+        return new QaSessionQuery(request.getTitle(), request.getOpenedAtStart(), request.getOpenedAtEnd());
     }
 
     private static ExportQaSessionCommand toExportSessionCommand(
