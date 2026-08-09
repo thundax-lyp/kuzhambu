@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations-infra worker render properties`：迁移 operations render worker 配置属性注册
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/report/client/OperationsWorkerRenderProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/report/configure/OperationsWorkerRenderProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/report/configure/OperationsWorkerRenderConfiguration.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/report/client/OperationsWorkerRenderHttpClient.java`
-    - 处理动作：按 RUNBOOK Step 3 将 `OperationsWorkerRenderProperties` 移入 `operations.infra.report.configure` 并改为 `@ConfigurationProperties` 注册
-    - 验收点：`OperationsWorkerRenderProperties` 不再使用 `@Component` 或字段级 `@Value`，`OperationsWorkerRenderConfiguration` 使用 `@EnableConfigurationProperties(OperationsWorkerRenderProperties.class)`，生产 import 指向新包
-    - 重要度：8/10
-
 - [ ] `operations backup properties`：迁移 operations backup 配置属性注册
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`

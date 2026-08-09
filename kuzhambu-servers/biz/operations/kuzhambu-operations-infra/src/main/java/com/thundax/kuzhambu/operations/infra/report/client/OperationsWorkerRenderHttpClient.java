@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.operations.domain.report.client.OperationsWorkerRenderClient;
 import com.thundax.kuzhambu.operations.domain.report.client.dto.OperationsWorkerRenderDtos;
+import com.thundax.kuzhambu.operations.infra.report.configure.OperationsWorkerRenderProperties;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
