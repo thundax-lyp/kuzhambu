@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationDocument;
+import com.thundax.kuzhambu.discovery.infra.configure.DiscoverySearchIndexProperties;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;

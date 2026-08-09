@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.discovery.infra.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.thundax.kuzhambu.discovery.infra.configure.DiscoverySearchIndexConfiguration;
+import com.thundax.kuzhambu.discovery.infra.configure.DiscoverySearchIndexProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
