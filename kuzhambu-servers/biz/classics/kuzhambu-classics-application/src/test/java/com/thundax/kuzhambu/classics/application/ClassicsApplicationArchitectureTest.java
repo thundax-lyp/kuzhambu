@@ -41,6 +41,8 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
                 Path.of("src/main/java"), ClassicsApplicationCommandQueryRecordAllowances.legacyAllowances());
+        NamingArchitectureRuleSupport.assertApplicationQueriesDoNotOwnPageState(
+                Path.of("src/main/java"), ClassicsApplicationPageQueryAllowances.legacyAllowances());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         SortableArchitectureRuleSupport.assertSortCommandsUseOrderedIdsOnly(Path.of("src/main/java"));

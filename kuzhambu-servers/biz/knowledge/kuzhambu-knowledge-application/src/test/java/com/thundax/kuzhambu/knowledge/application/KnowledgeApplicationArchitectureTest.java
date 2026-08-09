@@ -29,6 +29,8 @@ class KnowledgeApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
                 Path.of("src/main/java"), KnowledgeApplicationCommandQueryRecordAllowances.legacyAllowances());
+        NamingArchitectureRuleSupport.assertApplicationQueriesDoNotOwnPageState(
+                Path.of("src/main/java"), KnowledgeApplicationPageQueryAllowances.legacyAllowances());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
     }
 
