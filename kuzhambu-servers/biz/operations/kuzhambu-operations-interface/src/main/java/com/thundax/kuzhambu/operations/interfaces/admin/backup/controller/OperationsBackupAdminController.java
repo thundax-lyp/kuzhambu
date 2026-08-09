@@ -87,8 +87,6 @@ public class OperationsBackupAdminController {
     })
     public OperationsBackupDetailResponse detail(@Valid @RequestBody OperationsBackupDetailRequest request) {
         var result = backupApplicationService.detail(OperationsBackupInterfaceAssembler.toQuery(request));
-        return result == null
-                ? OperationsBackupDetailResponse.builder().build()
-                : OperationsBackupInterfaceAssembler.toDetailResponse(result);
+        return result == null ? null : OperationsBackupInterfaceAssembler.toDetailResponse(result);
     }
 }

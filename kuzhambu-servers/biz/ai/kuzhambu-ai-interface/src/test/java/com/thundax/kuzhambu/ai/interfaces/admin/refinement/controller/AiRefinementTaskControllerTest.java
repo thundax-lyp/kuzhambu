@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
@@ -135,6 +136,30 @@ class AiRefinementTaskControllerTest {
         assertEquals(true, page.getItems().get(0).getStreamEnabled());
         assertEquals(1L, page.getTotal());
         assertEquals("CANCELLED", cancelled.getStatus());
+    }
+
+    @Test
+    void getTaskShouldReturnEmptyResponseWhenTaskIsMissing() {
+        AiRefinementTaskController controller = new AiRefinementTaskController(
+                new MissingTaskApplicationService(), new NoOpBatchJobService(), DIRECT_EXECUTOR);
+        AiRefinementRequests.TaskIdRequest request = new AiRefinementRequests.TaskIdRequest();
+        request.setTaskId(7001L);
+
+        AiRefinementResponses.TaskDetailResponse response = controller.getTask(request);
+
+        assertNull(response.getTaskId());
+    }
+
+    @Test
+    void cancelTaskShouldReturnEmptyResponseWhenTaskIsMissing() {
+        AiRefinementTaskController controller = new AiRefinementTaskController(
+                new MissingTaskApplicationService(), new NoOpBatchJobService(), DIRECT_EXECUTOR);
+        AiRefinementRequests.TaskCancelRequest request = new AiRefinementRequests.TaskCancelRequest();
+        request.setTaskId(7001L);
+
+        AiRefinementResponses.TaskCancelResponse response = controller.cancelTask(request);
+
+        assertNull(response.getTaskId());
     }
 
     private static void assertRequestMapping(Class<?> controllerType, String expectedPath) {
@@ -305,6 +330,35 @@ class AiRefinementTaskControllerTest {
                     Instant.parse("2026-01-01T00:01:00Z"),
                     Instant.parse("2026-01-01T00:02:00Z"),
                     "CANCELLED".equals(status) ? Instant.parse("2026-01-01T00:03:00Z") : null);
+        }
+    }
+
+    private static final class MissingTaskApplicationService implements AiRefinementTaskApplicationService {
+
+        @Override
+        public AiRefinementTaskResult submit(SubmitAiRefinementTaskCommand command) {
+            throw new UnsupportedOperationException("submit should not be called in this test");
+        }
+
+        @Override
+        public AiRefinementTaskResult get(GetAiRefinementTaskQuery query) {
+            return null;
+        }
+
+        @Override
+        public PageResult<AiRefinementTaskResult> page(AiRefinementTasksQuery query, PageQuery pageQuery) {
+            throw new UnsupportedOperationException("page should not be called in this test");
+        }
+
+        @Override
+        public void subscribeEvents(
+                SubscribeAiRefinementTaskEventsQuery query, Consumer<AiStreamEventResult> eventConsumer) {
+            throw new UnsupportedOperationException("subscribeEvents should not be called in this test");
+        }
+
+        @Override
+        public AiRefinementTaskResult cancel(CancelAiRefinementTaskCommand command) {
+            return null;
         }
     }
 }

@@ -48,6 +48,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationReposito
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiInvocationLogFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
@@ -506,6 +507,40 @@ class AiFacadeImplTest {
         assertEquals(450, response.getUsage().getLatencyMs());
         assertEquals(new BigDecimal("1.23"), response.getUsage().getCostAmount());
         assertNull(response.getUsage().getCurrency());
+    }
+
+    @Test
+    void getInvocationLogShouldReturnNullWhenLogIsMissing() {
+        AiInvocationRepository aiInvocationRepository = mock(AiInvocationRepository.class);
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                mock(AiBatchJobApplicationService.class),
+                mock(DiscoveryAiApplicationService.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
+                aiInvocationRepository,
+                mock(AiCandidateApplicationService.class));
+
+        var response = facade.getInvocationLog(
+                GetAiInvocationLogFacadeRequest.builder().callId(302L).build());
+
+        assertNull(response);
+    }
+
+    @Test
+    void getCandidateShouldReturnNullWhenCandidateIsMissing() {
+        AiInvocationRepository aiInvocationRepository = mock(AiInvocationRepository.class);
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                mock(AiBatchJobApplicationService.class),
+                mock(DiscoveryAiApplicationService.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
+                aiInvocationRepository,
+                mock(AiCandidateApplicationService.class));
+
+        var response = facade.getCandidate(
+                GetAiCandidateFacadeRequest.builder().candidateId(402L).build());
+
+        assertNull(response);
     }
 
     @Test

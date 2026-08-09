@@ -87,8 +87,6 @@ public class OperationsCleanupAdminController {
     })
     public OperationsCleanupDetailResponse detail(@Valid @RequestBody OperationsCleanupDetailRequest request) {
         var result = cleanupApplicationService.detail(OperationsCleanupInterfaceAssembler.toQuery(request));
-        return result == null
-                ? OperationsCleanupDetailResponse.builder().build()
-                : OperationsCleanupInterfaceAssembler.toDetailResponse(result);
+        return result == null ? null : OperationsCleanupInterfaceAssembler.toDetailResponse(result);
     }
 }

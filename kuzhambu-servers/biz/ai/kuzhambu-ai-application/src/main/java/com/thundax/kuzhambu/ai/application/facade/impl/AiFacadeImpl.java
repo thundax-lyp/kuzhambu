@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeAiExtractio
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.DiscoveryAiStreamHandler;
@@ -173,8 +175,7 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeDto(
-                aiInvocationRepository.getInvocationLog(AiCallIdCodec.toDomain(request.getCallId())));
+        return toFacadeDto(aiInvocationRepository.getInvocationLog(AiCallIdCodec.toDomain(request.getCallId())));
     }
 
     @Override
@@ -183,8 +184,7 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeDto(
-                aiInvocationRepository.getCandidate(AiCandidateIdCodec.toDomain(request.getCandidateId())));
+        return toFacadeDto(aiInvocationRepository.getCandidate(AiCandidateIdCodec.toDomain(request.getCandidateId())));
     }
 
     @Override
@@ -215,6 +215,14 @@ public class AiFacadeImpl implements AiFacade {
         }
         return aiFacadeAssembler.toFacadeDto(
                 aiCandidateApplicationService.reject(aiFacadeAssembler.toRejectCandidateCommand(request)));
+    }
+
+    private AiInvocationLogFacadeDto toFacadeDto(AiInvocationLog invocationLog) {
+        return invocationLog == null ? null : aiFacadeAssembler.toFacadeDto(invocationLog);
+    }
+
+    private AiCandidateFacadeDto toFacadeDto(AiCandidate candidate) {
+        return candidate == null ? null : aiFacadeAssembler.toFacadeDto(candidate);
     }
 
     private UnsupportedOperationException unsupported() {

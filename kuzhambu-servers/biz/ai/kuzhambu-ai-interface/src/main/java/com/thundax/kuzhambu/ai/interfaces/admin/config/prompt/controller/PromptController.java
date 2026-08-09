@@ -1,7 +1,9 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller;
 
+import com.thundax.kuzhambu.ai.application.config.result.PromptVersionResult;
 import com.thundax.kuzhambu.ai.application.config.service.AiCapabilityCatalogApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.PromptApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.assembler.PromptInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.request.PromptRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.response.PromptResponses.CapabilityVariableResponse;
@@ -50,8 +52,7 @@ public class PromptController {
     @SysLogger(value = "模板读取")
     @PostMapping(value = "template/get")
     public TemplateResponse getTemplate(@Valid @RequestBody PromptRequests.TemplateIdRequest request) {
-        return PromptInterfaceAssembler.toResponse(
-                promptService.get(PromptInterfaceAssembler.toGetPromptQuery(request)));
+        return toTemplateResponse(promptService.get(PromptInterfaceAssembler.toGetPromptQuery(request)));
     }
 
     @Operation(summary = "按能力获取提示词模板", description = "ai:prompt:view")
@@ -66,7 +67,7 @@ public class PromptController {
     @SysLogger(value = "模板读取")
     @PostMapping(value = "template/get-by-capability")
     public TemplateResponse getTemplateByCapability(@Valid @RequestBody PromptRequests.TemplateQueryRequest request) {
-        return PromptInterfaceAssembler.toResponse(
+        return toTemplateResponse(
                 promptService.getByCapability(PromptInterfaceAssembler.toGetPromptByCapabilityQuery(request)));
     }
 
@@ -100,8 +101,7 @@ public class PromptController {
     @PostMapping(value = "template/save")
     public TemplateResponse saveTemplate(@Valid @RequestBody PromptRequests.TemplateSaveRequest request) {
         var templateId = promptService.save(PromptInterfaceAssembler.toSaveCommand(request));
-        return PromptInterfaceAssembler.toResponse(
-                promptService.get(PromptInterfaceAssembler.toGetPromptQuery(templateId)));
+        return toTemplateResponse(promptService.get(PromptInterfaceAssembler.toGetPromptQuery(templateId)));
     }
 
     @Operation(summary = "更新提示词模板状态", description = "ai:prompt:edit")
@@ -148,7 +148,7 @@ public class PromptController {
     @SysLogger(value = "当前版本读取")
     @PostMapping(value = "version/current")
     public VersionResponse getCurrentVersion(@Valid @RequestBody PromptRequests.TemplateIdRequest request) {
-        return PromptInterfaceAssembler.toResponse(
+        return toVersionResponse(
                 promptService.getCurrentVersion(PromptInterfaceAssembler.toGetCurrentPromptVersionQuery(request)));
     }
 
@@ -198,7 +198,7 @@ public class PromptController {
     @SysLogger(value = "版本回滚")
     @PostMapping(value = "version/rollback")
     public VersionResponse rollbackVersion(@Valid @RequestBody PromptRequests.VersionRollbackRequest request) {
-        return PromptInterfaceAssembler.toResponse(
+        return toVersionResponse(
                 promptService.rollback(PromptInterfaceAssembler.toRollbackPromptVersionCommand(request)));
     }
 
@@ -267,7 +267,15 @@ public class PromptController {
     @SysLogger(value = "优化建议")
     @PostMapping(value = "optimization/suggest")
     public VersionResponse buildOptimizationSuggestion(@Valid @RequestBody PromptRequests.OptimizationRequest request) {
-        return PromptInterfaceAssembler.toResponse(promptService.buildOptimizationSuggestion(
+        return toVersionResponse(promptService.buildOptimizationSuggestion(
                 PromptInterfaceAssembler.toBuildOptimizationSuggestionCommand(request)));
+    }
+
+    private static TemplateResponse toTemplateResponse(PromptTemplate template) {
+        return template == null ? TemplateResponse.builder().build() : PromptInterfaceAssembler.toResponse(template);
+    }
+
+    private static VersionResponse toVersionResponse(PromptVersionResult result) {
+        return result == null ? VersionResponse.builder().build() : PromptInterfaceAssembler.toResponse(result);
     }
 }

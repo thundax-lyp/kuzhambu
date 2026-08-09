@@ -101,11 +101,10 @@ public class StorageFacadeImpl implements StorageFacade {
     @Override
     @Transactional(readOnly = true)
     public ListStorageFacadeResponse list(ListStorageFacadeRequest request) {
-        if (request == null) {
-            return readableContentFacadeAssembler.toListResponse(Collections.emptyList());
-        }
+        ListStorageFacadeRequest effectiveRequest =
+                request == null ? ListStorageFacadeRequest.builder().build() : request;
         return readableContentFacadeAssembler.toListResponse(storageObjectApplicationService.list(
-                readableContentFacadeAssembler.toListStorageObjectsQuery(request)));
+                readableContentFacadeAssembler.toListStorageObjectsQuery(effectiveRequest)));
     }
 
     private StoredObjectId toStoredObjectId(OpenStorageFacadeRequest request) {
@@ -193,6 +192,9 @@ public class StorageFacadeImpl implements StorageFacade {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void unbindOwner(UnbindStorageOwnerFacadeRequest request) {
+        if (request == null) {
+            return;
+        }
         storageReferenceApplicationService.removeReferences(
                 ownerBindingFacadeAssembler.toRemoveReferencesCommand(request));
     }
@@ -200,6 +202,9 @@ public class StorageFacadeImpl implements StorageFacade {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void markInUse(MarkStorageUsageFacadeRequest request) {
+        if (request == null) {
+            return;
+        }
         storageReferenceApplicationService.changeReferenceStatus(
                 ownerBindingFacadeAssembler.toReferencedCommand(request));
     }
@@ -207,6 +212,9 @@ public class StorageFacadeImpl implements StorageFacade {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void markUnused(MarkStorageUsageFacadeRequest request) {
+        if (request == null) {
+            return;
+        }
         storageReferenceApplicationService.changeReferenceStatus(
                 ownerBindingFacadeAssembler.toUnreferencedCommand(request));
     }
