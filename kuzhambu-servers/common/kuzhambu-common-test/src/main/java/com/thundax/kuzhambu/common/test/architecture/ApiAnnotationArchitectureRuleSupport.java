@@ -285,7 +285,10 @@ public final class ApiAnnotationArchitectureRuleSupport {
                     .forEach(path -> collectGetMappingReturnViolations(root, path, violations));
         }
 
-        assertTrue("GET mapping methods must be non-JSON void responses: " + violations, violations.isEmpty());
+        assertTrue(
+                "GET mapping methods must return void, except an explicitly exempt SseEmitter event stream: "
+                        + violations,
+                violations.isEmpty());
     }
 
     public static void assertRequestBodyRequestParametersDeclareValid(Path sourceRoot) throws IOException {
@@ -688,7 +691,9 @@ public final class ApiAnnotationArchitectureRuleSupport {
             String annotations = content.substring(previousMethodEnd, matcher.start());
             String methodName = matcher.group(1);
             String declaration = content.substring(matcher.start(), matcher.end());
-            if (annotations.contains("@GetMapping") && !declaration.startsWith("public void ")) {
+            if (annotations.contains("@GetMapping")
+                    && !declaration.startsWith("public void ")
+                    && !(declaration.startsWith("public SseEmitter ") && hasPostJsonApiExemptReason(annotations))) {
                 violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName);
             }
             previousMethodEnd = matcher.end();
