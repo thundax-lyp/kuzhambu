@@ -52,8 +52,8 @@ class PromptInterfaceAssemblerTest {
         assertThat(getByCapabilityQuery.capability()).isEqualTo(AiBusinessCapability.CLASSICS_SUMMARY);
         assertThat(listQuery.capability()).isEqualTo(AiBusinessCapability.CLASSICS_SUMMARY);
         assertThat(listQuery.enabled()).isTrue();
-        assertThat(rollbackCommand.getTemplateId()).isEqualTo(new PromptTemplateId(1001L));
-        assertThat(rollbackCommand.getVersionNo()).isEqualTo(2);
+        assertThat(rollbackCommand.templateId()).isEqualTo(new PromptTemplateId(1001L));
+        assertThat(rollbackCommand.versionNo()).isEqualTo(2);
     }
 
     @Test

@@ -145,8 +145,8 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PromptVersionResult rollback(RollbackPromptVersionCommand command) {
-        PromptTemplateId templateId = command == null ? null : command.getTemplateId();
-        int versionNo = command == null ? 0 : command.getVersionNo();
+        PromptTemplateId templateId = command == null ? null : command.templateId();
+        int versionNo = command == null ? 0 : command.versionNo();
         findVersion(templateId, versionNo);
         int affectedRows = promptRepository.markCurrentVersion(templateId, versionNo);
         if (affectedRows <= 0) {
@@ -166,8 +166,8 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     public void validateRequiredVariables(ValidatePromptVariablesCommand command) {
-        PromptTemplateId templateId = command == null ? null : command.getTemplateId();
-        Collection<String> providedNames = command == null ? null : command.getProvidedNames();
+        PromptTemplateId templateId = command == null ? null : command.templateId();
+        Collection<String> providedNames = command == null ? null : command.providedNames();
         if (templateId == null) {
             throw new BizException("Prompt templateId is required");
         }
@@ -180,12 +180,12 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     public PromptVersionResult buildOptimizationSuggestion(BuildPromptOptimizationSuggestionCommand command) {
-        PromptTemplateId templateId = command == null ? null : command.getTemplateId();
+        PromptTemplateId templateId = command == null ? null : command.templateId();
         PromptVersion current = promptRepository.getCurrentVersion(templateId);
         if (current == null) {
             return null;
         }
-        current.setChangeSummary(command == null ? null : command.getChangeSummary());
+        current.setChangeSummary(command == null ? null : command.changeSummary());
         return PromptVersionResult.from(current);
     }
 
