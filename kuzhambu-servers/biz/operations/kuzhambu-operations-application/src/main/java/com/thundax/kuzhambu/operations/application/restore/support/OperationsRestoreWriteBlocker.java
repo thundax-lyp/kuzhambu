@@ -12,7 +12,7 @@ public class OperationsRestoreWriteBlocker {
 
     public Instant enable(RestoreId restoreId) {
         if (restoreId == null) {
-            throw new IllegalArgumentException("Operations restore write block restoreId must not be null.");
+            throw new IllegalStateException("Operations restore write block restoreId must not be null.");
         }
         if (!activeRestoreId.compareAndSet(null, restoreId)) {
             throw new IllegalStateException("Operations restore write block is already enabled.");

@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsContentGrowthPointFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsTopContentFacadeDto;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.facade.dto.DiscoveryQaTrendPointFacadeDto;
@@ -182,11 +183,10 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
             Instant periodStart = query == null ? null : query.getPeriodStart();
             Instant periodEnd = query == null ? null : query.getPeriodEnd();
             if (periodStart == null || periodEnd == null) {
-                throw new IllegalArgumentException(
-                        "Operations dashboard CUSTOM period requires periodStart and periodEnd.");
+                throw new BizException("Operations dashboard CUSTOM period requires periodStart and periodEnd.");
             }
             if (periodStart.isAfter(periodEnd)) {
-                throw new IllegalArgumentException("Operations dashboard periodStart must not be after periodEnd.");
+                throw new BizException("Operations dashboard periodStart must not be after periodEnd.");
             }
             return new PeriodRange(periodStart, periodEnd);
         }
@@ -195,9 +195,7 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
                 switch (periodType) {
                     case PERIOD_TYPE_WEEK -> periodEnd.minus(7, ChronoUnit.DAYS);
                     case PERIOD_TYPE_MONTH -> periodEnd.minus(30, ChronoUnit.DAYS);
-                    default ->
-                        throw new IllegalArgumentException(
-                                "Unsupported operations dashboard periodType: " + periodType);
+                    default -> throw new BizException("Unsupported operations dashboard periodType: " + periodType);
                 };
         return new PeriodRange(periodStart, periodEnd);
     }

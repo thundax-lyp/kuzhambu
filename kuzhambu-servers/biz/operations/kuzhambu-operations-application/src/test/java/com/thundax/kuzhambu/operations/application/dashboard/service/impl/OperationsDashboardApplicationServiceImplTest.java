@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsContentGrowthPointFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsTopContentFacadeDto;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.permission.PermissionAuthorizationService;
 import com.thundax.kuzhambu.common.security.permission.PrefixPermissionMatcher;
@@ -310,7 +311,7 @@ class OperationsDashboardApplicationServiceImplTest {
                 permissionResolverWithAllPrivileges());
 
         assertThrows(
-                IllegalArgumentException.class,
+                BizException.class,
                 () -> service.overview(new OperationsDashboardOverviewQuery(
                         "CUSTOM", Instant.ofEpochMilli(1_719_716_800_000L), Instant.ofEpochMilli(1_719_630_400_000L))));
     }
