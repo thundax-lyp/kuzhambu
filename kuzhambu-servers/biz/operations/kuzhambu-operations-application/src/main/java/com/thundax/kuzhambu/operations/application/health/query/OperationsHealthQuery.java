@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.operations.application.health.query;
 
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,11 +10,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OperationsHealthAlertPageQuery {
+public class OperationsHealthQuery {
     private String component;
-    private String alertLevel;
-    private String alertStatus;
-    private String sourceRefType;
-    private Long sourceRefId;
-    private Long latestCheckId;
+    private String healthStatus;
+    private String probeSource;
+    private String probeTarget;
+    private Instant checkedAtStart;
+    private Instant checkedAtEnd;
 }

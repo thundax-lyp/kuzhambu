@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.operations.application.backup.command.OperationsBack
 import com.thundax.kuzhambu.operations.application.backup.service.BackupApplicationService;
 import com.thundax.kuzhambu.operations.application.health.command.OperationsHealthAlertAckCommand;
 import com.thundax.kuzhambu.operations.application.health.command.OperationsHealthAlertRecoverCommand;
-import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthAlertPageQuery;
+import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthAlertQuery;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthAlertPageResult;
 import com.thundax.kuzhambu.operations.application.health.service.HealthAlertApplicationService;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthRecoveryLinkFactory;
@@ -53,7 +53,7 @@ public class HealthAlertApplicationServiceImpl implements HealthAlertApplication
     }
 
     @Override
-    public PageResult<OperationsHealthAlertPageResult> page(OperationsHealthAlertPageQuery query, PageQuery pageQuery) {
+    public PageResult<OperationsHealthAlertPageResult> page(OperationsHealthAlertQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<HealthAlertRecord> recordPage = healthAlertRepository.page(

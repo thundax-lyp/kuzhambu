@@ -28,7 +28,7 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
                 Path.of("src/main/java"), OperationsApplicationCommandQueryRecordAllowances.legacyAllowances());
         NamingArchitectureRuleSupport.assertApplicationQueriesDoNotOwnPageState(
-                Path.of("src/main/java"), OperationsApplicationPageQueryAllowances.legacyAllowances());
+                Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
     }
 

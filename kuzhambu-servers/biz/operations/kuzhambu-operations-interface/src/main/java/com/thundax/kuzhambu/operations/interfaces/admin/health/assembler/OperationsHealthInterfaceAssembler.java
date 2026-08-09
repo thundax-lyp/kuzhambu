@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.health.assembler;
 
-import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthPageQuery;
+import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthQuery;
 import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthTrendQuery;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthPageResult;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
@@ -15,11 +15,11 @@ public final class OperationsHealthInterfaceAssembler {
 
     private OperationsHealthInterfaceAssembler() {}
 
-    public static OperationsHealthPageQuery toQuery(OperationsHealthPageRequest request) {
+    public static OperationsHealthQuery toQuery(OperationsHealthPageRequest request) {
         if (request == null) {
             return null;
         }
-        return new OperationsHealthPageQuery(
+        return new OperationsHealthQuery(
                 request.getComponent(),
                 request.getHealthStatus(),
                 request.getProbeSource(),

@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.operations.application.health.service.impl;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthPageQuery;
+import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthQuery;
 import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthTrendQuery;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthPageResult;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
@@ -43,7 +43,7 @@ public class HealthCheckApplicationServiceImpl implements HealthCheckApplication
     }
 
     @Override
-    public PageResult<OperationsHealthPageResult> page(OperationsHealthPageQuery query, PageQuery pageQuery) {
+    public PageResult<OperationsHealthPageResult> page(OperationsHealthQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<HealthCheckRecord> recordPage = healthCheckRepository.page(

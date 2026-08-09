@@ -33,9 +33,9 @@ final class OperationsApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.command.OperationsHealthAlertRecoverCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.query.OperationsHealthAlertPageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.query.OperationsHealthAlertQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.query.OperationsHealthPageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.query.OperationsHealthQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.query.OperationsHealthTrendQuery"),
                 legacy(
