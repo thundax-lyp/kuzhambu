@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAl
 import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.configure.SpringSecurityConfiguration;
 import com.tngtech.archunit.core.domain.JavaClasses;
@@ -39,6 +40,8 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
         InterfaceBoundaryArchitectureRuleSupport.assertInterfaceProtocolsDoNotExposeDomainModels(
                 Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
+        PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
         NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
