@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCo
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
-import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.domain.common.codec.KnowledgeTagIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
@@ -512,7 +512,7 @@ class SancaiAdminControllerTest {
                         return null;
                     }
                     if ("pageEntries".equals(method.getName())) {
-                        SancaiEntryPageQuery query = (SancaiEntryPageQuery) args[0];
+                        SancaiEntryQuery query = (SancaiEntryQuery) args[0];
                         PageQuery page = (PageQuery) args[1];
                         assertEquals(101L, query.getVolumeId());
                         assertEquals("天地", query.getKeyword());
@@ -523,7 +523,7 @@ class SancaiAdminControllerTest {
                         return PageResult.of(1, 50, 1, List.of(entry()));
                     }
                     if ("listEntries".equals(method.getName())) {
-                        SancaiEntryPageQuery query = (SancaiEntryPageQuery) args[0];
+                        SancaiEntryQuery query = (SancaiEntryQuery) args[0];
                         assertEquals(101L, query.getVolumeId());
                         assertEquals("天地", query.getKeyword());
                         assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, query.getLifecycleStatus());

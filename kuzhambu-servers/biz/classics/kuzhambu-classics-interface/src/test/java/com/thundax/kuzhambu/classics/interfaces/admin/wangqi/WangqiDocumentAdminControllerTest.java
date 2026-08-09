@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.classics.application.content.service.ClassicsContent
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
-import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
+import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
@@ -303,7 +303,7 @@ class WangqiDocumentAdminControllerTest {
     }
 
     private static void assertQuery(Object[] args) {
-        WangqiDocumentPageQuery query = (WangqiDocumentPageQuery) args[0];
+        WangqiDocumentQuery query = (WangqiDocumentQuery) args[0];
         assertEquals("王圻", query.getKeyword());
         assertEquals(SortDirection.DESC, query.getSortDirection());
         assertEquals(true, query.getOperatorPermissions() != null);

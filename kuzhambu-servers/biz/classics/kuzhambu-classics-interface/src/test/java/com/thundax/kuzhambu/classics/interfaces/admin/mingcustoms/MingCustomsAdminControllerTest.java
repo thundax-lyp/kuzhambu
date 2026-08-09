@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
+import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
@@ -89,7 +89,7 @@ class MingCustomsAdminControllerTest {
 
         controller.page(request);
 
-        ArgumentCaptor<MingCustomsPageQuery> queryCaptor = ArgumentCaptor.forClass(MingCustomsPageQuery.class);
+        ArgumentCaptor<MingCustomsQuery> queryCaptor = ArgumentCaptor.forClass(MingCustomsQuery.class);
         verify(service).page(queryCaptor.capture(), any(PageQuery.class));
         assertNotNull(queryCaptor.getValue().getOperatorPermissions());
         assertEquals(7001L, queryCaptor.getValue().getTagId());
@@ -111,7 +111,7 @@ class MingCustomsAdminControllerTest {
         assertEquals(7001L, responses.get(0).getTagId());
         assertEquals("祭祀", responses.get(0).getTagNameSnapshot());
         assertEquals(3L, responses.get(0).getCount());
-        ArgumentCaptor<MingCustomsPageQuery> queryCaptor = ArgumentCaptor.forClass(MingCustomsPageQuery.class);
+        ArgumentCaptor<MingCustomsQuery> queryCaptor = ArgumentCaptor.forClass(MingCustomsQuery.class);
         verify(service).listTagCloud(queryCaptor.capture());
         assertEquals("礼俗", queryCaptor.getValue().getCategory());
         assertEquals("祭祀", queryCaptor.getValue().getKeyword());
