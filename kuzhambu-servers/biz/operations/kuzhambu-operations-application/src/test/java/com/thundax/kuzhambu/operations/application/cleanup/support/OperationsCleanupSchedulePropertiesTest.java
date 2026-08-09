@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.operations.application.cleanup.support;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import com.thundax.kuzhambu.operations.application.cleanup.configure.OperationsCleanupScheduleProperties;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

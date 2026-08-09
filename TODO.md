@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations cleanup properties`：迁移 operations cleanup 配置属性注册
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupScheduleProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/configure/OperationsCleanupScheduleProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/configure/OperationsCleanupConfiguration.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupScheduler.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupSchedulerTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupSchedulePropertiesTest.java`
-    - 处理动作：按 RUNBOOK Step 5 将 `OperationsCleanupScheduleProperties` 移入 `operations.application.cleanup.configure` 并改为 `@ConfigurationProperties` 注册
-    - 验收点：`OperationsCleanupScheduleProperties` 不再使用 `@Component` 或字段级 `@Value`，`OperationsCleanupConfiguration` 使用 `@EnableConfigurationProperties(OperationsCleanupScheduleProperties.class)`，cleanup 策略方法和嵌套 record 行为保持不变
-    - 重要度：9/10
-
 - [ ] `operations health alert properties`：迁移 operations health alert 配置属性注册
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`

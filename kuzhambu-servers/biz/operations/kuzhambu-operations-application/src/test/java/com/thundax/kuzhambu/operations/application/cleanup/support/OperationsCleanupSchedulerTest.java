@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsClean
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.service.CleanupApplicationService;
+import com.thundax.kuzhambu.operations.application.cleanup.configure.OperationsCleanupScheduleProperties;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
