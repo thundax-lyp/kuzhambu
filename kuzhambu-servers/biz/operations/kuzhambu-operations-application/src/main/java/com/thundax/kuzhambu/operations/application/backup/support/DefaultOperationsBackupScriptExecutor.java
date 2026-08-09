@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.operations.application.backup.support;
 
-import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifact;
 import com.thundax.kuzhambu.operations.application.backup.configure.OperationsBackupScriptProperties;
 import com.thundax.kuzhambu.operations.application.backup.configure.OperationsBackupScriptProperties.MysqlConnectionSettings;
+import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifact;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupType;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

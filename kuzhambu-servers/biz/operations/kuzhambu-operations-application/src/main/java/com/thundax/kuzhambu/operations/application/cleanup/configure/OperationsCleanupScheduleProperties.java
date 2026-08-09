@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.operations.application.cleanup.configure;
 
-import com.thundax.kuzhambu.operations.application.cleanup.OperationsCleanupSupport;
+import com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,7 +38,9 @@ public class OperationsCleanupScheduleProperties {
     private Integer expiredLongTaskLimit = 200;
 
     public List<CleanupPolicy> orderedPolicies() {
-        return OperationsCleanupSupport.orderedCleanupTypes().stream().map(this::policyFor).toList();
+        return OperationsCleanupSupport.orderedCleanupTypes().stream()
+                .map(this::policyFor)
+                .toList();
     }
 
     public CleanupPolicy policyFor(String cleanupType) {
