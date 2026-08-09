@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.system.interfaces;
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ApiSurfaceArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
@@ -11,6 +12,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.auth.configure.SpringSecurit
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 
@@ -43,6 +45,18 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
                 Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertApiModelsDoNotExposePriority(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertSortRequestsUseOrderedIdsOnly(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
+                Collections.singletonList(Path.of("src/main/java")),
+                BoundaryAssemblerNullnessAllowances.legacyClasses(
+                        "com.thundax.kuzhambu.system.interfaces.admin.audit.assembler.AuditInterfaceAssembler",
+                        "com.thundax.kuzhambu.system.interfaces.admin.auth.assembler.AuthInterfaceAssembler",
+                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler",
+                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler",
+                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.LogInterfaceAssembler",
+                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.MenuInterfaceAssembler",
+                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.PersonalInterfaceAssembler",
+                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler",
+                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.UserInterfaceAssembler"));
     }
 
     @Test
