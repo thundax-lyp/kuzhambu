@@ -181,7 +181,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiRefinementTaskResult cancel(CancelAiRefinementTaskCommand command) {
-        AiBatchJobId taskId = command == null ? null : command.getTaskId();
+        AiBatchJobId taskId = command == null ? null : command.taskId();
         AiBatchJobResult job = batchJobApplicationService.get(new GetAiBatchJobQuery(taskId));
         validateRefinementBatchOwnership(job);
         AiBatchJobResult cancelled = batchJobApplicationService.cancel(new CancelAiBatchJobCommand(taskId));

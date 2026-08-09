@@ -19,8 +19,6 @@ final class AiApplicationCommandQueryRecordAllowances {
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.scenario.command.DiscoveryAiCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.scenario.command.KnowledgeAiExtractionCommand"),
