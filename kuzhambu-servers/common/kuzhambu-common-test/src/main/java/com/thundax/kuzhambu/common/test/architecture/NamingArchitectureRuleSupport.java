@@ -809,7 +809,8 @@ public final class NamingArchitectureRuleSupport {
         boolean domainServiceName = simpleName.endsWith("DomainService");
         boolean domainServiceImplName = simpleName.endsWith("DomainServiceImpl");
 
-        if (servicePackage && !isAllowedDomainServiceShape(packageName, simpleName)) {
+        boolean allowedDomainServiceShape = isAllowedDomainServiceShape(source, packageName, simpleName);
+        if (servicePackage && !allowedDomainServiceShape) {
             collectAllowlistedViolation(
                     domainServiceShapeKey(typeName),
                     ArchitectureSourceSupport.repositoryPath(root, path)
@@ -829,6 +830,7 @@ public final class NamingArchitectureRuleSupport {
         }
         if (servicePackage
                 && (domainServiceName || domainServiceImplName)
+                && allowedDomainServiceShape
                 && isConcreteDomainServiceSource(source, simpleName)
                 && !DOMAIN_REPOSITORY_IMPORT_PATTERN.matcher(source).find()) {
             collectAllowlistedViolation(
@@ -841,9 +843,13 @@ public final class NamingArchitectureRuleSupport {
         }
     }
 
-    private static boolean isAllowedDomainServiceShape(String packageName, String simpleName) {
-        return (packageName.endsWith(".domain.service") && simpleName.endsWith("DomainService"))
-                || (packageName.endsWith(".domain.service.impl") && simpleName.endsWith("DomainServiceImpl"));
+    private static boolean isAllowedDomainServiceShape(String source, String packageName, String simpleName) {
+        return (packageName.endsWith(".domain.service")
+                        && simpleName.endsWith("DomainService")
+                        && isInterfaceDomainServiceSource(source, simpleName))
+                || (packageName.endsWith(".domain.service.impl")
+                        && simpleName.endsWith("DomainServiceImpl")
+                        && isConcreteDomainServiceSource(source, simpleName));
     }
 
     private static boolean isDomainServicePackage(String packageName) {
@@ -853,6 +859,12 @@ public final class NamingArchitectureRuleSupport {
 
     private static boolean isConcreteDomainServiceSource(String source, String simpleName) {
         return Pattern.compile("\\b(?:public\\s+)?(?:final\\s+)?class\\s+" + simpleName + "\\b")
+                .matcher(source)
+                .find();
+    }
+
+    private static boolean isInterfaceDomainServiceSource(String source, String simpleName) {
+        return Pattern.compile("\\b(?:public\\s+)?interface\\s+" + simpleName + "\\b")
                 .matcher(source)
                 .find();
     }
