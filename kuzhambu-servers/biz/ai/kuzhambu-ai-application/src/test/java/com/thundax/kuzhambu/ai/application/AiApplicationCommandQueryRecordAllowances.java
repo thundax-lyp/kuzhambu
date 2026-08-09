@@ -15,8 +15,6 @@ final class AiApplicationCommandQueryRecordAllowances {
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand"),
                 legacy(

@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.ai.application.config.command.BuildPromptOptimizatio
 import com.thundax.kuzhambu.ai.application.config.command.ChangePromptTemplateStatusCommand;
 import com.thundax.kuzhambu.ai.application.config.command.DeletePromptTemplateCommand;
 import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand;
+import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateVariableItem;
 import com.thundax.kuzhambu.ai.application.config.command.RollbackPromptVersionCommand;
 import com.thundax.kuzhambu.ai.application.config.command.ValidatePromptVariablesCommand;
 import com.thundax.kuzhambu.ai.application.config.query.GetCurrentPromptVersionQuery;
@@ -66,18 +67,17 @@ public final class PromptInterfaceAssembler {
     }
 
     public static PromptTemplateSaveCommand toSaveCommand(PromptRequests.TemplateSaveRequest request) {
-        PromptTemplateSaveCommand command = new PromptTemplateSaveCommand();
-        command.setId(PromptTemplateIdCodec.toDomain(request.getId()));
-        command.setCapability(AiBusinessCapability.from(request.getCapability()));
-        command.setName(request.getName());
-        command.setDescription(request.getDescription());
-        command.setEnabled(request.getEnabled() == null || request.getEnabled());
-        command.setMessageTemplatesJson(request.getMessageTemplatesJson());
-        command.setVariablesSnapshotJson(request.getVariablesSnapshotJson());
-        command.setOutputSchemaJson(request.getOutputSchemaJson());
-        command.setChangeSummary(request.getChangeSummary());
-        command.setVariables(toVariableItems(request.getVariables()));
-        return command;
+        return new PromptTemplateSaveCommand(
+                PromptTemplateIdCodec.toDomain(request.getId()),
+                AiBusinessCapability.from(request.getCapability()),
+                request.getName(),
+                request.getDescription(),
+                request.getEnabled() == null || request.getEnabled(),
+                request.getMessageTemplatesJson(),
+                request.getVariablesSnapshotJson(),
+                request.getOutputSchemaJson(),
+                request.getChangeSummary(),
+                toVariableItems(request.getVariables()));
     }
 
     public static GetCurrentPromptVersionQuery toGetCurrentPromptVersionQuery(
@@ -187,9 +187,8 @@ public final class PromptInterfaceAssembler {
                 .build();
     }
 
-    private static List<PromptTemplateSaveCommand.VariableItem> toVariableItems(
-            List<PromptRequests.VariableItemRequest> requests) {
-        List<PromptTemplateSaveCommand.VariableItem> items = new ArrayList<>();
+    private static List<PromptTemplateVariableItem> toVariableItems(List<PromptRequests.VariableItemRequest> requests) {
+        List<PromptTemplateVariableItem> items = new ArrayList<>();
         if (requests == null) {
             return items;
         }
@@ -197,11 +196,11 @@ public final class PromptInterfaceAssembler {
             if (request == null) {
                 continue;
             }
-            PromptTemplateSaveCommand.VariableItem item = new PromptTemplateSaveCommand.VariableItem();
-            item.setVariableName(request.getVariableName());
-            item.setRequired(request.getRequired() == null || request.getRequired());
-            item.setDescription(request.getDescription());
-            items.add(item);
+            items.add(new PromptTemplateVariableItem(
+                    request.getVariableName(),
+                    request.getRequired() == null || request.getRequired(),
+                    request.getDescription(),
+                    null));
         }
         return items;
     }

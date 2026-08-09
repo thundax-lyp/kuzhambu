@@ -2,39 +2,16 @@ package com.thundax.kuzhambu.ai.application.config.command;
 
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
-import java.util.ArrayList;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class PromptTemplateSaveCommand {
-
-    private PromptTemplateId id;
-    private AiBusinessCapability capability;
-    private String name;
-    private String description;
-    private boolean enabled = true;
-    private String messageTemplatesJson;
-    private String variablesSnapshotJson;
-    private String outputSchemaJson;
-    private String changeSummary;
-    private List<VariableItem> variables = new ArrayList<>();
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class VariableItem {
-
-        private String variableName;
-        private boolean required = true;
-        private String description;
-        private Integer priority;
-    }
-}
+public record PromptTemplateSaveCommand(
+        PromptTemplateId id,
+        AiBusinessCapability capability,
+        String name,
+        String description,
+        boolean enabled,
+        String messageTemplatesJson,
+        String variablesSnapshotJson,
+        String outputSchemaJson,
+        String changeSummary,
+        List<PromptTemplateVariableItem> variables) {}

@@ -26,8 +26,8 @@ class PromptInterfaceAssemblerTest {
 
         PromptTemplateSaveCommand command = PromptInterfaceAssembler.toSaveCommand(request);
 
-        assertThat(command.getId()).isEqualTo(new PromptTemplateId(1001L));
-        assertThat(command.getCapability()).isEqualTo(AiBusinessCapability.CLASSICS_SUMMARY);
+        assertThat(command.id()).isEqualTo(new PromptTemplateId(1001L));
+        assertThat(command.capability()).isEqualTo(AiBusinessCapability.CLASSICS_SUMMARY);
     }
 
     @Test
