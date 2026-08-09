@@ -734,6 +734,28 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
+    void domainServiceGateShouldRejectAdditionalDomainServiceDeclarationInsideServicePackage() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleDomainService.java"),
+                """
+                package com.thundax.kuzhambu.sample.domain.service;
+
+                public interface SampleDomainService {
+                }
+
+                class HelperDomainServiceImpl {
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(
+                        tempDir.resolve("src/main/java")));
+    }
+
+    @Test
     void domainServiceGateShouldRejectAnnotationDomainServiceDeclaration() throws Exception {
         Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service");
         Files.createDirectories(source);

@@ -811,7 +811,7 @@ public final class NamingArchitectureRuleSupport {
         boolean domainServiceName = simpleName.endsWith("DomainService");
         boolean domainServiceImplName = simpleName.endsWith("DomainServiceImpl");
 
-        collectNestedDomainServiceNameViolations(
+        collectAdditionalDomainServiceDeclarationViolations(
                 root, path, source, packageName, simpleName, violations, allowlist, matchedAllowances);
 
         boolean allowedDomainServiceShape = isAllowedDomainServiceShape(source, packageName, simpleName);
@@ -848,7 +848,7 @@ public final class NamingArchitectureRuleSupport {
         }
     }
 
-    private static void collectNestedDomainServiceNameViolations(
+    private static void collectAdditionalDomainServiceDeclarationViolations(
             Path root,
             Path path,
             String source,
@@ -857,26 +857,67 @@ public final class NamingArchitectureRuleSupport {
             List<String> violations,
             Map<String, ArchitectureRuleAllowance> allowlist,
             Set<String> matchedAllowances) {
-        if (isDomainServicePackage(packageName)) {
-            return;
-        }
         Matcher matcher = TYPE_DECLARATION_NAME_PATTERN.matcher(source);
         while (matcher.find()) {
             String declaredName = matcher.group(1);
             if (declaredName.equals(fileSimpleName)) {
                 continue;
             }
-            if (declaredName.endsWith("DomainService") || declaredName.endsWith("DomainServiceImpl")) {
-                collectAllowlistedViolation(
-                        domainServiceShapeKey(packageName + "." + declaredName),
-                        ArchitectureSourceSupport.repositoryPath(root, path)
-                                + " declares nested "
-                                + declaredName
-                                + " outside domain/service or domain/service/impl",
-                        violations,
-                        allowlist,
-                        matchedAllowances);
-            }
+            collectDomainServiceDeclarationViolations(
+                    root, path, source, packageName, declaredName, violations, allowlist, matchedAllowances);
+        }
+    }
+
+    private static void collectDomainServiceDeclarationViolations(
+            Path root,
+            Path path,
+            String source,
+            String packageName,
+            String declaredName,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        boolean servicePackage = isDomainServicePackage(packageName);
+        boolean domainServiceName = declaredName.endsWith("DomainService");
+        boolean domainServiceImplName = declaredName.endsWith("DomainServiceImpl");
+        String declaredTypeName = packageName + "." + declaredName;
+
+        if (servicePackage && !isAllowedDomainServiceShape(source, packageName, declaredName)) {
+            collectAllowlistedViolation(
+                    domainServiceShapeKey(declaredTypeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " declares "
+                            + declaredName
+                            + " under domain service package but it is not a valid *DomainService boundary",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+        if (!servicePackage && (domainServiceName || domainServiceImplName)) {
+            collectAllowlistedViolation(
+                    domainServiceShapeKey(declaredTypeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " declares "
+                            + declaredName
+                            + " outside domain/service or domain/service/impl",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+        if (servicePackage
+                && (domainServiceName || domainServiceImplName)
+                && isAllowedDomainServiceShape(source, packageName, declaredName)
+                && isConcreteDomainServiceSource(source, declaredName)
+                && !containsDomainRepositoryReference(source)) {
+            collectAllowlistedViolation(
+                    domainServiceRepositoryKey(declaredTypeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " declares concrete "
+                            + declaredName
+                            + " without a domain Repository dependency",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
         }
     }
 
