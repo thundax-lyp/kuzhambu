@@ -48,7 +48,6 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.assembler.PromptInterfaceAssembler",
                         "com.thundax.kuzhambu.ai.interfaces.admin.invocation.assembler.AiInvocationInterfaceAssembler",
                         "com.thundax.kuzhambu.ai.interfaces.admin.platform.assembler.PlatformAiInterfaceAssembler",
                         "com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinementInterfaceAssembler"));
