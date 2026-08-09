@@ -20,7 +20,7 @@ public final class SourceHardRuleArchitectureRuleSupport {
     private static final Pattern TOP_LEVEL_TOOL_PACKAGE_PATTERN = Pattern.compile(
             "(?m)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
                     + "storage|system)\\.(?:application\\.(?:misc|util|utils)|(?:domain|infra|interfaces)"
-                    + "\\.(?:misc|util|utils|helper))\\s*;");
+                    + "\\.(?:misc|util|utils|helper))(?:\\.|\\s*;)");
     private static final Pattern ILLEGAL_ARGUMENT_EXCEPTION_BUSINESS_EXIT_PATTERN = Pattern.compile(
             "(?ms)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
                     + "storage|system)\\.(?:application(?:\\.|;)|infra\\.[\\w.]+\\.repository\\.impl(?:\\.|;)).*"
