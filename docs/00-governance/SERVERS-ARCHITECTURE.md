@@ -193,6 +193,12 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 - `application` 层公开方法输入默认使用 `*Command` / `*Query` / `PageQuery`。
 - `application` 层 `*Command` / `*Query` 是纯契约对象，只定义字段；字段可以持有本域 domain entity 或强类型值对象；对象创建、值对象转换和领域模型装配放在 `*InterfaceAssembler`、application assembler 或应用服务编排代码中。
 - `application` 层公开方法输出优先使用本域 domain entity 或强类型值对象；`*Result` 用于不存在自然 domain entity 的复合结果、跨资源聚合结果或明确的非领域输出；仅在稳定通用传输对象场景下使用 `*DTO`；分页输出统一使用 `PageResult<...>`。
+- Java servers 全域 ArchUnit 必须覆盖 application 公开边界。`ApplicationService` 用例方法允许以下输入形态：
+  - 无参数：仅用于 `list*`、`summary*`、`health*`、`rebuild*` 等无条件读取或维护动作。
+  - 单参数：`*Command`、`*Query`、`PageQuery`，或本域 domain `model.valueobject` 下的强类型 `*Id`、`*Key`、`*Code`、`*Token`、`*Ref`。
+  - 双参数：业务 `*Query` + `PageQuery`；或流式/订阅方法的 `*Command` / `*Query` + `Consumer` / `*StreamHandler`。
+  - 其他多参数、裸 `Long` / `String` / `Integer` 等基础类型作为业务标识、以及不带契约对象的复杂查询条件，均视为历史债务或新增违规。
+- application 架构测试可以为历史代码配置 legacy allowlist，但每项必须写明违规描述和修复方向；allowlist 只能用于不击穿既有代码，新增或修改用例不得扩大 allowlist。修复历史代码后必须同步删除对应 allowlist 项。
 - `application/<subdomain>/service/`：应用用例入口接口，命名为 `*ApplicationService`。
 - `application/<subdomain>/service/impl/`：应用用例入口实现，命名为 `*ApplicationServiceImpl`。
 - `application/<subdomain>/command/`：写入用例输入模型。

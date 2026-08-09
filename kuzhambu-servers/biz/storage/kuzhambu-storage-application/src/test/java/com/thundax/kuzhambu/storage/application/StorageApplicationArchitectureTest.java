@@ -31,6 +31,7 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
         TransactionArchitectureRuleSupport.assertTransactionalOnlyOnApplicationServiceUseCases(classes, BASE_PACKAGE);
         LayerArchitectureRuleSupport.assertServiceBoundaryTypesClean(classes);
         LayerArchitectureRuleSupport.assertApplicationServiceUseCaseMethodShapeClean(classes);
+        LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(classes, Collections.emptyList());
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
         ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptyList());
         ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
