@@ -191,7 +191,7 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 
 - `application/`：用例编排、事务边界、跨域协调、命令、查询和结果对象。
 - `application` 层公开方法输入默认使用 `*Command` / `*Query` / `PageQuery`。
-- `PageQuery` 是 Java servers 全局唯一分页契约，只能使用 `common-core` 中的 `com.thundax.kuzhambu.common.core.page.PageQuery`。它的特别职责是承载分页归一化语义，包括默认页码、默认页大小、最小边界、最大页大小和 offset 计算入口；业务 `Query` 只表达业务筛选条件，不承载分页控制。
+- `PageQuery` 是 Java servers 全局唯一分页契约，只能使用 `common-core` 中的 `com.thundax.kuzhambu.common.core.page.PageQuery`。它的特别职责是承载分页归一化语义，包括默认页码、默认页大小和最小边界；业务 `Query` 只表达业务筛选条件，不承载分页控制。
 - application 层不得新增或保留业务 `XxxPageQuery` / `PageXxxQuery` 类型；分页用例统一使用业务 `*Query` + `PageQuery`，无业务筛选条件时只使用单个 `PageQuery`。业务 `*Query` 不得声明 `pageNo`、`pageSize`、`pageNum`、`offset`、`limit` 等分页字段，也不得内嵌 `PageQuery` 字段。
 - `application` 层 `*Command` / `*Query` 是纯契约对象，只定义字段；目标形态必须是 Java `record`，不得使用 Lombok 注解，不得声明业务方法、继承层级或框架协议注解。字段可以持有本域 domain entity 或强类型值对象；对象创建、默认值补齐、参数校验、值对象转换和领域模型装配放在 `*InterfaceAssembler`、application assembler、application service 或用例编排代码中。
 - 生产代码中 `new *Command` / `new *Query` 默认只能发生在 `*InterfaceAssembler` 或 `*FacadeAssembler`，用于把外部 request/facade DTO 转换为 application 契约。唯一例外是 `ApplicationService` 内部编排下游 `ApplicationService` 时，可以在 `*ApplicationService` / `*ApplicationServiceImpl` 中构造下游 `Command` / `Query`。`Controller`、facade impl、domain、infra、repository 和普通 support/helper 不得直接构造 application `Command` / `Query`；需要搬到对应 assembler，或上移到明确的 ApplicationService 编排点。
