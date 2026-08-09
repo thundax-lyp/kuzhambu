@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQue
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
-import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
+import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
@@ -239,7 +239,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
 
     private List<ClassicsSearchSourceContent> listPublicWangqiDocuments() {
         List<WangqiDocument> documents =
-                wangqiDocumentApplicationService.listTimeline(new WangqiDocumentPageQuery(null, SortDirection.ASC));
+                wangqiDocumentApplicationService.listTimeline(new WangqiDocumentQuery(null, SortDirection.ASC));
         if (documents == null || documents.isEmpty()) {
             return Collections.emptyList();
         }

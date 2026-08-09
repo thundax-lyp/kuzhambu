@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPub
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
-import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
+import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
@@ -70,7 +70,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     }
 
     @Override
-    public PageResult<WangqiDocument> page(WangqiDocumentPageQuery query, PageQuery page) {
+    public PageResult<WangqiDocument> page(WangqiDocumentQuery query, PageQuery page) {
         if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
             return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
         }
@@ -82,7 +82,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     }
 
     @Override
-    public List<WangqiDocument> listTimeline(WangqiDocumentPageQuery query) {
+    public List<WangqiDocument> listTimeline(WangqiDocumentQuery query) {
         if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
             return List.of();
         }
@@ -310,7 +310,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         return String.valueOf(documentId.value());
     }
 
-    private static boolean hasPermissionContext(WangqiDocumentPageQuery query) {
+    private static boolean hasPermissionContext(WangqiDocumentQuery query) {
         return query != null && hasPermissionContext(query.getOperatorPermissions());
     }
 

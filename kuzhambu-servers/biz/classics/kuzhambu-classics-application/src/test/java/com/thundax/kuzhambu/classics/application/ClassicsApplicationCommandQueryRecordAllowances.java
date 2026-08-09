@@ -69,7 +69,7 @@ final class ClassicsApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery"));
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery"));
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {

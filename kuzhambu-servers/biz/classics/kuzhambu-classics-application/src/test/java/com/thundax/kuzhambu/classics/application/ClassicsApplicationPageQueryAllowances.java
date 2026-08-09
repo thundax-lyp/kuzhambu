@@ -14,7 +14,6 @@ final class ClassicsApplicationPageQueryAllowances {
 
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
-                legacy("com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery"),
                 legacy("com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery"),
                 legacy("com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobPageQuery"));
     }

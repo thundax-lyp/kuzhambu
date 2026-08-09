@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler;
 
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
-import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
+import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
@@ -22,8 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 public final class WangqiDocumentInterfaceAssembler {
     private WangqiDocumentInterfaceAssembler() {}
 
-    public static WangqiDocumentPageQuery toQuery(WangqiDocumentRequest request) {
-        return new WangqiDocumentPageQuery(
+    public static WangqiDocumentQuery toQuery(WangqiDocumentRequest request) {
+        return new WangqiDocumentQuery(
                 request.getKeyword(),
                 StringUtils.isBlank(request.getSortDirection())
                         ? SortDirection.ASC

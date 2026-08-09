@@ -11,12 +11,12 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class WangqiDocumentPageQuery {
+public class WangqiDocumentQuery {
     private String keyword;
     private SortDirection sortDirection = SortDirection.ASC;
     private Set<String> operatorPermissions;
 
-    public WangqiDocumentPageQuery(String keyword, SortDirection sortDirection) {
+    public WangqiDocumentQuery(String keyword, SortDirection sortDirection) {
         this(keyword, sortDirection, null);
     }
 }
