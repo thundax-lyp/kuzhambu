@@ -90,11 +90,10 @@ public final class PromptInterfaceAssembler {
     }
 
     public static PromptVersionCompareQuery toCompareQuery(PromptRequests.VersionCompareRequest request) {
-        PromptVersionCompareQuery query = new PromptVersionCompareQuery();
-        query.setTemplateId(PromptTemplateIdCodec.toDomain(request.getId()));
-        query.setLeftVersionNo(request.getLeftVersionNo());
-        query.setRightVersionNo(request.getRightVersionNo());
-        return query;
+        return new PromptVersionCompareQuery(
+                PromptTemplateIdCodec.toDomain(request.getId()),
+                request.getLeftVersionNo(),
+                request.getRightVersionNo());
     }
 
     public static RollbackPromptVersionCommand toRollbackPromptVersionCommand(

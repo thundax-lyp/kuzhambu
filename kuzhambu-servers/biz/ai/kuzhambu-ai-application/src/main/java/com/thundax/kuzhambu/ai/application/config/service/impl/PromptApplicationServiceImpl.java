@@ -133,12 +133,12 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     public List<PromptVersionResult> compareVersions(PromptVersionCompareQuery query) {
-        if (query == null || query.getTemplateId() == null) {
+        if (query == null || query.templateId() == null) {
             throw new BizException("Prompt version compare query can not be null");
         }
         List<PromptVersionResult> results = new ArrayList<>();
-        results.add(PromptVersionResult.from(findVersion(query.getTemplateId(), query.getLeftVersionNo())));
-        results.add(PromptVersionResult.from(findVersion(query.getTemplateId(), query.getRightVersionNo())));
+        results.add(PromptVersionResult.from(findVersion(query.templateId(), query.leftVersionNo())));
+        results.add(PromptVersionResult.from(findVersion(query.templateId(), query.rightVersionNo())));
         return results;
     }
 

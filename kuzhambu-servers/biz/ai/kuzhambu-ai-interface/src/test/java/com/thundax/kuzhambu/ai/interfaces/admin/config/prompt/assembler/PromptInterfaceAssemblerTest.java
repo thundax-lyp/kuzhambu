@@ -48,10 +48,10 @@ class PromptInterfaceAssemblerTest {
         RollbackPromptVersionCommand rollbackCommand =
                 PromptInterfaceAssembler.toRollbackPromptVersionCommand(rollbackRequest);
 
-        assertThat(getQuery.getTemplateId()).isEqualTo(new PromptTemplateId(1001L));
-        assertThat(getByCapabilityQuery.getCapability()).isEqualTo(AiBusinessCapability.CLASSICS_SUMMARY);
-        assertThat(listQuery.getCapability()).isEqualTo(AiBusinessCapability.CLASSICS_SUMMARY);
-        assertThat(listQuery.getEnabled()).isTrue();
+        assertThat(getQuery.templateId()).isEqualTo(new PromptTemplateId(1001L));
+        assertThat(getByCapabilityQuery.capability()).isEqualTo(AiBusinessCapability.CLASSICS_SUMMARY);
+        assertThat(listQuery.capability()).isEqualTo(AiBusinessCapability.CLASSICS_SUMMARY);
+        assertThat(listQuery.enabled()).isTrue();
         assertThat(rollbackCommand.getTemplateId()).isEqualTo(new PromptTemplateId(1001L));
         assertThat(rollbackCommand.getVersionNo()).isEqualTo(2);
     }
@@ -65,7 +65,7 @@ class PromptInterfaceAssemblerTest {
         PromptResponses.VersionResponse response = PromptInterfaceAssembler.toResponse(new PromptVersionResult(
                 new PromptVersionId(2001L), new PromptTemplateId(1001L), 1, null, null, null, null, null));
 
-        assertThat(query.getTemplateId()).isEqualTo(new PromptTemplateId(1001L));
+        assertThat(query.templateId()).isEqualTo(new PromptTemplateId(1001L));
         assertThat(response.getId()).isEqualTo(2001L);
         assertThat(response.getTemplateId()).isEqualTo(1001L);
     }

@@ -52,7 +52,7 @@ class AiConfigControllerTest {
     private static AiCapabilityCatalogApplicationService capabilityListService() {
         return proxy(AiCapabilityCatalogApplicationService.class, (proxy, method, args) -> {
             if ("list".equals(method.getName())) {
-                assertEquals(true, ((ListAiCapabilitiesQuery) args[0]).getEnabled());
+                assertEquals(true, ((ListAiCapabilitiesQuery) args[0]).enabled());
                 return List.of(AiBusinessCapability.CLASSICS_TRANSLATE);
             }
             throw new UnsupportedOperationException(
