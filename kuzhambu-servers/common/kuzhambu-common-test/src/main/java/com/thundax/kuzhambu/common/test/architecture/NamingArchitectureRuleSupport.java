@@ -849,7 +849,8 @@ public final class NamingArchitectureRuleSupport {
                         && isInterfaceDomainServiceSource(source, simpleName))
                 || (packageName.endsWith(".domain.service.impl")
                         && simpleName.endsWith("DomainServiceImpl")
-                        && isConcreteDomainServiceSource(source, simpleName));
+                        && isConcreteDomainServiceSource(source, simpleName)
+                        && implementsExpectedDomainServiceInterface(source, simpleName));
     }
 
     private static boolean isDomainServicePackage(String packageName) {
@@ -865,6 +866,14 @@ public final class NamingArchitectureRuleSupport {
 
     private static boolean isInterfaceDomainServiceSource(String source, String simpleName) {
         return Pattern.compile("\\b(?:public\\s+)?interface\\s+" + simpleName + "\\b")
+                .matcher(source)
+                .find();
+    }
+
+    private static boolean implementsExpectedDomainServiceInterface(String source, String simpleName) {
+        String expectedInterface = simpleName.substring(0, simpleName.length() - "Impl".length());
+        return Pattern.compile(
+                        "\\bimplements\\s+[^\\{;]*\\b" + Pattern.quote(expectedInterface) + "\\b", Pattern.DOTALL)
                 .matcher(source)
                 .find();
     }
