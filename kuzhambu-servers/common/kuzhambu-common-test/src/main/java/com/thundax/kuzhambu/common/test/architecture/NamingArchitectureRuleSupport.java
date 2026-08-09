@@ -1003,7 +1003,7 @@ public final class NamingArchitectureRuleSupport {
     }
 
     private static boolean containsDomainRepositoryReference(String source) {
-        String sourceBody = sourceWithoutImportDeclarations(source);
+        String sourceBody = sourceWithoutImportDeclarationsAndLiterals(source);
         Matcher repositoryImport = DOMAIN_REPOSITORY_IMPORT_PATTERN.matcher(source);
         while (repositoryImport.find()) {
             String repositoryName = repositoryImport.group(2);
@@ -1019,8 +1019,12 @@ public final class NamingArchitectureRuleSupport {
                 .find();
     }
 
-    private static String sourceWithoutImportDeclarations(String source) {
-        return Pattern.compile("(?m)^\\s*import\\s+[^;]+;\\s*").matcher(source).replaceAll("\n");
+    private static String sourceWithoutImportDeclarationsAndLiterals(String source) {
+        String withoutImports =
+                Pattern.compile("(?m)^\\s*import\\s+[^;]+;\\s*").matcher(source).replaceAll("\n");
+        return Pattern.compile("\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'")
+                .matcher(withoutImports)
+                .replaceAll("\"\"");
     }
 
     public static String domainServiceShapeKey(String typeName) {
