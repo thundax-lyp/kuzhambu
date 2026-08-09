@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfi
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
+import com.thundax.kuzhambu.ai.infra.invocation.configure.AiWorkerGatewayProperties;
 import com.thundax.kuzhambu.ai.infra.invocation.gateway.dto.AiWorkerHttpPayloads;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;

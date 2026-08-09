@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.backup.command.OperationsBackupExecuteCommand;
+import com.thundax.kuzhambu.operations.application.backup.configure.OperationsBackupScheduleProperties;
 import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupDetailQuery;
 import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupQuery;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupDetailResult;

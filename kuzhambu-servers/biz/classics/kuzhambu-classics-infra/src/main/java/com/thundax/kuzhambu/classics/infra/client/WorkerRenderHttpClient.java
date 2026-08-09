@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
+import com.thundax.kuzhambu.classics.infra.configure.WorkerRenderProperties;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;

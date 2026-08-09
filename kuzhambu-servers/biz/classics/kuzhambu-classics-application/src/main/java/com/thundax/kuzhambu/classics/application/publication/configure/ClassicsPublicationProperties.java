@@ -2,9 +2,7 @@ package com.thundax.kuzhambu.classics.application.publication.configure;
 
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
 @ConfigurationProperties(prefix = "kuzhambu.classics.publication")
 public class ClassicsPublicationProperties {
     private boolean enabled;

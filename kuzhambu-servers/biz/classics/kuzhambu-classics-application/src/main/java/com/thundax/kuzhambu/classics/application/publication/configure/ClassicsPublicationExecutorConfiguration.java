@@ -2,11 +2,13 @@ package com.thundax.kuzhambu.classics.application.publication.configure;
 
 import java.time.Clock;
 import java.util.concurrent.ThreadPoolExecutor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
+@EnableConfigurationProperties(ClassicsPublicationProperties.class)
 public class ClassicsPublicationExecutorConfiguration {
     public static final String TASK_EXECUTOR = "classicsPublicationTaskExecutor";
 
