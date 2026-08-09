@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
-import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryQaStreamExecutorConfiguration;
+import com.thundax.kuzhambu.discovery.interfaces.configure.DiscoveryQaStreamExecutorConfiguration;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.response.DiscoveryQaResponses;

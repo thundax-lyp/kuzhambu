@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAl
 import com.thundax.kuzhambu.common.test.architecture.ConcurrencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModelAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -22,6 +23,8 @@ class DiscoveryInterfaceArchitectureTest {
         JavaClasses classes = ConcurrencyArchitectureRuleSupport.importMainClasses(BASE_PACKAGE + ".interfaces");
         ConcurrencyArchitectureRuleSupport.shouldNotUseCompletableFutureAsyncWithoutExecutor(BASE_PACKAGE)
                 .check(classes);
+        NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
+        PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
         ModelAnnotationArchitectureRuleSupport.assertRequestClassAnnotationsRequired(
                 classes, BASE_PACKAGE, Collections.emptyList());
         ModelAnnotationArchitectureRuleSupport.assertResponseClassAnnotationsRequired(
