@@ -1,7 +1,10 @@
 package com.thundax.kuzhambu.common.test.architecture;
 
+import static com.thundax.kuzhambu.common.test.architecture.ArchitectureAssertions.assertTrue;
+
 import com.tngtech.archunit.core.domain.JavaAnnotation;
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
@@ -12,8 +15,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +69,30 @@ public final class ModelAnnotationArchitectureRuleSupport {
                 "Response",
                 RESPONSE_REQUIRED_ANNOTATIONS,
                 NAME_RESPONSE_REQUIRED_ANNOTATIONS);
+    }
+
+    public static void assertRequestClassAnnotationsRequired(
+            JavaClasses classes, String basePackage, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        assertModelClassAnnotationsRequired(
+                classes,
+                basePackage,
+                ".request",
+                "Request",
+                REQUEST_REQUIRED_ANNOTATIONS,
+                NAME_REQUEST_REQUIRED_ANNOTATIONS,
+                legacyAllowances);
+    }
+
+    public static void assertResponseClassAnnotationsRequired(
+            JavaClasses classes, String basePackage, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        assertModelClassAnnotationsRequired(
+                classes,
+                basePackage,
+                ".response",
+                "Response",
+                RESPONSE_REQUIRED_ANNOTATIONS,
+                NAME_RESPONSE_REQUIRED_ANNOTATIONS,
+                legacyAllowances);
     }
 
     public static ArchRule dataObjectClassAnnotationsRequired(String basePackage, String... excludedClassNames) {
@@ -133,6 +163,61 @@ public final class ModelAnnotationArchitectureRuleSupport {
                 .because("RULE " + ruleName);
     }
 
+    private static void assertModelClassAnnotationsRequired(
+            JavaClasses classes,
+            String basePackage,
+            String packageSegment,
+            String simpleNameSuffix,
+            Set<String> requiredAnnotations,
+            String ruleName,
+            Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Map<String, ArchitectureRuleAllowance> allowlist = exactAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
+        List<String> violations = new ArrayList<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (!isModelClassUnder(javaClass, basePackage, packageSegment, simpleNameSuffix)) {
+                continue;
+            }
+            Set<String> actualAnnotations = annotationTypeNames(javaClass);
+            Set<String> missingAnnotations = missingAnnotations(actualAnnotations, requiredAnnotations);
+            Set<String> extraAnnotations = missingAnnotations(requiredAnnotations, actualAnnotations);
+            if (missingAnnotations.isEmpty() && extraAnnotations.isEmpty()) {
+                continue;
+            }
+            String allowanceKey = ruleName + ":" + javaClass.getFullName();
+            if (allowlist.containsKey(allowanceKey)) {
+                matchedAllowances.add(allowanceKey);
+                continue;
+            }
+            violations.add(javaClass.getFullName() + " missing=" + missingAnnotations + ", extra=" + extraAnnotations);
+        }
+
+        Set<String> staleAllowances = new HashSet<String>(allowlist.keySet());
+        staleAllowances.removeAll(matchedAllowances);
+        assertTrue(
+                "Model annotation legacy allowances must be exact and removed after remediation. Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
+    }
+
+    private static Map<String, ArchitectureRuleAllowance> exactAllowlist(
+            Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Map<String, ArchitectureRuleAllowance> allowlist = new HashMap<String, ArchitectureRuleAllowance>();
+        for (ArchitectureRuleAllowance allowance : legacyAllowances) {
+            if (allowance.key().contains("*")) {
+                throw new IllegalArgumentException(
+                        "Model annotation allowances must use exact class keys: " + allowance.key());
+            }
+            if (allowlist.put(allowance.key(), allowance) != null) {
+                throw new IllegalArgumentException("Duplicate architecture allowlist key: " + allowance.key());
+            }
+        }
+        return allowlist;
+    }
+
     private static boolean isModelClassUnder(
             JavaClass item, String basePackage, String packageSegment, String simpleNameSuffix) {
         return item.getPackageName().startsWith(basePackage + ".")
@@ -175,7 +260,12 @@ public final class ModelAnnotationArchitectureRuleSupport {
     }
 
     private static Path sourcePath(JavaClass item) {
-        String sourcePath = item.getFullName().replace('.', '/') + ".java";
+        String sourceClassName = item.getFullName();
+        int nestedClassMarker = sourceClassName.indexOf('$');
+        if (nestedClassMarker >= 0) {
+            sourceClassName = sourceClassName.substring(0, nestedClassMarker);
+        }
+        String sourcePath = sourceClassName.replace('.', '/') + ".java";
         for (String sourceRoot : sourceRoots()) {
             Path path = Paths.get(sourceRoot, sourcePath);
             if (Files.exists(path)) {
@@ -223,21 +313,73 @@ public final class ModelAnnotationArchitectureRuleSupport {
         return Arrays.asList(configuredSourceRoots.split(","));
     }
 
-    private static Set<String> sourceAnnotationTypeNames(JavaClass item, List<String> lines) {
+    static Set<String> sourceAnnotationTypeNames(JavaClass item, List<String> lines) {
         Map<String, String> imports = imports(lines);
         Set<String> annotationTypeNames = new LinkedHashSet<String>();
+        int annotationParenthesisDepth = 0;
         for (String line : lines) {
             String trimmedLine = line.trim();
-            if (trimmedLine.contains(" class " + item.getSimpleName())
-                    || trimmedLine.contains(" interface " + item.getSimpleName())
-                    || trimmedLine.contains(" enum " + item.getSimpleName())) {
+            if (declaresType(trimmedLine, item.getSimpleName())) {
                 break;
             }
             if (trimmedLine.startsWith("@")) {
                 annotationTypeNames.add(resolveAnnotationName(item, imports, annotationSimpleName(trimmedLine)));
+                annotationParenthesisDepth = parenthesisDelta(trimmedLine);
+            } else if (annotationParenthesisDepth > 0) {
+                annotationParenthesisDepth += parenthesisDelta(trimmedLine);
+            } else if (!trimmedLine.isEmpty()
+                    && !trimmedLine.startsWith("//")
+                    && !trimmedLine.startsWith("/*")
+                    && !trimmedLine.startsWith("*")) {
+                annotationTypeNames.clear();
             }
         }
         return annotationTypeNames;
+    }
+
+    private static boolean declaresType(String line, String simpleName) {
+        for (String typeKeyword : List.of("class", "interface", "enum")) {
+            String declaration = typeKeyword + " " + simpleName;
+            int declarationStart = line.indexOf(declaration);
+            if (declarationStart < 0) {
+                continue;
+            }
+            int nameEnd = declarationStart + declaration.length();
+            boolean validStart =
+                    declarationStart == 0 || !Character.isJavaIdentifierPart(line.charAt(declarationStart - 1));
+            boolean validEnd = nameEnd == line.length() || !Character.isJavaIdentifierPart(line.charAt(nameEnd));
+            if (validStart && validEnd) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int parenthesisDelta(String line) {
+        int depth = 0;
+        boolean inString = false;
+        boolean escaped = false;
+        for (int index = 0; index < line.length(); index++) {
+            char character = line.charAt(index);
+            if (inString) {
+                if (escaped) {
+                    escaped = false;
+                } else if (character == '\\') {
+                    escaped = true;
+                } else if (character == '"') {
+                    inString = false;
+                }
+                continue;
+            }
+            if (character == '"') {
+                inString = true;
+            } else if (character == '(') {
+                depth++;
+            } else if (character == ')') {
+                depth--;
+            }
+        }
+        return depth;
     }
 
     private static Map<String, String> imports(List<String> lines) {

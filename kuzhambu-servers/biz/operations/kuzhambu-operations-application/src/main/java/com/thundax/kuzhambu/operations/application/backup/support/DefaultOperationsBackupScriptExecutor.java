@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.operations.application.backup.support;
 
 import com.thundax.kuzhambu.operations.application.backup.configure.OperationsBackupScriptProperties;
-import com.thundax.kuzhambu.operations.application.backup.configure.OperationsBackupScriptProperties.MysqlConnectionSettings;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifact;
+import com.thundax.kuzhambu.operations.application.backup.support.OperationsMysqlConnectionSettingsResolver.MysqlConnectionSettings;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupType;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -122,7 +122,7 @@ public class DefaultOperationsBackupScriptExecutor implements OperationsBackupSc
         processBuilder.directory(scriptPath.getParent().toFile());
         processBuilder.redirectErrorStream(true);
         Map<String, String> environment = processBuilder.environment();
-        MysqlConnectionSettings mysqlSettings = properties.resolveMysqlConnectionSettings();
+        MysqlConnectionSettings mysqlSettings = OperationsMysqlConnectionSettingsResolver.resolve(properties);
         environment.put("KUZHAMBU_DB_HOST", mysqlSettings.host());
         environment.put("KUZHAMBU_DB_PORT", mysqlSettings.port());
         environment.put("KUZHAMBU_DB_NAME", mysqlSettings.databaseName());

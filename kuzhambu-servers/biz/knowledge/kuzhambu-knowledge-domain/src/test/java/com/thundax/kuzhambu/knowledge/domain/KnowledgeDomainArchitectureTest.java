@@ -29,5 +29,25 @@ class KnowledgeDomainArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertDomainEnumPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertRepositoryPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertRepositoryInterfaceMethodNames(
+                classes,
+                NamingArchitectureRuleSupport.legacyRepositoryInterfaceMethodNameAllowances(
+                        "com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository.findLatest",
+                        "com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository.findLatestAppliedByCategoryCode",
+                        "com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository.saveOrUpdateBatch",
+                        "com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository.saveOrUpdateBatch",
+                        "com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository.saveOrUpdateBatch",
+                        "com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository.saveOrUpdateBatch",
+                        "com.thundax.kuzhambu.knowledge.domain.refinement.repository.QualityAnnotationRepository.saveOrUpdate",
+                        "com.thundax.kuzhambu.knowledge.domain.refinement.repository.QualityReportRepository.getLatestPublished",
+                        "com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementEntityDraftRepository.saveOrUpdateBatch",
+                        "com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementLineageNodeDraftRepository.saveOrUpdateBatch",
+                        "com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementLineageRelationDraftRepository.saveOrUpdateBatch",
+                        "com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementRelationDraftRepository.saveOrUpdateBatch",
+                        "com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository.findLatestAppliedByGraphVersionId",
+                        "com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository.findLatestDraft",
+                        "com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository.getMetrics",
+                        "com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository.getTagCoverageRate",
+                        "com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository.pagePending"));
     }
 }

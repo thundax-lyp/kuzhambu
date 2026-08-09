@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceCont
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
+import com.thundax.kuzhambu.discovery.infra.configure.DiscoverySearchIndexProperties;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;

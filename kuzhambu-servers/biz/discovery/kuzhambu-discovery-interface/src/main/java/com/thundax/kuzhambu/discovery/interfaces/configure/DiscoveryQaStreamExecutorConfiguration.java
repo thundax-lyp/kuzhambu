@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.discovery.interfaces.common;
+package com.thundax.kuzhambu.discovery.interfaces.configure;
 
 import java.util.concurrent.ThreadPoolExecutor;
 import org.springframework.context.annotation.Bean;

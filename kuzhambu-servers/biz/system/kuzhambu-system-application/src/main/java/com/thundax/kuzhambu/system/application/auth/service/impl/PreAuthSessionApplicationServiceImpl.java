@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueValidateQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
+import com.thundax.kuzhambu.system.application.auth.support.CaptchaWhitelistPolicy;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.repository.PreAuthSessionRepository;
@@ -23,14 +24,13 @@ import org.springframework.stereotype.Service;
 public class PreAuthSessionApplicationServiceImpl implements PreAuthSessionApplicationService {
 
     private final PreAuthSessionRepository preAuthSessionRepository;
-    private final CaptchaWhitelistProperties captchaWhitelistProperties;
+    private final CaptchaWhitelistPolicy captchaWhitelistPolicy;
 
     @Autowired
     public PreAuthSessionApplicationServiceImpl(
             PreAuthSessionRepository preAuthSessionRepository, CaptchaWhitelistProperties captchaWhitelistProperties) {
         this.preAuthSessionRepository = preAuthSessionRepository;
-        this.captchaWhitelistProperties =
-                captchaWhitelistProperties == null ? CaptchaWhitelistProperties.disabled() : captchaWhitelistProperties;
+        this.captchaWhitelistPolicy = CaptchaWhitelistPolicy.from(captchaWhitelistProperties);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class PreAuthSessionApplicationServiceImpl implements PreAuthSessionAppli
         if (query == null) {
             return false;
         }
-        if (captchaWhitelistProperties.matches(query.getValue())) {
+        if (captchaWhitelistPolicy.matches(query.getValue())) {
             return true;
         }
         PreAuthSession session = get(new PreAuthSessionQuery(query.getId(), null, null));

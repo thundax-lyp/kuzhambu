@@ -239,7 +239,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
         if (current == null || !current.canRefresh(now) || !requestedClientId.equals(current.getClientId())) {
             throw invalidToken();
         }
-        if (refreshTokenRepository.markUsedIfActive(current, now) != 1) {
+        if (refreshTokenRepository.updateUsedIfActive(current, now) != 1) {
             throw invalidToken();
         }
 

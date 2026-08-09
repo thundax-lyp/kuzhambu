@@ -107,7 +107,7 @@ public class PrincipalCredentialRepositoryImpl implements PrincipalCredentialRep
     }
 
     @Override
-    public int recordFailure(PrincipalCredential principalCredential) {
+    public int updateFailure(PrincipalCredential principalCredential) {
         PrincipalCredentialDO dataObject = PrincipalCredentialPersistenceAssembler.toObject(principalCredential);
         return mapper.recordFailure(dataObject.getId(), dataObject.getFailedLimit(), dataObject.getLockedUntil());
     }

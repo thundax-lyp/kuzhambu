@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.application.scenario.configuration;
+package com.thundax.kuzhambu.ai.application.scenario.configure;
 
 import java.util.concurrent.ThreadPoolExecutor;
 import org.springframework.context.annotation.Bean;

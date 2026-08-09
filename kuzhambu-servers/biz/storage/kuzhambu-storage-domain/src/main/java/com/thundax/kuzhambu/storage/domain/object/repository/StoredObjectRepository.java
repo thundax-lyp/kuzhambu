@@ -49,7 +49,7 @@ public interface StoredObjectRepository {
 
     int deleteById(StoredObjectId id);
 
-    int physicalDeleteById(StoredObjectId id);
+    int deleteByIdPermanently(StoredObjectId id);
 
     List<StoredObject> listExpiredActiveUnreferenced(Instant storedBefore);
 

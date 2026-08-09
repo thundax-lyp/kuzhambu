@@ -1,7 +1,5 @@
 package com.thundax.kuzhambu.operations.application.cleanup.configure;
 
-import com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -16,38 +14,6 @@ public class OperationsCleanupScheduleProperties {
     private String dailyCron = "0 30 3 * * ?";
     private int defaultLimit = 200;
     private Policies policies = new Policies();
-
-    public List<CleanupPolicy> orderedPolicies() {
-        return OperationsCleanupSupport.orderedCleanupTypes().stream()
-                .map(this::policyFor)
-                .toList();
-    }
-
-    public CleanupPolicy policyFor(String cleanupType) {
-        String normalizedType = OperationsCleanupSupport.normalizeType(cleanupType);
-        CleanupPolicyProperties policy =
-                switch (normalizedType) {
-                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_BACKUP -> policies.getExpiredBackup();
-                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_EXPORT -> policies.getExpiredExport();
-                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_SHARE -> policies.getExpiredShare();
-                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_DRAFT -> policies.getExpiredDraft();
-                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_REPORT -> policies.getExpiredReport();
-                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_HEALTH_CHECK -> policies.getExpiredHealthCheck();
-                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_LONG_TASK -> policies.getExpiredLongTask();
-                    default -> throw new IllegalStateException("Unsupported operations cleanup type: " + cleanupType);
-                };
-        return new CleanupPolicy(
-                normalizedType, policy.isEnabled(), policy.getRetentionDays(), effectiveLimit(policy.getLimit()));
-    }
-
-    private int effectiveLimit(Integer policyLimit) {
-        if (policyLimit == null || policyLimit <= 0) {
-            return defaultLimit;
-        }
-        return policyLimit;
-    }
-
-    public record CleanupPolicy(String cleanupType, boolean enabled, int retentionDays, int limit) {}
 
     @Getter
     @Setter

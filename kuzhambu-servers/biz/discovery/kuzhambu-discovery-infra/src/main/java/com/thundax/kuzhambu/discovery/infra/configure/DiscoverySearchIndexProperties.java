@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.discovery.infra.client;
+package com.thundax.kuzhambu.discovery.infra.configure;
 
 import lombok.Getter;
 import lombok.Setter;

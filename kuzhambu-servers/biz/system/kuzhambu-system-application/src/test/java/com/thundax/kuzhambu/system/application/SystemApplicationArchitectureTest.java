@@ -7,7 +7,9 @@ import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRul
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SortableArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.SourceHardRuleArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
@@ -36,6 +38,10 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
         ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
                 classes, Collections.emptySet());
         NamingArchitectureRuleSupport.assertApplicationServicesUseApplicationServiceSuffix(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
+        PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
+        SourceHardRuleArchitectureRuleSupport.assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(
+                Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));

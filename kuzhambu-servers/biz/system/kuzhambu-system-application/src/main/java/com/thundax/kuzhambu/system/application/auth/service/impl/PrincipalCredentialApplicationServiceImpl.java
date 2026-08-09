@@ -86,7 +86,7 @@ public class PrincipalCredentialApplicationServiceImpl implements PrincipalCrede
         credential.setId(command.getId());
         credential.setFailedLimit(command.getFailedLimit());
         credential.setLockedUntil(command.getLockedUntil());
-        principalCredentialRepository.recordFailure(credential);
+        principalCredentialRepository.updateFailure(credential);
         return principalCredentialRepository.getById(credential.getId());
     }
 

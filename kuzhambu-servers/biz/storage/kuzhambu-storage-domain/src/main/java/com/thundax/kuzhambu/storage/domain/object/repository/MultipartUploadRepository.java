@@ -24,7 +24,7 @@ public interface MultipartUploadRepository {
 
     MultipartUploadPart getMultipartPart(MultipartUploadId uploadId, MultipartPartNumber partNumber);
 
-    int deleteMultipartParts(MultipartUploadId uploadId);
+    int deleteByUploadId(MultipartUploadId uploadId);
 
     List<MultipartUploadPart> listMultipartParts(MultipartUploadId uploadId);
 

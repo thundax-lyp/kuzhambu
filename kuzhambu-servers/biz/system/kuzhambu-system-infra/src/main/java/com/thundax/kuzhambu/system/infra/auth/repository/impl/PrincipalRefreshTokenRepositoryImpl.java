@@ -139,7 +139,7 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
     }
 
     @Override
-    public int markUsedIfActive(PrincipalRefreshToken refreshToken, Instant now) {
+    public int updateUsedIfActive(PrincipalRefreshToken refreshToken, Instant now) {
         Assert.notNull(refreshToken, "refreshToken can not be null");
         String tokenHash = tokenHashById(refreshToken.getId());
         if (StringUtils.isBlank(tokenHash)) {

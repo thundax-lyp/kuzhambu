@@ -3,16 +3,19 @@ package com.thundax.kuzhambu.system.interfaces;
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ApiSurfaceArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
 import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.configure.SpringSecurityConfiguration;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 
@@ -24,6 +27,10 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
     void interfaceLayerShouldKeepArchitectureBoundary() throws Exception {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".interfaces");
 
+        ApiAnnotationArchitectureRuleSupport.requestClassAnnotationsRequired(BASE_PACKAGE)
+                .check(classes);
+        ApiAnnotationArchitectureRuleSupport.responseClassAnnotationsRequired(BASE_PACKAGE)
+                .check(classes);
         ModuleAndDependencyArchitectureRuleSupport.assertInterfaceLayerBoundary(classes, BASE_PACKAGE);
         ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "system");
         InterfaceBoundaryArchitectureRuleSupport.assertInterfaceNoPersistenceDependency(classes, BASE_PACKAGE);
@@ -33,6 +40,8 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
         InterfaceBoundaryArchitectureRuleSupport.assertInterfaceProtocolsDoNotExposeDomainModels(
                 Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
+        PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
         NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
@@ -40,6 +49,8 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
                 Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertAdminControllerMethodsDeclareRequiredAnnotations(
                 Path.of("src/main/java"));
+        ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
+                Path.of("src/main/java"), legacyActionVerbAllowances());
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsDoNotUsePathOrQueryParameters(
                 Path.of("src/main/java"));
@@ -66,5 +77,24 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
 
         org.junit.jupiter.api.Assertions.assertFalse(
                 hasWebSecurityCustomizer, "Public API paths must use permitAll instead of web.ignoring().");
+    }
+
+    private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
+        return List.of(
+                actionVerbAllowance("AuditController"),
+                actionVerbAllowance("AuthController"),
+                actionVerbAllowance("CaptchaController"),
+                actionVerbAllowance("CurrentUserController"),
+                actionVerbAllowance("DepartmentController"),
+                actionVerbAllowance("MenuController"),
+                actionVerbAllowance("RoleController"),
+                actionVerbAllowance("UserController"));
+    }
+
+    private static ArchitectureRuleAllowance actionVerbAllowance(String controller) {
+        return ArchitectureRuleAllowance.of(
+                "CONTROLLER_ACTION_VERB:*" + controller + ".java*",
+                "System controller retains legacy action names or paths outside the shared verb whitelist.",
+                "Rename the controller method and action path with a shared verb, update callers, then remove this allowance.");
     }
 }

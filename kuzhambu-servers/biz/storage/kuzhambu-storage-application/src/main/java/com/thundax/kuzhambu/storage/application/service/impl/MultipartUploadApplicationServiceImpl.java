@@ -156,7 +156,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         for (MultipartUploadPart part : parts) {
             deleteMultipartPartContent(part);
         }
-        multipartUploadRepository.deleteMultipartParts(uploadId);
+        multipartUploadRepository.deleteByUploadId(uploadId);
     }
 
     private void persistCompletedMultipartStorage(
@@ -222,7 +222,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
                 throw new BizException("Multipart upload part delete failed: " + exception.getMessage());
             }
         }
-        multipartUploadRepository.deleteMultipartParts(session.getUploadIdRef());
+        multipartUploadRepository.deleteByUploadId(session.getUploadIdRef());
         Instant now = Instant.now();
         session.setUploadStatus(MultipartUploadStatus.ABORTED);
         session.setAbortedDate(now);

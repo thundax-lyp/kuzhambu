@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicat
 import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand;
 import com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand;
-import com.thundax.kuzhambu.ai.application.scenario.configuration.AiRefinementExecutorConfiguration;
+import com.thundax.kuzhambu.ai.application.scenario.configure.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.scenario.query.AiRefinementTasksQuery;
 import com.thundax.kuzhambu.ai.application.scenario.query.GetAiRefinementTaskQuery;
 import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;

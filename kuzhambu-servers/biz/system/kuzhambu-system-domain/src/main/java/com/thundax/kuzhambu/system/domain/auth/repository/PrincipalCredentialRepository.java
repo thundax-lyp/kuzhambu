@@ -26,5 +26,5 @@ public interface PrincipalCredentialRepository {
 
     int updateVerifyState(PrincipalCredential principalCredential);
 
-    int recordFailure(PrincipalCredential principalCredential);
+    int updateFailure(PrincipalCredential principalCredential);
 }

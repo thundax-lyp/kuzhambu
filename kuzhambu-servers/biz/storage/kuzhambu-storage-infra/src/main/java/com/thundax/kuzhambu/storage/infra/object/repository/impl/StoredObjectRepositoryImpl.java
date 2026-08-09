@@ -214,7 +214,7 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
     }
 
     @Override
-    public int physicalDeleteById(StoredObjectId id) {
+    public int deleteByIdPermanently(StoredObjectId id) {
         if (id == null) {
             return 0;
         }

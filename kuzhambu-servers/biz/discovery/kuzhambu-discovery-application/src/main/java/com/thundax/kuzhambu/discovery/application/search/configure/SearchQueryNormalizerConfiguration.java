@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.discovery.application.search.configuration;
+package com.thundax.kuzhambu.discovery.application.search.configure;
 
 import com.thundax.kuzhambu.discovery.domain.search.support.SearchQueryNormalizer;
 import org.springframework.context.annotation.Bean;

@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.discovery.application.search.configuration;
+package com.thundax.kuzhambu.discovery.application.search.configure;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

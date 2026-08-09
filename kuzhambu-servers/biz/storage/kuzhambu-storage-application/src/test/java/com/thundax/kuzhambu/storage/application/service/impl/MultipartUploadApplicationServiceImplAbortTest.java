@@ -53,7 +53,7 @@ class MultipartUploadApplicationServiceImplAbortTest {
         verify(contentRepository).delete(argThat(storage -> PART_PATH_2.equals(storage.getObjectKey())));
         verify(contentRepository).delete(argThat(storage -> PART_PATH_3.equals(storage.getObjectKey())));
         verify(contentRepository, times(3)).delete(any());
-        verify(multipartUploadRepository).deleteMultipartParts(UPLOAD_ID_REF);
+        verify(multipartUploadRepository).deleteByUploadId(UPLOAD_ID_REF);
         verify(multipartUploadRepository).updateMultipartSession(session);
     }
 
