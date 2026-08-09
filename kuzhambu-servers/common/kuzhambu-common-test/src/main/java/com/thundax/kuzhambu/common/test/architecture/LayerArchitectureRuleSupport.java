@@ -139,8 +139,9 @@ public final class LayerArchitectureRuleSupport {
         }
 
         assertTrue(
-                "*ApplicationService public use case methods must use zero or one *Command/*Query/*PageQuery "
-                        + "parameter, and count* methods must return primitive long. Violations: "
+                "*ApplicationService public use case methods must use an allowed command/query shape: no-arg "
+                        + "read/maintenance methods, one *Command/*Query/PageQuery, business query + PageQuery, "
+                        + "or stream command/query + handler. count* methods must return primitive long. Violations: "
                         + violations,
                 violations.isEmpty());
     }
@@ -334,15 +335,19 @@ public final class LayerArchitectureRuleSupport {
         if (parameterTypes.isEmpty()) {
             return;
         }
-        if (parameterTypes.size() > 1) {
-            violations.add(method.getFullName() + " has too many parameters " + parameterTypes.size());
+        if (parameterTypes.size() == 1) {
+            JavaClass parameterType = parameterTypes.get(0);
+            if (isServiceCommand(parameterType) || isServiceQuery(parameterType) || isPageQuery(parameterType)) {
+                return;
+            }
+        }
+        if (parameterTypes.size() == 2
+                && (isBusinessQueryAndPageQuery(parameterTypes.get(0), parameterTypes.get(1))
+                        || isStreamingApplicationServiceMethod(method, parameterTypes.get(0), parameterTypes.get(1)))) {
             return;
         }
-        JavaClass parameterType = parameterTypes.get(0);
-        if (isServiceCommand(parameterType) || isServiceQuery(parameterType) || isPageQuery(parameterType)) {
-            return;
-        }
-        violations.add(method.getFullName() + " has invalid use case parameter " + parameterType.getName());
+        violations.add(method.getFullName() + " has invalid use case parameters "
+                + parameterTypes.stream().map(JavaClass::getName).toList());
     }
 
     private static void collectApplicationServiceBoundaryParameterViolation(
