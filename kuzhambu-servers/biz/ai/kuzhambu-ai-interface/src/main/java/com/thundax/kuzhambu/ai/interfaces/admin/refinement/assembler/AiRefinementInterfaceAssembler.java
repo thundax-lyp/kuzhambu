@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler;
 
+import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
 import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand;
 import com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand;
@@ -18,6 +21,8 @@ import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
@@ -113,6 +118,27 @@ public final class AiRefinementInterfaceAssembler {
 
     public static CancelAiRefinementTaskCommand toCancelTaskCommand(Long taskId) {
         return new CancelAiRefinementTaskCommand(AiBatchJobIdCodec.toDomain(taskId));
+    }
+
+    public static AiBatchJobCreateCommand toCreateBatchCommand(AiRefinementRequests.BatchCreateRequest request) {
+        return new AiBatchJobCreateCommand(
+                request.getScope(),
+                AiBusinessCapability.from(request.getCapability()),
+                AiContentRef.ofNullable(request.getContentType(), null),
+                request.getTotalCount(),
+                request.getFailureSummaryJson());
+    }
+
+    public static GetAiBatchJobQuery toGetBatchQuery(AiRefinementRequests.BatchIdRequest request) {
+        return new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(request.getBatchId()));
+    }
+
+    public static GetAiBatchJobQuery toGetBatchQuery(AiBatchJobId batchId) {
+        return new GetAiBatchJobQuery(batchId);
+    }
+
+    public static CancelAiBatchJobCommand toCancelBatchCommand(AiRefinementRequests.BatchIdRequest request) {
+        return new CancelAiBatchJobCommand(AiBatchJobIdCodec.toDomain(request.getBatchId()));
     }
 
     public static AiRefinementResponses.CandidateResultResponse toResponse(AiCandidateResult result) {

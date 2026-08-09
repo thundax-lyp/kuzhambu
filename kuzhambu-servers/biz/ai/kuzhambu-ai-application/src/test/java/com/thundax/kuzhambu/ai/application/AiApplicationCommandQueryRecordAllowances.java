@@ -57,15 +57,7 @@ final class AiApplicationCommandQueryRecordAllowances {
                 construction(
                         "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#ApplyAiCandidateCommand:1"),
                 construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#RejectAiCandidateCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.AiRefinementTaskController#AiBatchJobCreateCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.AiRefinementTaskController#GetAiBatchJobQuery:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.AiRefinementTaskController#GetAiBatchJobQuery:2"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.AiRefinementTaskController#CancelAiBatchJobCommand:1"));
+                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#RejectAiCandidateCommand:1"));
     }
 
     static List<ArchitectureRuleAllowance> assemblerNullReturnAllowances() {

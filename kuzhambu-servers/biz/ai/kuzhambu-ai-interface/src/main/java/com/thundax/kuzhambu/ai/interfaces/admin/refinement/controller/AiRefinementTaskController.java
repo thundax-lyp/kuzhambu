@@ -1,15 +1,10 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
-import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
-import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.configuration.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinementInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
@@ -164,14 +159,8 @@ public class AiRefinementTaskController {
     @PostMapping(value = "batch/create")
     public AiRefinementResponses.BatchJobResponse createBatch(
             @Valid @RequestBody AiRefinementRequests.BatchCreateRequest request) {
-        AiBatchJobCreateCommand command = new AiBatchJobCreateCommand(
-                request.getScope(),
-                AiBusinessCapability.from(request.getCapability()),
-                AiContentRef.ofNullable(request.getContentType(), null),
-                request.getTotalCount(),
-                request.getFailureSummaryJson());
-        var batchId = batchJobApplicationService.create(command);
-        return toBatchResponse(batchJobApplicationService.get(new GetAiBatchJobQuery(batchId)));
+        var batchId = batchJobApplicationService.create(AiRefinementInterfaceAssembler.toCreateBatchCommand(request));
+        return toBatchResponse(batchJobApplicationService.get(AiRefinementInterfaceAssembler.toGetBatchQuery(batchId)));
     }
 
     @Operation(summary = "获取AI精修批量任务", description = "ai:refinement:view")
@@ -187,8 +176,7 @@ public class AiRefinementTaskController {
     @PostMapping(value = "batch/get")
     public AiRefinementResponses.BatchJobResponse getBatch(
             @Valid @RequestBody AiRefinementRequests.BatchIdRequest request) {
-        return toBatchResponse(batchJobApplicationService.get(
-                new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(request.getBatchId()))));
+        return toBatchResponse(batchJobApplicationService.get(AiRefinementInterfaceAssembler.toGetBatchQuery(request)));
     }
 
     @Operation(summary = "取消AI精修批量任务", description = "ai:refinement:edit")
@@ -204,8 +192,8 @@ public class AiRefinementTaskController {
     @PostMapping(value = "batch/cancel")
     public AiRefinementResponses.BatchJobResponse cancelBatch(
             @Valid @RequestBody AiRefinementRequests.BatchIdRequest request) {
-        return toBatchResponse(batchJobApplicationService.cancel(
-                new CancelAiBatchJobCommand(AiBatchJobIdCodec.toDomain(request.getBatchId()))));
+        return toBatchResponse(
+                batchJobApplicationService.cancel(AiRefinementInterfaceAssembler.toCancelBatchCommand(request)));
     }
 
     private static AiRefinementResponses.BatchJobResponse toBatchResponse(
