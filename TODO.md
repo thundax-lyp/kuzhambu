@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations health alert properties`：迁移 operations health alert 配置属性注册
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthAlertPolicyProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/configure/OperationsHealthAlertPolicyProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/configure/OperationsExternalHealthProbeConfiguration.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthAlertStrategy.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthAlertStrategyTest.java`
-    - 处理动作：按 RUNBOOK Step 6 将 `OperationsHealthAlertPolicyProperties` 移入 `operations.application.health.configure` 并注册到现有 health configuration
-    - 验收点：`OperationsHealthAlertPolicyProperties` 不再使用 `@Component` 或字段级 `@Value`，`OperationsExternalHealthProbeConfiguration` 同时注册 external probe 和 alert policy 两个 properties 类
-    - 重要度：8/10
-
 - [ ] `classics publication properties and executor stereotype`：收敛 classics publication 配置注册和执行器 stereotype
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`
