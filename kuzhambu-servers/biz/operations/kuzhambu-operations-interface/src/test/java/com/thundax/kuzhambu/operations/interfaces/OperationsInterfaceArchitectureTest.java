@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
 import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.ModelAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -25,6 +26,8 @@ class OperationsInterfaceArchitectureTest extends AbstractArchitectureTest {
                 .check(classes);
         ModelAnnotationArchitectureRuleSupport.assertResponseClassAnnotationsRequired(
                 classes, BASE_PACKAGE, legacyResponseAnnotationAllowances());
+        NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
+        PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
         ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
                 Path.of("src/main/java"), legacyActionVerbAllowances());
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
