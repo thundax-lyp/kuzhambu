@@ -86,20 +86,33 @@ public class StorageFacadeImpl implements StorageFacade {
         if (!exists(request)) {
             return null;
         }
-        StoredObjectId storedObjectId = readableContentFacadeAssembler.toStoredObjectId(request);
+        StoredObjectId storedObjectId = toStoredObjectId(request);
         if (storedObjectId == null) {
             return null;
         }
         StoredObjectContentResult content = storageContentApplicationService.openReadableContent(
                 readableContentFacadeAssembler.toOpenReadableContentQuery(request));
+        if (content == null) {
+            return null;
+        }
         return readableContentFacadeAssembler.toResponse(content);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ListStorageFacadeResponse list(ListStorageFacadeRequest request) {
+        if (request == null) {
+            return readableContentFacadeAssembler.toListResponse(Collections.emptyList());
+        }
         return readableContentFacadeAssembler.toListResponse(storageObjectApplicationService.list(
                 readableContentFacadeAssembler.toListStorageObjectsQuery(request)));
+    }
+
+    private StoredObjectId toStoredObjectId(OpenStorageFacadeRequest request) {
+        if (request.getStorageObjectId() == null) {
+            return null;
+        }
+        return StoredObjectIdCodec.toDomain(request.getStorageObjectId());
     }
 
     @Override
