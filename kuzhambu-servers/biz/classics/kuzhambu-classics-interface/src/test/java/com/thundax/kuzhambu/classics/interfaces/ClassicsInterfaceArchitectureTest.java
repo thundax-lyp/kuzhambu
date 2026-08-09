@@ -3,14 +3,17 @@ package com.thundax.kuzhambu.classics.interfaces;
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ApiSurfaceArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
 import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.ModelAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
@@ -21,6 +24,10 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
     void interfaceLayerShouldKeepArchitectureBoundary() throws Exception {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".interfaces");
 
+        ModelAnnotationArchitectureRuleSupport.assertRequestClassAnnotationsRequired(
+                classes, BASE_PACKAGE, legacyRequestAnnotationAllowances());
+        ModelAnnotationArchitectureRuleSupport.assertResponseClassAnnotationsRequired(
+                classes, BASE_PACKAGE, legacyResponseAnnotationAllowances());
         ModuleAndDependencyArchitectureRuleSupport.assertInterfaceLayerBoundary(classes, BASE_PACKAGE);
         ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "classics");
         InterfaceBoundaryArchitectureRuleSupport.assertInterfaceNoPersistenceDependency(classes, BASE_PACKAGE);
@@ -53,5 +60,72 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiInterfaceAssembler",
                         "com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler.WangqiDocumentInterfaceAssembler",
                         "com.thundax.kuzhambu.classics.interfaces.portal.sancai.assembler.SancaiPortalInterfaceAssembler"));
+    }
+
+    private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {
+        return modelAnnotationAllowances(
+                ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS,
+                "admin.content.controller.request.ClassicsContentRequest",
+                "admin.content.controller.request.ClassicsContentRequest$AiCandidateApplyRequest",
+                "admin.content.controller.request.ClassicsContentRequest$AiCandidateBatchApplyRequest",
+                "admin.content.controller.request.ClassicsContentRequest$AiCandidateBatchRejectRequest",
+                "admin.content.controller.request.ClassicsContentRequest$AiCandidateRejectItemRequest",
+                "admin.mingcustoms.controller.request.MingCustomsRequest",
+                "admin.mingcustoms.controller.request.MingCustomsVersionRequest",
+                "admin.publication.controller.request.ClassicsPublicationActionRequest",
+                "admin.publication.controller.request.ClassicsPublicationBatchActionRequest",
+                "admin.publication.controller.request.ClassicsPublicationJobGetRequest",
+                "admin.publication.controller.request.ClassicsPublicationJobPageRequest",
+                "admin.sancai.controller.request.SancaiAssetRequest",
+                "admin.sancai.controller.request.SancaiCategoryRequest",
+                "admin.sancai.controller.request.SancaiContentRequest",
+                "admin.sancai.controller.request.SancaiEntryPageRequest",
+                "admin.sancai.controller.request.SancaiEntryRequest",
+                "admin.sancai.controller.request.SancaiEntryVersionRequest",
+                "admin.sancai.controller.request.SancaiVolumeRequest",
+                "admin.wangqi.controller.request.WangqiDocumentRequest",
+                "admin.wangqi.controller.request.WangqiDocumentVersionRequest",
+                "portal.sancai.controller.request.SancaiPortalEntrySearchRequest");
+    }
+
+    private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
+        return modelAnnotationAllowances(
+                ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
+                "admin.common.response.ClassicsBatchOperationResponse",
+                "admin.content.controller.response.ClassicsContentResponse",
+                "admin.content.controller.response.ClassicsContentResponse$AiCandidateApplyResponse",
+                "admin.mingcustoms.controller.response.MingCustomsCategoriesResponse",
+                "admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse",
+                "admin.mingcustoms.controller.response.MingCustomsResponse",
+                "admin.mingcustoms.controller.response.MingCustomsTagCloudItemResponse",
+                "admin.mingcustoms.controller.response.MingCustomsVersionResponse",
+                "admin.publication.controller.response.ClassicsPublicationBatchItemResponse",
+                "admin.publication.controller.response.ClassicsPublicationBatchResponse",
+                "admin.publication.controller.response.ClassicsPublicationCreateResponse",
+                "admin.publication.controller.response.ClassicsPublicationJobResponse",
+                "admin.sancai.controller.response.SancaiAssetResponse",
+                "admin.sancai.controller.response.SancaiCategoryResponse",
+                "admin.sancai.controller.response.SancaiContentResponse",
+                "admin.sancai.controller.response.SancaiEntryResponse",
+                "admin.sancai.controller.response.SancaiEntryVersionResponse",
+                "admin.sancai.controller.response.SancaiVolumeResponse",
+                "admin.wangqi.controller.response.WangqiDocumentResponse",
+                "admin.wangqi.controller.response.WangqiDocumentSourceFileResponse",
+                "admin.wangqi.controller.response.WangqiDocumentVersionResponse",
+                "portal.sancai.controller.response.SancaiPortalCategoryResponse",
+                "portal.sancai.controller.response.SancaiPortalEntryResponse$ImageResponse",
+                "portal.sancai.controller.response.SancaiPortalEntryResponse$TagResponse",
+                "portal.sancai.controller.response.SancaiPortalEntryResponse$VisualAssetResponse",
+                "portal.sancai.controller.response.SancaiPortalVolumeResponse");
+    }
+
+    private static List<ArchitectureRuleAllowance> modelAnnotationAllowances(String ruleName, String... classNames) {
+        return java.util.Arrays.stream(classNames)
+                .map(
+                        className -> ArchitectureRuleAllowance.of(
+                                ruleName + ":" + BASE_PACKAGE + ".interfaces." + className,
+                                "Classics legacy API model is pending annotation normalization.",
+                                "Add the required model annotations or migrate the protocol shape, then remove this allowance."))
+                .toList();
     }
 }
