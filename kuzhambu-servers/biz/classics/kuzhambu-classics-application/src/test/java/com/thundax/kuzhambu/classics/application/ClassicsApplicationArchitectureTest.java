@@ -42,6 +42,12 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
                 Path.of("src/main/java"), ClassicsApplicationCommandQueryRecordAllowances.legacyAllowances());
+        NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
+                List.of(Path.of("src/main/java"), Path.of("../kuzhambu-classics-interface/src/main/java")),
+                legacyCommandQueryConstructionAllowances());
+        NamingArchitectureRuleSupport.assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
+                List.of(Path.of("src/main/java"), Path.of("../kuzhambu-classics-interface/src/main/java")),
+                legacyAssemblerNullReturnAllowances());
         NamingArchitectureRuleSupport.assertApplicationQueriesDoNotOwnPageState(
                 Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
@@ -182,6 +188,68 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
                 key,
                 "Classics publication internal workflow service exposes entity/token/time parameters instead of a Command.",
                 "Move the workflow method behind support/executor semantics or introduce a dedicated publication Command object, then remove this allowance.");
+    }
+
+    private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {
+        return List.of(
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer#ContentTagCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer#ContentTagCommand:2"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer#ContentQaPairCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer#ContentTagCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer#ContentQaPairCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.SancaiPortalController#PageQuery:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.MingCustomsAdminController#MingCustomsKeywordSortCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.WangqiDocumentAdminController#WangqiDocumentSourceFileCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiContentAdminController#ContentQaPairSortCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiContentAdminController#ContentQaPairCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController#SancaiCategorySortCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController#SancaiVolumeSortCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController#SancaiEntrySortCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAssetAdminController#SancaiEntryImageUploadCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAssetAdminController#SancaiEntryImageSortCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.content.controller.ClassicsContentAdminController#ContentTagSortCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.content.controller.ClassicsContentAdminController#ContentQaPairSortCommand:1"));
+    }
+
+    private static ArchitectureRuleAllowance constructionViolation(String ownerAndType) {
+        return ArchitectureRuleAllowance.of(
+                "COMMAND_QUERY_CONSTRUCTION:" + ownerAndType,
+                "Classics support or controller code directly constructs an application Command/Query.",
+                "Move request conversion into an InterfaceAssembler or application facade, then remove this allowance.");
+    }
+
+    private static List<ArchitectureRuleAllowance> legacyAssemblerNullReturnAllowances() {
+        return List.of(
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler#toAiCandidateApplyCommand:AiCandidateApplyContentCommand:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler#toAiCandidateBatchApplyCommand:AiCandidateBatchApplyContentCommand:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler#toAiCandidateBatchRejectCommand:AiCandidateBatchRejectContentCommand:1"));
+    }
+
+    private static ArchitectureRuleAllowance nullReturnViolation(String ownerMethodAndType) {
+        return ArchitectureRuleAllowance.of(
+                "COMMAND_QUERY_ASSEMBLER_NULL_RETURN:" + ownerMethodAndType,
+                "Classics interface assembler returns null for an application Command on null input.",
+                "Validate inputs in the caller or model the absence explicitly, then return a concrete application contract.");
     }
 
     private static ArchitectureRuleAllowance rawParameters(String key) {
