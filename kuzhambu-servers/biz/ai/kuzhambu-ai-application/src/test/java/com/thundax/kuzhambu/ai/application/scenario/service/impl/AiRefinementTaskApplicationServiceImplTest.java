@@ -76,7 +76,7 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         AiRefinementTaskResult accepted = service.submit(command(AiBusinessCapability.CLASSICS_TRANSLATE.value()));
 
-        assertEquals(1, batchJobService.created.getTotalCount());
+        assertEquals(1, batchJobService.created.totalCount());
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, accepted.getCapability());
         assertEquals(
                 AiBatchJobStatus.SUCCEEDED,
@@ -105,7 +105,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         service.submit(command);
 
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, command.getCapability());
-        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, batchJobService.created.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, batchJobService.created.capability());
     }
 
     @Test
@@ -128,7 +128,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         service.submit(command);
 
         assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, command.getCapability());
-        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, batchJobService.created.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, batchJobService.created.capability());
         assertEquals(1, refinementService.fusionInvokeCount);
     }
 
@@ -497,15 +497,15 @@ class AiRefinementTaskApplicationServiceImplTest {
             long batchId = sequence.incrementAndGet();
             jobs.add(new AiBatchJobResult(
                     new AiBatchJobId(batchId),
-                    command.getScope(),
-                    command.getCapability(),
-                    command.getContentRef(),
+                    command.scope(),
+                    command.capability(),
+                    command.contentRef(),
                     AiBatchJobStatus.RUNNING,
-                    command.getTotalCount(),
+                    command.totalCount(),
                     0,
                     0,
                     0,
-                    command.getFailureSummaryJson(),
+                    command.failureSummaryJson(),
                     Instant.parse("2026-01-01T00:00:00Z"),
                     null,
                     null));

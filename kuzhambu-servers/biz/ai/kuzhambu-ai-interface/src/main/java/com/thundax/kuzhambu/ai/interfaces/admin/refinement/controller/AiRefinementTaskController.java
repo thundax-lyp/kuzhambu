@@ -164,12 +164,12 @@ public class AiRefinementTaskController {
     @PostMapping(value = "batch/create")
     public AiRefinementResponses.BatchJobResponse createBatch(
             @Valid @RequestBody AiRefinementRequests.BatchCreateRequest request) {
-        AiBatchJobCreateCommand command = new AiBatchJobCreateCommand();
-        command.setScope(request.getScope());
-        command.setCapability(AiBusinessCapability.from(request.getCapability()));
-        command.setContentRef(AiContentRef.ofNullable(request.getContentType(), null));
-        command.setTotalCount(request.getTotalCount());
-        command.setFailureSummaryJson(request.getFailureSummaryJson());
+        AiBatchJobCreateCommand command = new AiBatchJobCreateCommand(
+                request.getScope(),
+                AiBusinessCapability.from(request.getCapability()),
+                AiContentRef.ofNullable(request.getContentType(), null),
+                request.getTotalCount(),
+                request.getFailureSummaryJson());
         var batchId = batchJobApplicationService.create(command);
         return toBatchResponse(batchJobApplicationService.get(new GetAiBatchJobQuery(batchId)));
     }

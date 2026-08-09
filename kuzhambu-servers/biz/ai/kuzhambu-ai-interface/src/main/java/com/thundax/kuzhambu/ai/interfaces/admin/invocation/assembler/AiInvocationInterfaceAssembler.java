@@ -35,13 +35,12 @@ public final class AiInvocationInterfaceAssembler {
     private AiInvocationInterfaceAssembler() {}
 
     public static AiBatchJobCreateCommand toCreateCommand(AiInvocationRequests.BatchCreateRequest request) {
-        AiBatchJobCreateCommand command = new AiBatchJobCreateCommand();
-        command.setScope(request.getScope());
-        command.setCapability(AiBusinessCapability.from(request.getCapability()));
-        command.setContentRef(AiContentRef.ofNullable(request.getContentType(), null));
-        command.setTotalCount(request.getTotalCount());
-        command.setFailureSummaryJson(request.getFailureSummaryJson());
-        return command;
+        return new AiBatchJobCreateCommand(
+                request.getScope(),
+                AiBusinessCapability.from(request.getCapability()),
+                AiContentRef.ofNullable(request.getContentType(), null),
+                request.getTotalCount(),
+                request.getFailureSummaryJson());
     }
 
     public static AiInvocationResponses.InvocationLogResponse toResponse(AiInvocationLog invocationLog) {

@@ -132,11 +132,11 @@ class AiFacadeImplTest {
         verify(aiBatchJobApplicationService).create(captor.capture());
 
         AiBatchJobCreateCommand command = captor.getValue();
-        assertEquals("knowledge", command.getScope());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, command.getCapability());
-        assertEquals("WANGQI_DOCUMENT", command.getContentRef().contentType());
-        assertEquals(12, command.getTotalCount());
-        assertEquals("{\"retry\":0}", command.getFailureSummaryJson());
+        assertEquals("knowledge", command.scope());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, command.capability());
+        assertEquals("WANGQI_DOCUMENT", command.contentRef().contentType());
+        assertEquals(12, command.totalCount());
+        assertEquals("{\"retry\":0}", command.failureSummaryJson());
         assertEquals(88L, response.getBatchId());
     }
 
