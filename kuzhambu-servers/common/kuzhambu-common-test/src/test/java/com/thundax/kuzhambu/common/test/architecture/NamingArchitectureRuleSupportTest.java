@@ -756,6 +756,25 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
+    void domainServiceGateShouldRejectHelperInDomainServiceSubpackage() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service/support");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("FooHelper.java"),
+                """
+                package com.thundax.kuzhambu.sample.domain.service.support;
+
+                public class FooHelper {
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(
+                        tempDir.resolve("src/main/java")));
+    }
+
+    @Test
     void domainServiceGateShouldScopeRepositoryReferenceToEachImplementation() throws Exception {
         Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service/impl");
         Files.createDirectories(source);
@@ -777,6 +796,36 @@ class NamingArchitectureRuleSupportTest {
                 }
 
                 class OtherDomainServiceImpl implements OtherDomainService {
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(
+                        tempDir.resolve("src/main/java")));
+    }
+
+    @Test
+    void domainServiceGateShouldNotUseNestedImplementationRepositoryForOuterImplementation() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service/impl");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleDomainServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.domain.service.impl;
+
+                import com.thundax.kuzhambu.sample.domain.core.repository.SampleRepository;
+                import com.thundax.kuzhambu.sample.domain.service.OtherDomainService;
+                import com.thundax.kuzhambu.sample.domain.service.SampleDomainService;
+
+                public class SampleDomainServiceImpl implements SampleDomainService {
+                    static class OtherDomainServiceImpl implements OtherDomainService {
+                        private final SampleRepository repository;
+
+                        OtherDomainServiceImpl(SampleRepository repository) {
+                            this.repository = repository;
+                        }
+                    }
                 }
                 """);
 

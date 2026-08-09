@@ -932,8 +932,12 @@ public final class NamingArchitectureRuleSupport {
     }
 
     private static boolean isDomainServicePackage(String packageName) {
-        return packageName.contains(".domain.")
-                && (packageName.endsWith(".service") || packageName.endsWith(".service.impl"));
+        int servicePackageStart = packageName.indexOf(".domain.service");
+        if (servicePackageStart < 0) {
+            return false;
+        }
+        int servicePackageEnd = servicePackageStart + ".domain.service".length();
+        return servicePackageEnd == packageName.length() || packageName.charAt(servicePackageEnd) == '.';
     }
 
     private static boolean isConcreteDomainServiceSource(String source, String simpleName) {
@@ -975,7 +979,33 @@ public final class NamingArchitectureRuleSupport {
             scopedSource.append(packageOrImport.group()).append('\n');
         }
         scopedSource.append(source, declaration.start(), bodyEnd);
-        return scopedSource.toString();
+        return sourceWithoutNestedTypeDeclarations(scopedSource.toString(), simpleName);
+    }
+
+    private static String sourceWithoutNestedTypeDeclarations(String source, String rootSimpleName) {
+        String scanSource = sourceWithoutLiterals(source);
+        Matcher declaration = TYPE_DECLARATION_NAME_PATTERN.matcher(scanSource);
+        StringBuilder sourceWithoutNestedTypes = new StringBuilder(source);
+        boolean rootDeclarationSeen = false;
+        while (declaration.find()) {
+            String declaredName = declaration.group(1);
+            if (!rootDeclarationSeen && declaredName.equals(rootSimpleName)) {
+                rootDeclarationSeen = true;
+                continue;
+            }
+            if (!rootDeclarationSeen) {
+                continue;
+            }
+            int bodyStart = scanSource.indexOf('{', declaration.end());
+            if (bodyStart < 0) {
+                continue;
+            }
+            int bodyEnd = matchingClosingBraceEnd(scanSource, bodyStart);
+            for (int index = declaration.start(); index < bodyEnd; index++) {
+                sourceWithoutNestedTypes.setCharAt(index, ' ');
+            }
+        }
+        return sourceWithoutNestedTypes.toString();
     }
 
     private static int matchingClosingBraceEnd(String source, int openBraceIndex) {
