@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-infra worker render properties`：迁移 classics render worker 配置属性注册
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/client/WorkerRenderProperties.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/configure/WorkerRenderProperties.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/configure/WorkerRenderConfiguration.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/client/WorkerRenderHttpClient.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/test/java/com/thundax/kuzhambu/classics/infra/client/WorkerRenderHttpClientTest.java`
-    - 处理动作：按 RUNBOOK Step 2 将 `WorkerRenderProperties` 移入 `classics.infra.configure` 并改为 `@ConfigurationProperties` 注册
-    - 验收点：`WorkerRenderProperties` 不再使用 `@Component` 或字段级 `@Value`，`WorkerRenderConfiguration` 使用 `@EnableConfigurationProperties(WorkerRenderProperties.class)`，生产和测试 import 指向新包
-    - 重要度：8/10
-
 - [ ] `operations-infra worker render properties`：迁移 operations render worker 配置属性注册
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`
