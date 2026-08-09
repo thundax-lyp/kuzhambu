@@ -868,7 +868,11 @@ public final class NamingArchitectureRuleSupport {
     }
 
     private static boolean isInterfaceDomainServiceSource(String source, String simpleName) {
-        return Pattern.compile("\\b(?:public\\s+)?interface\\s+" + simpleName + "\\b")
+        return Pattern.compile("(?m)^\\s*(?:@[\\w.]+(?:\\([^\\n]*\\))?\\s*)*"
+                        + "(?:(?:public|protected|private|abstract|static|sealed|non-sealed|strictfp)\\s+)*"
+                        + "interface\\s+"
+                        + Pattern.quote(simpleName)
+                        + "\\b")
                 .matcher(source)
                 .find();
     }

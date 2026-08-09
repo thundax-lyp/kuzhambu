@@ -713,6 +713,25 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
+    void domainServiceGateShouldRejectAnnotationDomainServiceDeclaration() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleDomainService.java"),
+                """
+                package com.thundax.kuzhambu.sample.domain.service;
+
+                public @interface SampleDomainService {
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(
+                        tempDir.resolve("src/main/java")));
+    }
+
+    @Test
     void domainServiceGateShouldRejectDomainServiceImplDeclaredAsInterface() throws Exception {
         Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service/impl");
         Files.createDirectories(source);
