@@ -16,9 +16,6 @@ final class KnowledgeApplicationPageQueryAllowances {
 
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
-                pageQueryType("com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery"),
-                pageQueryType("com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery"),
-                pageQueryType("com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery"),
                 pageQueryType("com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationPageQuery"),
                 pageFields("com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationPageQuery"),
                 pageQueryType("com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportPageQuery"),

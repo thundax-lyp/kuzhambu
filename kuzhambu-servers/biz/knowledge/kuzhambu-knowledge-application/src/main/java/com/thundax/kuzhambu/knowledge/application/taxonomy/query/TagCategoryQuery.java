@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TagCategoryPageQuery {
+public class TagCategoryQuery {
     private String name;
     private TagCategoryStatus status;
     private SortDirection sortDirection = SortDirection.ASC;
