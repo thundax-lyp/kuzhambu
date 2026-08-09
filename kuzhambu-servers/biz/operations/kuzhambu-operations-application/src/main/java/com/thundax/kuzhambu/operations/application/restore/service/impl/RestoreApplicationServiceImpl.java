@@ -107,14 +107,17 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         validateExecuteCommand(command);
         BackupRecord sourceBackup = backupRepository.getById(command.getBackupId());
         if (sourceBackup == null) {
-            throw new IllegalArgumentException("Operations restore source backup does not exist.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations restore source backup does not exist.");
         }
         if (!BackupStatus.SUCCEEDED.value().equalsIgnoreCase(sourceBackup.getBackupStatus())) {
-            throw new IllegalArgumentException("Operations restore source backup must be in SUCCEEDED status.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations restore source backup must be in SUCCEEDED status.");
         }
         String sourceBaseName = stripSqlSuffix(sourceBackup.getFileName());
         if (StringUtils.isBlank(sourceBaseName)) {
-            throw new IllegalArgumentException("Operations restore source backup filename is invalid.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations restore source backup filename is invalid.");
         }
         RestoreMode restoreMode = resolveRestoreMode(command);
         if (!executionGuard.tryEnterRestore()) {
@@ -374,13 +377,16 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
 
     private void validateExecuteCommand(OperationsRestoreExecuteCommand command) {
         if (command == null) {
-            throw new IllegalArgumentException("Operations restore execute command must not be null.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations restore execute command must not be null.");
         }
         if (command.getBackupId() == null) {
-            throw new IllegalArgumentException("Operations restore backupId must not be null.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations restore backupId must not be null.");
         }
         if (command.getRequesterUserId() == null) {
-            throw new IllegalArgumentException("Operations restore requesterUserId must not be null.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations restore requesterUserId must not be null.");
         }
     }
 
