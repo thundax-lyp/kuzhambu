@@ -15,27 +15,7 @@ public class OperationsCleanupScheduleProperties {
     private boolean startupEnabled = false;
     private String dailyCron = "0 30 3 * * ?";
     private int defaultLimit = 200;
-    private boolean expiredBackupEnabled = true;
-    private int expiredBackupRetentionDays = 30;
-    private Integer expiredBackupLimit = 200;
-    private boolean expiredExportEnabled = true;
-    private int expiredExportRetentionDays = 7;
-    private Integer expiredExportLimit = 200;
-    private boolean expiredShareEnabled = true;
-    private int expiredShareRetentionDays = 90;
-    private Integer expiredShareLimit = 200;
-    private boolean expiredDraftEnabled = true;
-    private int expiredDraftRetentionDays = 30;
-    private Integer expiredDraftLimit = 200;
-    private boolean expiredReportEnabled = true;
-    private int expiredReportRetentionDays = 90;
-    private Integer expiredReportLimit = 200;
-    private boolean expiredHealthCheckEnabled = true;
-    private int expiredHealthCheckRetentionDays = 30;
-    private Integer expiredHealthCheckLimit = 500;
-    private boolean expiredLongTaskEnabled = true;
-    private int expiredLongTaskRetentionDays = 90;
-    private Integer expiredLongTaskLimit = 200;
+    private Policies policies = new Policies();
 
     public List<CleanupPolicy> orderedPolicies() {
         return OperationsCleanupSupport.orderedCleanupTypes().stream()
@@ -45,51 +25,20 @@ public class OperationsCleanupScheduleProperties {
 
     public CleanupPolicy policyFor(String cleanupType) {
         String normalizedType = OperationsCleanupSupport.normalizeType(cleanupType);
-        return switch (normalizedType) {
-            case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_BACKUP ->
-                new CleanupPolicy(
-                        normalizedType,
-                        expiredBackupEnabled,
-                        expiredBackupRetentionDays,
-                        effectiveLimit(expiredBackupLimit));
-            case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_EXPORT ->
-                new CleanupPolicy(
-                        normalizedType,
-                        expiredExportEnabled,
-                        expiredExportRetentionDays,
-                        effectiveLimit(expiredExportLimit));
-            case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_SHARE ->
-                new CleanupPolicy(
-                        normalizedType,
-                        expiredShareEnabled,
-                        expiredShareRetentionDays,
-                        effectiveLimit(expiredShareLimit));
-            case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_DRAFT ->
-                new CleanupPolicy(
-                        normalizedType,
-                        expiredDraftEnabled,
-                        expiredDraftRetentionDays,
-                        effectiveLimit(expiredDraftLimit));
-            case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_REPORT ->
-                new CleanupPolicy(
-                        normalizedType,
-                        expiredReportEnabled,
-                        expiredReportRetentionDays,
-                        effectiveLimit(expiredReportLimit));
-            case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_HEALTH_CHECK ->
-                new CleanupPolicy(
-                        normalizedType,
-                        expiredHealthCheckEnabled,
-                        expiredHealthCheckRetentionDays,
-                        effectiveLimit(expiredHealthCheckLimit));
-            case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_LONG_TASK ->
-                new CleanupPolicy(
-                        normalizedType,
-                        expiredLongTaskEnabled,
-                        expiredLongTaskRetentionDays,
-                        effectiveLimit(expiredLongTaskLimit));
-            default -> throw new IllegalArgumentException("Unsupported operations cleanup type: " + cleanupType);
-        };
+        CleanupPolicyProperties policy =
+                switch (normalizedType) {
+                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_BACKUP -> policies.getExpiredBackup();
+                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_EXPORT -> policies.getExpiredExport();
+                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_SHARE -> policies.getExpiredShare();
+                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_DRAFT -> policies.getExpiredDraft();
+                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_REPORT -> policies.getExpiredReport();
+                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_HEALTH_CHECK -> policies.getExpiredHealthCheck();
+                    case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_LONG_TASK -> policies.getExpiredLongTask();
+                    default ->
+                        throw new IllegalArgumentException("Unsupported operations cleanup type: " + cleanupType);
+                };
+        return new CleanupPolicy(
+                normalizedType, policy.isEnabled(), policy.getRetentionDays(), effectiveLimit(policy.getLimit()));
     }
 
     private int effectiveLimit(Integer policyLimit) {
@@ -100,4 +49,34 @@ public class OperationsCleanupScheduleProperties {
     }
 
     public record CleanupPolicy(String cleanupType, boolean enabled, int retentionDays, int limit) {}
+
+    @Getter
+    @Setter
+    public static class Policies {
+
+        private CleanupPolicyProperties expiredBackup = new CleanupPolicyProperties(true, 30, 200);
+        private CleanupPolicyProperties expiredExport = new CleanupPolicyProperties(true, 7, 200);
+        private CleanupPolicyProperties expiredShare = new CleanupPolicyProperties(true, 90, 200);
+        private CleanupPolicyProperties expiredDraft = new CleanupPolicyProperties(true, 30, 200);
+        private CleanupPolicyProperties expiredReport = new CleanupPolicyProperties(true, 90, 200);
+        private CleanupPolicyProperties expiredHealthCheck = new CleanupPolicyProperties(true, 30, 500);
+        private CleanupPolicyProperties expiredLongTask = new CleanupPolicyProperties(true, 90, 200);
+    }
+
+    @Getter
+    @Setter
+    public static class CleanupPolicyProperties {
+
+        private boolean enabled;
+        private int retentionDays;
+        private Integer limit;
+
+        public CleanupPolicyProperties() {}
+
+        private CleanupPolicyProperties(boolean enabled, int retentionDays, Integer limit) {
+            this.enabled = enabled;
+            this.retentionDays = retentionDays;
+            this.limit = limit;
+        }
+    }
 }
