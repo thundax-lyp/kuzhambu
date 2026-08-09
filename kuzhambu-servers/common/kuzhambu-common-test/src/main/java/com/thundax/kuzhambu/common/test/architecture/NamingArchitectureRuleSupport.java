@@ -837,7 +837,7 @@ public final class NamingArchitectureRuleSupport {
                 && (domainServiceName || domainServiceImplName)
                 && allowedDomainServiceShape
                 && isConcreteDomainServiceSource(source, simpleName)
-                && !containsDomainRepositoryReference(source)) {
+                && !containsDomainRepositoryReference(declarationScopedSource(source, simpleName))) {
             collectAllowlistedViolation(
                     domainServiceRepositoryKey(typeName),
                     ArchitectureSourceSupport.repositoryPath(root, path)
@@ -857,7 +857,7 @@ public final class NamingArchitectureRuleSupport {
             List<String> violations,
             Map<String, ArchitectureRuleAllowance> allowlist,
             Set<String> matchedAllowances) {
-        Matcher matcher = TYPE_DECLARATION_NAME_PATTERN.matcher(source);
+        Matcher matcher = TYPE_DECLARATION_NAME_PATTERN.matcher(sourceWithoutLiterals(source));
         while (matcher.find()) {
             String declaredName = matcher.group(1);
             if (declaredName.equals(fileSimpleName)) {
@@ -908,7 +908,7 @@ public final class NamingArchitectureRuleSupport {
                 && (domainServiceName || domainServiceImplName)
                 && isAllowedDomainServiceShape(source, packageName, declaredName)
                 && isConcreteDomainServiceSource(source, declaredName)
-                && !containsDomainRepositoryReference(source)) {
+                && !containsDomainRepositoryReference(declarationScopedSource(source, declaredName))) {
             collectAllowlistedViolation(
                     domainServiceRepositoryKey(declaredTypeName),
                     ArchitectureSourceSupport.repositoryPath(root, path)
@@ -953,6 +953,45 @@ public final class NamingArchitectureRuleSupport {
                         + "\\b")
                 .matcher(source)
                 .find();
+    }
+
+    private static String declarationScopedSource(String source, String simpleName) {
+        String scanSource = sourceWithoutLiterals(source);
+        Matcher declaration = Pattern.compile(
+                        "\\b(?:class|interface|enum|record|@interface)\\s+" + Pattern.quote(simpleName) + "\\b")
+                .matcher(scanSource);
+        if (!declaration.find()) {
+            return source;
+        }
+        int bodyStart = scanSource.indexOf('{', declaration.end());
+        if (bodyStart < 0) {
+            return source;
+        }
+        int bodyEnd = matchingClosingBraceEnd(scanSource, bodyStart);
+        StringBuilder scopedSource = new StringBuilder();
+        Matcher packageOrImport = Pattern.compile("(?m)^\\s*(?:package\\s+[^;]+;|import\\s+[^;]+;)\\s*")
+                .matcher(source);
+        while (packageOrImport.find()) {
+            scopedSource.append(packageOrImport.group()).append('\n');
+        }
+        scopedSource.append(source, declaration.start(), bodyEnd);
+        return scopedSource.toString();
+    }
+
+    private static int matchingClosingBraceEnd(String source, int openBraceIndex) {
+        int depth = 0;
+        for (int index = openBraceIndex; index < source.length(); index++) {
+            char current = source.charAt(index);
+            if (current == '{') {
+                depth++;
+            } else if (current == '}') {
+                depth--;
+                if (depth == 0) {
+                    return index + 1;
+                }
+            }
+        }
+        return source.length();
     }
 
     private static boolean implementsExpectedDomainServiceInterface(
@@ -1063,9 +1102,19 @@ public final class NamingArchitectureRuleSupport {
     private static String sourceWithoutImportDeclarationsAndLiterals(String source) {
         String withoutImports =
                 Pattern.compile("(?m)^\\s*import\\s+[^;]+;\\s*").matcher(source).replaceAll("\n");
-        return Pattern.compile("\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'")
-                .matcher(withoutImports)
-                .replaceAll("\"\"");
+        return sourceWithoutLiterals(withoutImports);
+    }
+
+    private static String sourceWithoutLiterals(String source) {
+        Matcher matcher = Pattern.compile("(?s)\"\"\".*?\"\"\"|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'")
+                .matcher(source);
+        StringBuilder strippedSource = new StringBuilder(source);
+        while (matcher.find()) {
+            for (int index = matcher.start(); index < matcher.end(); index++) {
+                strippedSource.setCharAt(index, ' ');
+            }
+        }
+        return strippedSource.toString();
     }
 
     public static String domainServiceShapeKey(String typeName) {

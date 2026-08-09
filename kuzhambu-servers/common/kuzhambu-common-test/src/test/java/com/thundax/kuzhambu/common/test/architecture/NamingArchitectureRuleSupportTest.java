@@ -756,6 +756,56 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
+    void domainServiceGateShouldScopeRepositoryReferenceToEachImplementation() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service/impl");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleDomainServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.domain.service.impl;
+
+                import com.thundax.kuzhambu.sample.domain.core.repository.SampleRepository;
+                import com.thundax.kuzhambu.sample.domain.service.OtherDomainService;
+                import com.thundax.kuzhambu.sample.domain.service.SampleDomainService;
+
+                public class SampleDomainServiceImpl implements SampleDomainService {
+                    private final SampleRepository repository;
+
+                    public SampleDomainServiceImpl(SampleRepository repository) {
+                        this.repository = repository;
+                    }
+                }
+
+                class OtherDomainServiceImpl implements OtherDomainService {
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(
+                        tempDir.resolve("src/main/java")));
+    }
+
+    @Test
+    void domainServiceGateShouldIgnoreDomainServiceDeclarationsInsideLiterals() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/support");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("Helper.java"),
+                "package com.thundax.kuzhambu.sample.domain.support;\n\n"
+                        + "public class Helper {\n"
+                        + "    private static final String INLINE = \"interface InlineDomainService {}\";\n"
+                        + "    private static final String TEMPLATE = \"\"\"\n"
+                        + "            class LegacyDomainService {\n"
+                        + "            }\n"
+                        + "            \"\"\";\n"
+                        + "}\n");
+
+        assertDoesNotThrow(() -> NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(
+                tempDir.resolve("src/main/java")));
+    }
+
+    @Test
     void domainServiceGateShouldRejectAnnotationDomainServiceDeclaration() throws Exception {
         Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service");
         Files.createDirectories(source);
