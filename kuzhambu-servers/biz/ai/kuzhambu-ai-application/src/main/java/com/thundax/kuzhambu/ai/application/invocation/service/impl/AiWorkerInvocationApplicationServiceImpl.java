@@ -260,7 +260,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             validateBySchema(payload, schema, "payload");
             result.setResultPayload(objectMapper.writeValueAsString(payload));
             return result;
-        } catch (JsonProcessingException | IllegalArgumentException ex) {
+        } catch (JsonProcessingException | IllegalStateException ex) {
             return AiInvokeResult.failed(
                     command.trace().requestId(),
                     command.trace().traceId(),
@@ -284,7 +284,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
 
     private String extractJsonPayload(String payload) {
         if (isBlank(payload)) {
-            throw new IllegalArgumentException("Worker structured output is empty");
+            throw new IllegalStateException("Worker structured output is empty");
         }
         String trimmed = stripMarkdownJsonFence(payload.trim());
         if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
@@ -297,7 +297,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         if (start >= 0 && end > start) {
             return trimmed.substring(start, end + 1);
         }
-        throw new IllegalArgumentException("Worker structured output is not JSON");
+        throw new IllegalStateException("Worker structured output is not JSON");
     }
 
     private String stripMarkdownJsonFence(String payload) {
@@ -388,7 +388,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
 
     private void require(boolean condition, String message) {
         if (!condition) {
-            throw new IllegalArgumentException(message);
+            throw new IllegalStateException(message);
         }
     }
 
@@ -441,7 +441,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         try {
             return objectMapper.writeValueAsString(response);
         } catch (JsonProcessingException ex) {
-            throw new IllegalArgumentException("Failed to serialize storage upload response", ex);
+            throw new IllegalStateException("Failed to serialize storage upload response", ex);
         }
     }
 
@@ -452,7 +452,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         try {
             return objectMapper.writeValueAsString(response);
         } catch (JsonProcessingException ex) {
-            throw new IllegalArgumentException("Failed to serialize multipart upload response", ex);
+            throw new IllegalStateException("Failed to serialize multipart upload response", ex);
         }
     }
 
