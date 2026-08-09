@@ -872,10 +872,48 @@ public final class NamingArchitectureRuleSupport {
 
     private static boolean implementsExpectedDomainServiceInterface(String source, String simpleName) {
         String expectedInterface = simpleName.substring(0, simpleName.length() - "Impl".length());
-        return Pattern.compile(
-                        "\\bimplements\\s+[^\\{;]*\\b" + Pattern.quote(expectedInterface) + "\\b", Pattern.DOTALL)
-                .matcher(source)
-                .find();
+        Matcher matcher = Pattern.compile(
+                        "\\bclass\\s+" + Pattern.quote(simpleName) + "\\b[^\\{;]*\\bimplements\\s+([^\\{;]+)",
+                        Pattern.DOTALL)
+                .matcher(source);
+        if (!matcher.find()) {
+            return false;
+        }
+        return topLevelTypeNames(matcher.group(1)).stream().anyMatch(expectedInterface::equals);
+    }
+
+    private static List<String> topLevelTypeNames(String implementsClause) {
+        List<String> typeNames = new ArrayList<String>();
+        int depth = 0;
+        int start = 0;
+        for (int index = 0; index < implementsClause.length(); index++) {
+            char current = implementsClause.charAt(index);
+            if (current == '<') {
+                depth++;
+            } else if (current == '>') {
+                depth = Math.max(0, depth - 1);
+            } else if (current == ',' && depth == 0) {
+                addTopLevelTypeName(typeNames, implementsClause.substring(start, index));
+                start = index + 1;
+            }
+        }
+        addTopLevelTypeName(typeNames, implementsClause.substring(start));
+        return typeNames;
+    }
+
+    private static void addTopLevelTypeName(List<String> typeNames, String typeName) {
+        String rawTypeName = typeName.trim();
+        int genericStart = rawTypeName.indexOf('<');
+        if (genericStart >= 0) {
+            rawTypeName = rawTypeName.substring(0, genericStart).trim();
+        }
+        int packageSeparator = rawTypeName.lastIndexOf('.');
+        if (packageSeparator >= 0) {
+            rawTypeName = rawTypeName.substring(packageSeparator + 1);
+        }
+        if (!rawTypeName.isEmpty()) {
+            typeNames.add(rawTypeName);
+        }
     }
 
     public static String domainServiceShapeKey(String typeName) {
