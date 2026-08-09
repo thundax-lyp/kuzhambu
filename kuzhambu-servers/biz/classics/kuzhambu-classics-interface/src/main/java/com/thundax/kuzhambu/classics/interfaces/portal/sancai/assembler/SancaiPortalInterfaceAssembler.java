@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.portal.sancai.assembler;
 
-import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.KnowledgeTagId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
@@ -27,10 +27,10 @@ import org.apache.commons.lang3.StringUtils;
 public final class SancaiPortalInterfaceAssembler {
     private SancaiPortalInterfaceAssembler() {}
 
-    public static SancaiEntryPageQuery toPublicQuery(SancaiPortalEntrySearchRequest request) {
+    public static SancaiEntryQuery toPublicQuery(SancaiPortalEntrySearchRequest request) {
         SancaiPortalEntrySearchRequest effectiveRequest =
                 request == null ? new SancaiPortalEntrySearchRequest() : request;
-        SancaiEntryPageQuery query = new SancaiEntryPageQuery();
+        SancaiEntryQuery query = new SancaiEntryQuery();
         query.setCategoryId(effectiveRequest.getCategoryId());
         query.setVolumeId(effectiveRequest.getVolumeId());
         query.setKeyword(effectiveRequest.getKeyword());

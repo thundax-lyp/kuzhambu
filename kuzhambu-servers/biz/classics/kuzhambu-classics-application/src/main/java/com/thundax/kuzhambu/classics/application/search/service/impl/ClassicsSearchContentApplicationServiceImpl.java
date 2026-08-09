@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.classics.application.search.service.impl;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
-import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
@@ -186,7 +186,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         Map<Long, SancaiCategory> categoryById = listSancaiCategoryMap();
         Map<Long, Long> categoryIdByVolumeId = listSancaiCategoryIdByVolumeId();
         Map<Long, SancaiVolume> volumeById = listSancaiVolumeMap();
-        List<SancaiEntry> entries = sancaiApplicationService.listEntries(new SancaiEntryPageQuery(
+        List<SancaiEntry> entries = sancaiApplicationService.listEntries(new SancaiEntryQuery(
                 null, null, null, SancaiEntryLifecycleStatus.PUBLISHED, null, null, null, null, SortDirection.ASC));
         if (entries == null || entries.isEmpty()) {
             return Collections.emptyList();
@@ -211,7 +211,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         Map<Long, Long> categoryIdByVolumeId = listSancaiCategoryIdByVolumeId();
         Map<Long, SancaiVolume> volumeById = listSancaiVolumeMap();
         List<SancaiEntry> entries = sancaiApplicationService.listEntries(
-                new SancaiEntryPageQuery(categoryId, volumeId, null, null, null, null, null, null, SortDirection.ASC));
+                new SancaiEntryQuery(categoryId, volumeId, null, null, null, null, null, null, SortDirection.ASC));
         if (entries == null || entries.isEmpty()) {
             return Collections.emptyList();
         }

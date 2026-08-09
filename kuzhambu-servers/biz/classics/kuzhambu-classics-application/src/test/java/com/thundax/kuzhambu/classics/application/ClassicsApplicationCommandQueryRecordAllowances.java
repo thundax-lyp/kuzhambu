@@ -62,8 +62,7 @@ final class ClassicsApplicationCommandQueryRecordAllowances {
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery"),
+                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand"),
                 legacy(
