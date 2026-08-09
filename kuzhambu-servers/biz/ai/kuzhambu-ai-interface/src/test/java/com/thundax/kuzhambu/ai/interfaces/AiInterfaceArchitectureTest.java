@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.ai.interfaces;
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ApiSurfaceArchitectureRuleSupport;
-import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.ConcurrencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
@@ -46,8 +45,6 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
         ApiSurfaceArchitectureRuleSupport.assertApiModelsDoNotExposePriority(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertSortRequestsUseOrderedIdsOnly(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
-                Collections.singletonList(Path.of("src/main/java")),
-                BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinementInterfaceAssembler"));
+                Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
     }
 }

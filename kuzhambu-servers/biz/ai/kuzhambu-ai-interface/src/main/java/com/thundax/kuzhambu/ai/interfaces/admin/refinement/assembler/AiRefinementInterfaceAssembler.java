@@ -29,19 +29,26 @@ import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class AiRefinementInterfaceAssembler {
 
     private AiRefinementInterfaceAssembler() {}
 
-    public static AiRefinementRequestCommand toCommand(AiRefinementRequests.RefinementRequest request) {
-        return toCommand(request, request == null ? null : request.getCapability());
+    @NonNull
+    public static AiRefinementRequestCommand toCommand(@NonNull AiRefinementRequests.RefinementRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return toCommand(request, request.getCapability());
     }
 
-    public static SubmitAiRefinementTaskCommand toSubmitTaskCommand(AiRefinementRequests.RefinementRequest request) {
+    @NonNull
+    public static SubmitAiRefinementTaskCommand toSubmitTaskCommand(
+            @NonNull AiRefinementRequests.RefinementRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new SubmitAiRefinementTaskCommand(
                 null,
-                toCapability(request == null ? null : request.getCapability()),
+                toCapability(request.getCapability()),
                 request.getScope(),
                 request.getOperation(),
                 AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()),
@@ -62,8 +69,11 @@ public final class AiRefinementInterfaceAssembler {
                 request.getLocale());
     }
 
+    @NonNull
     public static AiRefinementRequestCommand toCommand(
-            AiRefinementRequests.RefinementRequest request, String capability) {
+            @NonNull AiRefinementRequests.RefinementRequest request, @NonNull String capability) {
+        Objects.requireNonNull(request, "request must not be null");
+        Objects.requireNonNull(capability, "capability must not be null");
         return new AiRefinementRequestCommand(
                 null,
                 toCapability(capability),
@@ -87,28 +97,37 @@ public final class AiRefinementInterfaceAssembler {
                 request.getLocale());
     }
 
-    public static GetAiRefinementTaskQuery toGetTaskQuery(Long taskId) {
+    @NonNull
+    public static GetAiRefinementTaskQuery toGetTaskQuery(@NonNull Long taskId) {
+        Objects.requireNonNull(taskId, "taskId must not be null");
         return new GetAiRefinementTaskQuery(AiBatchJobIdCodec.toDomain(taskId));
     }
 
-    public static SubscribeAiRefinementTaskEventsQuery toSubscribeTaskEventsQuery(Long taskId) {
+    @NonNull
+    public static SubscribeAiRefinementTaskEventsQuery toSubscribeTaskEventsQuery(@NonNull Long taskId) {
+        Objects.requireNonNull(taskId, "taskId must not be null");
         return new SubscribeAiRefinementTaskEventsQuery(AiBatchJobIdCodec.toDomain(taskId));
     }
 
-    public static AiRefinementTasksQuery toPageTasksQuery(AiRefinementRequests.TaskPageRequest request) {
+    @NonNull
+    public static AiRefinementTasksQuery toPageTasksQuery(@NonNull AiRefinementRequests.TaskPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new AiRefinementTasksQuery(
-                toCapability(request == null ? null : request.getCapability()),
-                toTaskStatus(request == null ? null : request.getStatus()),
-                AiContentRefCodec.toDomain(
-                        request == null ? null : request.getContentType(),
-                        request == null ? null : request.getContentId()));
+                toCapability(request.getCapability()),
+                toTaskStatus(request.getStatus()),
+                AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()));
     }
 
-    public static CancelAiRefinementTaskCommand toCancelTaskCommand(Long taskId) {
+    @NonNull
+    public static CancelAiRefinementTaskCommand toCancelTaskCommand(@NonNull Long taskId) {
+        Objects.requireNonNull(taskId, "taskId must not be null");
         return new CancelAiRefinementTaskCommand(AiBatchJobIdCodec.toDomain(taskId));
     }
 
-    public static AiBatchJobCreateCommand toCreateBatchCommand(AiRefinementRequests.BatchCreateRequest request) {
+    @NonNull
+    public static AiBatchJobCreateCommand toCreateBatchCommand(
+            @NonNull AiRefinementRequests.BatchCreateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new AiBatchJobCreateCommand(
                 request.getScope(),
                 AiBusinessCapability.from(request.getCapability()),
@@ -117,22 +136,27 @@ public final class AiRefinementInterfaceAssembler {
                 request.getFailureSummaryJson());
     }
 
-    public static GetAiBatchJobQuery toGetBatchQuery(AiRefinementRequests.BatchIdRequest request) {
+    @NonNull
+    public static GetAiBatchJobQuery toGetBatchQuery(@NonNull AiRefinementRequests.BatchIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(request.getBatchId()));
     }
 
-    public static GetAiBatchJobQuery toGetBatchQuery(AiBatchJobId batchId) {
+    @NonNull
+    public static GetAiBatchJobQuery toGetBatchQuery(@NonNull AiBatchJobId batchId) {
+        Objects.requireNonNull(batchId, "batchId must not be null");
         return new GetAiBatchJobQuery(batchId);
     }
 
-    public static CancelAiBatchJobCommand toCancelBatchCommand(AiRefinementRequests.BatchIdRequest request) {
+    @NonNull
+    public static CancelAiBatchJobCommand toCancelBatchCommand(@NonNull AiRefinementRequests.BatchIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new CancelAiBatchJobCommand(AiBatchJobIdCodec.toDomain(request.getBatchId()));
     }
 
-    public static AiRefinementResponses.CandidateResultResponse toResponse(AiCandidateResult result) {
-        if (result == null) {
-            return AiRefinementResponses.CandidateResultResponse.builder().build();
-        }
+    @NonNull
+    public static AiRefinementResponses.CandidateResultResponse toResponse(@NonNull AiCandidateResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return AiRefinementResponses.CandidateResultResponse.builder()
                 .callId(AiCallIdCodec.toValue(result.getCallId()))
                 .callIdText(longText(AiCallIdCodec.toValue(result.getCallId())))
@@ -151,10 +175,9 @@ public final class AiRefinementInterfaceAssembler {
                 .build();
     }
 
-    public static AiRefinementResponses.TaskDetailResponse toTaskDetailResponse(AiRefinementTaskResult task) {
-        if (task == null) {
-            return AiRefinementResponses.TaskDetailResponse.builder().build();
-        }
+    @NonNull
+    public static AiRefinementResponses.TaskDetailResponse toTaskDetailResponse(@NonNull AiRefinementTaskResult task) {
+        Objects.requireNonNull(task, "task must not be null");
         Long taskId = AiBatchJobIdCodec.toValue(task.getTaskId());
         Long callId = AiCallIdCodec.toValue(task.getCallId());
         Long candidateId = AiCandidateIdCodec.toValue(task.getCandidateId());
@@ -193,10 +216,10 @@ public final class AiRefinementInterfaceAssembler {
                 .build();
     }
 
-    public static AiRefinementResponses.TaskAcceptedResponse toTaskAcceptedResponse(AiRefinementTaskResult task) {
-        if (task == null) {
-            return AiRefinementResponses.TaskAcceptedResponse.builder().build();
-        }
+    @NonNull
+    public static AiRefinementResponses.TaskAcceptedResponse toTaskAcceptedResponse(
+            @NonNull AiRefinementTaskResult task) {
+        Objects.requireNonNull(task, "task must not be null");
         Long taskId = AiBatchJobIdCodec.toValue(task.getTaskId());
         return AiRefinementResponses.TaskAcceptedResponse.builder()
                 .taskId(taskId)
@@ -212,10 +235,9 @@ public final class AiRefinementInterfaceAssembler {
                 .build();
     }
 
-    public static AiRefinementResponses.TaskCancelResponse toTaskCancelResponse(AiRefinementTaskResult task) {
-        if (task == null) {
-            return AiRefinementResponses.TaskCancelResponse.builder().build();
-        }
+    @NonNull
+    public static AiRefinementResponses.TaskCancelResponse toTaskCancelResponse(@NonNull AiRefinementTaskResult task) {
+        Objects.requireNonNull(task, "task must not be null");
         Long taskId = AiBatchJobIdCodec.toValue(task.getTaskId());
         return AiRefinementResponses.TaskCancelResponse.builder()
                 .taskId(taskId)
@@ -225,13 +247,13 @@ public final class AiRefinementInterfaceAssembler {
                 .build();
     }
 
+    @NonNull
     public static AiRefinementResponses.TaskPageResponse toTaskPageResponse(
-            int pageNo, int pageSize, long total, List<AiRefinementTaskResult> records) {
+            int pageNo, int pageSize, long total, @NonNull List<AiRefinementTaskResult> records) {
+        Objects.requireNonNull(records, "records must not be null");
         List<AiRefinementResponses.TaskDetailResponse> items = new ArrayList<>();
-        if (records != null) {
-            for (AiRefinementTaskResult record : records) {
-                items.add(toTaskDetailResponse(record));
-            }
+        for (AiRefinementTaskResult record : records) {
+            items.add(toTaskDetailResponse(record));
         }
         return AiRefinementResponses.TaskPageResponse.builder()
                 .items(items)
