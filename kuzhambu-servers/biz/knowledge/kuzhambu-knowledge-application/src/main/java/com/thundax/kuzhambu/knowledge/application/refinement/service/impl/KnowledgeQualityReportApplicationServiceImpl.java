@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.common.core.page.PageRules;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTa
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
-import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportPageQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.IssueRecord;
@@ -162,18 +162,16 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
 
     @Override
     @Transactional(readOnly = true)
-    public PageResult<ReportRecord> pageReports(QualityReportPageQuery query) {
-        QualityReportPageQuery effective = query == null
-                ? new QualityReportPageQuery(
-                        null, null, null, null, PageRules.firstPageIndex(), PageRules.defaultPageSize())
-                : query;
+    public PageResult<ReportRecord> pageReports(QualityReportQuery query, PageQuery pageQuery) {
+        QualityReportQuery effective = query == null ? new QualityReportQuery(null, null, null, null) : query;
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         PageResult<QualityReport> page = qualityReportRepository.page(
-                effective.getGraphVersionId(),
-                effective.getSourceContentType(),
-                effective.getSourceContentId(),
-                effective.getReportStatus(),
-                effective.getPageNo(),
-                effective.getPageSize());
+                effective.graphVersionId(),
+                effective.sourceContentType(),
+                effective.sourceContentId(),
+                effective.reportStatus(),
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize());
         return PageResult.of(
                 page.getPageNo(),
                 page.getPageSize(),

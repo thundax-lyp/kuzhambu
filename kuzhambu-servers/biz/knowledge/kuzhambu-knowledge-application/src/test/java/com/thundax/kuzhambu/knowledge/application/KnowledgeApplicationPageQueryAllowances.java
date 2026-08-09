@@ -18,8 +18,6 @@ final class KnowledgeApplicationPageQueryAllowances {
         return List.of(
                 pageQueryType("com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationPageQuery"),
                 pageFields("com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationPageQuery"),
-                pageQueryType("com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportPageQuery"),
-                pageFields("com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportPageQuery"),
                 pageQueryType(
                         "com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery"),
                 pageFields("com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery"));
