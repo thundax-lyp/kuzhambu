@@ -22,11 +22,11 @@ public class AiCandidateApplicationServiceImpl implements AiCandidateApplication
 
     @Override
     public AiCandidate requirePendingForApply(RequireAiCandidateForApplyQuery query) {
-        AiCandidate candidate = getRequired(query == null ? null : query.getCandidateId());
+        AiCandidate candidate = getRequired(query == null ? null : query.candidateId());
         candidate.requirePendingForApply(
-                query == null ? null : query.getContentRef(), query == null ? null : query.getCapability());
-        if (query != null && query.getTargetObjectId() != null) {
-            candidate.requireTargetObject(query.getTargetObjectId());
+                query == null ? null : query.contentRef(), query == null ? null : query.capability());
+        if (query != null && query.targetObjectId() != null) {
+            candidate.requireTargetObject(query.targetObjectId());
         }
         return candidate;
     }

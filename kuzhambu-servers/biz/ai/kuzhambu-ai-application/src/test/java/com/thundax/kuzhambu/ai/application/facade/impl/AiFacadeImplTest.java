@@ -512,10 +512,10 @@ class AiFacadeImplTest {
     void requirePendingCandidateShouldMapApplyCheckAndCandidateDto() {
         AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
         when(aiCandidateApplicationService.requirePendingForApply(argThat(query -> query != null
-                        && new AiCandidateId(901L).equals(query.getCandidateId())
-                        && AiContentRef.of("CLASSICS_CONTENT", 902L).equals(query.getContentRef())
-                        && AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT == query.getCapability()
-                        && new AiTargetObjectId(903L).equals(query.getTargetObjectId()))))
+                        && new AiCandidateId(901L).equals(query.candidateId())
+                        && AiContentRef.of("CLASSICS_CONTENT", 902L).equals(query.contentRef())
+                        && AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT == query.capability()
+                        && new AiTargetObjectId(903L).equals(query.targetObjectId()))))
                 .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
