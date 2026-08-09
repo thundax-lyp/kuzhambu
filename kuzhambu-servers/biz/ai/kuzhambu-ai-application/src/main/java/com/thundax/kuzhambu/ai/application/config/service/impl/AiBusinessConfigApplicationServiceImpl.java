@@ -52,7 +52,7 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
     @Override
     public List<AiBusinessConfig> list(ListAiBusinessConfigsQuery query) {
         return aiBusinessConfigRepository.list(
-                query == null ? null : query.getCapability(), query == null ? null : query.getEnabled());
+                query == null ? null : query.capability(), query == null ? null : query.enabled());
     }
 
     @Override

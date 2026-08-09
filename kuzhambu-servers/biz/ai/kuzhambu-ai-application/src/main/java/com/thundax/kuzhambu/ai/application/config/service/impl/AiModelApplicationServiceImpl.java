@@ -39,8 +39,8 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
 
     @Override
     public List<AiModel> list(ListAiModelsQuery query) {
-        var apiSource = query == null ? null : query.getApiSource();
-        Boolean enabled = query == null ? null : query.getEnabled();
+        var apiSource = query == null ? null : query.apiSource();
+        Boolean enabled = query == null ? null : query.enabled();
         return aiModelRepository.list(apiSource == null ? null : apiSource.value(), enabled);
     }
 

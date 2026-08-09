@@ -72,8 +72,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     public List<PromptTemplate> list(ListPromptsQuery query) {
-        return promptRepository.list(
-                query == null ? null : query.getCapability(), query == null ? null : query.getEnabled());
+        return promptRepository.list(query == null ? null : query.capability(), query == null ? null : query.enabled());
     }
 
     @Override
@@ -122,7 +121,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     @Override
     public List<PromptVersionResult> listVersions(ListPromptVersionsQuery query) {
         List<PromptVersionResult> results = new ArrayList<>();
-        PromptTemplateId templateId = query == null ? null : query.getTemplateId();
+        PromptTemplateId templateId = query == null ? null : query.templateId();
         if (templateId == null) {
             return results;
         }
@@ -158,7 +157,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     public List<PromptVariable> listVariables(ListPromptVariablesQuery query) {
-        PromptTemplateId templateId = query == null ? null : query.getTemplateId();
+        PromptTemplateId templateId = query == null ? null : query.templateId();
         if (templateId == null) {
             return new ArrayList<>();
         }
