@@ -11,7 +11,6 @@ import jakarta.validation.constraints.Pattern;
 import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 public final class DiscoveryQaAdminRequests {
 
@@ -19,7 +18,6 @@ public final class DiscoveryQaAdminRequests {
 
     @Getter
     @Setter
-    @ToString
     @Schema(name = "KnowledgeHealthRequest", description = "Discovery QA 知识库健康请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -27,7 +25,6 @@ public final class DiscoveryQaAdminRequests {
 
     @Getter
     @Setter
-    @ToString
     @Schema(name = "KnowledgeRebuildRequest", description = "Discovery QA 知识库重建请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -44,7 +41,6 @@ public final class DiscoveryQaAdminRequests {
 
     @Getter
     @Setter
-    @ToString
     @Schema(name = "KnowledgeSyncRequest", description = "Discovery QA 知识同步请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -75,7 +71,6 @@ public final class DiscoveryQaAdminRequests {
 
     @Getter
     @Setter
-    @ToString
     @Schema(name = "KnowledgeSyncPageRequest", description = "Discovery QA 知识同步分页请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -92,7 +87,6 @@ public final class DiscoveryQaAdminRequests {
 
     @Getter
     @Setter
-    @ToString
     @Schema(name = "QaSessionPageRequest", description = "Discovery QA 会话分页请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
