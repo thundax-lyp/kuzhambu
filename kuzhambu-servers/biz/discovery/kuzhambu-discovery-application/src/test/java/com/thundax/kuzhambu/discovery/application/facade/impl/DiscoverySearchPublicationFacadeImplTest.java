@@ -7,13 +7,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoverySearchPublicationFacadeAssembler;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidateQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCategoryAggregationQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCategoryAggregationResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationProbeResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchPublicationApplicationService;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCandidatePageFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationCategoryAggregationFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationPrepareFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySearchPublicationReferenceFacadeRequest;
@@ -72,6 +76,24 @@ class DiscoverySearchPublicationFacadeImplTest {
         verify(service).delete(any(SearchPublicationReferenceCommand.class));
         assertTrue(result.isPresent());
         assertEquals("READY", result.getPublicationStatus());
+    }
+
+    @Test
+    void pageReadyCandidatesShouldDefaultNullableFacadePagination() {
+        when(service.pageReadyCandidates(any(SearchPublicationCandidateQuery.class), any(PageQuery.class)))
+                .thenReturn(PageResult.of(1, 10, 0, List.of()));
+        ArgumentCaptor<SearchPublicationCandidateQuery> queryCaptor =
+                ArgumentCaptor.forClass(SearchPublicationCandidateQuery.class);
+        ArgumentCaptor<PageQuery> pageCaptor = ArgumentCaptor.forClass(PageQuery.class);
+
+        facade.pageReadyCandidates(DiscoverySearchPublicationCandidatePageFacadeRequest.builder()
+                .contentType("SANCAI_ENTRY")
+                .build());
+
+        verify(service).pageReadyCandidates(queryCaptor.capture(), pageCaptor.capture());
+        assertEquals("SANCAI_ENTRY", queryCaptor.getValue().contentType());
+        assertEquals(1, pageCaptor.getValue().getPageNo());
+        assertEquals(10, pageCaptor.getValue().getPageSize());
     }
 
     @Test

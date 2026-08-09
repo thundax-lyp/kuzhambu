@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.discovery.application.facade.assembler;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.core.page.PageRules;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidateQuery;
@@ -60,7 +61,7 @@ public class DiscoverySearchPublicationFacadeAssembler {
     }
 
     public PageQuery toPageQuery(DiscoverySearchPublicationCandidatePageFacadeRequest request) {
-        return request == null ? new PageQuery() : new PageQuery(request.getPageNo(), request.getPageSize());
+        return new PageQuery(pageNo(request), pageSize(request));
     }
 
     public SearchPublicationCategoryAggregationQuery toCategoryAggregationQuery(
@@ -99,6 +100,16 @@ public class DiscoverySearchPublicationFacadeAssembler {
                 .categoryId(result.getCategoryId())
                 .volumeId(result.getVolumeId())
                 .build();
+    }
+
+    private int pageNo(DiscoverySearchPublicationCandidatePageFacadeRequest request) {
+        Integer pageNo = request == null ? null : request.getPageNo();
+        return pageNo == null ? PageRules.firstPageIndex() : pageNo;
+    }
+
+    private int pageSize(DiscoverySearchPublicationCandidatePageFacadeRequest request) {
+        Integer pageSize = request == null ? null : request.getPageSize();
+        return pageSize == null ? PageRules.defaultPageSize() : pageSize;
     }
 
     public List<DiscoverySearchPublicationCategoryAggregationFacadeResponse> toCategoryAggregationResponses(
