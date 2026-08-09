@@ -9,10 +9,6 @@ final class AiApplicationCommandQueryRecordAllowances {
             "Legacy application Command/Query is still a Lombok class instead of a record.";
     private static final String REMEDIATION =
             "Convert the contract to a Java record, remove Lombok annotations/imports, update callers, then remove this allowance.";
-    private static final String CONSTRUCTION_DESCRIPTION =
-            "Legacy production code constructs an application Command/Query outside *InterfaceAssembler, *FacadeAssembler, or ApplicationService orchestration.";
-    private static final String CONSTRUCTION_REMEDIATION =
-            "Move request or facade conversion into the matching assembler, or move internal downstream Command/Query construction into the calling ApplicationService, then remove this allowance.";
 
     private AiApplicationCommandQueryRecordAllowances() {}
 
@@ -30,25 +26,7 @@ final class AiApplicationCommandQueryRecordAllowances {
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand"));
     }
 
-    static List<ArchitectureRuleAllowance> constructionAllowances() {
-        return List.of(
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver#ListAiBusinessConfigsQuery:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver#GetAiModelQuery:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver#ListAiBusinessConfigsQuery:1"));
-    }
-
-    static List<ArchitectureRuleAllowance> assemblerNullReturnAllowances() {
-        return List.of();
-    }
-
     private static ArchitectureRuleAllowance legacy(String key) {
         return ArchitectureRuleAllowance.of(key, DESCRIPTION, REMEDIATION);
-    }
-
-    private static ArchitectureRuleAllowance construction(String key) {
-        return ArchitectureRuleAllowance.of(key, CONSTRUCTION_DESCRIPTION, CONSTRUCTION_REMEDIATION);
     }
 }

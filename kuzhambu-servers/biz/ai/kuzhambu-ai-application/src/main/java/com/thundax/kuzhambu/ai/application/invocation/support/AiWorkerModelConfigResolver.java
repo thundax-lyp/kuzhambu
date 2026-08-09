@@ -4,15 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.thundax.kuzhambu.ai.application.config.query.GetAiModelQuery;
-import com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery;
-import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
-import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository;
+import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -22,16 +20,16 @@ public class AiWorkerModelConfigResolver {
 
     private static final String DEFAULT_SERVICE_ROLE = "PRIMARY";
 
-    private final AiBusinessConfigApplicationService businessConfigService;
-    private final AiModelApplicationService modelService;
+    private final AiBusinessConfigRepository businessConfigRepository;
+    private final AiModelRepository modelRepository;
     private final ObjectMapper objectMapper;
 
     public AiWorkerModelConfigResolver(
-            AiBusinessConfigApplicationService businessConfigService,
-            AiModelApplicationService modelService,
+            AiBusinessConfigRepository businessConfigRepository,
+            AiModelRepository modelRepository,
             ObjectMapper objectMapper) {
-        this.businessConfigService = businessConfigService;
-        this.modelService = modelService;
+        this.businessConfigRepository = businessConfigRepository;
+        this.modelRepository = modelRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -82,7 +80,7 @@ public class AiWorkerModelConfigResolver {
         } else if (!matchesModel(command.getModelId(), config)) {
             config = null;
         }
-        AiModel model = modelService.get(new GetAiModelQuery(command.getModelId()));
+        AiModel model = modelRepository.get(command.getModelId());
         if (model == null) {
             throw new IllegalArgumentException("AI model not found: " + command.getModelId());
         }
@@ -100,8 +98,7 @@ public class AiWorkerModelConfigResolver {
         if (command.getCapability() == null) {
             return null;
         }
-        List<AiBusinessConfig> configs =
-                businessConfigService.list(new ListAiBusinessConfigsQuery(command.getCapability(), true));
+        List<AiBusinessConfig> configs = businessConfigRepository.list(command.getCapability(), true);
         return configs.isEmpty() ? null : configs.get(0);
     }
 

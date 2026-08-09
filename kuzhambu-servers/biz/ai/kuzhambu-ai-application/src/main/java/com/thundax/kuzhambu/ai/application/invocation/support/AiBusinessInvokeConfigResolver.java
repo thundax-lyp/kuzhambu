@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery;
-import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
@@ -14,6 +12,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.util.ArrayList;
@@ -29,17 +28,17 @@ public class AiBusinessInvokeConfigResolver {
 
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{\\s*([A-Za-z][A-Za-z0-9_]*)\\s*}}");
 
-    private final AiBusinessConfigApplicationService businessConfigService;
+    private final AiBusinessConfigRepository businessConfigRepository;
     private final PromptRepository promptRepository;
     private final AiWorkerModelConfigResolver modelConfigResolver;
     private final ObjectMapper objectMapper;
 
     public AiBusinessInvokeConfigResolver(
-            AiBusinessConfigApplicationService businessConfigService,
+            AiBusinessConfigRepository businessConfigRepository,
             PromptRepository promptRepository,
             AiWorkerModelConfigResolver modelConfigResolver,
             ObjectMapper objectMapper) {
-        this.businessConfigService = businessConfigService;
+        this.businessConfigRepository = businessConfigRepository;
         this.promptRepository = promptRepository;
         this.modelConfigResolver = modelConfigResolver;
         this.objectMapper = objectMapper;
@@ -87,7 +86,7 @@ public class AiBusinessInvokeConfigResolver {
     }
 
     private AiBusinessConfig resolveBusinessConfig(AiBusinessCapability capability) {
-        List<AiBusinessConfig> configs = businessConfigService.list(new ListAiBusinessConfigsQuery(capability, true));
+        List<AiBusinessConfig> configs = businessConfigRepository.list(capability, true);
         if (configs == null || configs.isEmpty()) {
             throw new BizException("AI business config is not configured: " + capability);
         }

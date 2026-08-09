@@ -5,19 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.ai.application.config.command.CreateAiBusinessConfigCommand;
-import com.thundax.kuzhambu.ai.application.config.command.CreateAiModelCommand;
-import com.thundax.kuzhambu.ai.application.config.command.DeleteAiBusinessConfigCommand;
-import com.thundax.kuzhambu.ai.application.config.command.DeleteAiModelCommand;
-import com.thundax.kuzhambu.ai.application.config.command.UpdateAiBusinessConfigCommand;
-import com.thundax.kuzhambu.ai.application.config.command.UpdateAiModelCommand;
-import com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigByCapabilityQuery;
-import com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigQuery;
-import com.thundax.kuzhambu.ai.application.config.query.GetAiModelQuery;
-import com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery;
-import com.thundax.kuzhambu.ai.application.config.query.ListAiModelsQuery;
-import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
-import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
@@ -33,6 +20,8 @@ import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVariableId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository;
+import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.util.List;
@@ -138,11 +127,11 @@ class AiBusinessInvokeConfigResolverTest {
     }
 
     private AiBusinessInvokeConfigResolver newResolver(PromptRepository promptRepository) {
-        FakeBusinessConfigApplicationService businessConfigService = new FakeBusinessConfigApplicationService();
+        FakeBusinessConfigRepository businessConfigRepository = new FakeBusinessConfigRepository();
         AiWorkerModelConfigResolver modelConfigResolver =
-                new AiWorkerModelConfigResolver(businessConfigService, new FakeModelApplicationService(), objectMapper);
+                new AiWorkerModelConfigResolver(businessConfigRepository, new FakeModelRepository(), objectMapper);
         return new AiBusinessInvokeConfigResolver(
-                businessConfigService, promptRepository, modelConfigResolver, objectMapper);
+                businessConfigRepository, promptRepository, modelConfigResolver, objectMapper);
     }
 
     private static AiInvokeCommand command() {
@@ -258,35 +247,40 @@ class AiBusinessInvokeConfigResolverTest {
         };
     }
 
-    private static class FakeBusinessConfigApplicationService implements AiBusinessConfigApplicationService {
+    private static class FakeBusinessConfigRepository implements AiBusinessConfigRepository {
 
         @Override
-        public AiBusinessConfig get(GetAiBusinessConfigQuery query) {
+        public AiBusinessConfig get(AiBusinessConfigId id) {
             return config();
         }
 
         @Override
-        public AiBusinessConfig getByCapability(GetAiBusinessConfigByCapabilityQuery query) {
+        public AiBusinessConfig get(AiBusinessCapability capability) {
             return config();
         }
 
         @Override
-        public List<AiBusinessConfig> list(ListAiBusinessConfigsQuery query) {
+        public List<AiBusinessConfig> list(AiBusinessCapability capability, Boolean enabled) {
             return List.of(config());
         }
 
         @Override
-        public AiBusinessConfigId create(CreateAiBusinessConfigCommand command) {
+        public AiBusinessConfigId insert(AiBusinessConfig config) {
             return null;
         }
 
         @Override
-        public int update(UpdateAiBusinessConfigCommand command) {
+        public int update(AiBusinessConfig config) {
             return 0;
         }
 
         @Override
-        public int delete(DeleteAiBusinessConfigCommand command) {
+        public int maxPriority() {
+            return 0;
+        }
+
+        @Override
+        public int delete(AiBusinessConfigId id) {
             return 0;
         }
 
@@ -303,10 +297,10 @@ class AiBusinessInvokeConfigResolverTest {
         }
     }
 
-    private static class FakeModelApplicationService implements AiModelApplicationService {
+    private static class FakeModelRepository implements AiModelRepository {
 
         @Override
-        public AiModel get(GetAiModelQuery query) {
+        public AiModel get(AiModelId id) {
             return new AiModel(
                     new AiModelId(2001L),
                     AiApiSource.OPENAI,
@@ -322,22 +316,22 @@ class AiBusinessInvokeConfigResolverTest {
         }
 
         @Override
-        public List<AiModel> list(ListAiModelsQuery query) {
-            return List.of(get(new GetAiModelQuery(new AiModelId(2001L))));
+        public List<AiModel> list(String apiSource, Boolean enabled) {
+            return List.of(get(new AiModelId(2001L)));
         }
 
         @Override
-        public AiModelId create(CreateAiModelCommand command) {
+        public AiModelId insert(AiModel model) {
             return null;
         }
 
         @Override
-        public int update(UpdateAiModelCommand command) {
+        public int update(AiModel model) {
             return 0;
         }
 
         @Override
-        public int delete(DeleteAiModelCommand command) {
+        public int delete(AiModelId id) {
             return 0;
         }
     }
