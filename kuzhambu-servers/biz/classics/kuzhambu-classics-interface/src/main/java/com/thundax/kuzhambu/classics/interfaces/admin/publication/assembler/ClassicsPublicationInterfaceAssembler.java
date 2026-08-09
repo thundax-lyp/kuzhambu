@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.publication.assembler;
 
 import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationCreateCommand;
-import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobPageQuery;
+import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobQuery;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationCreateResult;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationJobView;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
@@ -63,10 +63,10 @@ public final class ClassicsPublicationInterfaceAssembler {
         return new ClassicsPublicationBatchResponse(acceptedCount, items.size() - acceptedCount, items);
     }
 
-    public static ClassicsPublicationJobPageQuery toQuery(ClassicsPublicationJobPageRequest request) {
+    public static ClassicsPublicationJobQuery toQuery(ClassicsPublicationJobPageRequest request) {
         return request == null
-                ? new ClassicsPublicationJobPageQuery(null, null, null, null, null)
-                : new ClassicsPublicationJobPageQuery(
+                ? new ClassicsPublicationJobQuery(null, null, null, null, null)
+                : new ClassicsPublicationJobQuery(
                         request.getJobType(),
                         request.getJobResultStatus(),
                         request.getJobStatus(),

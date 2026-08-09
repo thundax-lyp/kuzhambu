@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
 import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationCreateCommand;
-import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobPageQuery;
+import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobQuery;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationCreateResult;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationJobView;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
@@ -61,7 +61,7 @@ public class ClassicsPublicationApplicationServiceImpl implements ClassicsPublic
 
     @Override
     @Transactional(readOnly = true)
-    public PageResult<ClassicsPublicationJobView> page(ClassicsPublicationJobPageQuery query, PageQuery page) {
+    public PageResult<ClassicsPublicationJobView> page(ClassicsPublicationJobQuery query, PageQuery page) {
         PageQuery normalized = page == null ? new PageQuery() : page;
         normalized.normalize();
         PageResult<ClassicsPublicationJob> jobs = jobRepository.page(
