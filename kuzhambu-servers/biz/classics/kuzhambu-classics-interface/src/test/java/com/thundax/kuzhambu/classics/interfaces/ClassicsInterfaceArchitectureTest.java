@@ -113,9 +113,6 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
                 "admin.wangqi.controller.response.WangqiDocumentSourceFileResponse",
                 "admin.wangqi.controller.response.WangqiDocumentVersionResponse",
                 "portal.sancai.controller.response.SancaiPortalCategoryResponse",
-                "portal.sancai.controller.response.SancaiPortalEntryResponse$ImageResponse",
-                "portal.sancai.controller.response.SancaiPortalEntryResponse$TagResponse",
-                "portal.sancai.controller.response.SancaiPortalEntryResponse$VisualAssetResponse",
                 "portal.sancai.controller.response.SancaiPortalVolumeResponse");
     }
 

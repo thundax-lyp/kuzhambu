@@ -260,7 +260,12 @@ public final class ModelAnnotationArchitectureRuleSupport {
     }
 
     private static Path sourcePath(JavaClass item) {
-        String sourcePath = item.getFullName().replace('.', '/') + ".java";
+        String sourceClassName = item.getFullName();
+        int nestedClassMarker = sourceClassName.indexOf('$');
+        if (nestedClassMarker >= 0) {
+            sourceClassName = sourceClassName.substring(0, nestedClassMarker);
+        }
+        String sourcePath = sourceClassName.replace('.', '/') + ".java";
         for (String sourceRoot : sourceRoots()) {
             Path path = Paths.get(sourceRoot, sourcePath);
             if (Files.exists(path)) {
@@ -320,6 +325,11 @@ public final class ModelAnnotationArchitectureRuleSupport {
             }
             if (trimmedLine.startsWith("@")) {
                 annotationTypeNames.add(resolveAnnotationName(item, imports, annotationSimpleName(trimmedLine)));
+            } else if (!trimmedLine.isEmpty()
+                    && !trimmedLine.startsWith("//")
+                    && !trimmedLine.startsWith("/*")
+                    && !trimmedLine.startsWith("*")) {
+                annotationTypeNames.clear();
             }
         }
         return annotationTypeNames;
