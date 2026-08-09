@@ -6,14 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
-import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersioningService;
+import com.thundax.kuzhambu.classics.domain.content.support.ClassicsContentVersioningSupport;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
-class ClassicsContentVersioningServiceTest {
+class ClassicsContentVersioningSupportTest {
 
-    private final ClassicsContentVersioningService service = new ClassicsContentVersioningService();
+    private final ClassicsContentVersioningSupport service = new ClassicsContentVersioningSupport();
 
     @Test
     void needsVersionShouldBeTrueWhenContentHasNoCurrentVersion() {

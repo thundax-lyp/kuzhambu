@@ -19,7 +19,7 @@ import com.thundax.kuzhambu.discovery.application.search.support.QueryUnderstand
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.QueryUnderstanding;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
 import com.thundax.kuzhambu.discovery.domain.search.repository.QueryUnderstandingRepository;
-import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
+import com.thundax.kuzhambu.discovery.domain.search.support.SearchQueryNormalizer;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +38,7 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
     private static final Long DEFAULT_PROMPT_VERSION_ID = 0L;
     private static final String DEFAULT_LOCALE = "zh-CN";
 
-    private final SearchDomainService searchDomainService = new SearchDomainService();
+    private final SearchQueryNormalizer searchQueryNormalizer = new SearchQueryNormalizer();
     private final QueryUnderstandingRepository queryUnderstandingRepository;
     private final DiscoveryKnowledgeEnhancementProvider knowledgeEnhancementProvider;
     private final QueryUnderstandingPayloadBuilder payloadBuilder;
@@ -70,7 +70,7 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     TraceIdCodec.toValue(query.getTraceId()));
         }
         String normalizedQueryText =
-                searchDomainService.normalizeKeyword(query.getQueryText()).getNormalizedText();
+                searchQueryNormalizer.normalizeKeyword(query.getQueryText()).getNormalizedText();
         var enhancement = knowledgeEnhancementProvider.enhance(normalizedQueryText);
         try {
             DiscoveryAiFacadeRequest aiRequest = DiscoveryAiFacadeRequest.builder()

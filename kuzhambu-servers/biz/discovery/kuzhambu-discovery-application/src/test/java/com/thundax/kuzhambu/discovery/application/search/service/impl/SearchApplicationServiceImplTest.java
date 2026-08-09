@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,7 +38,7 @@ import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyw
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickEventRepository;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
-import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
+import com.thundax.kuzhambu.discovery.domain.search.support.SearchQueryNormalizer;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -62,7 +63,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
@@ -92,7 +93,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
@@ -157,6 +158,57 @@ class SearchApplicationServiceImplTest {
     }
 
     @Test
+    void searchShouldCapPageSizeBeforeCallingGateway() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchQueryNormalizer(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        SearchQuery query =
+                new SearchQuery("黄帝", List.of(), List.of(), List.of(), null, null, "ANONYMOUS", null, null, null);
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
+        when(searchIndexGateway.search(any(), any(), eq(1), eq(200))).thenReturn(searchPageResult(0));
+
+        service.search(query, new PageQuery(1, 10_000));
+
+        verify(searchIndexGateway).search(any(), any(), eq(1), eq(200));
+    }
+
+    @Test
+    void searchShouldNormalizeMutablePageQueryBeforeCallingGateway() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchQueryNormalizer(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        SearchQuery query =
+                new SearchQuery("黄帝", List.of(), List.of(), List.of(), null, null, "ANONYMOUS", null, null, null);
+        PageQuery pageQuery = new PageQuery();
+        pageQuery.setPageNo(0);
+        pageQuery.setPageSize(0);
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
+        when(searchIndexGateway.search(any(), any(), eq(1), eq(10))).thenReturn(searchPageResult(0));
+
+        service.search(query, pageQuery);
+
+        verify(searchIndexGateway).search(any(), any(), eq(1), eq(10));
+    }
+
+    @Test
     void searchShouldAllowBlankQueryForDefaultPublishedContentList() {
         SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
         SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
@@ -166,7 +218,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
@@ -212,7 +264,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
@@ -255,7 +307,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
@@ -300,7 +352,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
@@ -348,7 +400,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
@@ -388,7 +440,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
@@ -429,7 +481,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchPreviewResult preview = new SearchPreviewResult();
@@ -454,7 +506,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         when(searchIndexGateway.getPreview(any(), any())).thenReturn(null);
@@ -477,7 +529,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         when(searchEventRepository.getById(searchEventId("1")))
@@ -530,7 +582,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         when(searchEventRepository.getById(searchEventId("404"))).thenReturn(null);
@@ -565,7 +617,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         when(searchEventRepository.page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20))
@@ -604,6 +656,50 @@ class SearchApplicationServiceImplTest {
     }
 
     @Test
+    void pageEventsShouldCapPageSizeBeforeCallingRepository() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchQueryNormalizer(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        when(searchEventRepository.page(null, null, null, null, 1, 200))
+                .thenReturn(PageResult.of(1, 200, 0, List.of()));
+
+        service.pageEvents(new SearchEventQuery(null, null, null, null, null, null), new PageQuery(1, 10_000));
+
+        verify(searchEventRepository).page(null, null, null, null, 1, 200);
+    }
+
+    @Test
+    void pageEventsShouldNormalizeMutablePageQueryBeforeCallingRepository() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchQueryNormalizer(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        PageQuery pageQuery = new PageQuery();
+        pageQuery.setPageNo(0);
+        pageQuery.setPageSize(0);
+        when(searchEventRepository.page(null, null, null, null, 1, 10)).thenReturn(PageResult.of(1, 10, 0, List.of()));
+
+        service.pageEvents(new SearchEventQuery(null, null, null, null, null, null), pageQuery);
+
+        verify(searchEventRepository).page(null, null, null, null, 1, 10);
+    }
+
+    @Test
     void getStatisticsSummaryShouldAggregateSearchEventsAndClicks() {
         SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
         SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
@@ -613,7 +709,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         Instant dateFrom = Instant.ofEpochMilli(1_718_000_000_000L);
@@ -648,7 +744,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 mock(SearchIndexGateway.class),
                 mock(QueryUnderstandingApplicationService.class));
         when(searchEventRepository.listByCreatedAtRange(null, null))
@@ -682,7 +778,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
@@ -722,7 +818,7 @@ class SearchApplicationServiceImplTest {
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchEventRepository,
                 searchClickEventRepository,
-                new SearchDomainService(),
+                new SearchQueryNormalizer(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(

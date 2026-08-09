@@ -108,6 +108,11 @@ public final class NamingArchitectureRuleSupport {
                     + "RequiredArgsConstructor|Value|With)\\b");
     private static final Set<String> PRIMITIVE_TYPES =
             Set.of("boolean", "byte", "char", "short", "int", "long", "float", "double");
+    private static final Pattern DOMAIN_REPOSITORY_IMPORT_PATTERN =
+            Pattern.compile("(?m)^\\s*import\\s+(com\\.thundax\\.kuzhambu\\.[\\w.]+\\.domain\\.[\\w.]+\\.repository\\."
+                    + "(\\w+Repository))\\s*;");
+    private static final Pattern TYPE_DECLARATION_NAME_PATTERN =
+            Pattern.compile("\\b(?:class|interface|enum|record|@interface)\\s+([A-Z][A-Za-z0-9_]*)\\b");
 
     private NamingArchitectureRuleSupport() {}
 
@@ -964,6 +969,45 @@ public final class NamingArchitectureRuleSupport {
                 violations.isEmpty());
     }
 
+    public static void assertDomainServiceSourcesUseRepositoryBoundary(
+            Path sourceRoot, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        Map<String, ArchitectureRuleAllowance> allowlist = architectureAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
+        List<String> violations = new ArrayList<String>();
+
+        if (!Files.exists(sourceRoot)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".java"))
+                    .forEach(path ->
+                            collectDomainServiceSourceViolations(root, path, violations, allowlist, matchedAllowances));
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to scan domain service sources under " + sourceRoot, e);
+        }
+
+        List<String> staleAllowances = allowlist.keySet().stream()
+                .filter(key -> !matchedAllowances.contains(key))
+                .toList();
+
+        assertTrue(
+                "DomainService is reserved for domain rules that coordinate repository-backed aggregate state. "
+                        + "Domain services must be named *DomainService or *DomainServiceImpl, must live under "
+                        + "domain/service or domain/service/impl, and concrete domain services must depend on a "
+                        + "domain repository. Pure normalization, calculation, factory, policy, or support code "
+                        + "must use a more specific helper role instead. Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
+    }
+
+    public static void assertDomainServiceSourcesUseRepositoryBoundary(Path sourceRoot) {
+        assertDomainServiceSourcesUseRepositoryBoundary(sourceRoot, List.of());
+    }
+
     public static void assertRepositoryPlacement(JavaClasses classes, String basePackage) {
         assertSuffixPlacement(
                 classes,
@@ -972,6 +1016,364 @@ public final class NamingArchitectureRuleSupport {
                 "Repository",
                 true,
                 "*Repository interfaces must be placed under com.thundax.kuzhambu.{module}.domain.{domain}.repository");
+    }
+
+    private static void collectDomainServiceSourceViolations(
+            Path root,
+            Path path,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        String typeName = sourceTypeName(source, path);
+        String packageName = typeName.substring(0, typeName.lastIndexOf('.'));
+        String simpleName = pathFileNameWithoutExtension(path);
+        boolean servicePackage = isDomainServicePackage(packageName);
+        boolean domainServiceName = simpleName.endsWith("DomainService");
+        boolean domainServiceImplName = simpleName.endsWith("DomainServiceImpl");
+
+        collectAdditionalDomainServiceDeclarationViolations(
+                root, path, source, packageName, simpleName, violations, allowlist, matchedAllowances);
+
+        boolean allowedDomainServiceShape = isAllowedDomainServiceShape(source, packageName, simpleName);
+        if (servicePackage && !allowedDomainServiceShape) {
+            collectAllowlistedViolation(
+                    domainServiceShapeKey(typeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " is under domain service package but is not a *DomainService boundary",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+        if (!servicePackage && (domainServiceName || domainServiceImplName)) {
+            collectAllowlistedViolation(
+                    domainServiceShapeKey(typeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " uses DomainService naming outside domain/service or domain/service/impl",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+        if (servicePackage
+                && (domainServiceName || domainServiceImplName)
+                && allowedDomainServiceShape
+                && isConcreteDomainServiceSource(source, simpleName)
+                && !containsDomainRepositoryReference(declarationScopedSource(source, simpleName))) {
+            collectAllowlistedViolation(
+                    domainServiceRepositoryKey(typeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " is a concrete DomainService without a domain Repository dependency",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+    }
+
+    private static void collectAdditionalDomainServiceDeclarationViolations(
+            Path root,
+            Path path,
+            String source,
+            String packageName,
+            String fileSimpleName,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        Matcher matcher = TYPE_DECLARATION_NAME_PATTERN.matcher(sourceWithoutLiterals(source));
+        while (matcher.find()) {
+            String declaredName = matcher.group(1);
+            if (declaredName.equals(fileSimpleName)) {
+                continue;
+            }
+            collectDomainServiceDeclarationViolations(
+                    root, path, source, packageName, declaredName, violations, allowlist, matchedAllowances);
+        }
+    }
+
+    private static void collectDomainServiceDeclarationViolations(
+            Path root,
+            Path path,
+            String source,
+            String packageName,
+            String declaredName,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        boolean servicePackage = isDomainServicePackage(packageName);
+        boolean domainServiceName = declaredName.endsWith("DomainService");
+        boolean domainServiceImplName = declaredName.endsWith("DomainServiceImpl");
+        String declaredTypeName = packageName + "." + declaredName;
+
+        if (servicePackage && !isAllowedDomainServiceShape(source, packageName, declaredName)) {
+            collectAllowlistedViolation(
+                    domainServiceShapeKey(declaredTypeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " declares "
+                            + declaredName
+                            + " under domain service package but it is not a valid *DomainService boundary",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+        if (!servicePackage && (domainServiceName || domainServiceImplName)) {
+            collectAllowlistedViolation(
+                    domainServiceShapeKey(declaredTypeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " declares "
+                            + declaredName
+                            + " outside domain/service or domain/service/impl",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+        if (servicePackage
+                && (domainServiceName || domainServiceImplName)
+                && isAllowedDomainServiceShape(source, packageName, declaredName)
+                && isConcreteDomainServiceSource(source, declaredName)
+                && !containsDomainRepositoryReference(declarationScopedSource(source, declaredName))) {
+            collectAllowlistedViolation(
+                    domainServiceRepositoryKey(declaredTypeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " declares concrete "
+                            + declaredName
+                            + " without a domain Repository dependency",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+    }
+
+    private static boolean isAllowedDomainServiceShape(String source, String packageName, String simpleName) {
+        return (packageName.endsWith(".domain.service")
+                        && simpleName.endsWith("DomainService")
+                        && isInterfaceDomainServiceSource(source, simpleName))
+                || (packageName.endsWith(".domain.service.impl")
+                        && simpleName.endsWith("DomainServiceImpl")
+                        && isConcreteDomainServiceSource(source, simpleName)
+                        && implementsExpectedDomainServiceInterface(source, packageName, simpleName));
+    }
+
+    private static boolean isDomainServicePackage(String packageName) {
+        int servicePackageStart = packageName.indexOf(".domain.service");
+        if (servicePackageStart < 0) {
+            return false;
+        }
+        int servicePackageEnd = servicePackageStart + ".domain.service".length();
+        return servicePackageEnd == packageName.length() || packageName.charAt(servicePackageEnd) == '.';
+    }
+
+    private static boolean isConcreteDomainServiceSource(String source, String simpleName) {
+        return Pattern.compile("(?m)^\\s*(?:@[\\w.]+(?:\\([^\\n]*\\))?\\s*)*"
+                        + "(?:(?:public|protected|private|static|final)\\s+)*class\\s+"
+                        + Pattern.quote(simpleName)
+                        + "\\b")
+                .matcher(source)
+                .find();
+    }
+
+    private static boolean isInterfaceDomainServiceSource(String source, String simpleName) {
+        return Pattern.compile("(?m)^\\s*(?:@[\\w.]+(?:\\([^\\n]*\\))?\\s*)*"
+                        + "(?:(?:public|protected|private|abstract|static|sealed|non-sealed|strictfp)\\s+)*"
+                        + "interface\\s+"
+                        + Pattern.quote(simpleName)
+                        + "\\b")
+                .matcher(source)
+                .find();
+    }
+
+    private static String declarationScopedSource(String source, String simpleName) {
+        String scanSource = sourceWithoutLiterals(source);
+        Matcher declaration = Pattern.compile(
+                        "\\b(?:class|interface|enum|record|@interface)\\s+" + Pattern.quote(simpleName) + "\\b")
+                .matcher(scanSource);
+        if (!declaration.find()) {
+            return source;
+        }
+        int bodyStart = scanSource.indexOf('{', declaration.end());
+        if (bodyStart < 0) {
+            return source;
+        }
+        int bodyEnd = matchingClosingBraceEnd(scanSource, bodyStart);
+        StringBuilder scopedSource = new StringBuilder();
+        Matcher packageOrImport = Pattern.compile("(?m)^\\s*(?:package\\s+[^;]+;|import\\s+[^;]+;)\\s*")
+                .matcher(source);
+        while (packageOrImport.find()) {
+            scopedSource.append(packageOrImport.group()).append('\n');
+        }
+        scopedSource.append(source, declaration.start(), bodyEnd);
+        return sourceWithoutNestedTypeDeclarations(scopedSource.toString(), simpleName);
+    }
+
+    private static String sourceWithoutNestedTypeDeclarations(String source, String rootSimpleName) {
+        String scanSource = sourceWithoutLiterals(source);
+        Matcher declaration = TYPE_DECLARATION_NAME_PATTERN.matcher(scanSource);
+        StringBuilder sourceWithoutNestedTypes = new StringBuilder(source);
+        boolean rootDeclarationSeen = false;
+        while (declaration.find()) {
+            String declaredName = declaration.group(1);
+            if (!rootDeclarationSeen && declaredName.equals(rootSimpleName)) {
+                rootDeclarationSeen = true;
+                continue;
+            }
+            if (!rootDeclarationSeen) {
+                continue;
+            }
+            int bodyStart = scanSource.indexOf('{', declaration.end());
+            if (bodyStart < 0) {
+                continue;
+            }
+            int bodyEnd = matchingClosingBraceEnd(scanSource, bodyStart);
+            for (int index = declaration.start(); index < bodyEnd; index++) {
+                sourceWithoutNestedTypes.setCharAt(index, ' ');
+            }
+        }
+        return sourceWithoutNestedTypes.toString();
+    }
+
+    private static int matchingClosingBraceEnd(String source, int openBraceIndex) {
+        int depth = 0;
+        for (int index = openBraceIndex; index < source.length(); index++) {
+            char current = source.charAt(index);
+            if (current == '{') {
+                depth++;
+            } else if (current == '}') {
+                depth--;
+                if (depth == 0) {
+                    return index + 1;
+                }
+            }
+        }
+        return source.length();
+    }
+
+    private static boolean implementsExpectedDomainServiceInterface(
+            String source, String packageName, String simpleName) {
+        String expectedInterface = simpleName.substring(0, simpleName.length() - "Impl".length());
+        String expectedPackage = packageName.substring(0, packageName.length() - ".impl".length());
+        String expectedInterfaceName = expectedPackage + "." + expectedInterface;
+        Matcher matcher = Pattern.compile(
+                        "\\bclass\\s+" + Pattern.quote(simpleName) + "\\b[^\\{;]*\\bimplements\\s+([^\\{;]+)",
+                        Pattern.DOTALL)
+                .matcher(source);
+        if (!matcher.find()) {
+            return false;
+        }
+        Map<String, String> imports = importedTypes(source);
+        Set<String> wildcardImports = wildcardImports(source);
+        return topLevelTypeNames(matcher.group(1)).stream()
+                .flatMap(typeName -> resolveTypeNames(typeName, packageName, imports, wildcardImports).stream())
+                .anyMatch(expectedInterfaceName::equals);
+    }
+
+    private static List<String> topLevelTypeNames(String implementsClause) {
+        List<String> typeNames = new ArrayList<String>();
+        int depth = 0;
+        int start = 0;
+        for (int index = 0; index < implementsClause.length(); index++) {
+            char current = implementsClause.charAt(index);
+            if (current == '<') {
+                depth++;
+            } else if (current == '>') {
+                depth = Math.max(0, depth - 1);
+            } else if (current == ',' && depth == 0) {
+                addTopLevelTypeName(typeNames, implementsClause.substring(start, index));
+                start = index + 1;
+            }
+        }
+        addTopLevelTypeName(typeNames, implementsClause.substring(start));
+        return typeNames;
+    }
+
+    private static void addTopLevelTypeName(List<String> typeNames, String typeName) {
+        String rawTypeName = typeName.trim();
+        int genericStart = rawTypeName.indexOf('<');
+        if (genericStart >= 0) {
+            rawTypeName = rawTypeName.substring(0, genericStart).trim();
+        }
+        if (!rawTypeName.isEmpty()) {
+            typeNames.add(rawTypeName);
+        }
+    }
+
+    private static Map<String, String> importedTypes(String source) {
+        Map<String, String> imports = new HashMap<String, String>();
+        Matcher matcher = Pattern.compile("(?m)^\\s*import\\s+(?!static\\b)([\\w.]+)\\s*;")
+                .matcher(source);
+        while (matcher.find()) {
+            String importedType = matcher.group(1);
+            int packageSeparator = importedType.lastIndexOf('.');
+            imports.put(importedType.substring(packageSeparator + 1), importedType);
+        }
+        return imports;
+    }
+
+    private static Set<String> wildcardImports(String source) {
+        Set<String> imports = new HashSet<String>();
+        Matcher matcher = Pattern.compile("(?m)^\\s*import\\s+(?!static\\b)([\\w.]+)\\.\\*\\s*;")
+                .matcher(source);
+        while (matcher.find()) {
+            imports.add(matcher.group(1));
+        }
+        return imports;
+    }
+
+    private static Set<String> resolveTypeNames(
+            String typeName, String packageName, Map<String, String> imports, Set<String> wildcardImports) {
+        if (typeName.contains(".")) {
+            return Set.of(typeName);
+        }
+        String importedType = imports.get(typeName);
+        if (importedType != null) {
+            return Set.of(importedType);
+        }
+        Set<String> resolvedNames = new HashSet<String>();
+        for (String wildcardImport : wildcardImports) {
+            resolvedNames.add(wildcardImport + "." + typeName);
+        }
+        resolvedNames.add(packageName + "." + typeName);
+        return resolvedNames;
+    }
+
+    private static boolean containsDomainRepositoryReference(String source) {
+        String sourceBody = sourceWithoutImportDeclarationsAndLiterals(source);
+        Matcher repositoryImport = DOMAIN_REPOSITORY_IMPORT_PATTERN.matcher(source);
+        while (repositoryImport.find()) {
+            String repositoryName = repositoryImport.group(2);
+            if (Pattern.compile("\\b" + Pattern.quote(repositoryName) + "\\b")
+                    .matcher(sourceBody)
+                    .find()) {
+                return true;
+            }
+        }
+        return Pattern.compile(
+                        "\\bcom\\.thundax\\.kuzhambu\\.[\\w.]+\\.domain\\.[\\w.]+\\.repository\\.\\w+Repository\\b")
+                .matcher(sourceBody)
+                .find();
+    }
+
+    private static String sourceWithoutImportDeclarationsAndLiterals(String source) {
+        String withoutImports =
+                Pattern.compile("(?m)^\\s*import\\s+[^;]+;\\s*").matcher(source).replaceAll("\n");
+        return sourceWithoutLiterals(withoutImports);
+    }
+
+    private static String sourceWithoutLiterals(String source) {
+        Matcher matcher = Pattern.compile("(?s)\"\"\".*?\"\"\"|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'")
+                .matcher(source);
+        StringBuilder strippedSource = new StringBuilder(source);
+        while (matcher.find()) {
+            for (int index = matcher.start(); index < matcher.end(); index++) {
+                strippedSource.setCharAt(index, ' ');
+            }
+        }
+        return strippedSource.toString();
+    }
+
+    public static String domainServiceShapeKey(String typeName) {
+        return "DOMAIN_SERVICE_SHAPE:" + typeName;
+    }
+
+    public static String domainServiceRepositoryKey(String typeName) {
+        return "DOMAIN_SERVICE_REPOSITORY:" + typeName;
     }
 
     public static void assertRepositoryImplPlacement(JavaClasses classes, String basePackage) {

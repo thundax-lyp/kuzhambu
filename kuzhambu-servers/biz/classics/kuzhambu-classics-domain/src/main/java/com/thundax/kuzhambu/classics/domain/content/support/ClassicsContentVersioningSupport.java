@@ -1,11 +1,11 @@
-package com.thundax.kuzhambu.classics.domain.content.service;
+package com.thundax.kuzhambu.classics.domain.content.support;
 
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import java.time.Instant;
 
-public class ClassicsContentVersioningService {
+public class ClassicsContentVersioningSupport {
 
     public boolean needsVersion(Versionable content) {
         if (content == null) {

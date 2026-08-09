@@ -64,7 +64,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_ENTITY_DOMAIN_ONLY`：`entity` 包只能出现在对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.entity`；`infra`、`application`、`interfaces` 不得定义 `entity` 包。
 - `SERVERS_ENTITY_CLASS_ANNOTATIONS`：领域实体类必须且只能声明 `@Getter`、`@Setter`、`@NoArgsConstructor`、`@AllArgsConstructor` 四个类级 Lombok 注解。
 - `SERVERS_DOMAIN_ENUM_MODEL_PACKAGE`：对应业务域 `{module}-domain` 模块内所有 enum 必须位于 `com.thundax.kuzhambu.{module}.domain.{domain}.model.enums`。
-- `SERVERS_NAMING_DOMAIN_SERVICE`：领域服务必须以 `DomainService` 结尾，并位于 `domain/service/` 包。
+- `SERVERS_NAMING_DOMAIN_SERVICE`：领域服务接口必须以 `DomainService` 结尾并位于 `domain/service/` 包；领域服务实现必须以 `DomainServiceImpl` 结尾并位于 `domain/service/impl/` 包。具体 `DomainService` / `DomainServiceImpl` 必须依赖本域 `Repository`，用于协同 repository-backed 聚合状态的领域规则；不触碰 `Repository` 的纯计算、默认值、归一化、对象构造、factory、policy、normalizer、support/helper 逻辑不得命名为 `DomainService`，也不得放入 `domain/service` 包。
 - `SERVERS_NAMING_REPOSITORY`：领域仓储端口必须以 `Repository` 结尾，并位于 `domain/{domain}/repository/` 包；仓储实现必须以 `RepositoryImpl` 结尾，并位于 `infra/{domain}/repository/impl/` 包。
 - `SERVERS_REPOSITORY_METHOD_VERB_WHITELIST`：`Repository` 接口方法名必须使用稳定仓储动作白名单；通用读写继续使用 `getBy*`、`list*`、`page*`、`count*`、`insert*`、`update*`、`deleteBy*`、`batch*`，内容仓储端口允许使用精确动作 `save`、`exists`、`open`、`delete`。
 - `SERVERS_NAMING_FACADE`：跨域 facade 协议接口必须以 `Facade` 结尾，并位于独立 `*-facade` 模块的 `facade/` 包；facade 协议对象继续使用 `FacadeRequest`、`FacadeResponse`、`FacadeDto` 后缀与对应子包。
@@ -156,7 +156,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 ## Review Rules
 
 - `SERVERS_REVIEW_MODEL_FIELD_DESCRIPTION`：API Request / Response 对外字段应声明 OpenAPI 3 `@Schema` 说明和稳定 JSON 字段名；字段说明质量依赖语义审阅，不放入 Hard Rules。
-- `SERVERS_REVIEW_CROSS_DOMAIN_USE_CASE`：单体内跨业务域协作不按微服务远程调用口径强制经过对端 application 公开用例；复杂跨域业务表达为稳定 `DomainService` 语义，不为了复用内部查询而直接穿透对端 infra、mapper、dataobject 或 repository implementation。
+- `SERVERS_REVIEW_CROSS_DOMAIN_USE_CASE`：单体内跨业务域协作不按微服务远程调用口径强制经过对端 application 公开用例；复杂跨域业务表达为稳定 repository-backed `DomainService` 语义，不为了复用内部查询而直接穿透对端 infra、mapper、dataobject 或 repository implementation。
 - `SERVERS_REVIEW_COMMON_EXTRACTION`：提取 common 能力前应确认至少两个业务域存在稳定复用需求，避免把业务概念过早沉淀到 common。
 - `SERVERS_REVIEW_SERVICE_GRANULARITY`：ApplicationService 应按用例聚合，不按数据库表机械拆分，也不把无关用例堆入单个巨型服务。
 - `SERVERS_REVIEW_FACADE_EXTERNAL_BOUNDARY`：`*Facade` 是提供方业务域给外域暴露的统一跨域边界，只供外域调用；提供方本域内部默认继续使用本域 application/domain 分层对象，不把 facade 当成本域内部复用入口。
