@@ -215,7 +215,7 @@ const installFetchMock = () => {
         if (path.endsWith("/classics/wangqi/documents/get")) {
             return apiResponse(mockDocumentRecord);
         }
-        if (path.endsWith("/classics/wangqi/documents/batch/publish")) {
+        if (path.endsWith("/classics/publication/wangqi/documents/batch/publish")) {
             return apiResponse({
                 acceptedCount: 1,
                 rejectedCount: 0,
@@ -1052,7 +1052,7 @@ describe("WangqiPage", () => {
             expect(
                 capturedCalls.some(
                     (call) =>
-                        call.path === "/classics/wangqi/documents/batch/publish" &&
+                        call.path === "/classics/publication/wangqi/documents/batch/publish" &&
                         JSON.stringify(call.body) === JSON.stringify({ ids: ["1"] })
                 )
             ).toBeTruthy();

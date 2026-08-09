@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "古籍模块-发布动作", description = "三才图会、王圻与明代习俗发布动作")
 @SysLogger(module = {"古籍", "发布"})
-@RequestMapping("/api/classics")
+@RequestMapping("/api/classics/publication")
 @WrappedApiController
 public class ClassicsPublicationActionController {
     private final ClassicsPublicationApplicationService publicationService;

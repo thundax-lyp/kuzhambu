@@ -83,28 +83,28 @@ export const deleteById = (id: string) => {
 
 export const publish = (command: MingCustomsPublicationActionCommand) => {
     return postJson<MingCustomsPublicationActionRecord, MingCustomsPublicationActionCommand>(
-        "/classics/ming-customs/publish",
+        "/classics/publication/ming-customs/publish",
         { body: command }
     );
 };
 
 export const submitOffline = (command: MingCustomsPublicationActionCommand) => {
     return postJson<MingCustomsPublicationActionRecord, MingCustomsPublicationActionCommand>(
-        "/classics/ming-customs/offline",
+        "/classics/publication/ming-customs/offline",
         { body: command }
     );
 };
 
 export const publishBatch = (command: MingCustomsPublicationBatchCommand) => {
     return postJson<MingCustomsPublicationBatchRecord, MingCustomsPublicationBatchCommand>(
-        "/classics/ming-customs/batch/publish",
+        "/classics/publication/ming-customs/batch/publish",
         { body: command }
     );
 };
 
 export const submitOfflineBatch = (command: MingCustomsPublicationBatchCommand) => {
     return postJson<MingCustomsPublicationBatchRecord, MingCustomsPublicationBatchCommand>(
-        "/classics/ming-customs/batch/offline",
+        "/classics/publication/ming-customs/batch/offline",
         { body: command }
     );
 };

@@ -12,6 +12,7 @@ import type {
 } from "./sancai-types";
 
 const ENTRIES_PATH = "/classics/sancai/entries";
+const PUBLICATION_ENTRIES_PATH = "/classics/publication/sancai/entries";
 const ASSET_IMAGES_PATH = "/classics/sancai/assets/images";
 const ASSET_VISUAL_ASSETS_PATH = "/classics/sancai/assets/visual-assets";
 
@@ -162,28 +163,28 @@ export const changeLifecycleStatus = (request: SancaiEntryLifecycleCommand) => {
 
 export const publish = (command: SancaiPublicationActionCommand) => {
     return postJson<SancaiPublicationActionRecord, SancaiPublicationActionCommand>(
-        `${ENTRIES_PATH}/publish`,
+        `${PUBLICATION_ENTRIES_PATH}/publish`,
         { body: command }
     );
 };
 
 export const submitOffline = (command: SancaiPublicationActionCommand) => {
     return postJson<SancaiPublicationActionRecord, SancaiPublicationActionCommand>(
-        `${ENTRIES_PATH}/offline`,
+        `${PUBLICATION_ENTRIES_PATH}/offline`,
         { body: command }
     );
 };
 
 export const publishBatch = (command: SancaiPublicationBatchCommand) => {
     return postJson<SancaiPublicationBatchRecord, SancaiPublicationBatchCommand>(
-        `${ENTRIES_PATH}/batch/publish`,
+        `${PUBLICATION_ENTRIES_PATH}/batch/publish`,
         { body: command }
     );
 };
 
 export const submitOfflineBatch = (command: SancaiPublicationBatchCommand) => {
     return postJson<SancaiPublicationBatchRecord, SancaiPublicationBatchCommand>(
-        `${ENTRIES_PATH}/batch/offline`,
+        `${PUBLICATION_ENTRIES_PATH}/batch/offline`,
         { body: command }
     );
 };

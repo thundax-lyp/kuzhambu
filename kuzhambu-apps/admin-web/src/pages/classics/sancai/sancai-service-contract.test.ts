@@ -265,18 +265,18 @@ describe("sancai service request contracts", () => {
         });
 
         await entryService.publish({ id: "3001" });
-        expectLastCall("POST", "/classics/sancai/entries/publish", { id: "3001" });
+        expectLastCall("POST", "/classics/publication/sancai/entries/publish", { id: "3001" });
 
         await entryService.submitOffline({ id: "3001" });
-        expectLastCall("POST", "/classics/sancai/entries/offline", { id: "3001" });
+        expectLastCall("POST", "/classics/publication/sancai/entries/offline", { id: "3001" });
 
         await entryService.publishBatch({ ids: ["3001", "3002"] });
-        expectLastCall("POST", "/classics/sancai/entries/batch/publish", {
+        expectLastCall("POST", "/classics/publication/sancai/entries/batch/publish", {
             ids: ["3001", "3002"]
         });
 
         await entryService.submitOfflineBatch({ ids: ["3001", "3002"] });
-        expectLastCall("POST", "/classics/sancai/entries/batch/offline", {
+        expectLastCall("POST", "/classics/publication/sancai/entries/batch/offline", {
             ids: ["3001", "3002"]
         });
 

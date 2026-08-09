@@ -202,7 +202,7 @@ const installFetchMock = () => {
                 records: [mockMingCustomsRecord]
             });
         }
-        if (path.endsWith("/classics/ming-customs/batch/publish")) {
+        if (path.endsWith("/classics/publication/ming-customs/batch/publish")) {
             return apiResponse({
                 acceptedCount: 1,
                 rejectedCount: 0,
@@ -982,7 +982,7 @@ describe("MingCustomPage", () => {
             expect(
                 capturedCalls.some(
                     (call) =>
-                        call.path === "/classics/ming-customs/batch/publish" &&
+                        call.path === "/classics/publication/ming-customs/batch/publish" &&
                         JSON.stringify(call.body) === JSON.stringify({ ids: ["500000000001"] })
                 )
             ).toBeTruthy();

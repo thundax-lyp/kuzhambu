@@ -150,18 +150,18 @@ describe("ming customs service request contracts", () => {
         });
 
         await service.publish({ id: "500000000001" });
-        expectLastCall("POST", "/classics/ming-customs/publish", { id: "500000000001" });
+        expectLastCall("POST", "/classics/publication/ming-customs/publish", { id: "500000000001" });
 
         await service.submitOffline({ id: "500000000001" });
-        expectLastCall("POST", "/classics/ming-customs/offline", { id: "500000000001" });
+        expectLastCall("POST", "/classics/publication/ming-customs/offline", { id: "500000000001" });
 
         await service.publishBatch({ ids: ["500000000001", "500000000002"] });
-        expectLastCall("POST", "/classics/ming-customs/batch/publish", {
+        expectLastCall("POST", "/classics/publication/ming-customs/batch/publish", {
             ids: ["500000000001", "500000000002"]
         });
 
         await service.submitOfflineBatch({ ids: ["500000000001", "500000000002"] });
-        expectLastCall("POST", "/classics/ming-customs/batch/offline", {
+        expectLastCall("POST", "/classics/publication/ming-customs/batch/offline", {
             ids: ["500000000001", "500000000002"]
         });
     });
