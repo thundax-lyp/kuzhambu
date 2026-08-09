@@ -170,25 +170,30 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
 
     private void validateGenerateCommand(OperationsReportGenerateCommand command) {
         if (command == null) {
-            throw new IllegalArgumentException("Operations report generate command must not be null.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations report generate command must not be null.");
         }
         if (StringUtils.isBlank(command.getReportType())) {
-            throw new IllegalArgumentException("Operations report type must not be blank.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations report type must not be blank.");
         }
         if (StringUtils.isBlank(command.getFormat())) {
-            throw new IllegalArgumentException("Operations report format must not be blank.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations report format must not be blank.");
         }
         if (command.getPeriodStart() == null || command.getPeriodEnd() == null) {
-            throw new IllegalArgumentException("Operations report period must not be null.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations report period must not be null.");
         }
         if (command.getPeriodStart().isAfter(command.getPeriodEnd())) {
-            throw new IllegalArgumentException("Operations report periodStart must not be after periodEnd.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations report periodStart must not be after periodEnd.");
         }
     }
 
     private void validateDownloadRecord(ReportRecord record) {
         if (record == null) {
-            throw new IllegalArgumentException("Operations report does not exist.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException("Operations report does not exist.");
         }
         if (record.getReportStatus() != ReportStatus.SUCCEEDED) {
             throw new IllegalStateException("Operations report artifact is not ready.");
