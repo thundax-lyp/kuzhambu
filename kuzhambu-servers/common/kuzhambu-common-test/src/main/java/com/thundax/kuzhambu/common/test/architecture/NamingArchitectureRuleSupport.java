@@ -1804,6 +1804,14 @@ public final class NamingArchitectureRuleSupport {
     }
 
     public static void assertRepositoryInterfaceMethodNames(JavaClasses classes) {
+        assertRepositoryInterfaceMethodNames(classes, List.of());
+    }
+
+    public static void assertRepositoryInterfaceMethodNames(
+            JavaClasses classes, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Map<String, ArchitectureRuleAllowance> allowlist =
+                exactRepositoryInterfaceMethodNameAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
         List<String> violations = new ArrayList<String>();
 
         for (JavaClass javaClass : classes) {
@@ -1812,16 +1820,63 @@ public final class NamingArchitectureRuleSupport {
             }
             for (JavaMethod method : javaClass.getMethods()) {
                 if (!isRepositoryPortMethodShape(method)) {
-                    violations.add(method.getFullName());
+                    String methodName = method.getFullName();
+                    String allowanceKey = repositoryInterfaceMethodNameAllowanceKey(methodName);
+                    if (allowlist.containsKey(allowanceKey)) {
+                        matchedAllowances.add(allowanceKey);
+                        continue;
+                    }
+                    violations.add(methodName);
                 }
             }
         }
 
+        Set<String> staleAllowances = new HashSet<String>(allowlist.keySet());
+        staleAllowances.removeAll(matchedAllowances);
+
         assertTrue(
                 "Repository interface methods should use getByXxx/list/page/count/insert/update/deleteBy/batchXxx "
-                        + "naming; content repositories may also use save/exists/open/delete: "
-                        + violations,
-                violations.isEmpty());
+                        + "naming; content repositories may also use save/exists/open/delete. Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
+    }
+
+    public static String repositoryInterfaceMethodNameAllowanceKey(String methodFullName) {
+        int parameterStart = methodFullName.indexOf('(');
+        String repositoryMethod = parameterStart < 0 ? methodFullName : methodFullName.substring(0, parameterStart);
+        return "REPOSITORY_INTERFACE_METHOD_NAME:" + repositoryMethod;
+    }
+
+    public static List<ArchitectureRuleAllowance> legacyRepositoryInterfaceMethodNameAllowances(
+            String... methodFullNames) {
+        List<ArchitectureRuleAllowance> allowances = new ArrayList<ArchitectureRuleAllowance>();
+        for (String methodFullName : methodFullNames) {
+            allowances.add(
+                    ArchitectureRuleAllowance.of(
+                            repositoryInterfaceMethodNameAllowanceKey(methodFullName),
+                            "Repository method retains a legacy verb outside the shared repository naming rule.",
+                            "Rename the repository method to the supported verb and update all callers before removing this allowance."));
+        }
+        return allowances;
+    }
+
+    private static Map<String, ArchitectureRuleAllowance> exactRepositoryInterfaceMethodNameAllowlist(
+            Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Map<String, ArchitectureRuleAllowance> allowlist = new HashMap<String, ArchitectureRuleAllowance>();
+        for (ArchitectureRuleAllowance allowance : legacyAllowances) {
+            if (allowance.key().contains("*")) {
+                throw new IllegalArgumentException(
+                        "Repository interface method-name allowances must use exact repository-method keys: "
+                                + allowance.key());
+            }
+            if (allowlist.put(allowance.key(), allowance) != null) {
+                throw new IllegalArgumentException(
+                        "Duplicate repository interface method-name allowance: " + allowance.key());
+            }
+        }
+        return allowlist;
     }
 
     public static void assertRepositoryTypeNamesUseRepositorySuffix(JavaClasses classes) {
