@@ -16,7 +16,6 @@ final class OperationsApplicationPageQueryAllowances {
         return List.of(
                 legacy("com.thundax.kuzhambu.operations.application.restore.query.OperationsRestorePageQuery"),
                 legacy("com.thundax.kuzhambu.operations.application.report.query.OperationsReportPageQuery"),
-                legacy("com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupPageQuery"),
                 legacy("com.thundax.kuzhambu.operations.application.health.query.OperationsHealthPageQuery"),
                 legacy("com.thundax.kuzhambu.operations.application.health.query.OperationsHealthAlertPageQuery"),
                 legacy("com.thundax.kuzhambu.operations.application.task.query.OperationsTaskPageQuery"),

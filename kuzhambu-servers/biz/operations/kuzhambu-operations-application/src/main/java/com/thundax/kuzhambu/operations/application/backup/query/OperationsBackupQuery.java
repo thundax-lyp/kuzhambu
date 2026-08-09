@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OperationsBackupPageQuery {
+public class OperationsBackupQuery {
     private String backupType;
     private String backupStatus;
     private Long requesterUserId;

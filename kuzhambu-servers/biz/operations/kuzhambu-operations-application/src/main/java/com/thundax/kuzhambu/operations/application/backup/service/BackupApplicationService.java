@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.backup.command.OperationsBackupExecuteCommand;
 import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupDetailQuery;
-import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupPageQuery;
+import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupQuery;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupDetailResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
@@ -15,7 +15,7 @@ public interface BackupApplicationService {
 
     OperationsBackupExecuteResult executeAutoBackup();
 
-    PageResult<OperationsBackupPageResult> page(OperationsBackupPageQuery query, PageQuery pageQuery);
+    PageResult<OperationsBackupPageResult> page(OperationsBackupQuery query, PageQuery pageQuery);
 
     OperationsBackupDetailResult detail(OperationsBackupDetailQuery query);
 }

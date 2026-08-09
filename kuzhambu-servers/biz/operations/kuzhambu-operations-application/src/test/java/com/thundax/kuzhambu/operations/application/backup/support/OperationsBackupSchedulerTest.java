@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.backup.command.OperationsBackupExecuteCommand;
 import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupDetailQuery;
-import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupPageQuery;
+import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupQuery;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupDetailResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
@@ -83,7 +83,7 @@ class OperationsBackupSchedulerTest {
         }
 
         @Override
-        public PageResult<OperationsBackupPageResult> page(OperationsBackupPageQuery query, PageQuery pageQuery) {
+        public PageResult<OperationsBackupPageResult> page(OperationsBackupQuery query, PageQuery pageQuery) {
             return PageResult.of(1, 10, 0, List.of());
         }
 

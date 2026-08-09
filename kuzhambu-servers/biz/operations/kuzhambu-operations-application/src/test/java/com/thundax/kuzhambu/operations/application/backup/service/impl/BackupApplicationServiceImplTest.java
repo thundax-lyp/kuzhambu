@@ -11,7 +11,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.backup.command.OperationsBackupExecuteCommand;
 import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupDetailQuery;
-import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupPageQuery;
+import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupQuery;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupDetailResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
@@ -132,7 +132,7 @@ class BackupApplicationServiceImplTest {
                 repository, new SuccessfulBackupScriptExecutor(), new OperationsBackupExecutionGuard());
 
         PageResult<OperationsBackupPageResult> pageResult =
-                service.page(new OperationsBackupPageQuery("MANUAL", "SUCCEEDED", 1001L), new PageQuery(1, 10));
+                service.page(new OperationsBackupQuery("MANUAL", "SUCCEEDED", 1001L), new PageQuery(1, 10));
         OperationsBackupDetailResult detailResult =
                 service.detail(new OperationsBackupDetailQuery(BackupIdCodec.toDomain(9001L)));
 
