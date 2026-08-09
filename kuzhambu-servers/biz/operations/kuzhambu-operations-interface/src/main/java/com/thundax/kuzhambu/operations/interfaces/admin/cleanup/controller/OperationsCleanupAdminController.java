@@ -49,8 +49,10 @@ public class OperationsCleanupAdminController {
                 dataTypeClass = String.class),
     })
     public OperationsCleanupExecuteResponse execute(@Valid @RequestBody OperationsCleanupExecuteRequest request) {
-        return OperationsCleanupInterfaceAssembler.toResponse(
-                cleanupApplicationService.execute(OperationsCleanupInterfaceAssembler.toCommand(request)));
+        var result = cleanupApplicationService.execute(OperationsCleanupInterfaceAssembler.toCommand(request));
+        return result == null
+                ? OperationsCleanupExecuteResponse.builder().build()
+                : OperationsCleanupInterfaceAssembler.toResponse(result);
     }
 
     @Operation(summary = "分页查询清理任务", description = "operations:cleanup:view")
@@ -84,7 +86,9 @@ public class OperationsCleanupAdminController {
                 dataTypeClass = String.class),
     })
     public OperationsCleanupDetailResponse detail(@Valid @RequestBody OperationsCleanupDetailRequest request) {
-        return OperationsCleanupInterfaceAssembler.toDetailResponse(
-                cleanupApplicationService.detail(OperationsCleanupInterfaceAssembler.toQuery(request)));
+        var result = cleanupApplicationService.detail(OperationsCleanupInterfaceAssembler.toQuery(request));
+        return result == null
+                ? OperationsCleanupDetailResponse.builder().build()
+                : OperationsCleanupInterfaceAssembler.toDetailResponse(result);
     }
 }

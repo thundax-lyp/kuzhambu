@@ -14,37 +14,35 @@ import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.reque
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.response.OperationsCleanupDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.response.OperationsCleanupExecuteResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.response.OperationsCleanupPageResponse;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class OperationsCleanupInterfaceAssembler {
 
     private OperationsCleanupInterfaceAssembler() {}
 
-    public static OperationsCleanupExecuteCommand toCommand(OperationsCleanupExecuteRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsCleanupExecuteCommand toCommand(@NonNull OperationsCleanupExecuteRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsCleanupExecuteCommand(request.getCleanupType(), currentAdminUserId());
     }
 
-    public static OperationsCleanupQuery toQuery(OperationsCleanupPageRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsCleanupQuery toQuery(@NonNull OperationsCleanupPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsCleanupQuery(
                 request.getCleanupType(), request.getCleanupStatus(), request.getRequesterUserId());
     }
 
-    public static OperationsCleanupDetailQuery toQuery(OperationsCleanupDetailRequest request) {
-        if (request == null || request.getCleanupId() == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsCleanupDetailQuery toQuery(@NonNull OperationsCleanupDetailRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsCleanupDetailQuery(CleanupJobIdCodec.toDomain(request.getCleanupId()));
     }
 
-    public static OperationsCleanupExecuteResponse toResponse(OperationsCleanupDetailResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsCleanupExecuteResponse toResponse(@NonNull OperationsCleanupDetailResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsCleanupExecuteResponse.builder()
                 .cleanupId(
                         result.getCleanupId() == null
@@ -62,10 +60,9 @@ public final class OperationsCleanupInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsCleanupPageResponse toResponse(OperationsCleanupPageResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsCleanupPageResponse toResponse(@NonNull OperationsCleanupPageResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsCleanupPageResponse.builder()
                 .cleanupId(
                         result.getCleanupId() == null
@@ -83,10 +80,9 @@ public final class OperationsCleanupInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsCleanupDetailResponse toDetailResponse(OperationsCleanupDetailResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsCleanupDetailResponse toDetailResponse(@NonNull OperationsCleanupDetailResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsCleanupDetailResponse.builder()
                 .cleanupId(
                         result.getCleanupId() == null
