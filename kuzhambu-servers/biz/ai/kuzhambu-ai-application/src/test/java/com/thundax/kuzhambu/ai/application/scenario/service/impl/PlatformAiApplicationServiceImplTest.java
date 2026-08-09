@@ -72,10 +72,8 @@ class PlatformAiApplicationServiceImplTest {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         PlatformAiApplicationServiceImpl service =
                 new PlatformAiApplicationServiceImpl(invocationService, resolver, null);
-        PlatformAiInvokeCommand command = command();
-        command.setCreateCandidate(Boolean.FALSE);
 
-        service.buildPromptSuggestion(command);
+        service.buildPromptSuggestion(command(Boolean.FALSE));
 
         assertFalse(invocationService.capturedCommand().isCreateCandidate());
     }
@@ -86,13 +84,25 @@ class PlatformAiApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
         PlatformAiApplicationServiceImpl service =
                 new PlatformAiApplicationServiceImpl(invocationService, resolver, businessResolver);
-        PlatformAiInvokeCommand command = command();
-        command.setServiceId(null);
-        command.setServiceRole(null);
-        command.setModelId(null);
-        command.setModelName(null);
-        command.setPromptVersionId(null);
-        command.setPromptMessagesJson(null);
+        PlatformAiInvokeCommand command = new PlatformAiInvokeCommand(
+                AiContentRef.ofNullable("PROMPT_TEMPLATE", 10L),
+                new AiTargetObjectId(20L),
+                null,
+                null,
+                null,
+                null,
+                null,
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
+                null,
+                null,
+                null,
+                "{\"template\":\"hello\"}",
+                "{\"type\":\"object\"}",
+                true,
+                "zh-CN",
+                false,
+                null);
 
         service.buildPromptSuggestion(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -105,20 +115,29 @@ class PlatformAiApplicationServiceImplTest {
     }
 
     private PlatformAiInvokeCommand command() {
-        PlatformAiInvokeCommand command = new PlatformAiInvokeCommand();
-        command.setContentRef(AiContentRef.ofNullable("PROMPT_TEMPLATE", 10L));
-        command.setTargetObjectId(new AiTargetObjectId(20L));
-        command.setModelId(new AiModelId(30L));
-        command.setModelName(AiModelName.of("model-a"));
-        command.setPromptVersionId(new PromptVersionId(40L));
-        command.setRequestId(new RequestId("req-1"));
-        command.setTraceId(new TraceId("trace-1"));
-        command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
-        command.setInputPayloadJson("{\"template\":\"hello\"}");
-        command.setOutputSchemaJson("{\"type\":\"object\"}");
-        command.setForceJson(true);
-        command.setLocale("zh-CN");
-        return command;
+        return command(null);
+    }
+
+    private PlatformAiInvokeCommand command(Boolean createCandidate) {
+        return new PlatformAiInvokeCommand(
+                AiContentRef.ofNullable("PROMPT_TEMPLATE", 10L),
+                new AiTargetObjectId(20L),
+                null,
+                null,
+                new AiModelId(30L),
+                AiModelName.of("model-a"),
+                new PromptVersionId(40L),
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
+                "[{\"role\":\"user\",\"content\":\"hello\"}]",
+                null,
+                null,
+                "{\"template\":\"hello\"}",
+                "{\"type\":\"object\"}",
+                true,
+                "zh-CN",
+                false,
+                createCandidate);
     }
 
     private static class CapturingInvocationService implements AiWorkerInvocationApplicationService {

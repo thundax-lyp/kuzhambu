@@ -19,26 +19,25 @@ public final class PlatformAiInterfaceAssembler {
     private PlatformAiInterfaceAssembler() {}
 
     public static PlatformAiInvokeCommand toCommand(PlatformAiRequests.InvokeRequest request) {
-        PlatformAiInvokeCommand command = new PlatformAiInvokeCommand();
-        command.setContentRef(AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()));
-        command.setTargetObjectId(AiTargetObjectIdCodec.toDomain(request.getObjectId()));
-        command.setServiceId(request.getServiceId());
-        command.setServiceRole(request.getServiceRole());
-        command.setModelId(AiModelIdCodec.toDomain(request.getModelId()));
-        command.setModelName(AiModelNameCodec.toDomain(request.getModelName()));
-        command.setPromptVersionId(PromptVersionIdCodec.toDomain(request.getPromptVersionId()));
-        command.setRequestId(RequestIdCodec.toDomain(request.getRequestId()));
-        command.setTraceId(TraceIdCodec.toDomain(request.getTraceId()));
-        command.setPromptMessagesJson(request.getPromptMessagesJson());
-        command.setPromptVariablesJson(request.getPromptVariablesJson());
-        command.setPromptHash(request.getPromptHash());
-        command.setInputPayloadJson(request.getInputPayloadJson());
-        command.setOutputSchemaJson(request.getOutputSchemaJson());
-        command.setForceJson(Boolean.TRUE.equals(request.getForceJson()));
-        command.setLocale(request.getLocale());
-        command.setAllowFallback(Boolean.TRUE.equals(request.getAllowFallback()));
-        command.setCreateCandidate(request.getCreateCandidate());
-        return command;
+        return new PlatformAiInvokeCommand(
+                AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()),
+                AiTargetObjectIdCodec.toDomain(request.getObjectId()),
+                request.getServiceId(),
+                request.getServiceRole(),
+                AiModelIdCodec.toDomain(request.getModelId()),
+                AiModelNameCodec.toDomain(request.getModelName()),
+                PromptVersionIdCodec.toDomain(request.getPromptVersionId()),
+                RequestIdCodec.toDomain(request.getRequestId()),
+                TraceIdCodec.toDomain(request.getTraceId()),
+                request.getPromptMessagesJson(),
+                request.getPromptVariablesJson(),
+                request.getPromptHash(),
+                request.getInputPayloadJson(),
+                request.getOutputSchemaJson(),
+                Boolean.TRUE.equals(request.getForceJson()),
+                request.getLocale(),
+                Boolean.TRUE.equals(request.getAllowFallback()),
+                request.getCreateCandidate());
     }
 
     public static PlatformAiResponses.InvokeResponse toResponse(AiInvokeResult result) {

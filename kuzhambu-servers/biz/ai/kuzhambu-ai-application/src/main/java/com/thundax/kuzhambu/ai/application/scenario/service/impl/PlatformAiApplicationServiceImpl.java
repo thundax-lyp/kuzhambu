@@ -55,26 +55,26 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
         command.setWorkerCapability(spec.workerCapability());
         command.setOperation(spec.operation());
         command.setWorkerPath(spec.workerPath());
-        command.setContentRef(source.getContentRef());
-        command.setTargetObjectId(source.getTargetObjectId());
-        command.setServiceId(source.getServiceId());
-        command.setServiceRole(source.getServiceRole());
-        command.setModelId(source.getModelId());
-        command.setModelName(source.getModelName());
-        command.setPromptVersionId(source.getPromptVersionId());
-        command.setRequestId(source.getRequestId());
-        command.setTraceId(source.getTraceId());
-        command.setPromptMessagesJson(source.getPromptMessagesJson());
-        command.setPromptVariablesJson(source.getPromptVariablesJson());
-        command.setPromptHash(source.getPromptHash());
-        command.setInputPayloadJson(source.getInputPayloadJson());
-        command.setOutputSchemaJson(source.getOutputSchemaJson());
+        command.setContentRef(source.contentRef());
+        command.setTargetObjectId(source.targetObjectId());
+        command.setServiceId(source.serviceId());
+        command.setServiceRole(source.serviceRole());
+        command.setModelId(source.modelId());
+        command.setModelName(source.modelName());
+        command.setPromptVersionId(source.promptVersionId());
+        command.setRequestId(source.requestId());
+        command.setTraceId(source.traceId());
+        command.setPromptMessagesJson(source.promptMessagesJson());
+        command.setPromptVariablesJson(source.promptVariablesJson());
+        command.setPromptHash(source.promptHash());
+        command.setInputPayloadJson(source.inputPayloadJson());
+        command.setOutputSchemaJson(source.outputSchemaJson());
         command.setStream(false);
-        command.setForceJson(source.isForceJson());
-        command.setLocale(source.getLocale());
-        command.setAllowFallback(source.isAllowFallback());
+        command.setForceJson(source.forceJson());
+        command.setLocale(source.locale());
+        command.setAllowFallback(source.allowFallback());
         command.setCreateCandidate(
-                source.getCreateCandidate() == null ? spec.defaultCreateCandidate() : source.getCreateCandidate());
+                source.createCandidate() == null ? spec.defaultCreateCandidate() : source.createCandidate());
         return command;
     }
 
@@ -87,9 +87,9 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
 
     private void validateCommand(PlatformAiInvokeCommand command) {
         if (command == null
-                || command.getRequestId() == null
-                || command.getTraceId() == null
-                || isBlank(command.getInputPayloadJson())) {
+                || command.requestId() == null
+                || command.traceId() == null
+                || isBlank(command.inputPayloadJson())) {
             throw new BizException("Platform AI invoke command is incomplete");
         }
     }
