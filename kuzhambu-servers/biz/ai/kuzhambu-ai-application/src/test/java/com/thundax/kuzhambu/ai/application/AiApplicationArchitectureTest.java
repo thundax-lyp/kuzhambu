@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.ai.application;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.AnnotationBoundaryArchitectureRuleSupport;
-import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.ConcurrencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
@@ -47,9 +46,7 @@ class AiApplicationArchitectureTest extends AbstractArchitectureTest {
                 List.of(Path.of("src/main/java"), Path.of("../kuzhambu-ai-interface/src/main/java")),
                 Collections.emptyList());
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
-                Collections.singletonList(Path.of("src/main/java")),
-                BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler"));
+                Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationQueriesDoNotOwnPageState(
                 Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
