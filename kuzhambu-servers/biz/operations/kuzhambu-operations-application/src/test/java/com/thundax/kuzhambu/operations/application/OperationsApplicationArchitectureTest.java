@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
 import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SourceHardRuleArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
@@ -26,6 +27,8 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
         ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
                 classes, Collections.emptySet());
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
+        PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
                 Path.of("src/main/java"), OperationsApplicationCommandQueryRecordAllowances.legacyAllowances());
         NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
