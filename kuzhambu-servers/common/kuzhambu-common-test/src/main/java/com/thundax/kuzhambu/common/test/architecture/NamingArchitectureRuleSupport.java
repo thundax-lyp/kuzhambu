@@ -859,7 +859,10 @@ public final class NamingArchitectureRuleSupport {
     }
 
     private static boolean isConcreteDomainServiceSource(String source, String simpleName) {
-        return Pattern.compile("\\b(?:public\\s+)?(?:final\\s+)?class\\s+" + simpleName + "\\b")
+        return Pattern.compile("(?m)^\\s*(?:@[\\w.]+(?:\\([^\\n]*\\))?\\s*)*"
+                        + "(?:(?:public|protected|private|static|final)\\s+)*class\\s+"
+                        + Pattern.quote(simpleName)
+                        + "\\b")
                 .matcher(source)
                 .find();
     }
