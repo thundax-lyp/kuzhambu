@@ -7,7 +7,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -149,7 +154,14 @@ public final class ApiAnnotationArchitectureRuleSupport {
     }
 
     public static void assertControllerActionsUseVerbWhitelist(Path sourceRoot) throws IOException {
+        assertControllerActionsUseVerbWhitelist(sourceRoot, List.of());
+    }
+
+    public static void assertControllerActionsUseVerbWhitelist(
+            Path sourceRoot, Collection<ArchitectureRuleAllowance> legacyAllowances) throws IOException {
         Path root = ArchitectureSourceSupport.repositoryRoot();
+        Map<String, ArchitectureRuleAllowance> allowlist = actionVerbAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
         List<String> violations = new ArrayList<String>();
 
         try (Stream<Path> paths = controllerSources(sourceRoot)) {
@@ -157,10 +169,20 @@ public final class ApiAnnotationArchitectureRuleSupport {
                     .forEach(path -> collectControllerActionVerbViolations(root, path, violations));
         }
 
+        List<String> unexpectedViolations = new ArrayList<String>();
+        for (String violation : violations) {
+            if (!isActionVerbAllowlisted("CONTROLLER_ACTION_VERB:" + violation, allowlist, matchedAllowances)) {
+                unexpectedViolations.add(violation);
+            }
+        }
+        Set<String> staleAllowances = new HashSet<String>(allowlist.keySet());
+        staleAllowances.removeAll(matchedAllowances);
         assertTrue(
                 "Controller action methods and PostMapping action paths must use allowed verbs "
-                        + CONTROLLER_ACTION_VERBS + ": " + violations,
-                violations.isEmpty());
+                        + CONTROLLER_ACTION_VERBS + ". Legacy allowances must include a description and remediation "
+                        + "and are rejected when stale. Violations: " + unexpectedViolations + ". Stale allowances: "
+                        + staleAllowances,
+                unexpectedViolations.isEmpty() && staleAllowances.isEmpty());
     }
 
     public static void assertOperationDeclaresAccessAnnotation(Path sourceRoot) throws IOException {
@@ -912,6 +934,35 @@ public final class ApiAnnotationArchitectureRuleSupport {
                     || methodName.startsWith(verb)
                             && methodName.length() > verb.length()
                             && Character.isUpperCase(methodName.charAt(verb.length()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Map<String, ArchitectureRuleAllowance> actionVerbAllowlist(
+            Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Map<String, ArchitectureRuleAllowance> allowlist = new LinkedHashMap<String, ArchitectureRuleAllowance>();
+        for (ArchitectureRuleAllowance allowance : legacyAllowances) {
+            if (allowlist.put(allowance.key(), allowance) != null) {
+                throw new IllegalArgumentException("Duplicate architecture allowlist key: " + allowance.key());
+            }
+        }
+        return allowlist;
+    }
+
+    private static boolean isActionVerbAllowlisted(
+            String key, Map<String, ArchitectureRuleAllowance> allowlist, Set<String> matchedAllowances) {
+        if (allowlist.containsKey(key)) {
+            matchedAllowances.add(key);
+            return true;
+        }
+        for (String allowanceKey : allowlist.keySet()) {
+            if (allowanceKey.contains("*")
+                    && Pattern.compile(Pattern.quote(allowanceKey).replace("*", "\\E.*\\Q"))
+                            .matcher(key)
+                            .matches()) {
+                matchedAllowances.add(allowanceKey);
                 return true;
             }
         }
