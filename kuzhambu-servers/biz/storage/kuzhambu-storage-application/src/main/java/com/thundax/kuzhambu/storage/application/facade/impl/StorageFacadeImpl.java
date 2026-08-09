@@ -189,13 +189,20 @@ public class StorageFacadeImpl implements StorageFacade {
             return;
         }
         requireStoredObject(storageObjectId);
-        StorageOwnerType ownerType = ownerBindingFacadeAssembler.toOwnerType(request);
+        StorageOwnerType ownerType = toOwnerType(request);
         String ownerId = request.getOwnerId();
         addReferenceIfAbsent(storageObjectId, ownerType, ownerId, request.getOwnerParams());
         storageReferenceApplicationService.changeReferenceStatus(
                 ownerBindingFacadeAssembler.toReferencedCommand(MarkStorageUsageFacadeRequest.builder()
                         .storageObjectId(storageObjectId)
                         .build()));
+    }
+
+    private StorageOwnerType toOwnerType(BindStorageOwnerFacadeRequest request) {
+        if (request.getOwnerType() == null || request.getOwnerType().isBlank()) {
+            return null;
+        }
+        return StorageOwnerType.from(request.getOwnerType());
     }
 
     private StoredObject requireStoredObject(Long storageObjectId) {

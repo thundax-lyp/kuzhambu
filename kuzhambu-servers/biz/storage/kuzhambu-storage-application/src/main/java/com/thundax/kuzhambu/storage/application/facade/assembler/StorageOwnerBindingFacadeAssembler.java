@@ -13,16 +13,17 @@ import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest
 import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StorageOwnerBindingFacadeAssembler {
 
-    public AddStorageReferencesCommand toAddReferencesCommand(BindStorageOwnerFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public AddStorageReferencesCommand toAddReferencesCommand(@NonNull BindStorageOwnerFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         List<Long> storageObjectIds =
                 request.getStorageObjectIds() == null ? Collections.emptyList() : request.getStorageObjectIds();
         StorageOwnerType ownerType = toOwnerType(request);
@@ -36,26 +37,24 @@ public class StorageOwnerBindingFacadeAssembler {
         return new AddStorageReferencesCommand(references);
     }
 
-    public RemoveStorageReferencesCommand toRemoveReferencesCommand(UnbindStorageOwnerFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public RemoveStorageReferencesCommand toRemoveReferencesCommand(@NonNull UnbindStorageOwnerFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RemoveStorageReferencesCommand(StorageOwnerRef.ofNullable(
                 isBlank(request.getOwnerType()) ? null : StorageOwnerType.from(request.getOwnerType()),
                 request.getOwnerId()));
     }
 
-    public StorageOwnerType toOwnerType(BindStorageOwnerFacadeRequest request) {
-        if (request == null || isBlank(request.getOwnerType())) {
+    private StorageOwnerType toOwnerType(BindStorageOwnerFacadeRequest request) {
+        if (isBlank(request.getOwnerType())) {
             return null;
         }
         return StorageOwnerType.from(request.getOwnerType());
     }
 
-    public ChangeStorageReferenceStatusCommand toReferencedCommand(MarkStorageUsageFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public ChangeStorageReferenceStatusCommand toReferencedCommand(@NonNull MarkStorageUsageFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ChangeStorageReferenceStatusCommand(
                 request.getStorageObjectId() == null
                         ? null
@@ -63,10 +62,9 @@ public class StorageOwnerBindingFacadeAssembler {
                 StoredObjectReferenceStatus.REFERENCED);
     }
 
-    public ChangeStorageReferenceStatusCommand toUnreferencedCommand(MarkStorageUsageFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public ChangeStorageReferenceStatusCommand toUnreferencedCommand(@NonNull MarkStorageUsageFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ChangeStorageReferenceStatusCommand(
                 request.getStorageObjectId() == null
                         ? null

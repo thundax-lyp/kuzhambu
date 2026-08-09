@@ -50,7 +50,6 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.storage.application.facade.assembler.StorageOwnerBindingFacadeAssembler",
                         "com.thundax.kuzhambu.storage.application.facade.assembler.StorageReadableContentFacadeAssembler",
                         "com.thundax.kuzhambu.storage.application.facade.assembler.StorageUploadFacadeAssembler"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
