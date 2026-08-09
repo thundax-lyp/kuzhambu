@@ -84,6 +84,10 @@ public final class ApiAnnotationArchitectureRuleSupport {
 
     private ApiAnnotationArchitectureRuleSupport() {}
 
+    static List<String> controllerActionVerbs() {
+        return CONTROLLER_ACTION_VERBS;
+    }
+
     public static ArchRule requestClassAnnotationsRequired(String basePackage) {
         return ModelAnnotationArchitectureRuleSupport.requestClassAnnotationsRequired(basePackage);
     }
