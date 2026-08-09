@@ -37,27 +37,7 @@ final class AiApplicationCommandQueryRecordAllowances {
                 construction(
                         "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver#GetAiModelQuery:1"),
                 construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver#ListAiBusinessConfigsQuery:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#AiReportSummaryQuery:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#GetAiBatchJobQuery:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#AiBatchJobCreateCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#CanDispatchNextAiBatchUnitQuery:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#RecordAiBatchJobCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#RecordAiBatchJobFailureCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#CancelAiBatchJobCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#RequireAiCandidateForApplyQuery:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#ApplyAiCandidateCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#RejectAiCandidateCommand:1"));
+                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver#ListAiBusinessConfigsQuery:1"));
     }
 
     static List<ArchitectureRuleAllowance> assemblerNullReturnAllowances() {
