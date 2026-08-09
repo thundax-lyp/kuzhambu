@@ -226,7 +226,7 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     private AiWorkerHttpPayloads.ModelConfig modelConfig(AiInvokeCommand command) {
         AiWorkerHttpPayloads.ModelConfig modelConfig = new AiWorkerHttpPayloads.ModelConfig();
         if (modelConfigResolver != null) {
-            AiWorkerModelConfigResolver.ResolvedModelConfig resolved = modelConfigResolver.resolve(command);
+            AiWorkerModelConfigResolver.ResolvedModelConfig resolved = modelConfigResolver.resolveConfig(command);
             if (resolved != null) {
                 modelConfig.setServiceRole(resolved.serviceRole());
                 modelConfig.setApiSource(resolved.apiSource());

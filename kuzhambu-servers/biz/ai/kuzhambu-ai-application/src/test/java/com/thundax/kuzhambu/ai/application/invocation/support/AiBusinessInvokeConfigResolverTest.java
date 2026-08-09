@@ -37,7 +37,7 @@ class AiBusinessInvokeConfigResolverTest {
                 List.of(variable("contentType", true), variable("sourceText", true), variable("tone", false))));
         AiInvokeCommand command = command();
 
-        AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved = resolver.resolve(command);
+        AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved = resolver.resolveConfig(command);
 
         JsonNode messages = objectMapper.readTree(resolved.promptMessagesJson());
         JsonNode variables = objectMapper.readTree(resolved.promptVariablesJson());
@@ -59,7 +59,7 @@ class AiBusinessInvokeConfigResolverTest {
         AiBusinessInvokeConfigResolver resolver =
                 newResolver(promptRepository(List.of(variable("contentType", true), variable("missingText", true))));
 
-        assertThatThrownBy(() -> resolver.resolve(command()))
+        assertThatThrownBy(() -> resolver.resolveConfig(command()))
                 .isInstanceOf(BizException.class)
                 .hasMessageContaining("Prompt required variables are missing: [missingText]");
     }
@@ -69,7 +69,7 @@ class AiBusinessInvokeConfigResolverTest {
         AiBusinessInvokeConfigResolver resolver = newResolver(
                 promptRepository(List.of(variable("contentType", true), variable("sourceText", true)), null, false));
 
-        assertThatThrownBy(() -> resolver.resolve(command()))
+        assertThatThrownBy(() -> resolver.resolveConfig(command()))
                 .isInstanceOf(BizException.class)
                 .hasMessageContaining("AI business config prompt template is disabled or mismatched: 6");
     }
@@ -98,7 +98,7 @@ class AiBusinessInvokeConfigResolverTest {
                 newResolver(promptRepository(List.of(variable("latestText", true)), variablesSnapshotJson));
         AiInvokeCommand command = command();
 
-        AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved = resolver.resolve(command);
+        AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved = resolver.resolveConfig(command);
 
         JsonNode variables = objectMapper.readTree(resolved.promptVariablesJson());
         assertThat(variables.get("sourceText").asText()).isEqualTo("天地玄黄");
@@ -118,7 +118,7 @@ class AiBusinessInvokeConfigResolverTest {
                 newResolver(promptRepository(List.of(variable("latestText", true)), variablesSnapshotJson));
         AiInvokeCommand command = command();
 
-        AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved = resolver.resolve(command);
+        AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved = resolver.resolveConfig(command);
 
         JsonNode variables = objectMapper.readTree(resolved.promptVariablesJson());
         assertThat(variables.get("contentType").asText()).isEqualTo("SANCAI_ENTRY");

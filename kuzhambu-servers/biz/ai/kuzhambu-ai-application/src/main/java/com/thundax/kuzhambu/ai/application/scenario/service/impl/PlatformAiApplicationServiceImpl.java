@@ -80,7 +80,7 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
         if (businessInvokeConfigResolver == null || command == null) {
             return command;
         }
-        var resolved = businessInvokeConfigResolver.resolve(command);
+        var resolved = businessInvokeConfigResolver.resolveConfig(command);
         return new AiInvokeCommand(
                 command.batchId(),
                 command.scope(),

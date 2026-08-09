@@ -241,7 +241,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         }
 
         @Override
-        public ResolvedBusinessInvokeConfig resolve(AiInvokeCommand command) {
+        public ResolvedBusinessInvokeConfig resolveConfig(AiInvokeCommand command) {
             captured = command;
             return new ResolvedBusinessInvokeConfig(
                     1001L,

@@ -35,11 +35,11 @@ public class AiWorkerModelConfigResolver {
         this.objectMapper = objectMapper;
     }
 
-    public ResolvedModelConfig resolve(AiInvokeCommand command) {
+    public ResolvedModelConfig resolveConfig(AiInvokeCommand command) {
         if (command == null) {
             return null;
         }
-        return resolve(
+        return resolveConfig(
                 command.capability(),
                 command.serviceId(),
                 command.serviceRole(),
@@ -47,7 +47,7 @@ public class AiWorkerModelConfigResolver {
                 command.modelName());
     }
 
-    public ResolvedModelConfig resolve(
+    public ResolvedModelConfig resolveConfig(
             AiBusinessCapability capability,
             Long serviceId,
             String serviceRole,

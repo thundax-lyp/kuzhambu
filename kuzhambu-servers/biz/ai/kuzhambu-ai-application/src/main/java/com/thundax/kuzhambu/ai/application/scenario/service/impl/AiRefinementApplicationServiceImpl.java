@@ -185,7 +185,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         if (businessInvokeConfigResolver == null || command == null) {
             return command;
         }
-        return withResolvedConfig(command, businessInvokeConfigResolver.resolve(command));
+        return withResolvedConfig(command, businessInvokeConfigResolver.resolveConfig(command));
     }
 
     private boolean hasResolvedInvokeConfig(AiInvokeCommand command) {

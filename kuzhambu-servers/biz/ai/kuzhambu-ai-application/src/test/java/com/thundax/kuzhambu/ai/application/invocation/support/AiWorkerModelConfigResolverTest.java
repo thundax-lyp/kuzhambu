@@ -27,7 +27,7 @@ class AiWorkerModelConfigResolverTest {
         modelService.model.setBaseUrl("");
         AiWorkerModelConfigResolver resolver = newResolver(modelService);
 
-        assertThatThrownBy(() -> resolver.resolve(command()))
+        assertThatThrownBy(() -> resolver.resolveConfig(command()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("AI model baseUrl is required");
     }
@@ -38,7 +38,7 @@ class AiWorkerModelConfigResolverTest {
         modelService.model.setEnabled(false);
         AiWorkerModelConfigResolver resolver = newResolver(modelService);
 
-        assertThatThrownBy(() -> resolver.resolve(command()))
+        assertThatThrownBy(() -> resolver.resolveConfig(command()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("AI model is disabled");
     }
@@ -53,7 +53,7 @@ class AiWorkerModelConfigResolverTest {
 
         AiWorkerModelConfigResolver resolver = newResolver(new FakeModelRepository());
 
-        assertThatThrownBy(() -> resolver.resolve(command))
+        assertThatThrownBy(() -> resolver.resolveConfig(command))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("AI modelId is required");
     }
@@ -70,7 +70,7 @@ class AiWorkerModelConfigResolverTest {
                 null,
                 null);
 
-        AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
+        AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolveConfig(command);
 
         assertThat(resolved.modelId().value()).isEqualTo(2001L);
         assertThat(resolved.modelName().value()).isEqualTo("gpt-4o");
@@ -89,7 +89,7 @@ class AiWorkerModelConfigResolverTest {
                 null,
                 null);
 
-        AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
+        AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolveConfig(command);
 
         assertThat(resolved.parameters().get("temperature").asDouble()).isEqualTo(0.7);
         assertThat(resolved.parameters().get("max_tokens").asInt()).isEqualTo(4096);
@@ -108,8 +108,8 @@ class AiWorkerModelConfigResolverTest {
                 null,
                 null);
 
-        AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
-        AiWorkerModelConfigResolver.ResolvedModelConfig resolvedAgain = resolver.resolve(command);
+        AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolveConfig(command);
+        AiWorkerModelConfigResolver.ResolvedModelConfig resolvedAgain = resolver.resolveConfig(command);
 
         assertThat(resolved.modelId().value()).isEqualTo(2001L);
         assertThat(resolvedAgain.parameters().get("temperature").asDouble()).isEqualTo(0.7);

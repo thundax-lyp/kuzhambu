@@ -241,7 +241,7 @@ class DiscoveryAiApplicationServiceImplTest {
         }
 
         @Override
-        public ResolvedBusinessInvokeConfig resolve(AiInvokeCommand command) {
+        public ResolvedBusinessInvokeConfig resolveConfig(AiInvokeCommand command) {
             captured = command;
             return resolved("{\"query\":\"hello\"}");
         }

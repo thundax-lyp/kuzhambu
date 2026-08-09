@@ -44,7 +44,7 @@ public class AiBusinessInvokeConfigResolver {
         this.objectMapper = objectMapper;
     }
 
-    public ResolvedBusinessInvokeConfig resolve(AiInvokeCommand command) {
+    public ResolvedBusinessInvokeConfig resolveConfig(AiInvokeCommand command) {
         if (command == null || command.capability() == null) {
             throw new BizException("AI business capability is required");
         }
@@ -58,7 +58,7 @@ public class AiBusinessInvokeConfigResolver {
         String outputSchemaJson =
                 isBlank(command.outputSchemaJson()) ? promptVersion.getOutputSchemaJson() : command.outputSchemaJson();
 
-        var resolved = modelConfigResolver.resolve(
+        var resolved = modelConfigResolver.resolveConfig(
                 command.capability(),
                 command.serviceId(),
                 command.serviceRole(),

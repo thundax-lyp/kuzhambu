@@ -394,7 +394,7 @@ class AiRefinementApplicationServiceImplTest {
         }
 
         @Override
-        public ResolvedBusinessInvokeConfig resolve(AiInvokeCommand command) {
+        public ResolvedBusinessInvokeConfig resolveConfig(AiInvokeCommand command) {
             resolveCount++;
             return new ResolvedBusinessInvokeConfig(
                     null,
