@@ -850,7 +850,7 @@ public final class NamingArchitectureRuleSupport {
                 || (packageName.endsWith(".domain.service.impl")
                         && simpleName.endsWith("DomainServiceImpl")
                         && isConcreteDomainServiceSource(source, simpleName)
-                        && implementsExpectedDomainServiceInterface(source, simpleName));
+                        && implementsExpectedDomainServiceInterface(source, packageName, simpleName));
     }
 
     private static boolean isDomainServicePackage(String packageName) {
@@ -873,8 +873,11 @@ public final class NamingArchitectureRuleSupport {
                 .find();
     }
 
-    private static boolean implementsExpectedDomainServiceInterface(String source, String simpleName) {
+    private static boolean implementsExpectedDomainServiceInterface(
+            String source, String packageName, String simpleName) {
         String expectedInterface = simpleName.substring(0, simpleName.length() - "Impl".length());
+        String expectedPackage = packageName.substring(0, packageName.length() - ".impl".length());
+        String expectedInterfaceName = expectedPackage + "." + expectedInterface;
         Matcher matcher = Pattern.compile(
                         "\\bclass\\s+" + Pattern.quote(simpleName) + "\\b[^\\{;]*\\bimplements\\s+([^\\{;]+)",
                         Pattern.DOTALL)
@@ -882,7 +885,11 @@ public final class NamingArchitectureRuleSupport {
         if (!matcher.find()) {
             return false;
         }
-        return topLevelTypeNames(matcher.group(1)).stream().anyMatch(expectedInterface::equals);
+        Map<String, String> imports = importedTypes(source);
+        Set<String> wildcardImports = wildcardImports(source);
+        return topLevelTypeNames(matcher.group(1)).stream()
+                .flatMap(typeName -> resolveTypeNames(typeName, packageName, imports, wildcardImports).stream())
+                .anyMatch(expectedInterfaceName::equals);
     }
 
     private static List<String> topLevelTypeNames(String implementsClause) {
@@ -910,13 +917,48 @@ public final class NamingArchitectureRuleSupport {
         if (genericStart >= 0) {
             rawTypeName = rawTypeName.substring(0, genericStart).trim();
         }
-        int packageSeparator = rawTypeName.lastIndexOf('.');
-        if (packageSeparator >= 0) {
-            rawTypeName = rawTypeName.substring(packageSeparator + 1);
-        }
         if (!rawTypeName.isEmpty()) {
             typeNames.add(rawTypeName);
         }
+    }
+
+    private static Map<String, String> importedTypes(String source) {
+        Map<String, String> imports = new HashMap<String, String>();
+        Matcher matcher = Pattern.compile("(?m)^\\s*import\\s+(?!static\\b)([\\w.]+)\\s*;")
+                .matcher(source);
+        while (matcher.find()) {
+            String importedType = matcher.group(1);
+            int packageSeparator = importedType.lastIndexOf('.');
+            imports.put(importedType.substring(packageSeparator + 1), importedType);
+        }
+        return imports;
+    }
+
+    private static Set<String> wildcardImports(String source) {
+        Set<String> imports = new HashSet<String>();
+        Matcher matcher = Pattern.compile("(?m)^\\s*import\\s+(?!static\\b)([\\w.]+)\\.\\*\\s*;")
+                .matcher(source);
+        while (matcher.find()) {
+            imports.add(matcher.group(1));
+        }
+        return imports;
+    }
+
+    private static Set<String> resolveTypeNames(
+            String typeName, String packageName, Map<String, String> imports, Set<String> wildcardImports) {
+        if (typeName.contains(".")) {
+            return Set.of(typeName);
+        }
+        String importedType = imports.get(typeName);
+        if (importedType != null) {
+            return Set.of(importedType);
+        }
+        Set<String> resolvedNames = new HashSet<String>();
+        for (String wildcardImport : wildcardImports) {
+            resolvedNames.add(wildcardImport + "." + typeName);
+        }
+        resolvedNames.add(packageName + "." + typeName);
+        return resolvedNames;
     }
 
     public static String domainServiceShapeKey(String typeName) {

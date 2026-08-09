@@ -818,6 +818,33 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
+    void domainServiceGateShouldRejectImplementationOfSameSimpleNameFromWrongPackage() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service/impl");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleDomainServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.domain.service.impl;
+
+                import com.example.other.SampleDomainService;
+                import com.thundax.kuzhambu.sample.domain.core.repository.SampleRepository;
+
+                public class SampleDomainServiceImpl implements SampleDomainService {
+                    private final SampleRepository repository;
+
+                    public SampleDomainServiceImpl(SampleRepository repository) {
+                        this.repository = repository;
+                    }
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(
+                        tempDir.resolve("src/main/java")));
+    }
+
+    @Test
     void domainServiceGateShouldAllowInterfaceAndRepositoryBackedImplementation() throws Exception {
         Path service = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service");
         Path impl = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service/impl");
