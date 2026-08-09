@@ -68,7 +68,18 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
                 aiInvocationActionVerbAllowance("method=recordBatchFailure path=batch/record-failure"),
                 aiInvocationActionVerbAllowance("method=canDispatchBatch"),
                 aiInvocationActionVerbAllowance("method=canDispatchBatch path=batch/can-dispatch"),
-                legacyControllerActionVerbAllowance("PromptController"),
+                promptActionVerbAllowance("method=getTemplateByCapability path=template/get-by-capability"),
+                promptActionVerbAllowance("method=saveTemplate"),
+                promptActionVerbAllowance("method=saveTemplate path=template/save"),
+                promptActionVerbAllowance("method=getCurrentVersion path=version/current"),
+                promptActionVerbAllowance("method=compareVersions"),
+                promptActionVerbAllowance("method=compareVersions path=version/compare"),
+                promptActionVerbAllowance("method=rollbackVersion"),
+                promptActionVerbAllowance("method=rollbackVersion path=version/rollback"),
+                promptActionVerbAllowance("method=validateVariables"),
+                promptActionVerbAllowance("method=validateVariables path=variable/validate"),
+                promptActionVerbAllowance("method=buildOptimizationSuggestion"),
+                promptActionVerbAllowance("method=buildOptimizationSuggestion path=optimization/suggest"),
                 legacyControllerActionVerbAllowance("PlatformAiController"),
                 legacyControllerActionVerbAllowance("AiRefinementTaskController"),
                 legacyControllerActionVerbAllowance("AiRefinementController"));
@@ -80,6 +91,15 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
                         + "kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java "
                         + violation,
                 "AI invocation endpoints retain legacy action names outside the shared verb whitelist.",
+                "Rename the method and action path with shared verbs, update callers, then remove this allowance.");
+    }
+
+    private static ArchitectureRuleAllowance promptActionVerbAllowance(String violation) {
+        return ArchitectureRuleAllowance.of(
+                "CONTROLLER_ACTION_VERB:kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/"
+                        + "kuzhambu/ai/interfaces/admin/config/prompt/controller/PromptController.java "
+                        + violation,
+                "Prompt endpoints retain legacy action names outside the shared verb whitelist.",
                 "Rename the method and action path with shared verbs, update callers, then remove this allowance.");
     }
 
