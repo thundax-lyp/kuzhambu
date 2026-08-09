@@ -1,12 +1,5 @@
 package com.thundax.kuzhambu.ai.application.invocation.query;
 
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
-@Getter
-@AllArgsConstructor
-public class GetAiBatchJobQuery {
-
-    private final AiBatchJobId batchId;
-}
+public record GetAiBatchJobQuery(AiBatchJobId batchId) {}

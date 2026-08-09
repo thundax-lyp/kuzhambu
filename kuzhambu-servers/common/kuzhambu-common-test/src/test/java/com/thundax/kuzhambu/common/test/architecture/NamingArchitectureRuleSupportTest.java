@@ -521,6 +521,171 @@ class NamingArchitectureRuleSupportTest {
                 interfaceSourceRoot));
     }
 
+    @Test
+    void commandQueryConstructionGateShouldRejectControllerConstruction() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/controller");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleController.java"),
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.controller;
+
+                public class SampleController {
+                    Object create() {
+                        return new SampleCreateCommand();
+                    }
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () ->
+                        NamingArchitectureRuleSupport
+                                .assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
+                                        List.of(tempDir.resolve("src/main/java")), Collections.emptyList()));
+    }
+
+    @Test
+    void commandQueryConstructionGateShouldAllowAssemblersAndApplicationServices() throws Exception {
+        Path assembler = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/assembler");
+        Path service = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/application/core/service/impl");
+        Files.createDirectories(assembler);
+        Files.createDirectories(service);
+        Files.writeString(
+                assembler.resolve("SampleInterfaceAssembler.java"),
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.assembler;
+
+                public final class SampleInterfaceAssembler {
+                    Object create() {
+                        return new SampleCreateCommand();
+                    }
+                }
+                """);
+        Files.writeString(
+                service.resolve("SampleApplicationServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.core.service.impl;
+
+                public final class SampleApplicationServiceImpl {
+                    Object create() {
+                        return new SampleCreateCommand();
+                    }
+                }
+                """);
+
+        NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
+                List.of(tempDir.resolve("src/main/java")), Collections.emptyList());
+    }
+
+    @Test
+    void commandQueryConstructionGateShouldHonorAllowlist() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/controller");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleController.java"),
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.controller;
+
+                public class SampleController {
+                    Object create() {
+                        return new SampleCreateCommand();
+                    }
+                }
+                """);
+
+        NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
+                List.of(tempDir.resolve("src/main/java")),
+                List.of(
+                        ArchitectureRuleAllowance.of(
+                                NamingArchitectureRuleSupport.commandQueryConstructionKey(
+                                        "com.thundax.kuzhambu.sample.interfaces.admin.controller.SampleController",
+                                        "SampleCreateCommand",
+                                        1),
+                                "Controller still constructs an application command directly.",
+                                "Move request-to-command conversion into SampleInterfaceAssembler, then remove this allowance.")));
+    }
+
+    @Test
+    void commandQueryAssemblerNullReturnGateShouldRejectCommandReturnNull() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/interfaces/admin/assembler");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleInterfaceAssembler.java"),
+                """
+                package com.thundax.kuzhambu.sample.interfaces.admin.assembler;
+
+                public class SampleInterfaceAssembler {
+                    SampleCreateCommand toCommand(Object request) {
+                        if (request == null) {
+                            return null;
+                        }
+                        return new SampleCreateCommand();
+                    }
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
+                        List.of(tempDir.resolve("src/main/java")), Collections.emptyList()));
+    }
+
+    @Test
+    void commandQueryAssemblerNullReturnGateShouldIgnoreNonCommandReturns() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/application/facade/assembler");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleFacadeAssembler.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.facade.assembler;
+
+                public class SampleFacadeAssembler {
+                    SampleResponse toResponse(Object result) {
+                        if (result == null) {
+                            return null;
+                        }
+                        return new SampleResponse();
+                    }
+                }
+                """);
+
+        NamingArchitectureRuleSupport.assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
+                List.of(tempDir.resolve("src/main/java")), Collections.emptyList());
+    }
+
+    @Test
+    void commandQueryAssemblerNullReturnGateShouldHonorAllowlist() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/application/facade/assembler");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleFacadeAssembler.java"),
+                """
+                package com.thundax.kuzhambu.sample.application.facade.assembler;
+
+                public class SampleFacadeAssembler {
+                    SampleCreateCommand toCommand(Object request) {
+                        if (request == null) {
+                            return null;
+                        }
+                        return new SampleCreateCommand();
+                    }
+                }
+                """);
+
+        NamingArchitectureRuleSupport.assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
+                List.of(tempDir.resolve("src/main/java")),
+                List.of(
+                        ArchitectureRuleAllowance.of(
+                                NamingArchitectureRuleSupport.commandQueryAssemblerNullReturnKey(
+                                        "com.thundax.kuzhambu.sample.application.facade.assembler.SampleFacadeAssembler",
+                                        "toCommand",
+                                        "SampleCreateCommand",
+                                        1),
+                                "Facade assembler can still return null for a command contract.",
+                                "Move null handling to caller validation or return a concrete command, then remove this allowance.")));
+    }
+
     private Path applicationSourceRoot() {
         return tempDir.resolve("kuzhambu-sample-application/src/main/java");
     }

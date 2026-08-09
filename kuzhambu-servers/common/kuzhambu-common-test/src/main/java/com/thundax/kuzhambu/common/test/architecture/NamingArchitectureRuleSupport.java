@@ -12,7 +12,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +44,14 @@ public final class NamingArchitectureRuleSupport {
                     + "(?:(?:static|final|synchronized|abstract|native|strictfp)\\s+)*"
                     + "(?:<[^>]+>\\s+)?[\\w<>?,.\\[\\]][\\w<>?,.\\[\\] ]*\\s+(\\w+)\\s*\\([^;{}]*\\)\\s*"
                     + "(?:throws\\s+[^;{]+)?\\{");
+    private static final Pattern COMMAND_QUERY_CONSTRUCTION_PATTERN =
+            Pattern.compile("\\bnew\\s+([A-Z][A-Za-z0-9_]*(?:Command|Query))\\s*\\(");
+    private static final Pattern COMMAND_QUERY_RETURNING_METHOD_DECLARATION_PATTERN =
+            Pattern.compile("(?m)^\\s*(?:@[\\w.]+(?:\\([^\\n]*\\))?\\s*)*"
+                    + "(?:(?:public|protected|private)\\s+)?"
+                    + "(?:(?:static|final|synchronized|abstract|native|strictfp)\\s+)*"
+                    + "(?:<[^>]+>\\s+)?(?:[\\w<>?,.\\[\\]]+\\.)?([A-Z][A-Za-z0-9_]*(?:Command|Query))\\s+"
+                    + "(\\w+)\\s*\\([^;{}]*\\)\\s*(?:throws\\s+[^;{]+)?\\{");
     private static final Set<String> SERVICE_QUERY_REQUIRED_ANNOTATIONS =
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
     private static final Set<String> APPLICATION_STRUCTURAL_PACKAGES = Set.of(
@@ -83,6 +94,9 @@ public final class NamingArchitectureRuleSupport {
     private static final Pattern SOURCE_ANNOTATION_PATTERN = Pattern.compile("@(?:[\\w.]+\\.)?(\\w+)\\b");
     private static final Pattern PACKAGE_DECLARATION_PATTERN =
             Pattern.compile("(?m)^\\s*package\\s+([a-zA-Z_][\\w]*(?:\\.[a-zA-Z_][\\w]*)*)\\s*;");
+    private static final Pattern LOMBOK_ANNOTATION_PATTERN =
+            Pattern.compile("(?m)^\\s*@(Getter|Setter|Data|Builder|NoArgsConstructor|AllArgsConstructor|"
+                    + "RequiredArgsConstructor|Value|With)\\b");
 
     private NamingArchitectureRuleSupport() {}
 
@@ -236,6 +250,112 @@ public final class NamingArchitectureRuleSupport {
                 violations.isEmpty());
     }
 
+    public static void assertApplicationCommandQuerySourcesAreRecords(
+            Path sourceRoot, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        Map<String, ArchitectureRuleAllowance> allowlist = architectureAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
+        List<String> violations = new ArrayList<String>();
+
+        if (!Files.exists(sourceRoot)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(NamingArchitectureRuleSupport::isApplicationCommandOrQuerySource)
+                    .forEach(path -> collectApplicationCommandQueryRecordViolation(
+                            root, path, violations, allowlist, matchedAllowances));
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Failed to scan application command/query source files under " + sourceRoot, e);
+        }
+
+        List<String> staleAllowances = allowlist.keySet().stream()
+                .filter(key -> !matchedAllowances.contains(key))
+                .toList();
+
+        assertTrue(
+                "Application *Command/*Query source must be declared as Java records and must not use Lombok "
+                        + "annotations. Legacy allowances must include a description and remediation and must be "
+                        + "removed after each contract is converted to record. Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
+    }
+
+    public static void assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
+            Collection<Path> sourceRoots, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        Map<String, ArchitectureRuleAllowance> allowlist = architectureAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
+        List<String> violations = new ArrayList<String>();
+
+        for (Path sourceRoot : sourceRoots) {
+            if (!Files.exists(sourceRoot)) {
+                continue;
+            }
+            try (Stream<Path> paths = Files.walk(sourceRoot)) {
+                paths.filter(Files::isRegularFile)
+                        .filter(path -> path.getFileName().toString().endsWith(".java"))
+                        .forEach(path -> collectCommandQueryConstructionViolations(
+                                root, path, violations, allowlist, matchedAllowances));
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to scan command/query construction under " + sourceRoot, e);
+            }
+        }
+
+        List<String> staleAllowances = allowlist.keySet().stream()
+                .filter(key -> !matchedAllowances.contains(key))
+                .toList();
+
+        assertTrue(
+                "Application *Command/*Query construction must stay in *InterfaceAssembler, *FacadeAssembler, or "
+                        + "ApplicationService orchestration. Controllers and facade impls must delegate request "
+                        + "conversion to assemblers; non-service application helpers must move construction to the "
+                        + "calling ApplicationService or a dedicated assembler. Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
+    }
+
+    public static void assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
+            Collection<Path> sourceRoots, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        Map<String, ArchitectureRuleAllowance> allowlist = architectureAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
+        List<String> violations = new ArrayList<String>();
+
+        for (Path sourceRoot : sourceRoots) {
+            if (!Files.exists(sourceRoot)) {
+                continue;
+            }
+            try (Stream<Path> paths = Files.walk(sourceRoot)) {
+                paths.filter(Files::isRegularFile)
+                        .filter(path -> path.getFileName().toString().endsWith(".java"))
+                        .forEach(path -> collectAssemblerNullCommandQueryReturnViolations(
+                                root, path, violations, allowlist, matchedAllowances));
+            } catch (IOException e) {
+                throw new IllegalStateException(
+                        "Failed to scan assembler command/query null returns under " + sourceRoot, e);
+            }
+        }
+
+        List<String> staleAllowances = allowlist.keySet().stream()
+                .filter(key -> !matchedAllowances.contains(key))
+                .toList();
+
+        assertTrue(
+                "*InterfaceAssembler and *FacadeAssembler methods returning application *Command/*Query must not "
+                        + "return null. Null input handling belongs in caller validation or an explicit use-case "
+                        + "branch; assemblers must return concrete contract objects. Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
+    }
+
     public static void assertApplicationContractSourcesUnderDedicatedPackages(Path sourceRoot) {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
@@ -284,6 +404,175 @@ public final class NamingArchitectureRuleSupport {
                         .resolve(fileName))
                 .filter(Files::isRegularFile)
                 .isPresent();
+    }
+
+    private static void collectApplicationCommandQueryRecordViolation(
+            Path root,
+            Path path,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        String typeName = applicationCommandQueryTypeName(source, path);
+        boolean record = Pattern.compile("\\brecord\\s+" + pathFileNameWithoutExtension(path) + "\\b")
+                .matcher(source)
+                .find();
+        boolean lombokAnnotated = LOMBOK_ANNOTATION_PATTERN.matcher(source).find();
+        if (record && !lombokAnnotated) {
+            return;
+        }
+        String key = "COMMAND_QUERY_RECORD:" + typeName;
+        if (isAllowlisted(key, allowlist, matchedAllowances)) {
+            return;
+        }
+        List<String> reasons = new ArrayList<String>();
+        if (!record) {
+            reasons.add("not record");
+        }
+        if (lombokAnnotated) {
+            reasons.add("uses Lombok annotation");
+        }
+        violations.add(key + " in " + ArchitectureSourceSupport.repositoryPath(root, path) + " is invalid: " + reasons);
+    }
+
+    private static void collectCommandQueryConstructionViolations(
+            Path root,
+            Path path,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        Matcher matcher = COMMAND_QUERY_CONSTRUCTION_PATTERN.matcher(source);
+        String ownerTypeName = sourceTypeName(source, path);
+        if (isAllowedCommandQueryConstructionOwner(ownerTypeName)) {
+            return;
+        }
+        Map<String, Integer> occurrenceCounts = new HashMap<String, Integer>();
+        while (matcher.find()) {
+            String constructedType = matcher.group(1);
+            int occurrence = occurrenceCounts.merge(constructedType, 1, Integer::sum);
+            String key = commandQueryConstructionKey(ownerTypeName, constructedType, occurrence);
+            if (isAllowlisted(key, allowlist, matchedAllowances)) {
+                continue;
+            }
+            violations.add(key + " in " + ArchitectureSourceSupport.repositoryPath(root, path));
+        }
+    }
+
+    private static boolean isAllowedCommandQueryConstructionOwner(String ownerTypeName) {
+        String simpleName = ownerTypeName.substring(ownerTypeName.lastIndexOf('.') + 1);
+        if (simpleName.endsWith("InterfaceAssembler") || simpleName.endsWith("FacadeAssembler")) {
+            return true;
+        }
+        return ownerTypeName.contains(".application.")
+                && (simpleName.endsWith("ApplicationService") || simpleName.endsWith("ApplicationServiceImpl"));
+    }
+
+    public static String commandQueryConstructionKey(String ownerTypeName, String constructedType, int occurrence) {
+        return "COMMAND_QUERY_CONSTRUCTION:" + ownerTypeName + "#" + constructedType + ":" + occurrence;
+    }
+
+    private static void collectAssemblerNullCommandQueryReturnViolations(
+            Path root,
+            Path path,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        String ownerTypeName = sourceTypeName(source, path);
+        String simpleName = ownerTypeName.substring(ownerTypeName.lastIndexOf('.') + 1);
+        if (!simpleName.endsWith("InterfaceAssembler") && !simpleName.endsWith("FacadeAssembler")) {
+            return;
+        }
+
+        Matcher matcher = COMMAND_QUERY_RETURNING_METHOD_DECLARATION_PATTERN.matcher(source);
+        Map<String, Integer> occurrenceCounts = new HashMap<String, Integer>();
+        while (matcher.find()) {
+            String returnType = matcher.group(1);
+            String methodName = matcher.group(2);
+            if (!methodBodyContainsReturnNull(source, matcher.end() - 1)) {
+                continue;
+            }
+            String occurrenceKey = methodName + ":" + returnType;
+            int occurrence = occurrenceCounts.merge(occurrenceKey, 1, Integer::sum);
+            String key = commandQueryAssemblerNullReturnKey(ownerTypeName, methodName, returnType, occurrence);
+            if (isAllowlisted(key, allowlist, matchedAllowances)) {
+                continue;
+            }
+            violations.add(key + " in " + ArchitectureSourceSupport.repositoryPath(root, path));
+        }
+    }
+
+    private static boolean methodBodyContainsReturnNull(String source, int openingBraceIndex) {
+        int depth = 0;
+        for (int index = openingBraceIndex; index < source.length(); index++) {
+            char current = source.charAt(index);
+            if (current == '{') {
+                depth++;
+                continue;
+            }
+            if (current == '}') {
+                depth--;
+                if (depth == 0) {
+                    String body = source.substring(openingBraceIndex + 1, index);
+                    return Pattern.compile("\\breturn\\s+null\\s*;")
+                            .matcher(body)
+                            .find();
+                }
+            }
+        }
+        return false;
+    }
+
+    public static String commandQueryAssemblerNullReturnKey(
+            String ownerTypeName, String methodName, String returnType, int occurrence) {
+        return "COMMAND_QUERY_ASSEMBLER_NULL_RETURN:"
+                + ownerTypeName
+                + "#"
+                + methodName
+                + ":"
+                + returnType
+                + ":"
+                + occurrence;
+    }
+
+    private static String applicationCommandQueryTypeName(String source, Path path) {
+        return sourceTypeName(source, path);
+    }
+
+    private static String sourceTypeName(String source, Path path) {
+        Matcher matcher = PACKAGE_DECLARATION_PATTERN.matcher(source);
+        if (!matcher.find()) {
+            return pathFileNameWithoutExtension(path);
+        }
+        return matcher.group(1) + "." + pathFileNameWithoutExtension(path);
+    }
+
+    private static String pathFileNameWithoutExtension(Path path) {
+        String fileName = path.getFileName().toString();
+        int extensionIndex = fileName.lastIndexOf('.');
+        return extensionIndex < 0 ? fileName : fileName.substring(0, extensionIndex);
+    }
+
+    private static Map<String, ArchitectureRuleAllowance> architectureAllowlist(
+            Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Map<String, ArchitectureRuleAllowance> allowlist = new LinkedHashMap<String, ArchitectureRuleAllowance>();
+        for (ArchitectureRuleAllowance allowance : legacyAllowances) {
+            ArchitectureRuleAllowance previous = allowlist.put(allowance.key(), allowance);
+            if (previous != null) {
+                throw new IllegalArgumentException("Duplicate architecture allowlist key: " + allowance.key());
+            }
+        }
+        return allowlist;
+    }
+
+    private static boolean isAllowlisted(
+            String key, Map<String, ArchitectureRuleAllowance> allowlist, Set<String> matchedAllowances) {
+        if (!allowlist.containsKey(key)) {
+            return false;
+        }
+        matchedAllowances.add(key);
+        return true;
     }
 
     public static void assertBaseIdTypes(JavaClasses classes, String basePackage) {

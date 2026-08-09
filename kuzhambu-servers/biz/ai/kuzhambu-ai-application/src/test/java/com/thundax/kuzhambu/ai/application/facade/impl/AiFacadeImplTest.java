@@ -68,9 +68,9 @@ class AiFacadeImplTest {
         Instant periodStart = Instant.parse("2025-01-01T00:00:00.123456Z");
         Instant periodEnd = Instant.parse("2025-01-31T23:59:59.987654Z");
         when(aiReportApplicationService.summary(argThat(query -> query != null
-                        && periodStart.equals(query.getPeriodStart())
-                        && periodEnd.equals(query.getPeriodEnd())
-                        && AiReportBucketType.DAY == query.getBucketType())))
+                        && periodStart.equals(query.periodStart())
+                        && periodEnd.equals(query.periodEnd())
+                        && AiReportBucketType.DAY == query.bucketType())))
                 .thenReturn(new AiReportSummaryResult(
                         periodStart,
                         periodEnd,
@@ -132,11 +132,11 @@ class AiFacadeImplTest {
         verify(aiBatchJobApplicationService).create(captor.capture());
 
         AiBatchJobCreateCommand command = captor.getValue();
-        assertEquals("knowledge", command.getScope());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, command.getCapability());
-        assertEquals("WANGQI_DOCUMENT", command.getContentRef().contentType());
-        assertEquals(12, command.getTotalCount());
-        assertEquals("{\"retry\":0}", command.getFailureSummaryJson());
+        assertEquals("knowledge", command.scope());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, command.capability());
+        assertEquals("WANGQI_DOCUMENT", command.contentRef().contentType());
+        assertEquals(12, command.totalCount());
+        assertEquals("{\"retry\":0}", command.failureSummaryJson());
         assertEquals(88L, response.getBatchId());
     }
 
@@ -512,10 +512,10 @@ class AiFacadeImplTest {
     void requirePendingCandidateShouldMapApplyCheckAndCandidateDto() {
         AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
         when(aiCandidateApplicationService.requirePendingForApply(argThat(query -> query != null
-                        && new AiCandidateId(901L).equals(query.getCandidateId())
-                        && AiContentRef.of("CLASSICS_CONTENT", 902L).equals(query.getContentRef())
-                        && AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT == query.getCapability()
-                        && new AiTargetObjectId(903L).equals(query.getTargetObjectId()))))
+                        && new AiCandidateId(901L).equals(query.candidateId())
+                        && AiContentRef.of("CLASSICS_CONTENT", 902L).equals(query.contentRef())
+                        && AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT == query.capability()
+                        && new AiTargetObjectId(903L).equals(query.targetObjectId()))))
                 .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -552,9 +552,9 @@ class AiFacadeImplTest {
     void rejectCandidateShouldDelegateToDomainServiceAndMapDto() {
         AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
         when(aiCandidateApplicationService.reject(argThat(command -> command != null
-                        && new AiCandidateId(901L).equals(command.getCandidateId())
-                        && "USER_REJECTED".equals(command.getErrorType())
-                        && "not useful".equals(command.getErrorMessage()))))
+                        && new AiCandidateId(901L).equals(command.candidateId())
+                        && "USER_REJECTED".equals(command.errorType())
+                        && "not useful".equals(command.errorMessage()))))
                 .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -573,9 +573,9 @@ class AiFacadeImplTest {
         assertEquals(901L, response.getCandidateId());
         verify(aiCandidateApplicationService)
                 .reject(argThat(command -> command != null
-                        && new AiCandidateId(901L).equals(command.getCandidateId())
-                        && "USER_REJECTED".equals(command.getErrorType())
-                        && "not useful".equals(command.getErrorMessage())));
+                        && new AiCandidateId(901L).equals(command.candidateId())
+                        && "USER_REJECTED".equals(command.errorType())
+                        && "not useful".equals(command.errorMessage())));
     }
 
     private static AiFacadeImpl newFacade(

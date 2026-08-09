@@ -31,6 +31,7 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
         TransactionArchitectureRuleSupport.assertTransactionalOnlyOnApplicationServiceUseCases(classes, BASE_PACKAGE);
         LayerArchitectureRuleSupport.assertServiceBoundaryTypesClean(classes);
         LayerArchitectureRuleSupport.assertApplicationServiceUseCaseMethodShapeClean(classes);
+        LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(classes, Collections.emptyList());
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
         ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptyList());
         ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
@@ -40,6 +41,8 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
+                Path.of("src/main/java"), StorageApplicationCommandQueryRecordAllowances.legacyAllowances());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         SortableArchitectureRuleSupport.assertSortCommandsUseOrderedIdsOnly(Path.of("src/main/java"));

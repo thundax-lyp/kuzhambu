@@ -20,12 +20,12 @@ public class AiCapabilityCatalogApplicationServiceImpl implements AiCapabilityCa
 
     @Override
     public AiBusinessCapability get(GetAiCapabilityQuery query) {
-        return query == null ? null : query.getCapability();
+        return query == null ? null : query.capability();
     }
 
     @Override
     public List<AiBusinessCapability> list(ListAiCapabilitiesQuery query) {
-        if (Boolean.FALSE.equals(query == null ? null : query.getEnabled())) {
+        if (Boolean.FALSE.equals(query == null ? null : query.enabled())) {
             return List.of();
         }
         return Arrays.asList(AiBusinessCapability.values());

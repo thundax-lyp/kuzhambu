@@ -105,34 +105,41 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiRefinementTaskResult submit(SubmitAiRefinementTaskCommand command) {
-        validateAddCommand(command);
-        validateRefinementBatchOwnership(command.getScope(), capabilityValue(command.getCapability()));
-        refinementApplicationService.snapshotInvokeConfig(command);
+        AiRefinementRequestCommand refinementCommand = toRefinementRequestCommand(command);
+        validateAddCommand(refinementCommand);
+        validateRefinementBatchOwnership(
+                refinementCommand.getScope(), capabilityValue(refinementCommand.getCapability()));
+        refinementApplicationService.snapshotInvokeConfig(refinementCommand);
         Long taskId = AiBatchJobIdCodec.toValue(batchJobApplicationService.create(new AiBatchJobCreateCommand(
-                command.getScope(), command.getCapability(), command.getContentRef(), 1, null)));
+                refinementCommand.getScope(),
+                refinementCommand.getCapability(),
+                refinementCommand.getContentRef(),
+                1,
+                null)));
+        refinementCommand.setBatchId(AiBatchJobIdCodec.toDomain(taskId));
         command.setBatchId(AiBatchJobIdCodec.toDomain(taskId));
-        scheduleTaskExecution(taskId, command);
+        scheduleTaskExecution(taskId, refinementCommand);
         return toTaskResult(
                 taskId,
                 batchJobApplicationService.get(new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(taskId))),
-                command,
+                refinementCommand,
                 null);
     }
 
     @Override
     public AiRefinementTaskResult get(GetAiRefinementTaskQuery query) {
         AiBatchJobResult job =
-                batchJobApplicationService.get(new GetAiBatchJobQuery(query == null ? null : query.getTaskId()));
+                batchJobApplicationService.get(new GetAiBatchJobQuery(query == null ? null : query.taskId()));
         validateRefinementBatchOwnership(job);
         return toTaskResult(job);
     }
 
     @Override
     public PageResult<AiRefinementTaskResult> page(PageAiRefinementTasksQuery query) {
-        AiBusinessCapability capability = query == null ? null : query.getCapability();
-        AiBatchJobStatus status = query == null ? null : query.getStatus();
-        AiContentRef contentRef = query == null ? null : query.getContentRef();
-        PageQuery pageQuery = query == null ? null : query.getPageQuery();
+        AiBusinessCapability capability = query == null ? null : query.capability();
+        AiBatchJobStatus status = query == null ? null : query.status();
+        AiContentRef contentRef = query == null ? null : query.contentRef();
+        PageQuery pageQuery = query == null ? null : query.pageQuery();
         PageResult<AiBatchJobResult> page = capability == null
                 ? batchJobApplicationService.pageByCapabilities(new PageAiBatchJobsByCapabilitiesQuery(
                         REFINEMENT_SCOPE, REFINEMENT_CAPABILITIES, status, contentRef, pageQuery))
@@ -153,7 +160,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     public void subscribeEvents(
             SubscribeAiRefinementTaskEventsQuery query, Consumer<AiStreamEventResult> eventConsumer) {
-        AiBatchJobId taskId = query == null ? null : query.getTaskId();
+        AiBatchJobId taskId = query == null ? null : query.taskId();
         AiBatchJobResult job = batchJobApplicationService.get(new GetAiBatchJobQuery(taskId));
         validateRefinementBatchOwnership(job);
         if (!isStreamEnabledTask(job)) {
@@ -174,7 +181,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiRefinementTaskResult cancel(CancelAiRefinementTaskCommand command) {
-        AiBatchJobId taskId = command == null ? null : command.getTaskId();
+        AiBatchJobId taskId = command == null ? null : command.taskId();
         AiBatchJobResult job = batchJobApplicationService.get(new GetAiBatchJobQuery(taskId));
         validateRefinementBatchOwnership(job);
         AiBatchJobResult cancelled = batchJobApplicationService.cancel(new CancelAiBatchJobCommand(taskId));
@@ -329,6 +336,34 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return refinementApplicationService.splitEntry(command);
         }
         throw new BizException("unsupported ai refinement capability: " + capabilityValue(capability));
+    }
+
+    private AiRefinementRequestCommand toRefinementRequestCommand(SubmitAiRefinementTaskCommand source) {
+        if (source == null) {
+            return null;
+        }
+        AiRefinementRequestCommand command = new AiRefinementRequestCommand();
+        command.setBatchId(source.getBatchId());
+        command.setCapability(source.getCapability());
+        command.setScope(source.getScope());
+        command.setOperation(source.getOperation());
+        command.setContentRef(source.getContentRef());
+        command.setTargetObjectId(source.getTargetObjectId());
+        command.setServiceId(source.getServiceId());
+        command.setServiceRole(source.getServiceRole());
+        command.setModelId(source.getModelId());
+        command.setModelName(source.getModelName());
+        command.setPromptVersionId(source.getPromptVersionId());
+        command.setRequestId(source.getRequestId());
+        command.setTraceId(source.getTraceId());
+        command.setPromptMessagesJson(source.getPromptMessagesJson());
+        command.setPromptVariablesJson(source.getPromptVariablesJson());
+        command.setPromptHash(source.getPromptHash());
+        command.setInputPayloadJson(source.getInputPayloadJson());
+        command.setOutputSchemaJson(source.getOutputSchemaJson());
+        command.setForceJson(source.isForceJson());
+        command.setLocale(source.getLocale());
+        return command;
     }
 
     private void validateAddCommand(AiRefinementRequestCommand command) {

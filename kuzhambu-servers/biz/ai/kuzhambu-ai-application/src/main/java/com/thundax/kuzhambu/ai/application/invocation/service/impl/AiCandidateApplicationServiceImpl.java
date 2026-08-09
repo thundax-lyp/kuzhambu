@@ -22,31 +22,30 @@ public class AiCandidateApplicationServiceImpl implements AiCandidateApplication
 
     @Override
     public AiCandidate requirePendingForApply(RequireAiCandidateForApplyQuery query) {
-        AiCandidate candidate = getRequired(query == null ? null : query.getCandidateId());
+        AiCandidate candidate = getRequired(query == null ? null : query.candidateId());
         candidate.requirePendingForApply(
-                query == null ? null : query.getContentRef(), query == null ? null : query.getCapability());
-        if (query != null && query.getTargetObjectId() != null) {
-            candidate.requireTargetObject(query.getTargetObjectId());
+                query == null ? null : query.contentRef(), query == null ? null : query.capability());
+        if (query != null && query.targetObjectId() != null) {
+            candidate.requireTargetObject(query.targetObjectId());
         }
         return candidate;
     }
 
     @Override
     public AiCandidate markApplied(ApplyAiCandidateCommand command) {
-        AiCandidate candidate = getRequired(command == null ? null : command.getCandidateId());
+        AiCandidate candidate = getRequired(command == null ? null : command.candidateId());
         candidate.markApplied(
-                defaultIfNull(command == null ? null : command.getResultFormat(), candidate.getResultFormat()),
-                defaultIfNull(command == null ? null : command.getResultPayload(), candidate.getResultPayload()),
-                command == null || command.getAppliedAt() == null ? Instant.now() : command.getAppliedAt());
+                defaultIfNull(command == null ? null : command.resultFormat(), candidate.getResultFormat()),
+                defaultIfNull(command == null ? null : command.resultPayload(), candidate.getResultPayload()),
+                command == null || command.appliedAt() == null ? Instant.now() : command.appliedAt());
         updateRequired(candidate);
         return candidate;
     }
 
     @Override
     public AiCandidate reject(RejectAiCandidateCommand command) {
-        AiCandidate candidate = getRequired(command == null ? null : command.getCandidateId());
-        candidate.reject(
-                command == null ? null : command.getErrorType(), command == null ? null : command.getErrorMessage());
+        AiCandidate candidate = getRequired(command == null ? null : command.candidateId());
+        candidate.reject(command == null ? null : command.errorType(), command == null ? null : command.errorMessage());
         updateRequired(candidate);
         return candidate;
     }

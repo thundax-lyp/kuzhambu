@@ -35,17 +35,20 @@ public final class AiRefinementInterfaceAssembler {
     }
 
     public static SubmitAiRefinementTaskCommand toSubmitTaskCommand(AiRefinementRequests.RefinementRequest request) {
-        return toCommand(
-                new SubmitAiRefinementTaskCommand(), request, request == null ? null : request.getCapability());
+        SubmitAiRefinementTaskCommand command = new SubmitAiRefinementTaskCommand();
+        fillCommand(command, request, request == null ? null : request.getCapability());
+        return command;
     }
 
     public static AiRefinementRequestCommand toCommand(
             AiRefinementRequests.RefinementRequest request, String capability) {
-        return toCommand(new AiRefinementRequestCommand(), request, capability);
+        AiRefinementRequestCommand command = new AiRefinementRequestCommand();
+        fillCommand(command, request, capability);
+        return command;
     }
 
-    private static <T extends AiRefinementRequestCommand> T toCommand(
-            T command, AiRefinementRequests.RefinementRequest request, String capability) {
+    private static void fillCommand(
+            AiRefinementRequestCommand command, AiRefinementRequests.RefinementRequest request, String capability) {
         command.setCapability(toCapability(capability));
         command.setScope(request.getScope());
         command.setOperation(request.getOperation());
@@ -65,7 +68,29 @@ public final class AiRefinementInterfaceAssembler {
         command.setOutputSchemaJson(request.getOutputSchemaJson());
         command.setForceJson(Boolean.TRUE.equals(request.getForceJson()));
         command.setLocale(request.getLocale());
-        return command;
+    }
+
+    private static void fillCommand(
+            SubmitAiRefinementTaskCommand command, AiRefinementRequests.RefinementRequest request, String capability) {
+        command.setCapability(toCapability(capability));
+        command.setScope(request.getScope());
+        command.setOperation(request.getOperation());
+        command.setContentRef(AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()));
+        command.setTargetObjectId(AiTargetObjectIdCodec.toDomain(request.getObjectId()));
+        command.setServiceId(request.getServiceId());
+        command.setServiceRole(request.getServiceRole());
+        command.setModelId(AiModelIdCodec.toDomain(request.getModelId()));
+        command.setModelName(AiModelNameCodec.toDomain(request.getModelName()));
+        command.setPromptVersionId(PromptVersionIdCodec.toDomain(request.getPromptVersionId()));
+        command.setRequestId(RequestIdCodec.toDomain(request.getRequestId()));
+        command.setTraceId(TraceIdCodec.toDomain(request.getTraceId()));
+        command.setPromptMessagesJson(request.getPromptMessagesJson());
+        command.setPromptVariablesJson(request.getPromptVariablesJson());
+        command.setPromptHash(request.getPromptHash());
+        command.setInputPayloadJson(request.getInputPayloadJson());
+        command.setOutputSchemaJson(request.getOutputSchemaJson());
+        command.setForceJson(Boolean.TRUE.equals(request.getForceJson()));
+        command.setLocale(request.getLocale());
     }
 
     public static GetAiRefinementTaskQuery toGetTaskQuery(Long taskId) {

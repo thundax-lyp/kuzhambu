@@ -11,9 +11,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -140,6 +143,41 @@ public final class LayerArchitectureRuleSupport {
                         + "parameter, and count* methods must return primitive long. Violations: "
                         + violations,
                 violations.isEmpty());
+    }
+
+    public static void assertApplicationServiceBoundaryClean(
+            JavaClasses classes, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Map<String, ArchitectureRuleAllowance> allowlist = applicationServiceBoundaryAllowlist(legacyAllowances);
+        List<String> violations = new ArrayList<String>();
+        Set<String> matchedAllowances = new HashSet<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (!isApplicationServicePackageInterface(javaClass)) {
+                continue;
+            }
+            collectApplicationServiceInterfaceNameViolation(javaClass, violations, allowlist, matchedAllowances);
+            if (!isApplicationServiceInterface(javaClass)) {
+                continue;
+            }
+            for (JavaMethod method : javaClass.getMethods()) {
+                collectApplicationServiceBoundaryParameterViolation(method, violations, allowlist, matchedAllowances);
+                collectApplicationServiceCountReturnViolation(method, violations, allowlist, matchedAllowances);
+            }
+        }
+
+        List<String> staleAllowances = allowlist.keySet().stream()
+                .filter(key -> !matchedAllowances.contains(key))
+                .toList();
+
+        assertTrue(
+                "*ApplicationService methods must use command/query boundary shapes. Allowed shapes are: no-arg "
+                        + "read/maintenance methods, one *Command/*Query/PageQuery or strong value-object identifier, "
+                        + "business query + PageQuery, and stream command/query + handler. Legacy allowances must include "
+                        + "a description and remediation and must be removed after cleanup. Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
     }
 
     public static void assertRepositoryBoundaryTypesClean(JavaClasses classes) {
@@ -276,6 +314,21 @@ public final class LayerArchitectureRuleSupport {
         violations.add(javaClass.getName() + " must be named *ApplicationService");
     }
 
+    private static void collectApplicationServiceInterfaceNameViolation(
+            JavaClass javaClass,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        if (isApplicationServiceInterface(javaClass)) {
+            return;
+        }
+        String key = "SERVICE_NAME:" + javaClass.getName();
+        if (isAllowlisted(key, allowlist, matchedAllowances)) {
+            return;
+        }
+        violations.add(key + " must be named *ApplicationService");
+    }
+
     private static void collectApplicationServiceParameterShapeViolation(JavaMethod method, List<String> violations) {
         List<JavaClass> parameterTypes = method.getRawParameterTypes();
         if (parameterTypes.isEmpty()) {
@@ -292,6 +345,23 @@ public final class LayerArchitectureRuleSupport {
         violations.add(method.getFullName() + " has invalid use case parameter " + parameterType.getName());
     }
 
+    private static void collectApplicationServiceBoundaryParameterViolation(
+            JavaMethod method,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        List<JavaClass> parameterTypes = method.getRawParameterTypes();
+        if (isAllowedApplicationServiceParameterShape(method, parameterTypes)) {
+            return;
+        }
+        String key = "METHOD_SHAPE:" + method.getFullName();
+        if (isAllowlisted(key, allowlist, matchedAllowances)) {
+            return;
+        }
+        violations.add(key + " has invalid parameters "
+                + parameterTypes.stream().map(JavaClass::getName).toList());
+    }
+
     private static void collectApplicationServiceCountReturnViolation(JavaMethod method, List<String> violations) {
         if (!method.getName().startsWith("count")) {
             return;
@@ -302,6 +372,25 @@ public final class LayerArchitectureRuleSupport {
         }
         violations.add(
                 method.getFullName() + " count method must return primitive long instead of " + returnType.getName());
+    }
+
+    private static void collectApplicationServiceCountReturnViolation(
+            JavaMethod method,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        if (!method.getName().startsWith("count")) {
+            return;
+        }
+        JavaClass returnType = method.getRawReturnType();
+        if ("long".equals(returnType.getName())) {
+            return;
+        }
+        String key = "COUNT_RETURN:" + method.getFullName();
+        if (isAllowlisted(key, allowlist, matchedAllowances)) {
+            return;
+        }
+        violations.add(key + " must return primitive long instead of " + returnType.getName());
     }
 
     private static void collectRepositoryReturnViolation(JavaMethod method, JavaClass type, List<String> violations) {
@@ -339,6 +428,69 @@ public final class LayerArchitectureRuleSupport {
                 || isPageQuery(type);
     }
 
+    private static Map<String, ArchitectureRuleAllowance> applicationServiceBoundaryAllowlist(
+            Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Map<String, ArchitectureRuleAllowance> allowlist = new LinkedHashMap<String, ArchitectureRuleAllowance>();
+        for (ArchitectureRuleAllowance allowance : legacyAllowances) {
+            ArchitectureRuleAllowance previous = allowlist.put(allowance.key(), allowance);
+            if (previous != null) {
+                throw new IllegalArgumentException("Duplicate architecture allowlist key: " + allowance.key());
+            }
+        }
+        return allowlist;
+    }
+
+    private static boolean isAllowlisted(
+            String key, Map<String, ArchitectureRuleAllowance> allowlist, Set<String> matchedAllowances) {
+        if (!allowlist.containsKey(key)) {
+            return false;
+        }
+        matchedAllowances.add(key);
+        return true;
+    }
+
+    private static boolean isAllowedApplicationServiceParameterShape(
+            JavaMethod method, List<JavaClass> parameterTypes) {
+        if (parameterTypes.isEmpty()) {
+            return isAllowedNoParameterApplicationServiceMethod(method);
+        }
+        if (parameterTypes.size() == 1) {
+            return isApplicationBoundaryContract(parameterTypes.get(0))
+                    || isStrongApplicationServiceValueObject(parameterTypes.get(0));
+        }
+        if (parameterTypes.size() == 2) {
+            JavaClass first = parameterTypes.get(0);
+            JavaClass second = parameterTypes.get(1);
+            return isBusinessQueryAndPageQuery(first, second)
+                    || isStreamingApplicationServiceMethod(method, first, second);
+        }
+        return false;
+    }
+
+    private static boolean isAllowedNoParameterApplicationServiceMethod(JavaMethod method) {
+        String methodName = method.getName();
+        return methodName.startsWith("list")
+                || methodName.startsWith("summary")
+                || methodName.startsWith("health")
+                || methodName.startsWith("rebuild");
+    }
+
+    private static boolean isBusinessQueryAndPageQuery(JavaClass first, JavaClass second) {
+        return isServiceQuery(first) && isPageQuery(second);
+    }
+
+    private static boolean isStreamingApplicationServiceMethod(JavaMethod method, JavaClass first, JavaClass second) {
+        String methodName = method.getName().toLowerCase();
+        return (methodName.contains("stream") || methodName.startsWith("subscribe") || isStreamHandlerType(second))
+                && (isServiceCommand(first) || isServiceQuery(first))
+                && isStreamHandlerType(second);
+    }
+
+    private static boolean isStreamHandlerType(JavaClass type) {
+        return "java.util.function.Consumer".equals(type.getName())
+                || type.getSimpleName().endsWith("StreamHandler");
+    }
+
     private static boolean isAllowedRepositoryResultType(JavaMethod method, JavaClass type) {
         return isAllowedRepositoryParameterType(type)
                 || isEntityId(type)
@@ -357,8 +509,9 @@ public final class LayerArchitectureRuleSupport {
 
     private static boolean isApplicationServicePackageInterface(JavaClass javaClass) {
         return javaClass.isInterface()
+                && javaClass.getSimpleName().endsWith("Service")
                 && javaClass.getPackageName().contains(".application.")
-                && javaClass.getPackageName().contains(".service");
+                && javaClass.getPackageName().endsWith(".service");
     }
 
     private static boolean isApplicationServiceInterface(JavaClass javaClass) {
@@ -412,6 +565,20 @@ public final class LayerArchitectureRuleSupport {
         return type.getSimpleName().endsWith("Id")
                 && type.getPackageName().contains(".domain.")
                 && type.getPackageName().contains(".model.");
+    }
+
+    private static boolean isStrongApplicationServiceValueObject(JavaClass type) {
+        return (type.getSimpleName().endsWith("Id")
+                        || type.getSimpleName().endsWith("Key")
+                        || type.getSimpleName().endsWith("Code")
+                        || type.getSimpleName().endsWith("Token")
+                        || type.getSimpleName().endsWith("Ref"))
+                && type.getPackageName().contains(".domain.")
+                && type.getPackageName().contains(".model.valueobject");
+    }
+
+    private static boolean isApplicationBoundaryContract(JavaClass type) {
+        return isServiceCommand(type) || isServiceQuery(type) || isPageQuery(type);
     }
 
     private static boolean isServiceQuery(JavaClass type) {

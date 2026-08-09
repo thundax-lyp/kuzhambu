@@ -34,13 +34,13 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
 
     @Override
     public AiModel get(GetAiModelQuery query) {
-        return aiModelRepository.get(query == null ? null : query.getModelId());
+        return aiModelRepository.get(query == null ? null : query.modelId());
     }
 
     @Override
     public List<AiModel> list(ListAiModelsQuery query) {
-        var apiSource = query == null ? null : query.getApiSource();
-        Boolean enabled = query == null ? null : query.getEnabled();
+        var apiSource = query == null ? null : query.apiSource();
+        Boolean enabled = query == null ? null : query.enabled();
         return aiModelRepository.list(apiSource == null ? null : apiSource.value(), enabled);
     }
 
@@ -65,7 +65,7 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int delete(DeleteAiModelCommand command) {
-        AiModelId modelId = command == null ? null : command.getModelId();
+        AiModelId modelId = command == null ? null : command.modelId();
         if (modelId == null) {
             return 0;
         }
@@ -83,32 +83,32 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
 
     private AiModel toModel(CreateAiModelCommand command) {
         AiModel model = new AiModel();
-        model.setId(command.getId());
-        model.setApiSource(command.getApiSource());
-        model.setBaseUrl(command.getBaseUrl());
-        model.setEncryptedApiKey(command.getEncryptedApiKey());
-        model.setModelName(command.getModelName());
-        model.setDisplayName(command.getDisplayName());
-        model.setCapabilities(command.getCapabilities());
-        model.setDefaultParamsJson(command.getDefaultParamsJson());
-        model.setDescription(command.getDescription());
-        model.setEnabled(command.getEnabled() == null || command.getEnabled());
+        model.setId(command.id());
+        model.setApiSource(command.apiSource());
+        model.setBaseUrl(command.baseUrl());
+        model.setEncryptedApiKey(command.encryptedApiKey());
+        model.setModelName(command.modelName());
+        model.setDisplayName(command.displayName());
+        model.setCapabilities(command.capabilities());
+        model.setDefaultParamsJson(command.defaultParamsJson());
+        model.setDescription(command.description());
+        model.setEnabled(command.enabled() == null || command.enabled());
         model.setRegisteredAt(Instant.now());
         return model;
     }
 
     private AiModel toModel(UpdateAiModelCommand command) {
         AiModel model = new AiModel();
-        model.setId(command.getId());
-        model.setApiSource(command.getApiSource());
-        model.setBaseUrl(command.getBaseUrl());
-        model.setEncryptedApiKey(command.getEncryptedApiKey());
-        model.setModelName(command.getModelName());
-        model.setDisplayName(command.getDisplayName());
-        model.setCapabilities(command.getCapabilities());
-        model.setDefaultParamsJson(command.getDefaultParamsJson());
-        model.setDescription(command.getDescription());
-        model.setEnabled(command.getEnabled() == null || command.getEnabled());
+        model.setId(command.id());
+        model.setApiSource(command.apiSource());
+        model.setBaseUrl(command.baseUrl());
+        model.setEncryptedApiKey(command.encryptedApiKey());
+        model.setModelName(command.modelName());
+        model.setDisplayName(command.displayName());
+        model.setCapabilities(command.capabilities());
+        model.setDefaultParamsJson(command.defaultParamsJson());
+        model.setDescription(command.description());
+        model.setEnabled(command.enabled() == null || command.enabled());
         model.setRegisteredAt(Instant.now());
         return model;
     }

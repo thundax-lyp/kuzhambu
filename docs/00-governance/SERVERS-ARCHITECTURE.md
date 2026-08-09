@@ -191,8 +191,18 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 
 - `application/`：用例编排、事务边界、跨域协调、命令、查询和结果对象。
 - `application` 层公开方法输入默认使用 `*Command` / `*Query` / `PageQuery`。
-- `application` 层 `*Command` / `*Query` 是纯契约对象，只定义字段；字段可以持有本域 domain entity 或强类型值对象；对象创建、值对象转换和领域模型装配放在 `*InterfaceAssembler`、application assembler 或应用服务编排代码中。
+- `application` 层 `*Command` / `*Query` 是纯契约对象，只定义字段；目标形态必须是 Java `record`，不得使用 Lombok 注解，不得声明业务方法、继承层级或框架协议注解。字段可以持有本域 domain entity 或强类型值对象；对象创建、默认值补齐、参数校验、值对象转换和领域模型装配放在 `*InterfaceAssembler`、application assembler、application service 或用例编排代码中。
+- 生产代码中 `new *Command` / `new *Query` 默认只能发生在 `*InterfaceAssembler` 或 `*FacadeAssembler`，用于把外部 request/facade DTO 转换为 application 契约。唯一例外是 `ApplicationService` 内部编排下游 `ApplicationService` 时，可以在 `*ApplicationService` / `*ApplicationServiceImpl` 中构造下游 `Command` / `Query`。`Controller`、facade impl、domain、infra、repository 和普通 support/helper 不得直接构造 application `Command` / `Query`；需要搬到对应 assembler，或上移到明确的 ApplicationService 编排点。
 - `application` 层公开方法输出优先使用本域 domain entity 或强类型值对象；`*Result` 用于不存在自然 domain entity 的复合结果、跨资源聚合结果或明确的非领域输出；仅在稳定通用传输对象场景下使用 `*DTO`；分页输出统一使用 `PageResult<...>`。
+- Java servers 全域 ArchUnit 必须覆盖 `application` 层 `*Command` / `*Query` 形态：新增或修改的 `*Command` / `*Query` 必须是 `record` 且不允许任何 Lombok 注解。历史 Lombok class 只能通过 legacy allowlist 保持不击穿；每项 allowlist 必须写明违规描述和修复方向。修复为 record 后必须同步删除对应 allowlist 项。
+- Java servers 全域 ArchUnit 必须覆盖生产代码中的 `*Command` / `*Query` 构造位置：新增构造点必须位于 `*InterfaceAssembler`、`*FacadeAssembler` 或 `ApplicationService` 内部编排代码。历史构造点只能通过 legacy allowlist 保持不击穿；每项 allowlist 必须写明违规描述和修复方向。修复后必须同步删除对应 allowlist 项。
+- Java servers 全域 ArchUnit 必须覆盖 `*InterfaceAssembler` / `*FacadeAssembler` 返回 `*Command` / `*Query` 的方法：这类方法不得返回 `null`，必须返回具体契约对象；可空输入的判断放在调用方校验或明确的用例分支中。历史 `return null` 只能通过 legacy allowlist 保持不击穿；每项 allowlist 必须写明违规描述和修复方向。修复后必须同步删除对应 allowlist 项。
+- Java servers 全域 ArchUnit 必须覆盖 application 公开边界。`ApplicationService` 用例方法允许以下输入形态：
+  - 无参数：仅用于 `list*`、`summary*`、`health*`、`rebuild*` 等无条件读取或维护动作。
+  - 单参数：`*Command`、`*Query`、`PageQuery`，或本域 domain `model.valueobject` 下的强类型 `*Id`、`*Key`、`*Code`、`*Token`、`*Ref`。
+  - 双参数：业务 `*Query` + `PageQuery`；或流式/订阅方法的 `*Command` / `*Query` + `Consumer` / `*StreamHandler`。
+  - 其他多参数、裸 `Long` / `String` / `Integer` 等基础类型作为业务标识、以及不带契约对象的复杂查询条件，均视为历史债务或新增违规。
+- application 架构测试可以为历史代码配置 legacy allowlist，但每项必须写明违规描述和修复方向；allowlist 只能用于不击穿既有代码，新增或修改用例不得扩大 allowlist。修复历史代码后必须同步删除对应 allowlist 项。
 - `application/<subdomain>/service/`：应用用例入口接口，命名为 `*ApplicationService`。
 - `application/<subdomain>/service/impl/`：应用用例入口实现，命名为 `*ApplicationServiceImpl`。
 - `application/<subdomain>/command/`：写入用例输入模型。

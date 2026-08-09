@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand;
+import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateVariableItem;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
@@ -32,8 +33,12 @@ class PromptApplicationServiceImplTest {
     @Test
     void saveTemplateShouldRejectCapabilityChange() {
         PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(new ConflictPromptRepository());
-        PromptTemplateSaveCommand command = saveCommand();
-        command.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE);
+        PromptTemplateSaveCommand command = saveCommand(
+                PromptTemplateIdCodec.toDomain(1001L),
+                AiBusinessCapability.CLASSICS_TRANSLATE,
+                defaultMessageTemplatesJson(),
+                null,
+                defaultVariables());
 
         assertThatThrownBy(() -> service.save(command))
                 .isInstanceOf(BizException.class)
@@ -55,8 +60,8 @@ class PromptApplicationServiceImplTest {
     void saveTemplateShouldReplaceVariablesWhenCreatingTemplate() {
         RecordingPromptRepository repository = new RecordingPromptRepository();
         PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(repository);
-        PromptTemplateSaveCommand command = saveCommand();
-        command.setId(null);
+        PromptTemplateSaveCommand command = saveCommand(
+                null, AiBusinessCapability.CLASSICS_SUMMARY, defaultMessageTemplatesJson(), null, defaultVariables());
 
         service.save(command);
 
@@ -67,8 +72,12 @@ class PromptApplicationServiceImplTest {
     @Test
     void saveTemplateShouldRejectVariableOutsideCapabilityCatalog() {
         PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(new RecordingPromptRepository());
-        PromptTemplateSaveCommand command = saveCommand();
-        command.setVariables(List.of(new PromptTemplateSaveCommand.VariableItem("unknownName", false, null, 1)));
+        PromptTemplateSaveCommand command = saveCommand(
+                PromptTemplateIdCodec.toDomain(1001L),
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                defaultMessageTemplatesJson(),
+                null,
+                List.of(new PromptTemplateVariableItem("unknownName", false, null, 1)));
 
         assertThatThrownBy(() -> service.save(command))
                 .isInstanceOf(BizException.class)
@@ -79,12 +88,14 @@ class PromptApplicationServiceImplTest {
     void saveTemplateShouldCanonicalizeOptionalVariableInVersionSnapshot() {
         RecordingPromptRepository repository = new RecordingPromptRepository();
         PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(repository);
-        PromptTemplateSaveCommand command = saveCommand();
-        command.setMessageTemplatesJson("[{\"role\":\"user\",\"content\":\"{{contentType}} {{title}}\"}]");
-        command.setVariablesSnapshotJson("[{\"variableName\":\"title\",\"required\":true}]");
-        command.setVariables(List.of(
-                new PromptTemplateSaveCommand.VariableItem("contentType", true, "内容类型", 1),
-                new PromptTemplateSaveCommand.VariableItem("title", true, "wrong", 2)));
+        PromptTemplateSaveCommand command = saveCommand(
+                PromptTemplateIdCodec.toDomain(1001L),
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                "[{\"role\":\"user\",\"content\":\"{{contentType}} {{title}}\"}]",
+                "[{\"variableName\":\"title\",\"required\":true}]",
+                List.of(
+                        new PromptTemplateVariableItem("contentType", true, "内容类型", 1),
+                        new PromptTemplateVariableItem("title", true, "wrong", 2)));
 
         service.save(command);
 
@@ -97,9 +108,12 @@ class PromptApplicationServiceImplTest {
     @Test
     void saveTemplateShouldRejectMissingRequiredCapabilityVariable() {
         PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(new RecordingPromptRepository());
-        PromptTemplateSaveCommand command = saveCommand();
-        command.setMessageTemplatesJson("[{\"role\":\"user\",\"content\":\"{{title}}\"}]");
-        command.setVariables(List.of(new PromptTemplateSaveCommand.VariableItem("title", false, null, 1)));
+        PromptTemplateSaveCommand command = saveCommand(
+                PromptTemplateIdCodec.toDomain(1001L),
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                "[{\"role\":\"user\",\"content\":\"{{title}}\"}]",
+                null,
+                List.of(new PromptTemplateVariableItem("title", false, null, 1)));
 
         assertThatThrownBy(() -> service.save(command))
                 .isInstanceOf(BizException.class)
@@ -110,10 +124,12 @@ class PromptApplicationServiceImplTest {
     void saveTemplateShouldCanonicalizeSnapshotWhenVariablesAreOmitted() {
         RecordingPromptRepository repository = new RecordingPromptRepository();
         PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(repository);
-        PromptTemplateSaveCommand command = saveCommand();
-        command.setVariables(Collections.emptyList());
-        command.setVariablesSnapshotJson(
-                "[{\"variableName\":\"contentType\",\"required\":false,\"description\":\"wrong\",\"priority\":3}]");
+        PromptTemplateSaveCommand command = saveCommand(
+                PromptTemplateIdCodec.toDomain(1001L),
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                defaultMessageTemplatesJson(),
+                "[{\"variableName\":\"contentType\",\"required\":false,\"description\":\"wrong\",\"priority\":3}]",
+                List.of());
 
         service.save(command);
 
@@ -125,14 +141,39 @@ class PromptApplicationServiceImplTest {
     }
 
     private PromptTemplateSaveCommand saveCommand() {
-        PromptTemplateSaveCommand command = new PromptTemplateSaveCommand();
-        command.setId(PromptTemplateIdCodec.toDomain(1001L));
-        command.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
-        command.setName("summary prompt");
-        command.setEnabled(true);
-        command.setMessageTemplatesJson("[{\"role\":\"user\",\"content\":\"请摘要：{{contentType}}\"}]");
-        command.setVariables(List.of(new PromptTemplateSaveCommand.VariableItem("contentType", true, "内容类型", 1)));
-        return command;
+        return saveCommand(
+                PromptTemplateIdCodec.toDomain(1001L),
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                defaultMessageTemplatesJson(),
+                null,
+                defaultVariables());
+    }
+
+    private PromptTemplateSaveCommand saveCommand(
+            PromptTemplateId id,
+            AiBusinessCapability capability,
+            String messageTemplatesJson,
+            String variablesSnapshotJson,
+            List<PromptTemplateVariableItem> variables) {
+        return new PromptTemplateSaveCommand(
+                id,
+                capability,
+                "summary prompt",
+                null,
+                true,
+                messageTemplatesJson,
+                variablesSnapshotJson,
+                null,
+                null,
+                variables);
+    }
+
+    private String defaultMessageTemplatesJson() {
+        return "[{\"role\":\"user\",\"content\":\"请摘要：{{contentType}}\"}]";
+    }
+
+    private List<PromptTemplateVariableItem> defaultVariables() {
+        return List.of(new PromptTemplateVariableItem("contentType", true, "内容类型", 1));
     }
 
     private static class ConflictPromptRepository implements PromptRepository {
