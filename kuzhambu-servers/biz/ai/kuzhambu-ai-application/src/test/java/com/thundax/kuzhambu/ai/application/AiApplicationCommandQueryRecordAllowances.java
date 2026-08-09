@@ -20,10 +20,6 @@ final class AiApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.query.AiReportSummaryQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsByCapabilitiesQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.query.RequireAiCandidateForApplyQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand"),

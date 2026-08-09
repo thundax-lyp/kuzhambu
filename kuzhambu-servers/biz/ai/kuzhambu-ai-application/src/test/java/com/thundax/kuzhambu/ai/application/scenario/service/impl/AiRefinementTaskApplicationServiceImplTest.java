@@ -477,16 +477,16 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public PageResult<AiBatchJobResult> page(PageAiBatchJobsQuery query) {
-            String scope = query == null ? null : query.getScope();
-            AiBusinessCapability capability = query == null ? null : query.getCapability();
+            String scope = query == null ? null : query.scope();
+            AiBusinessCapability capability = query == null ? null : query.capability();
             List<AiBatchJobResult> records = filtered(scope, capability == null ? List.of() : List.of(capability));
             return PageResult.of(1, 10, records.size(), records);
         }
 
         @Override
         public PageResult<AiBatchJobResult> pageByCapabilities(PageAiBatchJobsByCapabilitiesQuery query) {
-            String scope = query == null ? null : query.getScope();
-            List<AiBusinessCapability> capabilities = query == null ? null : query.getCapabilities();
+            String scope = query == null ? null : query.scope();
+            List<AiBusinessCapability> capabilities = query == null ? null : query.capabilities();
             List<AiBatchJobResult> records = filtered(scope, capabilities);
             return PageResult.of(1, 10, records.size(), records);
         }

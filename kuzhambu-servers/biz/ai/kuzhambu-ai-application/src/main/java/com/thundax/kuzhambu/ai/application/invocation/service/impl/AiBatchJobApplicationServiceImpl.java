@@ -46,12 +46,12 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
 
     @Override
     public PageResult<AiBatchJobResult> page(PageAiBatchJobsQuery query) {
-        PageQuery effectivePage = effectivePage(query == null ? null : query.getPageQuery());
-        AiContentRef contentRef = query == null ? null : query.getContentRef();
+        PageQuery effectivePage = effectivePage(query == null ? null : query.pageQuery());
+        AiContentRef contentRef = query == null ? null : query.contentRef();
         return page(new AiBatchJobQuery(
-                query == null ? null : query.getScope(),
-                query == null ? null : query.getCapability(),
-                query == null ? null : query.getStatus(),
+                query == null ? null : query.scope(),
+                query == null ? null : query.capability(),
+                query == null ? null : query.status(),
                 contentRef == null ? null : contentRef.contentType(),
                 contentRef == null ? null : contentRef.contentId(),
                 effectivePage.getPageNo(),
@@ -60,12 +60,12 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
 
     @Override
     public PageResult<AiBatchJobResult> pageByCapabilities(PageAiBatchJobsByCapabilitiesQuery query) {
-        PageQuery effectivePage = effectivePage(query == null ? null : query.getPageQuery());
-        AiContentRef contentRef = query == null ? null : query.getContentRef();
+        PageQuery effectivePage = effectivePage(query == null ? null : query.pageQuery());
+        AiContentRef contentRef = query == null ? null : query.contentRef();
         return page(new AiBatchJobQuery(
-                query == null ? null : query.getScope(),
-                query == null ? null : query.getCapabilities(),
-                query == null ? null : query.getStatus(),
+                query == null ? null : query.scope(),
+                query == null ? null : query.capabilities(),
+                query == null ? null : query.status(),
                 contentRef == null ? null : contentRef.contentType(),
                 contentRef == null ? null : contentRef.contentId(),
                 effectivePage.getPageNo(),
