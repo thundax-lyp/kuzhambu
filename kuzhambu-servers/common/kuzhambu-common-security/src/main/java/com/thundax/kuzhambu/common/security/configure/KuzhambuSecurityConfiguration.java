@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.security.authorization.HasPermissionBeanPostP
 import com.thundax.kuzhambu.common.security.permission.PermissionAuthorizationService;
 import com.thundax.kuzhambu.common.security.permission.PermissionMatcher;
 import com.thundax.kuzhambu.common.security.permission.PrefixPermissionMatcher;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -30,7 +31,7 @@ public class KuzhambuSecurityConfiguration {
     @ConditionalOnBean(PermissionAuthorizationService.class)
     @ConditionalOnMissingBean
     public static HasPermissionBeanPostProcessor hasPermissionBeanPostProcessor(
-            PermissionAuthorizationService permissionAuthorizationService) {
-        return new HasPermissionBeanPostProcessor(permissionAuthorizationService);
+            ObjectProvider<PermissionAuthorizationService> permissionAuthorizationServiceProvider) {
+        return new HasPermissionBeanPostProcessor(permissionAuthorizationServiceProvider);
     }
 }
