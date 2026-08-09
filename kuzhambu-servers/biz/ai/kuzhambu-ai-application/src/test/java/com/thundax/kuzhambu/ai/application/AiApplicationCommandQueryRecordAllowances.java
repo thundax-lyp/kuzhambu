@@ -59,20 +59,6 @@ final class AiApplicationCommandQueryRecordAllowances {
                 construction(
                         "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.application.facade.impl.AiFacadeImpl#RejectAiCandidateCommand:1"),
                 construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.AiInvocationController#RejectAiCandidateCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.AiInvocationController#ApplyAiCandidateCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.AiInvocationController#GetAiBatchJobQuery:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.AiInvocationController#CancelAiBatchJobCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.AiInvocationController#RecordAiBatchJobCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.AiInvocationController#RecordAiBatchJobFailureCommand:1"),
-                construction(
-                        "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.AiInvocationController#CanDispatchNextAiBatchUnitQuery:1"),
-                construction(
                         "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.AiRefinementTaskController#AiBatchJobCreateCommand:1"),
                 construction(
                         "COMMAND_QUERY_CONSTRUCTION:com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.AiRefinementTaskController#GetAiBatchJobQuery:1"),
