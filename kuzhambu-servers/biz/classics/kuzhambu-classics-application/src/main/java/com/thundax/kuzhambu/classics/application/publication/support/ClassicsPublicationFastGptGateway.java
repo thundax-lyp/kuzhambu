@@ -41,7 +41,7 @@ public class ClassicsPublicationFastGptGateway {
 
     public void fullReplace(String collectionId, List<ClassicsPublicationFragment> fragments) {
         if (collectionId == null || collectionId.isBlank()) {
-            throw new IllegalArgumentException("FastGPT collection ID must not be blank");
+            throw new IllegalStateException("FastGPT collection ID must not be blank");
         }
         disable(collectionId);
         deleteAllData(collectionId);

@@ -3,6 +3,8 @@ package com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
+import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryQaStreamExecutorConfiguration;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler;
@@ -30,7 +32,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Tag(name = "发现模块-Admin 问答会话流", description = "Discovery Admin 问答会话 SSE 接口")
+@SysLogger(module = {"发现", "知识助手"})
 @RequestMapping("/api/discovery/qa")
+@WrappedApiController
 @RestController
 public class DiscoveryQaConversationStreamController {
 

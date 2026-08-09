@@ -57,6 +57,7 @@ public class OperationsHealthAlertAdminController {
 
     @Operation(summary = "确认健康告警", description = "operations:health:manage")
     @HasPermission("operations:health:manage")
+    @SysLogger(value = "确认健康告警")
     @PostMapping("ack")
     @ApiImplicitParams({
         @ApiImplicitParam(
@@ -71,6 +72,7 @@ public class OperationsHealthAlertAdminController {
 
     @Operation(summary = "人工恢复健康告警", description = "operations:health:manage")
     @HasPermission("operations:health:manage")
+    @SysLogger(value = "人工恢复健康告警")
     @PostMapping("recover")
     @ApiImplicitParams({
         @ApiImplicitParam(

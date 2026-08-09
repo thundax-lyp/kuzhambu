@@ -316,7 +316,7 @@ public class ClassicsPublicationJobRepositoryImpl implements ClassicsPublication
 
     private static int positiveLimit(int limit) {
         if (limit <= 0) {
-            throw new IllegalArgumentException("Publication claim limit must be positive");
+            throw new IllegalStateException("Publication claim limit must be positive");
         }
         return limit;
     }

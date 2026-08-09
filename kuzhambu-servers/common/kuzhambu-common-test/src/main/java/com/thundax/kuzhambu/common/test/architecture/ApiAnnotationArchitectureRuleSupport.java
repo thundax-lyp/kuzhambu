@@ -7,7 +7,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -26,20 +31,15 @@ public final class ApiAnnotationArchitectureRuleSupport {
             "add",
             "create",
             "complete",
-            "publish",
-            "offline",
             "remove",
             "delete",
             "abort",
             "update",
             "change",
-            "apply",
-            "reject",
             "sort",
             "move",
             "upload",
             "download",
-            "content",
             "reset",
             "login",
             "logout",
@@ -50,6 +50,20 @@ public final class ApiAnnotationArchitectureRuleSupport {
             "search",
             "click",
             "rebuild",
+            "preview",
+            "apply",
+            "deprecate",
+            "reject",
+            "review",
+            "approve",
+            "recover",
+            "submit",
+            "confirm",
+            "cancel",
+            "publish",
+            "revoke",
+            "offline",
+            "content",
             "extract",
             "regenerate");
 
@@ -69,6 +83,10 @@ public final class ApiAnnotationArchitectureRuleSupport {
             Pattern.compile("new\\s+([A-Za-z0-9_]+Response)\\s*\\(");
 
     private ApiAnnotationArchitectureRuleSupport() {}
+
+    static List<String> controllerActionVerbs() {
+        return CONTROLLER_ACTION_VERBS;
+    }
 
     public static ArchRule requestClassAnnotationsRequired(String basePackage) {
         return ModelAnnotationArchitectureRuleSupport.requestClassAnnotationsRequired(basePackage);
@@ -120,8 +138,8 @@ public final class ApiAnnotationArchitectureRuleSupport {
 
         assertTrue(
                 "PostMapping methods must use no parameter, a @Valid @RequestBody *Request/List<*Request> "
-                        + "parameter, or multipart form parameters, and return void, Boolean, String, *Response, "
-                        + "List<*Response>, or PageResponse<*Response>: " + violations,
+                        + "parameter, or multipart form parameters, and return void, Boolean, String, Long, Integer, "
+                        + "SseEmitter, *Response, List<*Response>, or PageResponse<*Response>: " + violations,
                 violations.isEmpty());
     }
 
@@ -140,7 +158,14 @@ public final class ApiAnnotationArchitectureRuleSupport {
     }
 
     public static void assertControllerActionsUseVerbWhitelist(Path sourceRoot) throws IOException {
+        assertControllerActionsUseVerbWhitelist(sourceRoot, List.of());
+    }
+
+    public static void assertControllerActionsUseVerbWhitelist(
+            Path sourceRoot, Collection<ArchitectureRuleAllowance> legacyAllowances) throws IOException {
         Path root = ArchitectureSourceSupport.repositoryRoot();
+        Map<String, ArchitectureRuleAllowance> allowlist = actionVerbAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
         List<String> violations = new ArrayList<String>();
 
         try (Stream<Path> paths = controllerSources(sourceRoot)) {
@@ -148,10 +173,20 @@ public final class ApiAnnotationArchitectureRuleSupport {
                     .forEach(path -> collectControllerActionVerbViolations(root, path, violations));
         }
 
+        List<String> unexpectedViolations = new ArrayList<String>();
+        for (String violation : violations) {
+            if (!isActionVerbAllowlisted("CONTROLLER_ACTION_VERB:" + violation, allowlist, matchedAllowances)) {
+                unexpectedViolations.add(violation);
+            }
+        }
+        Set<String> staleAllowances = new HashSet<String>(allowlist.keySet());
+        staleAllowances.removeAll(matchedAllowances);
         assertTrue(
                 "Controller action methods and PostMapping action paths must use allowed verbs "
-                        + CONTROLLER_ACTION_VERBS + ": " + violations,
-                violations.isEmpty());
+                        + CONTROLLER_ACTION_VERBS + ". Legacy allowances must include a description and remediation "
+                        + "and are rejected when stale. Violations: " + unexpectedViolations + ". Stale allowances: "
+                        + staleAllowances,
+                unexpectedViolations.isEmpty() && staleAllowances.isEmpty());
     }
 
     public static void assertOperationDeclaresAccessAnnotation(Path sourceRoot) throws IOException {
@@ -276,7 +311,10 @@ public final class ApiAnnotationArchitectureRuleSupport {
                     .forEach(path -> collectGetMappingReturnViolations(root, path, violations));
         }
 
-        assertTrue("GET mapping methods must be non-JSON void responses: " + violations, violations.isEmpty());
+        assertTrue(
+                "GET mapping methods must return void, except an explicitly exempt SseEmitter event stream: "
+                        + violations,
+                violations.isEmpty());
     }
 
     public static void assertRequestBodyRequestParametersDeclareValid(Path sourceRoot) throws IOException {
@@ -679,7 +717,9 @@ public final class ApiAnnotationArchitectureRuleSupport {
             String annotations = content.substring(previousMethodEnd, matcher.start());
             String methodName = matcher.group(1);
             String declaration = content.substring(matcher.start(), matcher.end());
-            if (annotations.contains("@GetMapping") && !declaration.startsWith("public void ")) {
+            if (annotations.contains("@GetMapping")
+                    && !declaration.startsWith("public void ")
+                    && !(declaration.startsWith("public SseEmitter ") && hasPostJsonApiExemptReason(annotations))) {
                 violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName);
             }
             previousMethodEnd = matcher.end();
@@ -775,9 +815,12 @@ public final class ApiAnnotationArchitectureRuleSupport {
         return "void".equals(returnType)
                 || "Boolean".equals(returnType)
                 || "String".equals(returnType)
+                || "Long".equals(returnType)
+                || "Integer".equals(returnType)
+                || "SseEmitter".equals(returnType)
                 || returnType.endsWith("Response")
-                || returnType.matches("List\\s*<\\s*\\w+Response\\s*>")
-                || returnType.matches("PageResponse\\s*<\\s*\\w+Response\\s*>");
+                || returnType.matches("List\\s*<\\s*(?:\\w+\\.)*\\w+Response\\s*>")
+                || returnType.matches("PageResponse\\s*<\\s*(?:\\w+\\.)*\\w+Response\\s*>");
     }
 
     private static boolean isMultipartParameterShape(String annotations, String parameters) {
@@ -898,6 +941,35 @@ public final class ApiAnnotationArchitectureRuleSupport {
                     || methodName.startsWith(verb)
                             && methodName.length() > verb.length()
                             && Character.isUpperCase(methodName.charAt(verb.length()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Map<String, ArchitectureRuleAllowance> actionVerbAllowlist(
+            Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Map<String, ArchitectureRuleAllowance> allowlist = new LinkedHashMap<String, ArchitectureRuleAllowance>();
+        for (ArchitectureRuleAllowance allowance : legacyAllowances) {
+            if (allowlist.put(allowance.key(), allowance) != null) {
+                throw new IllegalArgumentException("Duplicate architecture allowlist key: " + allowance.key());
+            }
+        }
+        return allowlist;
+    }
+
+    private static boolean isActionVerbAllowlisted(
+            String key, Map<String, ArchitectureRuleAllowance> allowlist, Set<String> matchedAllowances) {
+        if (allowlist.containsKey(key)) {
+            matchedAllowances.add(key);
+            return true;
+        }
+        for (String allowanceKey : allowlist.keySet()) {
+            if (allowanceKey.contains("*")
+                    && Pattern.compile(Pattern.quote(allowanceKey).replace("*", "\\E.*\\Q"))
+                            .matcher(key)
+                            .matches()) {
+                matchedAllowances.add(allowanceKey);
                 return true;
             }
         }

@@ -52,16 +52,16 @@ public class ClassicsContentSnapshotAssembler {
 
     public JsonNode fromSnapshotJson(String snapshotJson) {
         if (snapshotJson == null || snapshotJson.isBlank()) {
-            throw new IllegalArgumentException("Snapshot JSON must not be blank");
+            throw new IllegalStateException("Snapshot JSON must not be blank");
         }
         try {
             JsonNode snapshot = OBJECT_MAPPER.readTree(snapshotJson);
             if (snapshot == null || !snapshot.isObject()) {
-                throw new IllegalArgumentException("Snapshot JSON must be an object");
+                throw new IllegalStateException("Snapshot JSON must be an object");
             }
             return snapshot;
         } catch (JsonProcessingException exception) {
-            throw new IllegalArgumentException("Snapshot JSON is invalid", exception);
+            throw new IllegalStateException("Snapshot JSON is invalid", exception);
         }
     }
 
@@ -78,7 +78,7 @@ public class ClassicsContentSnapshotAssembler {
             return MingCustomsVersionSnapshot.from((MingCustomsEntry) content, tags, qaPairs)
                     .toMap();
         }
-        throw new IllegalArgumentException("Unsupported classics content type: " + content.contentType());
+        throw new IllegalStateException("Unsupported classics content type: " + content.contentType());
     }
 
     private static String toJson(Map<String, Object> snapshot) {

@@ -62,6 +62,10 @@ public final class QaPersistenceAssembler {
         return entity;
     }
 
+    public static QaSession toDomain(QaSessionDO dataObject) {
+        return toSessionDomain(dataObject);
+    }
+
     public static QaSessionExportDO toObject(QaSessionExport entity) {
         if (entity == null) {
             return null;

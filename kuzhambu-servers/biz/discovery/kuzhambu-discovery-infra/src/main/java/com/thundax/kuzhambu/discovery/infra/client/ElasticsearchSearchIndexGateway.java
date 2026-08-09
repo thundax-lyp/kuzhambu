@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
@@ -57,15 +56,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     private final ElasticsearchOperations elasticsearchOperations;
     private final DiscoverySearchDocumentAssembler documentAssembler;
 
-    public ElasticsearchSearchIndexGateway() {
-        this(new DiscoverySearchIndexProperties(), null, new DiscoverySearchDocumentAssembler());
-    }
-
-    public ElasticsearchSearchIndexGateway(DiscoverySearchIndexProperties properties) {
-        this(properties, null, new DiscoverySearchDocumentAssembler());
-    }
-
-    @Autowired
     public ElasticsearchSearchIndexGateway(
             DiscoverySearchIndexProperties properties,
             ElasticsearchOperations elasticsearchOperations,

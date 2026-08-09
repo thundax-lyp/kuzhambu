@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -56,15 +57,15 @@ public class AiWorkerModelConfigResolver {
         ModelResolution resolution = resolveModel(capability, modelId);
         AiModel model = resolution.model();
         if (model.getApiSource() == null) {
-            throw new IllegalArgumentException("AI model apiSource is required: " + model.getId());
+            throw new BizException("AI model apiSource is required: " + model.getId());
         }
         if (isBlank(model.getBaseUrl())) {
-            throw new IllegalArgumentException("AI model baseUrl is required: " + model.getId());
+            throw new BizException("AI model baseUrl is required: " + model.getId());
         }
 
         var modelName = model.getModelName();
         if (requestedModelName != null && !requestedModelName.equals(modelName)) {
-            throw new IllegalArgumentException(
+            throw new BizException(
                     "AI model mismatch: modelId=%s, modelName=%s".formatted(model.getId(), requestedModelName));
         }
 
@@ -90,7 +91,7 @@ public class AiWorkerModelConfigResolver {
         AiModelId effectiveModelId = modelId;
         if (effectiveModelId == null) {
             if (config == null || config.getModelId() == null) {
-                throw new IllegalArgumentException("AI modelId is required");
+                throw new BizException("AI modelId is required");
             }
             effectiveModelId = config.getModelId();
         } else if (!matchesModel(effectiveModelId, config)) {
@@ -98,10 +99,10 @@ public class AiWorkerModelConfigResolver {
         }
         AiModel model = modelRepository.get(effectiveModelId);
         if (model == null) {
-            throw new IllegalArgumentException("AI model not found: " + effectiveModelId);
+            throw new BizException("AI model not found: " + effectiveModelId);
         }
         if (!model.isEnabled()) {
-            throw new IllegalArgumentException("AI model is disabled: " + effectiveModelId);
+            throw new BizException("AI model is disabled: " + effectiveModelId);
         }
         return new ModelResolution(model, config);
     }
@@ -138,10 +139,10 @@ public class AiWorkerModelConfigResolver {
         try {
             parameters = objectMapper.readTree(parametersJson);
         } catch (JsonProcessingException ex) {
-            throw new IllegalArgumentException(errorMessage, ex);
+            throw new BizException("AI model configuration is invalid: " + errorMessage);
         }
         if (!parameters.isObject()) {
-            throw new IllegalArgumentException(errorMessage);
+            throw new BizException("AI model configuration is invalid: " + errorMessage);
         }
         target.setAll((ObjectNode) parameters);
     }

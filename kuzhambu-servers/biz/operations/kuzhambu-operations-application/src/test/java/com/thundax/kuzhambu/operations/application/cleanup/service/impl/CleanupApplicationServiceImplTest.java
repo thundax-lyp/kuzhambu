@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacade
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.command.OperationsCleanupExecuteCommand;
@@ -242,8 +243,7 @@ class CleanupApplicationServiceImplTest {
                 new CleanupApplicationServiceImpl(repository, new InMemoryBackupRepository(), new FakeClassicsFacade());
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> service.execute(new OperationsCleanupExecuteCommand("UNSUPPORTED", 1001L)));
+                BizException.class, () -> service.execute(new OperationsCleanupExecuteCommand("UNSUPPORTED", 1001L)));
     }
 
     @Test

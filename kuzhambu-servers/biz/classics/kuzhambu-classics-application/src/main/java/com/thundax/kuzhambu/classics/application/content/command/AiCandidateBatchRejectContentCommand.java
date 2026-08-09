@@ -16,9 +16,6 @@ public class AiCandidateBatchRejectContentCommand {
     private String errorMessage;
 
     public AiCandidateBatchRejectContentCommand(List<Item> items, String errorType, String errorMessage) {
-        if (items == null || items.isEmpty()) {
-            throw new IllegalArgumentException("批量拒绝候选参数为空");
-        }
         this.items = items;
         this.errorType = errorType;
         this.errorMessage = errorMessage;

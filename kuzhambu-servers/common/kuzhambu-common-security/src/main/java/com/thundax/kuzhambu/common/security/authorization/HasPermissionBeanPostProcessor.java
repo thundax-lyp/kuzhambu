@@ -8,6 +8,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -16,10 +17,11 @@ import org.springframework.util.ReflectionUtils;
 
 public class HasPermissionBeanPostProcessor implements BeanPostProcessor, Ordered {
 
-    private final PermissionAuthorizationService permissionAuthorizationService;
+    private final ObjectProvider<PermissionAuthorizationService> permissionAuthorizationServiceProvider;
 
-    public HasPermissionBeanPostProcessor(PermissionAuthorizationService permissionAuthorizationService) {
-        this.permissionAuthorizationService = permissionAuthorizationService;
+    public HasPermissionBeanPostProcessor(
+            ObjectProvider<PermissionAuthorizationService> permissionAuthorizationServiceProvider) {
+        this.permissionAuthorizationServiceProvider = permissionAuthorizationServiceProvider;
     }
 
     @Override
@@ -31,7 +33,7 @@ public class HasPermissionBeanPostProcessor implements BeanPostProcessor, Ordere
 
         ProxyFactory proxyFactory = new ProxyFactory(bean);
         proxyFactory.setProxyTargetClass(true);
-        proxyFactory.addAdvice(new HasPermissionMethodInterceptor(permissionAuthorizationService));
+        proxyFactory.addAdvice(new HasPermissionMethodInterceptor(permissionAuthorizationServiceProvider));
         return proxyFactory.getProxy(beanClass.getClassLoader());
     }
 
@@ -55,16 +57,18 @@ public class HasPermissionBeanPostProcessor implements BeanPostProcessor, Ordere
 
     private static class HasPermissionMethodInterceptor implements MethodInterceptor {
 
-        private final PermissionAuthorizationService permissionAuthorizationService;
+        private final ObjectProvider<PermissionAuthorizationService> permissionAuthorizationServiceProvider;
 
-        HasPermissionMethodInterceptor(PermissionAuthorizationService permissionAuthorizationService) {
-            this.permissionAuthorizationService = permissionAuthorizationService;
+        HasPermissionMethodInterceptor(
+                ObjectProvider<PermissionAuthorizationService> permissionAuthorizationServiceProvider) {
+            this.permissionAuthorizationServiceProvider = permissionAuthorizationServiceProvider;
         }
 
         @Override
         public Object invoke(MethodInvocation invocation) throws Throwable {
             HasPermission annotation = findHasPermissionAnnotation(invocation);
-            if (annotation == null || permissionAuthorizationService.isPermittedAny(annotation.value())) {
+            if (annotation == null
+                    || permissionAuthorizationServiceProvider.getObject().isPermittedAny(annotation.value())) {
                 return invocation.proceed();
             }
             throw new AccessDeniedException("Access denied for permission " + String.join(",", annotation.value()));

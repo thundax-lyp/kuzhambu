@@ -28,6 +28,12 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
                 Path.of("src/main/java"), DiscoveryApplicationCommandQueryRecordAllowances.legacyAllowances());
+        NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
+                List.of(Path.of("src/main/java"), Path.of("../kuzhambu-discovery-interface/src/main/java")),
+                legacyCommandQueryConstructionAllowances());
+        NamingArchitectureRuleSupport.assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
+                List.of(Path.of("src/main/java"), Path.of("../kuzhambu-discovery-interface/src/main/java")),
+                legacyAssemblerNullReturnAllowances());
         NamingArchitectureRuleSupport.assertApplicationQueriesDoNotOwnPageState(
                 Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
@@ -65,6 +71,66 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
                 rawParameters(
                         "METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.report.service."
                                 + "DiscoveryReportApplicationService.summary(java.time.Instant, java.time.Instant, java.lang.String)"));
+    }
+
+    private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {
+        return List.of(
+                constructionViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#SyncKnowledgeContentCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#KnowledgeSyncItemQuery:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#KnowledgeSyncItemQuery:2"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#DeleteQaSessionCommand:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#QaSessionQuery:1"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#QaSessionQuery:2"),
+                constructionViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#ExportQaSessionCommand:1"));
+    }
+
+    private static ArchitectureRuleAllowance constructionViolation(String ownerAndType) {
+        return ArchitectureRuleAllowance.of(
+                "COMMAND_QUERY_CONSTRUCTION:" + ownerAndType,
+                "Discovery QA admin controller directly constructs an application Command/Query.",
+                "Move request conversion into DiscoveryQaInterfaceAssembler, then remove this allowance.");
+    }
+
+    private static List<ArchitectureRuleAllowance> legacyAssemblerNullReturnAllowances() {
+        return List.of(
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler#toOpenSessionCommand:OpenQaSessionCommand:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler#toChatCompletionCommand:ChatCompletionCommand:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler#toDeleteSessionCommand:DeleteQaSessionCommand:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler#toExportSessionCommand:ExportQaSessionCommand:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler.DiscoverySearchPortalInterfaceAssembler#toQuery:SearchQuery:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler.DiscoverySearchPortalInterfaceAssembler#toCommand:SearchClickEventCreateCommand:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler.DiscoverySearchPortalInterfaceAssembler#toQuery:SearchPreviewQuery:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchQuery:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchEventQuery:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toCommand:SearchClickEventCreateCommand:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchPreviewQuery:1"),
+                nullReturnViolation(
+                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchStatisticsSummaryQuery:1"));
+    }
+
+    private static ArchitectureRuleAllowance nullReturnViolation(String ownerMethodAndType) {
+        return ArchitectureRuleAllowance.of(
+                "COMMAND_QUERY_ASSEMBLER_NULL_RETURN:" + ownerMethodAndType,
+                "Discovery interface assembler returns null for an application Command/Query on null input.",
+                "Validate inputs in the caller or model the absence explicitly, then return a concrete application contract.");
     }
 
     private static ArchitectureRuleAllowance rawParameters(String key) {

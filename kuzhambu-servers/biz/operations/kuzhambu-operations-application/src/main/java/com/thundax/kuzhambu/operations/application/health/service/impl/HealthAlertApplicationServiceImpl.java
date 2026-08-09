@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.operations.application.health.service.impl;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -101,7 +102,7 @@ public class HealthAlertApplicationServiceImpl implements HealthAlertApplication
         if (OperationsHealthRecoveryLinkFactory.ACTION_RUN_RESTORE.equals(action)) {
             Long backupId = parseBackupId(record.getRecoveryTarget());
             if (backupId == null) {
-                throw new IllegalArgumentException("Operations restore recovery target must contain backupId.");
+                throw new BizException("Operations restore recovery target must contain backupId.");
             }
             if (restoreApplicationService == null) {
                 throw new IllegalStateException("Operations restore recovery action is not available.");
@@ -121,11 +122,11 @@ public class HealthAlertApplicationServiceImpl implements HealthAlertApplication
 
     private HealthAlertRecord requireAlert(HealthAlertId alertId) {
         if (alertId == null) {
-            throw new IllegalArgumentException("Operations health alert id must not be null.");
+            throw new BizException("Operations health alert id must not be null.");
         }
         HealthAlertRecord record = healthAlertRepository.getById(alertId);
         if (record == null) {
-            throw new IllegalArgumentException("Operations health alert does not exist.");
+            throw new BizException("Operations health alert does not exist.");
         }
         return record;
     }

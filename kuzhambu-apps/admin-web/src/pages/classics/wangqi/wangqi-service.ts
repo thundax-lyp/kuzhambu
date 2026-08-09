@@ -10,6 +10,7 @@ import type {
 } from "./wangqi-types";
 
 const DOCUMENTS_PATH = "/classics/wangqi/documents";
+const PUBLICATION_DOCUMENTS_PATH = "/classics/publication/wangqi/documents";
 
 export type WangqiDocumentQuery = PageQuery<{
     keyword?: string | null;
@@ -85,28 +86,28 @@ export const deleteById = (id: string) => {
 
 export const publish = (command: WangqiPublicationActionCommand) => {
     return postJson<WangqiPublicationActionRecord, WangqiPublicationActionCommand>(
-        `${DOCUMENTS_PATH}/publish`,
+        `${PUBLICATION_DOCUMENTS_PATH}/publish`,
         { body: command }
     );
 };
 
 export const submitOffline = (command: WangqiPublicationActionCommand) => {
     return postJson<WangqiPublicationActionRecord, WangqiPublicationActionCommand>(
-        `${DOCUMENTS_PATH}/offline`,
+        `${PUBLICATION_DOCUMENTS_PATH}/offline`,
         { body: command }
     );
 };
 
 export const publishBatch = (command: WangqiPublicationBatchCommand) => {
     return postJson<WangqiPublicationBatchRecord, WangqiPublicationBatchCommand>(
-        `${DOCUMENTS_PATH}/batch/publish`,
+        `${PUBLICATION_DOCUMENTS_PATH}/batch/publish`,
         { body: command }
     );
 };
 
 export const submitOfflineBatch = (command: WangqiPublicationBatchCommand) => {
     return postJson<WangqiPublicationBatchRecord, WangqiPublicationBatchCommand>(
-        `${DOCUMENTS_PATH}/batch/offline`,
+        `${PUBLICATION_DOCUMENTS_PATH}/batch/offline`,
         { body: command }
     );
 };

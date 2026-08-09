@@ -112,7 +112,8 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         validateExecuteCommand(command, requireRequesterUserId);
         String cleanupType = OperationsCleanupSupport.normalizeType(command.getCleanupType());
         if (!OperationsCleanupSupport.isSupportedType(cleanupType)) {
-            throw new IllegalArgumentException("Operations cleanup type is not supported: " + command.getCleanupType());
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations cleanup type is not supported: " + command.getCleanupType());
         }
 
         Instant requestedAt = command.getRequestedAt() == null ? Instant.now() : command.getRequestedAt();
@@ -337,13 +338,16 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
 
     private void validateExecuteCommand(OperationsCleanupExecuteCommand command, boolean requireRequesterUserId) {
         if (command == null) {
-            throw new IllegalArgumentException("Operations cleanup execute command must not be null.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations cleanup execute command must not be null.");
         }
         if (StringUtils.isBlank(command.getCleanupType())) {
-            throw new IllegalArgumentException("Operations cleanup type must not be blank.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations cleanup type must not be blank.");
         }
         if (requireRequesterUserId && command.getRequesterUserId() == null) {
-            throw new IllegalArgumentException("Operations cleanup requesterUserId must not be null.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations cleanup requesterUserId must not be null.");
         }
     }
 

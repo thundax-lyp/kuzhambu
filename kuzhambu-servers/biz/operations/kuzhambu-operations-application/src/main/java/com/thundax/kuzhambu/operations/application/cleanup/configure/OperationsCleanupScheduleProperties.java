@@ -34,8 +34,7 @@ public class OperationsCleanupScheduleProperties {
                     case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_REPORT -> policies.getExpiredReport();
                     case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_HEALTH_CHECK -> policies.getExpiredHealthCheck();
                     case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_LONG_TASK -> policies.getExpiredLongTask();
-                    default ->
-                        throw new IllegalArgumentException("Unsupported operations cleanup type: " + cleanupType);
+                    default -> throw new IllegalStateException("Unsupported operations cleanup type: " + cleanupType);
                 };
         return new CleanupPolicy(
                 normalizedType, policy.isEnabled(), policy.getRetentionDays(), effectiveLimit(policy.getLimit()));

@@ -231,10 +231,12 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
 
     private void validateExecuteCommand(OperationsBackupExecuteCommand command) {
         if (command == null) {
-            throw new IllegalArgumentException("Operations backup execute command must not be null.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations backup execute command must not be null.");
         }
         if (command.getRequesterUserId() == null) {
-            throw new IllegalArgumentException("Operations backup requesterUserId must not be null.");
+            throw new com.thundax.kuzhambu.common.core.exception.BizException(
+                    "Operations backup requesterUserId must not be null.");
         }
     }
 

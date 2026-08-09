@@ -26,10 +26,10 @@ public class DefaultOperationsBackupScriptExecutor implements OperationsBackupSc
     @Override
     public OperationsBackupArtifact executeBackup(BackupType backupType, String timestamp) {
         if (backupType == null) {
-            throw new IllegalArgumentException("Operations backup type must not be null.");
+            throw new IllegalStateException("Operations backup type must not be null.");
         }
         if (StringUtils.isBlank(timestamp)) {
-            throw new IllegalArgumentException("Operations backup timestamp must not be blank.");
+            throw new IllegalStateException("Operations backup timestamp must not be blank.");
         }
         runScript(
                 Path.of(properties.getScriptsRoot(), properties.getBackupScriptName()),
@@ -52,10 +52,10 @@ public class DefaultOperationsBackupScriptExecutor implements OperationsBackupSc
 
     private void executeRestoreWithMode(String backupBaseName, String preRestoreTimestamp, String restoreMode) {
         if (StringUtils.isBlank(backupBaseName)) {
-            throw new IllegalArgumentException("Operations restore backupBaseName must not be blank.");
+            throw new IllegalStateException("Operations restore backupBaseName must not be blank.");
         }
         if (StringUtils.isBlank(preRestoreTimestamp)) {
-            throw new IllegalArgumentException("Operations restore preRestoreTimestamp must not be blank.");
+            throw new IllegalStateException("Operations restore preRestoreTimestamp must not be blank.");
         }
         runScript(
                 Path.of(properties.getScriptsRoot(), properties.getRestoreScriptName()),
@@ -76,7 +76,7 @@ public class DefaultOperationsBackupScriptExecutor implements OperationsBackupSc
     @Override
     public OperationsBackupArtifact loadArtifact(String baseName) {
         if (StringUtils.isBlank(baseName)) {
-            throw new IllegalArgumentException("Operations backup baseName must not be blank.");
+            throw new IllegalStateException("Operations backup baseName must not be blank.");
         }
         Path backupRoot = Path.of(properties.getBackupRootPath());
         Path sqlFile = backupRoot.resolve(baseName + ".sql");

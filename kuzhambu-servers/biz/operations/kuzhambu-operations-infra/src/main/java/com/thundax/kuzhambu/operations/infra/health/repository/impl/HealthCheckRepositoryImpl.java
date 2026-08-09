@@ -195,7 +195,7 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
         return switch (normalized) {
             case "HOUR" -> "DATE_FORMAT(" + checkedAtDisplayTime + ", '%Y-%m-%d %H:00:00')";
             case "DAY" -> "DATE_FORMAT(" + checkedAtDisplayTime + ", '%Y-%m-%d')";
-            default -> throw new IllegalArgumentException("Unsupported health trend bucketType: " + bucketType);
+            default -> throw new IllegalStateException("Unsupported health trend bucketType: " + bucketType);
         };
     }
 

@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +37,7 @@ class AiWorkerModelConfigResolverTest {
         AiWorkerModelConfigResolver resolver = newResolver(modelService);
 
         assertThatThrownBy(() -> resolver.resolveConfig(command()))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BizException.class)
                 .hasMessageContaining("AI model baseUrl is required");
     }
 
@@ -47,7 +48,7 @@ class AiWorkerModelConfigResolverTest {
         AiWorkerModelConfigResolver resolver = newResolver(modelService);
 
         assertThatThrownBy(() -> resolver.resolveConfig(command()))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BizException.class)
                 .hasMessageContaining("AI model is disabled");
     }
 
@@ -62,7 +63,7 @@ class AiWorkerModelConfigResolverTest {
         AiWorkerModelConfigResolver resolver = newResolver(new FakeModelRepository());
 
         assertThatThrownBy(() -> resolver.resolveConfig(command))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BizException.class)
                 .hasMessageContaining("AI modelId is required");
     }
 

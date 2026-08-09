@@ -48,9 +48,9 @@ flowchart LR
 
 | Content | Publish | Offline | Batch publish | Batch offline | Permission |
 | --- | --- | --- | --- | --- | --- |
-| Sancai | `POST /api/classics/sancai/entries/publish` | `POST /api/classics/sancai/entries/offline` | `POST /api/classics/sancai/entries/batch/publish` | `POST /api/classics/sancai/entries/batch/offline` | `classics:sancai:edit` |
-| Wangqi | `POST /api/classics/wangqi/documents/publish` | `POST /api/classics/wangqi/documents/offline` | `POST /api/classics/wangqi/documents/batch/publish` | `POST /api/classics/wangqi/documents/batch/offline` | `classics:wangqi:edit` |
-| Ming Customs | `POST /api/classics/ming-customs/publish` | `POST /api/classics/ming-customs/offline` | `POST /api/classics/ming-customs/batch/publish` | `POST /api/classics/ming-customs/batch/offline` | `classics:mingcustoms:edit` |
+| Sancai | `POST /api/classics/publication/sancai/entries/publish` | `POST /api/classics/publication/sancai/entries/offline` | `POST /api/classics/publication/sancai/entries/batch/publish` | `POST /api/classics/publication/sancai/entries/batch/offline` | `classics:sancai:edit` |
+| Wangqi | `POST /api/classics/publication/wangqi/documents/publish` | `POST /api/classics/publication/wangqi/documents/offline` | `POST /api/classics/publication/wangqi/documents/batch/publish` | `POST /api/classics/publication/wangqi/documents/batch/offline` | `classics:wangqi:edit` |
+| Ming Customs | `POST /api/classics/publication/ming-customs/publish` | `POST /api/classics/publication/ming-customs/offline` | `POST /api/classics/publication/ming-customs/batch/publish` | `POST /api/classics/publication/ming-customs/batch/offline` | `classics:mingcustoms:edit` |
 
 任务查询：
 
