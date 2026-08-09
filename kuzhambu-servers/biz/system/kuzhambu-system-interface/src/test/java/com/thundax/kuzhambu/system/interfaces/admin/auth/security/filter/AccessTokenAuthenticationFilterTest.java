@@ -22,11 +22,11 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.query.AdminAuthQuery;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenQueryResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenRefreshResult;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthAccessTokenDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenQueryDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenRefreshDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthLookup;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthOperation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -59,76 +59,76 @@ class AccessTokenAuthenticationFilterTest {
     private static final class TokenAuthService implements AdminAuthService {
 
         @Override
-        public AuthAccessTokenResult createAccessToken(AdminAuthCommand command) {
+        public AuthAccessTokenDTO createAccessToken(AdminAuthOperation command) {
             return null;
         }
 
         @Override
-        public AuthAccessTokenResult getAccessToken(AdminAuthQuery query) {
+        public AuthAccessTokenDTO getAccessToken(AdminAuthLookup query) {
             PrincipalAccessToken accessToken = new PrincipalAccessToken();
             accessToken.setPrincipalKey(PrincipalKey.of(PrincipalType.USER, 1L));
-            return new AuthAccessTokenResult("access-token", null, accessToken);
+            return new AuthAccessTokenDTO("access-token", null, accessToken);
         }
 
         @Override
-        public int deleteAccessTokensByUserId(AdminAuthCommand command) {
+        public int deleteAccessTokensByUserId(AdminAuthOperation command) {
             return 0;
         }
 
         @Override
-        public boolean validateToken(AdminAuthCommand command) {
+        public boolean validateToken(AdminAuthOperation command) {
             return true;
         }
 
         @Override
-        public void activeAccessToken(AdminAuthCommand command) {}
+        public void activeAccessToken(AdminAuthOperation command) {}
 
         @Override
-        public void deleteAccessToken(AdminAuthCommand command) {}
+        public void deleteAccessToken(AdminAuthOperation command) {}
 
         @Override
-        public AuthTokenQueryResult getTokenInfo(AdminAuthQuery query) {
+        public AuthTokenQueryDTO getTokenInfo(AdminAuthLookup query) {
             return null;
         }
 
         @Override
-        public AuthTokenRefreshResult refreshAccessToken(AdminAuthCommand command) {
+        public AuthTokenRefreshDTO refreshAccessToken(AdminAuthOperation command) {
             return null;
         }
 
         @Override
-        public void invalidateSessionByToken(AdminAuthCommand command) {}
+        public void invalidateSessionByToken(AdminAuthOperation command) {}
 
         @Override
-        public int invalidateSessionsByUserId(AdminAuthCommand command) {
+        public int invalidateSessionsByUserId(AdminAuthOperation command) {
             return 0;
         }
 
         @Override
-        public User authenticatePassword(AdminAuthCommand command) {
+        public User authenticatePassword(AdminAuthOperation command) {
             return null;
         }
 
         @Override
-        public User authenticateSms(AdminAuthCommand command) {
+        public User authenticateSms(AdminAuthOperation command) {
             return null;
         }
 
         @Override
-        public User authenticateWecom(AdminAuthCommand command) {
+        public User authenticateWecom(AdminAuthOperation command) {
             return null;
         }
 
         @Override
-        public User authenticateGithub(AdminAuthCommand command) {
+        public User authenticateGithub(AdminAuthOperation command) {
             return null;
         }
 
         @Override
-        public void recordLoginFailed(AdminAuthCommand command) {}
+        public void recordLoginFailed(AdminAuthOperation command) {}
 
         @Override
-        public void validatePassword(AdminAuthCommand command) {}
+        public void validatePassword(AdminAuthOperation command) {}
     }
 
     private static final class EmptyPermissionService implements PermissionService {

@@ -29,13 +29,13 @@ class KnowledgePortalAtlasControllerTest {
                 KnowledgePortalAtlasController.class,
                 "getAtlas",
                 "get",
-                com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasQuery
+                com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasRequest
                         .class);
     }
 
     @Test
     void queryAndResponseJsonFieldsShouldRemainStable() throws Exception {
-        com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasQuery query =
+        com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasRequest query =
                 OBJECT_MAPPER.readValue(
                         """
                         {
@@ -49,7 +49,7 @@ class KnowledgePortalAtlasControllerTest {
                         }
                         """,
                         com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request
-                                .KnowledgePortalAtlasQuery.class);
+                                .KnowledgePortalAtlasRequest.class);
         assertEquals("detail", query.getLevel());
         var queryNode = OBJECT_MAPPER.valueToTree(query);
         assertTrue(queryNode.has("level"));
@@ -145,7 +145,7 @@ class KnowledgePortalAtlasControllerTest {
 
         var response = controller.getAtlas(
                 new com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request
-                        .KnowledgePortalAtlasQuery());
+                        .KnowledgePortalAtlasRequest());
 
         verify(service).getAtlas(any(KnowledgePortalAtlasQuery.class));
         assertEquals("overview", response.getCurrentLevel());
@@ -197,7 +197,7 @@ class KnowledgePortalAtlasControllerTest {
 
         var request =
                 new com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request
-                        .KnowledgePortalAtlasQuery();
+                        .KnowledgePortalAtlasRequest();
         request.setLevel("category");
         request.setCategoryCode("ANIMALS");
         var response = controller.getAtlas(request);
@@ -254,7 +254,7 @@ class KnowledgePortalAtlasControllerTest {
 
         var request =
                 new com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request
-                        .KnowledgePortalAtlasQuery();
+                        .KnowledgePortalAtlasRequest();
         request.setLevel("detail");
         request.setEntityId(3001L);
         var response = controller.getAtlas(request);

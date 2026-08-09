@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalHomeResult;
-import com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.request.KnowledgePortalHomeQuery;
+import com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.request.KnowledgePortalHomeRequest;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ class KnowledgePortalHomeControllerTest {
     @Test
     void routesShouldKeepPortalApiPaths() throws Exception {
         assertRequestMapping(KnowledgePortalHomeController.class, "/api/portal/knowledge/home");
-        assertPostMapping(KnowledgePortalHomeController.class, "getHome", "get", KnowledgePortalHomeQuery.class);
+        assertPostMapping(KnowledgePortalHomeController.class, "getHome", "get", KnowledgePortalHomeRequest.class);
     }
 
     @Test
@@ -83,7 +83,7 @@ class KnowledgePortalHomeControllerTest {
                         List.of(new KnowledgePortalHomeResult.PortalFeatureCollectionItem(
                                 "quality-brief", "质量摘要", "阅读型摘要", "/knowledge/quality", "质量洞察"))));
 
-        var response = controller.getHome(new KnowledgePortalHomeQuery());
+        var response = controller.getHome(new KnowledgePortalHomeRequest());
 
         verify(service).getHome();
         assertEquals("古籍知识图谱门户", response.getHeroTitle());

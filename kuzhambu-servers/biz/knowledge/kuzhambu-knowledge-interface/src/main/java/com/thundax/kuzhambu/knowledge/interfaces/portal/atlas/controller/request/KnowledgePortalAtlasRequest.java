@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class KnowledgePortalAtlasQuery {
+public class KnowledgePortalAtlasRequest {
     private String level;
     private String categoryCode;
     private Long entityId;

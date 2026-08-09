@@ -12,9 +12,8 @@ import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.query.AdminAuthQuery;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthAccessTokenDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthHelper;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -91,7 +90,7 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        AuthAccessTokenResult accessToken = authService.getAccessToken(tokenQuery(token));
+        AuthAccessTokenDTO accessToken = authService.getAccessToken(AdminAuthHelper.tokenLookup(token));
         if (accessToken == null) {
             writeError(response);
             return;
@@ -114,7 +113,7 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
         }
         Set<String> permissionSnapshot = new LinkedHashSet<>(permissions);
 
-        authService.activeAccessToken(accessTokenCommand(accessToken));
+        authService.activeAccessToken(AdminAuthHelper.accessTokenOperation(accessToken));
         KuzhambuContextHolder.setSubject(new KuzhambuSubject(
                 accessToken.getUserId(),
                 KuzhambuSubjectType.ADMIN_USER,
@@ -132,18 +131,6 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
         }
 
         return request.getParameter(PARAM_TOKEN);
-    }
-
-    private AdminAuthQuery tokenQuery(String token) {
-        AdminAuthQuery query = new AdminAuthQuery();
-        query.setToken(token);
-        return query;
-    }
-
-    private AdminAuthCommand accessTokenCommand(AuthAccessTokenResult accessToken) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setAccessToken(accessToken);
-        return command;
     }
 
     private void writeError(HttpServletResponse response) throws IOException {

@@ -36,13 +36,13 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthAccessTokenDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenQueryDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenRefreshDTO;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.provider.GithubLoginProvider;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.provider.WecomLoginProvider;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.query.AdminAuthQuery;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenQueryResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenRefreshResult;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthLookup;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthOperation;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.LoginProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,70 +80,73 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     @Override
-    public AuthAccessTokenResult createAccessToken(AdminAuthCommand command) {
-        PrincipalAuthenticationMethod authenticationMethod = command.getAuthenticationMethod();
+    public AuthAccessTokenDTO createAccessToken(AdminAuthOperation operation) {
+        PrincipalAuthenticationMethod authenticationMethod = operation.getAuthenticationMethod();
         if (authenticationMethod == null) {
             authenticationMethod = PrincipalAuthenticationMethod.PASSWORD;
         }
-        PrincipalIdentityType identityType = command.getIdentityType();
+        PrincipalIdentityType identityType = operation.getIdentityType();
         if (identityType == null) {
             identityType = PrincipalIdentityType.USER_ACCOUNT;
         }
-        AuthAccessTokenResult result =
+        AuthAccessTokenDTO result =
                 toInterfaceResult(adminTokenService.createAccessToken(new CreateAdminAccessTokenCommand(
-                        command.getUserId(),
-                        command.getLoginName(),
-                        command.getIp(),
-                        command.getUserAgent(),
+                        operation.getUserId(),
+                        operation.getLoginName(),
+                        operation.getIp(),
+                        operation.getUserAgent(),
                         authenticationMethod,
                         identityType)));
         if (result != null) {
-            permissionService.createPermissions(result.getToken(), UserIdCodec.toStringValue(command.getUserId()));
+            permissionService.createPermissions(result.getToken(), UserIdCodec.toStringValue(operation.getUserId()));
         }
         return result;
     }
 
     @Override
-    public AuthAccessTokenResult getAccessToken(AdminAuthQuery query) {
-        return toInterfaceResult(adminTokenService.getAccessToken(accessTokenQuery(query.getToken())));
+    public AuthAccessTokenDTO getAccessToken(AdminAuthLookup lookup) {
+        return toInterfaceResult(adminTokenService.getAccessToken(accessTokenQuery(lookup.getToken())));
     }
 
     @Override
-    public int deleteAccessTokensByUserId(AdminAuthCommand command) {
+    public int deleteAccessTokensByUserId(AdminAuthOperation operation) {
         return adminTokenService.deleteAccessTokensByUserId(
-                new DeleteAdminAccessTokenCommand(null, command.getUserId(), null, null));
+                new DeleteAdminAccessTokenCommand(null, operation.getUserId(), null, null));
     }
 
     @Override
-    public boolean validateToken(AdminAuthCommand command) {
-        return adminTokenService.validateToken(accessTokenQuery(tokenValue(command.getAccessToken())));
+    public boolean validateToken(AdminAuthOperation operation) {
+        return adminTokenService.validateToken(accessTokenQuery(tokenValue(operation.getAccessToken())));
     }
 
     @Override
-    public void activeAccessToken(AdminAuthCommand command) {
-        adminTokenService.activeAccessToken(accessTokenQuery(tokenValue(command.getAccessToken())));
+    public void activeAccessToken(AdminAuthOperation operation) {
+        adminTokenService.activeAccessToken(accessTokenQuery(tokenValue(operation.getAccessToken())));
     }
 
     @Override
-    public void deleteAccessToken(AdminAuthCommand command) {
+    public void deleteAccessToken(AdminAuthOperation operation) {
         adminTokenService.deleteAccessToken(new DeleteAdminAccessTokenCommand(
-                accessTokenCode(tokenValue(command.getAccessToken())), null, command.getIp(), command.getUserAgent()));
+                accessTokenCode(tokenValue(operation.getAccessToken())),
+                null,
+                operation.getIp(),
+                operation.getUserAgent()));
     }
 
     @Override
-    public AuthTokenQueryResult getTokenInfo(AdminAuthQuery query) {
-        return toInterfaceResult(adminTokenService.getTokenInfo(accessTokenQuery(query.getToken())));
+    public AuthTokenQueryDTO getTokenInfo(AdminAuthLookup lookup) {
+        return toInterfaceResult(adminTokenService.getTokenInfo(accessTokenQuery(lookup.getToken())));
     }
 
     @Override
-    public AuthTokenRefreshResult refreshAccessToken(AdminAuthCommand command) {
+    public AuthTokenRefreshDTO refreshAccessToken(AdminAuthOperation operation) {
         try {
-            AuthTokenRefreshResult result =
+            AuthTokenRefreshDTO result =
                     toInterfaceResult(adminTokenService.refreshAccessToken(new RefreshAdminAccessTokenCommand(
-                            PrincipalClientIdCodec.toDomain(command.getClientId()),
-                            PrincipalRefreshTokenCode.ofNullable(blankToNull(command.getRefreshToken())),
-                            command.getIp(),
-                            command.getUserAgent())));
+                            PrincipalClientIdCodec.toDomain(operation.getClientId()),
+                            PrincipalRefreshTokenCode.ofNullable(blankToNull(operation.getRefreshToken())),
+                            operation.getIp(),
+                            operation.getUserAgent())));
             if (result != null && result.getAccessToken() != null) {
                 permissionService.createPermissions(
                         result.getAccessToken().getToken(),
@@ -156,52 +159,52 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     @Override
-    public void invalidateSessionByToken(AdminAuthCommand command) {
+    public void invalidateSessionByToken(AdminAuthOperation operation) {
         adminTokenService.invalidateSessionByToken(
-                new InvalidateAdminSessionCommand(accessTokenCode(command.getToken()), null, command.getReason()));
+                new InvalidateAdminSessionCommand(accessTokenCode(operation.getToken()), null, operation.getReason()));
     }
 
     @Override
-    public int invalidateSessionsByUserId(AdminAuthCommand command) {
+    public int invalidateSessionsByUserId(AdminAuthOperation operation) {
         return adminTokenService.invalidateSessionsByUserId(
-                new InvalidateAdminSessionCommand(null, command.getUserId(), command.getReason()));
+                new InvalidateAdminSessionCommand(null, operation.getUserId(), operation.getReason()));
     }
 
     @Override
-    public User authenticatePassword(AdminAuthCommand command) {
+    public User authenticatePassword(AdminAuthOperation operation) {
         return authenticatePassword(
-                command.getLoginName(), command.getPlainPassword(), command.getIp(), command.getUserAgent());
+                operation.getLoginName(), operation.getPlainPassword(), operation.getIp(), operation.getUserAgent());
     }
 
     @Override
-    public User authenticateSms(AdminAuthCommand command) {
-        return authenticateSms(command.getMobile(), command.getIp(), command.getUserAgent());
+    public User authenticateSms(AdminAuthOperation operation) {
+        return authenticateSms(operation.getMobile(), operation.getIp(), operation.getUserAgent());
     }
 
     @Override
-    public User authenticateWecom(AdminAuthCommand command) {
-        return authenticateWecom(command.getCode(), command.getIp(), command.getUserAgent());
+    public User authenticateWecom(AdminAuthOperation operation) {
+        return authenticateWecom(operation.getCode(), operation.getIp(), operation.getUserAgent());
     }
 
     @Override
-    public User authenticateGithub(AdminAuthCommand command) {
-        return authenticateGithub(command.getCode(), command.getIp(), command.getUserAgent());
+    public User authenticateGithub(AdminAuthOperation operation) {
+        return authenticateGithub(operation.getCode(), operation.getIp(), operation.getUserAgent());
     }
 
     @Override
-    public void recordLoginFailed(AdminAuthCommand command) {
+    public void recordLoginFailed(AdminAuthOperation operation) {
         adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
                 null,
-                command.getAuthenticationMethod(),
-                command.getIdentityType(),
-                command.getIp(),
-                command.getUserAgent(),
-                command.getReason()));
+                operation.getAuthenticationMethod(),
+                operation.getIdentityType(),
+                operation.getIp(),
+                operation.getUserAgent(),
+                operation.getReason()));
     }
 
     @Override
-    public void validatePassword(AdminAuthCommand command) {
-        validatePassword(command.getUser(), command.getPlainPassword());
+    public void validatePassword(AdminAuthOperation operation) {
+        validatePassword(operation.getUser(), operation.getPlainPassword());
     }
 
     private User authenticatePassword(String loginName, String plainPassword) {
@@ -384,11 +387,11 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                 loginProperties.getEnable(), loginProperties.getMaxFailCount(), loginProperties.getLockTime());
     }
 
-    private AuthAccessTokenResult toInterfaceResult(AdminAccessTokenResult result) {
+    private AuthAccessTokenDTO toInterfaceResult(AdminAccessTokenResult result) {
         if (result == null) {
             return null;
         }
-        return new AuthAccessTokenResult(
+        return new AuthAccessTokenDTO(
                 result.getToken().asString(),
                 result.getRefreshToken() == null
                         ? null
@@ -396,7 +399,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                 result.getPrincipalAccessToken());
     }
 
-    private String tokenValue(AuthAccessTokenResult result) {
+    private String tokenValue(AuthAccessTokenDTO result) {
         if (result == null) {
             return null;
         }
@@ -415,24 +418,24 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         return StringUtils.isBlank(value) ? null : value;
     }
 
-    private AuthTokenQueryResult toInterfaceResult(AdminTokenQueryResult result) {
+    private AuthTokenQueryDTO toInterfaceResult(AdminTokenQueryResult result) {
         if (result == null) {
             return null;
         }
         if (!result.isActive()) {
-            return AuthTokenQueryResult.inactive(
+            return AuthTokenQueryDTO.inactive(
                     result.getToken() == null ? null : result.getToken().asString());
         }
-        return AuthTokenQueryResult.active(
+        return AuthTokenQueryDTO.active(
                 result.getToken().asString(), result.getSession(), result.getUser(), result.getUsername());
     }
 
-    private AuthTokenRefreshResult toInterfaceResult(AdminTokenRefreshResult result) {
+    private AuthTokenRefreshDTO toInterfaceResult(AdminTokenRefreshResult result) {
         if (result == null) {
             return null;
         }
-        AuthAccessTokenResult accessToken = toInterfaceResult(result.getAccessToken());
-        return new AuthTokenRefreshResult(
+        AuthAccessTokenDTO accessToken = toInterfaceResult(result.getAccessToken());
+        return new AuthTokenRefreshDTO(
                 accessToken,
                 result.getRefreshToken() == null
                         ? null

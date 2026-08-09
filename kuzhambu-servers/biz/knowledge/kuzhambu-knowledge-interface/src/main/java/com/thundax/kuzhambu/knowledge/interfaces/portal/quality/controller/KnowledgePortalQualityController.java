@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.quality.assembler.KnowledgePortalQualityInterfaceAssembler;
-import com.thundax.kuzhambu.knowledge.interfaces.portal.quality.controller.request.KnowledgePortalQualityQuery;
+import com.thundax.kuzhambu.knowledge.interfaces.portal.quality.controller.request.KnowledgePortalQualityRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.quality.controller.response.KnowledgePortalQualityResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +28,7 @@ public class KnowledgePortalQualityController {
 
     @Operation(summary = "获取知识门户质量页数据", description = "Portal 质量页")
     @PostMapping("get")
-    public KnowledgePortalQualityResponse getQuality(@Valid @RequestBody KnowledgePortalQualityQuery request) {
+    public KnowledgePortalQualityResponse getQuality(@Valid @RequestBody KnowledgePortalQualityRequest request) {
         return KnowledgePortalQualityInterfaceAssembler.toResponse(knowledgePortalReadApplicationService.getQuality());
     }
 }

@@ -19,9 +19,9 @@ import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthenticat
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.query.AdminAuthQuery;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenQueryResult;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenQueryDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthLookup;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthOperation;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.LoginProperties;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -34,10 +34,10 @@ class AdminAuthServiceImplTest {
         AdminAuthServiceImpl authService = authService(adminTokenService);
         when(adminTokenService.getTokenInfo(any(AdminAccessTokenQuery.class)))
                 .thenReturn(AdminTokenQueryResult.inactive(null));
-        AdminAuthQuery query = new AdminAuthQuery();
+        AdminAuthLookup query = new AdminAuthLookup();
         query.setToken("   ");
 
-        AuthTokenQueryResult result = authService.getTokenInfo(query);
+        AuthTokenQueryDTO result = authService.getTokenInfo(query);
 
         assertFalse(result.isActive());
         assertNull(result.getToken());
@@ -52,7 +52,7 @@ class AdminAuthServiceImplTest {
         AdminAuthServiceImpl authService = authService(adminTokenService);
         when(adminTokenService.refreshAccessToken(any(RefreshAdminAccessTokenCommand.class)))
                 .thenThrow(new BizException("invalid token"));
-        AdminAuthCommand command = new AdminAuthCommand();
+        AdminAuthOperation command = new AdminAuthOperation();
         command.setRefreshToken("   ");
 
         KuzhambuException exception =

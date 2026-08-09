@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.assembler.KnowledgePortalAtlasInterfaceAssembler;
-import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasQuery;
+import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.response.KnowledgePortalAtlasResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,8 +27,8 @@ public class KnowledgePortalAtlasController {
 
     @Operation(summary = "获取知识门户浏览页数据", description = "Portal 浏览页")
     @PostMapping("get")
-    public KnowledgePortalAtlasResponse getAtlas(@Valid @RequestBody KnowledgePortalAtlasQuery request) {
-        KnowledgePortalAtlasQuery effectiveRequest = request == null ? new KnowledgePortalAtlasQuery() : request;
+    public KnowledgePortalAtlasResponse getAtlas(@Valid @RequestBody KnowledgePortalAtlasRequest request) {
+        KnowledgePortalAtlasRequest effectiveRequest = request == null ? new KnowledgePortalAtlasRequest() : request;
         return KnowledgePortalAtlasInterfaceAssembler.toResponse(knowledgePortalReadApplicationService.getAtlas(
                 new com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery(
                         effectiveRequest.getLevel(),

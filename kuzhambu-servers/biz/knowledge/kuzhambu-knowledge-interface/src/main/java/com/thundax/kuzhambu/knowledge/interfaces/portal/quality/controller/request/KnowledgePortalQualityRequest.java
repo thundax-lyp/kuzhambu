@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class KnowledgePortalQualityQuery {
+public class KnowledgePortalQualityRequest {
     private String date;
     private String range;
     private String knowledgeBase;
