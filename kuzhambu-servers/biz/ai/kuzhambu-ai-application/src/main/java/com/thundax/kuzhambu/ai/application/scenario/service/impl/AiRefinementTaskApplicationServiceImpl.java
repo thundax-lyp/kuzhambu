@@ -129,17 +129,17 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     public AiRefinementTaskResult get(GetAiRefinementTaskQuery query) {
         AiBatchJobResult job =
-                batchJobApplicationService.get(new GetAiBatchJobQuery(query == null ? null : query.getTaskId()));
+                batchJobApplicationService.get(new GetAiBatchJobQuery(query == null ? null : query.taskId()));
         validateRefinementBatchOwnership(job);
         return toTaskResult(job);
     }
 
     @Override
     public PageResult<AiRefinementTaskResult> page(PageAiRefinementTasksQuery query) {
-        AiBusinessCapability capability = query == null ? null : query.getCapability();
-        AiBatchJobStatus status = query == null ? null : query.getStatus();
-        AiContentRef contentRef = query == null ? null : query.getContentRef();
-        PageQuery pageQuery = query == null ? null : query.getPageQuery();
+        AiBusinessCapability capability = query == null ? null : query.capability();
+        AiBatchJobStatus status = query == null ? null : query.status();
+        AiContentRef contentRef = query == null ? null : query.contentRef();
+        PageQuery pageQuery = query == null ? null : query.pageQuery();
         PageResult<AiBatchJobResult> page = capability == null
                 ? batchJobApplicationService.pageByCapabilities(new PageAiBatchJobsByCapabilitiesQuery(
                         REFINEMENT_SCOPE, REFINEMENT_CAPABILITIES, status, contentRef, pageQuery))
@@ -160,7 +160,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     public void subscribeEvents(
             SubscribeAiRefinementTaskEventsQuery query, Consumer<AiStreamEventResult> eventConsumer) {
-        AiBatchJobId taskId = query == null ? null : query.getTaskId();
+        AiBatchJobId taskId = query == null ? null : query.taskId();
         AiBatchJobResult job = batchJobApplicationService.get(new GetAiBatchJobQuery(taskId));
         validateRefinementBatchOwnership(job);
         if (!isStreamEnabledTask(job)) {
