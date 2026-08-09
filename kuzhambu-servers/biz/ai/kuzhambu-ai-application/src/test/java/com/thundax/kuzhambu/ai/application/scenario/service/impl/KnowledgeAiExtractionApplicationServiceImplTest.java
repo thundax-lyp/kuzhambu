@@ -38,10 +38,12 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("KNOWLEDGE_GRAPH_EXTRACTION", capturedCommand.operation());
-        assertNull(capturedCommand.workerPath());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, capturedCommand.capability());
-        assertEquals("knowledge_graph", capturedCommand.workerCapability());
+        assertEquals("KNOWLEDGE_GRAPH_EXTRACTION", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
+                capturedCommand.context().capability());
+        assertEquals("knowledge_graph", capturedCommand.route().workerCapability());
         assertEquals(0, invocationService.invokeCount());
         assertEquals(1, invocationService.streamCount());
     }
@@ -55,8 +57,10 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         extractRelations(repository);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
-        assertEquals("KNOWLEDGE_RELATION_EXTRACTION", capturedCommand.operation());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_RELATION_EXTRACT, capturedCommand.capability());
+        assertEquals("KNOWLEDGE_RELATION_EXTRACTION", capturedCommand.route().operation());
+        assertEquals(
+                AiBusinessCapability.KNOWLEDGE_RELATION_EXTRACT,
+                capturedCommand.context().capability());
     }
 
     @Test
@@ -68,9 +72,11 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         extractLineage(repository);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
-        assertEquals("KNOWLEDGE_LINEAGE_EXTRACTION", capturedCommand.operation());
-        assertNull(capturedCommand.workerPath());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_LINEAGE_EXTRACT, capturedCommand.capability());
+        assertEquals("KNOWLEDGE_LINEAGE_EXTRACTION", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.KNOWLEDGE_LINEAGE_EXTRACT,
+                capturedCommand.context().capability());
     }
 
     @Test
@@ -82,13 +88,15 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         extractTags(repository);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
-        assertEquals("knowledge", capturedCommand.scope());
-        assertEquals("KNOWLEDGE_TAG_EXTRACTION", capturedCommand.operation());
-        assertNull(capturedCommand.workerPath());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT, capturedCommand.capability());
-        assertEquals("tags", capturedCommand.workerCapability());
-        assertEquals(true, capturedCommand.forceJson());
-        assertEquals(true, capturedCommand.createCandidate());
+        assertEquals("knowledge", capturedCommand.context().scope());
+        assertEquals("KNOWLEDGE_TAG_EXTRACTION", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT,
+                capturedCommand.context().capability());
+        assertEquals("tags", capturedCommand.route().workerCapability());
+        assertEquals(true, capturedCommand.options().forceJson());
+        assertEquals(true, capturedCommand.options().createCandidate());
     }
 
     @Test
@@ -136,14 +144,16 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         repository.extractGraph(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
-        assertEquals("knowledge", businessResolver.capturedCommand().scope());
+        assertEquals("knowledge", businessResolver.capturedCommand().context().scope());
         assertEquals(
                 AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
-                businessResolver.capturedCommand().capability());
-        assertEquals(2001L, capturedCommand.modelId().value());
-        assertEquals("gpt-4o", capturedCommand.modelName().value());
-        assertEquals(6L, capturedCommand.promptVersionId().value());
-        assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.promptMessagesJson());
+                businessResolver.capturedCommand().context().capability());
+        assertEquals(2001L, capturedCommand.modelConfig().modelId().value());
+        assertEquals("gpt-4o", capturedCommand.modelConfig().modelName().value());
+        assertEquals(6L, capturedCommand.prompt().promptVersionId().value());
+        assertEquals(
+                "[{\"role\":\"user\",\"content\":\"rendered\"}]",
+                capturedCommand.prompt().promptMessagesJson());
     }
 
     private KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionApplicationServiceImpl repository) {
@@ -210,10 +220,10 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
             AiInvokeResult result = new AiInvokeResult();
             result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(101L));
             result.setCandidateId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(102L));
-            result.setRequestId(command.requestId());
-            result.setTraceId(command.traceId());
+            result.setRequestId(command.trace().requestId());
+            result.setTraceId(command.trace().traceId());
             result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
-            result.setCapability(command.capability());
+            result.setCapability(command.context().capability());
             result.setResultFormat("STRUCTURED");
             result.setResultPayload("{\"nodes\":[]}");
             return result;

@@ -45,25 +45,27 @@ public class AiBusinessInvokeConfigResolver {
     }
 
     public ResolvedBusinessInvokeConfig resolveConfig(AiInvokeCommand command) {
-        if (command == null || command.capability() == null) {
+        if (command == null || command.context() == null || command.context().capability() == null) {
             throw new BizException("AI business capability is required");
         }
-        AiBusinessConfig config = resolveBusinessConfig(command.capability());
+        AiBusinessConfig config = resolveBusinessConfig(command.context().capability());
         PromptVersion promptVersion = resolveCurrentPromptVersion(config);
-        ObjectNode inputPayload = withCommandMetadata(parseInputPayload(command.inputPayloadJson()), command);
+        ObjectNode inputPayload =
+                withCommandMetadata(parseInputPayload(command.payload().inputPayloadJson()), command);
         List<PromptVariable> variables = resolvePromptVariables(config, promptVersion);
         ObjectNode promptVariables = buildPromptVariables(variables, inputPayload);
         String promptMessagesJson = renderPromptMessages(promptVersion.getMessageTemplatesJson(), promptVariables);
         String promptVariablesJson = toJson(promptVariables, "AI prompt variables is not valid JSON");
-        String outputSchemaJson =
-                isBlank(command.outputSchemaJson()) ? promptVersion.getOutputSchemaJson() : command.outputSchemaJson();
+        String outputSchemaJson = isBlank(command.payload().outputSchemaJson())
+                ? promptVersion.getOutputSchemaJson()
+                : command.payload().outputSchemaJson();
 
         var resolved = modelConfigResolver.resolveConfig(
-                command.capability(),
-                command.serviceId(),
-                command.serviceRole(),
+                command.context().capability(),
+                command.modelConfig().serviceId(),
+                command.modelConfig().serviceRole(),
                 config.getModelId(),
-                command.modelName());
+                command.modelConfig().modelName());
         return new ResolvedBusinessInvokeConfig(
                 resolved.serviceId(),
                 resolved.serviceRole(),
@@ -76,15 +78,21 @@ public class AiBusinessInvokeConfigResolver {
     }
 
     public void validatePromptVersionEnabled(AiInvokeCommand command) {
-        if (command == null || command.capability() == null || command.promptVersionId() == null) {
+        if (command == null
+                || command.context() == null
+                || command.context().capability() == null
+                || command.prompt() == null
+                || command.prompt().promptVersionId() == null) {
             throw new BizException("AI prompt version is required");
         }
-        PromptVersion promptVersion = promptRepository.getVersion(command.promptVersionId());
+        PromptVersion promptVersion =
+                promptRepository.getVersion(command.prompt().promptVersionId());
         if (promptVersion == null || promptVersion.getTemplateId() == null) {
-            throw new BizException("AI prompt version is not configured: " + command.promptVersionId());
+            throw new BizException(
+                    "AI prompt version is not configured: " + command.prompt().promptVersionId());
         }
         PromptTemplate promptTemplate = promptRepository.get(promptVersion.getTemplateId());
-        AiBusinessCapability capability = command.capability();
+        AiBusinessCapability capability = command.context().capability();
         if (promptTemplate == null || !promptTemplate.isEnabled() || promptTemplate.getCapability() != capability) {
             throw new BizException("AI business config prompt template is disabled or mismatched: "
                     + PromptTemplateIdCodec.toValue(promptVersion.getTemplateId()));
@@ -200,23 +208,30 @@ public class AiBusinessInvokeConfigResolver {
 
     private ObjectNode withCommandMetadata(ObjectNode inputPayload, AiInvokeCommand command) {
         ObjectNode payload = inputPayload.deepCopy();
-        putIfAbsent(payload, "scope", command.scope());
-        putIfAbsent(payload, "capability", command.capability().value());
+        putIfAbsent(payload, "scope", command.context().scope());
+        putIfAbsent(payload, "capability", command.context().capability().value());
         putIfAbsent(
                 payload,
                 "contentType",
-                command.contentRef() == null ? null : command.contentRef().contentType());
+                command.target() == null || command.target().contentRef() == null
+                        ? null
+                        : command.target().contentRef().contentType());
         putIfAbsent(
                 payload,
                 "contentId",
-                command.contentRef() == null ? null : command.contentRef().contentId());
+                command.target() == null || command.target().contentRef() == null
+                        ? null
+                        : command.target().contentRef().contentId());
         putIfAbsent(
                 payload,
                 "objectId",
-                command.targetObjectId() == null
+                command.target() == null || command.target().targetObjectId() == null
                         ? null
-                        : command.targetObjectId().value());
-        putIfAbsent(payload, "locale", command.locale());
+                        : command.target().targetObjectId().value());
+        putIfAbsent(
+                payload,
+                "locale",
+                command.options() == null ? null : command.options().locale());
         return payload;
     }
 

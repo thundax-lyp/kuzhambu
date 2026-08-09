@@ -8,6 +8,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeContext;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeModelConfig;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeOptions;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePayload;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePrompt;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTarget;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTrace;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeWorkerRoute;
 import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
@@ -492,40 +500,25 @@ class AiWorkerHttpGatewayTest {
 
     private AiInvokeCommand command() {
         return new AiInvokeCommand(
-                null,
-                "classics",
-                AiBusinessCapability.from("CLASSICS_SUMMARY"),
-                "summary",
-                "translate",
-                null,
-                AiContentRef.ofNullable("entry", 10L),
-                null,
-                null,
-                "default",
-                new AiModelId(20L),
-                AiModelName.of("model-a"),
-                new PromptVersionId(30L),
-                new RequestId("req-1"),
-                new TraceId("trace-1"),
-                "[{\"role\":\"user\",\"content\":\"hello\"}]",
-                "{}",
-                null,
-                "{\"text\":\"hello\"}",
-                "{\"type\":\"text\"}",
-                false,
-                false,
-                null,
-                false,
-                false);
+                new AiInvokeContext(null, "classics", AiBusinessCapability.from("CLASSICS_SUMMARY")),
+                new AiInvokeWorkerRoute("summary", "translate", null),
+                new AiInvokeTarget(AiContentRef.ofNullable("entry", 10L), null),
+                new AiInvokeModelConfig(null, "default", new AiModelId(20L), AiModelName.of("model-a")),
+                new AiInvokeTrace(new RequestId("req-1"), new TraceId("trace-1")),
+                new AiInvokePrompt(new PromptVersionId(30L), "[{\"role\":\"user\",\"content\":\"hello\"}]", "{}", null),
+                new AiInvokePayload("{\"text\":\"hello\"}", "{\"type\":\"text\"}"),
+                new AiInvokeOptions(false, false, null, false, false));
     }
 
     private AiInvokeCommand withContentRef(AiInvokeCommand command, AiContentRef contentRef) {
-        return copyCommand(command, command.capability(), command.workerCapability(), contentRef);
+        return copyCommand(
+                command, command.context().capability(), command.route().workerCapability(), contentRef);
     }
 
     private AiInvokeCommand withRouting(
             AiInvokeCommand command, AiBusinessCapability capability, String workerCapability) {
-        return copyCommand(command, capability, workerCapability, command.contentRef());
+        return copyCommand(
+                command, capability, workerCapability, command.target().contentRef());
     }
 
     private AiInvokeCommand copyCommand(
@@ -534,31 +527,18 @@ class AiWorkerHttpGatewayTest {
             String workerCapability,
             AiContentRef contentRef) {
         return new AiInvokeCommand(
-                command.batchId(),
-                command.scope(),
-                capability,
-                workerCapability,
-                command.operation(),
-                command.workerPath(),
-                contentRef,
-                command.targetObjectId(),
-                command.serviceId(),
-                command.serviceRole(),
-                command.modelId(),
-                command.modelName(),
-                command.promptVersionId(),
-                command.requestId(),
-                command.traceId(),
-                command.promptMessagesJson(),
-                command.promptVariablesJson(),
-                command.promptHash(),
-                command.inputPayloadJson(),
-                command.outputSchemaJson(),
-                command.stream(),
-                command.forceJson(),
-                command.locale(),
-                command.allowFallback(),
-                command.createCandidate());
+                new AiInvokeContext(
+                        command.context().batchId(), command.context().scope(), capability),
+                new AiInvokeWorkerRoute(
+                        workerCapability,
+                        command.route().operation(),
+                        command.route().workerPath()),
+                new AiInvokeTarget(contentRef, command.target().targetObjectId()),
+                command.modelConfig(),
+                command.trace(),
+                command.prompt(),
+                command.payload(),
+                command.options());
     }
 
     private void respond(HttpExchange exchange, int statusCode, String body) throws IOException {

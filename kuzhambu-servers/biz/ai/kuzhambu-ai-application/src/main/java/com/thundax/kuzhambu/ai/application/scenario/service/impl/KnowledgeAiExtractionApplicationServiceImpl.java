@@ -1,6 +1,14 @@
 package com.thundax.kuzhambu.ai.application.scenario.service.impl;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeContext;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeModelConfig;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeOptions;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePayload;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePrompt;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTarget;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTrace;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeWorkerRoute;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
@@ -9,6 +17,8 @@ import com.thundax.kuzhambu.ai.application.scenario.result.KnowledgeAiExtraction
 import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.support.KnowledgeAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.scenario.support.KnowledgeAiWorkerUsecaseSpec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,32 +95,20 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
 
     private AiInvokeCommand toInvokeCommand(KnowledgeAiExtractionCommand command, KnowledgeAiWorkerUsecaseSpec spec) {
         return new AiInvokeCommand(
-                null,
-                "knowledge",
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(spec.capability()),
-                spec.workerCapability(),
-                spec.operation(),
-                spec.workerPath(),
-                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
-                        command.sourceContentType(), command.sourceContentId()),
-                null,
-                command.serviceId(),
-                command.serviceRole(),
-                command.modelId(),
-                command.modelName(),
-                command.promptVersionId(),
-                command.requestId(),
-                command.traceId(),
-                command.promptMessagesJson(),
-                command.promptVariablesJson(),
-                command.promptHash(),
-                command.inputPayloadJson(),
-                command.outputSchemaJson(),
-                false,
-                command.forceJson(),
-                command.locale(),
-                false,
-                true);
+                new AiInvokeContext(null, "knowledge", AiBusinessCapability.from(spec.capability())),
+                new AiInvokeWorkerRoute(spec.workerCapability(), spec.operation(), spec.workerPath()),
+                new AiInvokeTarget(
+                        AiContentRef.ofNullable(command.sourceContentType(), command.sourceContentId()), null),
+                new AiInvokeModelConfig(
+                        command.serviceId(), command.serviceRole(), command.modelId(), command.modelName()),
+                new AiInvokeTrace(command.requestId(), command.traceId()),
+                new AiInvokePrompt(
+                        command.promptVersionId(),
+                        command.promptMessagesJson(),
+                        command.promptVariablesJson(),
+                        command.promptHash()),
+                new AiInvokePayload(command.inputPayloadJson(), command.outputSchemaJson()),
+                new AiInvokeOptions(false, command.forceJson(), command.locale(), false, true));
     }
 
     private AiInvokeCommand enrichBusinessInvokeConfig(AiInvokeCommand command) {
@@ -119,30 +117,18 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
         }
         var resolved = businessInvokeConfigResolver.resolveConfig(command);
         return new AiInvokeCommand(
-                command.batchId(),
-                command.scope(),
-                command.capability(),
-                command.workerCapability(),
-                command.operation(),
-                command.workerPath(),
-                command.contentRef(),
-                command.targetObjectId(),
-                resolved.serviceId(),
-                resolved.serviceRole(),
-                resolved.modelId(),
-                resolved.modelName(),
-                resolved.promptVersionId(),
-                command.requestId(),
-                command.traceId(),
-                resolved.promptMessagesJson(),
-                resolved.promptVariablesJson(),
-                command.promptHash(),
-                command.inputPayloadJson(),
-                resolved.outputSchemaJson(),
-                command.stream(),
-                command.forceJson(),
-                command.locale(),
-                command.allowFallback(),
-                command.createCandidate());
+                command.context(),
+                command.route(),
+                command.target(),
+                new AiInvokeModelConfig(
+                        resolved.serviceId(), resolved.serviceRole(), resolved.modelId(), resolved.modelName()),
+                command.trace(),
+                new AiInvokePrompt(
+                        resolved.promptVersionId(),
+                        resolved.promptMessagesJson(),
+                        resolved.promptVariablesJson(),
+                        command.prompt().promptHash()),
+                new AiInvokePayload(command.payload().inputPayloadJson(), resolved.outputSchemaJson()),
+                command.options());
     }
 }

@@ -3,6 +3,14 @@ package com.thundax.kuzhambu.ai.application.invocation.result;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeContext;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeModelConfig;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeOptions;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePayload;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePrompt;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTarget;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTrace;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeWorkerRoute;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
@@ -80,30 +88,13 @@ class AiInvokeResultTest {
             PromptVersionId promptVersionId,
             boolean stream) {
         return new AiInvokeCommand(
-                new AiBatchJobId(1L),
-                null,
-                capability,
-                null,
-                null,
-                null,
-                contentRef,
-                targetObjectId,
-                null,
-                null,
-                null,
-                AiModelName.of("model-a"),
-                promptVersionId,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                stream,
-                false,
-                null,
-                false,
-                false);
+                new AiInvokeContext(new AiBatchJobId(1L), null, capability),
+                new AiInvokeWorkerRoute(null, null, null),
+                new AiInvokeTarget(contentRef, targetObjectId),
+                new AiInvokeModelConfig(null, null, null, AiModelName.of("model-a")),
+                new AiInvokeTrace(null, null),
+                new AiInvokePrompt(promptVersionId, null, null, null),
+                new AiInvokePayload(null, null),
+                new AiInvokeOptions(stream, false, null, false, false));
     }
 }

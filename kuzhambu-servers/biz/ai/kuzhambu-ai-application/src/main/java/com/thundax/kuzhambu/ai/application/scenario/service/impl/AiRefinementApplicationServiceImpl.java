@@ -1,6 +1,14 @@
 package com.thundax.kuzhambu.ai.application.scenario.service.impl;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeContext;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeModelConfig;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeOptions;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePayload;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePrompt;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTarget;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTrace;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeWorkerRoute;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
@@ -149,31 +157,18 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
 
     private AiInvokeCommand toInvokeCommand(AiRefinementRequestCommand source, AiBusinessCapability capability) {
         return new AiInvokeCommand(
-                source.batchId(),
-                source.scope(),
-                capability,
-                null,
-                source.operation(),
-                null,
-                source.contentRef(),
-                source.targetObjectId(),
-                source.serviceId(),
-                source.serviceRole(),
-                source.modelId(),
-                source.modelName(),
-                source.promptVersionId(),
-                source.requestId(),
-                source.traceId(),
-                source.promptMessagesJson(),
-                source.promptVariablesJson(),
-                source.promptHash(),
-                source.inputPayloadJson(),
-                source.outputSchemaJson(),
-                false,
-                source.forceJson(),
-                source.locale(),
-                false,
-                true);
+                new AiInvokeContext(source.batchId(), source.scope(), capability),
+                new AiInvokeWorkerRoute(null, source.operation(), null),
+                new AiInvokeTarget(source.contentRef(), source.targetObjectId()),
+                new AiInvokeModelConfig(source.serviceId(), source.serviceRole(), source.modelId(), source.modelName()),
+                new AiInvokeTrace(source.requestId(), source.traceId()),
+                new AiInvokePrompt(
+                        source.promptVersionId(),
+                        source.promptMessagesJson(),
+                        source.promptVariablesJson(),
+                        source.promptHash()),
+                new AiInvokePayload(source.inputPayloadJson(), source.outputSchemaJson()),
+                new AiInvokeOptions(false, source.forceJson(), source.locale(), false, true));
     }
 
     private boolean isStreamingCapability(AiBusinessCapability capability) {
@@ -190,10 +185,10 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
 
     private boolean hasResolvedInvokeConfig(AiInvokeCommand command) {
         return command != null
-                && command.modelId() != null
-                && command.promptVersionId() != null
-                && !isBlank(command.promptMessagesJson())
-                && !isBlank(command.promptVariablesJson());
+                && command.modelConfig().modelId() != null
+                && command.prompt().promptVersionId() != null
+                && !isBlank(command.prompt().promptMessagesJson())
+                && !isBlank(command.prompt().promptVariablesJson());
     }
 
     private AiRefinementRequestCommand toResolvedCommand(
@@ -205,18 +200,18 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
                 command.operation(),
                 command.contentRef(),
                 command.targetObjectId(),
-                invokeCommand.serviceId(),
-                invokeCommand.serviceRole(),
-                invokeCommand.modelId(),
-                invokeCommand.modelName(),
-                invokeCommand.promptVersionId(),
+                invokeCommand.modelConfig().serviceId(),
+                invokeCommand.modelConfig().serviceRole(),
+                invokeCommand.modelConfig().modelId(),
+                invokeCommand.modelConfig().modelName(),
+                invokeCommand.prompt().promptVersionId(),
                 command.requestId(),
                 command.traceId(),
-                invokeCommand.promptMessagesJson(),
-                invokeCommand.promptVariablesJson(),
+                invokeCommand.prompt().promptMessagesJson(),
+                invokeCommand.prompt().promptVariablesJson(),
                 command.promptHash(),
                 command.inputPayloadJson(),
-                invokeCommand.outputSchemaJson(),
+                invokeCommand.payload().outputSchemaJson(),
                 command.forceJson(),
                 command.locale());
     }
@@ -224,90 +219,49 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     private AiInvokeCommand withWorkerUsecase(
             AiInvokeCommand command, String workerCapability, String operation, String workerPath) {
         return new AiInvokeCommand(
-                command.batchId(),
-                command.scope(),
-                command.capability(),
-                workerCapability,
-                operation,
-                workerPath,
-                command.contentRef(),
-                command.targetObjectId(),
-                command.serviceId(),
-                command.serviceRole(),
-                command.modelId(),
-                command.modelName(),
-                command.promptVersionId(),
-                command.requestId(),
-                command.traceId(),
-                command.promptMessagesJson(),
-                command.promptVariablesJson(),
-                command.promptHash(),
-                command.inputPayloadJson(),
-                command.outputSchemaJson(),
-                command.stream(),
-                command.forceJson(),
-                command.locale(),
-                command.allowFallback(),
-                command.createCandidate());
+                command.context(),
+                new AiInvokeWorkerRoute(workerCapability, operation, workerPath),
+                command.target(),
+                command.modelConfig(),
+                command.trace(),
+                command.prompt(),
+                command.payload(),
+                command.options());
     }
 
     private AiInvokeCommand withStream(AiInvokeCommand command, boolean stream) {
         return new AiInvokeCommand(
-                command.batchId(),
-                command.scope(),
-                command.capability(),
-                command.workerCapability(),
-                command.operation(),
-                command.workerPath(),
-                command.contentRef(),
-                command.targetObjectId(),
-                command.serviceId(),
-                command.serviceRole(),
-                command.modelId(),
-                command.modelName(),
-                command.promptVersionId(),
-                command.requestId(),
-                command.traceId(),
-                command.promptMessagesJson(),
-                command.promptVariablesJson(),
-                command.promptHash(),
-                command.inputPayloadJson(),
-                command.outputSchemaJson(),
-                stream,
-                command.forceJson(),
-                command.locale(),
-                command.allowFallback(),
-                command.createCandidate());
+                command.context(),
+                command.route(),
+                command.target(),
+                command.modelConfig(),
+                command.trace(),
+                command.prompt(),
+                command.payload(),
+                new AiInvokeOptions(
+                        stream,
+                        command.options().forceJson(),
+                        command.options().locale(),
+                        command.options().allowFallback(),
+                        command.options().createCandidate()));
     }
 
     private AiInvokeCommand withResolvedConfig(
             AiInvokeCommand command, AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved) {
         return new AiInvokeCommand(
-                command.batchId(),
-                command.scope(),
-                command.capability(),
-                command.workerCapability(),
-                command.operation(),
-                command.workerPath(),
-                command.contentRef(),
-                command.targetObjectId(),
-                resolved.serviceId(),
-                resolved.serviceRole(),
-                resolved.modelId(),
-                resolved.modelName(),
-                resolved.promptVersionId(),
-                command.requestId(),
-                command.traceId(),
-                resolved.promptMessagesJson(),
-                resolved.promptVariablesJson(),
-                command.promptHash(),
-                command.inputPayloadJson(),
-                resolved.outputSchemaJson(),
-                command.stream(),
-                command.forceJson(),
-                command.locale(),
-                command.allowFallback(),
-                command.createCandidate());
+                command.context(),
+                command.route(),
+                command.target(),
+                new AiInvokeModelConfig(
+                        resolved.serviceId(), resolved.serviceRole(), resolved.modelId(), resolved.modelName()),
+                command.trace(),
+                new AiInvokePrompt(
+                        resolved.promptVersionId(),
+                        resolved.promptMessagesJson(),
+                        resolved.promptVariablesJson(),
+                        command.prompt().promptHash()),
+                new AiInvokePayload(command.payload().inputPayloadJson(), resolved.outputSchemaJson()),
+                command.options());
     }
 
     private void validateCommand(AiRefinementRequestCommand command) {

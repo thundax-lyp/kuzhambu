@@ -46,10 +46,10 @@ public class AiInvokeResult {
     public AiCandidate toCandidate(AiInvokeCommand command, AiCallId effectiveCallId) {
         AiCandidate candidate = new AiCandidate();
         candidate.setCallId(effectiveCallId);
-        candidate.setBatchId(command.batchId());
-        candidate.setCapability(command.capability());
-        candidate.setContentRef(command.contentRef());
-        candidate.setTargetObjectId(command.targetObjectId());
+        candidate.setBatchId(command.context().batchId());
+        candidate.setCapability(command.context().capability());
+        candidate.setContentRef(command.target().contentRef());
+        candidate.setTargetObjectId(command.target().targetObjectId());
         candidate.setArtifactReferenceJson(artifactReferenceJson);
         candidate.setResultFormat(resultFormat);
         candidate.setResultPayload(resultPayload);
@@ -57,10 +57,10 @@ public class AiInvokeResult {
         candidate.setErrorType(errorType);
         candidate.setErrorMessage(errorMessage);
         candidate.setPromptVersionId(AiPromptVersionIdCodec.toDomain(
-                command.promptVersionId() == null
+                command.prompt().promptVersionId() == null
                         ? null
-                        : command.promptVersionId().value()));
-        candidate.setModelName(command.modelName());
+                        : command.prompt().promptVersionId().value()));
+        candidate.setModelName(command.modelConfig().modelName());
         candidate.setRequestedAt(Instant.now());
         return candidate;
     }

@@ -40,11 +40,11 @@ public class AiWorkerModelConfigResolver {
             return null;
         }
         return resolveConfig(
-                command.capability(),
-                command.serviceId(),
-                command.serviceRole(),
-                command.modelId(),
-                command.modelName());
+                command.context() == null ? null : command.context().capability(),
+                command.modelConfig() == null ? null : command.modelConfig().serviceId(),
+                command.modelConfig() == null ? null : command.modelConfig().serviceRole(),
+                command.modelConfig() == null ? null : command.modelConfig().modelId(),
+                command.modelConfig() == null ? null : command.modelConfig().modelName());
     }
 
     public ResolvedModelConfig resolveConfig(

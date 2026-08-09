@@ -38,13 +38,14 @@ class PlatformAiApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("platform", capturedCommand.scope());
-        assertEquals("PLATFORM_PROMPT_SUGGESTION", capturedCommand.operation());
-        assertNull(capturedCommand.workerPath());
-        assertEquals(AiBusinessCapability.PROMPT_SUGGEST, capturedCommand.capability());
-        assertEquals("prompt_suggestion", capturedCommand.workerCapability());
-        assertFalse(capturedCommand.stream());
-        assertTrue(capturedCommand.createCandidate());
+        assertEquals("platform", capturedCommand.context().scope());
+        assertEquals("PLATFORM_PROMPT_SUGGESTION", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.PROMPT_SUGGEST, capturedCommand.context().capability());
+        assertEquals("prompt_suggestion", capturedCommand.route().workerCapability());
+        assertFalse(capturedCommand.options().stream());
+        assertTrue(capturedCommand.options().createCandidate());
         assertEquals(AiBusinessCapability.PROMPT_SUGGEST, result.getCapability());
     }
 
@@ -58,12 +59,14 @@ class PlatformAiApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("PLATFORM_VERSION_SUMMARY", capturedCommand.operation());
-        assertNull(capturedCommand.workerPath());
-        assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY, capturedCommand.capability());
-        assertEquals("version_summary", capturedCommand.workerCapability());
-        assertFalse(capturedCommand.stream());
-        assertFalse(capturedCommand.createCandidate());
+        assertEquals("PLATFORM_VERSION_SUMMARY", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.PLATFORM_VERSION_SUMMARY,
+                capturedCommand.context().capability());
+        assertEquals("version_summary", capturedCommand.route().workerCapability());
+        assertFalse(capturedCommand.options().stream());
+        assertFalse(capturedCommand.options().createCandidate());
         assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY, result.getCapability());
     }
 
@@ -75,7 +78,7 @@ class PlatformAiApplicationServiceImplTest {
 
         service.buildPromptSuggestion(command(Boolean.FALSE));
 
-        assertFalse(invocationService.capturedCommand().createCandidate());
+        assertFalse(invocationService.capturedCommand().options().createCandidate());
     }
 
     @Test
@@ -107,14 +110,16 @@ class PlatformAiApplicationServiceImplTest {
         service.buildPromptSuggestion(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
-        assertEquals("platform", businessResolver.capturedCommand().scope());
+        assertEquals("platform", businessResolver.capturedCommand().context().scope());
         assertEquals(
                 AiBusinessCapability.PROMPT_SUGGEST,
-                businessResolver.capturedCommand().capability());
-        assertEquals(2001L, capturedCommand.modelId().value());
-        assertEquals("gpt-4o", capturedCommand.modelName().value());
-        assertEquals(6L, capturedCommand.promptVersionId().value());
-        assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.promptMessagesJson());
+                businessResolver.capturedCommand().context().capability());
+        assertEquals(2001L, capturedCommand.modelConfig().modelId().value());
+        assertEquals("gpt-4o", capturedCommand.modelConfig().modelName().value());
+        assertEquals(6L, capturedCommand.prompt().promptVersionId().value());
+        assertEquals(
+                "[{\"role\":\"user\",\"content\":\"rendered\"}]",
+                capturedCommand.prompt().promptMessagesJson());
     }
 
     private PlatformAiInvokeCommand command() {
@@ -153,13 +158,13 @@ class PlatformAiApplicationServiceImplTest {
             AiInvokeResult result = new AiInvokeResult();
             result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(101L));
             result.setCandidateId(
-                    command.createCandidate()
+                    command.options().createCandidate()
                             ? new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(102L)
                             : null);
-            result.setRequestId(command.requestId());
-            result.setTraceId(command.traceId());
+            result.setRequestId(command.trace().requestId());
+            result.setTraceId(command.trace().traceId());
             result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
-            result.setCapability(command.capability());
+            result.setCapability(command.context().capability());
             result.setResultFormat("TEXT");
             result.setResultPayload("ok");
             return result;

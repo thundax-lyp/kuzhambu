@@ -5,6 +5,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeContext;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeModelConfig;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeOptions;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePayload;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePrompt;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTarget;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTrace;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeWorkerRoute;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
@@ -131,31 +139,14 @@ class AiWorkerModelConfigResolverTest {
 
     private static AiInvokeCommand command(AiBusinessCapability capability, AiModelId modelId, String serviceRole) {
         return new AiInvokeCommand(
-                null,
-                "classics",
-                capability,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                serviceRole,
-                modelId,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                false,
-                null,
-                false,
-                true);
+                new AiInvokeContext(null, "classics", capability),
+                new AiInvokeWorkerRoute(null, null, null),
+                new AiInvokeTarget(null, null),
+                new AiInvokeModelConfig(null, serviceRole, modelId, null),
+                new AiInvokeTrace(null, null),
+                new AiInvokePrompt(null, null, null, null),
+                new AiInvokePayload(null, null),
+                new AiInvokeOptions(false, false, null, false, true));
     }
 
     private static class FakeModelRepository implements AiModelRepository {

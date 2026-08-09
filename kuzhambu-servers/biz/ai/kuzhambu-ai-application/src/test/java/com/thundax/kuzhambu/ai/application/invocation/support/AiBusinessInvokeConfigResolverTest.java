@@ -6,6 +6,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeContext;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeModelConfig;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeOptions;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePayload;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePrompt;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTarget;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTrace;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeWorkerRoute;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
@@ -139,32 +147,17 @@ class AiBusinessInvokeConfigResolverTest {
 
     private static AiInvokeCommand command(PromptVersionId promptVersionId) {
         return new AiInvokeCommand(
-                null,
-                "classics",
-                AiBusinessCapability.CLASSICS_SUMMARY,
-                null,
-                null,
-                null,
-                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
-                        "SANCAI_ENTRY", 300000000001L),
-                null,
-                null,
-                null,
-                null,
-                null,
-                promptVersionId,
-                null,
-                null,
-                null,
-                null,
-                null,
-                "{\"sourceText\":\"天地玄黄\"}",
-                null,
-                false,
-                false,
-                null,
-                false,
-                true);
+                new AiInvokeContext(null, "classics", AiBusinessCapability.CLASSICS_SUMMARY),
+                new AiInvokeWorkerRoute(null, null, null),
+                new AiInvokeTarget(
+                        com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
+                                "SANCAI_ENTRY", 300000000001L),
+                        null),
+                new AiInvokeModelConfig(null, null, null, null),
+                new AiInvokeTrace(null, null),
+                new AiInvokePrompt(promptVersionId, null, null, null),
+                new AiInvokePayload("{\"sourceText\":\"天地玄黄\"}", null),
+                new AiInvokeOptions(false, false, null, false, true));
     }
 
     private static PromptVariable variable(String name, boolean required) {
