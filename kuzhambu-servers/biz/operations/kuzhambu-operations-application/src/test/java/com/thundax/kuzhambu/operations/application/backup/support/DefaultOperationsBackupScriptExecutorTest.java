@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.operations.application.backup.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.thundax.kuzhambu.operations.application.backup.configure.OperationsBackupScriptProperties;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

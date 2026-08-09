@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations backup properties`：迁移 operations backup 配置属性注册
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/support/OperationsBackupScheduleProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/support/OperationsBackupScriptProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/configure/OperationsBackupScheduleProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/configure/OperationsBackupScriptProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/configure/OperationsBackupConfiguration.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/support/OperationsBackupScheduler.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/support/DefaultOperationsBackupScriptExecutor.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/backup/support/OperationsBackupSchedulerTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/backup/support/DefaultOperationsBackupScriptExecutorTest.java`
-    - 处理动作：按 RUNBOOK Step 4 将 backup schedule/script 配置类移入 `operations.application.backup.configure` 并改为 `@ConfigurationProperties` 注册
-    - 验收点：两个 backup `*Properties` 类不再使用 `@Component`，`OperationsBackupConfiguration` 注册两个配置类，datasource 三个字段仍绑定 `spring.datasource.*`，所有生产和测试 import 指向新包
-    - 重要度：9/10
-
 - [ ] `operations cleanup properties`：迁移 operations cleanup 配置属性注册
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-COMPONENT-STEREOTYPE-CLEANUP.md`

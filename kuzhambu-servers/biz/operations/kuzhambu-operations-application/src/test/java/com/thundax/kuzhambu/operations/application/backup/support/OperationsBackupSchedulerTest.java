@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.operations.application.backup.result.OperationsBacku
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
 import com.thundax.kuzhambu.operations.application.backup.service.BackupApplicationService;
+import com.thundax.kuzhambu.operations.application.backup.configure.OperationsBackupScheduleProperties;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
