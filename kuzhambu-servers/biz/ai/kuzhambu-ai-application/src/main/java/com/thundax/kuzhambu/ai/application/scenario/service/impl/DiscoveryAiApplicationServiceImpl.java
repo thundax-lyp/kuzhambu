@@ -87,21 +87,21 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         invokeCommand.setWorkerPath(spec.workerPath());
         invokeCommand.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
                 CONTENT_TYPE_DISCOVERY_QUERY, null));
-        invokeCommand.setServiceId(command.getServiceId());
-        invokeCommand.setServiceRole(command.getServiceRole());
-        invokeCommand.setModelId(command.getModelId());
-        invokeCommand.setModelName(command.getModelName());
-        invokeCommand.setPromptVersionId(command.getPromptVersionId());
-        invokeCommand.setRequestId(command.getRequestId());
-        invokeCommand.setTraceId(command.getTraceId());
-        invokeCommand.setPromptMessagesJson(command.getPromptMessagesJson());
-        invokeCommand.setPromptVariablesJson(command.getPromptVariablesJson());
-        invokeCommand.setPromptHash(command.getPromptHash());
-        invokeCommand.setInputPayloadJson(command.getInputPayloadJson());
-        invokeCommand.setOutputSchemaJson(command.getOutputSchemaJson());
-        invokeCommand.setStream(spec.stream() || command.isStream());
-        invokeCommand.setForceJson(command.isForceJson());
-        invokeCommand.setLocale(command.getLocale());
+        invokeCommand.setServiceId(command.serviceId());
+        invokeCommand.setServiceRole(command.serviceRole());
+        invokeCommand.setModelId(command.modelId());
+        invokeCommand.setModelName(command.modelName());
+        invokeCommand.setPromptVersionId(command.promptVersionId());
+        invokeCommand.setRequestId(command.requestId());
+        invokeCommand.setTraceId(command.traceId());
+        invokeCommand.setPromptMessagesJson(command.promptMessagesJson());
+        invokeCommand.setPromptVariablesJson(command.promptVariablesJson());
+        invokeCommand.setPromptHash(command.promptHash());
+        invokeCommand.setInputPayloadJson(command.inputPayloadJson());
+        invokeCommand.setOutputSchemaJson(command.outputSchemaJson());
+        invokeCommand.setStream(spec.stream() || command.stream());
+        invokeCommand.setForceJson(command.forceJson());
+        invokeCommand.setLocale(command.locale());
         invokeCommand.setCreateCandidate(false);
         return invokeCommand;
     }
@@ -115,9 +115,9 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
 
     private void validateCommand(DiscoveryAiCommand command) {
         if (command == null
-                || command.getRequestId() == null
-                || command.getTraceId() == null
-                || isBlank(command.getInputPayloadJson())) {
+                || command.requestId() == null
+                || command.traceId() == null
+                || isBlank(command.inputPayloadJson())) {
             throw new BizException("Discovery AI command is incomplete");
         }
     }

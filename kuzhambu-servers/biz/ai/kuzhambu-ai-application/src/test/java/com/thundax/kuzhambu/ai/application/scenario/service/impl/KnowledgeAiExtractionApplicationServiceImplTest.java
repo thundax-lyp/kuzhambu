@@ -111,13 +111,27 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
         KnowledgeAiExtractionApplicationServiceImpl repository =
                 new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, businessResolver);
-        KnowledgeAiExtractionCommand command = command();
-        command.setServiceId(null);
-        command.setServiceRole(null);
-        command.setModelId(null);
-        command.setModelName(null);
-        command.setPromptVersionId(null);
-        command.setPromptMessagesJson(null);
+        KnowledgeAiExtractionCommand command = new KnowledgeAiExtractionCommand(
+                "GRAPH",
+                "ENTRY",
+                "{\"entryIds\":[1]}",
+                "SANCAI_ENTRY",
+                1L,
+                2L,
+                null,
+                null,
+                null,
+                null,
+                null,
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
+                null,
+                null,
+                null,
+                "{\"text\":\"hello\"}",
+                "{\"type\":\"object\"}",
+                true,
+                "zh-CN");
 
         repository.extractGraph(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();

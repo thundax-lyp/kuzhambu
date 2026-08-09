@@ -5,34 +5,25 @@ import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
 import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class KnowledgeAiExtractionCommand {
-    private String taskType;
-    private String scopeType;
-    private String scopeJson;
-    private String sourceContentType;
-    private Long sourceContentId;
-    private Long requestedBy;
-    private Long serviceId;
-    private String serviceRole;
-    private AiModelId modelId;
-    private AiModelName modelName;
-    private PromptVersionId promptVersionId;
-    private RequestId requestId;
-    private TraceId traceId;
-    private String promptMessagesJson;
-    private String promptVariablesJson;
-    private String promptHash;
-    private String inputPayloadJson;
-    private String outputSchemaJson;
-    private boolean forceJson;
-    private String locale;
-}
+public record KnowledgeAiExtractionCommand(
+        String taskType,
+        String scopeType,
+        String scopeJson,
+        String sourceContentType,
+        Long sourceContentId,
+        Long requestedBy,
+        Long serviceId,
+        String serviceRole,
+        AiModelId modelId,
+        AiModelName modelName,
+        PromptVersionId promptVersionId,
+        RequestId requestId,
+        TraceId traceId,
+        String promptMessagesJson,
+        String promptVariablesJson,
+        String promptHash,
+        String inputPayloadJson,
+        String outputSchemaJson,
+        boolean forceJson,
+        String locale) {}

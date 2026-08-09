@@ -121,13 +121,22 @@ class DiscoveryAiApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
         DiscoveryAiApplicationServiceImpl service =
                 new DiscoveryAiApplicationServiceImpl(invocationService, resolver, businessResolver);
-        DiscoveryAiCommand command = command(false);
-        command.setServiceId(null);
-        command.setServiceRole(null);
-        command.setModelId(null);
-        command.setModelName(null);
-        command.setPromptVersionId(null);
-        command.setPromptMessagesJson(null);
+        DiscoveryAiCommand command = new DiscoveryAiCommand(
+                null,
+                null,
+                null,
+                null,
+                null,
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
+                null,
+                "{\"locale\":\"zh-CN\"}",
+                "hash-a",
+                "{\"query\":\"hello\"}",
+                "{\"type\":\"object\"}",
+                false,
+                true,
+                "zh-CN");
 
         service.understandQuery(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();

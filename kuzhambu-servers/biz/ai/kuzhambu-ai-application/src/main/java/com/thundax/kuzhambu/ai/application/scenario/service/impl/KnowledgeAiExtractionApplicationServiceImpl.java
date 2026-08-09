@@ -63,21 +63,21 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
         invokeCommand.setOperation(spec.operation());
         invokeCommand.setWorkerPath(spec.workerPath());
         invokeCommand.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
-                command.getSourceContentType(), command.getSourceContentId()));
-        invokeCommand.setServiceId(command.getServiceId());
-        invokeCommand.setServiceRole(command.getServiceRole());
-        invokeCommand.setModelId(command.getModelId());
-        invokeCommand.setModelName(command.getModelName());
-        invokeCommand.setPromptVersionId(command.getPromptVersionId());
-        invokeCommand.setRequestId(command.getRequestId());
-        invokeCommand.setTraceId(command.getTraceId());
-        invokeCommand.setPromptMessagesJson(command.getPromptMessagesJson());
-        invokeCommand.setPromptVariablesJson(command.getPromptVariablesJson());
-        invokeCommand.setPromptHash(command.getPromptHash());
-        invokeCommand.setInputPayloadJson(command.getInputPayloadJson());
-        invokeCommand.setOutputSchemaJson(command.getOutputSchemaJson());
-        invokeCommand.setForceJson(command.isForceJson());
-        invokeCommand.setLocale(command.getLocale());
+                command.sourceContentType(), command.sourceContentId()));
+        invokeCommand.setServiceId(command.serviceId());
+        invokeCommand.setServiceRole(command.serviceRole());
+        invokeCommand.setModelId(command.modelId());
+        invokeCommand.setModelName(command.modelName());
+        invokeCommand.setPromptVersionId(command.promptVersionId());
+        invokeCommand.setRequestId(command.requestId());
+        invokeCommand.setTraceId(command.traceId());
+        invokeCommand.setPromptMessagesJson(command.promptMessagesJson());
+        invokeCommand.setPromptVariablesJson(command.promptVariablesJson());
+        invokeCommand.setPromptHash(command.promptHash());
+        invokeCommand.setInputPayloadJson(command.inputPayloadJson());
+        invokeCommand.setOutputSchemaJson(command.outputSchemaJson());
+        invokeCommand.setForceJson(command.forceJson());
+        invokeCommand.setLocale(command.locale());
         invokeCommand.setCreateCandidate(true);
         enrichBusinessInvokeConfig(invokeCommand);
         AiInvokeResult result = invocationApplicationService.stream(invokeCommand, null);
@@ -94,11 +94,11 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
 
     private void validateRequest(KnowledgeAiExtractionCommand command) {
         if (command == null
-                || isBlank(command.getSourceContentType())
-                || command.getSourceContentId() == null
-                || command.getRequestId() == null
-                || command.getTraceId() == null
-                || isBlank(command.getInputPayloadJson())) {
+                || isBlank(command.sourceContentType())
+                || command.sourceContentId() == null
+                || command.requestId() == null
+                || command.traceId() == null
+                || isBlank(command.inputPayloadJson())) {
             throw new BizException("Knowledge AI extraction request is incomplete");
         }
     }
