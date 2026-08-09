@@ -31,8 +31,8 @@ public class AiReportApplicationServiceImpl implements AiReportApplicationServic
 
     @Override
     public AiReportSummaryResult summary(AiReportSummaryQuery query) {
-        Instant periodStart = query == null ? null : query.getPeriodStart();
-        Instant periodEnd = query == null ? null : query.getPeriodEnd();
+        Instant periodStart = query == null ? null : query.periodStart();
+        Instant periodEnd = query == null ? null : query.periodEnd();
         List<AiInvocationLog> invocationLogs = aiInvocationRepository.listInvocationLogs(periodStart, periodEnd);
         long invocationCount = invocationLogs.size();
         long succeededInvocationCount = invocationLogs.stream()

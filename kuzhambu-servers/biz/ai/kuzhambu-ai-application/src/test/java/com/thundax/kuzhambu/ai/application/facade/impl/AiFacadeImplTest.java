@@ -68,9 +68,9 @@ class AiFacadeImplTest {
         Instant periodStart = Instant.parse("2025-01-01T00:00:00.123456Z");
         Instant periodEnd = Instant.parse("2025-01-31T23:59:59.987654Z");
         when(aiReportApplicationService.summary(argThat(query -> query != null
-                        && periodStart.equals(query.getPeriodStart())
-                        && periodEnd.equals(query.getPeriodEnd())
-                        && AiReportBucketType.DAY == query.getBucketType())))
+                        && periodStart.equals(query.periodStart())
+                        && periodEnd.equals(query.periodEnd())
+                        && AiReportBucketType.DAY == query.bucketType())))
                 .thenReturn(new AiReportSummaryResult(
                         periodStart,
                         periodEnd,
