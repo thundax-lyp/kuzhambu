@@ -1,8 +1,12 @@
 package com.thundax.kuzhambu.common.test.architecture;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class RepositorySourceHardRulesArchitectureTest {
 
@@ -20,6 +24,25 @@ class RepositorySourceHardRulesArchitectureTest {
     void configurationPropertiesShouldNotDeclareBusinessControlFlow() throws Exception {
         SourceHardRuleArchitectureRuleSupport.assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(
                 SERVER_SOURCE_ROOT, legacyConfigurationPropertiesBusinessControlFlowAllowances());
+    }
+
+    @Test
+    void configurationPropertiesControlFlowRuleShouldIgnoreTypesOutsidePropertiesClass(@TempDir Path temporaryDirectory)
+            throws Exception {
+        Path sourceRoot = temporaryDirectory.resolve("src/main/java");
+        Path sourceFile = sourceRoot.resolve("sample/SampleProperties.java");
+        Files.createDirectories(sourceFile.getParent());
+        Files.writeString(
+                sourceFile,
+                "@ConfigurationProperties(prefix = \"sample\")\n"
+                        + "class SampleProperties {}\n"
+                        + "final class UnrelatedType {\n"
+                        + "    void execute() { if (true) {} }\n"
+                        + "}\n");
+
+        assertDoesNotThrow(() ->
+                SourceHardRuleArchitectureRuleSupport.assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(
+                        sourceRoot));
     }
 
     private static List<ArchitectureRuleAllowance> legacyConfigurationPropertiesBusinessControlFlowAllowances() {

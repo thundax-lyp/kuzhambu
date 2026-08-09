@@ -31,8 +31,10 @@ public final class SourceHardRuleArchitectureRuleSupport {
     private static final Pattern ILLEGAL_ARGUMENT_EXCEPTION_VARIABLE_PATTERN =
             Pattern.compile("(?:java\\.lang\\.)?IllegalArgumentException\\s+(\\w+)\\b");
     private static final Pattern THROW_VARIABLE_PATTERN = Pattern.compile("\\bthrow\\s+(\\w+)\\s*;");
-    private static final Pattern CONFIGURATION_PROPERTIES_BUSINESS_CONTROL_FLOW_PATTERN =
-            Pattern.compile("(?s)@ConfigurationProperties\\s*\\([^)]*\\).*?\\b(?:if|switch|for|while|throw)\\b");
+    private static final Pattern CONFIGURATION_PROPERTIES_ANNOTATION_PATTERN =
+            Pattern.compile("@ConfigurationProperties\\s*\\([^)]*\\)");
+    private static final Pattern TYPE_BODY_PATTERN = Pattern.compile("\\b(?:class|record)\\s+\\w+[^\\{]*\\{");
+    private static final Pattern BUSINESS_CONTROL_FLOW_PATTERN = Pattern.compile("\\b(?:if|switch|for|while|throw)\\b");
     private static final Pattern COMMENTS_AND_LITERALS_PATTERN =
             Pattern.compile("(?s)/\\*.*?\\*/|//[^\\r\\n]*|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'");
 
@@ -76,7 +78,7 @@ public final class SourceHardRuleArchitectureRuleSupport {
             paths.filter(Files::isRegularFile)
                     .filter(path -> path.getFileName().toString().endsWith(".java"))
                     .filter(SourceHardRuleArchitectureRuleSupport::isProductionJavaSource)
-                    .filter(path -> sourceMatches(path, CONFIGURATION_PROPERTIES_BUSINESS_CONTROL_FLOW_PATTERN))
+                    .filter(SourceHardRuleArchitectureRuleSupport::hasConfigurationPropertiesBusinessControlFlow)
                     .map(path -> ArchitectureSourceSupport.repositoryPath(repositoryRoot, path))
                     .forEach(path -> {
                         String key = configurationPropertiesBusinessControlFlowAllowanceKey(path);
@@ -126,6 +128,44 @@ public final class SourceHardRuleArchitectureRuleSupport {
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to read source file " + path, exception);
         }
+    }
+
+    private static boolean hasConfigurationPropertiesBusinessControlFlow(Path path) {
+        try {
+            String source = withoutCommentsAndLiterals(Files.readString(path));
+            Matcher annotationMatcher = CONFIGURATION_PROPERTIES_ANNOTATION_PATTERN.matcher(source);
+            while (annotationMatcher.find()) {
+                Matcher typeMatcher = TYPE_BODY_PATTERN.matcher(source);
+                typeMatcher.region(annotationMatcher.end(), source.length());
+                if (!typeMatcher.find()) {
+                    continue;
+                }
+                int bodyStart = typeMatcher.end() - 1;
+                int bodyEnd = matchingClosingBrace(source, bodyStart);
+                if (bodyEnd >= 0
+                        && BUSINESS_CONTROL_FLOW_PATTERN
+                                .matcher(source.substring(bodyStart, bodyEnd + 1))
+                                .find()) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Failed to read source file " + path, exception);
+        }
+    }
+
+    private static int matchingClosingBrace(String source, int bodyStart) {
+        int depth = 0;
+        for (int index = bodyStart; index < source.length(); index++) {
+            char character = source.charAt(index);
+            if (character == '{') {
+                depth++;
+            } else if (character == '}' && --depth == 0) {
+                return index;
+            }
+        }
+        return -1;
     }
 
     private static boolean isProductionJavaSource(Path path) {
