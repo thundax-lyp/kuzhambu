@@ -17,13 +17,9 @@ final class AiApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.BuildPromptOptimizationSuggestionCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.CreateAiBusinessConfigCommand"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.RollbackPromptVersionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.UpdateAiBusinessConfigCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.ValidatePromptVariablesCommand"),
                 legacy(

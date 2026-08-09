@@ -115,12 +115,12 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
             return null;
         }
         AiBusinessConfig config = new AiBusinessConfig();
-        config.setId(command.getId());
-        config.setCapability(command.getCapability());
-        config.setPromptTemplateId(command.getPromptTemplateId());
-        config.setModelId(command.getModelId());
-        config.setDefaultParamsJson(command.getDefaultParamsJson());
-        config.setEnabled(command.getEnabled() == null || command.getEnabled());
+        config.setId(command.id());
+        config.setCapability(command.capability());
+        config.setPromptTemplateId(command.promptTemplateId());
+        config.setModelId(command.modelId());
+        config.setDefaultParamsJson(command.defaultParamsJson());
+        config.setEnabled(command.enabled() == null || command.enabled());
         config.setConfiguredAt(Instant.now());
         return config;
     }
@@ -130,12 +130,12 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
             return null;
         }
         AiBusinessConfig config = new AiBusinessConfig();
-        config.setId(command.getId());
-        config.setCapability(command.getCapability());
-        config.setPromptTemplateId(command.getPromptTemplateId());
-        config.setModelId(command.getModelId());
-        config.setDefaultParamsJson(command.getDefaultParamsJson());
-        config.setEnabled(command.getEnabled() == null || command.getEnabled());
+        config.setId(command.id());
+        config.setCapability(command.capability());
+        config.setPromptTemplateId(command.promptTemplateId());
+        config.setModelId(command.modelId());
+        config.setDefaultParamsJson(command.defaultParamsJson());
+        config.setEnabled(command.enabled() == null || command.enabled());
         config.setConfiguredAt(Instant.now());
         return config;
     }
