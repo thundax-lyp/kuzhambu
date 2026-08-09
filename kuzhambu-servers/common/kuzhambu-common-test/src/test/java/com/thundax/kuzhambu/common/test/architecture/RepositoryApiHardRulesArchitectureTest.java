@@ -29,6 +29,8 @@ class RepositoryApiHardRulesArchitectureTest {
         ApiAnnotationArchitectureRuleSupport.assertMappedMethodsUsePostOrGetMapping(BUSINESS_SOURCE_ROOT);
         ApiAnnotationArchitectureRuleSupport.assertJsonRequestMethodsUsePostMapping(BUSINESS_SOURCE_ROOT);
         ApiAnnotationArchitectureRuleSupport.assertGetMappingMethodsReturnVoid(BUSINESS_SOURCE_ROOT);
+        ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
+                BUSINESS_SOURCE_ROOT, legacyActionVerbAllowances());
         ApiAnnotationArchitectureRuleSupport.assertRequestBodyRequestParametersDeclareValid(BUSINESS_SOURCE_ROOT);
         ApiAnnotationArchitectureRuleSupport.assertControllersDoNotCreateResponses(BUSINESS_SOURCE_ROOT);
     }
@@ -48,5 +50,50 @@ class RepositoryApiHardRulesArchitectureTest {
 
         Assertions.assertThat(frontendVerbs)
                 .containsExactlyElementsOf(ApiAnnotationArchitectureRuleSupport.controllerActionVerbs());
+    }
+
+    private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
+        return List.of(
+                actionVerbAllowance("AiInvocationController", "AI"),
+                actionVerbAllowance("PromptController", "AI"),
+                actionVerbAllowance("PlatformAiController", "AI"),
+                actionVerbAllowance("AiRefinementTaskController", "AI"),
+                actionVerbAllowance("AiRefinementController", "AI"),
+                actionVerbAllowance("DiscoveryQaPortalStreamController", "Discovery"),
+                actionVerbAllowance("DiscoveryQaPortalController", "Discovery"),
+                actionVerbAllowance("DiscoveryQaConversationStreamController", "Discovery"),
+                actionVerbAllowance("DiscoveryQaAdminController", "Discovery"),
+                actionVerbAllowance("DiscoveryQaConversationController", "Discovery"),
+                actionVerbAllowance("DiscoverySearchStatisticsController", "Discovery"),
+                actionVerbAllowance("OperationsBackupAdminController", "Operations"),
+                actionVerbAllowance("OperationsCleanupAdminController", "Operations"),
+                actionVerbAllowance("OperationsDashboardAdminController", "Operations"),
+                actionVerbAllowance("OperationsHealthAdminController", "Operations"),
+                actionVerbAllowance("OperationsHealthAlertAdminController", "Operations"),
+                actionVerbAllowance("OperationsReportAdminController", "Operations"),
+                actionVerbAllowance("OperationsRestoreAdminController", "Operations"),
+                actionVerbAllowance("OperationsTaskAdminController", "Operations"),
+                actionVerbAllowance("StorageObjectController", "Storage"),
+                actionVerbAllowance("AuditController", "System"),
+                actionVerbAllowance("AuthController", "System"),
+                actionVerbAllowance("CaptchaController", "System"),
+                actionVerbAllowance("CurrentUserController", "System"),
+                actionVerbAllowance("DepartmentController", "System"),
+                actionVerbAllowance("MenuController", "System"),
+                actionVerbAllowance("RoleController", "System"),
+                actionVerbAllowance("UserController", "System"),
+                actionVerbAllowance("KnowledgeGraphExtractionController", "Knowledge"),
+                actionVerbAllowance("KnowledgeGraphRefinementController", "Knowledge"),
+                actionVerbAllowance("KnowledgeGraphWorkbenchController", "Knowledge"),
+                actionVerbAllowance("KnowledgeLineageController", "Knowledge"),
+                actionVerbAllowance("KnowledgeQualityReportController", "Knowledge"),
+                actionVerbAllowance("KnowledgeTaxonomyController", "Knowledge"));
+    }
+
+    private static ArchitectureRuleAllowance actionVerbAllowance(String controller, String domain) {
+        return ArchitectureRuleAllowance.of(
+                "CONTROLLER_ACTION_VERB:*" + controller + ".java*",
+                domain + " controller retains legacy action names or paths outside the shared verb whitelist.",
+                "Rename the controller method and action path with a shared verb, update callers, then remove this allowance.");
     }
 }

@@ -124,7 +124,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_ANNOTATION_REST_METHOD_JSON_POST_REQUIRED`：REST API 方法中使用 `@RequestBody` 或返回 JSON 包装的接口必须使用 `@PostMapping`。
 - `SERVERS_ANNOTATION_REST_METHOD_POST_SHAPE_ALLOWED`：`@PostMapping` 方法入参允许为空、单个 `@Valid @RequestBody *Request`、单个 `@Valid @RequestBody List<*Request>` 或 `multipart/form-data` 上传参数；出参允许 `void`、`Boolean`、`String`、`*Response`、`List<*Response>` 或 `PageResponse<*Response>`。
 - `SERVERS_ANNOTATION_REST_METHOD_POST_JSON_REQUIRED`：全局 API 接口默认必须使用 `HTTP POST + JSON body`；未声明 `@PostJsonApiExempt(reason = "...")` 的方法必须使用 `@PostMapping`，不得使用 `@PathVariable`、`@RequestParam` 或 `multipart/form-data` 参数。验证码、文件直链、SSE 等非 JSON 传输接口允许豁免，但必须在 `reason` 中写明原因。
-- `SERVERS_ANNOTATION_REST_METHOD_GET_NON_JSON_REQUIRED`：`@GetMapping` 只能用于验证码、头像、文件内容等非 JSON 响应，方法返回类型必须为 `void`。
+- `SERVERS_ANNOTATION_REST_METHOD_GET_NON_JSON_REQUIRED`：`@GetMapping` 只能用于验证码、头像、文件内容等非 JSON 响应，方法返回类型必须为 `void`；声明 `@PostJsonApiExempt(reason = "...")` 的 SSE 事件流可返回 `SseEmitter`。
 - `SERVERS_ANNOTATION_REQUEST_BODY_VALID_REQUIRED`：REST API 方法中使用 `@RequestBody` 的 `*Request` 参数必须同时声明 `@Valid`。
 - `SERVERS_ANNOTATION_REQUEST_MODEL_CLASS_REQUIRED`：接口层 `request/` 包内 `*Request` 类级注解必须固定为 `@Getter`、`@Setter`、`@Schema`、`@JsonInclude(JsonInclude.Include.NON_NULL)`、`@JsonIgnoreProperties(ignoreUnknown = true)`。
 - `SERVERS_ANNOTATION_RESPONSE_MODEL_CLASS_REQUIRED`：接口层 `response/` 包内 `*Response` 类级注解必须固定为 `@Getter`、`@Builder`、`@Schema`、`@JsonInclude(JsonInclude.Include.NON_NULL)`、`@JsonIgnoreProperties(ignoreUnknown = true)`。
