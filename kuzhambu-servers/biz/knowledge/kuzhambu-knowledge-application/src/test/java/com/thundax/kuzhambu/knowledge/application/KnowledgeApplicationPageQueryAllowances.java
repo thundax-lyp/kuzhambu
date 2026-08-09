@@ -16,8 +16,6 @@ final class KnowledgeApplicationPageQueryAllowances {
 
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
-                pageQueryType("com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationPageQuery"),
-                pageFields("com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationPageQuery"),
                 pageQueryType(
                         "com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery"),
                 pageFields("com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery"));

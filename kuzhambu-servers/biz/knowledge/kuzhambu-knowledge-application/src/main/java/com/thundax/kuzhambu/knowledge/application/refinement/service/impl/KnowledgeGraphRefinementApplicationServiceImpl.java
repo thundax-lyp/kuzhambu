@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.refinement.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.page.PageRules;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementEntityCommand;
@@ -19,7 +20,7 @@ import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefin
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand;
-import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationPageQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
@@ -393,12 +394,13 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     @Transactional(readOnly = true)
-    public PageResult<QualityAnnotationResult> pageAnnotations(QualityAnnotationPageQuery query) {
+    public PageResult<QualityAnnotationResult> pageAnnotations(QualityAnnotationQuery query, PageQuery pageQuery) {
         RefinementTask task = refinementTaskRepository.getByTaskId(
-                RefinementTaskIdCodec.toDomain(query == null ? null : query.getRefinementTaskId()));
+                RefinementTaskIdCodec.toDomain(query == null ? null : query.refinementTaskId()));
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         List<QualityAnnotationResult> records = qualityAnnotationRepository
                 .listBySource(
-                        query == null ? null : query.getObjectType(),
+                        query == null ? null : query.objectType(),
                         task.getSourceContentType(),
                         task.getSourceContentId(),
                         task.getGraphVersionId())
@@ -412,8 +414,8 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                         annotation.getAnnotationLabel(),
                         annotation.getComment()))
                 .toList();
-        int pageNo = query == null ? PageRules.firstPageIndex() : query.getPageNo();
-        int pageSize = query == null ? PageRules.defaultPageSize() : query.getPageSize();
+        int pageNo = effectivePage.getPageNo();
+        int pageSize = effectivePage.getPageSize();
         int fromIndex = Math.max(0, (pageNo - 1) * pageSize);
         int toIndex = Math.min(records.size(), fromIndex + pageSize);
         List<QualityAnnotationResult> pageRecords =

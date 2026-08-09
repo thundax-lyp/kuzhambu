@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.application.refinement.service;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementEntityCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageNodeCommand;
@@ -15,7 +16,7 @@ import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefin
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand;
-import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationPageQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
@@ -62,7 +63,7 @@ public interface KnowledgeGraphRefinementApplicationService {
 
     QualityAnnotationResult upsertAnnotation(UpsertQualityAnnotationCommand command);
 
-    PageResult<QualityAnnotationResult> pageAnnotations(QualityAnnotationPageQuery query);
+    PageResult<QualityAnnotationResult> pageAnnotations(QualityAnnotationQuery query, PageQuery pageQuery);
 
     void deleteAnnotation(DeleteQualityAnnotationCommand command);
 
