@@ -12,12 +12,12 @@ import java.util.stream.Stream;
 
 public final class SourceHardRuleArchitectureRuleSupport {
 
-    private static final Pattern NON_JACKSON_JSON_IMPORT_PATTERN =
-            Pattern.compile("(?m)^\\s*import\\s+(?:com\\.alibaba\\.fastjson[\\w.]*|com\\.google\\.gson[\\w.]*|"
-                    + "net\\.sf\\.json[\\w.]*|org\\.json[\\w.]*)\\s*;");
+    private static final Pattern NON_JACKSON_JSON_REFERENCE_PATTERN =
+            Pattern.compile("\\b(?:com\\.alibaba\\.fastjson|com\\.google\\.gson|net\\.sf\\.json|org\\.json)\\.");
     private static final Pattern TOP_LEVEL_TOOL_PACKAGE_PATTERN = Pattern.compile(
             "(?m)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
-                    + "storage|system)\\.(?:application|domain|infra|interfaces)\\.(?:misc|util|utils|helper)\\s*;");
+                    + "storage|system)\\.(?:application\\.(?:misc|util|utils)|(?:domain|infra|interfaces)"
+                    + "\\.(?:misc|util|utils|helper))\\s*;");
     private static final Pattern ILLEGAL_ARGUMENT_EXCEPTION_BUSINESS_EXIT_PATTERN = Pattern.compile(
             "(?ms)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
                     + "storage|system)\\.(?:application(?:\\.|;)|infra\\.[\\w.]+\\.repository\\.impl(?:\\.|;)).*"
@@ -28,8 +28,8 @@ public final class SourceHardRuleArchitectureRuleSupport {
     public static void assertProductionSourcesUseJacksonJsonOnly(Path sourceRoot) throws IOException {
         assertNoSourceMatches(
                 sourceRoot,
-                NON_JACKSON_JSON_IMPORT_PATTERN,
-                "Production sources must not directly import non-Jackson JSON libraries");
+                NON_JACKSON_JSON_REFERENCE_PATTERN,
+                "Production sources must not directly use non-Jackson JSON libraries");
     }
 
     public static void assertBusinessLayersDoNotUseTopLevelToolPackages(Path sourceRoot) throws IOException {

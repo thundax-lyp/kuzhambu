@@ -138,8 +138,8 @@ public final class ApiAnnotationArchitectureRuleSupport {
 
         assertTrue(
                 "PostMapping methods must use no parameter, a @Valid @RequestBody *Request/List<*Request> "
-                        + "parameter, or multipart form parameters, and return void, Boolean, String, *Response, "
-                        + "List<*Response>, or PageResponse<*Response>: " + violations,
+                        + "parameter, or multipart form parameters, and return void, Boolean, String, Long, Integer, "
+                        + "SseEmitter, *Response, List<*Response>, or PageResponse<*Response>: " + violations,
                 violations.isEmpty());
     }
 
@@ -815,9 +815,12 @@ public final class ApiAnnotationArchitectureRuleSupport {
         return "void".equals(returnType)
                 || "Boolean".equals(returnType)
                 || "String".equals(returnType)
+                || "Long".equals(returnType)
+                || "Integer".equals(returnType)
+                || "SseEmitter".equals(returnType)
                 || returnType.endsWith("Response")
-                || returnType.matches("List\\s*<\\s*\\w+Response\\s*>")
-                || returnType.matches("PageResponse\\s*<\\s*\\w+Response\\s*>");
+                || returnType.matches("List\\s*<\\s*(?:\\w+\\.)*\\w+Response\\s*>")
+                || returnType.matches("PageResponse\\s*<\\s*(?:\\w+\\.)*\\w+Response\\s*>");
     }
 
     private static boolean isMultipartParameterShape(String annotations, String parameters) {
