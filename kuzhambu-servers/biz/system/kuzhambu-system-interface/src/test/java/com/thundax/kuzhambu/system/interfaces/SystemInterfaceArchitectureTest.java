@@ -24,6 +24,10 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
     void interfaceLayerShouldKeepArchitectureBoundary() throws Exception {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".interfaces");
 
+        ApiAnnotationArchitectureRuleSupport.requestClassAnnotationsRequired(BASE_PACKAGE)
+                .check(classes);
+        ApiAnnotationArchitectureRuleSupport.responseClassAnnotationsRequired(BASE_PACKAGE)
+                .check(classes);
         ModuleAndDependencyArchitectureRuleSupport.assertInterfaceLayerBoundary(classes, BASE_PACKAGE);
         ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "system");
         InterfaceBoundaryArchitectureRuleSupport.assertInterfaceNoPersistenceDependency(classes, BASE_PACKAGE);
