@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private static final ObjectMapper OBJECT_MAPPER = SearchTimeObjectMapperFactory.create();
+    private static final int MAX_PAGE_SIZE = 200;
 
     private final SearchEventRepository searchEventRepository;
     private final SearchClickEventRepository searchClickEventRepository;
@@ -83,7 +84,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             normalizedQueryText = keyword.getNormalizedText();
             scope = searchQueryNormalizer.normalizeScope(toSearchScope(query));
             int pageNo = effectivePage.getPageNo();
-            int pageSize = effectivePage.getPageSize();
+            int pageSize = normalizePageSize(effectivePage.getPageSize());
             SearchPageResult searchPage = searchIndexGateway.search(keyword, scope, pageNo, pageSize);
             List<SearchGroupResult> groups = searchPage.safeGroups();
             SearchEvent searchEvent = buildSucceededSearchEvent(
@@ -163,7 +164,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         }
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         int pageNo = effectivePage.getPageNo();
-        int pageSize = effectivePage.getPageSize();
+        int pageSize = normalizePageSize(effectivePage.getPageSize());
         String intentType = firstOrNull(query.intentTypes());
         String searchStatus = firstOrNull(query.searchStatuses());
         PageResult<SearchEvent> pageResult = searchEventRepository.page(
@@ -362,6 +363,10 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         if (query.getQueryText() == null) {
             query.setQueryText("");
         }
+    }
+
+    private int normalizePageSize(int pageSize) {
+        return Math.min(pageSize, MAX_PAGE_SIZE);
     }
 
     private void validatePreviewQuery(SearchPreviewQuery query) {

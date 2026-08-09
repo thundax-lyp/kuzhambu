@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -154,6 +155,30 @@ class SearchApplicationServiceImplTest {
         assertEquals(
                 "<mark>黄帝</mark>上古帝王",
                 result.getGroups().get(0).getItems().get(0).getHighlightText());
+    }
+
+    @Test
+    void searchShouldCapPageSizeBeforeCallingGateway() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchQueryNormalizer(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        SearchQuery query =
+                new SearchQuery("黄帝", List.of(), List.of(), List.of(), null, null, "ANONYMOUS", null, null, null);
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
+        when(searchIndexGateway.search(any(), any(), eq(1), eq(200))).thenReturn(searchPageResult(0));
+
+        service.search(query, new PageQuery(1, 10_000));
+
+        verify(searchIndexGateway).search(any(), any(), eq(1), eq(200));
     }
 
     @Test
@@ -601,6 +626,27 @@ class SearchApplicationServiceImplTest {
         verify(searchEventRepository).page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20);
         assertEquals(1, result.getRecords().size());
         assertEquals(searchEventId("1"), result.getRecords().get(0).getId());
+    }
+
+    @Test
+    void pageEventsShouldCapPageSizeBeforeCallingRepository() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchQueryNormalizer(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        when(searchEventRepository.page(null, null, null, null, 1, 200))
+                .thenReturn(PageResult.of(1, 200, 0, List.of()));
+
+        service.pageEvents(new SearchEventQuery(null, null, null, null, null, null), new PageQuery(1, 10_000));
+
+        verify(searchEventRepository).page(null, null, null, null, 1, 200);
     }
 
     @Test
