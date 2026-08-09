@@ -83,32 +83,32 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
 
     private AiModel toModel(CreateAiModelCommand command) {
         AiModel model = new AiModel();
-        model.setId(command.getId());
-        model.setApiSource(command.getApiSource());
-        model.setBaseUrl(command.getBaseUrl());
-        model.setEncryptedApiKey(command.getEncryptedApiKey());
-        model.setModelName(command.getModelName());
-        model.setDisplayName(command.getDisplayName());
-        model.setCapabilities(command.getCapabilities());
-        model.setDefaultParamsJson(command.getDefaultParamsJson());
-        model.setDescription(command.getDescription());
-        model.setEnabled(command.getEnabled() == null || command.getEnabled());
+        model.setId(command.id());
+        model.setApiSource(command.apiSource());
+        model.setBaseUrl(command.baseUrl());
+        model.setEncryptedApiKey(command.encryptedApiKey());
+        model.setModelName(command.modelName());
+        model.setDisplayName(command.displayName());
+        model.setCapabilities(command.capabilities());
+        model.setDefaultParamsJson(command.defaultParamsJson());
+        model.setDescription(command.description());
+        model.setEnabled(command.enabled() == null || command.enabled());
         model.setRegisteredAt(Instant.now());
         return model;
     }
 
     private AiModel toModel(UpdateAiModelCommand command) {
         AiModel model = new AiModel();
-        model.setId(command.getId());
-        model.setApiSource(command.getApiSource());
-        model.setBaseUrl(command.getBaseUrl());
-        model.setEncryptedApiKey(command.getEncryptedApiKey());
-        model.setModelName(command.getModelName());
-        model.setDisplayName(command.getDisplayName());
-        model.setCapabilities(command.getCapabilities());
-        model.setDefaultParamsJson(command.getDefaultParamsJson());
-        model.setDescription(command.getDescription());
-        model.setEnabled(command.getEnabled() == null || command.getEnabled());
+        model.setId(command.id());
+        model.setApiSource(command.apiSource());
+        model.setBaseUrl(command.baseUrl());
+        model.setEncryptedApiKey(command.encryptedApiKey());
+        model.setModelName(command.modelName());
+        model.setDisplayName(command.displayName());
+        model.setCapabilities(command.capabilities());
+        model.setDefaultParamsJson(command.defaultParamsJson());
+        model.setDescription(command.description());
+        model.setEnabled(command.enabled() == null || command.enabled());
         model.setRegisteredAt(Instant.now());
         return model;
     }
