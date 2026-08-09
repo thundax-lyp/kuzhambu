@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -124,7 +125,8 @@ public class AiRefinementTaskController {
     @PostMapping(value = "page")
     public AiRefinementResponses.TaskPageResponse pageTasks(
             @Valid @RequestBody AiRefinementRequests.TaskPageRequest request) {
-        var page = taskApplicationService.page(AiRefinementInterfaceAssembler.toPageTasksQuery(request));
+        var page = taskApplicationService.page(
+                AiRefinementInterfaceAssembler.toPageTasksQuery(request), PageInterfaceAssembler.toPageQuery(request));
         return AiRefinementInterfaceAssembler.toTaskPageResponse(
                 page.getPageNo(), page.getPageSize(), page.getTotalCount(), page.getRecords());
     }

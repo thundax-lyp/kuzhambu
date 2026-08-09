@@ -108,7 +108,7 @@ class DiscoverySearchPortalControllerTest {
         request.setQueryText(null);
         request.setPageNo(1);
         request.setPageSize(20);
-        when(service.search(any()))
+        when(service.search(any(), any()))
                 .thenReturn(new SearchEventResult(
                         SearchEventIdCodec.toDomain(1L),
                         "",
@@ -130,7 +130,7 @@ class DiscoverySearchPortalControllerTest {
 
         var response = controller.search(request);
 
-        verify(service).search(queryCaptor.capture());
+        verify(service).search(queryCaptor.capture(), any());
         assertEquals("", queryCaptor.getValue().getQueryText());
         assertEquals(0, response.getTotalCount());
     }
@@ -143,7 +143,7 @@ class DiscoverySearchPortalControllerTest {
         request.setQueryText("黄帝");
         request.setPageNo(1);
         request.setPageSize(20);
-        when(service.search(any()))
+        when(service.search(any(), any()))
                 .thenReturn(new SearchEventResult(
                         SearchEventIdCodec.toDomain(1L),
                         "黄帝",
@@ -177,7 +177,7 @@ class DiscoverySearchPortalControllerTest {
 
         var response = controller.search(request);
 
-        verify(service).search(any());
+        verify(service).search(any(), any());
         assertEquals("1", response.getId());
         assertEquals(1, response.getGroups().size());
         assertEquals("1001", response.getGroups().get(0).getItems().get(0).getContentId());

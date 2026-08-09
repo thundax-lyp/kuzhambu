@@ -6,11 +6,12 @@ import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeReq
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
-import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
@@ -221,14 +222,15 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     }
 
     @Override
-    public PageResult<QaSessionResult> pageSessions(QaSessionPageQuery query) {
-        int pageNo = normalizePageNo(query == null ? null : query.getPageNo());
-        int pageSize = normalizePageSize(query == null ? null : query.getPageSize());
-        String title = StringUtils.trimToNull(query == null ? null : query.getTitle());
+    public PageResult<QaSessionResult> pageSessions(QaSessionQuery query, PageQuery pageQuery) {
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        int pageNo = normalizePageNo(effectivePage.getPageNo());
+        int pageSize = normalizePageSize(effectivePage.getPageSize());
+        String title = StringUtils.trimToNull(query == null ? null : query.title());
         PageResult<QaSession> sessionPage = qaSessionRepository.page(
                 title,
-                query == null ? null : query.getOpenedAtStart(),
-                query == null ? null : query.getOpenedAtEnd(),
+                query == null ? null : query.openedAtStart(),
+                query == null ? null : query.openedAtEnd(),
                 pageNo,
                 pageSize);
         List<QaSessionResult> pageItems =

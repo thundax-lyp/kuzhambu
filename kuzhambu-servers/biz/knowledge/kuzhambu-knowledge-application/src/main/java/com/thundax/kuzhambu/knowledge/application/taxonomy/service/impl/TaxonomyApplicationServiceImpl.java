@@ -33,11 +33,11 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewComm
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagBatchMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
@@ -119,8 +119,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     }
 
     @Override
-    public PageResult<TagCategoryResult> pageCategories(TagCategoryPageQuery query, PageQuery page) {
-        TagCategoryPageQuery effectiveQuery = query == null ? new TagCategoryPageQuery() : query;
+    public PageResult<TagCategoryResult> pageCategories(TagCategoryQuery query, PageQuery page) {
+        TagCategoryQuery effectiveQuery = query == null ? new TagCategoryQuery() : query;
         PageQuery effectivePage = normalize(page);
 
         PageResult<TagCategory> pageResult = tagCategoryRepository.page(
@@ -209,8 +209,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     }
 
     @Override
-    public PageResult<TagResult> pageTags(TagPageQuery query, PageQuery page) {
-        TagPageQuery effectiveQuery = query == null ? new TagPageQuery() : query;
+    public PageResult<TagResult> pageTags(TagQuery query, PageQuery page) {
+        TagQuery effectiveQuery = query == null ? new TagQuery() : query;
         PageQuery effectivePage = normalize(page);
 
         PageResult<Tag> pageResult = tagRepository.page(
@@ -505,8 +505,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     }
 
     @Override
-    public PageResult<TagResult> pagePendingTags(TagReviewPageQuery query, PageQuery page) {
-        TagReviewPageQuery effectiveQuery = query == null ? new TagReviewPageQuery() : query;
+    public PageResult<TagResult> pagePendingTags(TagReviewQuery query, PageQuery page) {
+        TagReviewQuery effectiveQuery = query == null ? new TagReviewQuery() : query;
         PageQuery effectivePage = normalize(page);
 
         PageResult<Tag> pageResult = tagRepository.pagePending(effectivePage.getPageNo(), effectivePage.getPageSize());
@@ -1060,7 +1060,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         return value;
     }
 
-    private boolean keepOnlyPending(Tag tag, TagReviewPageQuery query) {
+    private boolean keepOnlyPending(Tag tag, TagReviewQuery query) {
         if (tag == null) {
             return false;
         }

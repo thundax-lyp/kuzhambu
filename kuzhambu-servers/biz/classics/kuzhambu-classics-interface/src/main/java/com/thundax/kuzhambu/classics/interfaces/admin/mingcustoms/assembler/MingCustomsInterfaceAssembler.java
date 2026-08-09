@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler;
 
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
-import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
+import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
@@ -22,8 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 public final class MingCustomsInterfaceAssembler {
     private MingCustomsInterfaceAssembler() {}
 
-    public static MingCustomsPageQuery toQuery(MingCustomsRequest request) {
-        return new MingCustomsPageQuery(
+    public static MingCustomsQuery toQuery(MingCustomsRequest request) {
+        return new MingCustomsQuery(
                 request.getCategory(),
                 request.getKeyword(),
                 request.getTagName(),
@@ -33,8 +33,8 @@ public final class MingCustomsInterfaceAssembler {
                 null);
     }
 
-    public static MingCustomsPageQuery toTagCloudQuery(String category, String keyword) {
-        return new MingCustomsPageQuery(category, keyword, null, null, null, null, null);
+    public static MingCustomsQuery toTagCloudQuery(String category, String keyword) {
+        return new MingCustomsQuery(category, keyword, null, null, null, null, null);
     }
 
     public static MingCustomsCommand toCommand(MingCustomsRequest request) {

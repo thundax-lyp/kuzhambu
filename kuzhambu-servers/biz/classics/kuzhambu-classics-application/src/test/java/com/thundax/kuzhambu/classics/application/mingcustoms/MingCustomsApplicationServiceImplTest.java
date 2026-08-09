@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
-import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
+import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.impl.MingCustomsApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
@@ -81,7 +81,7 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, null, mock(ClassicsPublicationWriteGuard.class));
-        MingCustomsPageQuery query = new MingCustomsPageQuery();
+        MingCustomsQuery query = new MingCustomsQuery();
         query.setOperatorPermissions(Set.of("classics:content:view"));
 
         PageResult<MingCustomsEntry> result = service.page(query, new PageQuery(1, 20));
@@ -96,7 +96,7 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, null, mock(ClassicsPublicationWriteGuard.class));
-        MingCustomsPageQuery query = new MingCustomsPageQuery();
+        MingCustomsQuery query = new MingCustomsQuery();
         query.setOperatorPermissions(Set.of("classics:content:view"));
 
         List<MingCustomsTagCloudItem> result = service.listTagCloud(query);
@@ -110,7 +110,7 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, null, mock(ClassicsPublicationWriteGuard.class));
-        MingCustomsPageQuery query = new MingCustomsPageQuery();
+        MingCustomsQuery query = new MingCustomsQuery();
         query.setCategory("礼俗");
         query.setKeyword("祭祀");
         query.setOperatorPermissions(Set.of("classics:mingcustoms:view"));

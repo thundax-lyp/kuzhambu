@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.operations.application.health.command.OperationsHealthAlertAckCommand;
 import com.thundax.kuzhambu.operations.application.health.command.OperationsHealthAlertRecoverCommand;
-import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthAlertPageQuery;
+import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthAlertQuery;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthAlertPageResult;
 import com.thundax.kuzhambu.operations.domain.health.codec.HealthAlertIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertAckRequest;
@@ -16,11 +16,11 @@ public final class OperationsHealthAlertInterfaceAssembler {
 
     private OperationsHealthAlertInterfaceAssembler() {}
 
-    public static OperationsHealthAlertPageQuery toQuery(OperationsHealthAlertPageRequest request) {
+    public static OperationsHealthAlertQuery toQuery(OperationsHealthAlertPageRequest request) {
         if (request == null) {
             return null;
         }
-        return new OperationsHealthAlertPageQuery(
+        return new OperationsHealthAlertQuery(
                 request.getComponent(),
                 request.getAlertLevel(),
                 request.getAlertStatus(),

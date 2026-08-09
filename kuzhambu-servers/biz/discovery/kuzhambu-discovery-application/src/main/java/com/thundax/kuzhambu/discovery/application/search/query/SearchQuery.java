@@ -20,8 +20,6 @@ public class SearchQuery {
     private List<String> tagNames;
     private Instant dateFrom;
     private Instant dateTo;
-    private int pageNo;
-    private int pageSize;
     private String operatorType;
     private String operatorId;
     private RequestId requestId;

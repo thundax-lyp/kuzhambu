@@ -37,7 +37,7 @@ final class ClassicsApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand"),
                 legacy(
@@ -62,14 +62,13 @@ final class ClassicsApplicationCommandQueryRecordAllowances {
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery"),
+                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery"));
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery"));
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {

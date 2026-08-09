@@ -56,8 +56,8 @@ public class DiscoverySearchPublicationFacadeImpl implements DiscoverySearchPubl
     @Override
     public DiscoverySearchPublicationCandidatePageFacadeResponse pageReadyCandidates(
             DiscoverySearchPublicationCandidatePageFacadeRequest request) {
-        return assembler.toCandidatePageResponse(
-                searchPublicationApplicationService.pageReadyCandidates(assembler.toCandidatePageQuery(request)));
+        return assembler.toCandidatePageResponse(searchPublicationApplicationService.pageReadyCandidates(
+                assembler.toCandidateQuery(request), assembler.toPageQuery(request)));
     }
 
     @Override

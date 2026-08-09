@@ -5,10 +5,10 @@ import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCo
 import com.thundax.kuzhambu.ai.application.invocation.command.ExpireRunningAiBatchJobsCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsByCapabilitiesQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
-import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsByCapabilitiesQuery;
-import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiBatchJob;
@@ -45,8 +45,8 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     }
 
     @Override
-    public PageResult<AiBatchJobResult> page(PageAiBatchJobsQuery query) {
-        PageQuery effectivePage = effectivePage(query == null ? null : query.pageQuery());
+    public PageResult<AiBatchJobResult> page(AiBatchJobsQuery query, PageQuery pageQuery) {
+        PageQuery effectivePage = effectivePage(pageQuery);
         AiContentRef contentRef = query == null ? null : query.contentRef();
         return page(new AiBatchJobQuery(
                 query == null ? null : query.scope(),
@@ -59,8 +59,8 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     }
 
     @Override
-    public PageResult<AiBatchJobResult> pageByCapabilities(PageAiBatchJobsByCapabilitiesQuery query) {
-        PageQuery effectivePage = effectivePage(query == null ? null : query.pageQuery());
+    public PageResult<AiBatchJobResult> pageByCapabilities(AiBatchJobsByCapabilitiesQuery query, PageQuery pageQuery) {
+        PageQuery effectivePage = effectivePage(pageQuery);
         AiContentRef contentRef = query == null ? null : query.contentRef();
         return page(new AiBatchJobQuery(
                 query == null ? null : query.scope(),

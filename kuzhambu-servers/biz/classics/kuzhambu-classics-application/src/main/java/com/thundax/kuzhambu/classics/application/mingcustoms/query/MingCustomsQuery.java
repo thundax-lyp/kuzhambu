@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MingCustomsPageQuery {
+public class MingCustomsQuery {
     private String category;
     private String keyword;
     private String tagName;
@@ -20,7 +20,7 @@ public class MingCustomsPageQuery {
     private SortDirection sortDirection = SortDirection.ASC;
     private Set<String> operatorPermissions;
 
-    public MingCustomsPageQuery(String category, String keyword, String tagName, SortDirection sortDirection) {
+    public MingCustomsQuery(String category, String keyword, String tagName, SortDirection sortDirection) {
         this(category, keyword, tagName, null, null, sortDirection, null);
     }
 }

@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.operations.application.report.command.OperationsReportGenerateCommand;
 import com.thundax.kuzhambu.operations.application.report.query.OperationsReportDetailQuery;
-import com.thundax.kuzhambu.operations.application.report.query.OperationsReportPageQuery;
+import com.thundax.kuzhambu.operations.application.report.query.OperationsReportQuery;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDetailResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportGenerateResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportPageResult;
@@ -32,11 +32,11 @@ public final class OperationsReportInterfaceAssembler {
                 currentAdminUserId());
     }
 
-    public static OperationsReportPageQuery toQuery(OperationsReportPageRequest request) {
+    public static OperationsReportQuery toQuery(OperationsReportPageRequest request) {
         if (request == null) {
             return null;
         }
-        return new OperationsReportPageQuery(
+        return new OperationsReportQuery(
                 request.getReportType(),
                 request.getFormat(),
                 request.getReportStatus(),

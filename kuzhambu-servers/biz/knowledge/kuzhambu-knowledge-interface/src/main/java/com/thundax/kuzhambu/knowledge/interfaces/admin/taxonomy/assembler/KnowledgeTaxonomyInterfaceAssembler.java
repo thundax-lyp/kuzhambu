@@ -19,11 +19,11 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewComm
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagBatchMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
@@ -78,8 +78,8 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
 
     private KnowledgeTaxonomyInterfaceAssembler() {}
 
-    public static TagCategoryPageQuery toQuery(TagCategoryPageRequest request) {
-        TagCategoryPageQuery query = new TagCategoryPageQuery();
+    public static TagCategoryQuery toQuery(TagCategoryPageRequest request) {
+        TagCategoryQuery query = new TagCategoryQuery();
         query.setName(request == null ? null : request.getName());
         query.setStatus(
                 request == null || StringUtils.isBlank(request.getStatus())
@@ -107,8 +107,8 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 TagCategoryIdCodec.toDomain(request.getId()), TagCategoryStatus.from(request.getStatus()));
     }
 
-    public static TagPageQuery toQuery(TagPageRequest request) {
-        TagPageQuery query = new TagPageQuery();
+    public static TagQuery toQuery(TagPageRequest request) {
+        TagQuery query = new TagQuery();
         query.setName(request == null ? null : request.getName());
         query.setCategoryId(TagCategoryIdCodec.toDomain(request == null ? null : request.getCategoryId()));
         query.setStatus(
@@ -189,8 +189,8 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
         return request;
     }
 
-    public static TagReviewPageQuery toQuery(TagReviewPageRequest request) {
-        TagReviewPageQuery query = new TagReviewPageQuery();
+    public static TagReviewQuery toQuery(TagReviewPageRequest request) {
+        TagReviewQuery query = new TagReviewQuery();
         query.setName(request == null ? null : request.getName());
         query.setSource(
                 request == null || StringUtils.isBlank(request.getSource())

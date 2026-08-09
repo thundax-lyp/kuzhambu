@@ -144,7 +144,7 @@ class DiscoverySearchStatisticsControllerTest {
         DiscoverySearchEventPageRequest request = new DiscoverySearchEventPageRequest();
         request.setPageNo(1);
         request.setPageSize(20);
-        when(service.pageEvents(any()))
+        when(service.pageEvents(any(), any()))
                 .thenReturn(PageResult.of(
                         1,
                         20,
@@ -169,7 +169,7 @@ class DiscoverySearchStatisticsControllerTest {
 
         var response = controller.pageEvents(request);
 
-        verify(service).pageEvents(any());
+        verify(service).pageEvents(any(), any());
         assertEquals(1, response.getRecords().size());
         assertEquals("1", response.getRecords().get(0).getId());
     }
@@ -182,7 +182,7 @@ class DiscoverySearchStatisticsControllerTest {
         request.setQueryText("辞官");
         request.setPageNo(1);
         request.setPageSize(20);
-        when(service.search(any()))
+        when(service.search(any(), any()))
                 .thenReturn(new SearchEventResult(
                         SearchEventIdCodec.toDomain(1L),
                         "辞官",
@@ -217,7 +217,7 @@ class DiscoverySearchStatisticsControllerTest {
         var response = controller.search(request);
         ArgumentCaptor<SearchQuery> queryCaptor = ArgumentCaptor.forClass(SearchQuery.class);
 
-        verify(service).search(queryCaptor.capture());
+        verify(service).search(queryCaptor.capture(), any());
         assertEquals("辞官", queryCaptor.getValue().getQueryText());
         assertEquals("ADMIN", queryCaptor.getValue().getOperatorType());
         assertTrue(queryCaptor.getValue().getRequestId() != null);

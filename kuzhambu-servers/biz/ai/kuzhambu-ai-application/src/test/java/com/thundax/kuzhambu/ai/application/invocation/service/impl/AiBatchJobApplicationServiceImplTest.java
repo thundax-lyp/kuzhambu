@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCo
 import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
-import com.thundax.kuzhambu.ai.application.invocation.query.PageAiBatchJobsQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
@@ -205,12 +205,13 @@ public class AiBatchJobApplicationServiceImplTest {
         job.setTotalCount(1);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        PageResult<AiBatchJobResult> page = service.page(new PageAiBatchJobsQuery(
-                "classics",
-                AiBusinessCapability.CLASSICS_SUMMARY,
-                null,
-                AiContentRef.ofNullable("SANCAI_ENTRY", 3001L),
-                new PageQuery(1, 10)));
+        PageResult<AiBatchJobResult> page = service.page(
+                new AiBatchJobsQuery(
+                        "classics",
+                        AiBusinessCapability.CLASSICS_SUMMARY,
+                        null,
+                        AiContentRef.ofNullable("SANCAI_ENTRY", 3001L)),
+                new PageQuery(1, 10));
 
         assertEquals(1, page.getTotalCount());
         assertEquals(3001L, page.getRecords().get(0).getContentRef().contentId());

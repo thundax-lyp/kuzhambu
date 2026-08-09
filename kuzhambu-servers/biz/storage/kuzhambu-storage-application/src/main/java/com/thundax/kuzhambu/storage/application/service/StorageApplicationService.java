@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.storage.application.service;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.storage.application.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.command.ChangeStorageCommand;
@@ -11,8 +12,8 @@ import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesC
 import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
+import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
 import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
-import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
@@ -25,7 +26,7 @@ public interface StorageApplicationService {
 
     List<StoredObject> list(StorageQuery query);
 
-    PageResult<StoredObject> page(StorageObjectPageQuery query);
+    PageResult<StoredObject> page(ListStorageObjectsQuery query, PageQuery pageQuery);
 
     StoredObject create(CreateStorageCommand command);
 

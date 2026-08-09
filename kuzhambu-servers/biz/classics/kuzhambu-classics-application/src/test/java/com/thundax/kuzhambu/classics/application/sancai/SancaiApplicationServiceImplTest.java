@@ -18,7 +18,7 @@ import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPub
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
-import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.impl.SancaiApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
@@ -234,7 +234,7 @@ class SancaiApplicationServiceImplTest {
     void pageEntriesShouldReturnEmptyWhenPermissionContextLacksSancaiView() {
         SancaiRepository repository = mock(SancaiRepository.class);
         SancaiApplicationServiceImpl service = service(repository, null);
-        SancaiEntryPageQuery query = new SancaiEntryPageQuery();
+        SancaiEntryQuery query = new SancaiEntryQuery();
         query.setOperatorPermissions(Set.of("classics:content:view"));
 
         PageResult<SancaiEntry> result = service.pageEntries(query, new PageQuery(1, 20));
@@ -249,7 +249,7 @@ class SancaiApplicationServiceImplTest {
     void pageEntriesShouldForwardCategoryFilterToRepository() {
         SancaiRepository repository = mock(SancaiRepository.class);
         SancaiApplicationServiceImpl service = service(repository, null);
-        SancaiEntryPageQuery query = new SancaiEntryPageQuery();
+        SancaiEntryQuery query = new SancaiEntryQuery();
         query.setCategoryId(2L);
         query.setVolumeId(101L);
         query.setKeyword("天文");
@@ -315,7 +315,7 @@ class SancaiApplicationServiceImplTest {
                 .thenReturn(List.of(
                         existingEntry(1001L, SancaiEntryLifecycleStatus.DRAFT),
                         existingEntry(1002L, SancaiEntryLifecycleStatus.DRAFT)));
-        SancaiEntryPageQuery query = new SancaiEntryPageQuery();
+        SancaiEntryQuery query = new SancaiEntryQuery();
         query.setCategoryId(11L);
         query.setVolumeId(21L);
         query.setKeyword("天地");

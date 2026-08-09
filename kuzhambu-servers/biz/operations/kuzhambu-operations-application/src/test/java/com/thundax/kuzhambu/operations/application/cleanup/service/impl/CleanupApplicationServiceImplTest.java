@@ -21,7 +21,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.command.OperationsCleanupExecuteCommand;
 import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupDetailQuery;
-import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupPageQuery;
+import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupQuery;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
@@ -266,8 +266,8 @@ class CleanupApplicationServiceImplTest {
         CleanupApplicationServiceImpl service =
                 new CleanupApplicationServiceImpl(repository, new InMemoryBackupRepository(), new FakeClassicsFacade());
 
-        PageResult<OperationsCleanupPageResult> pageResult = service.page(
-                new OperationsCleanupPageQuery("EXPIRED_BACKUP", "SUCCEEDED", 1001L), new PageQuery(1, 10));
+        PageResult<OperationsCleanupPageResult> pageResult =
+                service.page(new OperationsCleanupQuery("EXPIRED_BACKUP", "SUCCEEDED", 1001L), new PageQuery(1, 10));
         OperationsCleanupDetailResult detailResult =
                 service.detail(new OperationsCleanupDetailQuery(CleanupJobIdCodec.toDomain(9001L)));
 

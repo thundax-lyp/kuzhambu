@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPubl
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobType;
 
-public record ClassicsPublicationJobPageQuery(
+public record ClassicsPublicationJobQuery(
         ClassicsPublicationJobType jobType,
         ClassicsPublicationJobResultStatus jobResultStatus,
         ClassicsPublicationJobStatus jobStatus,

@@ -26,20 +26,13 @@ final class DiscoveryApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidatePageQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCategoryAggregationQuery"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchQuery"),

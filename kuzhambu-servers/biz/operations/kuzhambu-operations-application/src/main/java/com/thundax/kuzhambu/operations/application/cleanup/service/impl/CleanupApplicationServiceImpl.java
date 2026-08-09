@@ -19,7 +19,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.command.OperationsCleanupExecuteCommand;
 import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupDetailQuery;
-import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupPageQuery;
+import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupQuery;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.service.CleanupApplicationService;
@@ -180,7 +180,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
     }
 
     @Override
-    public PageResult<OperationsCleanupPageResult> page(OperationsCleanupPageQuery query, PageQuery pageQuery) {
+    public PageResult<OperationsCleanupPageResult> page(OperationsCleanupQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<CleanupJob> jobPage = cleanupJobRepository.page(

@@ -6,8 +6,8 @@ import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
 import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.scenario.command.CancelAiRefinementTaskCommand;
 import com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand;
+import com.thundax.kuzhambu.ai.application.scenario.query.AiRefinementTasksQuery;
 import com.thundax.kuzhambu.ai.application.scenario.query.GetAiRefinementTaskQuery;
-import com.thundax.kuzhambu.ai.application.scenario.query.PageAiRefinementTasksQuery;
 import com.thundax.kuzhambu.ai.application.scenario.query.SubscribeAiRefinementTaskEventsQuery;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
@@ -27,7 +27,6 @@ import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.Ai
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
-import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,14 +95,13 @@ public final class AiRefinementInterfaceAssembler {
         return new SubscribeAiRefinementTaskEventsQuery(AiBatchJobIdCodec.toDomain(taskId));
     }
 
-    public static PageAiRefinementTasksQuery toPageTasksQuery(AiRefinementRequests.TaskPageRequest request) {
-        return new PageAiRefinementTasksQuery(
+    public static AiRefinementTasksQuery toPageTasksQuery(AiRefinementRequests.TaskPageRequest request) {
+        return new AiRefinementTasksQuery(
                 toCapability(request == null ? null : request.getCapability()),
                 toTaskStatus(request == null ? null : request.getStatus()),
                 AiContentRefCodec.toDomain(
                         request == null ? null : request.getContentType(),
-                        request == null ? null : request.getContentId()),
-                PageInterfaceAssembler.toPageQuery(request));
+                        request == null ? null : request.getContentId()));
     }
 
     public static CancelAiRefinementTaskCommand toCancelTaskCommand(Long taskId) {

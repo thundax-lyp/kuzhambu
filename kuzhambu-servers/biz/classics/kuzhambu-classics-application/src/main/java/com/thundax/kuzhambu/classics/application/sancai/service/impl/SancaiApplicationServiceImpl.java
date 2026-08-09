@@ -11,7 +11,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySortC
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
-import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
@@ -276,7 +276,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     @Override
-    public PageResult<SancaiEntry> pageEntries(SancaiEntryPageQuery query, PageQuery page) {
+    public PageResult<SancaiEntry> pageEntries(SancaiEntryQuery query, PageQuery page) {
         if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
             return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
         }
@@ -305,7 +305,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     @Override
-    public PageResult<SancaiEntry> pagePortalReadyEntries(SancaiEntryPageQuery query, PageQuery page) {
+    public PageResult<SancaiEntry> pagePortalReadyEntries(SancaiEntryQuery query, PageQuery page) {
         int pageNo = page == null ? 1 : page.getPageNo();
         int pageSize = page == null ? 20 : page.getPageSize();
         var candidatePage = discoverySearchPublicationFacade.pageReadyCandidates(
@@ -340,7 +340,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     @Override
-    public List<SancaiEntry> listEntries(SancaiEntryPageQuery query) {
+    public List<SancaiEntry> listEntries(SancaiEntryQuery query) {
         if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
             return List.of();
         }
@@ -486,7 +486,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
                 ErrorCode.SORT_DB_FAILURE.getMessage());
     }
 
-    private static boolean hasPermissionContext(SancaiEntryPageQuery query) {
+    private static boolean hasPermissionContext(SancaiEntryQuery query) {
         return query != null && hasPermissionContext(query.getOperatorPermissions());
     }
 

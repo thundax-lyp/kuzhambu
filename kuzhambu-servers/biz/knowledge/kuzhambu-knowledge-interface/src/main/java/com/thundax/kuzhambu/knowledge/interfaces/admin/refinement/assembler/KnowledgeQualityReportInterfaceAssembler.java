@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.assembler;
 
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
-import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportPageQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.IssueRecord;
@@ -36,14 +36,12 @@ public final class KnowledgeQualityReportInterfaceAssembler {
                 request == null ? null : request.getRequestedBy());
     }
 
-    public static QualityReportPageQuery toPageQuery(QualityReportRequests.PageRequestBody request) {
-        return new QualityReportPageQuery(
+    public static QualityReportQuery toQuery(QualityReportRequests.PageRequestBody request) {
+        return new QualityReportQuery(
                 request == null ? null : request.getGraphVersionId(),
                 request == null ? null : request.getSourceContentType(),
                 request == null ? null : request.getSourceContentId(),
-                request == null ? null : request.getReportStatus(),
-                request == null || request.getPageNo() == null ? 1 : request.getPageNo(),
-                request == null || request.getPageSize() == null ? 20 : request.getPageSize());
+                request == null ? null : request.getReportStatus());
     }
 
     public static QualityReportResponses.DetailResponse toResponse(QualityReportDetailResult result) {

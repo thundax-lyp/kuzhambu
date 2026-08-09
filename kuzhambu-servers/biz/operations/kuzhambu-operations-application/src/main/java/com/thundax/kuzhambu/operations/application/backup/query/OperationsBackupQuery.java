@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.operations.application.cleanup.query;
+package com.thundax.kuzhambu.operations.application.backup.query;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OperationsCleanupPageQuery {
-    private String cleanupType;
-    private String cleanupStatus;
+public class OperationsBackupQuery {
+    private String backupType;
+    private String backupStatus;
     private Long requesterUserId;
 }

@@ -48,7 +48,6 @@ final class StorageApplicationCommandQueryRecordAllowances {
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.storage.application.query.ListStorageReferencesQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.storage.application.query.StorageQuery"));
     }
 

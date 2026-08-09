@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
@@ -18,8 +19,8 @@ import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
+import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
 import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
-import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
 import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageMultipartUploadApplicationService;
@@ -117,9 +118,10 @@ public class StorageObjectController {
     @SysLogger(value = "分页")
     @PostMapping(value = "page")
     public PageResponse<StorageObjectResponse> page(@Valid @RequestBody StoragePageRequest request) {
-        StorageObjectPageQuery query = StorageInterfaceAssembler.toPageQuery(request);
+        ListStorageObjectsQuery query = StorageInterfaceAssembler.toListQuery(request);
         return PageResponseHelper.fromPageResult(
-                storageObjectApplicationService.page(query), StorageInterfaceAssembler::toResponse);
+                storageObjectApplicationService.page(query, PageInterfaceAssembler.toPageQuery(request)),
+                StorageInterfaceAssembler::toResponse);
     }
 
     @Operation(summary = "排序存储对象", description = "storage:object:edit")

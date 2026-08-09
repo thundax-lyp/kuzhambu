@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCo
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
-import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -38,8 +38,8 @@ import org.apache.commons.lang3.StringUtils;
 public final class SancaiInterfaceAssembler {
     private SancaiInterfaceAssembler() {}
 
-    public static SancaiEntryPageQuery toQuery(SancaiEntryPageRequest request) {
-        SancaiEntryPageQuery query = new SancaiEntryPageQuery();
+    public static SancaiEntryQuery toQuery(SancaiEntryPageRequest request) {
+        SancaiEntryQuery query = new SancaiEntryQuery();
         query.setCategoryId(request.getCategoryId());
         query.setVolumeId(request.getVolumeId());
         query.setKeyword(request.getKeyword());

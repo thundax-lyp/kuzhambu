@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.discovery.interfaces.portal.search.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler.DiscoverySearchPortalInterfaceAssembler;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickEventRequest;
@@ -31,8 +32,8 @@ public class DiscoverySearchPortalController {
     @Operation(summary = "执行搜索", description = "Portal 搜索")
     @PostMapping("search")
     public DiscoverySearchResponse search(@Valid @RequestBody DiscoverySearchRequest request) {
-        return DiscoverySearchPortalInterfaceAssembler.toResponse(
-                searchApplicationService.search(DiscoverySearchPortalInterfaceAssembler.toQuery(request)));
+        return DiscoverySearchPortalInterfaceAssembler.toResponse(searchApplicationService.search(
+                DiscoverySearchPortalInterfaceAssembler.toQuery(request), PageInterfaceAssembler.toPageQuery(request)));
     }
 
     @Operation(summary = "读取搜索预览", description = "Portal 搜索命中文档预览")

@@ -14,9 +14,9 @@ import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefin
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand;
-import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationPageQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery;
-import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualitySummaryResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementApplyResult;
@@ -35,15 +35,13 @@ public final class KnowledgeGraphRefinementInterfaceAssembler {
 
     private KnowledgeGraphRefinementInterfaceAssembler() {}
 
-    public static RefinementWorkbenchPageQuery toPageQuery(RefinementRequests.TaskPageRequest request) {
-        return new RefinementWorkbenchPageQuery(
+    public static RefinementWorkbenchQuery toTaskQuery(RefinementRequests.TaskPageRequest request) {
+        return new RefinementWorkbenchQuery(
                 request == null ? null : request.getTaskType(),
                 request == null ? null : request.getSourceContentType(),
                 request == null ? null : request.getSourceContentId(),
                 request == null ? null : request.getSourceCategoryCode(),
-                request == null ? null : request.getStatus(),
-                request == null || request.getPageNo() == null ? 1 : request.getPageNo(),
-                request == null || request.getPageSize() == null ? 20 : request.getPageSize());
+                request == null ? null : request.getStatus());
     }
 
     public static RefinementDetailQuery toDetailQuery(RefinementRequests.TaskDetailRequest request) {
@@ -194,12 +192,10 @@ public final class KnowledgeGraphRefinementInterfaceAssembler {
         return new DeleteQualityAnnotationCommand(request == null ? null : request.getAnnotationId());
     }
 
-    public static QualityAnnotationPageQuery toAnnotationPageQuery(RefinementRequests.AnnotationPageRequest request) {
-        return new QualityAnnotationPageQuery(
+    public static QualityAnnotationQuery toAnnotationQuery(RefinementRequests.AnnotationPageRequest request) {
+        return new QualityAnnotationQuery(
                 request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getObjectType(),
-                request == null || request.getPageNo() == null ? 1 : request.getPageNo(),
-                request == null || request.getPageSize() == null ? 20 : request.getPageSize());
+                request == null ? null : request.getObjectType());
     }
 
     public static RefinementResponses.WorkbenchItemResponse toResponse(RefinementWorkbenchItemResult result) {

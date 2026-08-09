@@ -6,11 +6,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
-import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportPageQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.ReextractLowQualityCategoryResult;
@@ -66,14 +67,17 @@ class KnowledgeQualityReportControllerTest {
         request.setPageSize(10);
         request.setGraphVersionId(71L);
         request.setReportStatus("PUBLISHED");
-        when(service.pageReports(any())).thenReturn(PageResult.of(1, 10, 1, List.of(reportRecord())));
+        when(service.pageReports(any(), any())).thenReturn(PageResult.of(1, 10, 1, List.of(reportRecord())));
 
         var response = controller.page(request);
 
-        ArgumentCaptor<QualityReportPageQuery> captor = ArgumentCaptor.forClass(QualityReportPageQuery.class);
-        verify(service).pageReports(captor.capture());
-        assertEquals(71L, captor.getValue().getGraphVersionId());
-        assertEquals("PUBLISHED", captor.getValue().getReportStatus());
+        ArgumentCaptor<QualityReportQuery> queryCaptor = ArgumentCaptor.forClass(QualityReportQuery.class);
+        ArgumentCaptor<PageQuery> pageCaptor = ArgumentCaptor.forClass(PageQuery.class);
+        verify(service).pageReports(queryCaptor.capture(), pageCaptor.capture());
+        assertEquals(71L, queryCaptor.getValue().graphVersionId());
+        assertEquals("PUBLISHED", queryCaptor.getValue().reportStatus());
+        assertEquals(1, pageCaptor.getValue().getPageNo());
+        assertEquals(10, pageCaptor.getValue().getPageSize());
         assertEquals("KQR-71", response.getRecords().get(0).getReportNo());
     }
 

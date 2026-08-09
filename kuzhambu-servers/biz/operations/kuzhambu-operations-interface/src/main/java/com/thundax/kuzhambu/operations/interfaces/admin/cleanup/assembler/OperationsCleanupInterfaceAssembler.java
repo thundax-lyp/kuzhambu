@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.operations.application.cleanup.command.OperationsCleanupExecuteCommand;
 import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupDetailQuery;
-import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupPageQuery;
+import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupQuery;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
 import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupJobIdCodec;
@@ -26,11 +26,11 @@ public final class OperationsCleanupInterfaceAssembler {
         return new OperationsCleanupExecuteCommand(request.getCleanupType(), currentAdminUserId());
     }
 
-    public static OperationsCleanupPageQuery toQuery(OperationsCleanupPageRequest request) {
+    public static OperationsCleanupQuery toQuery(OperationsCleanupPageRequest request) {
         if (request == null) {
             return null;
         }
-        return new OperationsCleanupPageQuery(
+        return new OperationsCleanupQuery(
                 request.getCleanupType(), request.getCleanupStatus(), request.getRequesterUserId());
     }
 

@@ -1,8 +1,9 @@
 package com.thundax.kuzhambu.discovery.application.qa.service;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
-import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 
@@ -15,5 +16,5 @@ public interface KnowledgeSyncApplicationService {
 
     KnowledgeSyncItemResult deleteContent(SyncKnowledgeContentCommand command);
 
-    PageResult<KnowledgeSyncItemResult> pageSyncItems(KnowledgeSyncItemPageQuery query);
+    PageResult<KnowledgeSyncItemResult> pageSyncItems(KnowledgeSyncItemQuery query, PageQuery pageQuery);
 }

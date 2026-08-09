@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.classics.application.content.service.ClassicsContent
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
-import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
+import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.impl.WangqiDocumentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
@@ -53,8 +53,7 @@ class WangqiDocumentApplicationServiceImplTest {
         WangqiDocument document = new WangqiDocument();
         when(repository.listTimeline("山川", SortDirection.DESC)).thenReturn(java.util.List.of(document));
 
-        java.util.List<WangqiDocument> result =
-                service.listTimeline(new WangqiDocumentPageQuery("山川", SortDirection.DESC));
+        java.util.List<WangqiDocument> result = service.listTimeline(new WangqiDocumentQuery("山川", SortDirection.DESC));
 
         assertEquals(java.util.List.of(document), result);
         verify(repository).listTimeline("山川", SortDirection.DESC);
@@ -65,7 +64,7 @@ class WangqiDocumentApplicationServiceImplTest {
         WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
         WangqiDocumentApplicationServiceImpl service = new WangqiDocumentApplicationServiceImpl(
                 repository, null, null, mock(ClassicsPublicationWriteGuard.class));
-        WangqiDocumentPageQuery query = new WangqiDocumentPageQuery();
+        WangqiDocumentQuery query = new WangqiDocumentQuery();
         query.setOperatorPermissions(Set.of("classics:content:view"));
 
         PageResult<WangqiDocument> result = service.page(query, new PageQuery(1, 20));

@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
@@ -184,7 +184,7 @@ class SancaiPortalControllerTest {
                                 1));
                     }
                     if ("pagePortalReadyEntries".equals(method.getName())) {
-                        SancaiEntryPageQuery query = (SancaiEntryPageQuery) args[0];
+                        SancaiEntryQuery query = (SancaiEntryQuery) args[0];
                         PageQuery pageQuery = (PageQuery) args[1];
                         assertEquals(2L, query.getCategoryId());
                         assertEquals(101L, query.getVolumeId());

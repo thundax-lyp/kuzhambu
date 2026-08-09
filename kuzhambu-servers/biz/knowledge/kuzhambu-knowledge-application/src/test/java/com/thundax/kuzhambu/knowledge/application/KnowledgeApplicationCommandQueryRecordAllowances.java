@@ -59,13 +59,7 @@ final class KnowledgeApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationPageQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportPageQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasCreateCommand"),
                 legacy(
@@ -101,14 +95,14 @@ final class KnowledgeApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery"),
+                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery"));
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewQuery"));
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {

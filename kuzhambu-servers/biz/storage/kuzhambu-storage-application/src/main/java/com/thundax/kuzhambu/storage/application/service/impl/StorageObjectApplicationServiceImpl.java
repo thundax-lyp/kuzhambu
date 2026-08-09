@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.storage.application.service.impl;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.storage.application.command.ChangeStorageCommand;
 import com.thundax.kuzhambu.storage.application.command.ChangeStorageObjectStatusCommand;
@@ -10,7 +11,6 @@ import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageMimeTypesQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageReferenceOwnerTypesQuery;
-import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageObjectApplicationService;
@@ -39,8 +39,8 @@ public class StorageObjectApplicationServiceImpl implements StorageObjectApplica
     }
 
     @Override
-    public PageResult<StoredObject> page(StorageObjectPageQuery query) {
-        return storageApplicationService.page(query);
+    public PageResult<StoredObject> page(ListStorageObjectsQuery query, PageQuery pageQuery) {
+        return storageApplicationService.page(query, pageQuery);
     }
 
     @Override

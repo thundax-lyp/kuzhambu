@@ -19,13 +19,13 @@ final class OperationsApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupDetailQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupPageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.cleanup.command.OperationsCleanupExecuteCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupDetailQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupPageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.dashboard.query.OperationsDashboardOverviewQuery"),
                 legacy(
@@ -33,9 +33,9 @@ final class OperationsApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.command.OperationsHealthAlertRecoverCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.query.OperationsHealthAlertPageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.query.OperationsHealthAlertQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.query.OperationsHealthPageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.query.OperationsHealthQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.health.query.OperationsHealthTrendQuery"),
                 legacy(
@@ -43,17 +43,17 @@ final class OperationsApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.report.query.OperationsReportDetailQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.report.query.OperationsReportPageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.report.query.OperationsReportQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.restore.command.OperationsRestoreExecuteCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreDetailQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.restore.query.OperationsRestorePageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.task.query.OperationsTaskDetailQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.task.query.OperationsTaskPageQuery"));
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.task.query.OperationsTaskQuery"));
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {

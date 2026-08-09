@@ -4,7 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobPageQuery;
+import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobQuery;
 import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationCreationApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
@@ -24,7 +24,7 @@ class ClassicsPublicationApplicationServiceTest {
         ClassicsPublicationJobRepository repository = mock(ClassicsPublicationJobRepository.class);
         ClassicsPublicationApplicationServiceImpl service = new ClassicsPublicationApplicationServiceImpl(
                 mock(ClassicsPublicationCreationApplicationServiceImpl.class), repository);
-        ClassicsPublicationJobPageQuery query = new ClassicsPublicationJobPageQuery(
+        ClassicsPublicationJobQuery query = new ClassicsPublicationJobQuery(
                 ClassicsPublicationJobType.PUBLISH,
                 ClassicsPublicationJobResultStatus.RUNNING,
                 ClassicsPublicationJobStatus.ES_PREPARED,

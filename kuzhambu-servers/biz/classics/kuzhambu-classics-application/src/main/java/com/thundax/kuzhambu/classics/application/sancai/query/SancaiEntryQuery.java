@@ -16,7 +16,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SancaiEntryPageQuery {
+public class SancaiEntryQuery {
     private Long categoryId;
     private Long volumeId;
     private String keyword;
@@ -28,7 +28,7 @@ public class SancaiEntryPageQuery {
     private SortDirection sortDirection = SortDirection.ASC;
     private Set<String> operatorPermissions;
 
-    public SancaiEntryPageQuery(
+    public SancaiEntryQuery(
             Long categoryId,
             Long volumeId,
             String keyword,

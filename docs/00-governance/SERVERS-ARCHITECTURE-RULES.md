@@ -51,7 +51,9 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_NAMING_APPLICATION_SERVICE`：用例编排入口必须以 `ApplicationService` 结尾；接口位于 `application/{domain}/service/`，实现位于 `application/{domain}/service/impl/`；接口和实现均不得命名为通用 `Manager`、`Processor` 或 `Handler`。
 - `SERVERS_APPLICATION_SERVICE_SUFFIX_ONLY`：业务域 `application` 层内以 `Service` 或 `ServiceImpl` 结尾的类型必须分别以 `ApplicationService` 或 `ApplicationServiceImpl` 结尾，内部辅助组件不得使用泛化 `*Service` 命名。
 - `SERVERS_IMPL_CONTRACT`：生产代码中命名为 `XxxImpl` 的类必须实现对应的 `Xxx` 接口；生产代码不得在字段、构造器参数、方法参数或泛型依赖参数中直接使用 `XxxImpl` 类型。仅内部协作组件不得使用 `Impl` 后缀；存量违规只能通过架构测试 allowlist 暂存，并且 allowlist 只能收缩。
-- `SERVERS_NAMING_APPLICATION_INPUT`：应用层写入输入模型必须以 `Command` 结尾；读取输入模型必须以 `Query` 或 `PageQuery` 结尾。
+- `SERVERS_NAMING_APPLICATION_INPUT`：应用层写入输入模型必须以 `Command` 结尾；读取输入模型必须以 `Query` 结尾；分页输入统一使用 common-core 的全局 `PageQuery`，业务域不得定义 `XxxPageQuery` / `PageXxxQuery`。
+- `SERVERS_APPLICATION_PAGE_QUERY_SINGLETON`：`PageQuery` 是全局唯一分页契约，负责分页默认值、边界和归一化语义；除 `com.thundax.kuzhambu.common.core.page.PageQuery` 外不得定义其他 `*PageQuery` / `Page*Query` 类型。
+- `SERVERS_APPLICATION_QUERY_NO_PAGE_STATE`：application 层业务 `*Query` 不得声明 `pageNo`、`pageSize`、`pageNum`、`offset`、`limit` 等分页字段，也不得内嵌 `PageQuery`；分页用例必须以 `BusinessQuery + PageQuery` 或单个 `PageQuery` 进入 application service。
 - `SERVERS_APPLICATION_COMMAND_PACKAGE`：`*-application` 模块中的 `*Command` 必须位于 `application/**/command/`。
 - `SERVERS_APPLICATION_QUERY_PACKAGE`：`*-application` 模块中的 `*Query` 必须位于 `application/**/query/`。
 - `SERVERS_APPLICATION_RESULT_PACKAGE`：`*-application` 模块中的 `*Result` 必须位于 `application/**/result/`。
@@ -73,7 +75,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 
 ### Application Service API
 
-- `SERVERS_APP_SERVICE_INPUT_SHAPE`：`*ApplicationService` 的公开用例方法入参只能是无参、单个 `*Command`、单个 `*Query` 或单个 `*PageQuery`；`*Command` / `*Query` 字段可以持有本域 domain entity 或强类型值对象。
+- `SERVERS_APP_SERVICE_INPUT_SHAPE`：`*ApplicationService` 的公开用例方法入参只能是无参、单个 `*Command`、单个 `*Query`、单个全局 `PageQuery`、业务 `*Query` + 全局 `PageQuery`、或流式 `*Command` / `*Query` + handler；`*Command` / `*Query` 字段可以持有本域 domain entity 或强类型值对象，但不得持有分页状态。
 - `SERVERS_APP_SERVICE_RETURN_SHAPE`：`*ApplicationService` 的公开用例方法返回值只能是 `void`、本域 domain entity、强类型值对象、`*Result`、`*DTO`、`List<本域 domain entity>`、`List<*Result>`、`List<*DTO>`、`PageResult<本域 domain entity>`、`PageResult<*Result>`、`PageResult<*DTO>` 或 Java primitive / 明确允许的基础类型。
 - `SERVERS_APP_SERVICE_COUNT_RETURN_LONG`：`*ApplicationService` 中以 `count` 命名的公开查询方法必须返回 primitive `long`，不得返回 `Long`、`*Result` 或其他包装对象。
 - `SERVERS_APP_SERVICE_PLAIN_TYPE_SET`：Application service 允许的基础类型指 Java primitive、`String`、`Instant`、`BigDecimal`、枚举，以及这些类型的集合；计数类返回必须使用 primitive `long`。

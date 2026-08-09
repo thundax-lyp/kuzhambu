@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.operations.application.backup.command.OperationsBackupExecuteCommand;
 import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupDetailQuery;
-import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupPageQuery;
+import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupQuery;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupDetailResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
@@ -27,11 +27,11 @@ public final class OperationsBackupInterfaceAssembler {
         return new OperationsBackupExecuteCommand(currentAdminUserId());
     }
 
-    public static OperationsBackupPageQuery toQuery(OperationsBackupPageRequest request) {
+    public static OperationsBackupQuery toQuery(OperationsBackupPageRequest request) {
         if (request == null) {
             return null;
         }
-        return new OperationsBackupPageQuery(
+        return new OperationsBackupQuery(
                 request.getBackupType(), request.getBackupStatus(), request.getRequesterUserId());
     }
 

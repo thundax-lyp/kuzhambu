@@ -52,6 +52,10 @@ public final class NamingArchitectureRuleSupport {
                     + "(?:(?:static|final|synchronized|abstract|native|strictfp)\\s+)*"
                     + "(?:<[^>]+>\\s+)?(?:[\\w<>?,.\\[\\]]+\\.)?([A-Z][A-Za-z0-9_]*(?:Command|Query))\\s+"
                     + "(\\w+)\\s*\\([^;{}]*\\)\\s*(?:throws\\s+[^;{]+)?\\{");
+    private static final Pattern QUERY_PAGE_FIELD_PATTERN =
+            Pattern.compile("\\b(?:pageNo|pageSize|pageNum|offset|limit)\\b");
+    private static final Pattern EMBEDDED_PAGE_QUERY_PATTERN =
+            Pattern.compile("\\bPageQuery\\b|com\\.thundax\\.kuzhambu\\.common\\.core\\.page\\.PageQuery");
     private static final Set<String> SERVICE_QUERY_REQUIRED_ANNOTATIONS =
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
     private static final Set<String> APPLICATION_STRUCTURAL_PACKAGES = Set.of(
@@ -356,6 +360,40 @@ public final class NamingArchitectureRuleSupport {
                 violations.isEmpty() && staleAllowances.isEmpty());
     }
 
+    public static void assertApplicationQueriesDoNotOwnPageState(
+            Path sourceRoot, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        Map<String, ArchitectureRuleAllowance> allowlist = architectureAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
+        List<String> violations = new ArrayList<String>();
+
+        if (!Files.exists(sourceRoot)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(NamingArchitectureRuleSupport::isServiceQuerySource)
+                    .forEach(path -> collectApplicationQueryPageStateViolations(
+                            root, path, violations, allowlist, matchedAllowances));
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to scan application query page state under " + sourceRoot, e);
+        }
+
+        List<String> staleAllowances = allowlist.keySet().stream()
+                .filter(key -> !matchedAllowances.contains(key))
+                .toList();
+
+        assertTrue(
+                "Application *Query types must not own pagination state. PageQuery is the single normalized "
+                        + "application pagination contract; paged use cases should accept BusinessQuery + PageQuery, "
+                        + "and query fields must not include pageNo/pageSize/pageNum/offset/limit or embedded PageQuery. "
+                        + "Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
+    }
+
     public static void assertApplicationContractSourcesUnderDedicatedPackages(Path sourceRoot) {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
@@ -501,6 +539,68 @@ public final class NamingArchitectureRuleSupport {
             }
             violations.add(key + " in " + ArchitectureSourceSupport.repositoryPath(root, path));
         }
+    }
+
+    private static void collectApplicationQueryPageStateViolations(
+            Path root,
+            Path path,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        String typeName = sourceTypeName(source, path);
+        String simpleName = pathFileNameWithoutExtension(path);
+        if (simpleName.contains("Page")) {
+            collectAllowlistedViolation(
+                    applicationQueryPageTypeKey(typeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path) + " names a business query as *Page*Query",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+        if (QUERY_PAGE_FIELD_PATTERN.matcher(source).find()) {
+            collectAllowlistedViolation(
+                    applicationQueryPageFieldsKey(typeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " declares raw pagination fields such as pageNo/pageSize/pageNum/offset/limit",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+        if (EMBEDDED_PAGE_QUERY_PATTERN.matcher(source).find()) {
+            collectAllowlistedViolation(
+                    applicationQueryEmbeddedPageQueryKey(typeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " embeds PageQuery inside a business Query instead of passing it as a separate "
+                            + "ApplicationService parameter",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+    }
+
+    private static void collectAllowlistedViolation(
+            String key,
+            String description,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        if (isAllowlisted(key, allowlist, matchedAllowances)) {
+            return;
+        }
+        violations.add(key + " in " + description);
+    }
+
+    public static String applicationQueryPageTypeKey(String typeName) {
+        return "PAGE_QUERY_TYPE:" + typeName;
+    }
+
+    public static String applicationQueryPageFieldsKey(String typeName) {
+        return "PAGE_QUERY_FIELDS:" + typeName;
+    }
+
+    public static String applicationQueryEmbeddedPageQueryKey(String typeName) {
+        return "PAGE_QUERY_EMBEDDED:" + typeName;
     }
 
     private static boolean methodBodyContainsReturnNull(String source, int openingBraceIndex) {
@@ -1197,10 +1297,7 @@ public final class NamingArchitectureRuleSupport {
 
     private static boolean isServiceQuerySource(Path path) {
         String value = ArchitectureSourceSupport.normalizePath(path);
-        return value.contains("/biz/")
-                && value.contains("/application/")
-                && value.contains("/query/")
-                && value.endsWith("Query.java");
+        return value.contains("/application/") && value.contains("/query/") && value.endsWith("Query.java");
     }
 
     private static boolean isApplicationCommandOrQuerySource(Path path) {

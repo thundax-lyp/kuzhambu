@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySortC
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
-import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
@@ -55,11 +55,11 @@ public interface SancaiApplicationService {
 
     boolean isPortalReadyEntry(SancaiEntryId id);
 
-    PageResult<SancaiEntry> pageEntries(SancaiEntryPageQuery query, PageQuery page);
+    PageResult<SancaiEntry> pageEntries(SancaiEntryQuery query, PageQuery page);
 
-    PageResult<SancaiEntry> pagePortalReadyEntries(SancaiEntryPageQuery query, PageQuery page);
+    PageResult<SancaiEntry> pagePortalReadyEntries(SancaiEntryQuery query, PageQuery page);
 
-    List<SancaiEntry> listEntries(SancaiEntryPageQuery query);
+    List<SancaiEntry> listEntries(SancaiEntryQuery query);
 
     SancaiEntryId addEntry(SancaiEntryCommand command);
 

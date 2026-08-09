@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchEventQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchStatisticsSummaryQuery;
@@ -49,27 +49,23 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 request.getTagNames(),
                 parseDate(request.getDateFrom(), "dateFrom"),
                 parseDate(request.getDateTo(), "dateTo"),
-                request.getPageNo() == null ? 1 : request.getPageNo(),
-                request.getPageSize() == null ? 20 : request.getPageSize(),
                 ADMIN_OPERATOR_TYPE,
                 KuzhambuContextHolder.currentSubjectId(),
                 RequestIdCodec.toDomain(newRequestId()),
                 TraceIdCodec.toDomain(newTraceId()));
     }
 
-    public static SearchEventPageQuery toQuery(DiscoverySearchEventPageRequest request) {
+    public static SearchEventQuery toQuery(DiscoverySearchEventPageRequest request) {
         if (request == null) {
             return null;
         }
-        return new SearchEventPageQuery(
+        return new SearchEventQuery(
                 request.getQueryText(),
                 request.getIntentTypes(),
                 request.getSearchStatuses(),
                 request.getOperatorId(),
                 parseDate(request.getDateFrom(), "dateFrom"),
-                parseDate(request.getDateTo(), "dateTo"),
-                request.getPageNo() == null ? 1 : request.getPageNo(),
-                request.getPageSize() == null ? 20 : request.getPageSize());
+                parseDate(request.getDateTo(), "dateTo"));
     }
 
     public static SearchClickEventCreateCommand toCommand(DiscoverySearchClickEventRequest request) {

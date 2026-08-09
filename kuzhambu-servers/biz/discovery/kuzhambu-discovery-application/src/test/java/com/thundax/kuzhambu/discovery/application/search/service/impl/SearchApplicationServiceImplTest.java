@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
@@ -17,7 +18,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchEventQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchStatisticsSummaryQuery;
@@ -65,13 +66,13 @@ class SearchApplicationServiceImplTest {
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
-                "黄帝", List.of("SANCAI_ENTRY"), List.of(), List.of(), null, null, 1, 20, "ANONYMOUS", null, null, null);
+                "黄帝", List.of("SANCAI_ENTRY"), List.of(), List.of(), null, null, "ANONYMOUS", null, null, null);
         when(queryUnderstandingApplicationService.understand(query))
                 .thenReturn(new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenThrow(new UnsupportedOperationException("not ready"));
 
-        BizException exception = assertThrows(BizException.class, () -> service.search(query));
+        BizException exception = assertThrows(BizException.class, () -> service.search(query, new PageQuery()));
         ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
 
         assertEquals("DISCOVERY-20001", exception.getCode());
@@ -120,8 +121,6 @@ class SearchApplicationServiceImplTest {
                 List.of("上古"),
                 dateFrom,
                 dateTo,
-                1,
-                20,
                 "ANONYMOUS",
                 null,
                 requestId("req-1"),
@@ -135,7 +134,7 @@ class SearchApplicationServiceImplTest {
                         "req-1",
                         "trace-1"));
 
-        var result = service.search(query);
+        var result = service.search(query, new PageQuery());
         ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
 
         verify(searchEventRepository).save(searchEventCaptor.capture());
@@ -177,8 +176,6 @@ class SearchApplicationServiceImplTest {
                 List.of(),
                 null,
                 null,
-                1,
-                20,
                 "ADMIN",
                 "admin-1",
                 requestId("req-blank"),
@@ -192,7 +189,7 @@ class SearchApplicationServiceImplTest {
                         new SearchGroupResult(
                                 "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1001")))));
 
-        var result = service.search(query);
+        var result = service.search(query, new PageQuery());
         ArgumentCaptor<SearchKeyword> keywordCaptor = ArgumentCaptor.forClass(SearchKeyword.class);
         ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
 
@@ -225,8 +222,6 @@ class SearchApplicationServiceImplTest {
                 List.of(),
                 null,
                 null,
-                1,
-                20,
                 "ANONYMOUS",
                 null,
                 requestId("req-null-query"),
@@ -239,7 +234,7 @@ class SearchApplicationServiceImplTest {
         ArgumentCaptor<SearchKeyword> keywordCaptor = ArgumentCaptor.forClass(SearchKeyword.class);
         ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
 
-        var result = service.search(query);
+        var result = service.search(query, new PageQuery());
 
         verify(searchIndexGateway).search(keywordCaptor.capture(), any(), any(Integer.class), any(Integer.class));
         verify(searchEventRepository).save(searchEventCaptor.capture());
@@ -270,8 +265,6 @@ class SearchApplicationServiceImplTest {
                 List.of("上古"),
                 null,
                 null,
-                1,
-                20,
                 "ANONYMOUS",
                 null,
                 requestId("req-3"),
@@ -284,7 +277,7 @@ class SearchApplicationServiceImplTest {
                         new SearchGroupResult(
                                 "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1001")))));
 
-        var result = service.search(query);
+        var result = service.search(query, new PageQuery());
 
         assertEquals(1, result.getResultTotalCount());
         assertEquals(1, result.getGroupTotalCount());
@@ -317,8 +310,6 @@ class SearchApplicationServiceImplTest {
                 List.of(),
                 null,
                 null,
-                1,
-                2,
                 "ADMIN",
                 "admin-1",
                 requestId("req-total"),
@@ -334,7 +325,7 @@ class SearchApplicationServiceImplTest {
                                 2,
                                 List.of(searchResult("SANCAI_ENTRY", "1001"), searchResult("SANCAI_ENTRY", "1002")))));
 
-        var result = service.search(query);
+        var result = service.search(query, new PageQuery());
         ArgumentCaptor<SearchScope> scopeCaptor = ArgumentCaptor.forClass(SearchScope.class);
 
         assertEquals(2, result.getResultTotalCount());
@@ -367,8 +358,6 @@ class SearchApplicationServiceImplTest {
                 List.of(),
                 null,
                 null,
-                1,
-                20,
                 "ADMIN",
                 "admin-1",
                 requestId("req-4"),
@@ -381,7 +370,7 @@ class SearchApplicationServiceImplTest {
                         new SearchGroupResult(
                                 "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1002")))));
 
-        var result = service.search(query);
+        var result = service.search(query, new PageQuery());
 
         assertEquals(1, result.getResultTotalCount());
         assertEquals("1002", result.getGroups().get(0).getItems().get(0).getContentId());
@@ -409,8 +398,6 @@ class SearchApplicationServiceImplTest {
                 List.of(),
                 null,
                 null,
-                1,
-                20,
                 "ADMIN",
                 "admin-1",
                 requestId("req-5"),
@@ -420,7 +407,7 @@ class SearchApplicationServiceImplTest {
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenReturn(searchPageResult(0));
 
-        var result = service.search(query);
+        var result = service.search(query, new PageQuery());
         ArgumentCaptor<SearchScope> scopeCaptor = ArgumentCaptor.forClass(SearchScope.class);
 
         assertEquals(0, result.getResultTotalCount());
@@ -606,8 +593,10 @@ class SearchApplicationServiceImplTest {
                                 "trace-1",
                                 Instant.ofEpochMilli(1_718_000_000_000L)))));
 
-        var result = service.pageEvents(new SearchEventPageQuery(
-                "黄帝", List.of("ENTITY", "KEYWORD"), List.of("SUCCEEDED", "FAILED"), "user-1", null, null, 1, 20));
+        var result = service.pageEvents(
+                new SearchEventQuery(
+                        "黄帝", List.of("ENTITY", "KEYWORD"), List.of("SUCCEEDED", "FAILED"), "user-1", null, null),
+                new PageQuery(1, 20));
 
         verify(searchEventRepository).page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20);
         assertEquals(1, result.getRecords().size());
@@ -703,8 +692,6 @@ class SearchApplicationServiceImplTest {
                 List.of(),
                 null,
                 null,
-                1,
-                20,
                 "ANONYMOUS",
                 "user-1",
                 requestId("req-2"),
@@ -714,7 +701,7 @@ class SearchApplicationServiceImplTest {
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenThrow(new BizException("DISCOVERY-29999", "discovery.search.test", "boom"));
 
-        BizException exception = assertThrows(BizException.class, () -> service.search(query));
+        BizException exception = assertThrows(BizException.class, () -> service.search(query, new PageQuery()));
         ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
 
         assertEquals("DISCOVERY-29999", exception.getCode());
@@ -745,8 +732,6 @@ class SearchApplicationServiceImplTest {
                 List.of(),
                 null,
                 null,
-                1,
-                20,
                 "ANONYMOUS",
                 null,
                 requestId("req-query-understanding"),
@@ -757,7 +742,7 @@ class SearchApplicationServiceImplTest {
                         "discovery.search.query-understanding.result-parse-failed",
                         "Query understanding result parse failed"));
 
-        BizException exception = assertThrows(BizException.class, () -> service.search(query));
+        BizException exception = assertThrows(BizException.class, () -> service.search(query, new PageQuery()));
         ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
 
         assertEquals("DISCOVERY-20004", exception.getCode());

@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.backup.command.OperationsBackupExecuteCommand;
 import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupDetailQuery;
-import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupPageQuery;
+import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackupQuery;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupDetailResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
@@ -155,7 +155,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
     }
 
     @Override
-    public PageResult<OperationsBackupPageResult> page(OperationsBackupPageQuery query, PageQuery pageQuery) {
+    public PageResult<OperationsBackupPageResult> page(OperationsBackupQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<BackupRecord> recordPage = backupRepository.page(

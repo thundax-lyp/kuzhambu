@@ -1,10 +1,11 @@
 package com.thundax.kuzhambu.discovery.application.qa.service;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
-import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
@@ -22,7 +23,7 @@ public interface QaApplicationService {
 
     List<QaSessionResult> listPortalSessions(String ownerType, String ownerId, Integer limit);
 
-    PageResult<QaSessionResult> pageSessions(QaSessionPageQuery query);
+    PageResult<QaSessionResult> pageSessions(QaSessionQuery query, PageQuery pageQuery);
 
     QaSessionDetailResult getPortalSessionDetail(Long sessionId, String ownerType, String ownerId);
 

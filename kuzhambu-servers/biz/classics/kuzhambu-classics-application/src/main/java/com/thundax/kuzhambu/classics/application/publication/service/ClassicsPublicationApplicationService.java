@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.application.publication.service;
 
 import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationCreateCommand;
-import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobPageQuery;
+import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobQuery;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationCreateResult;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationJobView;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
@@ -16,5 +16,5 @@ public interface ClassicsPublicationApplicationService {
 
     ClassicsPublicationJobView get(ClassicsPublicationJobId id);
 
-    PageResult<ClassicsPublicationJobView> page(ClassicsPublicationJobPageQuery query, PageQuery page);
+    PageResult<ClassicsPublicationJobView> page(ClassicsPublicationJobQuery query, PageQuery page);
 }

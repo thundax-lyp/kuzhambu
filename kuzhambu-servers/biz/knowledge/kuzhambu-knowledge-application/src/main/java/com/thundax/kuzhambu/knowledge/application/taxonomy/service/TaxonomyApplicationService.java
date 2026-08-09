@@ -19,11 +19,11 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewComm
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagBatchMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
@@ -39,7 +39,7 @@ import java.util.List;
 
 public interface TaxonomyApplicationService {
 
-    PageResult<TagCategoryResult> pageCategories(TagCategoryPageQuery query, PageQuery page);
+    PageResult<TagCategoryResult> pageCategories(TagCategoryQuery query, PageQuery page);
 
     TagCategoryId createCategory(TagCategoryCreateCommand command);
 
@@ -47,7 +47,7 @@ public interface TaxonomyApplicationService {
 
     void changeCategoryStatus(TagCategoryStatusCommand command);
 
-    PageResult<TagResult> pageTags(TagPageQuery query, PageQuery page);
+    PageResult<TagResult> pageTags(TagQuery query, PageQuery page);
 
     TagDetailResult getTagDetail(TagId id);
 
@@ -71,7 +71,7 @@ public interface TaxonomyApplicationService {
 
     TagGovernanceMetricsResult getTagGovernanceMetrics(TagGovernanceMetricsQuery query);
 
-    PageResult<TagResult> pagePendingTags(TagReviewPageQuery query, PageQuery page);
+    PageResult<TagResult> pagePendingTags(TagReviewQuery query, PageQuery page);
 
     void reviewTag(TagReviewCommand command);
 
