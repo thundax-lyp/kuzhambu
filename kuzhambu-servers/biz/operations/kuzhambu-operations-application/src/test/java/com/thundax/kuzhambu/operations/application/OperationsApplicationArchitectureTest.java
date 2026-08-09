@@ -24,6 +24,9 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
         ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptySet());
         ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
                 classes, Collections.emptySet());
+        NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
+                Path.of("src/main/java"), OperationsApplicationCommandQueryRecordAllowances.legacyAllowances());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
     }
 

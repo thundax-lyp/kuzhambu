@@ -40,6 +40,8 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
+                Path.of("src/main/java"), SystemApplicationCommandQueryRecordAllowances.legacyAllowances());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertServiceQueryObjectsUnderServiceQueryPackage(classes);

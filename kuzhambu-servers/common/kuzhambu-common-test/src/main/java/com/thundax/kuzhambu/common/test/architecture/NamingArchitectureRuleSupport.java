@@ -12,7 +12,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +86,9 @@ public final class NamingArchitectureRuleSupport {
     private static final Pattern SOURCE_ANNOTATION_PATTERN = Pattern.compile("@(?:[\\w.]+\\.)?(\\w+)\\b");
     private static final Pattern PACKAGE_DECLARATION_PATTERN =
             Pattern.compile("(?m)^\\s*package\\s+([a-zA-Z_][\\w]*(?:\\.[a-zA-Z_][\\w]*)*)\\s*;");
+    private static final Pattern LOMBOK_ANNOTATION_PATTERN =
+            Pattern.compile("(?m)^\\s*@(Getter|Setter|Data|Builder|NoArgsConstructor|AllArgsConstructor|"
+                    + "RequiredArgsConstructor|Value|With)\\b");
 
     private NamingArchitectureRuleSupport() {}
 
@@ -236,6 +242,40 @@ public final class NamingArchitectureRuleSupport {
                 violations.isEmpty());
     }
 
+    public static void assertApplicationCommandQuerySourcesAreRecords(
+            Path sourceRoot, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        Map<String, ArchitectureRuleAllowance> allowlist = architectureAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
+        List<String> violations = new ArrayList<String>();
+
+        if (!Files.exists(sourceRoot)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(NamingArchitectureRuleSupport::isApplicationCommandOrQuerySource)
+                    .forEach(path -> collectApplicationCommandQueryRecordViolation(
+                            root, path, violations, allowlist, matchedAllowances));
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Failed to scan application command/query source files under " + sourceRoot, e);
+        }
+
+        List<String> staleAllowances = allowlist.keySet().stream()
+                .filter(key -> !matchedAllowances.contains(key))
+                .toList();
+
+        assertTrue(
+                "Application *Command/*Query source must be declared as Java records and must not use Lombok "
+                        + "annotations. Legacy allowances must include a description and remediation and must be "
+                        + "removed after each contract is converted to record. Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
+    }
+
     public static void assertApplicationContractSourcesUnderDedicatedPackages(Path sourceRoot) {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
@@ -284,6 +324,70 @@ public final class NamingArchitectureRuleSupport {
                         .resolve(fileName))
                 .filter(Files::isRegularFile)
                 .isPresent();
+    }
+
+    private static void collectApplicationCommandQueryRecordViolation(
+            Path root,
+            Path path,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        String typeName = applicationCommandQueryTypeName(source, path);
+        boolean record = Pattern.compile("\\brecord\\s+" + pathFileNameWithoutExtension(path) + "\\b")
+                .matcher(source)
+                .find();
+        boolean lombokAnnotated = LOMBOK_ANNOTATION_PATTERN.matcher(source).find();
+        if (record && !lombokAnnotated) {
+            return;
+        }
+        String key = "COMMAND_QUERY_RECORD:" + typeName;
+        if (isAllowlisted(key, allowlist, matchedAllowances)) {
+            return;
+        }
+        List<String> reasons = new ArrayList<String>();
+        if (!record) {
+            reasons.add("not record");
+        }
+        if (lombokAnnotated) {
+            reasons.add("uses Lombok annotation");
+        }
+        violations.add(key + " in " + ArchitectureSourceSupport.repositoryPath(root, path) + " is invalid: " + reasons);
+    }
+
+    private static String applicationCommandQueryTypeName(String source, Path path) {
+        Matcher matcher = PACKAGE_DECLARATION_PATTERN.matcher(source);
+        if (!matcher.find()) {
+            return pathFileNameWithoutExtension(path);
+        }
+        return matcher.group(1) + "." + pathFileNameWithoutExtension(path);
+    }
+
+    private static String pathFileNameWithoutExtension(Path path) {
+        String fileName = path.getFileName().toString();
+        int extensionIndex = fileName.lastIndexOf('.');
+        return extensionIndex < 0 ? fileName : fileName.substring(0, extensionIndex);
+    }
+
+    private static Map<String, ArchitectureRuleAllowance> architectureAllowlist(
+            Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Map<String, ArchitectureRuleAllowance> allowlist = new LinkedHashMap<String, ArchitectureRuleAllowance>();
+        for (ArchitectureRuleAllowance allowance : legacyAllowances) {
+            ArchitectureRuleAllowance previous = allowlist.put(allowance.key(), allowance);
+            if (previous != null) {
+                throw new IllegalArgumentException("Duplicate architecture allowlist key: " + allowance.key());
+            }
+        }
+        return allowlist;
+    }
+
+    private static boolean isAllowlisted(
+            String key, Map<String, ArchitectureRuleAllowance> allowlist, Set<String> matchedAllowances) {
+        if (!allowlist.containsKey(key)) {
+            return false;
+        }
+        matchedAllowances.add(key);
+        return true;
     }
 
     public static void assertBaseIdTypes(JavaClasses classes, String basePackage) {
