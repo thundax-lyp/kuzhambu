@@ -47,6 +47,8 @@ const SERVICE_METHOD_VERBS = [
     "cancel",
     "publish",
     "revoke",
+    "offline",
+    "content",
     "extract",
     "regenerate"
 ];
