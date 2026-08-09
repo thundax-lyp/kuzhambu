@@ -11,15 +11,16 @@ import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertRecoverRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthAlertPageResponse;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class OperationsHealthAlertInterfaceAssembler {
 
     private OperationsHealthAlertInterfaceAssembler() {}
 
-    public static OperationsHealthAlertQuery toQuery(OperationsHealthAlertPageRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsHealthAlertQuery toQuery(@NonNull OperationsHealthAlertPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsHealthAlertQuery(
                 request.getComponent(),
                 request.getAlertLevel(),
@@ -29,26 +30,23 @@ public final class OperationsHealthAlertInterfaceAssembler {
                 request.getLatestCheckId());
     }
 
-    public static OperationsHealthAlertAckCommand toCommand(OperationsHealthAlertAckRequest request) {
-        if (request == null || request.getAlertId() == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsHealthAlertAckCommand toCommand(@NonNull OperationsHealthAlertAckRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsHealthAlertAckCommand(
                 HealthAlertIdCodec.toDomain(request.getAlertId()), currentAdminUserId());
     }
 
-    public static OperationsHealthAlertRecoverCommand toCommand(OperationsHealthAlertRecoverRequest request) {
-        if (request == null || request.getAlertId() == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsHealthAlertRecoverCommand toCommand(@NonNull OperationsHealthAlertRecoverRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsHealthAlertRecoverCommand(
                 HealthAlertIdCodec.toDomain(request.getAlertId()), currentAdminUserId());
     }
 
-    public static OperationsHealthAlertPageResponse toResponse(OperationsHealthAlertPageResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsHealthAlertPageResponse toResponse(@NonNull OperationsHealthAlertPageResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsHealthAlertPageResponse.builder()
                 .alertId(
                         result.getAlertId() == null ? null : result.getAlertId().value())
