@@ -16,7 +16,6 @@ class OperationsInterfaceArchitectureTest {
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.operations.interfaces.admin.dashboard.assembler.OperationsDashboardInterfaceAssembler",
                         "com.thundax.kuzhambu.operations.interfaces.admin.health.assembler.OperationsHealthAlertInterfaceAssembler",
                         "com.thundax.kuzhambu.operations.interfaces.admin.health.assembler.OperationsHealthInterfaceAssembler",
                         "com.thundax.kuzhambu.operations.interfaces.admin.report.assembler.OperationsReportInterfaceAssembler",
