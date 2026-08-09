@@ -20,9 +20,6 @@ final class AiApplicationCommandQueryRecordAllowances {
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.CreateAiBusinessConfigCommand"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.CreateAiModelCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.DeleteAiBusinessConfigCommand"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.DeleteAiModelCommand"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.RollbackPromptVersionCommand"),
@@ -36,7 +33,6 @@ final class AiApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigQuery"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.GetAiCapabilityQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.GetAiModelQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.GetCurrentPromptVersionQuery"),
                 legacy(

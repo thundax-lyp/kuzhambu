@@ -34,7 +34,7 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
 
     @Override
     public AiModel get(GetAiModelQuery query) {
-        return aiModelRepository.get(query == null ? null : query.getModelId());
+        return aiModelRepository.get(query == null ? null : query.modelId());
     }
 
     @Override
@@ -65,7 +65,7 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int delete(DeleteAiModelCommand command) {
-        AiModelId modelId = command == null ? null : command.getModelId();
+        AiModelId modelId = command == null ? null : command.modelId();
         if (modelId == null) {
             return 0;
         }

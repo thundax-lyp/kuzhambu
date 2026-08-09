@@ -89,7 +89,7 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int delete(DeleteAiBusinessConfigCommand command) {
-        AiBusinessConfigId businessConfigId = command == null ? null : command.getBusinessConfigId();
+        AiBusinessConfigId businessConfigId = command == null ? null : command.businessConfigId();
         if (businessConfigId == null) {
             return 0;
         }
