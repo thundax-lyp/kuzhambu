@@ -149,10 +149,14 @@ describe("wangqi service request contracts", () => {
         expectLastCall("POST", "/classics/publication/wangqi/documents/offline", { id: "1" });
 
         await service.publishBatch({ ids: ["1", "2"] });
-        expectLastCall("POST", "/classics/publication/wangqi/documents/batch/publish", { ids: ["1", "2"] });
+        expectLastCall("POST", "/classics/publication/wangqi/documents/batch/publish", {
+            ids: ["1", "2"]
+        });
 
         await service.submitOfflineBatch({ ids: ["1", "2"] });
-        expectLastCall("POST", "/classics/publication/wangqi/documents/batch/offline", { ids: ["1", "2"] });
+        expectLastCall("POST", "/classics/publication/wangqi/documents/batch/offline", {
+            ids: ["1", "2"]
+        });
     });
 
     it("sends wangqi source file requests without storage api coupling", async () => {
