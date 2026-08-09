@@ -58,14 +58,32 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
 
     private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
         return List.of(
-                actionVerbAllowance("AiInvocationController"),
-                actionVerbAllowance("PromptController"),
-                actionVerbAllowance("PlatformAiController"),
-                actionVerbAllowance("AiRefinementTaskController"),
-                actionVerbAllowance("AiRefinementController"));
+                aiInvocationActionVerbAllowance("method=summarizeInvocationLogs"),
+                aiInvocationActionVerbAllowance("method=summarizeInvocationLogs path=invocation-log/summary"),
+                aiInvocationActionVerbAllowance("method=markCandidateApplied"),
+                aiInvocationActionVerbAllowance("method=markCandidateApplied path=candidate/mark-applied"),
+                aiInvocationActionVerbAllowance("method=recordBatchSuccess"),
+                aiInvocationActionVerbAllowance("method=recordBatchSuccess path=batch/record-success"),
+                aiInvocationActionVerbAllowance("method=recordBatchFailure"),
+                aiInvocationActionVerbAllowance("method=recordBatchFailure path=batch/record-failure"),
+                aiInvocationActionVerbAllowance("method=canDispatchBatch"),
+                aiInvocationActionVerbAllowance("method=canDispatchBatch path=batch/can-dispatch"),
+                legacyControllerActionVerbAllowance("PromptController"),
+                legacyControllerActionVerbAllowance("PlatformAiController"),
+                legacyControllerActionVerbAllowance("AiRefinementTaskController"),
+                legacyControllerActionVerbAllowance("AiRefinementController"));
     }
 
-    private static ArchitectureRuleAllowance actionVerbAllowance(String controller) {
+    private static ArchitectureRuleAllowance aiInvocationActionVerbAllowance(String violation) {
+        return ArchitectureRuleAllowance.of(
+                "CONTROLLER_ACTION_VERB:kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/"
+                        + "kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java "
+                        + violation,
+                "AI invocation endpoints retain legacy action names outside the shared verb whitelist.",
+                "Rename the method and action path with shared verbs, update callers, then remove this allowance.");
+    }
+
+    private static ArchitectureRuleAllowance legacyControllerActionVerbAllowance(String controller) {
         return ArchitectureRuleAllowance.of(
                 "CONTROLLER_ACTION_VERB:*" + controller + ".java*",
                 "AI controller retains legacy action names or paths outside the shared verb whitelist.",
