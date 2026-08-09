@@ -80,7 +80,10 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
                 promptActionVerbAllowance("method=validateVariables path=variable/validate"),
                 promptActionVerbAllowance("method=buildOptimizationSuggestion"),
                 promptActionVerbAllowance("method=buildOptimizationSuggestion path=optimization/suggest"),
-                legacyControllerActionVerbAllowance("PlatformAiController"),
+                platformAiActionVerbAllowance("method=buildPromptSuggestion"),
+                platformAiActionVerbAllowance("method=buildPromptSuggestion path=prompt-suggestion"),
+                platformAiActionVerbAllowance("method=summarizeVersion"),
+                platformAiActionVerbAllowance("method=summarizeVersion path=version-summary"),
                 legacyControllerActionVerbAllowance("AiRefinementTaskController"),
                 legacyControllerActionVerbAllowance("AiRefinementController"));
     }
@@ -100,6 +103,15 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
                         + "kuzhambu/ai/interfaces/admin/config/prompt/controller/PromptController.java "
                         + violation,
                 "Prompt endpoints retain legacy action names outside the shared verb whitelist.",
+                "Rename the method and action path with shared verbs, update callers, then remove this allowance.");
+    }
+
+    private static ArchitectureRuleAllowance platformAiActionVerbAllowance(String violation) {
+        return ArchitectureRuleAllowance.of(
+                "CONTROLLER_ACTION_VERB:kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/"
+                        + "kuzhambu/ai/interfaces/admin/platform/controller/PlatformAiController.java "
+                        + violation,
+                "AI platform endpoints retain legacy action names outside the shared verb whitelist.",
                 "Rename the method and action path with shared verbs, update callers, then remove this allowance.");
     }
 
