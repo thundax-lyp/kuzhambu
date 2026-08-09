@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.operations.application.backup.support;
 
+import com.thundax.kuzhambu.operations.application.backup.configure.OperationsBackupScheduleProperties;
 import com.thundax.kuzhambu.operations.application.backup.service.BackupApplicationService;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;

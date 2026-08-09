@@ -25,6 +25,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.infra.invocation.configure.AiWorkerGatewayProperties;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
