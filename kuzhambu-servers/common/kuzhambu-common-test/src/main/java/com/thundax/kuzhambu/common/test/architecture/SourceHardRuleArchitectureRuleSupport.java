@@ -18,6 +18,10 @@ public final class SourceHardRuleArchitectureRuleSupport {
     private static final Pattern TOP_LEVEL_TOOL_PACKAGE_PATTERN = Pattern.compile(
             "(?m)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
                     + "storage|system)\\.(?:application|domain|infra|interfaces)\\.(?:misc|util|utils|helper)\\s*;");
+    private static final Pattern ILLEGAL_ARGUMENT_EXCEPTION_BUSINESS_EXIT_PATTERN = Pattern.compile(
+            "(?ms)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
+                    + "storage|system)\\.(?:application(?:\\.|;)|infra\\.[\\w.]+\\.repository\\.impl(?:\\.|;)).*"
+                    + "throw\\s+new\\s+IllegalArgumentException\\s*\\(");
 
     private SourceHardRuleArchitectureRuleSupport() {}
 
@@ -33,6 +37,14 @@ public final class SourceHardRuleArchitectureRuleSupport {
                 sourceRoot,
                 TOP_LEVEL_TOOL_PACKAGE_PATTERN,
                 "Business production sources must not use top-level misc, util, utils, or helper packages");
+    }
+
+    public static void assertApplicationAndRepositoryImplementationsDoNotUseIllegalArgumentException(Path sourceRoot)
+            throws IOException {
+        assertNoSourceMatches(
+                sourceRoot,
+                ILLEGAL_ARGUMENT_EXCEPTION_BUSINESS_EXIT_PATTERN,
+                "Application and repository implementation sources must not throw IllegalArgumentException");
     }
 
     private static void assertNoSourceMatches(Path sourceRoot, Pattern pattern, String message) throws IOException {

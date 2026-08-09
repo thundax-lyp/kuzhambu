@@ -381,7 +381,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
             ClassicsPublicationContent expectedState, ClassicsPublicationContent targetState) {
         if (expectedState.getContentType() != targetState.getContentType()
                 || !Objects.equals(expectedState.getContentId(), targetState.getContentId())) {
-            throw new IllegalArgumentException("Publication state update must target the same content");
+            throw new IllegalStateException("Publication state update must target the same content");
         }
         Long id = ClassicsContentIdCodec.toValue(expectedState.getContentId());
         Long expectedJobId = ClassicsPublicationJobIdCodec.toValue(expectedState.getCurrentJobId());
@@ -442,7 +442,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
             transitionStatus = entry.getTransitionStatus();
             currentJobId = entry.getCurrentPublicationJobId();
         } else {
-            throw new IllegalArgumentException("Unsupported publication content data object");
+            throw new IllegalStateException("Unsupported publication content data object");
         }
         return new ClassicsPublicationContent(
                 contentType,

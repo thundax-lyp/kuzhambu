@@ -11,5 +11,7 @@ class RepositorySourceHardRulesArchitectureTest {
     void productionSourceShouldKeepJsonAndPackageHardRules() throws Exception {
         SourceHardRuleArchitectureRuleSupport.assertProductionSourcesUseJacksonJsonOnly(SERVER_SOURCE_ROOT);
         SourceHardRuleArchitectureRuleSupport.assertBusinessLayersDoNotUseTopLevelToolPackages(SERVER_SOURCE_ROOT);
+        SourceHardRuleArchitectureRuleSupport
+                .assertApplicationAndRepositoryImplementationsDoNotUseIllegalArgumentException(SERVER_SOURCE_ROOT);
     }
 }
