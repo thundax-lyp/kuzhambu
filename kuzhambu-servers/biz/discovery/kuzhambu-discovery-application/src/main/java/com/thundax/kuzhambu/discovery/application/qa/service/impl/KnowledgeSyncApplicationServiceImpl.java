@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacad
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
 import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseEnsureRequest;
@@ -16,7 +17,7 @@ import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemUpsertReque
 import com.thundax.kuzhambu.common.knowledge.model.sync.KnowledgeSyncRequest;
 import com.thundax.kuzhambu.common.knowledge.model.sync.KnowledgeSyncResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
-import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeSyncApplicationService;
@@ -205,9 +206,10 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     }
 
     @Override
-    public PageResult<KnowledgeSyncItemResult> pageSyncItems(KnowledgeSyncItemPageQuery query) {
-        int pageNo = normalizePageNo(query == null ? null : query.getPageNo());
-        int pageSize = normalizePageSize(query == null ? null : query.getPageSize());
+    public PageResult<KnowledgeSyncItemResult> pageSyncItems(KnowledgeSyncItemQuery query, PageQuery pageQuery) {
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        int pageNo = normalizePageNo(effectivePage.getPageNo());
+        int pageSize = normalizePageSize(effectivePage.getPageSize());
         int start = (pageNo - 1) * pageSize;
 
         List<QaKnowledgeSyncItem> allItems = listItemsForPageQuery(query);
@@ -338,9 +340,9 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
         return deleteSyncItem(existingItem, sourceId, now, command.getRequestId(), command.getTraceId());
     }
 
-    private List<QaKnowledgeSyncItem> listItemsForPageQuery(KnowledgeSyncItemPageQuery query) {
-        String syncStatus = normalizeString(query == null ? null : query.getSyncStatus());
-        String contentType = normalizeString(query == null ? null : query.getContentType());
+    private List<QaKnowledgeSyncItem> listItemsForPageQuery(KnowledgeSyncItemQuery query) {
+        String syncStatus = normalizeString(query == null ? null : query.syncStatus());
+        String contentType = normalizeString(query == null ? null : query.contentType());
 
         List<QaKnowledgeSyncItem> items = StringUtils.isBlank(syncStatus)
                 ? listAllSyncItems()

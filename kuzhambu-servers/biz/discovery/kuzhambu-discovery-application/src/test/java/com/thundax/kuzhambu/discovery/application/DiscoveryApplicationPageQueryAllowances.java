@@ -15,10 +15,7 @@ final class DiscoveryApplicationPageQueryAllowances {
     private DiscoveryApplicationPageQueryAllowances() {}
 
     static List<ArchitectureRuleAllowance> legacyAllowances() {
-        return List.of(
-                pageQueryType("com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery"),
-                pageFields("com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery"),
-                pageFields("com.thundax.kuzhambu.discovery.application.search.query.SearchQuery"));
+        return List.of(pageFields("com.thundax.kuzhambu.discovery.application.search.query.SearchQuery"));
     }
 
     private static ArchitectureRuleAllowance pageQueryType(String typeName) {

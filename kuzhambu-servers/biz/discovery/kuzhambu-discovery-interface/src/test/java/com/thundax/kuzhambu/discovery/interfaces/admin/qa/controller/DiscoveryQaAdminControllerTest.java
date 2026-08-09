@@ -17,7 +17,7 @@ import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
-import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
@@ -181,7 +181,7 @@ class DiscoveryQaAdminControllerTest {
                 .thenReturn(new KnowledgeHealthResult(true, "fastgpt", null, Map.of("provider", "fastgpt")));
         when(syncService.rebuild()).thenReturn(9001L);
         when(syncService.syncContent(any(SyncKnowledgeContentCommand.class))).thenReturn(sampleSyncItem());
-        when(syncService.pageSyncItems(any(KnowledgeSyncItemPageQuery.class)))
+        when(syncService.pageSyncItems(any(KnowledgeSyncItemQuery.class), any(PageQuery.class)))
                 .thenReturn(PageResult.of(2, 10, 1, List.of(sampleSyncItem())));
 
         DiscoveryQaAdminRequests.QaSessionGetRequest sessionRequest =
@@ -279,11 +279,11 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(10001L, syncContentCommand.getValue().getContentId());
         assertEquals(3, syncContentCommand.getValue().getCurrentVersionNo());
 
-        ArgumentCaptor<KnowledgeSyncItemPageQuery> syncPageQuery =
-                ArgumentCaptor.forClass(KnowledgeSyncItemPageQuery.class);
-        verify(syncService).pageSyncItems(syncPageQuery.capture());
-        assertEquals("SANCAI_ENTRY", syncPageQuery.getValue().getContentType());
-        assertEquals("FAILED", syncPageQuery.getValue().getSyncStatus());
+        ArgumentCaptor<KnowledgeSyncItemQuery> syncQuery = ArgumentCaptor.forClass(KnowledgeSyncItemQuery.class);
+        ArgumentCaptor<PageQuery> syncPageQuery = ArgumentCaptor.forClass(PageQuery.class);
+        verify(syncService).pageSyncItems(syncQuery.capture(), syncPageQuery.capture());
+        assertEquals("SANCAI_ENTRY", syncQuery.getValue().contentType());
+        assertEquals("FAILED", syncQuery.getValue().syncStatus());
         assertEquals(2, syncPageQuery.getValue().getPageNo());
         assertEquals(10, syncPageQuery.getValue().getPageSize());
     }
