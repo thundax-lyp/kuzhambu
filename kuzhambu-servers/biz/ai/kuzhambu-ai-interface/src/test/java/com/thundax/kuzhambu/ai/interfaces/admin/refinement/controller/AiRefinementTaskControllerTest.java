@@ -239,9 +239,7 @@ class AiRefinementTaskControllerTest {
         public AiRefinementTaskResult submit(SubmitAiRefinementTaskCommand command) {
             return task(
                     "RUNNING",
-                    command.getCapability() == null
-                            ? null
-                            : command.getCapability().value(),
+                    command.capability() == null ? null : command.capability().value(),
                     null,
                     null);
         }

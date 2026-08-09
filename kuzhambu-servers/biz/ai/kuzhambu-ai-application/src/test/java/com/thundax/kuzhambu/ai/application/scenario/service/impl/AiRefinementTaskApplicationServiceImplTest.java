@@ -82,7 +82,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 AiBatchJobStatus.SUCCEEDED,
                 batchJobService.get(accepted.getTaskId()).getStatus());
         assertEquals(1, batchJobService.get(accepted.getTaskId()).getSuccessCount());
-        assertEquals(accepted.getTaskId(), refinementService.lastCommand.getBatchId());
+        assertEquals(accepted.getTaskId(), refinementService.lastCommand.batchId());
     }
 
     @Test
@@ -104,7 +104,7 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         service.submit(command);
 
-        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, command.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, command.capability());
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, batchJobService.created.capability());
     }
 
@@ -127,7 +127,7 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         service.submit(command);
 
-        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, command.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, command.capability());
         assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, batchJobService.created.capability());
         assertEquals(1, refinementService.fusionInvokeCount);
     }
@@ -436,20 +436,27 @@ class AiRefinementTaskApplicationServiceImplTest {
     }
 
     private SubmitAiRefinementTaskCommand command(String capability) {
-        SubmitAiRefinementTaskCommand command = new SubmitAiRefinementTaskCommand();
-        command.setCapability(AiBusinessCapability.from(capability));
-        command.setScope("classics");
-        command.setOperation(capability);
-        command.setContentRef(AiContentRef.ofNullable("SANCAI_ENTRY", 10L));
-        command.setTargetObjectId(new AiTargetObjectId(20L));
-        command.setModelId(new AiModelId(40L));
-        command.setModelName(AiModelName.of("model-a"));
-        command.setPromptVersionId(new PromptVersionId(50L));
-        command.setRequestId(new RequestId("req-1"));
-        command.setTraceId(new TraceId("trace-1"));
-        command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
-        command.setInputPayloadJson("{\"text\":\"hello\"}");
-        return command;
+        return new SubmitAiRefinementTaskCommand(
+                null,
+                AiBusinessCapability.from(capability),
+                "classics",
+                capability,
+                AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
+                new AiTargetObjectId(20L),
+                null,
+                null,
+                new AiModelId(40L),
+                AiModelName.of("model-a"),
+                new PromptVersionId(50L),
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
+                "[{\"role\":\"user\",\"content\":\"hello\"}]",
+                null,
+                null,
+                "{\"text\":\"hello\"}",
+                null,
+                false,
+                null);
     }
 
     private static final class RecordingBatchJobService implements AiBatchJobApplicationService {
@@ -645,7 +652,9 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public void snapshotInvokeConfig(AiRefinementRequestCommand command) {}
+        public AiRefinementRequestCommand snapshotInvokeConfig(AiRefinementRequestCommand command) {
+            return command;
+        }
 
         @Override
         public void validateSnapshotInvokeConfig(AiRefinementRequestCommand command) {}

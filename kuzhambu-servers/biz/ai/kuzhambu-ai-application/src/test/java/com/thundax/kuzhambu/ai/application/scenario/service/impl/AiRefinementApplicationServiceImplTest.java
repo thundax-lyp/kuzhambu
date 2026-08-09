@@ -204,11 +204,8 @@ class AiRefinementApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessConfigResolver = new CapturingBusinessInvokeConfigResolver();
         AiRefinementApplicationServiceImpl service =
                 new AiRefinementApplicationServiceImpl(invocationService, resolver, businessConfigResolver);
-        AiRefinementRequestCommand command = command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_QA);
-        command.setModelId(null);
-        command.setModelName(null);
-        command.setPromptVersionId(null);
-        command.setPromptMessagesJson(null);
+        AiRefinementRequestCommand command =
+                command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_QA, null, null, null, null, null, null);
 
         service.generateQa(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -228,9 +225,16 @@ class AiRefinementApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessConfigResolver = new CapturingBusinessInvokeConfigResolver();
         AiRefinementApplicationServiceImpl service =
                 new AiRefinementApplicationServiceImpl(invocationService, resolver, businessConfigResolver);
-        AiRefinementRequestCommand command = command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_QA);
-        command.setPromptVariablesJson(null);
-        command.setOutputSchemaJson(null);
+        AiRefinementRequestCommand command = command(
+                "WANGQI_DOCUMENT",
+                "external-operation",
+                CAPABILITY_QA,
+                new AiModelId(20L),
+                AiModelName.of("model-a"),
+                new PromptVersionId(30L),
+                "[{\"role\":\"user\",\"content\":\"hello\"}]",
+                null,
+                null);
 
         service.generateQa(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -250,9 +254,16 @@ class AiRefinementApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessConfigResolver = new CapturingBusinessInvokeConfigResolver();
         AiRefinementApplicationServiceImpl service =
                 new AiRefinementApplicationServiceImpl(invocationService, resolver, businessConfigResolver);
-        AiRefinementRequestCommand command = command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_QA);
-        command.setPromptVariablesJson("{\"title\":\"submitted variables\"}");
-        command.setOutputSchemaJson("{\"type\":\"object\",\"required\":[\"qaPairs\"]}");
+        AiRefinementRequestCommand command = command(
+                "WANGQI_DOCUMENT",
+                "external-operation",
+                CAPABILITY_QA,
+                new AiModelId(20L),
+                AiModelName.of("model-a"),
+                new PromptVersionId(30L),
+                "[{\"role\":\"user\",\"content\":\"hello\"}]",
+                "{\"title\":\"submitted variables\"}",
+                "{\"type\":\"object\",\"required\":[\"qaPairs\"]}");
 
         service.generateQa(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -272,9 +283,16 @@ class AiRefinementApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessConfigResolver = new CapturingBusinessInvokeConfigResolver();
         AiRefinementApplicationServiceImpl service =
                 new AiRefinementApplicationServiceImpl(invocationService, resolver, businessConfigResolver);
-        AiRefinementRequestCommand command = command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_SUMMARY);
-        command.setPromptVariablesJson("{\"title\":\"submitted variables\"}");
-        command.setOutputSchemaJson(null);
+        AiRefinementRequestCommand command = command(
+                "WANGQI_DOCUMENT",
+                "external-operation",
+                CAPABILITY_SUMMARY,
+                new AiModelId(20L),
+                AiModelName.of("model-a"),
+                new PromptVersionId(30L),
+                "[{\"role\":\"user\",\"content\":\"hello\"}]",
+                "{\"title\":\"submitted variables\"}",
+                null);
 
         service.summarize(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -288,18 +306,49 @@ class AiRefinementApplicationServiceImplTest {
     }
 
     private AiRefinementRequestCommand command(String contentType, String operation, String capability) {
-        AiRefinementRequestCommand command = new AiRefinementRequestCommand();
-        command.setScope("classics");
-        command.setOperation(operation);
-        command.setContentRef(AiContentRef.ofNullable(contentType, 10L));
-        command.setModelId(new AiModelId(20L));
-        command.setModelName(AiModelName.of("model-a"));
-        command.setPromptVersionId(new PromptVersionId(30L));
-        command.setRequestId(new RequestId("req-1"));
-        command.setTraceId(new TraceId("trace-1"));
-        command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
-        command.setInputPayloadJson("{\"text\":\"hello\"}");
-        return command;
+        return command(
+                contentType,
+                operation,
+                capability,
+                new AiModelId(20L),
+                AiModelName.of("model-a"),
+                new PromptVersionId(30L),
+                "[{\"role\":\"user\",\"content\":\"hello\"}]",
+                null,
+                null);
+    }
+
+    private AiRefinementRequestCommand command(
+            String contentType,
+            String operation,
+            String capability,
+            AiModelId modelId,
+            AiModelName modelName,
+            PromptVersionId promptVersionId,
+            String promptMessagesJson,
+            String promptVariablesJson,
+            String outputSchemaJson) {
+        return new AiRefinementRequestCommand(
+                null,
+                AiBusinessCapability.from(capability),
+                "classics",
+                operation,
+                AiContentRef.ofNullable(contentType, 10L),
+                null,
+                null,
+                null,
+                modelId,
+                modelName,
+                promptVersionId,
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
+                promptMessagesJson,
+                promptVariablesJson,
+                null,
+                "{\"text\":\"hello\"}",
+                outputSchemaJson,
+                false,
+                null);
     }
 
     private static class CapturingInvocationService implements AiWorkerInvocationApplicationService {

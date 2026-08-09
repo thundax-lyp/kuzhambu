@@ -7,7 +7,9 @@ import java.util.function.Consumer;
 
 public interface AiRefinementApplicationService {
 
-    default void snapshotInvokeConfig(AiRefinementRequestCommand command) {}
+    default AiRefinementRequestCommand snapshotInvokeConfig(AiRefinementRequestCommand command) {
+        return command;
+    }
 
     default void validateSnapshotInvokeConfig(AiRefinementRequestCommand command) {}
 

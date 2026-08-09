@@ -14,11 +14,7 @@ final class AiApplicationCommandQueryRecordAllowances {
 
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.scenario.command.SubmitAiRefinementTaskCommand"));
+                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand"));
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {
