@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.system.interfaces;
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ApiSurfaceArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
 import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
@@ -13,6 +14,7 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 
@@ -44,6 +46,8 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
                 Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertAdminControllerMethodsDeclareRequiredAnnotations(
                 Path.of("src/main/java"));
+        ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
+                Path.of("src/main/java"), legacyActionVerbAllowances());
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsDoNotUsePathOrQueryParameters(
                 Path.of("src/main/java"));
@@ -70,5 +74,24 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
 
         org.junit.jupiter.api.Assertions.assertFalse(
                 hasWebSecurityCustomizer, "Public API paths must use permitAll instead of web.ignoring().");
+    }
+
+    private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
+        return List.of(
+                actionVerbAllowance("AuditController"),
+                actionVerbAllowance("AuthController"),
+                actionVerbAllowance("CaptchaController"),
+                actionVerbAllowance("CurrentUserController"),
+                actionVerbAllowance("DepartmentController"),
+                actionVerbAllowance("MenuController"),
+                actionVerbAllowance("RoleController"),
+                actionVerbAllowance("UserController"));
+    }
+
+    private static ArchitectureRuleAllowance actionVerbAllowance(String controller) {
+        return ArchitectureRuleAllowance.of(
+                "CONTROLLER_ACTION_VERB:*" + controller + ".java*",
+                "System controller retains legacy action names or paths outside the shared verb whitelist.",
+                "Rename the controller method and action path with a shared verb, update callers, then remove this allowance.");
     }
 }
