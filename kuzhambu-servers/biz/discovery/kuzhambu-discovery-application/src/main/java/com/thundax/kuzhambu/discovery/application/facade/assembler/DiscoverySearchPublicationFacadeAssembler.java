@@ -1,9 +1,10 @@
 package com.thundax.kuzhambu.discovery.application.facade.assembler;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidatePageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidateQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCategoryAggregationQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCategoryAggregationResult;
@@ -49,15 +50,17 @@ public class DiscoverySearchPublicationFacadeAssembler {
                 request.getOccurredAt());
     }
 
-    public SearchPublicationCandidatePageQuery toCandidatePageQuery(
+    public SearchPublicationCandidateQuery toCandidateQuery(
             DiscoverySearchPublicationCandidatePageFacadeRequest request) {
-        return new SearchPublicationCandidatePageQuery(
+        return new SearchPublicationCandidateQuery(
                 request == null ? null : request.getContentType(),
                 request == null ? null : request.getCategoryId(),
                 request == null ? null : request.getVolumeId(),
-                request == null ? null : request.getKeyword(),
-                request == null ? null : request.getPageNo(),
-                request == null ? null : request.getPageSize());
+                request == null ? null : request.getKeyword());
+    }
+
+    public PageQuery toPageQuery(DiscoverySearchPublicationCandidatePageFacadeRequest request) {
+        return request == null ? new PageQuery() : new PageQuery(request.getPageNo(), request.getPageSize());
     }
 
     public SearchPublicationCategoryAggregationQuery toCategoryAggregationQuery(

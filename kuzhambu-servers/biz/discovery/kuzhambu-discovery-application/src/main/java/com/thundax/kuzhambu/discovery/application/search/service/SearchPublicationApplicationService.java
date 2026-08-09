@@ -1,9 +1,10 @@
 package com.thundax.kuzhambu.discovery.application.search.service;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidatePageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidateQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCategoryAggregationQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCategoryAggregationResult;
@@ -22,7 +23,8 @@ public interface SearchPublicationApplicationService {
 
     SearchPublicationProbeResult probe(SearchPublicationReferenceCommand command);
 
-    PageResult<SearchPublicationCandidateResult> pageReadyCandidates(SearchPublicationCandidatePageQuery query);
+    PageResult<SearchPublicationCandidateResult> pageReadyCandidates(
+            SearchPublicationCandidateQuery query, PageQuery pageQuery);
 
     List<SearchPublicationCategoryAggregationResult> listReadyCandidateCategoryAggregations(
             SearchPublicationCategoryAggregationQuery query);

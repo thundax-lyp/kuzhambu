@@ -2,10 +2,11 @@ package com.thundax.kuzhambu.discovery.application.search.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidatePageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidateQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCategoryAggregationQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCandidateResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPublicationCategoryAggregationResult;
@@ -21,8 +22,6 @@ import org.springframework.stereotype.Service;
 @BizExceptionBoundary
 public class SearchPublicationApplicationServiceImpl implements SearchPublicationApplicationService {
 
-    private static final int DEFAULT_PAGE_NO = 1;
-    private static final int DEFAULT_PAGE_SIZE = 20;
     private static final int MAX_PAGE_SIZE = 500;
 
     private final SearchIndexGateway searchIndexGateway;
@@ -79,14 +78,16 @@ public class SearchPublicationApplicationServiceImpl implements SearchPublicatio
     }
 
     @Override
-    public PageResult<SearchPublicationCandidateResult> pageReadyCandidates(SearchPublicationCandidatePageQuery query) {
+    public PageResult<SearchPublicationCandidateResult> pageReadyCandidates(
+            SearchPublicationCandidateQuery query, PageQuery pageQuery) {
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         return searchIndexGateway.pageReadyPublicationCandidates(
-                query == null ? null : query.getContentType(),
-                query == null ? null : query.getCategoryId(),
-                query == null ? null : query.getVolumeId(),
-                query == null ? null : query.getKeyword(),
-                normalizePageNo(query == null ? null : query.getPageNo()),
-                normalizePageSize(query == null ? null : query.getPageSize()));
+                query == null ? null : query.contentType(),
+                query == null ? null : query.categoryId(),
+                query == null ? null : query.volumeId(),
+                query == null ? null : query.keyword(),
+                effectivePage.getPageNo(),
+                Math.min(effectivePage.getPageSize(), MAX_PAGE_SIZE));
     }
 
     @Override
@@ -94,16 +95,5 @@ public class SearchPublicationApplicationServiceImpl implements SearchPublicatio
             SearchPublicationCategoryAggregationQuery query) {
         return searchIndexGateway.listReadyPublicationCategoryAggregations(
                 query == null ? null : query.getContentType());
-    }
-
-    private int normalizePageNo(Integer pageNo) {
-        return pageNo == null || pageNo < 1 ? DEFAULT_PAGE_NO : pageNo;
-    }
-
-    private int normalizePageSize(Integer pageSize) {
-        if (pageSize == null || pageSize < 1) {
-            return DEFAULT_PAGE_SIZE;
-        }
-        return Math.min(pageSize, MAX_PAGE_SIZE);
     }
 }

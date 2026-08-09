@@ -22,11 +22,7 @@ final class DiscoveryApplicationPageQueryAllowances {
                 pageFields("com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery"),
                 pageQueryType("com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery"),
                 pageFields("com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery"),
-                pageFields("com.thundax.kuzhambu.discovery.application.search.query.SearchQuery"),
-                pageQueryType(
-                        "com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidatePageQuery"),
-                pageFields(
-                        "com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCandidatePageQuery"));
+                pageFields("com.thundax.kuzhambu.discovery.application.search.query.SearchQuery"));
     }
 
     private static ArchitectureRuleAllowance pageQueryType(String typeName) {
