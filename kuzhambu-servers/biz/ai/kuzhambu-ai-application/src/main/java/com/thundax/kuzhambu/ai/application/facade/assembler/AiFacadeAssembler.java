@@ -34,6 +34,7 @@ import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -127,9 +128,7 @@ public class AiFacadeAssembler {
     }
 
     public DiscoveryAiCommand toDiscoveryAiCommand(DiscoveryAiFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
+        Objects.requireNonNull(request, "request must not be null");
         return new DiscoveryAiCommand(
                 request.getServiceId(),
                 request.getServiceRole(),
@@ -169,9 +168,7 @@ public class AiFacadeAssembler {
     }
 
     public KnowledgeAiExtractionCommand toKnowledgeAiExtractionCommand(KnowledgeAiExtractionFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
+        Objects.requireNonNull(request, "request must not be null");
         return new KnowledgeAiExtractionCommand(
                 request.getTaskType(),
                 request.getScopeType(),

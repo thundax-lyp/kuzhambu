@@ -13,10 +13,6 @@ final class AiApplicationCommandQueryRecordAllowances {
             "Legacy production code constructs an application Command/Query outside *InterfaceAssembler, *FacadeAssembler, or ApplicationService orchestration.";
     private static final String CONSTRUCTION_REMEDIATION =
             "Move request or facade conversion into the matching assembler, or move internal downstream Command/Query construction into the calling ApplicationService, then remove this allowance.";
-    private static final String NULL_RETURN_DESCRIPTION =
-            "Legacy assembler method returning an application Command/Query can return null.";
-    private static final String NULL_RETURN_REMEDIATION =
-            "Move null input handling to caller validation or an explicit use-case branch, return a concrete Command/Query, then remove this allowance.";
 
     private AiApplicationCommandQueryRecordAllowances() {}
 
@@ -87,11 +83,7 @@ final class AiApplicationCommandQueryRecordAllowances {
     }
 
     static List<ArchitectureRuleAllowance> assemblerNullReturnAllowances() {
-        return List.of(
-                nullReturn(
-                        "COMMAND_QUERY_ASSEMBLER_NULL_RETURN:com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler#toDiscoveryAiCommand:DiscoveryAiCommand:1"),
-                nullReturn(
-                        "COMMAND_QUERY_ASSEMBLER_NULL_RETURN:com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler#toKnowledgeAiExtractionCommand:KnowledgeAiExtractionCommand:1"));
+        return List.of();
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {
@@ -100,9 +92,5 @@ final class AiApplicationCommandQueryRecordAllowances {
 
     private static ArchitectureRuleAllowance construction(String key) {
         return ArchitectureRuleAllowance.of(key, CONSTRUCTION_DESCRIPTION, CONSTRUCTION_REMEDIATION);
-    }
-
-    private static ArchitectureRuleAllowance nullReturn(String key) {
-        return ArchitectureRuleAllowance.of(key, NULL_RETURN_DESCRIPTION, NULL_RETURN_REMEDIATION);
     }
 }
