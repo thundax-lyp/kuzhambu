@@ -49,7 +49,7 @@ final class OperationsApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreDetailQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.restore.query.OperationsRestorePageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.task.query.OperationsTaskDetailQuery"),
                 legacy(

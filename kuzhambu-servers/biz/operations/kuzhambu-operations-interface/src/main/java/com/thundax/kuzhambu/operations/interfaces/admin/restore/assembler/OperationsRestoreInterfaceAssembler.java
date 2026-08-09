@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.operations.application.restore.command.OperationsRestoreExecuteCommand;
 import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreDetailQuery;
-import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestorePageQuery;
+import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreQuery;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreDetailResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreExecuteResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestorePageResult;
@@ -29,11 +29,11 @@ public final class OperationsRestoreInterfaceAssembler {
                 BackupIdCodec.toDomain(request.getBackupId()), request.getRestoreMode(), currentAdminUserId());
     }
 
-    public static OperationsRestorePageQuery toQuery(OperationsRestorePageRequest request) {
+    public static OperationsRestoreQuery toQuery(OperationsRestorePageRequest request) {
         if (request == null) {
             return null;
         }
-        return new OperationsRestorePageQuery(
+        return new OperationsRestoreQuery(
                 request.getBackupId(),
                 request.getRestoreMode(),
                 request.getRestoreStatus(),

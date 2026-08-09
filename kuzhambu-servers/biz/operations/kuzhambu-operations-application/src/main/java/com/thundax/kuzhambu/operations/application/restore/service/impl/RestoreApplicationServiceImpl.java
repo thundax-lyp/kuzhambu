@@ -9,7 +9,7 @@ import com.thundax.kuzhambu.operations.application.backup.support.OperationsBack
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.application.restore.command.OperationsRestoreExecuteCommand;
 import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreDetailQuery;
-import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestorePageQuery;
+import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreQuery;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreDetailResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreExecuteResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestorePageResult;
@@ -129,7 +129,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
     }
 
     @Override
-    public PageResult<OperationsRestorePageResult> page(OperationsRestorePageQuery query, PageQuery pageQuery) {
+    public PageResult<OperationsRestorePageResult> page(OperationsRestoreQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<RestoreRecord> recordPage = restoreRepository.page(

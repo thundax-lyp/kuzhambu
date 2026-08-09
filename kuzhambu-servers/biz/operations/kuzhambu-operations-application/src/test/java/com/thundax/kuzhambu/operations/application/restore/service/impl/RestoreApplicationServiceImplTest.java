@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.operations.application.backup.support.OperationsBack
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.application.restore.command.OperationsRestoreExecuteCommand;
 import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreDetailQuery;
-import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestorePageQuery;
+import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreQuery;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreDetailResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreExecuteResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestorePageResult;
@@ -247,8 +247,7 @@ class RestoreApplicationServiceImplTest {
                 service(restoreRepository, backupRepository, new SuccessfulRestoreScriptExecutor());
 
         PageResult<OperationsRestorePageResult> pageResult = service.page(
-                new OperationsRestorePageQuery(9001L, RestoreMode.DRILL.value(), "SUCCEEDED", 1001L),
-                new PageQuery(1, 10));
+                new OperationsRestoreQuery(9001L, RestoreMode.DRILL.value(), "SUCCEEDED", 1001L), new PageQuery(1, 10));
         OperationsRestoreDetailResult detailResult =
                 service.detail(new OperationsRestoreDetailQuery(RestoreIdCodec.toDomain(9101L)));
 
