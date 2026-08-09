@@ -31,7 +31,7 @@ import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchEven
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickEventRepository;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
-import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
+import com.thundax.kuzhambu.discovery.domain.search.support.SearchQueryNormalizer;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
@@ -50,19 +50,19 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private final SearchEventRepository searchEventRepository;
     private final SearchClickEventRepository searchClickEventRepository;
-    private final SearchDomainService searchDomainService;
+    private final SearchQueryNormalizer searchQueryNormalizer;
     private final SearchIndexGateway searchIndexGateway;
     private final QueryUnderstandingApplicationService queryUnderstandingApplicationService;
 
     public SearchApplicationServiceImpl(
             SearchEventRepository searchEventRepository,
             SearchClickEventRepository searchClickEventRepository,
-            SearchDomainService searchDomainService,
+            SearchQueryNormalizer searchQueryNormalizer,
             SearchIndexGateway searchIndexGateway,
             QueryUnderstandingApplicationService queryUnderstandingApplicationService) {
         this.searchEventRepository = searchEventRepository;
         this.searchClickEventRepository = searchClickEventRepository;
-        this.searchDomainService = searchDomainService;
+        this.searchQueryNormalizer = searchQueryNormalizer;
         this.searchIndexGateway = searchIndexGateway;
         this.queryUnderstandingApplicationService = queryUnderstandingApplicationService;
     }
@@ -75,15 +75,15 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         long startNanos = System.nanoTime();
         QueryUnderstandingResult understandingResult = null;
         String normalizedQueryText =
-                searchDomainService.normalizeKeyword(query.getQueryText()).getNormalizedText();
-        SearchScope scope = searchDomainService.normalizeScope(toSearchScope(query));
+                searchQueryNormalizer.normalizeKeyword(query.getQueryText()).getNormalizedText();
+        SearchScope scope = searchQueryNormalizer.normalizeScope(toSearchScope(query));
         try {
             understandingResult = queryUnderstandingApplicationService.understand(query);
-            var keyword = searchDomainService.normalizeKeyword(resolveSearchText(query, understandingResult));
+            var keyword = searchQueryNormalizer.normalizeKeyword(resolveSearchText(query, understandingResult));
             normalizedQueryText = keyword.getNormalizedText();
-            scope = searchDomainService.normalizeScope(toSearchScope(query));
-            int pageNo = searchDomainService.normalizePageNo(effectivePage.getPageNo());
-            int pageSize = searchDomainService.normalizePageSize(effectivePage.getPageSize());
+            scope = searchQueryNormalizer.normalizeScope(toSearchScope(query));
+            int pageNo = effectivePage.getPageNo();
+            int pageSize = effectivePage.getPageSize();
             SearchPageResult searchPage = searchIndexGateway.search(keyword, scope, pageNo, pageSize);
             List<SearchGroupResult> groups = searchPage.safeGroups();
             SearchEvent searchEvent = buildSucceededSearchEvent(
@@ -162,8 +162,8 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             throw new BizException("Search event page query is required");
         }
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
-        int pageNo = searchDomainService.normalizePageNo(effectivePage.getPageNo());
-        int pageSize = searchDomainService.normalizePageSize(effectivePage.getPageSize());
+        int pageNo = effectivePage.getPageNo();
+        int pageSize = effectivePage.getPageSize();
         String intentType = firstOrNull(query.intentTypes());
         String searchStatus = firstOrNull(query.searchStatuses());
         PageResult<SearchEvent> pageResult = searchEventRepository.page(
