@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OperationsTaskPageQuery {
+public class OperationsTaskQuery {
     private String sourceDomain;
     private String taskType;
     private String taskStatus;

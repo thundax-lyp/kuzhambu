@@ -53,7 +53,7 @@ final class OperationsApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.task.query.OperationsTaskDetailQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.task.query.OperationsTaskPageQuery"));
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.task.query.OperationsTaskQuery"));
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {

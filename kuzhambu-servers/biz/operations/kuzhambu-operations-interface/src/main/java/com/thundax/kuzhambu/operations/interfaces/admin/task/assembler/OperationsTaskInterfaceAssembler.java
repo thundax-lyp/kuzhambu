@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.task.assembler;
 
 import com.thundax.kuzhambu.operations.application.task.query.OperationsTaskDetailQuery;
-import com.thundax.kuzhambu.operations.application.task.query.OperationsTaskPageQuery;
+import com.thundax.kuzhambu.operations.application.task.query.OperationsTaskQuery;
 import com.thundax.kuzhambu.operations.application.task.result.OperationsTaskDetailResult;
 import com.thundax.kuzhambu.operations.application.task.result.OperationsTaskPageResult;
 import com.thundax.kuzhambu.operations.domain.task.codec.LongTaskSnapshotIdCodec;
@@ -14,11 +14,11 @@ public final class OperationsTaskInterfaceAssembler {
 
     private OperationsTaskInterfaceAssembler() {}
 
-    public static OperationsTaskPageQuery toQuery(OperationsTaskPageRequest request) {
+    public static OperationsTaskQuery toQuery(OperationsTaskPageRequest request) {
         if (request == null) {
             return null;
         }
-        return new OperationsTaskPageQuery(request.getSourceDomain(), request.getTaskType(), request.getTaskStatus());
+        return new OperationsTaskQuery(request.getSourceDomain(), request.getTaskType(), request.getTaskStatus());
     }
 
     public static OperationsTaskDetailQuery toQuery(OperationsTaskDetailRequest request) {

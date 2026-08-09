@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.application.task.query.OperationsTaskDetailQuery;
-import com.thundax.kuzhambu.operations.application.task.query.OperationsTaskPageQuery;
+import com.thundax.kuzhambu.operations.application.task.query.OperationsTaskQuery;
 import com.thundax.kuzhambu.operations.application.task.result.OperationsTaskDetailResult;
 import com.thundax.kuzhambu.operations.application.task.result.OperationsTaskPageResult;
 import com.thundax.kuzhambu.operations.application.task.service.TaskApplicationService;
@@ -37,7 +37,7 @@ public class TaskApplicationServiceImpl implements TaskApplicationService {
     }
 
     @Override
-    public PageResult<OperationsTaskPageResult> page(OperationsTaskPageQuery query, PageQuery pageQuery) {
+    public PageResult<OperationsTaskPageResult> page(OperationsTaskQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<LongTaskSnapshot> taskPage = longTaskSnapshotRepository.page(
