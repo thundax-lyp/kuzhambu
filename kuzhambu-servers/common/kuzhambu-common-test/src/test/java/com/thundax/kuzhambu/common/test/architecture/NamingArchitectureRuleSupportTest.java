@@ -845,6 +845,33 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
+    void domainServiceGateShouldRejectImplementationWithOnlyUnusedRepositoryImport() throws Exception {
+        Path source = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service/impl");
+        Files.createDirectories(source);
+        Files.writeString(
+                source.resolve("SampleDomainServiceImpl.java"),
+                """
+                package com.thundax.kuzhambu.sample.domain.service.impl;
+
+                import com.thundax.kuzhambu.sample.domain.core.repository.SampleRepository;
+                import com.thundax.kuzhambu.sample.domain.service.SampleDomainService;
+
+                public class SampleDomainServiceImpl implements SampleDomainService {
+                    private final String name;
+
+                    public SampleDomainServiceImpl(String name) {
+                        this.name = name;
+                    }
+                }
+                """);
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(
+                        tempDir.resolve("src/main/java")));
+    }
+
+    @Test
     void domainServiceGateShouldAllowInterfaceAndRepositoryBackedImplementation() throws Exception {
         Path service = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service");
         Path impl = tempDir.resolve("src/main/java/com/thundax/kuzhambu/sample/domain/service/impl");

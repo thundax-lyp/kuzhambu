@@ -102,8 +102,8 @@ public final class NamingArchitectureRuleSupport {
             Pattern.compile("(?m)^\\s*@(Getter|Setter|Data|Builder|NoArgsConstructor|AllArgsConstructor|"
                     + "RequiredArgsConstructor|Value|With)\\b");
     private static final Pattern DOMAIN_REPOSITORY_IMPORT_PATTERN =
-            Pattern.compile("(?m)^\\s*import\\s+com\\.thundax\\.kuzhambu\\.[\\w.]+\\.domain\\.[\\w.]+\\.repository\\."
-                    + "\\w+Repository\\s*;");
+            Pattern.compile("(?m)^\\s*import\\s+(com\\.thundax\\.kuzhambu\\.[\\w.]+\\.domain\\.[\\w.]+\\.repository\\."
+                    + "(\\w+Repository))\\s*;");
 
     private NamingArchitectureRuleSupport() {}
 
@@ -832,7 +832,7 @@ public final class NamingArchitectureRuleSupport {
                 && (domainServiceName || domainServiceImplName)
                 && allowedDomainServiceShape
                 && isConcreteDomainServiceSource(source, simpleName)
-                && !DOMAIN_REPOSITORY_IMPORT_PATTERN.matcher(source).find()) {
+                && !containsDomainRepositoryReference(source)) {
             collectAllowlistedViolation(
                     domainServiceRepositoryKey(typeName),
                     ArchitectureSourceSupport.repositoryPath(root, path)
@@ -959,6 +959,27 @@ public final class NamingArchitectureRuleSupport {
         }
         resolvedNames.add(packageName + "." + typeName);
         return resolvedNames;
+    }
+
+    private static boolean containsDomainRepositoryReference(String source) {
+        String sourceBody = sourceWithoutImportDeclarations(source);
+        Matcher repositoryImport = DOMAIN_REPOSITORY_IMPORT_PATTERN.matcher(source);
+        while (repositoryImport.find()) {
+            String repositoryName = repositoryImport.group(2);
+            if (Pattern.compile("\\b" + Pattern.quote(repositoryName) + "\\b")
+                    .matcher(sourceBody)
+                    .find()) {
+                return true;
+            }
+        }
+        return Pattern.compile(
+                        "\\bcom\\.thundax\\.kuzhambu\\.[\\w.]+\\.domain\\.[\\w.]+\\.repository\\.\\w+Repository\\b")
+                .matcher(sourceBody)
+                .find();
+    }
+
+    private static String sourceWithoutImportDeclarations(String source) {
+        return Pattern.compile("(?m)^\\s*import\\s+[^;]+;\\s*").matcher(source).replaceAll("\n");
     }
 
     public static String domainServiceShapeKey(String typeName) {
