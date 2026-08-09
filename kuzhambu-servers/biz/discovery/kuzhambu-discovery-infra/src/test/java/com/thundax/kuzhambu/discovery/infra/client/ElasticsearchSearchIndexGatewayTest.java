@@ -40,7 +40,8 @@ class ElasticsearchSearchIndexGatewayTest {
     void searchShouldThrowUnsupportedOperationExceptionWithIndexName() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         properties.setIndexName("discovery-search-test");
-        ElasticsearchSearchIndexGateway gateway = new ElasticsearchSearchIndexGateway(properties);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, null, new DiscoverySearchDocumentAssembler());
 
         UnsupportedOperationException exception =
                 assertThrows(UnsupportedOperationException.class, () -> gateway.search(null, null, 1, 20));
@@ -52,7 +53,8 @@ class ElasticsearchSearchIndexGatewayTest {
     void rebuildAndUpsertShouldThrowUnsupportedOperationExceptionWithIndexName() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         properties.setIndexName("discovery-search-test");
-        ElasticsearchSearchIndexGateway gateway = new ElasticsearchSearchIndexGateway(properties);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, null, new DiscoverySearchDocumentAssembler());
 
         UnsupportedOperationException rebuildException =
                 assertThrows(UnsupportedOperationException.class, () -> gateway.rebuildIndex(Collections.emptyList()));
