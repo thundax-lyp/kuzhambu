@@ -591,7 +591,7 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public AiBatchJobResult cancel(CancelAiBatchJobCommand command) {
-            AiBatchJobId batchId = command == null ? null : command.getBatchId();
+            AiBatchJobId batchId = command == null ? null : command.batchId();
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "CANCELLED", job.getSuccessCount(), job.getFailedCount(), null);
             replace(updated);

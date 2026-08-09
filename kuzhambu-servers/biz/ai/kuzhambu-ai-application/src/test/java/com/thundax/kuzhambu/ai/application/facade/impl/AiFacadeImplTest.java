@@ -552,9 +552,9 @@ class AiFacadeImplTest {
     void rejectCandidateShouldDelegateToDomainServiceAndMapDto() {
         AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
         when(aiCandidateApplicationService.reject(argThat(command -> command != null
-                        && new AiCandidateId(901L).equals(command.getCandidateId())
-                        && "USER_REJECTED".equals(command.getErrorType())
-                        && "not useful".equals(command.getErrorMessage()))))
+                        && new AiCandidateId(901L).equals(command.candidateId())
+                        && "USER_REJECTED".equals(command.errorType())
+                        && "not useful".equals(command.errorMessage()))))
                 .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -573,9 +573,9 @@ class AiFacadeImplTest {
         assertEquals(901L, response.getCandidateId());
         verify(aiCandidateApplicationService)
                 .reject(argThat(command -> command != null
-                        && new AiCandidateId(901L).equals(command.getCandidateId())
-                        && "USER_REJECTED".equals(command.getErrorType())
-                        && "not useful".equals(command.getErrorMessage())));
+                        && new AiCandidateId(901L).equals(command.candidateId())
+                        && "USER_REJECTED".equals(command.errorType())
+                        && "not useful".equals(command.errorMessage())));
     }
 
     private static AiFacadeImpl newFacade(

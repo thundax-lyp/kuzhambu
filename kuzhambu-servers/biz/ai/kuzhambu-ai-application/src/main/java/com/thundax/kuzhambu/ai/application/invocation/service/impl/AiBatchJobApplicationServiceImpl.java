@@ -186,7 +186,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobResult cancel(CancelAiBatchJobCommand command) {
-        AiBatchJobId batchId = command == null ? null : command.getBatchId();
+        AiBatchJobId batchId = command == null ? null : command.batchId();
         AiBatchJob job = getRequired(batchId);
         if (isTerminal(job.getStatus())) {
             return AiBatchJobResult.from(job);

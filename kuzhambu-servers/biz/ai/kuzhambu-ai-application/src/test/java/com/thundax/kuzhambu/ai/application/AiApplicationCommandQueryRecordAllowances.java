@@ -18,17 +18,11 @@ final class AiApplicationCommandQueryRecordAllowances {
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.ExpireRunningAiBatchJobsCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.invocation.query.AiReportSummaryQuery"),
                 legacy(

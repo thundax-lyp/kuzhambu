@@ -300,7 +300,7 @@ class AiInvocationControllerTest {
                 new Class<?>[] {AiBatchJobApplicationService.class},
                 (proxy, method, args) -> {
                     if ("cancel".equals(method.getName())) {
-                        assertEquals(new AiBatchJobId(8801L), ((CancelAiBatchJobCommand) args[0]).getBatchId());
+                        assertEquals(new AiBatchJobId(8801L), ((CancelAiBatchJobCommand) args[0]).batchId());
                         return new com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult(
                                 new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(8801L),
                                 "classics",
@@ -359,9 +359,9 @@ class AiInvocationControllerTest {
 
             @Override
             public AiCandidate reject(RejectAiCandidateCommand command) {
-                assertEquals(new AiCandidateId(11L), command.getCandidateId());
-                assertEquals("TIMEOUT", command.getErrorType());
-                assertEquals("执行超时", command.getErrorMessage());
+                assertEquals(new AiCandidateId(11L), command.candidateId());
+                assertEquals("TIMEOUT", command.errorType());
+                assertEquals("执行超时", command.errorMessage());
                 return rejectedCandidate();
             }
         };
@@ -376,10 +376,10 @@ class AiInvocationControllerTest {
 
             @Override
             public AiCandidate markApplied(ApplyAiCandidateCommand command) {
-                assertEquals(new AiCandidateId(22L), command.getCandidateId());
-                assertEquals(null, command.getResultFormat());
-                assertEquals(null, command.getResultPayload());
-                assertEquals(null, command.getAppliedAt());
+                assertEquals(new AiCandidateId(22L), command.candidateId());
+                assertEquals(null, command.resultFormat());
+                assertEquals(null, command.resultPayload());
+                assertEquals(null, command.appliedAt());
                 return appliedCandidate();
             }
 
