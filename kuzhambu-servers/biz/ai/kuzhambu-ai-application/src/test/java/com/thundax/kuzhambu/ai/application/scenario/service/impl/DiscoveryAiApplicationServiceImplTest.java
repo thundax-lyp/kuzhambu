@@ -42,14 +42,16 @@ class DiscoveryAiApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("discovery", capturedCommand.getScope());
-        assertEquals("DISCOVERY_QUERY_UNDERSTANDING", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING, capturedCommand.getCapability());
-        assertEquals("query_understanding", capturedCommand.getWorkerCapability());
-        assertEquals("DISCOVERY_QUERY", capturedCommand.getContentRef().contentType());
-        assertFalse(capturedCommand.isStream());
-        assertFalse(capturedCommand.isCreateCandidate());
+        assertEquals("discovery", capturedCommand.context().scope());
+        assertEquals("DISCOVERY_QUERY_UNDERSTANDING", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING,
+                capturedCommand.context().capability());
+        assertEquals("query_understanding", capturedCommand.route().workerCapability());
+        assertEquals("DISCOVERY_QUERY", capturedCommand.target().contentRef().contentType());
+        assertFalse(capturedCommand.options().stream());
+        assertFalse(capturedCommand.options().createCandidate());
         assertEquals(AiInvocationStatus.SUCCEEDED, result.getStatus());
         assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING, result.getCapability());
     }
@@ -68,12 +70,15 @@ class DiscoveryAiApplicationServiceImplTest {
         assertNotNull(result);
         assertTrue(invocationService.streamInvoked());
         assertEquals(List.of("王圻", "文档答案"), deltas);
-        assertEquals("DISCOVERY_ANSWER_GENERATION_STREAM", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION, capturedCommand.getCapability());
-        assertEquals("answer_generation", capturedCommand.getWorkerCapability());
-        assertTrue(capturedCommand.isStream());
-        assertFalse(capturedCommand.isCreateCandidate());
+        assertEquals(
+                "DISCOVERY_ANSWER_GENERATION_STREAM", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.DISCOVERY_ANSWER_GENERATION,
+                capturedCommand.context().capability());
+        assertEquals("answer_generation", capturedCommand.route().workerCapability());
+        assertTrue(capturedCommand.options().stream());
+        assertFalse(capturedCommand.options().createCandidate());
         assertEquals(AiInvocationStatus.SUCCEEDED, result.getStatus());
         assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION, result.getCapability());
     }
@@ -88,11 +93,13 @@ class DiscoveryAiApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("DISCOVERY_ANSWER_GENERATION", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION, capturedCommand.getCapability());
-        assertFalse(capturedCommand.isStream());
-        assertFalse(capturedCommand.isCreateCandidate());
+        assertEquals("DISCOVERY_ANSWER_GENERATION", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.DISCOVERY_ANSWER_GENERATION,
+                capturedCommand.context().capability());
+        assertFalse(capturedCommand.options().stream());
+        assertFalse(capturedCommand.options().createCandidate());
         assertEquals(new AiCallId(101L), result.getCallId());
         assertEquals(new AiCandidateId(102L), result.getCandidateId());
         assertEquals(AiInvocationStatus.SUCCEEDED, result.getStatus());
@@ -121,22 +128,36 @@ class DiscoveryAiApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
         DiscoveryAiApplicationServiceImpl service =
                 new DiscoveryAiApplicationServiceImpl(invocationService, resolver, businessResolver);
-        DiscoveryAiCommand command = command(false);
-        command.setServiceId(null);
-        command.setServiceRole(null);
-        command.setModelId(null);
-        command.setModelName(null);
-        command.setPromptVersionId(null);
-        command.setPromptMessagesJson(null);
+        DiscoveryAiCommand command = new DiscoveryAiCommand(
+                null,
+                null,
+                null,
+                null,
+                null,
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
+                null,
+                "{\"locale\":\"zh-CN\"}",
+                "hash-a",
+                "{\"query\":\"hello\"}",
+                "{\"type\":\"object\"}",
+                false,
+                true,
+                "zh-CN");
 
         service.understandQuery(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
-        assertEquals(capturedCommand, businessResolver.capturedCommand());
-        assertEquals(2001L, capturedCommand.getModelId().value());
-        assertEquals("gpt-4o", capturedCommand.getModelName().value());
-        assertEquals(6L, capturedCommand.getPromptVersionId().value());
-        assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.getPromptMessagesJson());
+        assertEquals("discovery", businessResolver.capturedCommand().context().scope());
+        assertEquals(
+                AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING,
+                businessResolver.capturedCommand().context().capability());
+        assertEquals(2001L, capturedCommand.modelConfig().modelId().value());
+        assertEquals("gpt-4o", capturedCommand.modelConfig().modelName().value());
+        assertEquals(6L, capturedCommand.prompt().promptVersionId().value());
+        assertEquals(
+                "[{\"role\":\"user\",\"content\":\"rendered\"}]",
+                capturedCommand.prompt().promptMessagesJson());
     }
 
     private DiscoveryAiCommand command(boolean stream) {
@@ -170,13 +191,13 @@ class DiscoveryAiApplicationServiceImplTest {
             AiInvokeResult result = new AiInvokeResult();
             result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(101L));
             result.setCandidateId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(102L));
-            result.setRequestId(command.getRequestId());
-            result.setTraceId(command.getTraceId());
+            result.setRequestId(command.trace().requestId());
+            result.setTraceId(command.trace().traceId());
             result.setStatus(
                     failed
                             ? com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.FAILED
                             : com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
-            result.setCapability(command.getCapability());
+            result.setCapability(command.context().capability());
             result.setResultFormat("STRUCTURED");
             result.setResultPayload(failed ? null : "{\"intent\":\"search\"}");
             result.setErrorType(failed ? "WORKER_STREAM" : null);
@@ -193,10 +214,10 @@ class DiscoveryAiApplicationServiceImplTest {
             AiInvokeResult result = new AiInvokeResult();
             result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(201L));
             result.setCandidateId(null);
-            result.setRequestId(command.getRequestId());
-            result.setTraceId(command.getTraceId());
+            result.setRequestId(command.trace().requestId());
+            result.setTraceId(command.trace().traceId());
             result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
-            result.setCapability(command.getCapability());
+            result.setCapability(command.context().capability());
             result.setResultFormat("TEXT");
             result.setResultPayload("answer");
             return result;
@@ -229,15 +250,21 @@ class DiscoveryAiApplicationServiceImplTest {
         }
 
         @Override
-        public void resolve(AiInvokeCommand command) {
+        public ResolvedBusinessInvokeConfig resolveConfig(AiInvokeCommand command) {
             captured = command;
-            command.setServiceId(1001L);
-            command.setServiceRole("PRIMARY");
-            command.setModelId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(2001L));
-            command.setModelName(com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("gpt-4o"));
-            command.setPromptVersionId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(6L));
-            command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"rendered\"}]");
-            command.setPromptVariablesJson("{\"query\":\"hello\"}");
+            return resolved("{\"query\":\"hello\"}");
+        }
+
+        private ResolvedBusinessInvokeConfig resolved(String promptVariablesJson) {
+            return new ResolvedBusinessInvokeConfig(
+                    1001L,
+                    "PRIMARY",
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(2001L),
+                    com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("gpt-4o"),
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(6L),
+                    "[{\"role\":\"user\",\"content\":\"rendered\"}]",
+                    promptVariablesJson,
+                    "{\"type\":\"object\"}");
         }
 
         private AiInvokeCommand capturedCommand() {

@@ -38,10 +38,12 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("KNOWLEDGE_GRAPH_EXTRACTION", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, capturedCommand.getCapability());
-        assertEquals("knowledge_graph", capturedCommand.getWorkerCapability());
+        assertEquals("KNOWLEDGE_GRAPH_EXTRACTION", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
+                capturedCommand.context().capability());
+        assertEquals("knowledge_graph", capturedCommand.route().workerCapability());
         assertEquals(0, invocationService.invokeCount());
         assertEquals(1, invocationService.streamCount());
     }
@@ -55,8 +57,10 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         extractRelations(repository);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
-        assertEquals("KNOWLEDGE_RELATION_EXTRACTION", capturedCommand.getOperation());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_RELATION_EXTRACT, capturedCommand.getCapability());
+        assertEquals("KNOWLEDGE_RELATION_EXTRACTION", capturedCommand.route().operation());
+        assertEquals(
+                AiBusinessCapability.KNOWLEDGE_RELATION_EXTRACT,
+                capturedCommand.context().capability());
     }
 
     @Test
@@ -68,9 +72,11 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         extractLineage(repository);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
-        assertEquals("KNOWLEDGE_LINEAGE_EXTRACTION", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_LINEAGE_EXTRACT, capturedCommand.getCapability());
+        assertEquals("KNOWLEDGE_LINEAGE_EXTRACTION", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.KNOWLEDGE_LINEAGE_EXTRACT,
+                capturedCommand.context().capability());
     }
 
     @Test
@@ -82,13 +88,15 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         extractTags(repository);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
-        assertEquals("knowledge", capturedCommand.getScope());
-        assertEquals("KNOWLEDGE_TAG_EXTRACTION", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT, capturedCommand.getCapability());
-        assertEquals("tags", capturedCommand.getWorkerCapability());
-        assertEquals(true, capturedCommand.isForceJson());
-        assertEquals(true, capturedCommand.isCreateCandidate());
+        assertEquals("knowledge", capturedCommand.context().scope());
+        assertEquals("KNOWLEDGE_TAG_EXTRACTION", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT,
+                capturedCommand.context().capability());
+        assertEquals("tags", capturedCommand.route().workerCapability());
+        assertEquals(true, capturedCommand.options().forceJson());
+        assertEquals(true, capturedCommand.options().createCandidate());
     }
 
     @Test
@@ -111,22 +119,41 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
         KnowledgeAiExtractionApplicationServiceImpl repository =
                 new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, businessResolver);
-        KnowledgeAiExtractionCommand command = command();
-        command.setServiceId(null);
-        command.setServiceRole(null);
-        command.setModelId(null);
-        command.setModelName(null);
-        command.setPromptVersionId(null);
-        command.setPromptMessagesJson(null);
+        KnowledgeAiExtractionCommand command = new KnowledgeAiExtractionCommand(
+                "GRAPH",
+                "ENTRY",
+                "{\"entryIds\":[1]}",
+                "SANCAI_ENTRY",
+                1L,
+                2L,
+                null,
+                null,
+                null,
+                null,
+                null,
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
+                null,
+                null,
+                null,
+                "{\"text\":\"hello\"}",
+                "{\"type\":\"object\"}",
+                true,
+                "zh-CN");
 
         repository.extractGraph(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
-        assertEquals(capturedCommand, businessResolver.capturedCommand());
-        assertEquals(2001L, capturedCommand.getModelId().value());
-        assertEquals("gpt-4o", capturedCommand.getModelName().value());
-        assertEquals(6L, capturedCommand.getPromptVersionId().value());
-        assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.getPromptMessagesJson());
+        assertEquals("knowledge", businessResolver.capturedCommand().context().scope());
+        assertEquals(
+                AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
+                businessResolver.capturedCommand().context().capability());
+        assertEquals(2001L, capturedCommand.modelConfig().modelId().value());
+        assertEquals("gpt-4o", capturedCommand.modelConfig().modelName().value());
+        assertEquals(6L, capturedCommand.prompt().promptVersionId().value());
+        assertEquals(
+                "[{\"role\":\"user\",\"content\":\"rendered\"}]",
+                capturedCommand.prompt().promptMessagesJson());
     }
 
     private KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionApplicationServiceImpl repository) {
@@ -193,10 +220,10 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
             AiInvokeResult result = new AiInvokeResult();
             result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(101L));
             result.setCandidateId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(102L));
-            result.setRequestId(command.getRequestId());
-            result.setTraceId(command.getTraceId());
+            result.setRequestId(command.trace().requestId());
+            result.setTraceId(command.trace().traceId());
             result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
-            result.setCapability(command.getCapability());
+            result.setCapability(command.context().capability());
             result.setResultFormat("STRUCTURED");
             result.setResultPayload("{\"nodes\":[]}");
             return result;
@@ -224,15 +251,17 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         }
 
         @Override
-        public void resolve(AiInvokeCommand command) {
+        public ResolvedBusinessInvokeConfig resolveConfig(AiInvokeCommand command) {
             captured = command;
-            command.setServiceId(1001L);
-            command.setServiceRole("PRIMARY");
-            command.setModelId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(2001L));
-            command.setModelName(com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("gpt-4o"));
-            command.setPromptVersionId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(6L));
-            command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"rendered\"}]");
-            command.setPromptVariablesJson("{\"text\":\"hello\"}");
+            return new ResolvedBusinessInvokeConfig(
+                    1001L,
+                    "PRIMARY",
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(2001L),
+                    com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("gpt-4o"),
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(6L),
+                    "[{\"role\":\"user\",\"content\":\"rendered\"}]",
+                    "{\"text\":\"hello\"}",
+                    "{\"type\":\"object\"}");
         }
 
         private AiInvokeCommand capturedCommand() {

@@ -38,13 +38,14 @@ class PlatformAiApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("platform", capturedCommand.getScope());
-        assertEquals("PLATFORM_PROMPT_SUGGESTION", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.PROMPT_SUGGEST, capturedCommand.getCapability());
-        assertEquals("prompt_suggestion", capturedCommand.getWorkerCapability());
-        assertFalse(capturedCommand.isStream());
-        assertTrue(capturedCommand.isCreateCandidate());
+        assertEquals("platform", capturedCommand.context().scope());
+        assertEquals("PLATFORM_PROMPT_SUGGESTION", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.PROMPT_SUGGEST, capturedCommand.context().capability());
+        assertEquals("prompt_suggestion", capturedCommand.route().workerCapability());
+        assertFalse(capturedCommand.options().stream());
+        assertTrue(capturedCommand.options().createCandidate());
         assertEquals(AiBusinessCapability.PROMPT_SUGGEST, result.getCapability());
     }
 
@@ -58,12 +59,14 @@ class PlatformAiApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("PLATFORM_VERSION_SUMMARY", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY, capturedCommand.getCapability());
-        assertEquals("version_summary", capturedCommand.getWorkerCapability());
-        assertFalse(capturedCommand.isStream());
-        assertFalse(capturedCommand.isCreateCandidate());
+        assertEquals("PLATFORM_VERSION_SUMMARY", capturedCommand.route().operation());
+        assertNull(capturedCommand.route().workerPath());
+        assertEquals(
+                AiBusinessCapability.PLATFORM_VERSION_SUMMARY,
+                capturedCommand.context().capability());
+        assertEquals("version_summary", capturedCommand.route().workerCapability());
+        assertFalse(capturedCommand.options().stream());
+        assertFalse(capturedCommand.options().createCandidate());
         assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY, result.getCapability());
     }
 
@@ -72,12 +75,10 @@ class PlatformAiApplicationServiceImplTest {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         PlatformAiApplicationServiceImpl service =
                 new PlatformAiApplicationServiceImpl(invocationService, resolver, null);
-        PlatformAiInvokeCommand command = command();
-        command.setCreateCandidate(Boolean.FALSE);
 
-        service.buildPromptSuggestion(command);
+        service.buildPromptSuggestion(command(Boolean.FALSE));
 
-        assertFalse(invocationService.capturedCommand().isCreateCandidate());
+        assertFalse(invocationService.capturedCommand().options().createCandidate());
     }
 
     @Test
@@ -86,39 +87,65 @@ class PlatformAiApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
         PlatformAiApplicationServiceImpl service =
                 new PlatformAiApplicationServiceImpl(invocationService, resolver, businessResolver);
-        PlatformAiInvokeCommand command = command();
-        command.setServiceId(null);
-        command.setServiceRole(null);
-        command.setModelId(null);
-        command.setModelName(null);
-        command.setPromptVersionId(null);
-        command.setPromptMessagesJson(null);
+        PlatformAiInvokeCommand command = new PlatformAiInvokeCommand(
+                AiContentRef.ofNullable("PROMPT_TEMPLATE", 10L),
+                new AiTargetObjectId(20L),
+                null,
+                null,
+                null,
+                null,
+                null,
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
+                null,
+                null,
+                null,
+                "{\"template\":\"hello\"}",
+                "{\"type\":\"object\"}",
+                true,
+                "zh-CN",
+                false,
+                null);
 
         service.buildPromptSuggestion(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
-        assertEquals(capturedCommand, businessResolver.capturedCommand());
-        assertEquals(2001L, capturedCommand.getModelId().value());
-        assertEquals("gpt-4o", capturedCommand.getModelName().value());
-        assertEquals(6L, capturedCommand.getPromptVersionId().value());
-        assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.getPromptMessagesJson());
+        assertEquals("platform", businessResolver.capturedCommand().context().scope());
+        assertEquals(
+                AiBusinessCapability.PROMPT_SUGGEST,
+                businessResolver.capturedCommand().context().capability());
+        assertEquals(2001L, capturedCommand.modelConfig().modelId().value());
+        assertEquals("gpt-4o", capturedCommand.modelConfig().modelName().value());
+        assertEquals(6L, capturedCommand.prompt().promptVersionId().value());
+        assertEquals(
+                "[{\"role\":\"user\",\"content\":\"rendered\"}]",
+                capturedCommand.prompt().promptMessagesJson());
     }
 
     private PlatformAiInvokeCommand command() {
-        PlatformAiInvokeCommand command = new PlatformAiInvokeCommand();
-        command.setContentRef(AiContentRef.ofNullable("PROMPT_TEMPLATE", 10L));
-        command.setTargetObjectId(new AiTargetObjectId(20L));
-        command.setModelId(new AiModelId(30L));
-        command.setModelName(AiModelName.of("model-a"));
-        command.setPromptVersionId(new PromptVersionId(40L));
-        command.setRequestId(new RequestId("req-1"));
-        command.setTraceId(new TraceId("trace-1"));
-        command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
-        command.setInputPayloadJson("{\"template\":\"hello\"}");
-        command.setOutputSchemaJson("{\"type\":\"object\"}");
-        command.setForceJson(true);
-        command.setLocale("zh-CN");
-        return command;
+        return command(null);
+    }
+
+    private PlatformAiInvokeCommand command(Boolean createCandidate) {
+        return new PlatformAiInvokeCommand(
+                AiContentRef.ofNullable("PROMPT_TEMPLATE", 10L),
+                new AiTargetObjectId(20L),
+                null,
+                null,
+                new AiModelId(30L),
+                AiModelName.of("model-a"),
+                new PromptVersionId(40L),
+                new RequestId("req-1"),
+                new TraceId("trace-1"),
+                "[{\"role\":\"user\",\"content\":\"hello\"}]",
+                null,
+                null,
+                "{\"template\":\"hello\"}",
+                "{\"type\":\"object\"}",
+                true,
+                "zh-CN",
+                false,
+                createCandidate);
     }
 
     private static class CapturingInvocationService implements AiWorkerInvocationApplicationService {
@@ -131,13 +158,13 @@ class PlatformAiApplicationServiceImplTest {
             AiInvokeResult result = new AiInvokeResult();
             result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(101L));
             result.setCandidateId(
-                    command.isCreateCandidate()
+                    command.options().createCandidate()
                             ? new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(102L)
                             : null);
-            result.setRequestId(command.getRequestId());
-            result.setTraceId(command.getTraceId());
+            result.setRequestId(command.trace().requestId());
+            result.setTraceId(command.trace().traceId());
             result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
-            result.setCapability(command.getCapability());
+            result.setCapability(command.context().capability());
             result.setResultFormat("TEXT");
             result.setResultPayload("ok");
             return result;
@@ -162,15 +189,17 @@ class PlatformAiApplicationServiceImplTest {
         }
 
         @Override
-        public void resolve(AiInvokeCommand command) {
+        public ResolvedBusinessInvokeConfig resolveConfig(AiInvokeCommand command) {
             captured = command;
-            command.setServiceId(1001L);
-            command.setServiceRole("PRIMARY");
-            command.setModelId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(2001L));
-            command.setModelName(com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("gpt-4o"));
-            command.setPromptVersionId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(6L));
-            command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"rendered\"}]");
-            command.setPromptVariablesJson("{\"template\":\"hello\"}");
+            return new ResolvedBusinessInvokeConfig(
+                    1001L,
+                    "PRIMARY",
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(2001L),
+                    com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("gpt-4o"),
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(6L),
+                    "[{\"role\":\"user\",\"content\":\"rendered\"}]",
+                    "{\"template\":\"hello\"}",
+                    "{\"type\":\"object\"}");
         }
 
         private AiInvokeCommand capturedCommand() {

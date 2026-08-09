@@ -1,6 +1,13 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.invocation.assembler;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
+import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
@@ -41,6 +48,44 @@ public final class AiInvocationInterfaceAssembler {
                 AiContentRef.ofNullable(request.getContentType(), null),
                 request.getTotalCount(),
                 request.getFailureSummaryJson());
+    }
+
+    public static RejectAiCandidateCommand toRejectCommand(AiInvocationRequests.CandidateRejectRequest request) {
+        return new RejectAiCandidateCommand(
+                AiCandidateIdCodec.toDomain(request.getCandidateId()),
+                request.getErrorType(),
+                request.getErrorMessage());
+    }
+
+    public static ApplyAiCandidateCommand toMarkAppliedCommand(
+            AiInvocationRequests.CandidateMarkAppliedRequest request) {
+        return new ApplyAiCandidateCommand(
+                AiCandidateIdCodec.toDomain(request.getCandidateId()),
+                request.getResultFormat(),
+                request.getResultPayload(),
+                null);
+    }
+
+    public static GetAiBatchJobQuery toGetBatchQuery(AiInvocationRequests.BatchIdRequest request) {
+        return new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(request.getBatchId()));
+    }
+
+    public static CancelAiBatchJobCommand toCancelBatchCommand(AiInvocationRequests.BatchIdRequest request) {
+        return new CancelAiBatchJobCommand(AiBatchJobIdCodec.toDomain(request.getBatchId()));
+    }
+
+    public static RecordAiBatchJobCommand toRecordBatchSuccessCommand(AiInvocationRequests.BatchIdRequest request) {
+        return new RecordAiBatchJobCommand(AiBatchJobIdCodec.toDomain(request.getBatchId()));
+    }
+
+    public static RecordAiBatchJobFailureCommand toRecordBatchFailureCommand(
+            AiInvocationRequests.BatchFailureRequest request) {
+        return new RecordAiBatchJobFailureCommand(
+                AiBatchJobIdCodec.toDomain(request.getBatchId()), request.getFailureSummaryJson());
+    }
+
+    public static CanDispatchNextAiBatchUnitQuery toCanDispatchBatchQuery(AiInvocationRequests.BatchIdRequest request) {
+        return new CanDispatchNextAiBatchUnitQuery(AiBatchJobIdCodec.toDomain(request.getBatchId()));
     }
 
     public static AiInvocationResponses.InvocationLogResponse toResponse(AiInvocationLog invocationLog) {

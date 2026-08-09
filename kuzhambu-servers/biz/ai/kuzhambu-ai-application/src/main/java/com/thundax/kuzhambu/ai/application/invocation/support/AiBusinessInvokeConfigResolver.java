@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery;
-import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
@@ -14,6 +12,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.util.ArrayList;
@@ -29,57 +28,71 @@ public class AiBusinessInvokeConfigResolver {
 
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{\\s*([A-Za-z][A-Za-z0-9_]*)\\s*}}");
 
-    private final AiBusinessConfigApplicationService businessConfigService;
+    private final AiBusinessConfigRepository businessConfigRepository;
     private final PromptRepository promptRepository;
     private final AiWorkerModelConfigResolver modelConfigResolver;
     private final ObjectMapper objectMapper;
 
     public AiBusinessInvokeConfigResolver(
-            AiBusinessConfigApplicationService businessConfigService,
+            AiBusinessConfigRepository businessConfigRepository,
             PromptRepository promptRepository,
             AiWorkerModelConfigResolver modelConfigResolver,
             ObjectMapper objectMapper) {
-        this.businessConfigService = businessConfigService;
+        this.businessConfigRepository = businessConfigRepository;
         this.promptRepository = promptRepository;
         this.modelConfigResolver = modelConfigResolver;
         this.objectMapper = objectMapper;
     }
 
-    public void resolve(AiInvokeCommand command) {
-        if (command == null || command.getCapability() == null) {
+    public ResolvedBusinessInvokeConfig resolveConfig(AiInvokeCommand command) {
+        if (command == null || command.context() == null || command.context().capability() == null) {
             throw new BizException("AI business capability is required");
         }
-        AiBusinessConfig config = resolveBusinessConfig(command.getCapability());
+        AiBusinessConfig config = resolveBusinessConfig(command.context().capability());
         PromptVersion promptVersion = resolveCurrentPromptVersion(config);
-        ObjectNode inputPayload = withCommandMetadata(parseInputPayload(command.getInputPayloadJson()), command);
+        ObjectNode inputPayload =
+                withCommandMetadata(parseInputPayload(command.payload().inputPayloadJson()), command);
         List<PromptVariable> variables = resolvePromptVariables(config, promptVersion);
         ObjectNode promptVariables = buildPromptVariables(variables, inputPayload);
+        String promptMessagesJson = renderPromptMessages(promptVersion.getMessageTemplatesJson(), promptVariables);
+        String promptVariablesJson = toJson(promptVariables, "AI prompt variables is not valid JSON");
+        String outputSchemaJson = isBlank(command.payload().outputSchemaJson())
+                ? promptVersion.getOutputSchemaJson()
+                : command.payload().outputSchemaJson();
 
-        command.setModelId(config.getModelId());
-        command.setPromptVersionId(promptVersion.getId());
-        command.setPromptMessagesJson(renderPromptMessages(promptVersion.getMessageTemplatesJson(), promptVariables));
-        command.setPromptVariablesJson(toJson(promptVariables, "AI prompt variables is not valid JSON"));
-        if (isBlank(command.getOutputSchemaJson())) {
-            command.setOutputSchemaJson(promptVersion.getOutputSchemaJson());
-        }
-
-        var resolved = modelConfigResolver.resolve(command);
-        command.setServiceId(resolved.serviceId());
-        command.setServiceRole(resolved.serviceRole());
-        command.setModelId(resolved.modelId());
-        command.setModelName(resolved.modelName());
+        var resolved = modelConfigResolver.resolveConfig(
+                command.context().capability(),
+                command.modelConfig().serviceId(),
+                command.modelConfig().serviceRole(),
+                config.getModelId(),
+                command.modelConfig().modelName());
+        return new ResolvedBusinessInvokeConfig(
+                resolved.serviceId(),
+                resolved.serviceRole(),
+                resolved.modelId(),
+                resolved.modelName(),
+                promptVersion.getId(),
+                promptMessagesJson,
+                promptVariablesJson,
+                outputSchemaJson);
     }
 
     public void validatePromptVersionEnabled(AiInvokeCommand command) {
-        if (command == null || command.getCapability() == null || command.getPromptVersionId() == null) {
+        if (command == null
+                || command.context() == null
+                || command.context().capability() == null
+                || command.prompt() == null
+                || command.prompt().promptVersionId() == null) {
             throw new BizException("AI prompt version is required");
         }
-        PromptVersion promptVersion = promptRepository.getVersion(command.getPromptVersionId());
+        PromptVersion promptVersion =
+                promptRepository.getVersion(command.prompt().promptVersionId());
         if (promptVersion == null || promptVersion.getTemplateId() == null) {
-            throw new BizException("AI prompt version is not configured: " + command.getPromptVersionId());
+            throw new BizException(
+                    "AI prompt version is not configured: " + command.prompt().promptVersionId());
         }
         PromptTemplate promptTemplate = promptRepository.get(promptVersion.getTemplateId());
-        AiBusinessCapability capability = command.getCapability();
+        AiBusinessCapability capability = command.context().capability();
         if (promptTemplate == null || !promptTemplate.isEnabled() || promptTemplate.getCapability() != capability) {
             throw new BizException("AI business config prompt template is disabled or mismatched: "
                     + PromptTemplateIdCodec.toValue(promptVersion.getTemplateId()));
@@ -87,7 +100,7 @@ public class AiBusinessInvokeConfigResolver {
     }
 
     private AiBusinessConfig resolveBusinessConfig(AiBusinessCapability capability) {
-        List<AiBusinessConfig> configs = businessConfigService.list(new ListAiBusinessConfigsQuery(capability, true));
+        List<AiBusinessConfig> configs = businessConfigRepository.list(capability, true);
         if (configs == null || configs.isEmpty()) {
             throw new BizException("AI business config is not configured: " + capability);
         }
@@ -195,23 +208,30 @@ public class AiBusinessInvokeConfigResolver {
 
     private ObjectNode withCommandMetadata(ObjectNode inputPayload, AiInvokeCommand command) {
         ObjectNode payload = inputPayload.deepCopy();
-        putIfAbsent(payload, "scope", command.getScope());
-        putIfAbsent(payload, "capability", command.getCapability().value());
+        putIfAbsent(payload, "scope", command.context().scope());
+        putIfAbsent(payload, "capability", command.context().capability().value());
         putIfAbsent(
                 payload,
                 "contentType",
-                command.getContentRef() == null ? null : command.getContentRef().contentType());
+                command.target() == null || command.target().contentRef() == null
+                        ? null
+                        : command.target().contentRef().contentType());
         putIfAbsent(
                 payload,
                 "contentId",
-                command.getContentRef() == null ? null : command.getContentRef().contentId());
+                command.target() == null || command.target().contentRef() == null
+                        ? null
+                        : command.target().contentRef().contentId());
         putIfAbsent(
                 payload,
                 "objectId",
-                command.getTargetObjectId() == null
+                command.target() == null || command.target().targetObjectId() == null
                         ? null
-                        : command.getTargetObjectId().value());
-        putIfAbsent(payload, "locale", command.getLocale());
+                        : command.target().targetObjectId().value());
+        putIfAbsent(
+                payload,
+                "locale",
+                command.options() == null ? null : command.options().locale());
         return payload;
     }
 
@@ -301,4 +321,14 @@ public class AiBusinessInvokeConfigResolver {
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }
+
+    public record ResolvedBusinessInvokeConfig(
+            Long serviceId,
+            String serviceRole,
+            com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId modelId,
+            com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName modelName,
+            com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId promptVersionId,
+            String promptMessagesJson,
+            String promptVariablesJson,
+            String outputSchemaJson) {}
 }

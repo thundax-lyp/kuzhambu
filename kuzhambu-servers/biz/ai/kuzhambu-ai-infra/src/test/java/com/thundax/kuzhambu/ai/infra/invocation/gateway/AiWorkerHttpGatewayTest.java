@@ -8,10 +8,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeContext;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeModelConfig;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeOptions;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePayload;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePrompt;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTarget;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTrace;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeWorkerRoute;
 import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
@@ -89,8 +100,7 @@ class AiWorkerHttpGatewayTest {
             respond(exchange, 200, succeededResponse());
         });
         AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
-        AiInvokeCommand command = command();
-        command.setContentRef(null);
+        AiInvokeCommand command = withContentRef(command(), null);
 
         AiInvokeResult result = client.invoke(command);
 
@@ -107,8 +117,7 @@ class AiWorkerHttpGatewayTest {
             respond(exchange, 200, succeededResponse());
         });
         AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
-        AiInvokeCommand command = command();
-        command.setContentRef(AiContentRef.ofNullable("entry", null));
+        AiInvokeCommand command = withContentRef(command(), AiContentRef.ofNullable("entry", null));
 
         AiInvokeResult result = client.invoke(command);
 
@@ -174,9 +183,8 @@ class AiWorkerHttpGatewayTest {
                                 }
                                 """));
         AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
-        AiInvokeCommand command = command();
-        command.setCapability(AiBusinessCapability.PLATFORM_VERSION_SUMMARY);
-        command.setWorkerCapability("version_summary");
+        AiInvokeCommand command =
+                withRouting(command(), AiBusinessCapability.PLATFORM_VERSION_SUMMARY, "version_summary");
 
         AiInvokeResult result = client.invoke(command);
 
@@ -491,25 +499,46 @@ class AiWorkerHttpGatewayTest {
     }
 
     private AiInvokeCommand command() {
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setScope("classics");
-        command.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from("CLASSICS_SUMMARY"));
-        command.setWorkerCapability("summary");
-        command.setOperation("translate");
-        command.setContentRef(
-                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("entry", 10L));
-        command.setServiceRole("default");
-        command.setModelId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(20L));
-        command.setModelName(com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("model-a"));
-        command.setPromptVersionId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(30L));
-        command.setRequestId(new RequestId("req-1"));
-        command.setTraceId(new TraceId("trace-1"));
-        command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
-        command.setPromptVariablesJson("{}");
-        command.setInputPayloadJson("{\"text\":\"hello\"}");
-        command.setOutputSchemaJson("{\"type\":\"text\"}");
-        return command;
+        return new AiInvokeCommand(
+                new AiInvokeContext(null, "classics", AiBusinessCapability.from("CLASSICS_SUMMARY")),
+                new AiInvokeWorkerRoute("summary", "translate", null),
+                new AiInvokeTarget(AiContentRef.ofNullable("entry", 10L), null),
+                new AiInvokeModelConfig(null, "default", new AiModelId(20L), AiModelName.of("model-a")),
+                new AiInvokeTrace(new RequestId("req-1"), new TraceId("trace-1")),
+                new AiInvokePrompt(new PromptVersionId(30L), "[{\"role\":\"user\",\"content\":\"hello\"}]", "{}", null),
+                new AiInvokePayload("{\"text\":\"hello\"}", "{\"type\":\"text\"}"),
+                new AiInvokeOptions(false, false, null, false, false));
+    }
+
+    private AiInvokeCommand withContentRef(AiInvokeCommand command, AiContentRef contentRef) {
+        return copyCommand(
+                command, command.context().capability(), command.route().workerCapability(), contentRef);
+    }
+
+    private AiInvokeCommand withRouting(
+            AiInvokeCommand command, AiBusinessCapability capability, String workerCapability) {
+        return copyCommand(
+                command, capability, workerCapability, command.target().contentRef());
+    }
+
+    private AiInvokeCommand copyCommand(
+            AiInvokeCommand command,
+            AiBusinessCapability capability,
+            String workerCapability,
+            AiContentRef contentRef) {
+        return new AiInvokeCommand(
+                new AiInvokeContext(
+                        command.context().batchId(), command.context().scope(), capability),
+                new AiInvokeWorkerRoute(
+                        workerCapability,
+                        command.route().operation(),
+                        command.route().workerPath()),
+                new AiInvokeTarget(contentRef, command.target().targetObjectId()),
+                command.modelConfig(),
+                command.trace(),
+                command.prompt(),
+                command.payload(),
+                command.options());
     }
 
     private void respond(HttpExchange exchange, int statusCode, String body) throws IOException {

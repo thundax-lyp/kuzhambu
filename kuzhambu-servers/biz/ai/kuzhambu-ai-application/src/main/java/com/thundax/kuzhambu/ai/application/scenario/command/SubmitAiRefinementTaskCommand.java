@@ -9,35 +9,25 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
 import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class SubmitAiRefinementTaskCommand {
-
-    private AiBatchJobId batchId;
-    private AiBusinessCapability capability;
-    private String scope;
-    private String operation;
-    private AiContentRef contentRef;
-    private AiTargetObjectId targetObjectId;
-    private Long serviceId;
-    private String serviceRole;
-    private AiModelId modelId;
-    private AiModelName modelName;
-    private PromptVersionId promptVersionId;
-    private RequestId requestId;
-    private TraceId traceId;
-    private String promptMessagesJson;
-    private String promptVariablesJson;
-    private String promptHash;
-    private String inputPayloadJson;
-    private String outputSchemaJson;
-    private boolean forceJson;
-    private String locale;
-}
+public record SubmitAiRefinementTaskCommand(
+        AiBatchJobId batchId,
+        AiBusinessCapability capability,
+        String scope,
+        String operation,
+        AiContentRef contentRef,
+        AiTargetObjectId targetObjectId,
+        Long serviceId,
+        String serviceRole,
+        AiModelId modelId,
+        AiModelName modelName,
+        PromptVersionId promptVersionId,
+        RequestId requestId,
+        TraceId traceId,
+        String promptMessagesJson,
+        String promptVariablesJson,
+        String promptHash,
+        String inputPayloadJson,
+        String outputSchemaJson,
+        boolean forceJson,
+        String locale) {}

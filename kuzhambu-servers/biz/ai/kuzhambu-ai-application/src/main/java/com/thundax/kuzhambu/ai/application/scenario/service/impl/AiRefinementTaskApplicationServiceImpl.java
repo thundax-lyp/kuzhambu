@@ -107,17 +107,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     public AiRefinementTaskResult submit(SubmitAiRefinementTaskCommand command) {
         AiRefinementRequestCommand refinementCommand = toRefinementRequestCommand(command);
         validateAddCommand(refinementCommand);
-        validateRefinementBatchOwnership(
-                refinementCommand.getScope(), capabilityValue(refinementCommand.getCapability()));
-        refinementApplicationService.snapshotInvokeConfig(refinementCommand);
+        validateRefinementBatchOwnership(refinementCommand.scope(), capabilityValue(refinementCommand.capability()));
+        refinementCommand = refinementApplicationService.snapshotInvokeConfig(refinementCommand);
         Long taskId = AiBatchJobIdCodec.toValue(batchJobApplicationService.create(new AiBatchJobCreateCommand(
-                refinementCommand.getScope(),
-                refinementCommand.getCapability(),
-                refinementCommand.getContentRef(),
-                1,
-                null)));
-        refinementCommand.setBatchId(AiBatchJobIdCodec.toDomain(taskId));
-        command.setBatchId(AiBatchJobIdCodec.toDomain(taskId));
+                refinementCommand.scope(), refinementCommand.capability(), refinementCommand.contentRef(), 1, null)));
+        refinementCommand = withBatchId(refinementCommand, AiBatchJobIdCodec.toDomain(taskId));
         scheduleTaskExecution(taskId, refinementCommand);
         return toTaskResult(
                 taskId,
@@ -215,7 +209,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                     null,
                     null,
                     AiInvocationStatus.FAILED,
-                    command.getCapability(),
+                    command.capability(),
                     "WORKER_REQUEST",
                     null,
                     null,
@@ -303,7 +297,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private AiCandidateResult invoke(Long taskId, AiRefinementRequestCommand command, boolean streamEnabled) {
-        AiBusinessCapability capability = command.getCapability();
+        AiBusinessCapability capability = command.capability();
         if (AiBusinessCapability.CLASSICS_TRANSLATE == capability) {
             return refinementApplicationService.translate(command);
         }
@@ -342,40 +336,63 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         if (source == null) {
             return null;
         }
-        AiRefinementRequestCommand command = new AiRefinementRequestCommand();
-        command.setBatchId(source.getBatchId());
-        command.setCapability(source.getCapability());
-        command.setScope(source.getScope());
-        command.setOperation(source.getOperation());
-        command.setContentRef(source.getContentRef());
-        command.setTargetObjectId(source.getTargetObjectId());
-        command.setServiceId(source.getServiceId());
-        command.setServiceRole(source.getServiceRole());
-        command.setModelId(source.getModelId());
-        command.setModelName(source.getModelName());
-        command.setPromptVersionId(source.getPromptVersionId());
-        command.setRequestId(source.getRequestId());
-        command.setTraceId(source.getTraceId());
-        command.setPromptMessagesJson(source.getPromptMessagesJson());
-        command.setPromptVariablesJson(source.getPromptVariablesJson());
-        command.setPromptHash(source.getPromptHash());
-        command.setInputPayloadJson(source.getInputPayloadJson());
-        command.setOutputSchemaJson(source.getOutputSchemaJson());
-        command.setForceJson(source.isForceJson());
-        command.setLocale(source.getLocale());
-        return command;
+        return new AiRefinementRequestCommand(
+                source.batchId(),
+                source.capability(),
+                source.scope(),
+                source.operation(),
+                source.contentRef(),
+                source.targetObjectId(),
+                source.serviceId(),
+                source.serviceRole(),
+                source.modelId(),
+                source.modelName(),
+                source.promptVersionId(),
+                source.requestId(),
+                source.traceId(),
+                source.promptMessagesJson(),
+                source.promptVariablesJson(),
+                source.promptHash(),
+                source.inputPayloadJson(),
+                source.outputSchemaJson(),
+                source.forceJson(),
+                source.locale());
+    }
+
+    private AiRefinementRequestCommand withBatchId(AiRefinementRequestCommand source, AiBatchJobId batchId) {
+        return new AiRefinementRequestCommand(
+                batchId,
+                source.capability(),
+                source.scope(),
+                source.operation(),
+                source.contentRef(),
+                source.targetObjectId(),
+                source.serviceId(),
+                source.serviceRole(),
+                source.modelId(),
+                source.modelName(),
+                source.promptVersionId(),
+                source.requestId(),
+                source.traceId(),
+                source.promptMessagesJson(),
+                source.promptVariablesJson(),
+                source.promptHash(),
+                source.inputPayloadJson(),
+                source.outputSchemaJson(),
+                source.forceJson(),
+                source.locale());
     }
 
     private void validateAddCommand(AiRefinementRequestCommand command) {
         if (command == null
-                || command.getCapability() == null
-                || isBlank(command.getScope())
-                || command.getRequestId() == null
-                || command.getTraceId() == null
-                || command.getContentRef() == null
-                || isBlank(command.getContentRef().contentType())
-                || command.getContentRef().contentId() == null
-                || isBlank(command.getInputPayloadJson())) {
+                || command.capability() == null
+                || isBlank(command.scope())
+                || command.requestId() == null
+                || command.traceId() == null
+                || command.contentRef() == null
+                || isBlank(command.contentRef().contentType())
+                || command.contentRef().contentId() == null
+                || isBlank(command.inputPayloadJson())) {
             throw new BizException("AI refinement task add command is incomplete");
         }
     }
@@ -413,11 +430,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     private boolean isStreamEnabledTask(AiRefinementRequestCommand command) {
         if (command == null
-                || !CONTENT_TYPE_SANCAI_ENTRY.equals(AiContentRefCodec.toContentType(command.getContentRef()))) {
+                || !CONTENT_TYPE_SANCAI_ENTRY.equals(AiContentRefCodec.toContentType(command.contentRef()))) {
             return false;
         }
-        return AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE == command.getCapability()
-                || AiBusinessCapability.CLASSICS_IMAGE_GENERATE == command.getCapability();
+        return AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE == command.capability()
+                || AiBusinessCapability.CLASSICS_IMAGE_GENERATE == command.capability();
     }
 
     private boolean isStreamEnabledTask(AiBatchJobResult job) {
@@ -532,17 +549,17 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         }
         return new AiRefinementTaskResult(
                 job == null ? AiBatchJobIdCodec.toDomain(taskId) : job.getBatchId(),
-                command == null ? (job == null ? null : job.getScope()) : command.getScope(),
-                command == null ? (job == null ? null : job.getCapability()) : command.getCapability(),
-                command == null ? (job == null ? null : job.getContentRef()) : command.getContentRef(),
-                command == null ? null : command.getTargetObjectId(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
+                command == null ? (job == null ? null : job.getScope()) : command.scope(),
+                command == null ? (job == null ? null : job.getCapability()) : command.capability(),
+                command == null ? (job == null ? null : job.getContentRef()) : command.contentRef(),
+                command == null ? null : command.targetObjectId(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
                 status,
-                command == null ? null : command.getServiceRole(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getPromptVersionId(),
+                command == null ? null : command.serviceRole(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.promptVersionId(),
                 result == null ? null : result.getCallId(),
                 result == null || (command != null && isStreamEnabledTask(command)) ? null : result.getCandidateId(),
                 result == null ? null : result.getResultFormat(),

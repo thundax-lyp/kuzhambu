@@ -4,15 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.thundax.kuzhambu.ai.application.config.query.GetAiModelQuery;
-import com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery;
-import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
-import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository;
+import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -22,42 +22,55 @@ public class AiWorkerModelConfigResolver {
 
     private static final String DEFAULT_SERVICE_ROLE = "PRIMARY";
 
-    private final AiBusinessConfigApplicationService businessConfigService;
-    private final AiModelApplicationService modelService;
+    private final AiBusinessConfigRepository businessConfigRepository;
+    private final AiModelRepository modelRepository;
     private final ObjectMapper objectMapper;
 
     public AiWorkerModelConfigResolver(
-            AiBusinessConfigApplicationService businessConfigService,
-            AiModelApplicationService modelService,
+            AiBusinessConfigRepository businessConfigRepository,
+            AiModelRepository modelRepository,
             ObjectMapper objectMapper) {
-        this.businessConfigService = businessConfigService;
-        this.modelService = modelService;
+        this.businessConfigRepository = businessConfigRepository;
+        this.modelRepository = modelRepository;
         this.objectMapper = objectMapper;
     }
 
-    public ResolvedModelConfig resolve(AiInvokeCommand command) {
+    public ResolvedModelConfig resolveConfig(AiInvokeCommand command) {
         if (command == null) {
             return null;
         }
+        return resolveConfig(
+                command.context() == null ? null : command.context().capability(),
+                command.modelConfig() == null ? null : command.modelConfig().serviceId(),
+                command.modelConfig() == null ? null : command.modelConfig().serviceRole(),
+                command.modelConfig() == null ? null : command.modelConfig().modelId(),
+                command.modelConfig() == null ? null : command.modelConfig().modelName());
+    }
 
-        ModelResolution resolution = resolveModel(command);
+    public ResolvedModelConfig resolveConfig(
+            AiBusinessCapability capability,
+            Long serviceId,
+            String serviceRole,
+            AiModelId modelId,
+            AiModelName requestedModelName) {
+        ModelResolution resolution = resolveModel(capability, modelId);
         AiModel model = resolution.model();
         if (model.getApiSource() == null) {
-            throw new IllegalArgumentException("AI model apiSource is required: " + command.getModelId());
+            throw new IllegalArgumentException("AI model apiSource is required: " + model.getId());
         }
         if (isBlank(model.getBaseUrl())) {
-            throw new IllegalArgumentException("AI model baseUrl is required: " + command.getModelId());
+            throw new IllegalArgumentException("AI model baseUrl is required: " + model.getId());
         }
 
         var modelName = model.getModelName();
-        if (command.getModelName() != null && !command.getModelName().equals(modelName)) {
-            throw new IllegalArgumentException("AI model mismatch: modelId=%s, modelName=%s"
-                    .formatted(command.getModelId(), command.getModelName()));
+        if (requestedModelName != null && !requestedModelName.equals(modelName)) {
+            throw new IllegalArgumentException(
+                    "AI model mismatch: modelId=%s, modelName=%s".formatted(model.getId(), requestedModelName));
         }
 
         return new ResolvedModelConfig(
-                command.getServiceId(),
-                resolveServiceRole(command),
+                serviceId,
+                resolveServiceRole(serviceRole),
                 model.getId(),
                 model.getApiSource() == null ? null : model.getApiSource().value(),
                 model.getBaseUrl(),
@@ -72,22 +85,23 @@ public class AiWorkerModelConfigResolver {
                 null);
     }
 
-    private ModelResolution resolveModel(AiInvokeCommand command) {
-        AiBusinessConfig config = resolveBusinessConfig(command);
-        if (command.getModelId() == null) {
+    private ModelResolution resolveModel(AiBusinessCapability capability, AiModelId modelId) {
+        AiBusinessConfig config = resolveBusinessConfig(capability);
+        AiModelId effectiveModelId = modelId;
+        if (effectiveModelId == null) {
             if (config == null || config.getModelId() == null) {
                 throw new IllegalArgumentException("AI modelId is required");
             }
-            command.setModelId(config.getModelId());
-        } else if (!matchesModel(command.getModelId(), config)) {
+            effectiveModelId = config.getModelId();
+        } else if (!matchesModel(effectiveModelId, config)) {
             config = null;
         }
-        AiModel model = modelService.get(new GetAiModelQuery(command.getModelId()));
+        AiModel model = modelRepository.get(effectiveModelId);
         if (model == null) {
-            throw new IllegalArgumentException("AI model not found: " + command.getModelId());
+            throw new IllegalArgumentException("AI model not found: " + effectiveModelId);
         }
         if (!model.isEnabled()) {
-            throw new IllegalArgumentException("AI model is disabled: " + command.getModelId());
+            throw new IllegalArgumentException("AI model is disabled: " + effectiveModelId);
         }
         return new ModelResolution(model, config);
     }
@@ -96,12 +110,11 @@ public class AiWorkerModelConfigResolver {
         return modelId != null && config != null && modelId.equals(config.getModelId());
     }
 
-    private AiBusinessConfig resolveBusinessConfig(AiInvokeCommand command) {
-        if (command.getCapability() == null) {
+    private AiBusinessConfig resolveBusinessConfig(AiBusinessCapability capability) {
+        if (capability == null) {
             return null;
         }
-        List<AiBusinessConfig> configs =
-                businessConfigService.list(new ListAiBusinessConfigsQuery(command.getCapability(), true));
+        List<AiBusinessConfig> configs = businessConfigRepository.list(capability, true);
         return configs.isEmpty() ? null : configs.get(0);
     }
 
@@ -137,8 +150,8 @@ public class AiWorkerModelConfigResolver {
         return value == null || value.trim().isEmpty();
     }
 
-    private String resolveServiceRole(AiInvokeCommand command) {
-        return isBlank(command.getServiceRole()) ? DEFAULT_SERVICE_ROLE : command.getServiceRole();
+    private String resolveServiceRole(String serviceRole) {
+        return isBlank(serviceRole) ? DEFAULT_SERVICE_ROLE : serviceRole;
     }
 
     public record ResolvedModelConfig(

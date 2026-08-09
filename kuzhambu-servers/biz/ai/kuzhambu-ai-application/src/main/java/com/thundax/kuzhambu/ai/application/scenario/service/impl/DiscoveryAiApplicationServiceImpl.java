@@ -1,6 +1,14 @@
 package com.thundax.kuzhambu.ai.application.scenario.service.impl;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeContext;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeModelConfig;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeOptions;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePayload;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokePrompt;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTarget;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTrace;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeWorkerRoute;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
@@ -10,7 +18,9 @@ import com.thundax.kuzhambu.ai.application.scenario.result.DiscoveryAiInvokeResu
 import com.thundax.kuzhambu.ai.application.scenario.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.support.DiscoveryAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.scenario.support.DiscoveryAiWorkerUsecaseSpec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.util.function.Consumer;
@@ -69,7 +79,7 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         validateCommand(command);
         DiscoveryAiWorkerUsecaseSpec spec = resolver.resolve(usecase);
         AiInvokeCommand invokeCommand = toInvokeCommand(command, spec);
-        enrichBusinessInvokeConfig(invokeCommand);
+        invokeCommand = enrichBusinessInvokeConfig(invokeCommand);
         AiInvokeResult result = spec.stream()
                 ? invocationApplicationService.stream(
                         invokeCommand, eventConsumer == null ? event -> {} : eventConsumer)
@@ -78,46 +88,49 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
     }
 
     private AiInvokeCommand toInvokeCommand(DiscoveryAiCommand command, DiscoveryAiWorkerUsecaseSpec spec) {
-        AiInvokeCommand invokeCommand = new AiInvokeCommand();
-        invokeCommand.setScope(SCOPE_DISCOVERY);
-        invokeCommand.setCapability(
-                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.from(spec.capability()));
-        invokeCommand.setWorkerCapability(spec.workerCapability());
-        invokeCommand.setOperation(spec.operation());
-        invokeCommand.setWorkerPath(spec.workerPath());
-        invokeCommand.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
-                CONTENT_TYPE_DISCOVERY_QUERY, null));
-        invokeCommand.setServiceId(command.getServiceId());
-        invokeCommand.setServiceRole(command.getServiceRole());
-        invokeCommand.setModelId(command.getModelId());
-        invokeCommand.setModelName(command.getModelName());
-        invokeCommand.setPromptVersionId(command.getPromptVersionId());
-        invokeCommand.setRequestId(command.getRequestId());
-        invokeCommand.setTraceId(command.getTraceId());
-        invokeCommand.setPromptMessagesJson(command.getPromptMessagesJson());
-        invokeCommand.setPromptVariablesJson(command.getPromptVariablesJson());
-        invokeCommand.setPromptHash(command.getPromptHash());
-        invokeCommand.setInputPayloadJson(command.getInputPayloadJson());
-        invokeCommand.setOutputSchemaJson(command.getOutputSchemaJson());
-        invokeCommand.setStream(spec.stream() || command.isStream());
-        invokeCommand.setForceJson(command.isForceJson());
-        invokeCommand.setLocale(command.getLocale());
-        invokeCommand.setCreateCandidate(false);
-        return invokeCommand;
+        return new AiInvokeCommand(
+                new AiInvokeContext(null, SCOPE_DISCOVERY, AiBusinessCapability.from(spec.capability())),
+                new AiInvokeWorkerRoute(spec.workerCapability(), spec.operation(), spec.workerPath()),
+                new AiInvokeTarget(AiContentRef.ofNullable(CONTENT_TYPE_DISCOVERY_QUERY, null), null),
+                new AiInvokeModelConfig(
+                        command.serviceId(), command.serviceRole(), command.modelId(), command.modelName()),
+                new AiInvokeTrace(command.requestId(), command.traceId()),
+                new AiInvokePrompt(
+                        command.promptVersionId(),
+                        command.promptMessagesJson(),
+                        command.promptVariablesJson(),
+                        command.promptHash()),
+                new AiInvokePayload(command.inputPayloadJson(), command.outputSchemaJson()),
+                new AiInvokeOptions(
+                        spec.stream() || command.stream(), command.forceJson(), command.locale(), false, false));
     }
 
-    private void enrichBusinessInvokeConfig(AiInvokeCommand command) {
+    private AiInvokeCommand enrichBusinessInvokeConfig(AiInvokeCommand command) {
         if (businessInvokeConfigResolver == null || command == null) {
-            return;
+            return command;
         }
-        businessInvokeConfigResolver.resolve(command);
+        var resolved = businessInvokeConfigResolver.resolveConfig(command);
+        return new AiInvokeCommand(
+                command.context(),
+                command.route(),
+                command.target(),
+                new AiInvokeModelConfig(
+                        resolved.serviceId(), resolved.serviceRole(), resolved.modelId(), resolved.modelName()),
+                command.trace(),
+                new AiInvokePrompt(
+                        resolved.promptVersionId(),
+                        resolved.promptMessagesJson(),
+                        resolved.promptVariablesJson(),
+                        command.prompt().promptHash()),
+                new AiInvokePayload(command.payload().inputPayloadJson(), resolved.outputSchemaJson()),
+                command.options());
     }
 
     private void validateCommand(DiscoveryAiCommand command) {
         if (command == null
-                || command.getRequestId() == null
-                || command.getTraceId() == null
-                || isBlank(command.getInputPayloadJson())) {
+                || command.requestId() == null
+                || command.traceId() == null
+                || isBlank(command.inputPayloadJson())) {
             throw new BizException("Discovery AI command is incomplete");
         }
     }
