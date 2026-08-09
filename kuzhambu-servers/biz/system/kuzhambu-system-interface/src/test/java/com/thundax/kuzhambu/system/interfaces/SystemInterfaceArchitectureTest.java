@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectu
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.SourceHardRuleArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.configure.SpringSecurityConfiguration;
 import com.tngtech.archunit.core.domain.JavaClasses;
@@ -42,6 +43,8 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
         PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
+        SourceHardRuleArchitectureRuleSupport.assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(
+                Path.of("src/main/java"), legacyConfigurationPropertiesBusinessControlFlowAllowances());
         NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
@@ -89,6 +92,16 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
                 actionVerbAllowance("MenuController"),
                 actionVerbAllowance("RoleController"),
                 actionVerbAllowance("UserController"));
+    }
+
+    private static List<ArchitectureRuleAllowance> legacyConfigurationPropertiesBusinessControlFlowAllowances() {
+        return List.of(
+                ArchitectureRuleAllowance.of(
+                        SourceHardRuleArchitectureRuleSupport.configurationPropertiesBusinessControlFlowAllowanceKey(
+                                "kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/"
+                                        + "kuzhambu/system/interfaces/admin/configure/KuzhambuProperties.java"),
+                        "KuzhambuProperties combines legacy nested configuration binding with defaults and normalization for upload, logging, and access-token filtering.",
+                        "Split the nested bindings into plain configuration properties and move each defaulting or normalization rule to its owning upload, logging, or security policy before removing this allowance."));
     }
 
     private static ArchitectureRuleAllowance actionVerbAllowance(String controller) {

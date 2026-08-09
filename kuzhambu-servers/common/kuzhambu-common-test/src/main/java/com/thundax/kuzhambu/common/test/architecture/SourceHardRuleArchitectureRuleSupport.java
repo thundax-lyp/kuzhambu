@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,10 +62,40 @@ public final class SourceHardRuleArchitectureRuleSupport {
 
     public static void assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(Path sourceRoot)
             throws IOException {
-        assertNoSourceMatches(
-                sourceRoot,
-                CONFIGURATION_PROPERTIES_BUSINESS_CONTROL_FLOW_PATTERN,
-                "ConfigurationProperties sources must not declare business control flow");
+        assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(sourceRoot, List.of());
+    }
+
+    public static void assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(
+            Path sourceRoot, Collection<ArchitectureRuleAllowance> legacyAllowances) throws IOException {
+        Path repositoryRoot = ArchitectureSourceSupport.repositoryRoot();
+        Map<String, ArchitectureRuleAllowance> allowances = exactAllowances(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
+        List<String> violations = new ArrayList<String>();
+
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".java"))
+                    .filter(SourceHardRuleArchitectureRuleSupport::isProductionJavaSource)
+                    .filter(path -> sourceMatches(path, CONFIGURATION_PROPERTIES_BUSINESS_CONTROL_FLOW_PATTERN))
+                    .map(path -> ArchitectureSourceSupport.repositoryPath(repositoryRoot, path))
+                    .forEach(path -> {
+                        String key = configurationPropertiesBusinessControlFlowAllowanceKey(path);
+                        if (allowances.containsKey(key)) {
+                            matchedAllowances.add(key);
+                            return;
+                        }
+                        violations.add(path);
+                    });
+        }
+
+        Set<String> staleAllowances = new HashSet<String>(allowances.keySet());
+        staleAllowances.removeAll(matchedAllowances);
+        assertTrue(
+                "ConfigurationProperties sources must not declare business control flow. Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
     }
 
     private static void assertNoSourceMatches(Path sourceRoot, Pattern pattern, String message) throws IOException {
@@ -77,8 +110,7 @@ public final class SourceHardRuleArchitectureRuleSupport {
         try (Stream<Path> paths = Files.walk(sourceRoot)) {
             paths.filter(Files::isRegularFile)
                     .filter(path -> path.getFileName().toString().endsWith(".java"))
-                    .filter(path ->
-                            ArchitectureSourceSupport.normalizePath(path).contains("/src/main/java/"))
+                    .filter(SourceHardRuleArchitectureRuleSupport::isProductionJavaSource)
                     .filter(matcher::matches)
                     .map(path -> ArchitectureSourceSupport.repositoryPath(root, path))
                     .forEach(violations::add);
@@ -94,6 +126,31 @@ public final class SourceHardRuleArchitectureRuleSupport {
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to read source file " + path, exception);
         }
+    }
+
+    private static boolean isProductionJavaSource(Path path) {
+        return ArchitectureSourceSupport.normalizePath(path.toAbsolutePath()).contains("/src/main/java/");
+    }
+
+    public static String configurationPropertiesBusinessControlFlowAllowanceKey(String repositoryPath) {
+        return "CONFIGURATION_PROPERTIES_BUSINESS_CONTROL_FLOW:" + repositoryPath;
+    }
+
+    private static Map<String, ArchitectureRuleAllowance> exactAllowances(
+            Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Map<String, ArchitectureRuleAllowance> allowances = new HashMap<String, ArchitectureRuleAllowance>();
+        for (ArchitectureRuleAllowance allowance : legacyAllowances) {
+            if (allowance.key().contains("*")) {
+                throw new IllegalArgumentException(
+                        "ConfigurationProperties business-control-flow allowances must use exact source paths: "
+                                + allowance.key());
+            }
+            if (allowances.put(allowance.key(), allowance) != null) {
+                throw new IllegalArgumentException(
+                        "Duplicate ConfigurationProperties business-control-flow allowance: " + allowance.key());
+            }
+        }
+        return allowances;
     }
 
     private static boolean hasIllegalArgumentExceptionBusinessExit(Path path) {
