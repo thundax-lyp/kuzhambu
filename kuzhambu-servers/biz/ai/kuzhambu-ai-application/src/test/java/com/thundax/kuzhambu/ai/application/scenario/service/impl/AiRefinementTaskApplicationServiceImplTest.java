@@ -460,7 +460,7 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public AiBatchJobResult get(GetAiBatchJobQuery query) {
-            AiBatchJobId batchId = query == null ? null : query.getBatchId();
+            AiBatchJobId batchId = query == null ? null : query.batchId();
             return jobs.stream()
                     .filter(job -> job.getBatchId().equals(batchId))
                     .findFirst()

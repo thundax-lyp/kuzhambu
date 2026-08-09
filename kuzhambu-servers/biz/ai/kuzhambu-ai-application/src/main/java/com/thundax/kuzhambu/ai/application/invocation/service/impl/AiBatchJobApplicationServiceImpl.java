@@ -41,7 +41,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
 
     @Override
     public AiBatchJobResult get(GetAiBatchJobQuery query) {
-        return AiBatchJobResult.from(getRequired(query == null ? null : query.getBatchId()));
+        return AiBatchJobResult.from(getRequired(query == null ? null : query.batchId()));
     }
 
     @Override
@@ -96,7 +96,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
 
     @Override
     public boolean canDispatchNextUnit(CanDispatchNextAiBatchUnitQuery query) {
-        AiBatchJobId batchId = query == null ? null : query.getBatchId();
+        AiBatchJobId batchId = query == null ? null : query.batchId();
         AiBatchJob job = getRequired(batchId);
         return AiBatchJobStatus.CANCELLED != job.getStatus()
                 && job.getSuccessCount() + job.getFailedCount() + job.getCancelledCount() < job.getTotalCount();
