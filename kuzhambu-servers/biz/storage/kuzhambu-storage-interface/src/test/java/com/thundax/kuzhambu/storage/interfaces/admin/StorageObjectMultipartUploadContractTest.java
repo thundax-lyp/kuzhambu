@@ -46,9 +46,9 @@ class StorageObjectMultipartUploadContractTest {
     @Test
     void initiateRouteShouldKeepMultipartContract() throws Exception {
         PostMapping methodMapping = StorageObjectController.class
-                .getDeclaredMethod("init", InitMultipartUploadRequest.class)
+                .getDeclaredMethod("initiate", InitMultipartUploadRequest.class)
                 .getAnnotation(PostMapping.class);
-        assertEquals("multipart/init", methodMapping.value()[0]);
+        assertEquals("multipart/initiate", methodMapping.value()[0]);
     }
 
     @Test
@@ -69,7 +69,7 @@ class StorageObjectMultipartUploadContractTest {
         request.setTotalSize(100L);
         request.setPartSize(5L);
 
-        InitMultipartUploadResponse response = controller.init(request);
+        InitMultipartUploadResponse response = controller.initiate(request);
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
 
         InitMultipartUploadCommand command = commandRef.get();
@@ -105,9 +105,9 @@ class StorageObjectMultipartUploadContractTest {
     @Test
     void uploadPartRouteShouldKeepMultipartContract() throws Exception {
         PostMapping methodMapping = StorageObjectController.class
-                .getDeclaredMethod("upload", UploadMultipartPartRequest.class, MultipartFile.class)
+                .getDeclaredMethod("uploadPart", UploadMultipartPartRequest.class, MultipartFile.class)
                 .getAnnotation(PostMapping.class);
-        assertEquals("multipart/upload", methodMapping.value()[0]);
+        assertEquals("multipart/uploadPart", methodMapping.value()[0]);
     }
 
     @Test
@@ -123,7 +123,7 @@ class StorageObjectMultipartUploadContractTest {
         MultipartFile file =
                 new MockMultipartFile("file", "part-2.bin", "application/octet-stream", new byte[] {0x31, 0x32});
 
-        UploadMultipartPartResponse response = controller.upload(request, file);
+        UploadMultipartPartResponse response = controller.uploadPart(request, file);
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
 
         UploadMultipartPartCommand command = commandRef.get();
