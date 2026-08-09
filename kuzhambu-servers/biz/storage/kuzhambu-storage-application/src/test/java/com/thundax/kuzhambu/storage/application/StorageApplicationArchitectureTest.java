@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.storage.application;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.AnnotationBoundaryArchitectureRuleSupport;
-import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.CrossApplicationIsolationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
@@ -48,9 +47,7 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
                 Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
-                Collections.singletonList(Path.of("src/main/java")),
-                BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.storage.application.facade.assembler.StorageUploadFacadeAssembler"));
+                Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         SortableArchitectureRuleSupport.assertSortCommandsUseOrderedIdsOnly(Path.of("src/main/java"));
     }

@@ -121,38 +121,52 @@ public class StorageFacadeImpl implements StorageFacade {
         if (request == null) {
             return null;
         }
-        return uploadFacadeAssembler.toResponse(
-                storageUploadApplicationService.upload(uploadFacadeAssembler.toUploadStorageObjectCommand(request)));
+        StoredObject storage =
+                storageUploadApplicationService.upload(uploadFacadeAssembler.toUploadStorageObjectCommand(request));
+        return storage == null ? null : uploadFacadeAssembler.toResponse(storage);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public InitMultipartUploadFacadeResponse initMultipartUpload(InitMultipartUploadFacadeRequest request) {
-        return uploadFacadeAssembler.toResponse(storageMultipartUploadApplicationService.init(
-                uploadFacadeAssembler.toInitMultipartUploadCommand(request)));
+        if (request == null) {
+            return null;
+        }
+        var session = storageMultipartUploadApplicationService.init(
+                uploadFacadeAssembler.toInitMultipartUploadCommand(request));
+        return session == null ? null : uploadFacadeAssembler.toResponse(session);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UploadMultipartPartFacadeResponse uploadPart(UploadMultipartPartFacadeRequest request) {
-        return uploadFacadeAssembler.toResponse(storageMultipartUploadApplicationService.uploadPart(
-                uploadFacadeAssembler.toUploadMultipartPartCommand(request)));
+        if (request == null) {
+            return null;
+        }
+        var part = storageMultipartUploadApplicationService.uploadPart(
+                uploadFacadeAssembler.toUploadMultipartPartCommand(request));
+        return part == null ? null : uploadFacadeAssembler.toResponse(part);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CompleteMultipartUploadFacadeResponse completeMultipart(CompleteMultipartUploadFacadeRequest request) {
-        return uploadFacadeAssembler.toResponse(
-                storageMultipartUploadApplicationService.complete(
-                        uploadFacadeAssembler.toCompleteMultipartUploadCommand(request)),
-                request == null ? null : request.getUploadId());
+        if (request == null) {
+            return null;
+        }
+        StoredObject storage = storageMultipartUploadApplicationService.complete(
+                uploadFacadeAssembler.toCompleteMultipartUploadCommand(request));
+        return storage == null ? null : uploadFacadeAssembler.toResponse(storage, request);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AbortMultipartUploadFacadeResponse abortMultipart(AbortMultipartUploadFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
         storageMultipartUploadApplicationService.abort(uploadFacadeAssembler.toAbortMultipartUploadCommand(request));
-        return uploadFacadeAssembler.toResponse(request == null ? null : request.getUploadId());
+        return uploadFacadeAssembler.toResponse(request);
     }
 
     @Override
