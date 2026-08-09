@@ -313,18 +313,20 @@ public final class ModelAnnotationArchitectureRuleSupport {
         return Arrays.asList(configuredSourceRoots.split(","));
     }
 
-    private static Set<String> sourceAnnotationTypeNames(JavaClass item, List<String> lines) {
+    static Set<String> sourceAnnotationTypeNames(JavaClass item, List<String> lines) {
         Map<String, String> imports = imports(lines);
         Set<String> annotationTypeNames = new LinkedHashSet<String>();
+        int annotationParenthesisDepth = 0;
         for (String line : lines) {
             String trimmedLine = line.trim();
-            if (trimmedLine.contains(" class " + item.getSimpleName())
-                    || trimmedLine.contains(" interface " + item.getSimpleName())
-                    || trimmedLine.contains(" enum " + item.getSimpleName())) {
+            if (declaresType(trimmedLine, item.getSimpleName())) {
                 break;
             }
             if (trimmedLine.startsWith("@")) {
                 annotationTypeNames.add(resolveAnnotationName(item, imports, annotationSimpleName(trimmedLine)));
+                annotationParenthesisDepth = parenthesisDelta(trimmedLine);
+            } else if (annotationParenthesisDepth > 0) {
+                annotationParenthesisDepth += parenthesisDelta(trimmedLine);
             } else if (!trimmedLine.isEmpty()
                     && !trimmedLine.startsWith("//")
                     && !trimmedLine.startsWith("/*")
@@ -333,6 +335,51 @@ public final class ModelAnnotationArchitectureRuleSupport {
             }
         }
         return annotationTypeNames;
+    }
+
+    private static boolean declaresType(String line, String simpleName) {
+        for (String typeKeyword : List.of("class", "interface", "enum")) {
+            String declaration = typeKeyword + " " + simpleName;
+            int declarationStart = line.indexOf(declaration);
+            if (declarationStart < 0) {
+                continue;
+            }
+            int nameEnd = declarationStart + declaration.length();
+            boolean validStart =
+                    declarationStart == 0 || !Character.isJavaIdentifierPart(line.charAt(declarationStart - 1));
+            boolean validEnd = nameEnd == line.length() || !Character.isJavaIdentifierPart(line.charAt(nameEnd));
+            if (validStart && validEnd) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int parenthesisDelta(String line) {
+        int depth = 0;
+        boolean inString = false;
+        boolean escaped = false;
+        for (int index = 0; index < line.length(); index++) {
+            char character = line.charAt(index);
+            if (inString) {
+                if (escaped) {
+                    escaped = false;
+                } else if (character == '\\') {
+                    escaped = true;
+                } else if (character == '"') {
+                    inString = false;
+                }
+                continue;
+            }
+            if (character == '"') {
+                inString = true;
+            } else if (character == '(') {
+                depth++;
+            } else if (character == ')') {
+                depth--;
+            }
+        }
+        return depth;
     }
 
     private static Map<String, String> imports(List<String> lines) {
