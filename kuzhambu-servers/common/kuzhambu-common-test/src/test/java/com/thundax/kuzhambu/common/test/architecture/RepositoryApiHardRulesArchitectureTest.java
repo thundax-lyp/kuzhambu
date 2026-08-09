@@ -153,12 +153,6 @@ class RepositoryApiHardRulesArchitectureTest {
                 "method=detail path=detail");
         addLegacyActionVerbAllowances(
                 allowances,
-                "kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/StorageObjectController.java",
-                "method=initiate",
-                "method=initiate path=multipart/initiate",
-                "method=uploadPart path=multipart/uploadPart");
-        addLegacyActionVerbAllowances(
-                allowances,
                 "kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/DepartmentController.java",
                 "method=tree",
                 "method=tree path=tree");

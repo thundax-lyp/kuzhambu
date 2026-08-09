@@ -50,7 +50,7 @@ describe("storage-object-service", () => {
             const url = String(input);
             fetchCalls.push({ body: init?.body, url });
 
-            if (url.endsWith("/storage/object/multipart/initiate")) {
+            if (url.endsWith("/storage/object/multipart/init")) {
                 abortController.abort();
                 return createApiResponse({
                     uploadId: "upload-1",

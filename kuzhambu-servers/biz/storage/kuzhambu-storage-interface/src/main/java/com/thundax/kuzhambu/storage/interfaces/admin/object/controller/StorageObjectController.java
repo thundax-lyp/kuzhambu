@@ -182,8 +182,8 @@ public class StorageObjectController {
     })
     @HasPermission(value = "storage:object:edit")
     @SysLogger(value = "分片上传-初始化")
-    @PostMapping(value = "multipart/initiate")
-    public InitMultipartUploadResponse initiate(@Valid @RequestBody InitMultipartUploadRequest request) {
+    @PostMapping(value = "multipart/init")
+    public InitMultipartUploadResponse init(@Valid @RequestBody InitMultipartUploadRequest request) {
         MultipartUploadSession session =
                 storageMultipartUploadApplicationService.init(toInitMultipartUploadCommand(request));
         return session == null
@@ -202,8 +202,8 @@ public class StorageObjectController {
     @HasPermission(value = "storage:object:edit")
     @SysLogger(value = "分片上传-上传分片")
     @PostJsonApiExempt(reason = "分片文件上传必须使用 multipart/form-data 承载文件流")
-    @PostMapping(value = "multipart/uploadPart", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public UploadMultipartPartResponse uploadPart(
+    @PostMapping(value = "multipart/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UploadMultipartPartResponse upload(
             @Valid UploadMultipartPartRequest request, @RequestParam("file") MultipartFile file) {
         try {
             MultipartUploadPart part =
