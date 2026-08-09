@@ -25,7 +25,7 @@ final class OperationsApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupDetailQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupPageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.operations.application.dashboard.query.OperationsDashboardOverviewQuery"),
                 legacy(

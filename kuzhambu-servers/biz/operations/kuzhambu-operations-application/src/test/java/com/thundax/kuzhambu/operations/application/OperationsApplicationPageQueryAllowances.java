@@ -18,8 +18,7 @@ final class OperationsApplicationPageQueryAllowances {
                 legacy("com.thundax.kuzhambu.operations.application.report.query.OperationsReportPageQuery"),
                 legacy("com.thundax.kuzhambu.operations.application.health.query.OperationsHealthPageQuery"),
                 legacy("com.thundax.kuzhambu.operations.application.health.query.OperationsHealthAlertPageQuery"),
-                legacy("com.thundax.kuzhambu.operations.application.task.query.OperationsTaskPageQuery"),
-                legacy("com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupPageQuery"));
+                legacy("com.thundax.kuzhambu.operations.application.task.query.OperationsTaskPageQuery"));
     }
 
     private static ArchitectureRuleAllowance legacy(String typeName) {

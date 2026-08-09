@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OperationsCleanupPageQuery {
+public class OperationsCleanupQuery {
     private String cleanupType;
     private String cleanupStatus;
     private Long requesterUserId;
