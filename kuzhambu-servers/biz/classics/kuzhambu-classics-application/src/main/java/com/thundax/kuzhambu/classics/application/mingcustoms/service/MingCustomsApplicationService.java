@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.classics.application.mingcustoms.service;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
-import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
+import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
@@ -18,7 +18,7 @@ public interface MingCustomsApplicationService {
 
     MingCustomsEntry get(MingCustomsEntryId id);
 
-    PageResult<MingCustomsEntry> page(MingCustomsPageQuery query, PageQuery page);
+    PageResult<MingCustomsEntry> page(MingCustomsQuery query, PageQuery page);
 
     List<String> listCategories();
 
@@ -38,5 +38,5 @@ public interface MingCustomsApplicationService {
 
     List<MingCustomsKeywordCloudItem> listKeywordCloud();
 
-    List<MingCustomsTagCloudItem> listTagCloud(MingCustomsPageQuery query);
+    List<MingCustomsTagCloudItem> listTagCloud(MingCustomsQuery query);
 }

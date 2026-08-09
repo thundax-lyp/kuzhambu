@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.classics.application.content.support.ClassicsContent
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
-import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
+import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
@@ -58,7 +58,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     }
 
     @Override
-    public PageResult<MingCustomsEntry> page(MingCustomsPageQuery query, PageQuery page) {
+    public PageResult<MingCustomsEntry> page(MingCustomsQuery query, PageQuery page) {
         if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
             return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
         }
@@ -178,7 +178,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     }
 
     @Override
-    public List<MingCustomsTagCloudItem> listTagCloud(MingCustomsPageQuery query) {
+    public List<MingCustomsTagCloudItem> listTagCloud(MingCustomsQuery query) {
         if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
             return List.of();
         }
@@ -260,7 +260,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         return entry;
     }
 
-    private static boolean hasPermissionContext(MingCustomsPageQuery query) {
+    private static boolean hasPermissionContext(MingCustomsQuery query) {
         return query != null && hasPermissionContext(query.getOperatorPermissions());
     }
 

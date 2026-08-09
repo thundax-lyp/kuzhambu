@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.application.search.service.impl;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
+import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
@@ -258,8 +258,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         int pageNo = 1;
         while (true) {
             var pageResult = mingCustomsApplicationService.page(
-                    new MingCustomsPageQuery(null, null, null, SortDirection.ASC),
-                    new PageQuery(pageNo, FETCH_PAGE_SIZE));
+                    new MingCustomsQuery(null, null, null, SortDirection.ASC), new PageQuery(pageNo, FETCH_PAGE_SIZE));
             if (pageResult == null
                     || pageResult.getRecords() == null
                     || pageResult.getRecords().isEmpty()) {

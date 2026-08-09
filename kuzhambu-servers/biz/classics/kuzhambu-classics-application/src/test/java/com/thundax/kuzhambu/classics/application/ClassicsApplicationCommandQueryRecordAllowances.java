@@ -37,7 +37,7 @@ final class ClassicsApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery"),
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand"),
                 legacy(
