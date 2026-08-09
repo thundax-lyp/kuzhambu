@@ -101,6 +101,9 @@ public final class NamingArchitectureRuleSupport {
     private static final Pattern LOMBOK_ANNOTATION_PATTERN =
             Pattern.compile("(?m)^\\s*@(Getter|Setter|Data|Builder|NoArgsConstructor|AllArgsConstructor|"
                     + "RequiredArgsConstructor|Value|With)\\b");
+    private static final Pattern DOMAIN_REPOSITORY_IMPORT_PATTERN =
+            Pattern.compile("(?m)^\\s*import\\s+com\\.thundax\\.kuzhambu\\.[\\w.]+\\.domain\\.[\\w.]+\\.repository\\."
+                    + "\\w+Repository\\s*;");
 
     private NamingArchitectureRuleSupport() {}
 
@@ -743,6 +746,45 @@ public final class NamingArchitectureRuleSupport {
                 violations.isEmpty());
     }
 
+    public static void assertDomainServiceSourcesUseRepositoryBoundary(
+            Path sourceRoot, Collection<ArchitectureRuleAllowance> legacyAllowances) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        Map<String, ArchitectureRuleAllowance> allowlist = architectureAllowlist(legacyAllowances);
+        Set<String> matchedAllowances = new HashSet<String>();
+        List<String> violations = new ArrayList<String>();
+
+        if (!Files.exists(sourceRoot)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".java"))
+                    .forEach(path ->
+                            collectDomainServiceSourceViolations(root, path, violations, allowlist, matchedAllowances));
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to scan domain service sources under " + sourceRoot, e);
+        }
+
+        List<String> staleAllowances = allowlist.keySet().stream()
+                .filter(key -> !matchedAllowances.contains(key))
+                .toList();
+
+        assertTrue(
+                "DomainService is reserved for domain rules that coordinate repository-backed aggregate state. "
+                        + "Domain services must be named *DomainService or *DomainServiceImpl, must live under "
+                        + "domain/service or domain/service/impl, and concrete domain services must depend on a "
+                        + "domain repository. Pure normalization, calculation, factory, policy, or support code "
+                        + "must use a more specific helper role instead. Violations: "
+                        + violations
+                        + ". Stale allowances: "
+                        + staleAllowances,
+                violations.isEmpty() && staleAllowances.isEmpty());
+    }
+
+    public static void assertDomainServiceSourcesUseRepositoryBoundary(Path sourceRoot) {
+        assertDomainServiceSourcesUseRepositoryBoundary(sourceRoot, List.of());
+    }
+
     public static void assertRepositoryPlacement(JavaClasses classes, String basePackage) {
         assertSuffixPlacement(
                 classes,
@@ -751,6 +793,76 @@ public final class NamingArchitectureRuleSupport {
                 "Repository",
                 true,
                 "*Repository interfaces must be placed under com.thundax.kuzhambu.{module}.domain.{domain}.repository");
+    }
+
+    private static void collectDomainServiceSourceViolations(
+            Path root,
+            Path path,
+            List<String> violations,
+            Map<String, ArchitectureRuleAllowance> allowlist,
+            Set<String> matchedAllowances) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        String typeName = sourceTypeName(source, path);
+        String packageName = typeName.substring(0, typeName.lastIndexOf('.'));
+        String simpleName = pathFileNameWithoutExtension(path);
+        boolean servicePackage = isDomainServicePackage(packageName);
+        boolean domainServiceName = simpleName.endsWith("DomainService");
+        boolean domainServiceImplName = simpleName.endsWith("DomainServiceImpl");
+
+        if (servicePackage && !isAllowedDomainServiceShape(packageName, simpleName)) {
+            collectAllowlistedViolation(
+                    domainServiceShapeKey(typeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " is under domain service package but is not a *DomainService boundary",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+        if (!servicePackage && (domainServiceName || domainServiceImplName)) {
+            collectAllowlistedViolation(
+                    domainServiceShapeKey(typeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " uses DomainService naming outside domain/service or domain/service/impl",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+        if (servicePackage
+                && (domainServiceName || domainServiceImplName)
+                && isConcreteDomainServiceSource(source, simpleName)
+                && !DOMAIN_REPOSITORY_IMPORT_PATTERN.matcher(source).find()) {
+            collectAllowlistedViolation(
+                    domainServiceRepositoryKey(typeName),
+                    ArchitectureSourceSupport.repositoryPath(root, path)
+                            + " is a concrete DomainService without a domain Repository dependency",
+                    violations,
+                    allowlist,
+                    matchedAllowances);
+        }
+    }
+
+    private static boolean isAllowedDomainServiceShape(String packageName, String simpleName) {
+        return (packageName.endsWith(".domain.service") && simpleName.endsWith("DomainService"))
+                || (packageName.endsWith(".domain.service.impl") && simpleName.endsWith("DomainServiceImpl"));
+    }
+
+    private static boolean isDomainServicePackage(String packageName) {
+        return packageName.contains(".domain.")
+                && (packageName.endsWith(".service") || packageName.endsWith(".service.impl"));
+    }
+
+    private static boolean isConcreteDomainServiceSource(String source, String simpleName) {
+        return Pattern.compile("\\b(?:public\\s+)?(?:final\\s+)?class\\s+" + simpleName + "\\b")
+                .matcher(source)
+                .find();
+    }
+
+    public static String domainServiceShapeKey(String typeName) {
+        return "DOMAIN_SERVICE_SHAPE:" + typeName;
+    }
+
+    public static String domainServiceRepositoryKey(String typeName) {
+        return "DOMAIN_SERVICE_REPOSITORY:" + typeName;
     }
 
     public static void assertRepositoryImplPlacement(JavaClasses classes, String basePackage) {
