@@ -17,8 +17,8 @@ import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesC
 import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
+import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
 import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
-import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
@@ -104,9 +104,9 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     }
 
     @Override
-    public PageResult<StoredObject> page(StorageObjectPageQuery query) {
+    public PageResult<StoredObject> page(ListStorageObjectsQuery query, PageQuery pageQuery) {
         StorageQuery storageQuery = toStorageQuery(query);
-        PageQuery page = toPageQuery(query);
+        PageQuery page = pageQuery == null ? new PageQuery() : pageQuery;
         StorageReferenceOwnerType referenceOwnerType =
                 StorageReferenceOwnerTypeCodec.toDomain(storageQuery.getReferenceOwnerType());
         String referenceOwnerId = storageQuery.getReferenceOwnerId();
@@ -125,7 +125,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         return storagePage;
     }
 
-    private StorageQuery toStorageQuery(StorageObjectPageQuery query) {
+    private StorageQuery toStorageQuery(ListStorageObjectsQuery query) {
         StorageQuery storageQuery = new StorageQuery();
         if (query == null) {
             return storageQuery;
@@ -143,10 +143,6 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         storageQuery.setRemarks(query.getRemarks());
         storageQuery.setSortDirection(query.getSortDirection());
         return storageQuery;
-    }
-
-    private PageQuery toPageQuery(StorageObjectPageQuery query) {
-        return query == null ? new PageQuery() : new PageQuery(query.getPageNo(), query.getPageSize());
     }
 
     private void fillReferenceOwnerTypes(List<StoredObject> storages) {

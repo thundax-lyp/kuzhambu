@@ -13,12 +13,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.storage.application.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
+import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
 import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
-import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
 import com.thundax.kuzhambu.storage.application.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
@@ -313,10 +314,10 @@ class StorageApplicationServiceUploadTest {
                         any(), any(), any(), any(), any(), any(), any(), any(), any(Integer.class), any(Integer.class)))
                 .thenReturn(new PageResult<>());
 
-        StorageObjectPageQuery query = new StorageObjectPageQuery();
-        query.setReferenceOwnerRef(StorageOwnerRef.of(StorageOwnerType.USER, "owner-9"));
+        ListStorageObjectsQuery query = new ListStorageObjectsQuery(
+                null, null, null, null, StorageOwnerRef.of(StorageOwnerType.USER, "owner-9"), null, null, null);
 
-        service.page(query);
+        service.page(query, new PageQuery());
 
         verify(storageRepository)
                 .page(

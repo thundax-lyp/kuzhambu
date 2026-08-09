@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.storage.application.service;
 
 import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.storage.application.command.ChangeStorageCommand;
 import com.thundax.kuzhambu.storage.application.command.ChangeStorageObjectStatusCommand;
@@ -11,7 +12,6 @@ import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageMimeTypesQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageReferenceOwnerTypesQuery;
-import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import java.util.List;
 
@@ -24,7 +24,7 @@ public interface StorageObjectApplicationService {
     List<StoredObject> list(ListStorageObjectsQuery query);
 
     @LayerPublicApi(reason = "存储对象分页读取入口")
-    PageResult<StoredObject> page(StorageObjectPageQuery query);
+    PageResult<StoredObject> page(ListStorageObjectsQuery query, PageQuery pageQuery);
 
     @LayerPublicApi(reason = "存储对象元数据创建入口")
     StoredObject create(CreateStorageCommand command);

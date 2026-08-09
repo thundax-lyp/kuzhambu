@@ -1,8 +1,7 @@
 package com.thundax.kuzhambu.storage.interfaces.admin.object.assembler;
 
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
-import com.thundax.kuzhambu.storage.application.query.StorageObjectPageQuery;
+import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
@@ -27,9 +26,9 @@ public final class StorageInterfaceAssembler {
     private StorageInterfaceAssembler() {}
 
     @NonNull
-    public static StorageObjectPageQuery toPageQuery(@NonNull StoragePageRequest request) {
-        com.thundax.kuzhambu.common.core.page.PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
-        return new StorageObjectPageQuery(
+    public static ListStorageObjectsQuery toListQuery(@NonNull StoragePageRequest request) {
+        return new ListStorageObjectsQuery(
+                null,
                 mimeTypeFrom(request.getContentType()),
                 objectStatusFrom(request.getObjectStatus()),
                 referenceStatusFrom(request.getReferenceStatus()),
@@ -37,9 +36,7 @@ public final class StorageInterfaceAssembler {
                         ownerTypeFrom(request.getReferenceOwnerType()), emptyToNull(request.getReferenceOwnerId())),
                 emptyToNull(request.getOriginalFilename()),
                 emptyToNull(request.getRemarks()),
-                sortDirectionFrom(request.getSortDirection()),
-                pageQuery.getPageNo(),
-                pageQuery.getPageSize());
+                sortDirectionFrom(request.getSortDirection()));
     }
 
     @NonNull

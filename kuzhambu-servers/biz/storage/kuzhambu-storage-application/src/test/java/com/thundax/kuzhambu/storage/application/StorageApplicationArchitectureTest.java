@@ -44,7 +44,7 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
                 Path.of("src/main/java"), StorageApplicationCommandQueryRecordAllowances.legacyAllowances());
         NamingArchitectureRuleSupport.assertApplicationQueriesDoNotOwnPageState(
-                Path.of("src/main/java"), StorageApplicationPageQueryAllowances.legacyAllowances());
+                Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         SortableArchitectureRuleSupport.assertSortCommandsUseOrderedIdsOnly(Path.of("src/main/java"));
