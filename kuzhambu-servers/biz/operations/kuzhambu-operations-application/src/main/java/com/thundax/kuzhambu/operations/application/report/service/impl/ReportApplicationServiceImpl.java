@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.report.command.OperationsReportGenerateCommand;
 import com.thundax.kuzhambu.operations.application.report.query.OperationsReportDetailQuery;
-import com.thundax.kuzhambu.operations.application.report.query.OperationsReportPageQuery;
+import com.thundax.kuzhambu.operations.application.report.query.OperationsReportQuery;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDetailResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDownloadResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportGenerateResult;
@@ -77,7 +77,7 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
     }
 
     @Override
-    public PageResult<OperationsReportPageResult> page(OperationsReportPageQuery query, PageQuery pageQuery) {
+    public PageResult<OperationsReportPageResult> page(OperationsReportQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<ReportRecord> recordPage = reportRepository.page(

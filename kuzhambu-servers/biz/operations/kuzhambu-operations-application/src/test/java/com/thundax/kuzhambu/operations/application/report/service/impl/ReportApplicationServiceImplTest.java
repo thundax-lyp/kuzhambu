@@ -9,7 +9,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.report.command.OperationsReportGenerateCommand;
 import com.thundax.kuzhambu.operations.application.report.query.OperationsReportDetailQuery;
-import com.thundax.kuzhambu.operations.application.report.query.OperationsReportPageQuery;
+import com.thundax.kuzhambu.operations.application.report.query.OperationsReportQuery;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportArtifactResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDetailResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportGenerateResult;
@@ -78,7 +78,7 @@ class ReportApplicationServiceImplTest {
                         1001L,
                         Instant.ofEpochMilli(1_720_420_000_000L),
                         Instant.ofEpochMilli(1_720_420_300_000L))));
-        OperationsReportPageQuery query = new OperationsReportPageQuery();
+        OperationsReportQuery query = new OperationsReportQuery();
         query.setReportType("MONTHLY");
         query.setFormat("HTML");
         query.setReportStatus("SUCCEEDED");

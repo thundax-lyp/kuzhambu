@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OperationsReportPageQuery {
+public class OperationsReportQuery {
 
     private String reportType;
     private String format;
