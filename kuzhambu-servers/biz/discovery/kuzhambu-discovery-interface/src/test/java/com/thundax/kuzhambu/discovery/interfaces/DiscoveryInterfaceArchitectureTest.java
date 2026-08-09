@@ -28,6 +28,7 @@ class DiscoveryInterfaceArchitectureTest {
                 classes, BASE_PACKAGE, legacyResponseAnnotationAllowances());
         ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
                 Path.of("src/main/java"), legacyActionVerbAllowances());
+        ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertApiModelsDoNotExposePriority(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertSortRequestsUseOrderedIdsOnly(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
