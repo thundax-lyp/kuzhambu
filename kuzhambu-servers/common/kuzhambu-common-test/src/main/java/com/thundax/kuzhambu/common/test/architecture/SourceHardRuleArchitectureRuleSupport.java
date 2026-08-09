@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -21,7 +24,12 @@ public final class SourceHardRuleArchitectureRuleSupport {
     private static final Pattern ILLEGAL_ARGUMENT_EXCEPTION_BUSINESS_EXIT_PATTERN = Pattern.compile(
             "(?ms)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
                     + "storage|system)\\.(?:application(?:\\.|;)|infra\\.[\\w.]+\\.repository\\.impl(?:\\.|;)).*"
-                    + "throw\\s+new\\s+IllegalArgumentException\\s*\\(");
+                    + "throw\\s+new\\s+(?:java\\.lang\\.)?IllegalArgumentException\\s*\\(");
+    private static final Pattern ILLEGAL_ARGUMENT_EXCEPTION_VARIABLE_PATTERN =
+            Pattern.compile("(?:java\\.lang\\.)?IllegalArgumentException\\s+(\\w+)\\b");
+    private static final Pattern THROW_VARIABLE_PATTERN = Pattern.compile("\\bthrow\\s+(\\w+)\\s*;");
+    private static final Pattern COMMENTS_AND_LITERALS_PATTERN =
+            Pattern.compile("(?s)/\\*.*?\\*/|//[^\\r\\n]*|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'");
 
     private SourceHardRuleArchitectureRuleSupport() {}
 
@@ -43,11 +51,16 @@ public final class SourceHardRuleArchitectureRuleSupport {
             throws IOException {
         assertNoSourceMatches(
                 sourceRoot,
-                ILLEGAL_ARGUMENT_EXCEPTION_BUSINESS_EXIT_PATTERN,
+                SourceHardRuleArchitectureRuleSupport::hasIllegalArgumentExceptionBusinessExit,
                 "Application and repository implementation sources must not throw IllegalArgumentException");
     }
 
     private static void assertNoSourceMatches(Path sourceRoot, Pattern pattern, String message) throws IOException {
+        assertNoSourceMatches(sourceRoot, path -> sourceMatches(path, pattern), message);
+    }
+
+    private static void assertNoSourceMatches(Path sourceRoot, SourceMatcher matcher, String message)
+            throws IOException {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
@@ -56,7 +69,7 @@ public final class SourceHardRuleArchitectureRuleSupport {
                     .filter(path -> path.getFileName().toString().endsWith(".java"))
                     .filter(path ->
                             ArchitectureSourceSupport.normalizePath(path).contains("/src/main/java/"))
-                    .filter(path -> sourceMatches(path, pattern))
+                    .filter(matcher::matches)
                     .map(path -> ArchitectureSourceSupport.repositoryPath(root, path))
                     .forEach(violations::add);
         }
@@ -66,9 +79,52 @@ public final class SourceHardRuleArchitectureRuleSupport {
 
     private static boolean sourceMatches(Path path, Pattern pattern) {
         try {
-            return pattern.matcher(Files.readString(path)).find();
+            return pattern.matcher(withoutCommentsAndLiterals(Files.readString(path)))
+                    .find();
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to read source file " + path, exception);
         }
+    }
+
+    private static boolean hasIllegalArgumentExceptionBusinessExit(Path path) {
+        try {
+            String source = withoutCommentsAndLiterals(Files.readString(path));
+            if (ILLEGAL_ARGUMENT_EXCEPTION_BUSINESS_EXIT_PATTERN.matcher(source).find()) {
+                return true;
+            }
+            if (!isApplicationOrRepositoryImplementationSource(source)) {
+                return false;
+            }
+            Set<String> exceptionVariables = new HashSet<String>();
+            Matcher declarationMatcher = ILLEGAL_ARGUMENT_EXCEPTION_VARIABLE_PATTERN.matcher(source);
+            while (declarationMatcher.find()) {
+                exceptionVariables.add(declarationMatcher.group(1));
+            }
+            Matcher throwMatcher = THROW_VARIABLE_PATTERN.matcher(source);
+            while (throwMatcher.find()) {
+                if (exceptionVariables.contains(throwMatcher.group(1))) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Failed to read source file " + path, exception);
+        }
+    }
+
+    private static boolean isApplicationOrRepositoryImplementationSource(String source) {
+        return source.matches(
+                "(?s)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
+                        + "storage|system)\\.(?:application(?:\\.|;)|infra\\.[\\w.]+\\.repository\\.impl(?:\\.|;)).*");
+    }
+
+    private static String withoutCommentsAndLiterals(String source) {
+        return COMMENTS_AND_LITERALS_PATTERN.matcher(source).replaceAll(" ");
+    }
+
+    @FunctionalInterface
+    private interface SourceMatcher {
+
+        boolean matches(Path path);
     }
 }
