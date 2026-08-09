@@ -29,16 +29,6 @@ final class AiApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.command.ValidatePromptVariablesCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigByCapabilityQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.GetAiBusinessConfigQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.GetAiCapabilityQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.GetCurrentPromptVersionQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.GetPromptByCapabilityQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.GetPromptQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.ListAiBusinessConfigsQuery"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.ListAiCapabilitiesQuery"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.ai.application.config.query.ListAiModelsQuery"),

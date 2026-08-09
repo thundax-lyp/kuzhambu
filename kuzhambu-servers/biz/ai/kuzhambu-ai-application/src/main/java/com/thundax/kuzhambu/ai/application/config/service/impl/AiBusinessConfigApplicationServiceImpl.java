@@ -41,12 +41,12 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
 
     @Override
     public AiBusinessConfig get(GetAiBusinessConfigQuery query) {
-        return aiBusinessConfigRepository.get(query == null ? null : query.getBusinessConfigId());
+        return aiBusinessConfigRepository.get(query == null ? null : query.businessConfigId());
     }
 
     @Override
     public AiBusinessConfig getByCapability(GetAiBusinessConfigByCapabilityQuery query) {
-        return aiBusinessConfigRepository.get(query == null ? null : query.getCapability());
+        return aiBusinessConfigRepository.get(query == null ? null : query.capability());
     }
 
     @Override

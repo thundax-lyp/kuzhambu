@@ -58,12 +58,12 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     public PromptTemplate get(GetPromptQuery query) {
-        return promptRepository.get(query == null ? null : query.getTemplateId());
+        return promptRepository.get(query == null ? null : query.templateId());
     }
 
     @Override
     public PromptTemplate getByCapability(GetPromptByCapabilityQuery query) {
-        AiBusinessCapability capability = query == null ? null : query.getCapability();
+        AiBusinessCapability capability = query == null ? null : query.capability();
         if (capability == null) {
             return null;
         }
@@ -112,7 +112,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     public PromptVersionResult getCurrentVersion(GetCurrentPromptVersionQuery query) {
-        PromptTemplateId templateId = query == null ? null : query.getTemplateId();
+        PromptTemplateId templateId = query == null ? null : query.templateId();
         if (templateId == null) {
             return null;
         }
