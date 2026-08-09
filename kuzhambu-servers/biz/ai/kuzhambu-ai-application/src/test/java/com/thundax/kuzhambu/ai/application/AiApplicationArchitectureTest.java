@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRule
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class AiApplicationArchitectureTest extends AbstractArchitectureTest {
@@ -38,6 +39,12 @@ class AiApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
                 Path.of("src/main/java"), AiApplicationCommandQueryRecordAllowances.legacyAllowances());
+        NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
+                List.of(Path.of("src/main/java"), Path.of("../kuzhambu-ai-interface/src/main/java")),
+                AiApplicationCommandQueryRecordAllowances.constructionAllowances());
+        NamingArchitectureRuleSupport.assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
+                List.of(Path.of("src/main/java"), Path.of("../kuzhambu-ai-interface/src/main/java")),
+                AiApplicationCommandQueryRecordAllowances.assemblerNullReturnAllowances());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         ConcurrencyArchitectureRuleSupport.shouldNotUseCompletableFutureAsyncWithoutExecutor(BASE_PACKAGE)
