@@ -55,6 +55,9 @@ public final class TaxonomyApplicationAssembler {
     @NonNull
     public static TagResult toResult(
             @NonNull Tag tag, @NonNull String categoryName, int contentRefCount, @NonNull Long categoryId) {
+        Objects.requireNonNull(tag, "tag must not be null");
+        Objects.requireNonNull(categoryName, "categoryName must not be null");
+        Objects.requireNonNull(categoryId, "categoryId must not be null");
         return toResult(tag, categoryName, contentRefCount, String.valueOf(categoryId));
     }
 
@@ -86,7 +89,7 @@ public final class TaxonomyApplicationAssembler {
     }
 
     @NonNull
-    public static TagAliasResult toAliasResult(TagAlias alias) {
+    public static TagAliasResult toAliasResult(@NonNull TagAlias alias) {
         Objects.requireNonNull(alias, "alias must not be null");
 
         return new TagAliasResult(
@@ -96,7 +99,7 @@ public final class TaxonomyApplicationAssembler {
     }
 
     @NonNull
-    public static List<TagAliasResult> toAliasResultList(List<TagAlias> list) {
+    public static List<TagAliasResult> toAliasResultList(@NonNull List<TagAlias> list) {
         Objects.requireNonNull(list, "list must not be null");
         return list.stream()
                 .filter(Objects::nonNull)
@@ -105,7 +108,7 @@ public final class TaxonomyApplicationAssembler {
     }
 
     @NonNull
-    public static TagContentRefResult toContentRefResult(TagContentRef ref) {
+    public static TagContentRefResult toContentRefResult(@NonNull TagContentRef ref) {
         Objects.requireNonNull(ref, "ref must not be null");
 
         return new TagContentRefResult(
@@ -117,7 +120,7 @@ public final class TaxonomyApplicationAssembler {
     }
 
     @NonNull
-    public static List<TagContentRefResult> toContentRefResultList(List<TagContentRef> list) {
+    public static List<TagContentRefResult> toContentRefResultList(@NonNull List<TagContentRef> list) {
         Objects.requireNonNull(list, "list must not be null");
         return list.stream()
                 .filter(Objects::nonNull)

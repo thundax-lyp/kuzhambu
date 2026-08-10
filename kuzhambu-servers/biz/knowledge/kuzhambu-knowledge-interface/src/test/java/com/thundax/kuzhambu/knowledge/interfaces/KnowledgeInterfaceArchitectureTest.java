@@ -65,15 +65,6 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
-                "admin.taxonomy.controller.response.TagAliasResponse",
-                "admin.taxonomy.controller.response.TagBatchMergePreviewResponse",
-                "admin.taxonomy.controller.response.TagCategoryResponse",
-                "admin.taxonomy.controller.response.TagContentRefResponse",
-                "admin.taxonomy.controller.response.TagDetailResponse",
-                "admin.taxonomy.controller.response.TagExtractionResponse",
-                "admin.taxonomy.controller.response.TagGovernanceMetricsResponse",
-                "admin.taxonomy.controller.response.TagMergePreviewResponse",
-                "admin.taxonomy.controller.response.TagResponse",
                 "portal.atlas.controller.response.KnowledgePortalAtlasResponse",
                 "portal.atlas.controller.response.KnowledgePortalAtlasResponse$AvailableFiltersResponse",
                 "portal.atlas.controller.response.KnowledgePortalAtlasResponse$BreadcrumbItemResponse",
