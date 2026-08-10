@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `08-03 refinement entity-relation command-query record`：迁移精修实体与关系 Command/Query 为 Java record
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-08-KNOWLEDGE-GRAPH-REFINEMENT.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/ConfirmRefinementEntityCommand.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/ConfirmRefinementRelationCommand.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteRefinementEntityCommand.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteRefinementRelationCommand.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertRefinementEntityCommand.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertRefinementRelationCommand.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/query/RefinementDetailQuery.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/KnowledgeApplicationCommandQueryRecordAllowances.java`
-    - 处理动作：将实体、关系和详情查询契约改为 record，并删除对应 `COMMAND_QUERY_RECORD` allowance。
-    - 验收点：七个生产契约文件均为 record，相关调用方使用 record accessor，allowlist 中不再包含对应 class key。
-    - 重要度：10/10
-
 - [ ] `08-04 refinement lineage-quality command record`：迁移精修世系与质量报告 Command 为 Java record
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-08-KNOWLEDGE-GRAPH-REFINEMENT.md`

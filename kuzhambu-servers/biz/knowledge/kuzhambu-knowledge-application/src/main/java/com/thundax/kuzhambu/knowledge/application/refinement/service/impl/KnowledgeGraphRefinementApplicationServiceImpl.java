@@ -183,16 +183,16 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     @Transactional(readOnly = true)
     public RefinementDetailResult getTaskDetail(RefinementDetailQuery query) {
         return detail(refinementTaskRepository.getByTaskId(
-                RefinementTaskIdCodec.toDomain(query == null ? null : query.getRefinementTaskId())));
+                RefinementTaskIdCodec.toDomain(query == null ? null : query.refinementTaskId())));
     }
 
     @Override
     public RefinementEntityResult upsertEntity(UpsertRefinementEntityCommand command) {
         List<RefinementEntityDraft> drafts =
-                new ArrayList<>(entityDraftRepository.listByTaskId(command.getRefinementTaskId()));
+                new ArrayList<>(entityDraftRepository.listByTaskId(command.refinementTaskId()));
         RefinementEntityDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getEntityKey(), command.getEntityKey())
-                        || idEquals(item.getEntityId(), command.getEntityId()))
+                .filter(item -> keyEquals(item.getEntityKey(), command.entityKey())
+                        || idEquals(item.getEntityId(), command.entityId()))
                 .findFirst()
                 .orElseGet(() -> new RefinementEntityDraft());
         boolean created = draft.getDraftId() == null;
@@ -203,14 +203,14 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     public RefinementEntityResult confirmEntity(ConfirmRefinementEntityCommand command) {
-        List<RefinementEntityDraft> drafts = entityDraftRepository.listByTaskId(command.getRefinementTaskId());
+        List<RefinementEntityDraft> drafts = entityDraftRepository.listByTaskId(command.refinementTaskId());
         RefinementEntityDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getEntityKey(), command.getEntityKey()))
+                .filter(item -> keyEquals(item.getEntityKey(), command.entityKey()))
                 .findFirst()
                 .orElseThrow();
         draft.setConfirmationStatus("MANUAL_CONFIRMED");
         draft.setOperationType("CONFIRMED");
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
         entityDraftRepository.saveOrUpdateBatch(List.of(draft));
         return toResult(draft);
@@ -218,13 +218,13 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     public void deleteEntity(DeleteRefinementEntityCommand command) {
-        List<RefinementEntityDraft> drafts = entityDraftRepository.listByTaskId(command.getRefinementTaskId());
+        List<RefinementEntityDraft> drafts = entityDraftRepository.listByTaskId(command.refinementTaskId());
         RefinementEntityDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getEntityKey(), command.getEntityKey()))
+                .filter(item -> keyEquals(item.getEntityKey(), command.entityKey()))
                 .findFirst()
                 .orElseThrow();
         draft.setOperationType("DELETED");
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
         entityDraftRepository.saveOrUpdateBatch(List.of(draft));
     }
@@ -232,10 +232,10 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     @Override
     public RefinementRelationResult upsertRelation(UpsertRefinementRelationCommand command) {
         List<RefinementRelationDraft> drafts =
-                new ArrayList<>(relationDraftRepository.listByTaskId(command.getRefinementTaskId()));
+                new ArrayList<>(relationDraftRepository.listByTaskId(command.refinementTaskId()));
         RefinementRelationDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getRelationKey(), command.getRelationKey())
-                        || idEquals(item.getRelationId(), command.getRelationId()))
+                .filter(item -> keyEquals(item.getRelationKey(), command.relationKey())
+                        || idEquals(item.getRelationId(), command.relationId()))
                 .findFirst()
                 .orElseGet(RefinementRelationDraft::new);
         boolean created = draft.getDraftId() == null;
@@ -246,14 +246,14 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     public RefinementRelationResult confirmRelation(ConfirmRefinementRelationCommand command) {
-        List<RefinementRelationDraft> drafts = relationDraftRepository.listByTaskId(command.getRefinementTaskId());
+        List<RefinementRelationDraft> drafts = relationDraftRepository.listByTaskId(command.refinementTaskId());
         RefinementRelationDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getRelationKey(), command.getRelationKey()))
+                .filter(item -> keyEquals(item.getRelationKey(), command.relationKey()))
                 .findFirst()
                 .orElseThrow();
         draft.setConfirmationStatus("MANUAL_CONFIRMED");
         draft.setOperationType("CONFIRMED");
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
         relationDraftRepository.saveOrUpdateBatch(List.of(draft));
         return toResult(draft);
@@ -261,13 +261,13 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     public void deleteRelation(DeleteRefinementRelationCommand command) {
-        List<RefinementRelationDraft> drafts = relationDraftRepository.listByTaskId(command.getRefinementTaskId());
+        List<RefinementRelationDraft> drafts = relationDraftRepository.listByTaskId(command.refinementTaskId());
         RefinementRelationDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getRelationKey(), command.getRelationKey()))
+                .filter(item -> keyEquals(item.getRelationKey(), command.relationKey()))
                 .findFirst()
                 .orElseThrow();
         draft.setOperationType("DELETED");
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
         relationDraftRepository.saveOrUpdateBatch(List.of(draft));
     }
@@ -452,53 +452,53 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     private void fillEntityDraft(RefinementEntityDraft draft, UpsertRefinementEntityCommand command, boolean created) {
         Instant now = Instant.now();
-        draft.setRefinementTaskId(command.getRefinementTaskId());
-        draft.setEntityId(command.getEntityId());
+        draft.setRefinementTaskId(command.refinementTaskId());
+        draft.setEntityId(command.entityId());
         draft.setEntityKey(
-                created && command.getEntityKey() == null
+                created && command.entityKey() == null
                         ? manualKeySupport.nextEntityKey()
-                        : defaultIfBlank(command.getEntityKey(), draft.getEntityKey()));
-        draft.setOriginType(created && command.getEntityId() == null ? "MANUAL_CREATED" : "AI_EXTRACTED");
-        draft.setOperationType(created && command.getEntityId() == null ? "ADDED" : "UPDATED");
-        draft.setName(command.getName());
-        draft.setEntityType(command.getEntityType());
-        draft.setDescription(command.getDescription());
+                        : defaultIfBlank(command.entityKey(), draft.getEntityKey()));
+        draft.setOriginType(created && command.entityId() == null ? "MANUAL_CREATED" : "AI_EXTRACTED");
+        draft.setOperationType(created && command.entityId() == null ? "ADDED" : "UPDATED");
+        draft.setName(command.name());
+        draft.setEntityType(command.entityType());
+        draft.setDescription(command.description());
         draft.setConfirmationStatus(created ? "PENDING" : defaultIfBlank(draft.getConfirmationStatus(), "PENDING"));
-        draft.setSourceRefsJson(command.getSourceRefsJson());
-        draft.setSortOrder(command.getSortOrder());
+        draft.setSourceRefsJson(command.sourceRefsJson());
+        draft.setSortOrder(command.sortOrder());
         if (created) {
-            draft.setCreatedBy(command.getOperatorId());
+            draft.setCreatedBy(command.operatorId());
             draft.setCreatedAt(now);
         }
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(now);
     }
 
     private void fillRelationDraft(
             RefinementRelationDraft draft, UpsertRefinementRelationCommand command, boolean created) {
         Instant now = Instant.now();
-        draft.setRefinementTaskId(command.getRefinementTaskId());
-        draft.setRelationId(command.getRelationId());
+        draft.setRefinementTaskId(command.refinementTaskId());
+        draft.setRelationId(command.relationId());
         draft.setRelationKey(
-                created && command.getRelationKey() == null
+                created && command.relationKey() == null
                         ? manualKeySupport.nextRelationKey()
-                        : defaultIfBlank(command.getRelationKey(), draft.getRelationKey()));
-        draft.setOriginType(created && command.getRelationId() == null ? "MANUAL_CREATED" : "AI_EXTRACTED");
-        draft.setOperationType(created && command.getRelationId() == null ? "ADDED" : "UPDATED");
-        draft.setSourceEntityKey(command.getSourceEntityKey());
-        draft.setTargetEntityKey(command.getTargetEntityKey());
-        draft.setSourceName(command.getSourceName());
-        draft.setTargetName(command.getTargetName());
-        draft.setRelationType(command.getRelationType());
-        draft.setEvidence(command.getEvidence());
+                        : defaultIfBlank(command.relationKey(), draft.getRelationKey()));
+        draft.setOriginType(created && command.relationId() == null ? "MANUAL_CREATED" : "AI_EXTRACTED");
+        draft.setOperationType(created && command.relationId() == null ? "ADDED" : "UPDATED");
+        draft.setSourceEntityKey(command.sourceEntityKey());
+        draft.setTargetEntityKey(command.targetEntityKey());
+        draft.setSourceName(command.sourceName());
+        draft.setTargetName(command.targetName());
+        draft.setRelationType(command.relationType());
+        draft.setEvidence(command.evidence());
         draft.setConfirmationStatus(created ? "PENDING" : defaultIfBlank(draft.getConfirmationStatus(), "PENDING"));
-        draft.setSourceRefsJson(command.getSourceRefsJson());
-        draft.setSortOrder(command.getSortOrder());
+        draft.setSourceRefsJson(command.sourceRefsJson());
+        draft.setSortOrder(command.sortOrder());
         if (created) {
-            draft.setCreatedBy(command.getOperatorId());
+            draft.setCreatedBy(command.operatorId());
             draft.setCreatedAt(now);
         }
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(now);
     }
 

@@ -17,23 +17,15 @@ final class KnowledgeApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementEntityCommand"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageNodeCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageRelationCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementRelationCommand"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteQualityAnnotationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementEntityCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageNodeCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageRelationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementRelationCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand"),
                 legacy(
@@ -41,15 +33,9 @@ final class KnowledgeApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertQualityAnnotationCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementEntityCommand"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageNodeCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageRelationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasCreateCommand"),
                 legacy(
