@@ -7,27 +7,18 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTransl
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.Set;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class SancaiEntryQuery {
-    private Long categoryId;
-    private Long volumeId;
-    private String keyword;
-    private SancaiEntryLifecycleStatus lifecycleStatus;
-    private SancaiEntryTranslationStatus translationStatus;
-    private SancaiEntryImageStatus imageStatus;
-    private SancaiEntryVisualAssetStatus visualAssetStatus;
-    private SancaiEntryRefinementStatus refinementStatus;
-    private SortDirection sortDirection = SortDirection.ASC;
-    private Set<String> operatorPermissions;
-
+public record SancaiEntryQuery(
+        Long categoryId,
+        Long volumeId,
+        String keyword,
+        SancaiEntryLifecycleStatus lifecycleStatus,
+        SancaiEntryTranslationStatus translationStatus,
+        SancaiEntryImageStatus imageStatus,
+        SancaiEntryVisualAssetStatus visualAssetStatus,
+        SancaiEntryRefinementStatus refinementStatus,
+        SortDirection sortDirection,
+        Set<String> operatorPermissions) {
     public SancaiEntryQuery(
             Long categoryId,
             Long volumeId,
@@ -49,5 +40,11 @@ public class SancaiEntryQuery {
                 refinementStatus,
                 sortDirection,
                 null);
+    }
+
+    public SancaiEntryQuery {
+        if (sortDirection == null) {
+            sortDirection = SortDirection.ASC;
+        }
     }
 }

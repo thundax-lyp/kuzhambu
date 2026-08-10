@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,6 +12,7 @@ import lombok.Getter;
 @Builder
 @Schema(description = "三才图会门户门类响应")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SancaiPortalCategoryResponse implements Serializable {
     @JsonProperty("id")
     private Long id;

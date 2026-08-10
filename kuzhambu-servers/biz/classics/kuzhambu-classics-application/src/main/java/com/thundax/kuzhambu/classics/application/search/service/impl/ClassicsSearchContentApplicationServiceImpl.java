@@ -6,6 +6,8 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQu
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.application.search.query.ClassicsSearchContentQuery;
+import com.thundax.kuzhambu.classics.application.search.query.ClassicsWorkbenchContentQuery;
 import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
@@ -66,7 +68,9 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
     }
 
     @Override
-    public ClassicsSearchSourceContent getPublicContent(String contentType, String contentId) {
+    public ClassicsSearchSourceContent getPublicContent(ClassicsSearchContentQuery query) {
+        String contentType = query == null ? null : query.contentType();
+        String contentId = query == null ? null : query.contentId();
         Long idValue = Long.valueOf(contentId);
         return switch (ClassicsContentType.from(contentType)) {
             case SANCAI_ENTRY ->
@@ -157,7 +161,9 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
     }
 
     @Override
-    public List<ClassicsSearchSourceContent> listWorkbenchContents(String categoryCode, String volumeCode) {
+    public List<ClassicsSearchSourceContent> listWorkbenchContents(ClassicsWorkbenchContentQuery query) {
+        String categoryCode = query == null ? null : query.categoryCode();
+        String volumeCode = query == null ? null : query.volumeCode();
         if (volumeCode == null || volumeCode.isBlank()) {
             return listWorkbenchContents();
         }
@@ -170,7 +176,9 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
     }
 
     @Override
-    public ClassicsSearchSourceContent getWorkbenchContent(String contentType, String contentId) {
+    public ClassicsSearchSourceContent getWorkbenchContent(ClassicsSearchContentQuery query) {
+        String contentType = query == null ? null : query.contentType();
+        String contentId = query == null ? null : query.contentId();
         Long idValue = Long.valueOf(contentId);
         return switch (ClassicsContentType.from(contentType)) {
             case SANCAI_ENTRY ->
@@ -179,7 +187,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                         listSancaiCategoryMap(),
                         listSancaiCategoryIdByVolumeId(),
                         listSancaiVolumeMap());
-            case WANGQI_DOCUMENT, MING_CUSTOMS -> getPublicContent(contentType, contentId);
+            case WANGQI_DOCUMENT, MING_CUSTOMS -> getPublicContent(query);
         };
     }
 

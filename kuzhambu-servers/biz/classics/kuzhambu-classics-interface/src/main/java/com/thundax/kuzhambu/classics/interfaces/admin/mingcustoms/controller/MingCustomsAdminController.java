@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler.MingCustomsInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsKeywordSortRequest;
@@ -101,7 +102,11 @@ public class MingCustomsAdminController {
     @PostMapping("get")
     public MingCustomsResponse get(@Valid @RequestBody MingCustomsRequest request) {
         Long id = requireParameter(request == null ? null : request.getId(), "id");
-        return MingCustomsInterfaceAssembler.toResponse(service.get(MingCustomsEntryIdCodec.toDomain(id)));
+        MingCustomsEntry entry = service.get(MingCustomsEntryIdCodec.toDomain(id));
+        if (entry == null) {
+            throw new BizException("明代习俗条目不存在");
+        }
+        return MingCustomsInterfaceAssembler.toResponse(entry);
     }
 
     @Operation(summary = "新增明代习俗", description = "classics:mingcustoms:edit")

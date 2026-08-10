@@ -105,31 +105,30 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     public SancaiCategory getCategory(SancaiCategoryId id) {
-        return repository.getCategoryById(id);
+        return repository.getByCategoryId(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiCategoryId addCategory(SancaiCategoryCommand command) {
         SancaiCategory category = toNewCategory(command);
-        category.setPriority(
-                command.getPriority() == null ? repository.maxCategoryPriority() + 1 : command.getPriority());
+        category.setPriority(command.priority() == null ? repository.maxCategoryPriority() + 1 : command.priority());
         return repository.insertCategory(category);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiCategoryId updateCategory(SancaiCategoryCommand command) {
-        if (command == null || command.getId() == null) {
+        if (command == null || command.id() == null) {
             throw invalidCategory("id");
         }
         SancaiCategory category = toNewCategory(command);
-        category.setId(SancaiCategoryIdCodec.toDomain(command.getId()));
-        SancaiCategory oldCategory = repository.getCategoryById(category.getId());
+        category.setId(SancaiCategoryIdCodec.toDomain(command.id()));
+        SancaiCategory oldCategory = repository.getByCategoryId(category.getId());
         if (oldCategory == null) {
             throw categoryNotFound();
         }
-        category.setPriority(command.getPriority() == null ? oldCategory.getPriority() : command.getPriority());
+        category.setPriority(command.priority() == null ? oldCategory.getPriority() : command.priority());
         if (repository.updateCategory(category) != 1) {
             throw categoryNotFound();
         }
@@ -137,12 +136,12 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     private static SancaiCategory toNewCategory(SancaiCategoryCommand command) {
-        if (command == null || StringUtils.isBlank(command.getTitle())) {
+        if (command == null || StringUtils.isBlank(command.title())) {
             throw invalidCategory("title");
         }
         SancaiCategory category = new SancaiCategory();
-        category.setTitle(command.getTitle().trim());
-        category.setCategoryType(command.getCategoryType());
+        category.setTitle(command.title().trim());
+        category.setCategoryType(command.categoryType());
         return category;
     }
 
@@ -155,7 +154,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (repository.countVolumesByCategoryId(id) > 0) {
             throw new BizException("三才图会门类下仍有关联卷，不能删除");
         }
-        if (repository.deleteCategoryById(id) != 1) {
+        if (repository.deleteByCategoryId(id) != 1) {
             throw categoryNotFound();
         }
     }
@@ -167,30 +166,30 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     public SancaiVolume getVolume(SancaiVolumeId id) {
-        return id == null ? null : repository.getVolumeById(id);
+        return id == null ? null : repository.getByVolumeId(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiVolumeId addVolume(SancaiVolumeCommand command) {
         SancaiVolume volume = toNewVolume(command);
-        volume.setPriority(command.getPriority() == null ? repository.maxVolumePriority() + 1 : command.getPriority());
+        volume.setPriority(command.priority() == null ? repository.maxVolumePriority() + 1 : command.priority());
         return repository.insertVolume(volume);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiVolumeId updateVolume(SancaiVolumeCommand command) {
-        if (command == null || command.getId() == null) {
+        if (command == null || command.id() == null) {
             throw invalidVolume("id");
         }
         SancaiVolume volume = toNewVolume(command);
-        volume.setId(SancaiVolumeIdCodec.toDomain(command.getId()));
-        SancaiVolume oldVolume = repository.getVolumeById(volume.getId());
+        volume.setId(SancaiVolumeIdCodec.toDomain(command.id()));
+        SancaiVolume oldVolume = repository.getByVolumeId(volume.getId());
         if (oldVolume == null) {
             throw volumeNotFound();
         }
-        volume.setPriority(command.getPriority() == null ? oldVolume.getPriority() : command.getPriority());
+        volume.setPriority(command.priority() == null ? oldVolume.getPriority() : command.priority());
         if (repository.updateVolume(volume) != 1) {
             throw volumeNotFound();
         }
@@ -206,7 +205,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (repository.countEntriesByVolumeId(id) > 0) {
             throw new BizException("三才图会卷下仍有关联条目，不能删除");
         }
-        if (repository.deleteVolumeById(id) != 1) {
+        if (repository.deleteByVolumeId(id) != 1) {
             throw volumeNotFound();
         }
     }
@@ -214,7 +213,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortCategories(SancaiCategorySortCommand command) {
-        List<SancaiCategoryId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<SancaiCategoryId> orderedIdList = command == null ? null : command.orderedIds();
         SortablePrioritySwapSupport.sort(
                 orderedIdList,
                 repository.listCategories(SortDirection.ASC),
@@ -228,7 +227,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortVolumes(SancaiVolumeSortCommand command) {
-        List<SancaiVolumeId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<SancaiVolumeId> orderedIdList = command == null ? null : command.orderedIds();
         SortablePrioritySwapSupport.sort(
                 orderedIdList,
                 repository.listVolumes(SortDirection.ASC),
@@ -242,7 +241,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortEntries(SancaiEntrySortCommand command) {
-        List<SancaiEntryId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<SancaiEntryId> orderedIdList = command == null ? null : command.orderedIds();
         List<SancaiEntry> entries = repository.listEntries(SortDirection.ASC);
         entries.forEach(entry -> requireWritable(entry.getId(), ClassicsPublicationWriteOperation.EDIT));
         SortablePrioritySwapSupport.sort(
@@ -257,7 +256,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     public SancaiEntry getEntry(SancaiEntryId id) {
-        return id == null ? null : repository.getEntryById(id);
+        return id == null ? null : repository.getByEntryId(id);
     }
 
     @Override
@@ -277,30 +276,30 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     @Override
-    public PageResult<SancaiEntry> pageEntries(SancaiEntryQuery query, PageQuery page) {
-        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+    public PageResult<SancaiEntry> page(SancaiEntryQuery query, PageQuery page) {
+        if (hasPermissionContext(query) && !canView(query.operatorPermissions())) {
             return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
         }
-        return repository.pageEntries(
-                query == null ? null : SancaiCategoryIdCodec.toDomain(query.getCategoryId()),
-                query == null ? null : SancaiVolumeIdCodec.toDomain(query.getVolumeId()),
-                query == null ? null : query.getKeyword(),
-                query == null || query.getLifecycleStatus() == null
+        return repository.page(
+                query == null ? null : SancaiCategoryIdCodec.toDomain(query.categoryId()),
+                query == null ? null : SancaiVolumeIdCodec.toDomain(query.volumeId()),
+                query == null ? null : query.keyword(),
+                query == null || query.lifecycleStatus() == null
                         ? null
-                        : query.getLifecycleStatus().value(),
-                query == null || query.getTranslationStatus() == null
+                        : query.lifecycleStatus().value(),
+                query == null || query.translationStatus() == null
                         ? null
-                        : query.getTranslationStatus().value(),
-                query == null || query.getImageStatus() == null
+                        : query.translationStatus().value(),
+                query == null || query.imageStatus() == null
                         ? null
-                        : query.getImageStatus().value(),
-                query == null || query.getVisualAssetStatus() == null
+                        : query.imageStatus().value(),
+                query == null || query.visualAssetStatus() == null
                         ? null
-                        : query.getVisualAssetStatus().value(),
-                query == null || query.getRefinementStatus() == null
+                        : query.visualAssetStatus().value(),
+                query == null || query.refinementStatus() == null
                         ? null
-                        : query.getRefinementStatus().value(),
-                query == null ? SortDirection.ASC : query.getSortDirection(),
+                        : query.refinementStatus().value(),
+                query == null ? SortDirection.ASC : query.sortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
     }
@@ -312,9 +311,9 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         var candidatePage = discoverySearchPublicationFacade.pageReadyCandidates(
                 DiscoverySearchPublicationCandidatePageFacadeRequest.builder()
                         .contentType(ClassicsContentType.SANCAI_ENTRY.value())
-                        .categoryId(stringValue(query == null ? null : query.getCategoryId()))
-                        .volumeId(stringValue(query == null ? null : query.getVolumeId()))
-                        .keyword(query == null ? null : query.getKeyword())
+                        .categoryId(stringValue(query == null ? null : query.categoryId()))
+                        .volumeId(stringValue(query == null ? null : query.volumeId()))
+                        .keyword(query == null ? null : query.keyword())
                         .pageNo(pageNo)
                         .pageSize(pageSize)
                         .build());
@@ -326,7 +325,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
                         .map(SancaiEntryIdCodec::toDomain)
                         .toList();
         Map<Long, SancaiEntry> entryById = new LinkedHashMap<>();
-        repository.listEntriesByIds(ids).forEach(entry -> {
+        repository.listEntriesByIdList(ids).forEach(entry -> {
             Long idValue = SancaiEntryIdCodec.toValue(entry.getId());
             if (idValue != null) {
                 entryById.put(idValue, entry);
@@ -342,29 +341,29 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     public List<SancaiEntry> listEntries(SancaiEntryQuery query) {
-        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+        if (hasPermissionContext(query) && !canView(query.operatorPermissions())) {
             return List.of();
         }
         return repository.listEntries(
-                query == null ? null : SancaiCategoryIdCodec.toDomain(query.getCategoryId()),
-                query == null ? null : SancaiVolumeIdCodec.toDomain(query.getVolumeId()),
-                query == null ? null : query.getKeyword(),
-                query == null || query.getLifecycleStatus() == null
+                query == null ? null : SancaiCategoryIdCodec.toDomain(query.categoryId()),
+                query == null ? null : SancaiVolumeIdCodec.toDomain(query.volumeId()),
+                query == null ? null : query.keyword(),
+                query == null || query.lifecycleStatus() == null
                         ? null
-                        : query.getLifecycleStatus().value(),
-                query == null || query.getTranslationStatus() == null
+                        : query.lifecycleStatus().value(),
+                query == null || query.translationStatus() == null
                         ? null
-                        : query.getTranslationStatus().value(),
-                query == null || query.getImageStatus() == null
+                        : query.translationStatus().value(),
+                query == null || query.imageStatus() == null
                         ? null
-                        : query.getImageStatus().value(),
-                query == null || query.getVisualAssetStatus() == null
+                        : query.imageStatus().value(),
+                query == null || query.visualAssetStatus() == null
                         ? null
-                        : query.getVisualAssetStatus().value(),
-                query == null || query.getRefinementStatus() == null
+                        : query.visualAssetStatus().value(),
+                query == null || query.refinementStatus() == null
                         ? null
-                        : query.getRefinementStatus().value(),
-                query == null ? SortDirection.ASC : query.getSortDirection());
+                        : query.refinementStatus().value(),
+                query == null ? SortDirection.ASC : query.sortDirection());
     }
 
     @Override
@@ -373,7 +372,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (command == null) {
             return null;
         }
-        requireExistingVolume(command.getVolumeId());
+        requireExistingVolume(command.volumeId());
         SancaiEntry entry = toEntry(command);
         entry.setPriority(repository.maxEntryPriority() + 1);
         entry.setContentUpdatedAt(Instant.now());
@@ -386,16 +385,16 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryId updateEntry(SancaiEntryCommand command) {
-        if (command == null || command.getId() == null) {
+        if (command == null || command.id() == null) {
             return null;
         }
-        SancaiEntryId currentEntryId = SancaiEntryIdCodec.toDomain(command.getId());
+        SancaiEntryId currentEntryId = SancaiEntryIdCodec.toDomain(command.id());
         requireWritable(currentEntryId, ClassicsPublicationWriteOperation.EDIT);
-        SancaiEntry currentEntry = repository.getEntryById(currentEntryId);
+        SancaiEntry currentEntry = repository.getByEntryId(currentEntryId);
         if (currentEntry == null) {
             throw new BizException("三才图会条目不存在");
         }
-        SancaiVolumeId targetVolumeId = requireExistingVolume(command.getVolumeId());
+        SancaiVolumeId targetVolumeId = requireExistingVolume(command.volumeId());
         SancaiEntry entry = toEntry(command);
         boolean volumeChanged = !sameVolumeId(currentEntry.getVolumeId(), targetVolumeId);
         entry.setPriority(volumeChanged ? repository.maxEntryPriority() + 1 : currentEntry.getPriority());
@@ -410,19 +409,19 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeEntryStatus(SancaiEntryStatusCommand command) {
-        if (command == null || command.getId() == null) {
+        if (command == null || command.id() == null) {
             return;
         }
-        if (hasPermissionContext(command.getOperatorPermissions()) && !canEdit(command.getOperatorPermissions())) {
+        if (hasPermissionContext(command.operatorPermissions()) && !canEdit(command.operatorPermissions())) {
             throw permissionDenied();
         }
-        SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command.getId());
+        SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command.id());
         requireWritable(entryId, ClassicsPublicationWriteOperation.EDIT);
-        SancaiEntry entry = repository.getEntryById(entryId);
+        SancaiEntry entry = repository.getByEntryId(entryId);
         if (entry == null) {
             return;
         }
-        SancaiEntryLifecycleStatus targetStatus = command.getLifecycleStatus();
+        SancaiEntryLifecycleStatus targetStatus = command.lifecycleStatus();
         SancaiEntryLifecycleStatus currentStatus = entry.getLifecycleStatus();
         validateLifecycleChange(currentStatus, targetStatus);
         entry.setLifecycleStatus(targetStatus);
@@ -434,14 +433,14 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteEntry(SancaiEntryId id) {
         prepareDeletion(id);
-        SancaiEntry entry = repository.getEntryById(id);
+        SancaiEntry entry = repository.getByEntryId(id);
         if (entry == null) {
             return;
         }
         entry.setContentUpdatedAt(Instant.now());
         contentApplicationService.ensureVersioned(
                 new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除"));
-        repository.deleteEntryById(id);
+        repository.deleteByEntryId(id);
     }
 
     private void requireWritable(SancaiEntryId id, ClassicsPublicationWriteOperation operation) {
@@ -489,7 +488,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     private static boolean hasPermissionContext(SancaiEntryQuery query) {
-        return query != null && hasPermissionContext(query.getOperatorPermissions());
+        return query != null && hasPermissionContext(query.operatorPermissions());
     }
 
     private static boolean hasPermissionContext(Set<String> operatorPermissions) {
@@ -578,17 +577,17 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     private SancaiVolume toNewVolume(SancaiVolumeCommand command) {
-        if (command == null || command.getCategoryId() == null || StringUtils.isBlank(command.getTitle())) {
+        if (command == null || command.categoryId() == null || StringUtils.isBlank(command.title())) {
             throw invalidVolume("categoryId/title");
         }
-        SancaiCategoryId categoryId = SancaiCategoryIdCodec.toDomain(command.getCategoryId());
-        if (repository.getCategoryById(categoryId) == null) {
+        SancaiCategoryId categoryId = SancaiCategoryIdCodec.toDomain(command.categoryId());
+        if (repository.getByCategoryId(categoryId) == null) {
             throw categoryNotFound();
         }
         SancaiVolume volume = new SancaiVolume();
         volume.setCategoryId(categoryId);
-        volume.setTitle(command.getTitle().trim());
-        volume.setVolumeType(command.getVolumeType());
+        volume.setTitle(command.title().trim());
+        volume.setVolumeType(command.volumeType());
         return volume;
     }
 
@@ -597,7 +596,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
             throw invalidVolume("volumeId");
         }
         SancaiVolumeId targetVolumeId = SancaiVolumeIdCodec.toDomain(volumeId);
-        if (repository.getVolumeById(targetVolumeId) == null) {
+        if (repository.getByVolumeId(targetVolumeId) == null) {
             throw volumeNotFound();
         }
         return targetVolumeId;
@@ -609,17 +608,17 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     private static SancaiEntry toEntry(SancaiEntryCommand command) {
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryIdCodec.toDomain(command.getId()));
-        entry.setVolumeId(SancaiVolumeIdCodec.toDomain(command.getVolumeId()));
-        entry.setTitle(command.getTitle());
-        entry.setOriginalText(command.getOriginalText());
-        entry.setTranslationText(command.getTranslationText());
-        entry.setSummary(command.getSummary());
-        entry.setLifecycleStatus(command.getLifecycleStatus());
-        entry.setTranslationStatus(command.getTranslationStatus());
-        entry.setImageStatus(command.getImageStatus());
-        entry.setVisualAssetStatus(command.getVisualAssetStatus());
-        entry.setRefinementStatus(command.getRefinementStatus());
+        entry.setId(SancaiEntryIdCodec.toDomain(command.id()));
+        entry.setVolumeId(SancaiVolumeIdCodec.toDomain(command.volumeId()));
+        entry.setTitle(command.title());
+        entry.setOriginalText(command.originalText());
+        entry.setTranslationText(command.translationText());
+        entry.setSummary(command.summary());
+        entry.setLifecycleStatus(command.lifecycleStatus());
+        entry.setTranslationStatus(command.translationStatus());
+        entry.setImageStatus(command.imageStatus());
+        entry.setVisualAssetStatus(command.visualAssetStatus());
+        entry.setRefinementStatus(command.refinementStatus());
         return entry;
     }
 

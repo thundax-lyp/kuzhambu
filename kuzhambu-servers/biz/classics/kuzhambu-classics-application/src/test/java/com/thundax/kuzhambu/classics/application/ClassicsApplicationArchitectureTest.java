@@ -57,136 +57,17 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.classics.application.facade.assembler.ClassicsFacadeAssembler",
-                        "com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationAssembler"));
+                        "com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationFacadeAssembler"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         SortableArchitectureRuleSupport.assertSortCommandsUseOrderedIdsOnly(Path.of("src/main/java"));
     }
 
     private static List<ArchitectureRuleAllowance> legacyApplicationServiceBoundaryAllowances() {
-        return List.of(
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationCleanupApplicationService.claimEs(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob, java.lang.String, java.time.Instant, java.time.Instant)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationCleanupApplicationService.claimFastGpt(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob, java.lang.String, java.time.Instant, java.time.Instant)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationCleanupApplicationService.qualify(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob, java.lang.String, boolean)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationCleanupApplicationService.fail(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob, java.lang.String, boolean, java.lang.String)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationCleanupApplicationService.complete(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob, java.lang.String, boolean)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                        + "ClassicsPublicationApplicationService.createBatch(java.util.List)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationExecutionApplicationService.releaseClaim(com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId, com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationExecutionApplicationService.claim(com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId, com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken, java.time.Instant, java.time.Instant)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationExecutionApplicationService.retry(com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId, com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken, java.time.Instant, java.lang.String, java.lang.String)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationExecutionApplicationService.fail(com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId, com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken, java.time.Instant, java.lang.String, java.lang.String)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationExecutionApplicationService.start(com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId, com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken, java.time.Instant, java.time.Instant)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.useImage(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.useVisualAsset(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.getImageContent(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.pageShowcases(java.lang.String, java.lang.String, java.lang.String, java.time.Instant, java.time.Instant, com.thundax.kuzhambu.common.core.page.PageQuery)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.applyFusionDescription(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId, java.lang.String)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.createGeneratedVisualAssetVersion(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId, com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.getVisualAssetSourceContent(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.updateVisualAsset(com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.pageShowcases(java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.getVisualAssetGeneratedContent(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.cleanup.service."
-                                + "ClassicsCleanupApplicationService.listTargets(java.lang.String, java.time.Instant, java.lang.Integer, java.lang.Integer)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.classics.application.cleanup.service."
-                        + "ClassicsCleanupApplicationService.executeTarget(java.lang.String, java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.report.service."
-                                + "ClassicsReportApplicationService.summary(java.time.Instant, java.time.Instant, java.lang.String)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationReconcileApplicationService.reconcileFailure(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationReconcileApplicationService.succeed(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob, java.time.Instant)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationSnapshotBindApplicationService.bind(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob, com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.search.service."
-                                + "ClassicsSearchContentApplicationService.getPublicContent(java.lang.String, java.lang.String)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.search.service."
-                                + "ClassicsSearchContentApplicationService.getWorkbenchContent(java.lang.String, java.lang.String)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.search.service."
-                                + "ClassicsSearchContentApplicationService.listWorkbenchContents(java.lang.String, java.lang.String)"),
-                publicationWorkflow(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
-                                + "ClassicsPublicationContentCommitApplicationService.commit(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob, com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken)"));
-    }
-
-    private static ArchitectureRuleAllowance publicationWorkflow(String key) {
-        return ArchitectureRuleAllowance.of(
-                key,
-                "Classics publication internal workflow service exposes entity/token/time parameters instead of a Command.",
-                "Move the workflow method behind support/executor semantics or introduce a dedicated publication Command object, then remove this allowance.");
+        return List.of();
     }
 
     private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {
-        return List.of(
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer#ContentTagCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer#ContentQaPairCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.SancaiPortalController#PageQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiContentAdminController#ContentQaPairSortCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiContentAdminController#ContentQaPairCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController#SancaiCategorySortCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController#SancaiVolumeSortCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController#SancaiEntrySortCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAssetAdminController#SancaiEntryImageUploadCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAssetAdminController#SancaiEntryImageSortCommand:1"));
+        return List.of();
     }
 
     private static ArchitectureRuleAllowance constructionViolation(String ownerAndType) {
@@ -198,12 +79,5 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
 
     private static List<ArchitectureRuleAllowance> legacyAssemblerNullReturnAllowances() {
         return List.of();
-    }
-
-    private static ArchitectureRuleAllowance rawParameters(String key) {
-        return ArchitectureRuleAllowance.of(
-                key,
-                "Classics ApplicationService method uses naked values, domain entities, collections, or scattered query parameters.",
-                "Introduce a dedicated Query/Command or strong domain value object for the method input, then remove this allowance.");
     }
 }

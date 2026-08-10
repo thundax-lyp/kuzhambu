@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationBatchCreateCommand;
 import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationCreateCommand;
 import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobQuery;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationCreateResult;
@@ -35,18 +36,19 @@ public class ClassicsPublicationApplicationServiceImpl implements ClassicsPublic
     }
 
     @Override
-    public List<ClassicsPublicationCreateResult> createBatch(List<ClassicsPublicationCreateCommand> commands) {
+    public List<ClassicsPublicationCreateResult> createBatch(ClassicsPublicationBatchCreateCommand command) {
+        List<ClassicsPublicationCreateCommand> commands = command == null ? null : command.commands();
         if (commands == null || commands.isEmpty()) {
             return List.of();
         }
         List<ClassicsPublicationCreateResult> results = new ArrayList<>(commands.size());
-        for (ClassicsPublicationCreateCommand command : commands) {
+        for (ClassicsPublicationCreateCommand item : commands) {
             try {
-                results.add(creationService.create(command));
+                results.add(creationService.create(item));
             } catch (BizException exception) {
                 results.add(ClassicsPublicationCreateResult.failure(
-                        command == null ? null : command.contentType(),
-                        command == null ? null : command.contentId(),
+                        item == null ? null : item.contentType(),
+                        item == null ? null : item.contentId(),
                         exception.getDefaultMessage()));
             }
         }

@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersion
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler.WangqiDocumentInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
@@ -93,8 +94,12 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "详情")
     @PostMapping("get")
     public WangqiDocumentResponse get(@Valid @RequestBody WangqiDocumentRequest request) {
-        return WangqiDocumentInterfaceAssembler.toResponse(
-                service.get(WangqiDocumentIdCodec.toDomain(request.getId())));
+        Long id = requireParameter(request == null ? null : request.getId(), "id");
+        WangqiDocument document = service.get(WangqiDocumentIdCodec.toDomain(id));
+        if (document == null) {
+            throw new BizException("王圻文档不存在");
+        }
+        return WangqiDocumentInterfaceAssembler.toResponse(document);
     }
 
     @Operation(summary = "查询王圻时间线", description = "classics:wangqi:view")

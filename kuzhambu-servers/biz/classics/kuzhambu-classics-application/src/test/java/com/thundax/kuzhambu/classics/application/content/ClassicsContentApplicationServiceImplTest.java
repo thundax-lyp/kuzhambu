@@ -1174,7 +1174,7 @@ class ClassicsContentApplicationServiceImplTest {
         private SancaiEntry restoredEntry;
 
         @Override
-        public SancaiEntry getEntryById(SancaiEntryId id) {
+        public SancaiEntry getByEntryId(SancaiEntryId id) {
             SancaiEntry entry = new SancaiEntry();
             entry.setId(id);
             entry.setLifecycleStatus(SancaiEntryLifecycleStatus.DRAFT);

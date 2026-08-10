@@ -1,7 +1,12 @@
 package com.thundax.kuzhambu.classics.application.facade.assembler;
 
+import com.thundax.kuzhambu.classics.application.cleanup.command.ClassicsCleanupExecuteCommand;
+import com.thundax.kuzhambu.classics.application.cleanup.query.ClassicsCleanupTargetsQuery;
 import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
+import com.thundax.kuzhambu.classics.application.report.query.ClassicsReportSummaryQuery;
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult;
+import com.thundax.kuzhambu.classics.application.search.query.ClassicsSearchContentQuery;
+import com.thundax.kuzhambu.classics.application.search.query.ClassicsWorkbenchContentQuery;
 import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -12,12 +17,15 @@ import com.thundax.kuzhambu.classics.facade.dto.ClassicsContentGrowthPointFacade
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsTopContentFacadeDto;
+import com.thundax.kuzhambu.classics.facade.request.ClassicsCleanupTargetsFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
@@ -26,10 +34,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class ClassicsFacadeAssembler {
 
-    public ClassicsSummaryFacadeResponse toFacadeResponse(ClassicsReportSummaryResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public ClassicsSummaryFacadeResponse toFacadeResponse(@NonNull ClassicsReportSummaryResult result) {
+        Objects.requireNonNull(result, "result");
         return ClassicsSummaryFacadeResponse.builder()
                 .periodStart(result.getPeriodStart())
                 .periodEnd(result.getPeriodEnd())
@@ -42,34 +49,94 @@ public class ClassicsFacadeAssembler {
                 .build();
     }
 
+    @NonNull
     public ClassicsPublicContentsFacadeResponse toPublicContentsFacadeResponse(
-            List<ClassicsSearchSourceContent> contents) {
+            @NonNull List<ClassicsSearchSourceContent> contents) {
+        Objects.requireNonNull(contents, "contents");
         return ClassicsPublicContentsFacadeResponse.builder()
                 .contents(toPublicContentFacadeDtos(contents))
                 .build();
     }
 
-    public ClassicsPublicContentFacadeResponse toPublicContentFacadeResponse(ClassicsSearchSourceContent content) {
+    @NonNull
+    public ClassicsPublicContentFacadeResponse toPublicContentFacadeResponse(
+            @NonNull ClassicsSearchSourceContent content) {
+        Objects.requireNonNull(content, "content");
         return ClassicsPublicContentFacadeResponse.builder()
                 .content(toPublicContentFacadeDto(content))
                 .build();
     }
 
-    public ClassicsQaKnowledgeFacadeResponse toQaKnowledgeFacadeResponse(ClassicsQaKnowledgeFacadeDto knowledge) {
+    @NonNull
+    public ClassicsQaKnowledgeFacadeResponse toQaKnowledgeFacadeResponse(
+            @NonNull ClassicsQaKnowledgeFacadeDto knowledge) {
+        Objects.requireNonNull(knowledge, "knowledge");
         return ClassicsQaKnowledgeFacadeResponse.builder().knowledge(knowledge).build();
     }
 
+    @NonNull
+    public ClassicsReportSummaryQuery toReportSummaryQuery(@NonNull ClassicsSummaryFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new ClassicsReportSummaryQuery(
+                request.getPeriodStart(), request.getPeriodEnd(), request.getBucketType());
+    }
+
+    @NonNull
+    public ClassicsSearchContentQuery toSearchContentQuery(@NonNull String contentType, @NonNull String contentId) {
+        Objects.requireNonNull(contentType, "contentType");
+        Objects.requireNonNull(contentId, "contentId");
+        return new ClassicsSearchContentQuery(contentType, contentId);
+    }
+
+    @NonNull
+    public ClassicsWorkbenchContentQuery toWorkbenchContentQuery(
+            @NonNull String categoryCode, @NonNull String volumeCode) {
+        Objects.requireNonNull(categoryCode, "categoryCode");
+        Objects.requireNonNull(volumeCode, "volumeCode");
+        return new ClassicsWorkbenchContentQuery(categoryCode, volumeCode);
+    }
+
+    @NonNull
+    public ClassicsCleanupTargetsQuery toCleanupTargetsQuery(@NonNull ClassicsCleanupTargetsFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new ClassicsCleanupTargetsQuery(
+                normalizeCleanupType(request.getCleanupType()),
+                request.getRequestedAt(),
+                request.getRetentionDays(),
+                request.getLimit());
+    }
+
+    private String normalizeCleanupType(String cleanupType) {
+        return cleanupType == null ? null : cleanupType.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private static String normalizeOptionalText(String value) {
+        return value.isBlank() ? null : value;
+    }
+
+    @NonNull
+    public ClassicsCleanupExecuteCommand toCleanupExecuteCommand(@NonNull String cleanupType, @NonNull Long targetId) {
+        Objects.requireNonNull(cleanupType, "cleanupType");
+        Objects.requireNonNull(targetId, "targetId");
+        return new ClassicsCleanupExecuteCommand(cleanupType, targetId);
+    }
+
+    @NonNull
     public ClassicsQaKnowledgeFacadeDto toQaKnowledgeFacadeDto(
-            ClassicsSearchSourceContent sourceContent,
-            String originalText,
-            String translationText,
-            String body,
-            String originalExcerpts,
-            List<ClassicsContentTag> tags,
-            List<ClassicsContentQaPair> qaPairs) {
-        if (sourceContent == null) {
-            return null;
-        }
+            @NonNull ClassicsSearchSourceContent sourceContent,
+            @NonNull String originalText,
+            @NonNull String translationText,
+            @NonNull String body,
+            @NonNull String originalExcerpts,
+            @NonNull List<ClassicsContentTag> tags,
+            @NonNull List<ClassicsContentQaPair> qaPairs) {
+        Objects.requireNonNull(sourceContent, "sourceContent");
+        Objects.requireNonNull(originalText, "originalText");
+        Objects.requireNonNull(translationText, "translationText");
+        Objects.requireNonNull(body, "body");
+        Objects.requireNonNull(originalExcerpts, "originalExcerpts");
+        Objects.requireNonNull(tags, "tags");
+        Objects.requireNonNull(qaPairs, "qaPairs");
         return ClassicsQaKnowledgeFacadeDto.builder()
                 .sourceId(sourceContent.getContentType() + ":" + sourceContent.getContentId())
                 .contentType(sourceContent.getContentType())
@@ -84,10 +151,10 @@ public class ClassicsFacadeAssembler {
                 .title(sourceContent.getTitle())
                 .categoryPath(sourceContent.getCategoryName())
                 .summary(sourceContent.getSummary())
-                .body(body)
-                .originalText(originalText)
-                .translationText(translationText)
-                .originalExcerpts(originalExcerpts)
+                .body(normalizeOptionalText(body))
+                .originalText(normalizeOptionalText(originalText))
+                .translationText(normalizeOptionalText(translationText))
+                .originalExcerpts(normalizeOptionalText(originalExcerpts))
                 .tags(toTagNames(tags))
                 .qaPairs(toQaPairs(qaPairs))
                 .build();

@@ -1,15 +1,26 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
@@ -23,14 +34,21 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response.ClassicsContentResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiCategoryRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiCategorySortRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiContentRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiContentSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryPageRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntrySortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiVolumeRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiVolumeSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiCategoryResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryVersionResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiVolumeResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.DictResponse;
 import java.util.List;
 import java.util.Objects;
@@ -48,25 +66,30 @@ public final class SancaiInterfaceAssembler {
         return ClassicsContentInterfaceAssembler.toObjectQuery(contentType, contentId);
     }
 
-    public static SancaiEntryQuery toQuery(SancaiEntryPageRequest request) {
-        SancaiEntryQuery query = new SancaiEntryQuery();
-        query.setCategoryId(request.getCategoryId());
-        query.setVolumeId(request.getVolumeId());
-        query.setKeyword(request.getKeyword());
-        query.setLifecycleStatus(fromLifecycle(request.getLifecycleStatus()));
-        query.setTranslationStatus(fromTranslation(request.getTranslationStatus()));
-        query.setImageStatus(fromImage(request.getImageStatus()));
-        query.setVisualAssetStatus(fromVisualAsset(request.getVisualAssetStatus()));
-        query.setRefinementStatus(fromRefinement(request.getRefinementStatus()));
-        query.setSortDirection(
+    @NonNull
+    public static SancaiEntryQuery toQuery(
+            @NonNull SancaiEntryPageRequest request, @NonNull Set<String> operatorPermissions) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(operatorPermissions, "operatorPermissions");
+        return new SancaiEntryQuery(
+                request.getCategoryId(),
+                request.getVolumeId(),
+                request.getKeyword(),
+                fromLifecycle(request.getLifecycleStatus()),
+                fromTranslation(request.getTranslationStatus()),
+                fromImage(request.getImageStatus()),
+                fromVisualAsset(request.getVisualAssetStatus()),
+                fromRefinement(request.getRefinementStatus()),
                 StringUtils.isBlank(request.getSortDirection())
                         ? SortDirection.ASC
                         : SortDirection.valueOf(
-                                request.getSortDirection().trim().toUpperCase()));
-        return query;
+                                request.getSortDirection().trim().toUpperCase()),
+                operatorPermissions);
     }
 
-    public static SancaiEntryCommand toCommand(SancaiEntryRequest request) {
+    @NonNull
+    public static SancaiEntryCommand toCommand(@NonNull SancaiEntryRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiEntryCommand(
                 request.getId(),
                 request.getVolumeId(),
@@ -81,20 +104,48 @@ public final class SancaiInterfaceAssembler {
                 fromRefinement(request.getRefinementStatus()));
     }
 
+    @NonNull
     public static SancaiEntryStatusCommand toStatusCommand(
-            SancaiEntryRequest request, Set<String> operatorPermissions) {
+            @NonNull SancaiEntryRequest request, @NonNull Set<String> operatorPermissions) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(operatorPermissions, "operatorPermissions");
         return new SancaiEntryStatusCommand(
-                request == null ? null : request.getId(),
-                fromLifecycle(request == null ? null : request.getLifecycleStatus()),
-                operatorPermissions);
+                request.getId(), fromLifecycle(request.getLifecycleStatus()), operatorPermissions);
     }
 
-    public static SancaiCategoryCommand toCommand(SancaiCategoryRequest request) {
+    @NonNull
+    public static ContentQaPairCommand toContentQaPairCommand(@NonNull SancaiContentRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new ContentQaPairCommand(
+                request.getId(),
+                ClassicsContentType.SANCAI_ENTRY,
+                request.getEntryId(),
+                request.getQuestion(),
+                request.getAnswer(),
+                StringUtils.isBlank(request.getSource())
+                        ? ClassicsContentSource.MANUAL
+                        : ClassicsContentSource.from(request.getSource()));
+    }
+
+    @NonNull
+    public static ContentQaPairSortCommand toContentQaPairSortCommand(@NonNull SancaiContentSortRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new ContentQaPairSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
+                ClassicsContentQaPairIdCodec::toDomain));
+    }
+
+    @NonNull
+    public static SancaiCategoryCommand toCommand(@NonNull SancaiCategoryRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiCategoryCommand(
                 request.getId(), request.getTitle(), fromCategoryType(request.getCategoryType()), null);
     }
 
-    public static SancaiVolumeCommand toCommand(SancaiVolumeRequest request) {
+    @NonNull
+    public static SancaiVolumeCommand toCommand(@NonNull SancaiVolumeRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiVolumeCommand(
                 request.getId(),
                 request.getCategoryId(),
@@ -103,31 +154,63 @@ public final class SancaiInterfaceAssembler {
                 null);
     }
 
+    @NonNull
+    public static SancaiCategorySortCommand toSortCommand(@NonNull SancaiCategorySortRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new SancaiCategorySortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
+                SancaiCategoryIdCodec::toDomain));
+    }
+
+    @NonNull
+    public static SancaiVolumeSortCommand toSortCommand(@NonNull SancaiVolumeSortRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new SancaiVolumeSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
+                SancaiVolumeIdCodec::toDomain));
+    }
+
+    @NonNull
+    public static SancaiEntrySortCommand toSortCommand(@NonNull SancaiEntrySortRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new SancaiEntrySortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
+                SancaiEntryIdCodec::toDomain));
+    }
+
+    @NonNull
     public static List<DictResponse> toCategoryTypes() {
         return List.of(
                 dict("SANCAI_CATEGORY_TYPE", SancaiCategoryType.FORMAL.value(), "正式门类"),
                 dict("SANCAI_CATEGORY_TYPE", SancaiCategoryType.AUXILIARY.value(), "辅助内容"));
     }
 
+    @NonNull
     public static List<DictResponse> toVolumeTypes() {
         return List.of(
                 dict("SANCAI_VOLUME_TYPE", SancaiVolumeType.MAIN.value(), "正式卷目"),
                 dict("SANCAI_VOLUME_TYPE", SancaiVolumeType.AUXILIARY.value(), "辅助卷目"));
     }
 
-    public static SancaiEntryResponse toResponse(SancaiEntry entity) {
+    @NonNull
+    public static SancaiEntryResponse toResponse(@NonNull SancaiEntry entity) {
+        Objects.requireNonNull(entity, "entity");
         return toResponse(entity, List.of());
     }
 
-    public static SancaiEntryResponse toResponse(SancaiEntry entity, List<ClassicsContentTag> tags) {
+    @NonNull
+    public static SancaiEntryResponse toResponse(@NonNull SancaiEntry entity, @NonNull List<ClassicsContentTag> tags) {
+        Objects.requireNonNull(entity, "entity");
+        Objects.requireNonNull(tags, "tags");
         if (entity == null) {
             return SancaiEntryResponse.builder().build();
         }
-        List<ClassicsContentResponse> tagResponses = tags == null
-                ? List.of()
-                : tags.stream()
-                        .map(ClassicsContentInterfaceAssembler::toTagResponse)
-                        .toList();
+        List<ClassicsContentResponse> tagResponses = tags.stream()
+                .map(ClassicsContentInterfaceAssembler::toTagResponse)
+                .toList();
         return SancaiEntryResponse.builder()
                 .id(entity.getId() == null ? null : entity.getId().value())
                 .volumeId(
@@ -157,7 +240,9 @@ public final class SancaiInterfaceAssembler {
                 .build();
     }
 
-    public static SancaiEntryVersionResponse toVersionResponse(ClassicsContentVersion version) {
+    @NonNull
+    public static SancaiEntryVersionResponse toVersionResponse(@NonNull ClassicsContentVersion version) {
+        Objects.requireNonNull(version, "version");
         return version == null
                 ? SancaiEntryVersionResponse.builder().build()
                 : SancaiEntryVersionResponse.builder()
@@ -178,7 +263,9 @@ public final class SancaiInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiCategoryResponse toResponse(SancaiCategory entity) {
+    @NonNull
+    public static SancaiCategoryResponse toResponse(@NonNull SancaiCategory entity) {
+        Objects.requireNonNull(entity, "entity");
         if (entity == null) {
             return SancaiCategoryResponse.builder().build();
         }
@@ -189,7 +276,9 @@ public final class SancaiInterfaceAssembler {
                 .build();
     }
 
-    public static SancaiVolumeResponse toResponse(SancaiVolume entity) {
+    @NonNull
+    public static SancaiVolumeResponse toResponse(@NonNull SancaiVolume entity) {
+        Objects.requireNonNull(entity, "entity");
         if (entity == null) {
             return SancaiVolumeResponse.builder().build();
         }

@@ -1,12 +1,20 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler;
 
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageUseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetUseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiImageContentQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiVisualAssetContentQuery;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiShowcaseJobResult;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
@@ -17,17 +25,28 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseSta
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiAssetRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryImageSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.request.RequestListHelper;
+import java.io.IOException;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
+import org.springframework.web.multipart.MultipartFile;
 
 public final class SancaiAssetInterfaceAssembler {
     private SancaiAssetInterfaceAssembler() {}
 
-    public static SancaiDraftCommand toDraftCommand(SancaiAssetRequest request) {
+    @NonNull
+    public static SancaiDraftCommand toDraftCommand(@NonNull SancaiAssetRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiDraftCommand(request.getEntryId(), null, request.getDraftJson());
     }
 
-    public static SancaiImageCommand toImageCommand(SancaiAssetRequest request) {
+    @NonNull
+    public static SancaiImageCommand toImageCommand(@NonNull SancaiAssetRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiImageCommand(
                 request.getId(),
                 request.getEntryId(),
@@ -37,45 +56,115 @@ public final class SancaiAssetInterfaceAssembler {
                 Boolean.TRUE.equals(request.getCurrentUsed()));
     }
 
-    public static SancaiShowcaseCommand toShowcaseCommand(SancaiAssetRequest request) {
-        SancaiShowcaseCommand command = new SancaiShowcaseCommand();
-        command.setStatus(
+    @NonNull
+    public static SancaiShowcaseCommand toShowcaseCommand(@NonNull SancaiAssetRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new SancaiShowcaseCommand(
+                null,
                 StringUtils.isBlank(request.getStatus())
                         ? SancaiShowcaseStatus.REQUESTED
-                        : SancaiShowcaseStatus.from(request.getStatus()));
-        command.setScopeJson(request.getScopeJson());
-        command.setScopeTitle(request.getScopeTitle());
-        command.setEntryCount(request.getEntryCount() == null ? 0 : request.getEntryCount());
-        command.setVisibilityRiskStatus(
+                        : SancaiShowcaseStatus.from(request.getStatus()),
+                request.getScopeJson(),
+                request.getScopeTitle(),
+                null,
+                request.getEntryCount() == null ? 0 : request.getEntryCount(),
                 StringUtils.isBlank(request.getVisibilityRiskStatus())
                         ? null
-                        : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()));
-        command.setPrivateConfirmed(Boolean.TRUE.equals(request.getPrivateConfirmed()));
-        return command;
+                        : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()),
+                Boolean.TRUE.equals(request.getPrivateConfirmed()));
     }
 
-    public static SancaiVisualAsset toVisualAsset(SancaiAssetRequest request) {
-        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
-        visualAsset.setId(SancaiVisualAssetIdCodec.toDomain(request.getVisualAssetId()));
-        visualAsset.setEntryId(SancaiEntryIdCodec.toDomain(request.getEntryId()));
-        visualAsset.setVersionNo(request.getVersionNo() == null ? 0 : request.getVersionNo());
-        visualAsset.setStatus(
-                StringUtils.isBlank(request.getStatus()) ? null : SancaiVisualAssetStatus.from(request.getStatus()));
-        visualAsset.setSourceImageStorageObjectId(
-                StorageObjectIdCodec.toDomain(request.getSourceImageStorageObjectId()));
-        visualAsset.setGeneratedImageStorageObjectId(
-                StorageObjectIdCodec.toDomain(request.getGeneratedImageStorageObjectId()));
-        visualAsset.setCurrentUsed(Boolean.TRUE.equals(request.getCurrentUsed()));
-        visualAsset.setTextWeight(request.getTextWeight());
-        visualAsset.setImageWeight(request.getImageWeight());
-        visualAsset.setImageAnalysisMarkdown(request.getImageAnalysisMarkdown());
-        visualAsset.setFusionDescription(request.getFusionDescription());
-        visualAsset.setVisualDescription(request.getVisualDescription());
-        visualAsset.setGenerationParamsJson(request.getGenerationParamsJson());
-        return visualAsset;
+    @NonNull
+    public static SancaiEntryImageUploadCommand toImageUploadCommand(
+            @NonNull Long entryId,
+            @NonNull MultipartFile file,
+            @NonNull String title,
+            @NonNull String imageType,
+            @NonNull Boolean currentUsed,
+            @NonNull Long replaceImageId)
+            throws IOException {
+        Objects.requireNonNull(entryId, "entryId");
+        Objects.requireNonNull(file, "file");
+        Objects.requireNonNull(title, "title");
+        Objects.requireNonNull(imageType, "imageType");
+        Objects.requireNonNull(currentUsed, "currentUsed");
+        Objects.requireNonNull(replaceImageId, "replaceImageId");
+        Long normalizedReplaceImageId = Long.valueOf(-1L).equals(replaceImageId) ? null : replaceImageId;
+        return new SancaiEntryImageUploadCommand(
+                entryId,
+                file.getInputStream(),
+                file.getOriginalFilename(),
+                file.getContentType(),
+                file.getSize(),
+                title,
+                StringUtils.isBlank(imageType) ? null : SancaiEntryImageType.from(imageType),
+                Boolean.TRUE.equals(currentUsed),
+                normalizedReplaceImageId);
     }
 
-    public static SancaiAssetResponse toImageResponse(SancaiEntryImage image) {
+    @NonNull
+    public static SancaiEntryImageSortCommand toImageSortCommand(@NonNull SancaiEntryImageSortRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new SancaiEntryImageSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
+                SancaiEntryImageIdCodec::toDomain));
+    }
+
+    @NonNull
+    public static SancaiImageUseCommand toImageUseCommand(@NonNull SancaiAssetRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new SancaiImageUseCommand(
+                SancaiEntryIdCodec.toDomain(request.getEntryId()), SancaiEntryImageIdCodec.toDomain(request.getId()));
+    }
+
+    @NonNull
+    public static SancaiImageContentQuery toImageContentQuery(@NonNull Long entryId, @NonNull Long imageId) {
+        Objects.requireNonNull(entryId, "entryId");
+        Objects.requireNonNull(imageId, "imageId");
+        return new SancaiImageContentQuery(
+                SancaiEntryIdCodec.toDomain(entryId), SancaiEntryImageIdCodec.toDomain(imageId));
+    }
+
+    @NonNull
+    public static SancaiVisualAssetCommand toVisualAssetCommand(@NonNull SancaiAssetRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new SancaiVisualAssetCommand(
+                SancaiVisualAssetIdCodec.toDomain(request.getVisualAssetId()),
+                SancaiEntryIdCodec.toDomain(request.getEntryId()),
+                request.getVersionNo() == null ? 0 : request.getVersionNo(),
+                StringUtils.isBlank(request.getStatus()) ? null : SancaiVisualAssetStatus.from(request.getStatus()),
+                StorageObjectIdCodec.toDomain(request.getSourceImageStorageObjectId()),
+                StorageObjectIdCodec.toDomain(request.getGeneratedImageStorageObjectId()),
+                Boolean.TRUE.equals(request.getCurrentUsed()),
+                request.getTextWeight(),
+                request.getImageWeight(),
+                request.getImageAnalysisMarkdown(),
+                request.getFusionDescription(),
+                request.getVisualDescription(),
+                request.getGenerationParamsJson());
+    }
+
+    @NonNull
+    public static SancaiVisualAssetUseCommand toVisualAssetUseCommand(@NonNull SancaiAssetRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new SancaiVisualAssetUseCommand(
+                SancaiEntryIdCodec.toDomain(request.getEntryId()),
+                SancaiVisualAssetIdCodec.toDomain(request.getVisualAssetId()));
+    }
+
+    @NonNull
+    public static SancaiVisualAssetContentQuery toVisualAssetContentQuery(
+            @NonNull Long entryId, @NonNull Long visualAssetId) {
+        Objects.requireNonNull(entryId, "entryId");
+        Objects.requireNonNull(visualAssetId, "visualAssetId");
+        return new SancaiVisualAssetContentQuery(
+                SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId));
+    }
+
+    @NonNull
+    public static SancaiAssetResponse toImageResponse(@NonNull SancaiEntryImage image) {
+        Objects.requireNonNull(image, "image");
         return image == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
@@ -97,7 +186,9 @@ public final class SancaiAssetInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiAssetResponse toImageResourceResponse(SancaiEntryImageResource resource) {
+    @NonNull
+    public static SancaiAssetResponse toImageResourceResponse(@NonNull SancaiEntryImageResource resource) {
+        Objects.requireNonNull(resource, "resource");
         return resource == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
@@ -112,7 +203,9 @@ public final class SancaiAssetInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiAssetResponse toDraftResponse(SancaiEntryDraft draft) {
+    @NonNull
+    public static SancaiAssetResponse toDraftResponse(@NonNull SancaiEntryDraft draft) {
+        Objects.requireNonNull(draft, "draft");
         return draft == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
@@ -125,7 +218,9 @@ public final class SancaiAssetInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiAssetResponse toVisualAssetResponse(SancaiVisualAsset visualAsset) {
+    @NonNull
+    public static SancaiAssetResponse toVisualAssetResponse(@NonNull SancaiVisualAsset visualAsset) {
+        Objects.requireNonNull(visualAsset, "visualAsset");
         Long sourceStorageObjectId = visualAsset == null || visualAsset.getSourceImageStorageObjectId() == null
                 ? null
                 : visualAsset.getSourceImageStorageObjectId().value();
@@ -169,7 +264,9 @@ public final class SancaiAssetInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiAssetResponse toShowcaseResponse(SancaiShowcase showcase) {
+    @NonNull
+    public static SancaiAssetResponse toShowcaseResponse(@NonNull SancaiShowcase showcase) {
+        Objects.requireNonNull(showcase, "showcase");
         Long showcaseId = showcase == null || showcase.getId() == null
                 ? null
                 : showcase.getId().value();
@@ -208,7 +305,9 @@ public final class SancaiAssetInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiAssetResponse toShowcaseJobResponse(SancaiShowcaseJobResult result) {
+    @NonNull
+    public static SancaiAssetResponse toShowcaseJobResponse(@NonNull SancaiShowcaseJobResult result) {
+        Objects.requireNonNull(result, "result");
         Long showcaseId = result == null || result.getShowcaseId() == null
                 ? null
                 : result.getShowcaseId().value();

@@ -7,8 +7,6 @@ import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicatio
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
-import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
-import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
@@ -18,7 +16,6 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.respons
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.response.SancaiPortalEntryResponse;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.response.SancaiPortalVolumeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -91,17 +88,14 @@ public class SancaiPortalController {
 
     @Operation(summary = "分页查询三才图会门户公开条目", description = "公开访问")
     @PostMapping("entries/page")
-    public PageResponse<SancaiPortalEntryResponse> pageEntries(
-            @Valid @RequestBody SancaiPortalEntrySearchRequest request) {
+    public PageResponse<SancaiPortalEntryResponse> page(@Valid @RequestBody SancaiPortalEntrySearchRequest request) {
         SancaiPortalEntrySearchRequest effectiveRequest =
                 request == null ? new SancaiPortalEntrySearchRequest() : request;
         effectiveRequest.setKeyword(SancaiPortalInterfaceAssembler.normalizeKeyword(effectiveRequest.getKeyword()));
         return PageResponseHelper.fromPageResult(
                 service.pagePortalReadyEntries(
                         SancaiPortalInterfaceAssembler.toPublicQuery(effectiveRequest),
-                        new PageQuery(
-                                SancaiPortalInterfaceAssembler.pageNo(effectiveRequest.getPageNo()),
-                                SancaiPortalInterfaceAssembler.pageSize(effectiveRequest.getPageSize()))),
+                        SancaiPortalInterfaceAssembler.toPageQuery(effectiveRequest)),
                 SancaiPortalInterfaceAssembler::toResponse);
     }
 
@@ -131,8 +125,8 @@ public class SancaiPortalController {
         requirePublicEntry(SancaiEntryIdCodec.toDomain(entryId));
         SancaiEntryImageContent imageContent;
         try {
-            imageContent = assetService.getImageContent(
-                    SancaiEntryIdCodec.toDomain(entryId), SancaiEntryImageIdCodec.toDomain(imageId));
+            imageContent =
+                    assetService.getImageContent(SancaiPortalInterfaceAssembler.toImageContentQuery(entryId, imageId));
         } catch (BizException exception) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -183,9 +177,9 @@ public class SancaiPortalController {
         try {
             content = sourceContent
                     ? assetService.getVisualAssetSourceContent(
-                            SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId))
+                            SancaiPortalInterfaceAssembler.toVisualAssetContentQuery(entryId, visualAssetId))
                     : assetService.getVisualAssetGeneratedContent(
-                            SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId));
+                            SancaiPortalInterfaceAssembler.toVisualAssetContentQuery(entryId, visualAssetId));
         } catch (BizException exception) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;

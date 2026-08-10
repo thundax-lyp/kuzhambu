@@ -1,11 +1,10 @@
 package com.thundax.kuzhambu.classics.application.publication.service;
 
-import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
-import java.time.Instant;
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 
 public interface ClassicsPublicationReconcileApplicationService {
 
-    boolean succeed(ClassicsPublicationJob job, Instant finishedAt);
+    boolean succeed(ClassicsPublicationWorkflowCommand command);
 
-    boolean reconcileFailure(ClassicsPublicationJob job);
+    boolean reconcileFailure(ClassicsPublicationWorkflowCommand command);
 }

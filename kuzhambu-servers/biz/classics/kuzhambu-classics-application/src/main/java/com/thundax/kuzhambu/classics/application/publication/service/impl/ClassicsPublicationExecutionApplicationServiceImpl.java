@@ -1,11 +1,9 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationExecutionApplicationService;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
-import java.time.Instant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,52 +18,50 @@ public class ClassicsPublicationExecutionApplicationServiceImpl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean claim(
-            ClassicsPublicationJobId jobId,
-            ClassicsPublicationExecutionToken token,
-            Instant now,
-            Instant dispatchExpiresAt) {
-        return jobRepository.claimExecution(jobId, token, now, dispatchExpiresAt) == 1;
+    public boolean claim(ClassicsPublicationWorkflowCommand command) {
+        return jobRepository.claimExecution(
+                        command.jobId(), command.executionToken(), command.occurredAt(), command.expiresAt())
+                == 1;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ClassicsPublicationJob start(
-            ClassicsPublicationJobId jobId,
-            ClassicsPublicationExecutionToken token,
-            Instant startedAt,
-            Instant sliceExpiresAt) {
-        if (jobRepository.markThreadStarted(jobId, token, startedAt, sliceExpiresAt) != 1) {
+    public ClassicsPublicationJob start(ClassicsPublicationWorkflowCommand command) {
+        if (jobRepository.markThreadStarted(
+                        command.jobId(), command.executionToken(), command.occurredAt(), command.expiresAt())
+                != 1) {
             return null;
         }
-        return jobRepository.getById(jobId);
+        return jobRepository.getById(command.jobId());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean releaseClaim(ClassicsPublicationJobId jobId, ClassicsPublicationExecutionToken token) {
-        return jobRepository.releaseExecutionClaim(jobId, token) == 1;
+    public boolean releaseClaim(ClassicsPublicationWorkflowCommand command) {
+        return jobRepository.releaseExecutionClaim(command.jobId(), command.executionToken()) == 1;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean retry(
-            ClassicsPublicationJobId jobId,
-            ClassicsPublicationExecutionToken token,
-            Instant nextRetryAt,
-            String failureReason,
-            String detailJson) {
-        return jobRepository.releaseForRetry(jobId, token, nextRetryAt, failureReason, detailJson) == 1;
+    public boolean retry(ClassicsPublicationWorkflowCommand command) {
+        return jobRepository.releaseForRetry(
+                        command.jobId(),
+                        command.executionToken(),
+                        command.occurredAt(),
+                        command.failureReason(),
+                        command.detailJson())
+                == 1;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean fail(
-            ClassicsPublicationJobId jobId,
-            ClassicsPublicationExecutionToken token,
-            Instant finishedAt,
-            String failureReason,
-            String detailJson) {
-        return jobRepository.markTerminalFailure(jobId, token, finishedAt, failureReason, detailJson) == 1;
+    public boolean fail(ClassicsPublicationWorkflowCommand command) {
+        return jobRepository.markTerminalFailure(
+                        command.jobId(),
+                        command.executionToken(),
+                        command.occurredAt(),
+                        command.failureReason(),
+                        command.detailJson())
+                == 1;
     }
 }

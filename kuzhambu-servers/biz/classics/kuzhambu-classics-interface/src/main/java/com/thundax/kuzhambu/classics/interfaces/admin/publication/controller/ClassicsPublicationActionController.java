@@ -165,6 +165,6 @@ public class ClassicsPublicationActionController {
             ClassicsContentType contentType,
             ClassicsPublicationJobType jobType) {
         return ClassicsPublicationInterfaceAssembler.toBatchResponse(publicationService.createBatch(
-                ClassicsPublicationInterfaceAssembler.toCommands(request, contentType, jobType)));
+                ClassicsPublicationInterfaceAssembler.toBatchCreateCommand(request, contentType, jobType)));
     }
 }

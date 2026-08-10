@@ -19,15 +19,15 @@ public interface SancaiAssetRepository {
 
     SancaiEntryDraftId insertDraft(SancaiEntryDraft draft);
 
-    SancaiEntryDraft getLatestDraftByEntryId(SancaiEntryId entryId);
+    SancaiEntryDraft getByEntryIdLatestDraft(SancaiEntryId entryId);
 
     default List<SancaiEntryDraftId> listExpiredDraftIds(Instant cutoff, int limit) {
         return List.of();
     }
 
-    int deleteDraftByEntryId(SancaiEntryId entryId);
+    int deleteByDraftEntryId(SancaiEntryId entryId);
 
-    default int deleteDraftById(SancaiEntryDraftId id) {
+    default int deleteByDraftId(SancaiEntryDraftId id) {
         return 0;
     }
 
@@ -35,9 +35,9 @@ public interface SancaiAssetRepository {
 
     int updateImage(SancaiEntryImage image);
 
-    int deleteImageById(SancaiEntryImageId id);
+    int deleteByImageId(SancaiEntryImageId id);
 
-    SancaiEntryImage getImageById(SancaiEntryImageId id);
+    SancaiEntryImage getByImageId(SancaiEntryImageId id);
 
     List<SancaiEntryImage> listImages(SortDirection sortDirection);
 
@@ -45,9 +45,9 @@ public interface SancaiAssetRepository {
 
     List<SancaiEntryImage> listCurrentImagesByEntryId(SancaiEntryId entryId, SortDirection sortDirection);
 
-    int clearCurrentImagesByEntryId(SancaiEntryId entryId);
+    int updateCurrentImagesClearedByEntryId(SancaiEntryId entryId);
 
-    int markImageCurrent(SancaiEntryId entryId, SancaiEntryImageId imageId);
+    int updateImageCurrent(SancaiEntryId entryId, SancaiEntryImageId imageId);
 
     int maxPriority();
 
@@ -68,7 +68,7 @@ public interface SancaiAssetRepository {
      */
     int updateCurrentVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
 
-    SancaiVisualAsset getVisualAssetById(SancaiVisualAssetId visualAssetId);
+    SancaiVisualAsset getByVisualAssetId(SancaiVisualAssetId visualAssetId);
 
     /**
      * 按条目返回全部视觉资产版本，包含当前使用标记。
@@ -85,13 +85,13 @@ public interface SancaiAssetRepository {
 
     SancaiShowcaseId insertShowcase(SancaiShowcase showcase);
 
-    SancaiShowcase getShowcaseById(SancaiShowcaseId id);
+    SancaiShowcase getByShowcaseId(SancaiShowcaseId id);
 
     int updateShowcase(SancaiShowcase showcase);
 
-    int markShowcaseCompleted(SancaiShowcaseId id, StorageObjectId storageObjectId, int entryCount);
+    int updateShowcaseCompleted(SancaiShowcaseId id, StorageObjectId storageObjectId, int entryCount);
 
-    int markShowcaseCompleted(
+    int updateShowcaseCompleted(
             SancaiShowcaseId id,
             StorageObjectId storageObjectId,
             int entryCount,
@@ -101,17 +101,17 @@ public interface SancaiAssetRepository {
             Long sizeBytes,
             String sha256);
 
-    int markShowcaseFailed(SancaiShowcaseId id);
+    int updateShowcaseFailed(SancaiShowcaseId id);
 
-    int markShowcaseFailed(SancaiShowcaseId id, String failureType, String failureMessage);
+    int updateShowcaseFailed(SancaiShowcaseId id, String failureType, String failureMessage);
 
-    int markShowcaseExpired(SancaiShowcaseId id);
+    int updateShowcaseExpired(SancaiShowcaseId id);
 
-    int deleteShowcaseById(SancaiShowcaseId id);
+    int deleteByShowcaseId(SancaiShowcaseId id);
 
-    PageResult<SancaiShowcase> pageShowcases(String status, int pageNo, int pageSize);
+    PageResult<SancaiShowcase> page(String status, int pageNo, int pageSize);
 
-    PageResult<SancaiShowcase> pageShowcases(
+    PageResult<SancaiShowcase> page(
             String keyword,
             String status,
             String visibilityRiskStatus,

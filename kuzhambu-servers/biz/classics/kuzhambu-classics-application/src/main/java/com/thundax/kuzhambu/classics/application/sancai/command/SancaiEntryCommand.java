@@ -5,25 +5,16 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecy
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class SancaiEntryCommand {
-    private Long id;
-    private Long volumeId;
-    private String title;
-    private String originalText;
-    private String translationText;
-    private String summary;
-    private SancaiEntryLifecycleStatus lifecycleStatus;
-    private SancaiEntryTranslationStatus translationStatus;
-    private SancaiEntryImageStatus imageStatus;
-    private SancaiEntryVisualAssetStatus visualAssetStatus;
-    private SancaiEntryRefinementStatus refinementStatus;
-}
+public record SancaiEntryCommand(
+        Long id,
+        Long volumeId,
+        String title,
+        String originalText,
+        String translationText,
+        String summary,
+        SancaiEntryLifecycleStatus lifecycleStatus,
+        SancaiEntryTranslationStatus translationStatus,
+        SancaiEntryImageStatus imageStatus,
+        SancaiEntryVisualAssetStatus visualAssetStatus,
+        SancaiEntryRefinementStatus refinementStatus) {}

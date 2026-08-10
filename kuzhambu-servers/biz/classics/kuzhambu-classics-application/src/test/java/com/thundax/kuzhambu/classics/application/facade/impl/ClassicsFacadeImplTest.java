@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.facade.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -43,7 +44,9 @@ class ClassicsFacadeImplTest {
                 mock(ClassicsReportApplicationService.class);
         Instant periodStart = Instant.ofEpochMilli(1_735_689_600_000L);
         Instant periodEnd = Instant.ofEpochMilli(1_735_776_000_000L);
-        when(classicsReportApplicationService.summary(periodStart, periodEnd, "WEEK"))
+        when(classicsReportApplicationService.summary(argThat(query -> periodStart.equals(query.periodStart())
+                        && periodEnd.equals(query.periodEnd())
+                        && "WEEK".equals(query.bucketType()))))
                 .thenReturn(new ClassicsReportSummaryResult(
                         periodStart,
                         periodEnd,
@@ -92,7 +95,8 @@ class ClassicsFacadeImplTest {
                 Instant.ofEpochMilli(1_735_689_600_000L),
                 Instant.ofEpochMilli(1_735_776_000_000L));
         when(classicsSearchContentApplicationService.listPublicContents()).thenReturn(List.of(sourceContent));
-        when(classicsSearchContentApplicationService.getPublicContent("SANCAI_ENTRY", "1001"))
+        when(classicsSearchContentApplicationService.getPublicContent(argThat(
+                        query -> "SANCAI_ENTRY".equals(query.contentType()) && "1001".equals(query.contentId()))))
                 .thenReturn(sourceContent);
         ClassicsFacadeImpl facade =
                 newFacade(mock(ClassicsReportApplicationService.class), classicsSearchContentApplicationService);
@@ -110,7 +114,9 @@ class ClassicsFacadeImplTest {
         assertEquals("青花龙纹", getResponse.getContent().getTitle());
         assertEquals(List.of("礼制", "器物"), getResponse.getContent().getTagNames());
         verify(classicsSearchContentApplicationService).listPublicContents();
-        verify(classicsSearchContentApplicationService).getPublicContent("SANCAI_ENTRY", "1001");
+        verify(classicsSearchContentApplicationService)
+                .getPublicContent(argThat(
+                        query -> "SANCAI_ENTRY".equals(query.contentType()) && "1001".equals(query.contentId())));
     }
 
     @Test
@@ -146,7 +152,8 @@ class ClassicsFacadeImplTest {
         entry.setId(com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec.toDomain(1001L));
         entry.setOriginalText("原文");
         entry.setTranslationText("译文");
-        when(classicsSearchContentApplicationService.getPublicContent("SANCAI_ENTRY", "1001"))
+        when(classicsSearchContentApplicationService.getPublicContent(argThat(
+                        query -> "SANCAI_ENTRY".equals(query.contentType()) && "1001".equals(query.contentId()))))
                 .thenReturn(sourceContent);
         when(sancaiApplicationService.getEntry(
                         com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec.toDomain(1001L)))
@@ -214,7 +221,8 @@ class ClassicsFacadeImplTest {
         WangqiDocument document = new WangqiDocument();
         document.setId(com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec.toDomain(2001L));
         document.setContent("内容正文");
-        when(classicsSearchContentApplicationService.getPublicContent("WANGQI_DOCUMENT", "2001"))
+        when(classicsSearchContentApplicationService.getPublicContent(argThat(
+                        query -> "WANGQI_DOCUMENT".equals(query.contentType()) && "2001".equals(query.contentId()))))
                 .thenReturn(sourceContent);
         when(wangqiDocumentApplicationService.get(
                         com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec.toDomain(2001L)))
@@ -279,7 +287,8 @@ class ClassicsFacadeImplTest {
         entry.setId(com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec.toDomain(3001L));
         entry.setContent("正文");
         entry.setOriginalExcerpts("原典");
-        when(classicsSearchContentApplicationService.getPublicContent("MING_CUSTOMS", "3001"))
+        when(classicsSearchContentApplicationService.getPublicContent(argThat(
+                        query -> "MING_CUSTOMS".equals(query.contentType()) && "3001".equals(query.contentId()))))
                 .thenReturn(sourceContent);
         when(mingCustomsApplicationService.get(
                         com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec.toDomain(3001L)))
@@ -348,7 +357,10 @@ class ClassicsFacadeImplTest {
     void cleanupTargetsShouldForwardPolicyParametersAndExposeTargetIds() {
         ClassicsCleanupApplicationService cleanupApplicationService = mock(ClassicsCleanupApplicationService.class);
         Instant requestedAt = Instant.ofEpochMilli(1_735_689_600_000L);
-        when(cleanupApplicationService.listTargets("EXPIRED_SHARE", requestedAt, 90, 25))
+        when(cleanupApplicationService.listTargets(argThat(query -> "EXPIRED_SHARE".equals(query.cleanupType())
+                        && requestedAt.equals(query.requestedAt())
+                        && Integer.valueOf(90).equals(query.retentionDays())
+                        && Integer.valueOf(25).equals(query.maxTargets()))))
                 .thenReturn(List.of(
                         ClassicsCleanupApplicationService.CleanupTarget.builder()
                                 .targetType("share")

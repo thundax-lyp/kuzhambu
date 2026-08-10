@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.scheduler;
 
+import com.thundax.kuzhambu.classics.application.publication.assembler.ClassicsPublicationFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationCleanupApplicationService;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
@@ -19,18 +20,21 @@ public class ClassicsPublicationEsCleanupScheduler {
     private final ClassicsPublicationCleanupApplicationService transactionService;
     private final DiscoverySearchPublicationFacade searchFacade;
     private final Clock clock;
+    private final ClassicsPublicationFacadeAssembler facadeAssembler;
 
     public ClassicsPublicationEsCleanupScheduler(
             ClassicsPublicationProperties properties,
             ClassicsPublicationJobRepository jobRepository,
             ClassicsPublicationCleanupApplicationService transactionService,
             DiscoverySearchPublicationFacade searchFacade,
-            Clock clock) {
+            Clock clock,
+            ClassicsPublicationFacadeAssembler facadeAssembler) {
         this.properties = properties;
         this.jobRepository = jobRepository;
         this.transactionService = transactionService;
         this.searchFacade = searchFacade;
         this.clock = clock;
+        this.facadeAssembler = facadeAssembler;
     }
 
     @Scheduled(fixedDelayString = "${kuzhambu.classics.publication.es-cleanup-fixed-delay:60s}")
@@ -44,8 +48,9 @@ public class ClassicsPublicationEsCleanupScheduler {
 
     private void cleanup(ClassicsPublicationJob job, Instant now) {
         String token = UUID.randomUUID().toString();
-        if (!transactionService.claimEs(job, token, now, now.plus(properties.getCleanupLease()))
-                || !transactionService.qualify(job, token, true)) {
+        if (!transactionService.claimEs(facadeAssembler.toCleanupClaimCommand(
+                        job, token, true, now, now.plus(properties.getCleanupLease())))
+                || !transactionService.qualify(facadeAssembler.toCleanupQualifyCommand(job, token, true))) {
             return;
         }
         try {
@@ -53,9 +58,10 @@ public class ClassicsPublicationEsCleanupScheduler {
                     .documentId(job.getEsDocumentId())
                     .occurredAt(clock.instant())
                     .build());
-            transactionService.complete(job, token, true);
+            transactionService.complete(facadeAssembler.toCleanupCompleteCommand(job, token, true));
         } catch (RuntimeException exception) {
-            transactionService.fail(job, token, true, detail(exception, clock.instant()));
+            transactionService.fail(
+                    facadeAssembler.toCleanupFailCommand(job, token, true, detail(exception, clock.instant())));
         }
     }
 
