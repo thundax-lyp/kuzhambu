@@ -41,12 +41,16 @@ public final class SancaiPortalInterfaceAssembler {
     public static SancaiEntryQuery toPublicQuery(SancaiPortalEntrySearchRequest request) {
         SancaiPortalEntrySearchRequest effectiveRequest =
                 request == null ? new SancaiPortalEntrySearchRequest() : request;
-        SancaiEntryQuery query = new SancaiEntryQuery();
-        query.setCategoryId(effectiveRequest.getCategoryId());
-        query.setVolumeId(effectiveRequest.getVolumeId());
-        query.setKeyword(effectiveRequest.getKeyword());
-        query.setSortDirection(SortDirection.ASC);
-        return query;
+        return new SancaiEntryQuery(
+                effectiveRequest.getCategoryId(),
+                effectiveRequest.getVolumeId(),
+                effectiveRequest.getKeyword(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                SortDirection.ASC);
     }
 
     public static SancaiPortalCategoryResponse toResponse(SancaiCategory category) {

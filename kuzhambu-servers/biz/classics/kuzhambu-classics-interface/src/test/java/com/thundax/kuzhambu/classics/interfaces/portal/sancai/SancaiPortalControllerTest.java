@@ -103,8 +103,8 @@ class SancaiPortalControllerTest {
         var page = controller.pageEntries(request);
 
         assertEquals(1, page.getRecords().size());
-        assertEquals("天地", page.getRecords().get(0).getTitle());
-        assertEquals("PUBLISHED", page.getRecords().get(0).getLifecycleStatus());
+        assertEquals("天地", page.getRecords().get(0).title());
+        assertEquals("PUBLISHED", page.getRecords().get(0).lifecycleStatus());
     }
 
     @Test
@@ -187,11 +187,11 @@ class SancaiPortalControllerTest {
                     if ("pagePortalReadyEntries".equals(method.getName())) {
                         SancaiEntryQuery query = (SancaiEntryQuery) args[0];
                         PageQuery pageQuery = (PageQuery) args[1];
-                        assertEquals(2L, query.getCategoryId());
-                        assertEquals(101L, query.getVolumeId());
-                        assertEquals("天地", query.getKeyword());
-                        assertEquals(null, query.getLifecycleStatus());
-                        assertEquals(SortDirection.ASC, query.getSortDirection());
+                        assertEquals(2L, query.categoryId());
+                        assertEquals(101L, query.volumeId());
+                        assertEquals("天地", query.keyword());
+                        assertEquals(null, query.lifecycleStatus());
+                        assertEquals(SortDirection.ASC, query.sortDirection());
                         assertEquals(1, pageQuery.getPageNo());
                         assertEquals(100, pageQuery.getPageSize());
                         return PageResult.of(1, 100, 1, List.of(publicEntry()));

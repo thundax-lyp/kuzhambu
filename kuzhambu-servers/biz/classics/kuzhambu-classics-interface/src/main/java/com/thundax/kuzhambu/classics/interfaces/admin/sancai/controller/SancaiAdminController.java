@@ -271,8 +271,7 @@ public class SancaiAdminController {
     @SysLogger(value = "分页查询")
     @PostMapping("entries/page")
     public PageResponse<SancaiEntryResponse> pageEntries(@Valid @RequestBody SancaiEntryPageRequest request) {
-        var query = SancaiInterfaceAssembler.toQuery(request);
-        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
+        var query = SancaiInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentAuthorities());
         return PageResponseHelper.fromPageResult(
                 service.pageEntries(query, PageInterfaceAssembler.toPageQuery(request)),
                 SancaiInterfaceAssembler::toResponse);
@@ -290,8 +289,7 @@ public class SancaiAdminController {
     @SysLogger(value = "条目列表")
     @PostMapping("entries/list")
     public List<SancaiEntryResponse> listEntries(@Valid @RequestBody SancaiEntryPageRequest request) {
-        var query = SancaiInterfaceAssembler.toQuery(request);
-        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
+        var query = SancaiInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentAuthorities());
         return service.listEntries(query).stream()
                 .map(SancaiInterfaceAssembler::toResponse)
                 .toList();

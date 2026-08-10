@@ -48,22 +48,21 @@ public final class SancaiInterfaceAssembler {
         return ClassicsContentInterfaceAssembler.toObjectQuery(contentType, contentId);
     }
 
-    public static SancaiEntryQuery toQuery(SancaiEntryPageRequest request) {
-        SancaiEntryQuery query = new SancaiEntryQuery();
-        query.setCategoryId(request.getCategoryId());
-        query.setVolumeId(request.getVolumeId());
-        query.setKeyword(request.getKeyword());
-        query.setLifecycleStatus(fromLifecycle(request.getLifecycleStatus()));
-        query.setTranslationStatus(fromTranslation(request.getTranslationStatus()));
-        query.setImageStatus(fromImage(request.getImageStatus()));
-        query.setVisualAssetStatus(fromVisualAsset(request.getVisualAssetStatus()));
-        query.setRefinementStatus(fromRefinement(request.getRefinementStatus()));
-        query.setSortDirection(
+    public static SancaiEntryQuery toQuery(SancaiEntryPageRequest request, Set<String> operatorPermissions) {
+        return new SancaiEntryQuery(
+                request.getCategoryId(),
+                request.getVolumeId(),
+                request.getKeyword(),
+                fromLifecycle(request.getLifecycleStatus()),
+                fromTranslation(request.getTranslationStatus()),
+                fromImage(request.getImageStatus()),
+                fromVisualAsset(request.getVisualAssetStatus()),
+                fromRefinement(request.getRefinementStatus()),
                 StringUtils.isBlank(request.getSortDirection())
                         ? SortDirection.ASC
                         : SortDirection.valueOf(
-                                request.getSortDirection().trim().toUpperCase()));
-        return query;
+                                request.getSortDirection().trim().toUpperCase()),
+                operatorPermissions);
     }
 
     public static SancaiEntryCommand toCommand(SancaiEntryRequest request) {

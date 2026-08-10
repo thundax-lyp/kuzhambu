@@ -2,16 +2,5 @@ package com.thundax.kuzhambu.classics.application.sancai.command;
 
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class SancaiEntrySortCommand {
-
-    private List<SancaiEntryId> orderedIds;
-}
+public record SancaiEntrySortCommand(List<SancaiEntryId> orderedIds) {}
