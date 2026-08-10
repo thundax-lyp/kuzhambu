@@ -45,7 +45,7 @@ export const page = (request: PageQuery = {}) => {
 };
 
 export const listDepartments = () => {
-    return postJson<UserDepartmentNode[]>("/sys/user/department/tree");
+    return postJson<UserDepartmentNode[]>("/sys/user/department/list");
 };
 
 export const listRoles = () => {
@@ -53,15 +53,21 @@ export const listRoles = () => {
 };
 
 export const getOptions = () => {
-    return postJson<OptionsRecord<UserOptionKeys>, Record<string, never>>("/sys/user/options", {
-        body: {}
-    });
+    return postJson<OptionsRecord<UserOptionKeys>, Record<string, never>>(
+        "/sys/user/options/list",
+        {
+            body: {}
+        }
+    );
 };
 
 export const changeStatus = (request: StatusCommand) => {
-    return postJson<boolean, Array<{ id: string; enable?: boolean | null }>>("/sys/user/enable", {
-        body: request.users
-    });
+    return postJson<boolean, Array<{ id: string; enable?: boolean | null }>>(
+        "/sys/user/status/update",
+        {
+            body: request.users
+        }
+    );
 };
 
 export const remove = (ids: string[]) => {

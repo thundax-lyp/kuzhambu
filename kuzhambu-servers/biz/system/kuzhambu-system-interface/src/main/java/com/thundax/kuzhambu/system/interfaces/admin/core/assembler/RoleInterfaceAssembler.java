@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
@@ -8,6 +9,8 @@ import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
 import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
@@ -34,6 +37,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.Rol
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -43,32 +47,24 @@ public final class RoleInterfaceAssembler {
     private RoleInterfaceAssembler() {}
 
     @NonNull
-    public static RoleResponse toResponse(Role entity, List<Menu> menuList) {
-        if (entity == null) {
-            return RoleResponse.builder().build();
-        }
-
+    public static RoleResponse toResponse(@NonNull Role entity, @NonNull List<Menu> menuList) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(menuList, "menuList must not be null");
         return RoleResponse.builder()
                 .id(RoleIdCodec.toStringValue(entity.getId()))
                 .remarks(entity.getRemarks())
                 .name(entity.getName())
                 .admin(entity.isAdmin())
                 .enable(entity.isEnable())
-                .menuList(
-                        menuList == null
-                                ? new ArrayList<>()
-                                : menuList.stream()
-                                        .map(RoleInterfaceAssembler::toMenuResponse)
-                                        .collect(Collectors.toList()))
+                .menuList(menuList.stream()
+                        .map(RoleInterfaceAssembler::toMenuResponse)
+                        .collect(Collectors.toList()))
                 .build();
     }
 
     @NonNull
-    public static RoleMenuResponse toMenuResponse(Menu entity) {
-        if (entity == null) {
-            return RoleMenuResponse.builder().build();
-        }
-
+    public static RoleMenuResponse toMenuResponse(@NonNull Menu entity) {
+        Objects.requireNonNull(entity, "entity must not be null");
         String parentId = MenuIdCodec.toStringValue(entity.getParentId());
         return RoleMenuResponse.builder()
                 .id(MenuIdCodec.toStringValue(entity.getId()))
@@ -80,21 +76,26 @@ public final class RoleInterfaceAssembler {
 
     @NonNull
     public static RoleUserResponse toUserResponse(
-            User entity, String loginName, Department department, Function<DepartmentId, Department> departmentLoader) {
-        if (entity == null) {
-            return RoleUserResponse.builder().build();
-        }
-
+            @NonNull User entity,
+            @NonNull Optional<String> loginName,
+            @NonNull Optional<Department> department,
+            @NonNull Function<DepartmentId, Department> departmentLoader) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(loginName, "loginName must not be null");
+        Objects.requireNonNull(department, "department must not be null");
+        Objects.requireNonNull(departmentLoader, "departmentLoader must not be null");
         return RoleUserResponse.builder()
                 .id(UserIdCodec.toStringValue(entity.getId()))
                 .name(entity.getName())
-                .loginName(loginName)
+                .loginName(loginName.orElse(null))
                 .department(toDepartmentResponse(department, departmentLoader))
                 .build();
     }
 
     @NonNull
-    public static RoleUserTreeNodeResponse toDepartmentTreeNode(String id, Department entity) {
+    public static RoleUserTreeNodeResponse toDepartmentTreeNode(@NonNull String id, @NonNull Department entity) {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(entity, "entity must not be null");
         return RoleUserTreeNodeResponse.builder()
                 .id(id)
                 .parentId(
@@ -107,11 +108,16 @@ public final class RoleInterfaceAssembler {
 
     @NonNull
     public static RoleUserTreeNodeResponse toUserTreeNode(
-            String departmentIdPrefix,
-            User entity,
-            String loginName,
-            Department department,
-            Function<DepartmentId, Department> departmentLoader) {
+            @NonNull String departmentIdPrefix,
+            @NonNull User entity,
+            @NonNull Optional<String> loginName,
+            @NonNull Optional<Department> department,
+            @NonNull Function<DepartmentId, Department> departmentLoader) {
+        Objects.requireNonNull(departmentIdPrefix, "departmentIdPrefix must not be null");
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(loginName, "loginName must not be null");
+        Objects.requireNonNull(department, "department must not be null");
+        Objects.requireNonNull(departmentLoader, "departmentLoader must not be null");
         return RoleUserTreeNodeResponse.builder()
                 .id(UserIdCodec.toStringValue(entity.getId()))
                 .parentId(departmentIdPrefix + DepartmentIdCodec.toStringValue(entity.getDepartmentId()))
@@ -135,9 +141,22 @@ public final class RoleInterfaceAssembler {
     }
 
     @NonNull
+    public static RoleQuery toEnabledQuery() {
+        return new RoleQuery(null, RoleStatus.ENABLED);
+    }
+
+    @NonNull
     public static GetRoleQuery toGetQuery(@NonNull RoleId id) {
         Objects.requireNonNull(id, "id must not be null");
         return new GetRoleQuery(id);
+    }
+
+    @NonNull
+    public static PrincipalIdentityQuery toPrincipalIdentityQuery(
+            @NonNull PrincipalKey principalKey, @NonNull PrincipalIdentityType identityType) {
+        Objects.requireNonNull(principalKey, "principalKey must not be null");
+        Objects.requireNonNull(identityType, "identityType must not be null");
+        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
     }
 
     @NonNull
@@ -194,6 +213,8 @@ public final class RoleInterfaceAssembler {
 
     @NonNull
     public static Role toDomain(@NonNull Role entity, @NonNull RoleSaveRequest request) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(request, "request must not be null");
         entity.setId(RoleIdCodec.toDomain(request.getId()));
         entity.setRemarks(request.getRemarks());
         entity.setName(request.getName());
@@ -220,15 +241,16 @@ public final class RoleInterfaceAssembler {
 
     @NonNull
     private static RoleDepartmentResponse toDepartmentResponse(
-            Department entity, Function<DepartmentId, Department> departmentLoader) {
-        if (entity == null) {
+            Optional<Department> entity, Function<DepartmentId, Department> departmentLoader) {
+        if (entity.isEmpty()) {
             return RoleDepartmentResponse.builder().build();
         }
+        Department department = entity.get();
 
         return RoleDepartmentResponse.builder()
-                .id(DepartmentIdCodec.toStringValue(entity.getId()))
-                .name(entity.getName())
-                .namePath(namePath(entity, departmentLoader))
+                .id(DepartmentIdCodec.toStringValue(department.getId()))
+                .name(department.getName())
+                .namePath(namePath(department, departmentLoader))
                 .build();
     }
 

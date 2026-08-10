@@ -157,7 +157,7 @@ public class MenuController {
     })
     @HasPermission(value = "super")
     @SysLogger(value = "显示")
-    @PostMapping(value = "display")
+    @PostMapping(value = "visibility/update")
     public Boolean updateVisibility(@Valid @RequestBody List<MenuDisplayRequest> list) {
         List<com.thundax.kuzhambu.system.application.core.command.ChangeMenuVisibilityCommand> commandList =
                 new ArrayList<>();
@@ -217,8 +217,8 @@ public class MenuController {
     })
     @HasPermission(value = "super")
     @SysLogger(value = "读取")
-    @PostMapping(value = "tree")
-    public List<MenuResponse> tree(@Valid @RequestBody List<MenuIdRequest> excludeList) {
+    @PostMapping(value = "tree/list")
+    public List<MenuResponse> listTree(@Valid @RequestBody List<MenuIdRequest> excludeList) {
         List<Menu> beanList = menuService.list(MenuInterfaceAssembler.toListAllQuery());
 
         Set<MenuId> excludeIds =

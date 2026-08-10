@@ -88,7 +88,7 @@ describe("role service request contracts", () => {
         await roleService.changeStatus({
             roles: [{ id: "role-1", enable: false }]
         });
-        expectLastRequest("/sys/role/enable", [{ id: "role-1", enable: false }]);
+        expectLastRequest("/sys/role/status/update", [{ id: "role-1", enable: false }]);
 
         await roleService.sort({
             orderedIds: ["role-1", "role-2"],

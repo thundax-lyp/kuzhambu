@@ -47,7 +47,7 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
-                Path.of("src/main/java"), SystemApplicationCommandQueryRecordAllowances.legacyAllowances());
+                Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
                 List.of(Path.of("src/main/java"), Path.of("../kuzhambu-system-interface/src/main/java")),
                 legacyCommandQueryConstructionAllowances());
@@ -73,31 +73,7 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.audit.controller.AuditController#PageQuery:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#PrincipalIdentityQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.CurrentUserController#PreAuthSessionQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.CurrentUserController#PreAuthSessionValueQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.LogController#PrincipalIdentityQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#PrincipalIdentityQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#ChangeCurrentUserAvatarCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#CurrentUserAvatarQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#CurrentUserAvatarQuery:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#GetRoleQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#PreAuthSessionQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#PreAuthSessionValueQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#RemoveCurrentUserAvatarCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#RoleQuery:1"));
+                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#PrincipalIdentityQuery:1"));
     }
 
     private static ArchitectureRuleAllowance constructionViolation(String ownerAndType) {

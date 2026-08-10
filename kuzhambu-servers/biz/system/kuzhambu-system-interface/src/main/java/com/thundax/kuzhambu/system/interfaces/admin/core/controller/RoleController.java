@@ -56,6 +56,7 @@ import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,8 +144,8 @@ public class RoleController {
     })
     @HasPermission(value = "sys:role:view")
     @IgnoreSysLogger
-    @PostMapping(value = "options")
-    public RoleOptionsResponse options() {
+    @PostMapping(value = "options/list")
+    public RoleOptionsResponse listOptions() {
         return RoleOptionsResponse.builder()
                 .statusOptions(OptionInterfaceAssembler.toOptionResponseList(
                         dictService.list(DictInterfaceAssembler.toTypeQuery(ROLE_STATUS_DICT_TYPE)),
@@ -220,7 +221,7 @@ public class RoleController {
     })
     @HasPermission(value = "sys:role:edit")
     @SysLogger(value = "启用")
-    @PostMapping(value = "enable")
+    @PostMapping(value = "status/update")
     public Boolean updateStatus(@Valid @RequestBody List<RoleStatusRequest> list) {
         List<com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand> commandList =
                 new ArrayList<>();
@@ -309,8 +310,8 @@ public class RoleController {
     })
     @HasPermission({"sys:role:view", "sys:role:edit"})
     @IgnoreSysLogger
-    @PostMapping(value = "menu/tree")
-    public List<RoleMenuResponse> menuTree() {
+    @PostMapping(value = "menu/list")
+    public List<RoleMenuResponse> listMenus() {
         return menuService.list(MenuInterfaceAssembler.toListAllQuery()).stream()
                 .map(menu -> RoleInterfaceAssembler.toMenuResponse(menu))
                 .collect(Collectors.toList());
@@ -326,8 +327,8 @@ public class RoleController {
     })
     @HasPermission({"sys:role:view", "sys:role:edit"})
     @IgnoreSysLogger
-    @PostMapping(value = "user/tree")
-    public List<RoleUserTreeNodeResponse> userTree() {
+    @PostMapping(value = "user-tree/list")
+    public List<RoleUserTreeNodeResponse> listUserTree() {
         List<RoleUserTreeNodeResponse> list = new ArrayList<>();
 
         list.addAll(departmentService.list(DepartmentInterfaceAssembler.toListAllQuery()).stream()
@@ -339,8 +340,8 @@ public class RoleController {
                 .map(user -> RoleInterfaceAssembler.toUserTreeNode(
                         DEPARTMENT_ID_PREFIX,
                         user,
-                        getAccountLoginName(user),
-                        getDepartment(user.getDepartmentId()),
+                        Optional.ofNullable(getAccountLoginName(user)),
+                        Optional.ofNullable(getDepartment(user.getDepartmentId())),
                         this::getDepartment))
                 .collect(Collectors.toList()));
 
@@ -358,7 +359,7 @@ public class RoleController {
     @HasPermission({"sys:role:view", "sys:role:edit"})
     @IgnoreSysLogger
     @PostMapping(value = "user/list")
-    public List<RoleUserResponse> userList(@Valid @RequestBody RoleIdRequest request) {
+    public List<RoleUserResponse> listUsers(@Valid @RequestBody RoleIdRequest request) {
         Role bean = roleService.get(RoleInterfaceAssembler.toGetQuery(RoleIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
@@ -381,8 +382,8 @@ public class RoleController {
     })
     @HasPermission(value = "sys:role:edit")
     @SysLogger(value = "授权")
-    @PostMapping(value = "user/assign")
-    public Boolean assignUser(@Valid @RequestBody RoleAssignUserRequest request) {
+    @PostMapping(value = "user/update")
+    public Boolean updateUsers(@Valid @RequestBody RoleAssignUserRequest request) {
         validateAssignUser(request);
 
         roleService.assignUsers(RoleInterfaceAssembler.toAssignUsersCommand(request));
@@ -397,7 +398,10 @@ public class RoleController {
 
     private RoleUserResponse toUserResponse(User user) {
         return RoleInterfaceAssembler.toUserResponse(
-                user, getAccountLoginName(user), getDepartment(user.getDepartmentId()), this::getDepartment);
+                user,
+                Optional.ofNullable(getAccountLoginName(user)),
+                Optional.ofNullable(getDepartment(user.getDepartmentId())),
+                this::getDepartment);
     }
 
     private String getAccountLoginName(User user) {
@@ -411,7 +415,7 @@ public class RoleController {
     }
 
     private PrincipalIdentityQuery identityQuery(PrincipalKey principalKey, PrincipalIdentityType identityType) {
-        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
+        return RoleInterfaceAssembler.toPrincipalIdentityQuery(principalKey, identityType);
     }
 
     private void validateAssignUser(RoleAssignUserRequest request) {

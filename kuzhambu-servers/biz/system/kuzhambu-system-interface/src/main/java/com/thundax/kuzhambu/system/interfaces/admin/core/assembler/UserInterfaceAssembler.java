@@ -4,18 +4,25 @@ import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCrede
 import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
@@ -36,9 +43,11 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.User
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.UserDepartmentResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.UserResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.UserRoleResponse;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -127,46 +136,57 @@ public final class UserInterfaceAssembler {
     }
 
     @NonNull
-    public static UserResponse toResponse(
-            User entity,
-            String loginName,
-            Department department,
-            List<Role> roleList,
-            String avatarUrl,
-            Function<DepartmentId, Department> departmentLoader) {
-        if (entity == null) {
-            return UserResponse.builder().build();
-        }
+    public static PreAuthSessionQuery toPreAuthSessionQuery(@NonNull String token) {
+        Objects.requireNonNull(token, "token must not be null");
+        return new PreAuthSessionQuery(null, PreAuthSessionToken.of(token), null);
+    }
 
+    @NonNull
+    public static PreAuthSessionValueQuery toPreAuthSessionValueQuery(
+            @NonNull PreAuthSessionId sessionId, @NonNull String item) {
+        Objects.requireNonNull(sessionId, "sessionId must not be null");
+        Objects.requireNonNull(item, "item must not be null");
+        return new PreAuthSessionValueQuery(sessionId, item);
+    }
+
+    @NonNull
+    public static UserResponse toResponse(
+            @NonNull User entity,
+            @NonNull Optional<String> loginName,
+            @NonNull Optional<Department> department,
+            @NonNull List<Role> roleList,
+            @NonNull Optional<String> avatarUrl,
+            @NonNull Function<DepartmentId, Department> departmentLoader) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(loginName, "loginName must not be null");
+        Objects.requireNonNull(department, "department must not be null");
+        Objects.requireNonNull(roleList, "roleList must not be null");
+        Objects.requireNonNull(avatarUrl, "avatarUrl must not be null");
+        Objects.requireNonNull(departmentLoader, "departmentLoader must not be null");
         return UserResponse.builder()
                 .id(UserIdCodec.toStringValue(entity.getId()))
                 .remarks(entity.getRemarks())
-                .loginName(loginName)
+                .loginName(loginName.orElse(null))
                 .ranks(AccessRankCodec.toValue(entity.getRank()))
                 .name(entity.getName())
                 .email(entity.getEmail())
                 .mobile(entity.getMobile())
-                .avatar(avatarUrl)
+                .avatar(avatarUrl.orElse(null))
                 .superAdmin(entity.isSuper())
                 .admin(entity.isAdmin())
                 .enable(entity.isEnable())
-                .department(toDepartmentResponse(department, departmentLoader))
-                .roleList(
-                        roleList == null
-                                ? new ArrayList<>()
-                                : roleList.stream()
-                                        .map(UserInterfaceAssembler::toRoleResponse)
-                                        .collect(Collectors.toList()))
+                .department(toOptionalDepartmentResponse(department, departmentLoader))
+                .roleList(roleList.stream()
+                        .map(UserInterfaceAssembler::toRoleResponse)
+                        .collect(Collectors.toList()))
                 .build();
     }
 
     @NonNull
     public static UserDepartmentResponse toDepartmentResponse(
-            Department entity, Function<DepartmentId, Department> departmentLoader) {
-        if (entity == null) {
-            return UserDepartmentResponse.builder().build();
-        }
-
+            @NonNull Department entity, @NonNull Function<DepartmentId, Department> departmentLoader) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(departmentLoader, "departmentLoader must not be null");
         return UserDepartmentResponse.builder()
                 .id(DepartmentIdCodec.toStringValue(entity.getId()))
                 .parentId(DepartmentIdCodec.toStringValue(entity.getParentId()))
@@ -176,11 +196,15 @@ public final class UserInterfaceAssembler {
     }
 
     @NonNull
-    public static UserRoleResponse toRoleResponse(Role entity) {
-        if (entity == null) {
-            return UserRoleResponse.builder().build();
-        }
+    private static UserDepartmentResponse toOptionalDepartmentResponse(
+            Optional<Department> entity, Function<DepartmentId, Department> departmentLoader) {
+        return entity.map(department -> toDepartmentResponse(department, departmentLoader))
+                .orElseGet(() -> UserDepartmentResponse.builder().build());
+    }
 
+    @NonNull
+    public static UserRoleResponse toRoleResponse(@NonNull Role entity) {
+        Objects.requireNonNull(entity, "entity must not be null");
         return UserRoleResponse.builder()
                 .id(RoleIdCodec.toStringValue(entity.getId()))
                 .name(entity.getName())
@@ -189,14 +213,17 @@ public final class UserInterfaceAssembler {
 
     @NonNull
     public static UserQuery toQuery(@NonNull UserQueryRequest request) {
-        return toQuery(request, DepartmentIdCodec.toDomain(request.getDepartmentId()));
+        Objects.requireNonNull(request, "request must not be null");
+        return toQuery(request, Optional.ofNullable(DepartmentIdCodec.toDomain(request.getDepartmentId())));
     }
 
     @NonNull
-    public static UserQuery toQuery(@NonNull UserQueryRequest request, DepartmentId departmentId) {
+    public static UserQuery toQuery(@NonNull UserQueryRequest request, @NonNull Optional<DepartmentId> departmentId) {
+        Objects.requireNonNull(request, "request must not be null");
+        Objects.requireNonNull(departmentId, "departmentId must not be null");
         return new UserQuery(
                 null,
-                departmentId,
+                departmentId.orElse(null),
                 emptyToNull(request.getLoginName()),
                 null,
                 null,
@@ -219,13 +246,17 @@ public final class UserInterfaceAssembler {
     }
 
     @NonNull
-    public static UserQuery toEmailQuery(String email, UserId excludedId) {
-        return new UserQuery(null, null, null, email, null, null, null, null, null, excludedId);
+    public static UserQuery toEmailQuery(@NonNull String email, @NonNull Optional<UserId> excludedId) {
+        Objects.requireNonNull(email, "email must not be null");
+        Objects.requireNonNull(excludedId, "excludedId must not be null");
+        return new UserQuery(null, null, null, email, null, null, null, null, null, excludedId.orElse(null));
     }
 
     @NonNull
-    public static UserQuery toMobileQuery(String mobile, UserId excludedId) {
-        return new UserQuery(null, null, null, null, mobile, null, null, null, null, excludedId);
+    public static UserQuery toMobileQuery(@NonNull String mobile, @NonNull Optional<UserId> excludedId) {
+        Objects.requireNonNull(mobile, "mobile must not be null");
+        Objects.requireNonNull(excludedId, "excludedId must not be null");
+        return new UserQuery(null, null, null, null, mobile, null, null, null, null, excludedId.orElse(null));
     }
 
     @NonNull
@@ -239,10 +270,21 @@ public final class UserInterfaceAssembler {
             @NonNull User user, @NonNull UserStatusRequest request) {
         Objects.requireNonNull(user, "user must not be null");
         Objects.requireNonNull(request, "request must not be null");
-        return new ChangeUserStatusCommand(
-                user.getId(),
-                Boolean.TRUE.equals(request.getEnable()) ? UserStatus.ENABLED : UserStatus.DISABLED,
-                user);
+        UserStatus status = Boolean.TRUE.equals(request.getEnable()) ? UserStatus.ENABLED : UserStatus.DISABLED;
+        return new ChangeUserStatusCommand(user.getId(), status, user, auditAfterUser(user.getId(), status, user));
+    }
+
+    private static User auditAfterUser(UserId id, UserStatus status, User beforeUser) {
+        User user = new User();
+        if (beforeUser != null) {
+            user.setId(beforeUser.getId());
+            user.setName(beforeUser.getName());
+            user.setPrivilege(beforeUser.getPrivilege());
+        } else {
+            user.setId(id);
+        }
+        user.setStatus(status);
+        return user;
     }
 
     @NonNull
@@ -252,7 +294,31 @@ public final class UserInterfaceAssembler {
     }
 
     @NonNull
-    public static CreateUserCommand toCreateCommand(@NonNull UserSaveRequest request, String encryptedPassword) {
+    public static ChangeCurrentUserAvatarCommand toChangeCurrentUserAvatarCommand(
+            @NonNull UserId userId, @NonNull InputStream inputStream, @NonNull Optional<String> originalFilename) {
+        Objects.requireNonNull(userId, "userId must not be null");
+        Objects.requireNonNull(inputStream, "inputStream must not be null");
+        Objects.requireNonNull(originalFilename, "originalFilename must not be null");
+        return new ChangeCurrentUserAvatarCommand(userId, inputStream, originalFilename.orElse(null));
+    }
+
+    @NonNull
+    public static RemoveCurrentUserAvatarCommand toRemoveCurrentUserAvatarCommand(@NonNull UserId userId) {
+        Objects.requireNonNull(userId, "userId must not be null");
+        return new RemoveCurrentUserAvatarCommand(userId);
+    }
+
+    @NonNull
+    public static CurrentUserAvatarQuery toCurrentUserAvatarQuery(@NonNull UserId userId) {
+        Objects.requireNonNull(userId, "userId must not be null");
+        return new CurrentUserAvatarQuery(userId);
+    }
+
+    @NonNull
+    public static CreateUserCommand toCreateCommand(
+            @NonNull UserSaveRequest request, @NonNull String encryptedPassword) {
+        Objects.requireNonNull(request, "request must not be null");
+        Objects.requireNonNull(encryptedPassword, "encryptedPassword must not be null");
         User entity = toDomain(new User(), request);
         return new CreateUserCommand(
                 entity.getId(),
@@ -272,6 +338,7 @@ public final class UserInterfaceAssembler {
 
     @NonNull
     public static ChangeUserInfoCommand toChangeInfoCommand(@NonNull UserSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         User entity = toDomain(new User(), request);
         return new ChangeUserInfoCommand(
                 entity.getId(),
@@ -290,6 +357,8 @@ public final class UserInterfaceAssembler {
 
     @NonNull
     public static User toDomain(@NonNull User entity, @NonNull UserSaveRequest request) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(request, "request must not be null");
         entity.setId(UserIdCodec.toDomain(request.getId()));
         entity.setRemarks(request.getRemarks());
         if (request.getDepartment() != null) {
@@ -307,6 +376,7 @@ public final class UserInterfaceAssembler {
 
     @NonNull
     public static List<RoleId> toRoleIdList(@NonNull UserSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return request.getRoleList() == null
                 ? new ArrayList<>()
                 : request.getRoleList().stream()

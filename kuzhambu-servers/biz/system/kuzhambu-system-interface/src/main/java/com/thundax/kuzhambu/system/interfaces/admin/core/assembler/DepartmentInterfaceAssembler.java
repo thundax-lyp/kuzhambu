@@ -25,10 +25,9 @@ public final class DepartmentInterfaceAssembler {
 
     @NonNull
     public static DepartmentResponse toResponse(
-            Department entity, Function<DepartmentId, Department> departmentLoader) {
-        if (entity == null) {
-            return DepartmentResponse.builder().build();
-        }
+            @NonNull Department entity, @NonNull Function<DepartmentId, Department> departmentLoader) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(departmentLoader, "departmentLoader must not be null");
         return DepartmentResponse.builder()
                 .id(DepartmentIdCodec.toStringValue(entity.getId()))
                 .remarks(entity.getRemarks())
@@ -40,10 +39,8 @@ public final class DepartmentInterfaceAssembler {
     }
 
     @NonNull
-    public static DepartmentResponse toTreeResponse(Department entity) {
-        if (entity == null) {
-            return DepartmentResponse.builder().build();
-        }
+    public static DepartmentResponse toTreeResponse(@NonNull Department entity) {
+        Objects.requireNonNull(entity, "entity must not be null");
         return DepartmentResponse.builder()
                 .id(DepartmentIdCodec.toStringValue(entity.getId()))
                 .parentId(DepartmentIdCodec.toStringValue(entity.getParentId()))
@@ -54,6 +51,7 @@ public final class DepartmentInterfaceAssembler {
 
     @NonNull
     public static DepartmentQuery toQuery(@NonNull DepartmentQueryRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new DepartmentQuery(
                 null, null, DepartmentIdCodec.toDomain(request.getParentId()), request.getName(), request.getRemarks());
     }
@@ -78,6 +76,8 @@ public final class DepartmentInterfaceAssembler {
 
     @NonNull
     public static Department toDomain(@NonNull Department entity, @NonNull DepartmentSaveRequest request) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(request, "request must not be null");
         entity.setId(DepartmentIdCodec.toDomain(request.getId()));
         entity.setRemarks(request.getRemarks());
         if (request.getParentId() != null) {
@@ -90,6 +90,7 @@ public final class DepartmentInterfaceAssembler {
 
     @NonNull
     public static CreateDepartmentCommand toCreateCommand(@NonNull DepartmentSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         Department entity = toDomain(new Department(), request);
         return new CreateDepartmentCommand(
                 entity.getId(), entity.getParentId(), entity.getName(), entity.getShortName(), entity.getRemarks());
@@ -97,6 +98,7 @@ public final class DepartmentInterfaceAssembler {
 
     @NonNull
     public static ChangeDepartmentInfoCommand toChangeInfoCommand(@NonNull DepartmentSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         Department entity = toDomain(new Department(), request);
         return new ChangeDepartmentInfoCommand(
                 entity.getId(), entity.getParentId(), entity.getName(), entity.getShortName(), entity.getRemarks());

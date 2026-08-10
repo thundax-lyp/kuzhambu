@@ -23,10 +23,8 @@ public final class DictInterfaceAssembler {
     private DictInterfaceAssembler() {}
 
     @NonNull
-    public static DictResponse toResponse(Dict entity) {
-        if (entity == null) {
-            return DictResponse.builder().build();
-        }
+    public static DictResponse toResponse(@NonNull Dict entity) {
+        Objects.requireNonNull(entity, "entity must not be null");
         return DictResponse.builder()
                 .id(DictIdCodec.toStringValue(entity.getId()))
                 .remarks(entity.getRemarks())
@@ -38,17 +36,20 @@ public final class DictInterfaceAssembler {
 
     @NonNull
     public static DictId toId(@NonNull DictIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return DictIdCodec.toDomain(request.getId());
     }
 
     @NonNull
     public static DictQuery toQuery(@NonNull DictQueryRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new DictQuery(
                 emptyToNull(request.getType()), emptyToNull(request.getRemarks()), emptyToNull(request.getLabel()));
     }
 
     @NonNull
     public static DictQuery toQuery(@NonNull DictPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new DictQuery(
                 emptyToNull(request.getType()), emptyToNull(request.getRemarks()), emptyToNull(request.getLabel()));
     }
@@ -67,11 +68,13 @@ public final class DictInterfaceAssembler {
 
     @NonNull
     public static CreateDictCommand toCreateCommand(@NonNull DictSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new CreateDictCommand(request.getType(), request.getLabel(), request.getValue(), request.getRemarks());
     }
 
     @NonNull
     public static ChangeDictInfoCommand toChangeInfoCommand(@NonNull DictSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ChangeDictInfoCommand(
                 DictIdCodec.toDomain(request.getId()),
                 request.getType(),

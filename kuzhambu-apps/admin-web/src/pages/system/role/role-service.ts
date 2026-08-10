@@ -40,13 +40,16 @@ export const list = (request: RoleQuery = {}) => {
 };
 
 export const listMenus = () => {
-    return postJson<RoleMenuNode[]>("/sys/role/menu/tree");
+    return postJson<RoleMenuNode[]>("/sys/role/menu/list");
 };
 
 export const getOptions = () => {
-    return postJson<OptionsRecord<RoleOptionKeys>, Record<string, never>>("/sys/role/options", {
-        body: {}
-    });
+    return postJson<OptionsRecord<RoleOptionKeys>, Record<string, never>>(
+        "/sys/role/options/list",
+        {
+            body: {}
+        }
+    );
 };
 
 export const create = (request: RoleSaveCommand) => {
@@ -62,9 +65,12 @@ export const changeInfo = (request: RoleSaveCommand) => {
 };
 
 export const changeStatus = (request: RoleStatusCommand) => {
-    return postJson<boolean, Array<{ id: string; enable?: boolean | null }>>("/sys/role/enable", {
-        body: request.roles
-    });
+    return postJson<boolean, Array<{ id: string; enable?: boolean | null }>>(
+        "/sys/role/status/update",
+        {
+            body: request.roles
+        }
+    );
 };
 
 export const sort = (request: RoleSortCommand) => {

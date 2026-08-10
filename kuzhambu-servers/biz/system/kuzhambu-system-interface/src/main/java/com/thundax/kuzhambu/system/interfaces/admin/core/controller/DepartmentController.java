@@ -184,8 +184,8 @@ public class DepartmentController {
     })
     @HasPermission(value = "super")
     @SysLogger(value = "读取")
-    @PostMapping(value = "tree")
-    public List<DepartmentResponse> tree(@Valid @RequestBody List<DepartmentIdRequest> excludeList) {
+    @PostMapping(value = "tree/list")
+    public List<DepartmentResponse> listTree(@Valid @RequestBody List<DepartmentIdRequest> excludeList) {
         List<Department> beanList = departmentService.list(DepartmentInterfaceAssembler.toListAllQuery());
 
         Set<DepartmentId> excludeIds = new HashSet<>(

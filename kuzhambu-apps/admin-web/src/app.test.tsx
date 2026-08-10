@@ -55,7 +55,7 @@ describe("App", () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
             const url = String(input);
-            if (url.endsWith("/sys/current-user/info")) {
+            if (url.endsWith("/sys/current-user/get")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -75,7 +75,7 @@ describe("App", () => {
                 );
             }
 
-            if (url.endsWith("/sys/current-user/menus")) {
+            if (url.endsWith("/sys/current-user/menu/list")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -125,7 +125,7 @@ describe("App", () => {
                 );
             }
 
-            if (url.endsWith("/sys/current-user/perms")) {
+            if (url.endsWith("/sys/current-user/permission/list")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -164,7 +164,7 @@ describe("App", () => {
         ).toBeInTheDocument();
         expect(await screen.findByText("Developer")).toBeInTheDocument();
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/kuzhambu-admin-api/api/sys/current-user/info",
+            "/kuzhambu-admin-api/api/sys/current-user/get",
             expect.objectContaining({
                 headers: expect.objectContaining({
                     "Access-Token": "test-token"
@@ -175,7 +175,7 @@ describe("App", () => {
         expect(await screen.findByText("系统管理")).toBeInTheDocument();
         expect(document.querySelector(".anticon-safety-certificate")).toBeInTheDocument();
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/kuzhambu-admin-api/api/sys/current-user/menus",
+            "/kuzhambu-admin-api/api/sys/current-user/menu/list",
             expect.objectContaining({
                 headers: expect.objectContaining({
                     "Access-Token": "test-token"
@@ -184,7 +184,7 @@ describe("App", () => {
             })
         );
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/kuzhambu-admin-api/api/sys/current-user/perms",
+            "/kuzhambu-admin-api/api/sys/current-user/permission/list",
             expect.objectContaining({
                 headers: expect.objectContaining({
                     "Access-Token": "test-token"
@@ -257,7 +257,7 @@ describe("App", () => {
                 );
             }
 
-            if (url.endsWith("/sys/current-user/perms")) {
+            if (url.endsWith("/sys/current-user/permission/list")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -275,7 +275,7 @@ describe("App", () => {
                 );
             }
 
-            if (url.endsWith("/sys/current-user/info")) {
+            if (url.endsWith("/sys/current-user/get")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -295,7 +295,7 @@ describe("App", () => {
                 );
             }
 
-            if (url.endsWith("/sys/current-user/menus")) {
+            if (url.endsWith("/sys/current-user/menu/list")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({ code: "COMMON-00000", message: "success", data: [] }),
@@ -333,7 +333,7 @@ describe("App", () => {
         await waitFor(() => expect(hasPermission("sys:user:view")).toBe(true));
         expect(hasPermission("sys:role:view")).toBe(false);
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/kuzhambu-admin-api/api/sys/current-user/perms",
+            "/kuzhambu-admin-api/api/sys/current-user/permission/list",
             expect.objectContaining({
                 headers: expect.objectContaining({
                     "Access-Token": "login-access-token"
@@ -348,7 +348,7 @@ describe("App", () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
             const url = String(input);
-            if (url.endsWith("/sys/current-user/info")) {
+            if (url.endsWith("/sys/current-user/get")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -368,7 +368,7 @@ describe("App", () => {
                 );
             }
 
-            if (url.endsWith("/sys/current-user/menus")) {
+            if (url.endsWith("/sys/current-user/menu/list")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({ code: "COMMON-00000", message: "success", data: [] }),
@@ -380,7 +380,7 @@ describe("App", () => {
                 );
             }
 
-            if (url.endsWith("/sys/current-user/perms")) {
+            if (url.endsWith("/sys/current-user/permission/list")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -1003,7 +1003,7 @@ describe("App", () => {
         replacePermissions(["sys:user:view", "sys:user:edit"]);
         vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
             const url = String(input);
-            if (url.endsWith("/sys/current-user/info")) {
+            if (url.endsWith("/sys/current-user/get")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -1025,7 +1025,7 @@ describe("App", () => {
                     )
                 );
             }
-            if (url.endsWith("/sys/user/department/tree")) {
+            if (url.endsWith("/sys/user/department/list")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -1065,7 +1065,7 @@ describe("App", () => {
                     )
                 );
             }
-            if (url.endsWith("/sys/user/options")) {
+            if (url.endsWith("/sys/user/options/list")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -1197,7 +1197,7 @@ describe("App", () => {
             )
         );
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/kuzhambu-admin-api/api/sys/user/options",
+            "/kuzhambu-admin-api/api/sys/user/options/list",
             expect.any(Object)
         );
 
@@ -1269,7 +1269,7 @@ describe("App", () => {
         expect(await screen.findByRole("heading", { name: "登录" })).toBeInTheDocument();
         expect(localStorage.getItem("kuzhambu.admin.accessToken")).toBeNull();
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/kuzhambu-admin-api/api/sys/current-user/info",
+            "/kuzhambu-admin-api/api/sys/current-user/get",
             expect.objectContaining({
                 headers: expect.objectContaining({
                     "Access-Token": "stale-token"
@@ -1314,7 +1314,7 @@ describe("App", () => {
                 );
             }
 
-            if (url.endsWith("/sys/current-user/info")) {
+            if (url.endsWith("/sys/current-user/get")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -1334,7 +1334,7 @@ describe("App", () => {
                 );
             }
 
-            if (url.endsWith("/sys/current-user/menus")) {
+            if (url.endsWith("/sys/current-user/menu/list")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({ code: "COMMON-00000", message: "success", data: [] }),
@@ -1346,7 +1346,7 @@ describe("App", () => {
                 );
             }
 
-            if (url.endsWith("/sys/current-user/perms")) {
+            if (url.endsWith("/sys/current-user/permission/list")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -1378,7 +1378,7 @@ describe("App", () => {
         expect(localStorage.getItem("kuzhambu.admin.accessTokenExpireAt")).toBe("1778514052155");
         await waitFor(() =>
             expect(globalThis.fetch).toHaveBeenCalledWith(
-                "/kuzhambu-admin-api/api/sys/current-user/info",
+                "/kuzhambu-admin-api/api/sys/current-user/get",
                 expect.objectContaining({
                     headers: expect.objectContaining({
                         "Access-Token": "refreshed-access-token"
@@ -1402,7 +1402,7 @@ describe("App", () => {
         });
         vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
             const url = String(input);
-            if (url.endsWith("/sys/current-user/info")) {
+            if (url.endsWith("/sys/current-user/get")) {
                 return Promise.resolve(
                     new Response(JSON.stringify({ code: "COMMON-00002", message: "未授权用户" }), {
                         headers: { "Content-Type": "application/json" },
@@ -1415,7 +1415,7 @@ describe("App", () => {
                 return refreshResponse;
             }
 
-            if (url.endsWith("/sys/current-user/menus")) {
+            if (url.endsWith("/sys/current-user/menu/list")) {
                 expect(init).toEqual(
                     expect.objectContaining({
                         headers: expect.objectContaining({
@@ -1455,7 +1455,7 @@ describe("App", () => {
         const menuRequest = listCurrentUserMenus();
 
         expect(globalThis.fetch).not.toHaveBeenCalledWith(
-            "/kuzhambu-admin-api/api/sys/current-user/menus",
+            "/kuzhambu-admin-api/api/sys/current-user/menu/list",
             expect.any(Object)
         );
         resolveRefresh(

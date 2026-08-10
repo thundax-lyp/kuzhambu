@@ -3,8 +3,6 @@ package com.thundax.kuzhambu.system.interfaces;
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ApiSurfaceArchitectureRuleSupport;
-import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
-import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
@@ -15,7 +13,6 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 
@@ -50,22 +47,14 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
         ApiAnnotationArchitectureRuleSupport.assertAdminControllerMethodsDeclareRequiredAnnotations(
                 Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
-                Path.of("src/main/java"), legacyActionVerbAllowances());
+                Path.of("src/main/java"), Collections.emptyList());
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsDoNotUsePathOrQueryParameters(
                 Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertApiModelsDoNotExposePriority(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertSortRequestsUseOrderedIdsOnly(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
-                Collections.singletonList(Path.of("src/main/java")),
-                BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler",
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler",
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.LogInterfaceAssembler",
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.MenuInterfaceAssembler",
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.PersonalInterfaceAssembler",
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler",
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.UserInterfaceAssembler"));
+                Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
     }
 
     @Test
@@ -75,21 +64,5 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
 
         org.junit.jupiter.api.Assertions.assertFalse(
                 hasWebSecurityCustomizer, "Public API paths must use permitAll instead of web.ignoring().");
-    }
-
-    private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
-        return List.of(
-                actionVerbAllowance("CurrentUserController"),
-                actionVerbAllowance("DepartmentController"),
-                actionVerbAllowance("MenuController"),
-                actionVerbAllowance("RoleController"),
-                actionVerbAllowance("UserController"));
-    }
-
-    private static ArchitectureRuleAllowance actionVerbAllowance(String controller) {
-        return ArchitectureRuleAllowance.of(
-                "CONTROLLER_ACTION_VERB:*" + controller + ".java*",
-                "System controller retains legacy action names or paths outside the shared verb whitelist.",
-                "Rename the controller method and action path with a shared verb, update callers, then remove this allowance.");
     }
 }

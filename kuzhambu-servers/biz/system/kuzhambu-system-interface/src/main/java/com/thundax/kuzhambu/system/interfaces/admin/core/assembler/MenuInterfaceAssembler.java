@@ -23,10 +23,8 @@ public final class MenuInterfaceAssembler {
     private MenuInterfaceAssembler() {}
 
     @NonNull
-    public static MenuResponse toResponse(Menu entity) {
-        if (entity == null) {
-            return MenuResponse.builder().build();
-        }
+    public static MenuResponse toResponse(@NonNull Menu entity) {
+        Objects.requireNonNull(entity, "entity must not be null");
         String parentId = MenuIdCodec.toStringValue(entity.getParentId());
         return MenuResponse.builder()
                 .id(MenuIdCodec.toStringValue(entity.getId()))
@@ -42,10 +40,8 @@ public final class MenuInterfaceAssembler {
     }
 
     @NonNull
-    public static MenuResponse toTreeResponse(Menu entity) {
-        if (entity == null) {
-            return MenuResponse.builder().build();
-        }
+    public static MenuResponse toTreeResponse(@NonNull Menu entity) {
+        Objects.requireNonNull(entity, "entity must not be null");
         return MenuResponse.builder()
                 .id(MenuIdCodec.toStringValue(entity.getId()))
                 .parentId(MenuIdCodec.toStringValue(entity.getParentId()))
@@ -55,6 +51,7 @@ public final class MenuInterfaceAssembler {
 
     @NonNull
     public static MenuQuery toQuery(@NonNull MenuQueryRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new MenuQuery(
                 null,
                 null,
@@ -86,6 +83,8 @@ public final class MenuInterfaceAssembler {
 
     @NonNull
     public static Menu toDomain(@NonNull Menu entity, @NonNull MenuSaveRequest request) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(request, "request must not be null");
         entity.setId(MenuIdCodec.toDomain(request.getId()));
         entity.setRemarks(request.getRemarks());
         if (request.getParentId() != null) {
@@ -103,6 +102,7 @@ public final class MenuInterfaceAssembler {
 
     @NonNull
     public static CreateMenuCommand toCreateCommand(@NonNull MenuSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         Menu entity = toDomain(new Menu(), request);
         return new CreateMenuCommand(
                 entity.getId(),
@@ -119,6 +119,7 @@ public final class MenuInterfaceAssembler {
 
     @NonNull
     public static ChangeMenuInfoCommand toChangeInfoCommand(@NonNull MenuSaveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         Menu entity = toDomain(new Menu(), request);
         return new ChangeMenuInfoCommand(
                 entity.getId(),

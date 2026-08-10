@@ -32,6 +32,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -81,7 +82,12 @@ public class LogController {
     private LogResponse toResponse(Log log) {
         User user = getLogUser(log);
         Department department = user == null ? null : getDepartment(user.getDepartmentId());
-        return LogInterfaceAssembler.toResponse(log, user, getAccountLoginName(user), department, this::getDepartment);
+        return LogInterfaceAssembler.toResponse(
+                log,
+                Optional.ofNullable(user),
+                Optional.ofNullable(getAccountLoginName(user)),
+                Optional.ofNullable(department),
+                this::getDepartment);
     }
 
     private User getLogUser(Log log) {
@@ -102,7 +108,7 @@ public class LogController {
     }
 
     private PrincipalIdentityQuery identityQuery(PrincipalKey principalKey, PrincipalIdentityType identityType) {
-        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
+        return LogInterfaceAssembler.toPrincipalIdentityQuery(principalKey, identityType);
     }
 
     private Department getDepartment(DepartmentId departmentId) {

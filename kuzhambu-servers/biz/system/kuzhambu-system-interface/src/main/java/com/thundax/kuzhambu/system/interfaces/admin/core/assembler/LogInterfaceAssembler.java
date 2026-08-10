@@ -1,9 +1,12 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
 import com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
@@ -20,6 +23,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
@@ -29,14 +33,16 @@ public final class LogInterfaceAssembler {
 
     @NonNull
     public static LogResponse toResponse(
-            Log entity,
-            User user,
-            String loginName,
-            Department department,
-            Function<DepartmentId, Department> departmentLoader) {
-        if (entity == null) {
-            return LogResponse.builder().build();
-        }
+            @NonNull Log entity,
+            @NonNull Optional<User> user,
+            @NonNull Optional<String> loginName,
+            @NonNull Optional<Department> department,
+            @NonNull Function<DepartmentId, Department> departmentLoader) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(user, "user must not be null");
+        Objects.requireNonNull(loginName, "loginName must not be null");
+        Objects.requireNonNull(department, "department must not be null");
+        Objects.requireNonNull(departmentLoader, "departmentLoader must not be null");
         return LogResponse.builder()
                 .id(LogIdCodec.toStringValue(entity.getId()))
                 .remarks(entity.getRemarks())
@@ -54,6 +60,7 @@ public final class LogInterfaceAssembler {
 
     @NonNull
     public static LogQuery toQuery(@NonNull LogPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new LogQuery(
                 null,
                 request.getRemoteAddr(),
@@ -83,7 +90,9 @@ public final class LogInterfaceAssembler {
     }
 
     @NonNull
-    public static DeleteLogCommand toDeleteCommand(Instant beginDate, Instant endDate) {
+    public static DeleteLogCommand toDeleteCommand(@NonNull Instant beginDate, @NonNull Instant endDate) {
+        Objects.requireNonNull(beginDate, "beginDate must not be null");
+        Objects.requireNonNull(endDate, "endDate must not be null");
         return new DeleteLogCommand(new LogQuery(null, null, null, null, null, null, beginDate, endDate));
     }
 
@@ -94,29 +103,42 @@ public final class LogInterfaceAssembler {
     }
 
     @NonNull
+    public static PrincipalIdentityQuery toPrincipalIdentityQuery(
+            @NonNull PrincipalKey principalKey, @NonNull PrincipalIdentityType identityType) {
+        Objects.requireNonNull(principalKey, "principalKey must not be null");
+        Objects.requireNonNull(identityType, "identityType must not be null");
+        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
+    }
+
+    @NonNull
     private static LogUserResponse toUserResponse(
-            User entity, String loginName, Department department, Function<DepartmentId, Department> departmentLoader) {
-        if (entity == null) {
+            Optional<User> entity,
+            Optional<String> loginName,
+            Optional<Department> department,
+            Function<DepartmentId, Department> departmentLoader) {
+        if (entity.isEmpty()) {
             return LogUserResponse.builder().build();
         }
+        User user = entity.get();
         return LogUserResponse.builder()
-                .id(UserIdCodec.toStringValue(entity.getId()))
-                .loginName(loginName)
-                .name(entity.getName())
+                .id(UserIdCodec.toStringValue(user.getId()))
+                .loginName(loginName.orElse(null))
+                .name(user.getName())
                 .department(toDepartmentResponse(department, departmentLoader))
                 .build();
     }
 
     @NonNull
     private static LogDepartmentResponse toDepartmentResponse(
-            Department entity, Function<DepartmentId, Department> departmentLoader) {
-        if (entity == null) {
+            Optional<Department> entity, Function<DepartmentId, Department> departmentLoader) {
+        if (entity.isEmpty()) {
             return LogDepartmentResponse.builder().build();
         }
+        Department department = entity.get();
         return LogDepartmentResponse.builder()
-                .id(DepartmentIdCodec.toStringValue(entity.getId()))
-                .name(entity.getName())
-                .namePath(namePath(entity, departmentLoader))
+                .id(DepartmentIdCodec.toStringValue(department.getId()))
+                .name(department.getName())
+                .namePath(namePath(department, departmentLoader))
                 .build();
     }
 
