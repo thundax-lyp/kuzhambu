@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationSnapshotBindApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationPayloadAssembler;
@@ -60,10 +61,11 @@ class ClassicsPublicationSnapshotBindApplicationServiceTest {
         WangqiDocument document = new WangqiDocument();
         document.setId(new WangqiDocumentId(12L));
         ClassicsContentVersion version = version();
-        when(contentRepository.lockPublicationContent(ClassicsContentType.WANGQI_DOCUMENT, CONTENT_ID))
+        when(contentRepository.getByPublicationContentForLock(ClassicsContentType.WANGQI_DOCUMENT, CONTENT_ID))
                 .thenReturn(publicationContent());
-        when(contentRepository.getWangqiDocumentForAiApply(CONTENT_ID)).thenReturn(document);
-        when(contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "发布正式版本"))
+        when(contentRepository.getByWangqiDocumentForAiApply(CONTENT_ID)).thenReturn(document);
+        when(contentApplicationService.ensureVersioned(
+                        new ContentVersionCommand(document, ClassicsContentChangeType.MANUAL_SAVE, "发布正式版本")))
                 .thenAnswer(invocation -> {
                     document.markVersioned(version);
                     return version;
@@ -85,9 +87,10 @@ class ClassicsPublicationSnapshotBindApplicationServiceTest {
         assertTrue(service.bind(job, TOKEN));
 
         var ordered = inOrder(contentRepository, contentApplicationService, payloadAssembler, jobRepository);
-        ordered.verify(contentRepository).lockPublicationContent(ClassicsContentType.WANGQI_DOCUMENT, CONTENT_ID);
+        ordered.verify(contentRepository)
+                .getByPublicationContentForLock(ClassicsContentType.WANGQI_DOCUMENT, CONTENT_ID);
         ordered.verify(contentApplicationService)
-                .ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "发布正式版本");
+                .ensureVersioned(new ContentVersionCommand(document, ClassicsContentChangeType.MANUAL_SAVE, "发布正式版本"));
         ordered.verify(contentRepository).updateWangqiDocumentVersionMarkers(document);
         ordered.verify(payloadAssembler).assemble(job, version);
         ordered.verify(jobRepository)
@@ -109,10 +112,11 @@ class ClassicsPublicationSnapshotBindApplicationServiceTest {
         ClassicsPublicationJob job = job();
         WangqiDocument document = new WangqiDocument();
         ClassicsContentVersion version = version();
-        when(contentRepository.lockPublicationContent(ClassicsContentType.WANGQI_DOCUMENT, CONTENT_ID))
+        when(contentRepository.getByPublicationContentForLock(ClassicsContentType.WANGQI_DOCUMENT, CONTENT_ID))
                 .thenReturn(publicationContent());
-        when(contentRepository.getWangqiDocumentForAiApply(CONTENT_ID)).thenReturn(document);
-        when(contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "发布正式版本"))
+        when(contentRepository.getByWangqiDocumentForAiApply(CONTENT_ID)).thenReturn(document);
+        when(contentApplicationService.ensureVersioned(
+                        new ContentVersionCommand(document, ClassicsContentChangeType.MANUAL_SAVE, "发布正式版本")))
                 .thenAnswer(invocation -> {
                     document.markVersioned(version);
                     return version;

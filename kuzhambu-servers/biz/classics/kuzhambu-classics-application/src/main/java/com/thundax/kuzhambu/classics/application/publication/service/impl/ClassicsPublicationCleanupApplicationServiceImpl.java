@@ -38,7 +38,7 @@ public class ClassicsPublicationCleanupApplicationServiceImpl implements Classic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean qualify(ClassicsPublicationJob claimedJob, String token, boolean es) {
-        ClassicsPublicationContent content = contentRepository.lockPublicationContent(
+        ClassicsPublicationContent content = contentRepository.getByPublicationContentForLock(
                 claimedJob.getContentType(), new ClassicsContentId(claimedJob.getContentId()));
         ClassicsPublicationJob current =
                 jobRepository.lockByContent(claimedJob.getContentType(), claimedJob.getContentId());

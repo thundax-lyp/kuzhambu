@@ -31,7 +31,7 @@ public class RefinementTaskRepositoryImpl implements RefinementTaskRepository {
     }
 
     @Override
-    public RefinementTask findLatestDraft(
+    public RefinementTask getByLatestDraft(
             String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId) {
         QueryWrapper<RefinementTaskDO> wrapper = new QueryWrapper<>();
         wrapper.eq("task_type", taskType)
@@ -45,7 +45,7 @@ public class RefinementTaskRepositoryImpl implements RefinementTaskRepository {
     }
 
     @Override
-    public RefinementTask findLatestAppliedByGraphVersionId(Long graphVersionId) {
+    public RefinementTask getByLatestAppliedGraphVersionId(Long graphVersionId) {
         QueryWrapper<RefinementTaskDO> wrapper = new QueryWrapper<>();
         wrapper.eq("graph_version_id", graphVersionId)
                 .eq("status", "APPLIED")

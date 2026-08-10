@@ -4,43 +4,50 @@ import com.thundax.kuzhambu.knowledge.application.lineage.query.LineageCanvasQue
 import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.lineage.controller.request.LineageCanvasRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.lineage.controller.response.LineageCanvasResponse;
+import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class KnowledgeLineageInterfaceAssembler {
 
     private KnowledgeLineageInterfaceAssembler() {}
 
-    public static LineageCanvasQuery toQuery(LineageCanvasRequest request) {
+    @NonNull
+    public static LineageCanvasQuery toQuery(@NonNull LineageCanvasRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new LineageCanvasQuery(
-                request == null ? null : request.getVersionId(),
-                request == null ? null : request.getFocusNodeId(),
-                request == null ? null : request.getFocusRelationId(),
-                request == null ? null : request.getKeyword(),
-                request == null ? null : request.getNodeType(),
-                request == null ? null : request.getRelationType(),
-                request == null ? null : request.getConfirmationStatus(),
-                request == null ? null : request.getDepth());
+                request.getVersionId(),
+                request.getFocusNodeId(),
+                request.getFocusRelationId(),
+                request.getKeyword(),
+                request.getNodeType(),
+                request.getRelationType(),
+                request.getConfirmationStatus(),
+                request.getDepth());
     }
 
-    public static LineageCanvasResponse toResponse(LineageCanvasResult result) {
+    @NonNull
+    public static LineageCanvasResponse toResponse(@NonNull LineageCanvasResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return LineageCanvasResponse.builder()
-                .version(toVersionResponse(result == null ? null : result.getVersion()))
-                .summary(toSummaryResponse(result == null ? null : result.getSummary()))
+                .version(toVersionResponse(result.getVersion()))
+                .summary(toSummaryResponse(result.getSummary()))
                 .nodes(
-                        result == null
-                                ? null
+                        result.getNodes() == null
+                                ? List.of()
                                 : result.getNodes().stream()
                                         .map(KnowledgeLineageInterfaceAssembler::toNodeResponse)
                                         .toList())
                 .relations(
-                        result == null
-                                ? null
+                        result.getRelations() == null
+                                ? List.of()
                                 : result.getRelations().stream()
                                         .map(KnowledgeLineageInterfaceAssembler::toRelationResponse)
                                         .toList())
-                .selectedNode(toNodeResponse(result == null ? null : result.getSelectedNode()))
-                .selectedRelation(toRelationResponse(result == null ? null : result.getSelectedRelation()))
-                .availableFilters(toAvailableFiltersResponse(result == null ? null : result.getAvailableFilters()))
-                .empty(toEmptyResponse(result == null ? null : result.getEmpty()))
+                .selectedNode(toNodeResponse(result.getSelectedNode()))
+                .selectedRelation(toRelationResponse(result.getSelectedRelation()))
+                .availableFilters(toAvailableFiltersResponse(result.getAvailableFilters()))
+                .empty(toEmptyResponse(result.getEmpty()))
                 .build();
     }
 

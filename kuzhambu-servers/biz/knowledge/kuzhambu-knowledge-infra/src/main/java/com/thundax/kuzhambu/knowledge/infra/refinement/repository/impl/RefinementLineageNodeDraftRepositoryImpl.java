@@ -29,7 +29,7 @@ public class RefinementLineageNodeDraftRepositoryImpl implements RefinementLinea
     }
 
     @Override
-    public void saveOrUpdateBatch(List<RefinementLineageNodeDraft> drafts) {
+    public void batchSaveOrUpdate(List<RefinementLineageNodeDraft> drafts) {
         for (RefinementLineageNodeDraft draft : drafts == null ? List.<RefinementLineageNodeDraft>of() : drafts) {
             RefinementLineageNodeDraftDO dataObject = RefinementLineageNodeDraftPersistenceAssembler.toObject(draft);
             if (dataObject.getDraftId() == null) {

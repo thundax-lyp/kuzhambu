@@ -222,7 +222,7 @@ const createGraphExtractionMockHandlers = async (page: Page) => {
         }
     );
     await page.route(
-        "**/kuzhambu-admin-api/api/knowledge/graph-extraction/task/cancel-batch",
+        "**/kuzhambu-admin-api/api/knowledge/graph-extraction/task/cancel",
         async (route) => {
             cancelPayload = readRequestBody(route.request().postData());
             await fulfillSuccess(route, {

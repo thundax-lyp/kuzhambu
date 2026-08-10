@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.classics.application.wangqi.service.impl;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
@@ -7,6 +9,7 @@ import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPub
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentStorageObjectCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
@@ -71,24 +74,23 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     @Override
     public PageResult<WangqiDocument> page(WangqiDocumentQuery query, PageQuery page) {
-        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+        if (hasPermissionContext(query) && !canView(query.operatorPermissions())) {
             return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
         }
         return repository.page(
-                query == null ? null : query.getKeyword(),
-                query == null ? SortDirection.ASC : query.getSortDirection(),
+                query == null ? null : query.keyword(),
+                query == null ? SortDirection.ASC : query.sortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
     }
 
     @Override
     public List<WangqiDocument> listTimeline(WangqiDocumentQuery query) {
-        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+        if (hasPermissionContext(query) && !canView(query.operatorPermissions())) {
             return List.of();
         }
         return repository.listTimeline(
-                query == null ? null : query.getKeyword(),
-                query == null ? SortDirection.ASC : query.getSortDirection());
+                query == null ? null : query.keyword(), query == null ? SortDirection.ASC : query.sortDirection());
     }
 
     @Override
@@ -121,16 +123,16 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     @Override
     @Transactional(rollbackFor = Exception.class)
     public WangqiDocumentSourceFile changeSourceFile(WangqiDocumentSourceFileCommand command) {
-        WangqiDocumentId documentId = WangqiDocumentIdCodec.toDomain(command == null ? null : command.getDocumentId());
+        WangqiDocumentId documentId = WangqiDocumentIdCodec.toDomain(command == null ? null : command.documentId());
         requireWritable(documentId, ClassicsPublicationWriteOperation.EDIT);
         WangqiDocument document = requireDocument(documentId);
         boolean replacing = document.getStorageObjectId() != null;
 
         UploadStorageFacadeResponse uploadResponse = storageFacade.upload(UploadStorageFacadeRequest.builder()
-                .inputStream(command.getInputStream())
-                .originalFilename(command.getOriginalFilename())
-                .contentType(command.getContentType())
-                .sizeBytes(command.getSize())
+                .inputStream(command.inputStream())
+                .originalFilename(command.originalFilename())
+                .contentType(command.contentType())
+                .sizeBytes(command.size())
                 .ownerType(DOCUMENT_OWNER_TYPE)
                 .ownerId(ownerId(documentId))
                 .build());
@@ -177,7 +179,9 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void changeStorageObject(WangqiDocumentId id, StorageObjectId storageObjectId) {
+    public void changeStorageObject(WangqiDocumentStorageObjectCommand command) {
+        WangqiDocumentId id = command == null ? null : command.id();
+        StorageObjectId storageObjectId = command == null ? null : command.storageObjectId();
         requireWritable(id, ClassicsPublicationWriteOperation.EDIT);
         repository.updateStorageObjectId(id, storageObjectId);
     }
@@ -192,10 +196,11 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         WangqiDocument document = get(id);
         if (document != null) {
             document.setContentUpdatedAt(Instant.now());
-            contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+            contentApplicationService.ensureVersioned(
+                    new ContentVersionCommand(document, ClassicsContentChangeType.MANUAL_SAVE, "手动删除"));
         }
-        contentApplicationService.deleteVersions(
-                ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(id.value()));
+        contentApplicationService.deleteVersions(new ContentObjectQuery(
+                ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(id.value())));
         storageFacade.unbindOwner(UnbindStorageOwnerFacadeRequest.builder()
                 .ownerType(DOCUMENT_OWNER_TYPE)
                 .ownerId(ownerId(id))
@@ -212,13 +217,13 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     private static WangqiDocument toDocument(WangqiDocumentCommand command) {
         WangqiDocument document = new WangqiDocument();
-        document.setId(WangqiDocumentIdCodec.toDomain(command.getId()));
-        document.setTitle(command.getTitle());
-        document.setSummary(command.getSummary());
-        document.setContentFormat(command.getContentFormat());
-        document.setContent(command.getContent());
-        document.setDocumentTime(command.getDocumentTime());
-        document.setStorageObjectId(StorageObjectIdCodec.toDomain(command.getStorageObjectId()));
+        document.setId(WangqiDocumentIdCodec.toDomain(command.id()));
+        document.setTitle(command.title());
+        document.setSummary(command.summary());
+        document.setContentFormat(command.contentFormat());
+        document.setContent(command.content());
+        document.setDocumentTime(command.documentTime());
+        document.setStorageObjectId(StorageObjectIdCodec.toDomain(command.storageObjectId()));
         return document;
     }
 
@@ -236,7 +241,8 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     }
 
     private void markVersion(WangqiDocument document, String changeSummary) {
-        contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
+        contentApplicationService.ensureVersioned(
+                new ContentVersionCommand(document, ClassicsContentChangeType.MANUAL_SAVE, changeSummary));
         repository.update(document);
     }
 
@@ -311,7 +317,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     }
 
     private static boolean hasPermissionContext(WangqiDocumentQuery query) {
-        return query != null && hasPermissionContext(query.getOperatorPermissions());
+        return query != null && hasPermissionContext(query.operatorPermissions());
     }
 
     private static boolean hasPermissionContext(Set<String> operatorPermissions) {

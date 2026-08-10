@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.assembler;
 
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ApplyRefinementTaskCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementEntityCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageRelationCommand;
@@ -9,12 +10,14 @@ import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefin
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementRelationCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.OpenRefinementTaskCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertQualityAnnotationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementEntityCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualitySummaryQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
@@ -30,227 +33,270 @@ import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementRe
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementWorkbenchItemResult;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller.request.RefinementRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller.response.RefinementResponses;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class KnowledgeGraphRefinementInterfaceAssembler {
 
     private KnowledgeGraphRefinementInterfaceAssembler() {}
 
-    public static RefinementWorkbenchQuery toTaskQuery(RefinementRequests.TaskPageRequest request) {
+    @NonNull
+    public static RefinementWorkbenchQuery toTaskQuery(@NonNull RefinementRequests.TaskPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RefinementWorkbenchQuery(
-                request == null ? null : request.getTaskType(),
-                request == null ? null : request.getSourceContentType(),
-                request == null ? null : request.getSourceContentId(),
-                request == null ? null : request.getSourceCategoryCode(),
-                request == null ? null : request.getStatus());
+                request.getTaskType(),
+                request.getSourceContentType(),
+                request.getSourceContentId(),
+                request.getSourceCategoryCode(),
+                request.getStatus());
     }
 
-    public static RefinementDetailQuery toDetailQuery(RefinementRequests.TaskDetailRequest request) {
-        return new RefinementDetailQuery(request == null ? null : request.getRefinementTaskId());
+    @NonNull
+    public static OpenRefinementTaskCommand toOpenTaskCommand(@NonNull RefinementRequests.TaskOpenRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new OpenRefinementTaskCommand(request.getGraphVersionId(), request.getOpenedBy());
     }
 
-    public static UpsertRefinementEntityCommand toEntityCommand(RefinementRequests.EntityUpsertRequest request) {
+    @NonNull
+    public static RefinementDetailQuery toDetailQuery(@NonNull RefinementRequests.TaskDetailRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new RefinementDetailQuery(request.getRefinementTaskId());
+    }
+
+    @NonNull
+    public static ApplyRefinementTaskCommand toApplyTaskCommand(@NonNull RefinementRequests.TaskApplyRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new ApplyRefinementTaskCommand(request.getRefinementTaskId(), request.getAppliedBy());
+    }
+
+    @NonNull
+    public static QualitySummaryQuery toQualitySummaryQuery(@NonNull RefinementRequests.QualitySummaryRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new QualitySummaryQuery(request.getRefinementTaskId());
+    }
+
+    @NonNull
+    public static UpsertRefinementEntityCommand toEntityCommand(
+            @NonNull RefinementRequests.EntityUpsertRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new UpsertRefinementEntityCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getEntityId(),
-                request == null ? null : request.getEntityKey(),
-                request == null ? null : request.getName(),
-                request == null ? null : request.getEntityType(),
-                request == null ? null : request.getDescription(),
-                request == null ? null : request.getSourceRefsJson(),
-                request == null ? null : request.getSortOrder(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(),
+                request.getEntityId(),
+                request.getEntityKey(),
+                request.getName(),
+                request.getEntityType(),
+                request.getDescription(),
+                request.getSourceRefsJson(),
+                request.getSortOrder(),
+                request.getOperatorId());
     }
 
+    @NonNull
     public static ConfirmRefinementEntityCommand toConfirmEntityCommand(
-            RefinementRequests.EntityConfirmRequest request) {
+            @NonNull RefinementRequests.EntityConfirmRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ConfirmRefinementEntityCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getEntityKey(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(), request.getEntityKey(), request.getOperatorId());
     }
 
-    public static DeleteRefinementEntityCommand toDeleteEntityCommand(RefinementRequests.EntityDeleteRequest request) {
+    @NonNull
+    public static DeleteRefinementEntityCommand toDeleteEntityCommand(
+            @NonNull RefinementRequests.EntityDeleteRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new DeleteRefinementEntityCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getEntityKey(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(), request.getEntityKey(), request.getOperatorId());
     }
 
-    public static UpsertRefinementRelationCommand toRelationCommand(RefinementRequests.RelationUpsertRequest request) {
+    @NonNull
+    public static UpsertRefinementRelationCommand toRelationCommand(
+            @NonNull RefinementRequests.RelationUpsertRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new UpsertRefinementRelationCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getRelationId(),
-                request == null ? null : request.getRelationKey(),
-                request == null ? null : request.getSourceEntityKey(),
-                request == null ? null : request.getTargetEntityKey(),
-                request == null ? null : request.getSourceName(),
-                request == null ? null : request.getTargetName(),
-                request == null ? null : request.getRelationType(),
-                request == null ? null : request.getEvidence(),
-                request == null ? null : request.getSourceRefsJson(),
-                request == null ? null : request.getSortOrder(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(),
+                request.getRelationId(),
+                request.getRelationKey(),
+                request.getSourceEntityKey(),
+                request.getTargetEntityKey(),
+                request.getSourceName(),
+                request.getTargetName(),
+                request.getRelationType(),
+                request.getEvidence(),
+                request.getSourceRefsJson(),
+                request.getSortOrder(),
+                request.getOperatorId());
     }
 
+    @NonNull
     public static ConfirmRefinementRelationCommand toConfirmRelationCommand(
-            RefinementRequests.RelationConfirmRequest request) {
+            @NonNull RefinementRequests.RelationConfirmRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ConfirmRefinementRelationCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getRelationKey(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(), request.getRelationKey(), request.getOperatorId());
     }
 
+    @NonNull
     public static DeleteRefinementRelationCommand toDeleteRelationCommand(
-            RefinementRequests.RelationDeleteRequest request) {
+            @NonNull RefinementRequests.RelationDeleteRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new DeleteRefinementRelationCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getRelationKey(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(), request.getRelationKey(), request.getOperatorId());
     }
 
+    @NonNull
     public static UpsertRefinementLineageNodeCommand toLineageNodeCommand(
-            RefinementRequests.LineageNodeUpsertRequest request) {
+            @NonNull RefinementRequests.LineageNodeUpsertRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new UpsertRefinementLineageNodeCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getNodeId(),
-                request == null ? null : request.getNodeKey(),
-                request == null ? null : request.getName(),
-                request == null ? null : request.getNodeType(),
-                request == null ? null : request.getGeneration(),
-                request == null ? null : request.getGender(),
-                request == null ? null : request.getSourceRefsJson(),
-                request == null ? null : request.getSortOrder(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(),
+                request.getNodeId(),
+                request.getNodeKey(),
+                request.getName(),
+                request.getNodeType(),
+                request.getGeneration(),
+                request.getGender(),
+                request.getSourceRefsJson(),
+                request.getSortOrder(),
+                request.getOperatorId());
     }
 
+    @NonNull
     public static ConfirmRefinementLineageNodeCommand toConfirmLineageNodeCommand(
-            RefinementRequests.LineageNodeConfirmRequest request) {
+            @NonNull RefinementRequests.LineageNodeConfirmRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ConfirmRefinementLineageNodeCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getNodeKey(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(), request.getNodeKey(), request.getOperatorId());
     }
 
+    @NonNull
     public static DeleteRefinementLineageNodeCommand toDeleteLineageNodeCommand(
-            RefinementRequests.LineageNodeDeleteRequest request) {
+            @NonNull RefinementRequests.LineageNodeDeleteRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new DeleteRefinementLineageNodeCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getNodeKey(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(), request.getNodeKey(), request.getOperatorId());
     }
 
+    @NonNull
     public static UpsertRefinementLineageRelationCommand toLineageRelationCommand(
-            RefinementRequests.LineageRelationUpsertRequest request) {
+            @NonNull RefinementRequests.LineageRelationUpsertRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new UpsertRefinementLineageRelationCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getRelationId(),
-                request == null ? null : request.getRelationKey(),
-                request == null ? null : request.getSourceNodeKey(),
-                request == null ? null : request.getTargetNodeKey(),
-                request == null ? null : request.getSourceName(),
-                request == null ? null : request.getTargetName(),
-                request == null ? null : request.getRelationType(),
-                request == null ? null : request.getEvidence(),
-                request == null ? null : request.getSourceRefsJson(),
-                request == null ? null : request.getSortOrder(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(),
+                request.getRelationId(),
+                request.getRelationKey(),
+                request.getSourceNodeKey(),
+                request.getTargetNodeKey(),
+                request.getSourceName(),
+                request.getTargetName(),
+                request.getRelationType(),
+                request.getEvidence(),
+                request.getSourceRefsJson(),
+                request.getSortOrder(),
+                request.getOperatorId());
     }
 
+    @NonNull
     public static ConfirmRefinementLineageRelationCommand toConfirmLineageRelationCommand(
-            RefinementRequests.LineageRelationConfirmRequest request) {
+            @NonNull RefinementRequests.LineageRelationConfirmRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ConfirmRefinementLineageRelationCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getRelationKey(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(), request.getRelationKey(), request.getOperatorId());
     }
 
+    @NonNull
     public static DeleteRefinementLineageRelationCommand toDeleteLineageRelationCommand(
-            RefinementRequests.LineageRelationDeleteRequest request) {
+            @NonNull RefinementRequests.LineageRelationDeleteRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new DeleteRefinementLineageRelationCommand(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getRelationKey(),
-                request == null ? null : request.getOperatorId());
+                request.getRefinementTaskId(), request.getRelationKey(), request.getOperatorId());
     }
 
+    @NonNull
     public static UpsertQualityAnnotationCommand toAnnotationCommand(
-            RefinementRequests.AnnotationUpsertRequest request) {
+            @NonNull RefinementRequests.AnnotationUpsertRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new UpsertQualityAnnotationCommand(
-                request == null ? null : request.getAnnotationId(),
-                request == null ? null : request.getObjectType(),
-                request == null ? null : request.getObjectKey(),
-                request == null ? null : request.getSourceContentType(),
-                request == null ? null : request.getSourceContentId(),
-                request == null ? null : request.getGraphVersionId(),
-                request == null ? null : request.getAnnotationStatus(),
-                request == null ? null : request.getAnnotationLabel(),
-                request == null ? null : request.getComment(),
-                request == null ? null : request.getOperatorId());
+                request.getAnnotationId(),
+                request.getObjectType(),
+                request.getObjectKey(),
+                request.getSourceContentType(),
+                request.getSourceContentId(),
+                request.getGraphVersionId(),
+                request.getAnnotationStatus(),
+                request.getAnnotationLabel(),
+                request.getComment(),
+                request.getOperatorId());
     }
 
+    @NonNull
     public static DeleteQualityAnnotationCommand toDeleteAnnotationCommand(
-            RefinementRequests.AnnotationDeleteRequest request) {
-        return new DeleteQualityAnnotationCommand(request == null ? null : request.getAnnotationId());
+            @NonNull RefinementRequests.AnnotationDeleteRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new DeleteQualityAnnotationCommand(request.getAnnotationId());
     }
 
-    public static QualityAnnotationQuery toAnnotationQuery(RefinementRequests.AnnotationPageRequest request) {
-        return new QualityAnnotationQuery(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getObjectType());
+    @NonNull
+    public static QualityAnnotationQuery toAnnotationQuery(@NonNull RefinementRequests.AnnotationPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new QualityAnnotationQuery(request.getRefinementTaskId(), request.getObjectType());
     }
 
-    public static RefinementResponses.WorkbenchItemResponse toResponse(RefinementWorkbenchItemResult result) {
+    @NonNull
+    public static RefinementResponses.WorkbenchItemResponse toResponse(@NonNull RefinementWorkbenchItemResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return RefinementResponses.WorkbenchItemResponse.builder()
-                .refinementTaskId(result == null ? null : result.getRefinementTaskId())
-                .graphVersionId(result == null ? null : result.getGraphVersionId())
-                .taskType(result == null ? null : result.getTaskType())
-                .sourceContentType(result == null ? null : result.getSourceContentType())
-                .sourceContentId(result == null ? null : result.getSourceContentId())
-                .sourceCategoryCode(result == null ? null : result.getSourceCategoryCode())
-                .sourceCategoryName(result == null ? null : result.getSourceCategoryName())
-                .status(result == null ? null : result.getStatus())
-                .openedBy(result == null ? null : result.getOpenedBy())
-                .openedAt(result == null ? null : result.getOpenedAt())
-                .progressSummary(toResponse(result == null ? null : result.getProgressSummary()))
+                .refinementTaskId(result.getRefinementTaskId())
+                .graphVersionId(result.getGraphVersionId())
+                .taskType(result.getTaskType())
+                .sourceContentType(result.getSourceContentType())
+                .sourceContentId(result.getSourceContentId())
+                .sourceCategoryCode(result.getSourceCategoryCode())
+                .sourceCategoryName(result.getSourceCategoryName())
+                .status(result.getStatus())
+                .openedBy(result.getOpenedBy())
+                .openedAt(result.getOpenedAt())
+                .progressSummary(toResponse(result.getProgressSummary()))
                 .build();
     }
 
-    public static RefinementResponses.DetailResponse toResponse(RefinementDetailResult result) {
+    @NonNull
+    public static RefinementResponses.DetailResponse toResponse(@NonNull RefinementDetailResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return RefinementResponses.DetailResponse.builder()
-                .refinementTaskId(result == null ? null : result.getRefinementTaskId())
-                .graphVersionId(result == null ? null : result.getGraphVersionId())
-                .taskType(result == null ? null : result.getTaskType())
-                .sourceContentType(result == null ? null : result.getSourceContentType())
-                .sourceContentId(result == null ? null : result.getSourceContentId())
-                .sourceCategoryCode(result == null ? null : result.getSourceCategoryCode())
-                .sourceCategoryName(result == null ? null : result.getSourceCategoryName())
-                .status(result == null ? null : result.getStatus())
-                .progressSummary(toResponse(result == null ? null : result.getProgressSummary()))
+                .refinementTaskId(result.getRefinementTaskId())
+                .graphVersionId(result.getGraphVersionId())
+                .taskType(result.getTaskType())
+                .sourceContentType(result.getSourceContentType())
+                .sourceContentId(result.getSourceContentId())
+                .sourceCategoryCode(result.getSourceCategoryCode())
+                .sourceCategoryName(result.getSourceCategoryName())
+                .status(result.getStatus())
+                .progressSummary(toResponse(result.getProgressSummary()))
                 .entities(
-                        result == null || result.getEntities() == null
+                        result.getEntities() == null
                                 ? java.util.List.of()
                                 : result.getEntities().stream()
                                         .map(KnowledgeGraphRefinementInterfaceAssembler::toResponse)
                                         .toList())
                 .relations(
-                        result == null || result.getRelations() == null
+                        result.getRelations() == null
                                 ? java.util.List.of()
                                 : result.getRelations().stream()
                                         .map(KnowledgeGraphRefinementInterfaceAssembler::toResponse)
                                         .toList())
                 .lineageNodes(
-                        result == null || result.getLineageNodes() == null
+                        result.getLineageNodes() == null
                                 ? java.util.List.of()
                                 : result.getLineageNodes().stream()
                                         .map(KnowledgeGraphRefinementInterfaceAssembler::toResponse)
                                         .toList())
                 .lineageRelations(
-                        result == null || result.getLineageRelations() == null
+                        result.getLineageRelations() == null
                                 ? java.util.List.of()
                                 : result.getLineageRelations().stream()
                                         .map(KnowledgeGraphRefinementInterfaceAssembler::toResponse)
                                         .toList())
                 .entityOptions(
-                        result == null || result.getEntityOptions() == null
+                        result.getEntityOptions() == null
                                 ? java.util.List.of()
                                 : result.getEntityOptions().stream()
                                         .map(KnowledgeGraphRefinementInterfaceAssembler::toResponse)
@@ -258,132 +304,148 @@ public final class KnowledgeGraphRefinementInterfaceAssembler {
                 .build();
     }
 
-    public static RefinementResponses.ApplyResponse toResponse(RefinementApplyResult result) {
+    @NonNull
+    public static RefinementResponses.ApplyResponse toResponse(@NonNull RefinementApplyResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return RefinementResponses.ApplyResponse.builder()
-                .refinementTaskId(result == null ? null : result.getRefinementTaskId())
-                .graphVersionId(result == null ? null : result.getGraphVersionId())
-                .taskType(result == null ? null : result.getTaskType())
-                .sourceContentType(result == null ? null : result.getSourceContentType())
-                .sourceContentId(result == null ? null : result.getSourceContentId())
-                .sourceCategoryCode(result == null ? null : result.getSourceCategoryCode())
-                .sourceCategoryName(result == null ? null : result.getSourceCategoryName())
-                .status(result == null ? null : result.getStatus())
-                .appliedAt(result == null ? null : result.getAppliedAt())
-                .graphRefreshRequired(result == null ? null : result.getGraphRefreshRequired())
-                .regenerateSupported(result == null ? null : result.getRegenerateSupported())
-                .sourceTaskId(result == null ? null : result.getSourceTaskId())
-                .selectionScopeJson(result == null ? null : result.getSelectionScopeJson())
-                .replaceUnconfirmedOnly(result == null ? null : result.getReplaceUnconfirmedOnly())
-                .triggerSource(result == null ? null : result.getTriggerSource())
-                .nextAction(result == null ? null : result.getNextAction())
-                .qualityReportRefreshRequired(result == null ? null : result.getQualityReportRefreshRequired())
+                .refinementTaskId(result.getRefinementTaskId())
+                .graphVersionId(result.getGraphVersionId())
+                .taskType(result.getTaskType())
+                .sourceContentType(result.getSourceContentType())
+                .sourceContentId(result.getSourceContentId())
+                .sourceCategoryCode(result.getSourceCategoryCode())
+                .sourceCategoryName(result.getSourceCategoryName())
+                .status(result.getStatus())
+                .appliedAt(result.getAppliedAt())
+                .graphRefreshRequired(result.getGraphRefreshRequired())
+                .regenerateSupported(result.getRegenerateSupported())
+                .sourceTaskId(result.getSourceTaskId())
+                .selectionScopeJson(result.getSelectionScopeJson())
+                .replaceUnconfirmedOnly(result.getReplaceUnconfirmedOnly())
+                .triggerSource(result.getTriggerSource())
+                .nextAction(result.getNextAction())
+                .qualityReportRefreshRequired(result.getQualityReportRefreshRequired())
                 .build();
     }
 
-    public static RefinementResponses.EntityResponse toResponse(RefinementEntityResult result) {
+    @NonNull
+    public static RefinementResponses.EntityResponse toResponse(@NonNull RefinementEntityResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return RefinementResponses.EntityResponse.builder()
-                .draftId(result == null ? null : result.getDraftId())
-                .entityId(result == null ? null : result.getEntityId())
-                .entityKey(result == null ? null : result.getEntityKey())
-                .originType(result == null ? null : result.getOriginType())
-                .operationType(result == null ? null : result.getOperationType())
-                .name(result == null ? null : result.getName())
-                .entityType(result == null ? null : result.getEntityType())
-                .description(result == null ? null : result.getDescription())
-                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
-                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
-                .sortOrder(result == null ? null : result.getSortOrder())
+                .draftId(result.getDraftId())
+                .entityId(result.getEntityId())
+                .entityKey(result.getEntityKey())
+                .originType(result.getOriginType())
+                .operationType(result.getOperationType())
+                .name(result.getName())
+                .entityType(result.getEntityType())
+                .description(result.getDescription())
+                .confirmationStatus(result.getConfirmationStatus())
+                .sourceRefsJson(result.getSourceRefsJson())
+                .sortOrder(result.getSortOrder())
                 .build();
     }
 
-    public static RefinementResponses.RelationResponse toResponse(RefinementRelationResult result) {
+    @NonNull
+    public static RefinementResponses.RelationResponse toResponse(@NonNull RefinementRelationResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return RefinementResponses.RelationResponse.builder()
-                .draftId(result == null ? null : result.getDraftId())
-                .relationId(result == null ? null : result.getRelationId())
-                .relationKey(result == null ? null : result.getRelationKey())
-                .originType(result == null ? null : result.getOriginType())
-                .operationType(result == null ? null : result.getOperationType())
-                .sourceEntityKey(result == null ? null : result.getSourceEntityKey())
-                .targetEntityKey(result == null ? null : result.getTargetEntityKey())
-                .sourceName(result == null ? null : result.getSourceName())
-                .targetName(result == null ? null : result.getTargetName())
-                .relationType(result == null ? null : result.getRelationType())
-                .evidence(result == null ? null : result.getEvidence())
-                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
-                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
-                .sortOrder(result == null ? null : result.getSortOrder())
+                .draftId(result.getDraftId())
+                .relationId(result.getRelationId())
+                .relationKey(result.getRelationKey())
+                .originType(result.getOriginType())
+                .operationType(result.getOperationType())
+                .sourceEntityKey(result.getSourceEntityKey())
+                .targetEntityKey(result.getTargetEntityKey())
+                .sourceName(result.getSourceName())
+                .targetName(result.getTargetName())
+                .relationType(result.getRelationType())
+                .evidence(result.getEvidence())
+                .confirmationStatus(result.getConfirmationStatus())
+                .sourceRefsJson(result.getSourceRefsJson())
+                .sortOrder(result.getSortOrder())
                 .build();
     }
 
-    public static RefinementResponses.LineageNodeResponse toResponse(RefinementLineageNodeResult result) {
+    @NonNull
+    public static RefinementResponses.LineageNodeResponse toResponse(@NonNull RefinementLineageNodeResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return RefinementResponses.LineageNodeResponse.builder()
-                .draftId(result == null ? null : result.getDraftId())
-                .nodeId(result == null ? null : result.getNodeId())
-                .nodeKey(result == null ? null : result.getNodeKey())
-                .originType(result == null ? null : result.getOriginType())
-                .operationType(result == null ? null : result.getOperationType())
-                .name(result == null ? null : result.getName())
-                .nodeType(result == null ? null : result.getNodeType())
-                .generation(result == null ? null : result.getGeneration())
-                .gender(result == null ? null : result.getGender())
-                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
-                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
-                .sortOrder(result == null ? null : result.getSortOrder())
+                .draftId(result.getDraftId())
+                .nodeId(result.getNodeId())
+                .nodeKey(result.getNodeKey())
+                .originType(result.getOriginType())
+                .operationType(result.getOperationType())
+                .name(result.getName())
+                .nodeType(result.getNodeType())
+                .generation(result.getGeneration())
+                .gender(result.getGender())
+                .confirmationStatus(result.getConfirmationStatus())
+                .sourceRefsJson(result.getSourceRefsJson())
+                .sortOrder(result.getSortOrder())
                 .build();
     }
 
-    public static RefinementResponses.LineageRelationResponse toResponse(RefinementLineageRelationResult result) {
+    @NonNull
+    public static RefinementResponses.LineageRelationResponse toResponse(
+            @NonNull RefinementLineageRelationResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return RefinementResponses.LineageRelationResponse.builder()
-                .draftId(result == null ? null : result.getDraftId())
-                .relationId(result == null ? null : result.getRelationId())
-                .relationKey(result == null ? null : result.getRelationKey())
-                .originType(result == null ? null : result.getOriginType())
-                .operationType(result == null ? null : result.getOperationType())
-                .sourceNodeKey(result == null ? null : result.getSourceNodeKey())
-                .targetNodeKey(result == null ? null : result.getTargetNodeKey())
-                .sourceName(result == null ? null : result.getSourceName())
-                .targetName(result == null ? null : result.getTargetName())
-                .relationType(result == null ? null : result.getRelationType())
-                .evidence(result == null ? null : result.getEvidence())
-                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
-                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
-                .sortOrder(result == null ? null : result.getSortOrder())
+                .draftId(result.getDraftId())
+                .relationId(result.getRelationId())
+                .relationKey(result.getRelationKey())
+                .originType(result.getOriginType())
+                .operationType(result.getOperationType())
+                .sourceNodeKey(result.getSourceNodeKey())
+                .targetNodeKey(result.getTargetNodeKey())
+                .sourceName(result.getSourceName())
+                .targetName(result.getTargetName())
+                .relationType(result.getRelationType())
+                .evidence(result.getEvidence())
+                .confirmationStatus(result.getConfirmationStatus())
+                .sourceRefsJson(result.getSourceRefsJson())
+                .sortOrder(result.getSortOrder())
                 .build();
     }
 
-    public static RefinementResponses.AnnotationResponse toResponse(QualityAnnotationResult result) {
+    @NonNull
+    public static RefinementResponses.AnnotationResponse toResponse(@NonNull QualityAnnotationResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return RefinementResponses.AnnotationResponse.builder()
-                .annotationId(result == null ? null : result.getAnnotationId())
-                .objectType(result == null ? null : result.getObjectType())
-                .objectKey(result == null ? null : result.getObjectKey())
-                .graphVersionId(result == null ? null : result.getGraphVersionId())
-                .annotationStatus(result == null ? null : result.getAnnotationStatus())
-                .annotationLabel(result == null ? null : result.getAnnotationLabel())
-                .comment(result == null ? null : result.getComment())
+                .annotationId(result.getAnnotationId())
+                .objectType(result.getObjectType())
+                .objectKey(result.getObjectKey())
+                .graphVersionId(result.getGraphVersionId())
+                .annotationStatus(result.getAnnotationStatus())
+                .annotationLabel(result.getAnnotationLabel())
+                .comment(result.getComment())
                 .build();
     }
 
-    public static RefinementResponses.QualitySummaryResponse toResponse(QualitySummaryResult result) {
+    @NonNull
+    public static RefinementResponses.QualitySummaryResponse toResponse(@NonNull QualitySummaryResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return RefinementResponses.QualitySummaryResponse.builder()
-                .entityCoverageRate(result == null ? null : result.getEntityCoverageRate())
-                .relationAccuracyRate(result == null ? null : result.getRelationAccuracyRate())
-                .completenessRate(result == null ? null : result.getCompletenessRate())
+                .entityCoverageRate(result.getEntityCoverageRate())
+                .relationAccuracyRate(result.getRelationAccuracyRate())
+                .completenessRate(result.getCompletenessRate())
                 .build();
     }
 
-    private static RefinementResponses.ProgressSummaryResponse toResponse(RefinementProgressSummaryResult result) {
+    private static RefinementResponses.ProgressSummaryResponse toResponse(
+            @NonNull RefinementProgressSummaryResult result) {
         return RefinementResponses.ProgressSummaryResponse.builder()
-                .entityPendingCount(result == null ? null : result.getEntityPendingCount())
-                .entityConfirmedCount(result == null ? null : result.getEntityConfirmedCount())
-                .relationPendingCount(result == null ? null : result.getRelationPendingCount())
-                .relationConfirmedCount(result == null ? null : result.getRelationConfirmedCount())
+                .entityPendingCount(result.getEntityPendingCount())
+                .entityConfirmedCount(result.getEntityConfirmedCount())
+                .relationPendingCount(result.getRelationPendingCount())
+                .relationConfirmedCount(result.getRelationConfirmedCount())
                 .build();
     }
 
-    private static RefinementResponses.EntityOptionResponse toResponse(RefinementEntityOptionResult result) {
+    private static RefinementResponses.EntityOptionResponse toResponse(@NonNull RefinementEntityOptionResult result) {
         return RefinementResponses.EntityOptionResponse.builder()
-                .entityKey(result == null ? null : result.getEntityKey())
-                .name(result == null ? null : result.getName())
+                .entityKey(result.getEntityKey())
+                .name(result.getName())
                 .build();
     }
 }

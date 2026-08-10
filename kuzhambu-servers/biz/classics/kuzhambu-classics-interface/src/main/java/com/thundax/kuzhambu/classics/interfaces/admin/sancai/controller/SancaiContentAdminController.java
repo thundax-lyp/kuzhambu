@@ -3,12 +3,12 @@ package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiContentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiContentSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiContentResponse;
@@ -54,7 +54,9 @@ public class SancaiContentAdminController {
     @SysLogger(value = "内容列表")
     @PostMapping("list")
     public List<SancaiContentResponse> listContents(@Valid @RequestBody SancaiContentRequest request) {
-        return service.listQaPairs(CONTENT_TYPE, ClassicsContentIdCodec.toDomain(request.getEntryId())).stream()
+        return service
+                .listQaPairs(SancaiInterfaceAssembler.toContentObjectQuery(CONTENT_TYPE, request.getEntryId()))
+                .stream()
                 .map(SancaiContentAdminController::toResponse)
                 .toList();
     }

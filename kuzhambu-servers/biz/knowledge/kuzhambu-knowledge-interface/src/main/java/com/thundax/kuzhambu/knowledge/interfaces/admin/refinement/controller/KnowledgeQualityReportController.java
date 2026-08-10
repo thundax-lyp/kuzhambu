@@ -35,7 +35,7 @@ public class KnowledgeQualityReportController {
     @Operation(summary = "生成质量报告", description = "knowledge:quality-report:generate")
     @HasPermission("knowledge:quality-report:generate")
     @SysLogger("生成质量报告")
-    @PostMapping("generate")
+    @PostMapping("create")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -43,7 +43,7 @@ public class KnowledgeQualityReportController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public QualityReportResponses.DetailResponse generate(
+    public QualityReportResponses.DetailResponse create(
             @Valid @RequestBody QualityReportRequests.GenerateRequest request) {
         return KnowledgeQualityReportInterfaceAssembler.toResponse(
                 qualityReportService.generateReport(KnowledgeQualityReportInterfaceAssembler.toCommand(request)));
@@ -72,7 +72,7 @@ public class KnowledgeQualityReportController {
     @Operation(summary = "获取质量报告详情", description = "knowledge:quality-report:view")
     @HasPermission("knowledge:quality-report:view")
     @SysLogger("获取质量报告详情")
-    @PostMapping("detail")
+    @PostMapping("get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -80,10 +80,9 @@ public class KnowledgeQualityReportController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public QualityReportResponses.DetailResponse detail(
-            @Valid @RequestBody QualityReportRequests.DetailRequest request) {
+    public QualityReportResponses.DetailResponse get(@Valid @RequestBody QualityReportRequests.DetailRequest request) {
         return KnowledgeQualityReportInterfaceAssembler.toResponse(
-                qualityReportService.detail(request == null ? null : request.getReportId()));
+                qualityReportService.detail(KnowledgeQualityReportInterfaceAssembler.toDetailQuery(request)));
     }
 
     @Operation(summary = "获取最新质量报告", description = "knowledge:quality-report:view")
@@ -100,13 +99,13 @@ public class KnowledgeQualityReportController {
     public QualityReportResponses.DetailResponse latest(
             @Valid @RequestBody QualityReportRequests.LatestRequest request) {
         return KnowledgeQualityReportInterfaceAssembler.toResponse(
-                qualityReportService.latest(request == null ? null : request.getGraphVersionId()));
+                qualityReportService.latest(KnowledgeQualityReportInterfaceAssembler.toLatestQuery(request)));
     }
 
     @Operation(summary = "重提取低质量门类", description = "knowledge:graph:edit")
     @HasPermission("knowledge:graph:edit")
     @SysLogger("重提取低质量门类")
-    @PostMapping("reextract-low-quality-category")
+    @PostMapping("extract")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -114,7 +113,7 @@ public class KnowledgeQualityReportController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public QualityReportResponses.ReextractResponse reextractLowQualityCategory(
+    public QualityReportResponses.ReextractResponse extractLowQualityCategory(
             @Valid @RequestBody QualityReportRequests.ReextractRequest request) {
         return KnowledgeQualityReportInterfaceAssembler.toResponse(qualityReportService.reextractLowQualityCategory(
                 KnowledgeQualityReportInterfaceAssembler.toCommand(request)));

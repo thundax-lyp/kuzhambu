@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,6 +12,9 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ProgressSummaryResponse {
         private Integer entityPendingCount;
         private Integer entityConfirmedCount;
@@ -18,6 +24,9 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class WorkbenchItemResponse {
         private Long refinementTaskId;
         private Long graphVersionId;
@@ -34,6 +43,9 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class EntityOptionResponse {
         private String entityKey;
         private String name;
@@ -41,6 +53,9 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class EntityResponse {
         private Long draftId;
         private Long entityId;
@@ -57,6 +72,9 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RelationResponse {
         private Long draftId;
         private Long relationId;
@@ -76,6 +94,9 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class LineageNodeResponse {
         private Long draftId;
         private Long nodeId;
@@ -93,6 +114,9 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class LineageRelationResponse {
         private Long draftId;
         private Long relationId;
@@ -112,6 +136,9 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AnnotationResponse {
         private Long annotationId;
         private String objectType;
@@ -124,6 +151,9 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class QualitySummaryResponse {
         private Double entityCoverageRate;
         private Double relationAccuracyRate;
@@ -132,6 +162,9 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ApplyResponse {
         private Long refinementTaskId;
         private Long graphVersionId;
@@ -154,6 +187,9 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class DetailResponse {
         private Long refinementTaskId;
         private Long graphVersionId;

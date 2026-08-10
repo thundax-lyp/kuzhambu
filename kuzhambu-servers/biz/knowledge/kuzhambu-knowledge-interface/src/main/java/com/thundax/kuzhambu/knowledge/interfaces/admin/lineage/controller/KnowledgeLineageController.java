@@ -39,7 +39,7 @@ public class KnowledgeLineageController {
     })
     @HasPermission("knowledge:graph:view")
     @SysLogger(value = "读取世系画布")
-    @PostMapping("canvas")
+    @PostMapping("get")
     public LineageCanvasResponse getCanvas(@Valid @RequestBody LineageCanvasRequest request) {
         return KnowledgeLineageInterfaceAssembler.toResponse(
                 lineageReadApplicationService.getCanvas(KnowledgeLineageInterfaceAssembler.toQuery(request)));

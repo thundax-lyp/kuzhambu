@@ -57,7 +57,7 @@ public class QualityReportRepositoryImpl implements QualityReportRepository {
     }
 
     @Override
-    public QualityReport getLatestPublished(Long graphVersionId) {
+    public QualityReport getByLatestPublished(Long graphVersionId) {
         QueryWrapper<QualityReportDO> wrapper = new QueryWrapper<>();
         wrapper.eq("report_status", "PUBLISHED")
                 .eq(graphVersionId != null, "graph_version_id", graphVersionId)

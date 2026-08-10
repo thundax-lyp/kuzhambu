@@ -1,11 +1,13 @@
 package com.thundax.kuzhambu.classics.application.facade.assembler;
 
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult;
 import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsContentGrowthPointFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
@@ -16,7 +18,9 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeRe
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -87,6 +91,13 @@ public class ClassicsFacadeAssembler {
                 .tags(toTagNames(tags))
                 .qaPairs(toQaPairs(qaPairs))
                 .build();
+    }
+
+    @NonNull
+    public ContentObjectQuery toContentObjectQuery(@NonNull String contentType, @NonNull ClassicsContentId contentId) {
+        Objects.requireNonNull(contentType, "contentType");
+        Objects.requireNonNull(contentId, "contentId");
+        return new ContentObjectQuery(contentType, contentId);
     }
 
     private List<ClassicsTopContentFacadeDto> toTopContentFacadeDtos(

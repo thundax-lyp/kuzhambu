@@ -9,6 +9,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
@@ -64,8 +66,7 @@ class WangqiDocumentApplicationServiceImplTest {
         WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
         WangqiDocumentApplicationServiceImpl service = new WangqiDocumentApplicationServiceImpl(
                 repository, null, null, mock(ClassicsPublicationWriteGuard.class));
-        WangqiDocumentQuery query = new WangqiDocumentQuery();
-        query.setOperatorPermissions(Set.of("classics:content:view"));
+        WangqiDocumentQuery query = new WangqiDocumentQuery(null, null, Set.of("classics:content:view"));
 
         PageResult<WangqiDocument> result = service.page(query, new PageQuery(1, 20));
 
@@ -109,7 +110,8 @@ class WangqiDocumentApplicationServiceImplTest {
         assertEquals("CLASSICS_WANGQI_DOCUMENT", bindCaptor.getValue().getOwnerType());
         assertEquals("400000000001", bindCaptor.getValue().getOwnerId());
         verify(repository).update(document);
-        verify(contentApplicationService).ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "上传原始文件");
+        verify(contentApplicationService)
+                .ensureVersioned(new ContentVersionCommand(document, ClassicsContentChangeType.MANUAL_SAVE, "上传原始文件"));
     }
 
     @Test
@@ -123,7 +125,7 @@ class WangqiDocumentApplicationServiceImplTest {
 
         service.add(publicCommand(null));
 
-        verify(contentApplicationService).ensureVersioned(any(WangqiDocument.class), any(), any());
+        verify(contentApplicationService).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     @Test
@@ -140,7 +142,7 @@ class WangqiDocumentApplicationServiceImplTest {
 
         service.update(publicCommand(400000000004L));
 
-        verify(contentApplicationService).ensureVersioned(any(WangqiDocument.class), any(), any());
+        verify(contentApplicationService).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     @Test
@@ -166,8 +168,8 @@ class WangqiDocumentApplicationServiceImplTest {
         service.delete(documentId);
 
         verify(contentApplicationService)
-                .deleteVersions(
-                        ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(400000000001L));
+                .deleteVersions(new ContentObjectQuery(
+                        ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(400000000001L)));
         ArgumentCaptor<UnbindStorageOwnerFacadeRequest> removeCaptor =
                 ArgumentCaptor.forClass(UnbindStorageOwnerFacadeRequest.class);
         verify(storageFacade).unbindOwner(removeCaptor.capture());
@@ -184,12 +186,13 @@ class WangqiDocumentApplicationServiceImplTest {
     private static void versionDocumentOnEnsure(
             ClassicsContentApplicationService contentApplicationService, int versionNo) {
         doAnswer(invocation -> {
-                    WangqiDocument document = invocation.getArgument(0);
+                    ContentVersionCommand command = invocation.getArgument(0);
+                    WangqiDocument document = (WangqiDocument) command.content();
                     document.setCurrentVersionNo(versionNo);
                     return null;
                 })
                 .when(contentApplicationService)
-                .ensureVersioned(any(), any(), any());
+                .ensureVersioned(any(ContentVersionCommand.class));
     }
 
     private static WangqiDocumentCommand publicCommand(Long id) {

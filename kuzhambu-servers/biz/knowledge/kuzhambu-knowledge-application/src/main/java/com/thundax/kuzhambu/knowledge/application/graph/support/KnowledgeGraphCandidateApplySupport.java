@@ -155,7 +155,7 @@ public class KnowledgeGraphCandidateApplySupport {
         if (existing != null) {
             return existing;
         }
-        GraphVersion latest = graphVersionRepository.findLatest(
+        GraphVersion latest = graphVersionRepository.getByLatestSource(
                 task.getTaskType(), task.getSourceContentType(), task.getSourceContentId());
         SourceCategory sourceCategory = resolveSourceCategory(task);
         GraphVersion version = new GraphVersion();
@@ -317,13 +317,13 @@ public class KnowledgeGraphCandidateApplySupport {
                 knowledgeEntityRepository.listByEntityKeys(keys(incoming, KnowledgeEntity::getEntityKey)),
                 KnowledgeEntity::getEntityKey);
         if (APPLY_MODE_APPEND.equals(applyMode)) {
-            knowledgeEntityRepository.saveOrUpdateBatch(incoming.stream()
+            knowledgeEntityRepository.batchSaveOrUpdate(incoming.stream()
                     .filter(entity -> !existingByKey.containsKey(entity.getEntityKey()))
                     .toList());
             return;
         }
         if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
-            knowledgeEntityRepository.saveOrUpdateBatch(incoming);
+            knowledgeEntityRepository.batchSaveOrUpdate(incoming);
             return;
         }
         for (KnowledgeEntity entity : incoming) {
@@ -341,7 +341,7 @@ public class KnowledgeGraphCandidateApplySupport {
                 entity.setDescription(StringUtils.defaultIfBlank(existing.getDescription(), entity.getDescription()));
             }
         }
-        knowledgeEntityRepository.saveOrUpdateBatch(incoming);
+        knowledgeEntityRepository.batchSaveOrUpdate(incoming);
     }
 
     private void mergeRelations(List<KnowledgeRelation> incoming, Instant appliedAt, String applyMode) {
@@ -349,13 +349,13 @@ public class KnowledgeGraphCandidateApplySupport {
                 knowledgeRelationRepository.listByRelationKeys(keys(incoming, KnowledgeRelation::getRelationKey)),
                 KnowledgeRelation::getRelationKey);
         if (APPLY_MODE_APPEND.equals(applyMode)) {
-            knowledgeRelationRepository.saveOrUpdateBatch(incoming.stream()
+            knowledgeRelationRepository.batchSaveOrUpdate(incoming.stream()
                     .filter(relation -> !existingByKey.containsKey(relation.getRelationKey()))
                     .toList());
             return;
         }
         if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
-            knowledgeRelationRepository.saveOrUpdateBatch(incoming);
+            knowledgeRelationRepository.batchSaveOrUpdate(incoming);
             return;
         }
         for (KnowledgeRelation relation : incoming) {
@@ -373,7 +373,7 @@ public class KnowledgeGraphCandidateApplySupport {
                 relation.setEvidence(StringUtils.defaultIfBlank(existing.getEvidence(), relation.getEvidence()));
             }
         }
-        knowledgeRelationRepository.saveOrUpdateBatch(incoming);
+        knowledgeRelationRepository.batchSaveOrUpdate(incoming);
     }
 
     private void mergeLineageNodes(List<KnowledgeLineageNode> incoming, Instant appliedAt, String applyMode) {
@@ -381,13 +381,13 @@ public class KnowledgeGraphCandidateApplySupport {
                 knowledgeLineageNodeRepository.listByNodeKeys(keys(incoming, KnowledgeLineageNode::getNodeKey)),
                 KnowledgeLineageNode::getNodeKey);
         if (APPLY_MODE_APPEND.equals(applyMode)) {
-            knowledgeLineageNodeRepository.saveOrUpdateBatch(incoming.stream()
+            knowledgeLineageNodeRepository.batchSaveOrUpdate(incoming.stream()
                     .filter(node -> !existingByKey.containsKey(node.getNodeKey()))
                     .toList());
             return;
         }
         if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
-            knowledgeLineageNodeRepository.saveOrUpdateBatch(incoming);
+            knowledgeLineageNodeRepository.batchSaveOrUpdate(incoming);
             return;
         }
         for (KnowledgeLineageNode node : incoming) {
@@ -404,7 +404,7 @@ public class KnowledgeGraphCandidateApplySupport {
                 node.setConfirmationStatus(existing.getConfirmationStatus());
             }
         }
-        knowledgeLineageNodeRepository.saveOrUpdateBatch(incoming);
+        knowledgeLineageNodeRepository.batchSaveOrUpdate(incoming);
     }
 
     private void mergeLineageRelations(List<KnowledgeLineageRelation> incoming, Instant appliedAt, String applyMode) {
@@ -413,13 +413,13 @@ public class KnowledgeGraphCandidateApplySupport {
                         keys(incoming, KnowledgeLineageRelation::getRelationKey)),
                 KnowledgeLineageRelation::getRelationKey);
         if (APPLY_MODE_APPEND.equals(applyMode)) {
-            knowledgeLineageRelationRepository.saveOrUpdateBatch(incoming.stream()
+            knowledgeLineageRelationRepository.batchSaveOrUpdate(incoming.stream()
                     .filter(relation -> !existingByKey.containsKey(relation.getRelationKey()))
                     .toList());
             return;
         }
         if (APPLY_MODE_OVERWRITE.equals(applyMode)) {
-            knowledgeLineageRelationRepository.saveOrUpdateBatch(incoming);
+            knowledgeLineageRelationRepository.batchSaveOrUpdate(incoming);
             return;
         }
         for (KnowledgeLineageRelation relation : incoming) {
@@ -437,7 +437,7 @@ public class KnowledgeGraphCandidateApplySupport {
                 relation.setEvidence(StringUtils.defaultIfBlank(existing.getEvidence(), relation.getEvidence()));
             }
         }
-        knowledgeLineageRelationRepository.saveOrUpdateBatch(incoming);
+        knowledgeLineageRelationRepository.batchSaveOrUpdate(incoming);
     }
 
     private JsonNode parsePayload(String payload) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -16,6 +17,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Schema(description = "古籍内容管理请求")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ClassicsContentRequest extends PageRequest {
@@ -66,6 +68,7 @@ public class ClassicsContentRequest extends PageRequest {
 
     @Getter
     @Setter
+    @Schema(description = "AI候选结果应用请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AiCandidateApplyRequest {
@@ -106,6 +109,7 @@ public class ClassicsContentRequest extends PageRequest {
 
     @Getter
     @Setter
+    @Schema(description = "AI候选结果批量应用请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AiCandidateBatchApplyRequest {
@@ -117,6 +121,7 @@ public class ClassicsContentRequest extends PageRequest {
 
     @Getter
     @Setter
+    @Schema(description = "AI候选结果批量拒绝请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AiCandidateBatchRejectRequest {
@@ -134,6 +139,7 @@ public class ClassicsContentRequest extends PageRequest {
 
     @Getter
     @Setter
+    @Schema(description = "AI候选结果拒绝项请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AiCandidateRejectItemRequest {

@@ -56,14 +56,14 @@ class KnowledgePortalLineageControllerTest {
 
         ArgumentCaptor<LineageCanvasQuery> captor = ArgumentCaptor.forClass(LineageCanvasQuery.class);
         verify(service).getLineage(captor.capture());
-        assertEquals(71L, captor.getValue().getVersionId());
-        assertEquals(301L, captor.getValue().getFocusNodeId());
-        assertEquals(401L, captor.getValue().getFocusRelationId());
-        assertEquals("贾", captor.getValue().getKeyword());
-        assertEquals("PERSON", captor.getValue().getNodeType());
-        assertEquals("PARENT_CHILD", captor.getValue().getRelationType());
-        assertEquals("CONFIRMED", captor.getValue().getConfirmationStatus());
-        assertEquals(2, captor.getValue().getDepth());
+        assertEquals(71L, captor.getValue().versionId());
+        assertEquals(301L, captor.getValue().focusNodeId());
+        assertEquals(401L, captor.getValue().focusRelationId());
+        assertEquals("贾", captor.getValue().keyword());
+        assertEquals("PERSON", captor.getValue().nodeType());
+        assertEquals("PARENT_CHILD", captor.getValue().relationType());
+        assertEquals("CONFIRMED", captor.getValue().confirmationStatus());
+        assertEquals(2, captor.getValue().depth());
         assertEquals(0L, response.getSummary().getNodeCount());
         assertEquals("NO_VERSION", response.getEmpty().getReason());
         assertEquals("请选择世系版本", response.getEmpty().getTitle());

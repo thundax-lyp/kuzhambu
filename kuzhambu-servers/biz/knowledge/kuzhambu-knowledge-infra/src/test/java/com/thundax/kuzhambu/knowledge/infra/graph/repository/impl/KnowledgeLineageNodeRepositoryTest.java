@@ -71,7 +71,7 @@ class KnowledgeLineageNodeRepositoryTest {
     }
 
     @Test
-    void saveOrUpdateBatchShouldInsertWhenNodeDoesNotExist() {
+    void batchSaveOrUpdateShouldInsertWhenNodeDoesNotExist() {
         KnowledgeLineageNodeMapper mapper = mock(KnowledgeLineageNodeMapper.class);
         when(mapper.update(any(), any())).thenReturn(0);
         when(mapper.insert(any(KnowledgeLineageNodeDO.class))).thenReturn(1);
@@ -88,7 +88,7 @@ class KnowledgeLineageNodeRepositoryTest {
         node.setFirstExtractedAt(Instant.now());
         node.setLastExtractedAt(Instant.now());
 
-        repository.saveOrUpdateBatch(List.of(node));
+        repository.batchSaveOrUpdate(List.of(node));
 
         ArgumentCaptor<KnowledgeLineageNodeDO> captor = ArgumentCaptor.forClass(KnowledgeLineageNodeDO.class);
         verify(mapper).insert(captor.capture());

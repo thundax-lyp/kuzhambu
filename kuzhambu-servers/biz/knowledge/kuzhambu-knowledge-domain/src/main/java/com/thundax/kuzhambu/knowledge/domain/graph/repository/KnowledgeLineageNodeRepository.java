@@ -16,7 +16,7 @@ public interface KnowledgeLineageNodeRepository {
     PageResult<KnowledgeLineageNode> page(
             Long versionId, String keyword, String nodeType, String confirmationStatus, int pageNo, int pageSize);
 
-    void saveOrUpdateBatch(List<KnowledgeLineageNode> nodes);
+    void batchSaveOrUpdate(List<KnowledgeLineageNode> nodes);
 
     int deleteByNodeKeys(Collection<String> nodeKeys);
 }

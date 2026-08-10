@@ -7,7 +7,7 @@ public interface RefinementLineageRelationDraftRepository {
 
     List<RefinementLineageRelationDraft> listByTaskId(Long refinementTaskId);
 
-    void saveOrUpdateBatch(List<RefinementLineageRelationDraft> drafts);
+    void batchSaveOrUpdate(List<RefinementLineageRelationDraft> drafts);
 
     int deleteByTaskId(Long refinementTaskId);
 }

@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
@@ -25,6 +24,7 @@ import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import io.swagger.annotations.ApiImplicitParam;
@@ -74,10 +74,10 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "分页查询")
     @PostMapping("page")
     public PageResponse<WangqiDocumentResponse> page(@Valid @RequestBody WangqiDocumentRequest request) {
-        var query = WangqiDocumentInterfaceAssembler.toQuery(request);
-        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
         return PageResponseHelper.fromPageResult(
-                service.page(query, PageInterfaceAssembler.toPageQuery(request)),
+                service.page(
+                        WangqiDocumentInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentAuthorities()),
+                        PageInterfaceAssembler.toPageQuery(request)),
                 WangqiDocumentInterfaceAssembler::toResponse);
     }
 
@@ -109,9 +109,10 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "时间线")
     @PostMapping("timeline/list")
     public List<WangqiDocumentResponse> listTimeline(@Valid @RequestBody WangqiDocumentRequest request) {
-        var query = WangqiDocumentInterfaceAssembler.toQuery(request);
-        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
-        return service.listTimeline(query).stream()
+        return service
+                .listTimeline(
+                        WangqiDocumentInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentAuthorities()))
+                .stream()
                 .map(WangqiDocumentInterfaceAssembler::toResponse)
                 .toList();
     }
@@ -182,12 +183,8 @@ public class WangqiDocumentAdminController {
     public WangqiDocumentSourceFileResponse uploadSourceFile(
             @PathVariable("id") Long id, @RequestParam("file") MultipartFile file) {
         try {
-            WangqiDocumentSourceFile result = service.changeSourceFile(new WangqiDocumentSourceFileCommand(
-                    id,
-                    file == null ? null : file.getInputStream(),
-                    file == null ? null : file.getOriginalFilename(),
-                    file == null ? null : file.getContentType(),
-                    file == null ? 0L : file.getSize()));
+            WangqiDocumentSourceFile result =
+                    service.changeSourceFile(WangqiDocumentInterfaceAssembler.toSourceFileCommand(id, file));
             return WangqiDocumentInterfaceAssembler.toSourceFileResponse(result);
         } catch (IOException exception) {
             throw new BizException("王圻原始文件上传失败：" + exception.getMessage());
@@ -259,9 +256,10 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "版本列表")
     @PostMapping("versions/list")
     public List<WangqiDocumentVersionResponse> listVersions(@Valid @RequestBody WangqiDocumentVersionRequest request) {
+        Long documentId = requireParameter(request == null ? null : request.getId(), "id");
         return contentService
-                .listVersions(
-                        ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(request.getId()))
+                .listVersions(WangqiDocumentInterfaceAssembler.toContentObjectQuery(
+                        ClassicsContentType.WANGQI_DOCUMENT.value(), documentId))
                 .stream()
                 .map(WangqiDocumentInterfaceAssembler::toVersionResponse)
                 .toList();
@@ -308,6 +306,13 @@ public class WangqiDocumentAdminController {
             throw new BizException("王圻版本不属于当前文档");
         }
         return version;
+    }
+
+    private static Long requireParameter(Long value, String fieldName) {
+        if (value == null) {
+            throw AdminResponseExceptions.invalidParameter(fieldName);
+        }
+        return value;
     }
 
     private static String contentDisposition(String originalFilename, boolean download) {

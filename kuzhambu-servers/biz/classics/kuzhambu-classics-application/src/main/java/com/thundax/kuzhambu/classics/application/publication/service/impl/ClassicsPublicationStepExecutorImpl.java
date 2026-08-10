@@ -143,7 +143,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
             throw new IllegalStateException("Bound formal version is missing");
         }
         ClassicsContentVersion version =
-                contentRepository.getVersionById(new ClassicsContentVersionId(job.getContentVersionId()));
+                contentRepository.getByVersionId(new ClassicsContentVersionId(job.getContentVersionId()));
         return payloadAssembler.assemble(job, version);
     }
 

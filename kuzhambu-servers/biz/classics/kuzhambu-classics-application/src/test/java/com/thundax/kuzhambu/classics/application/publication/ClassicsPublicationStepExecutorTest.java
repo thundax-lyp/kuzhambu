@@ -75,7 +75,7 @@ class ClassicsPublicationStepExecutorTest {
 
         assertFalse(executor.execute(JOB_ID, TOKEN));
 
-        verify(contentRepository, never()).getVersionById(any());
+        verify(contentRepository, never()).getByVersionId(any());
         verify(searchFacade, never()).prepare(any());
         verify(fastGptGateway, never()).fullReplace(any(), any());
         verify(jobRepository, never())
@@ -86,7 +86,7 @@ class ClassicsPublicationStepExecutorTest {
     void shouldExecuteOnlySearchPrepareSlice() {
         ClassicsPublicationJob job = job(ClassicsPublicationJobStatus.SNAPSHOT_READY);
         when(jobRepository.getById(JOB_ID)).thenReturn(job);
-        when(contentRepository.getVersionById(any())).thenReturn(new ClassicsContentVersion());
+        when(contentRepository.getByVersionId(any())).thenReturn(new ClassicsContentVersion());
         DiscoverySearchPublicationPrepareFacadeRequest request =
                 DiscoverySearchPublicationPrepareFacadeRequest.builder()
                         .sourceId("WANGQI_DOCUMENT:12")
@@ -147,14 +147,14 @@ class ClassicsPublicationStepExecutorTest {
         assertThrows(IllegalStateException.class, () -> executor.execute(JOB_ID, TOKEN));
 
         verify(searchFacade, never()).prepare(any());
-        verify(contentRepository, never()).getVersionById(any());
+        verify(contentRepository, never()).getByVersionId(any());
     }
 
     @Test
     void shouldCheckpointNewCollectionBeforeFullReplace() {
         ClassicsPublicationJob job = job(ClassicsPublicationJobStatus.ES_PREPARED);
         when(jobRepository.getById(JOB_ID)).thenReturn(job);
-        when(contentRepository.getVersionById(any())).thenReturn(new ClassicsContentVersion());
+        when(contentRepository.getByVersionId(any())).thenReturn(new ClassicsContentVersion());
         when(payloadAssembler.assemble(any(), any()))
                 .thenReturn(new ClassicsPublicationPayload(null, "WANGQI_DOCUMENT:12:王圻", List.of()));
         when(fastGptGateway.createCollection("WANGQI_DOCUMENT:12:王圻")).thenReturn("collection-new");
@@ -187,7 +187,7 @@ class ClassicsPublicationStepExecutorTest {
     void shouldKeepCollectionCheckpointWhenFullReplaceFails() {
         ClassicsPublicationJob job = job(ClassicsPublicationJobStatus.ES_PREPARED);
         when(jobRepository.getById(JOB_ID)).thenReturn(job);
-        when(contentRepository.getVersionById(any())).thenReturn(new ClassicsContentVersion());
+        when(contentRepository.getByVersionId(any())).thenReturn(new ClassicsContentVersion());
         when(payloadAssembler.assemble(any(), any()))
                 .thenReturn(new ClassicsPublicationPayload(null, "WANGQI_DOCUMENT:12:王圻", List.of()));
         when(fastGptGateway.createCollection("WANGQI_DOCUMENT:12:王圻")).thenReturn("collection-new");

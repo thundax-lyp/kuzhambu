@@ -11,10 +11,10 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersio
 
 public interface GraphVersionRepository {
 
-    GraphVersion findLatest(
+    GraphVersion getByLatestSource(
             GraphExtractionTaskType taskType, String sourceContentType, GraphExtractionSourceContentId sourceContentId);
 
-    default GraphVersion findLatestAppliedByCategoryCode(String sourceCategoryCode) {
+    default GraphVersion getByLatestAppliedCategoryCode(String sourceCategoryCode) {
         return null;
     }
 

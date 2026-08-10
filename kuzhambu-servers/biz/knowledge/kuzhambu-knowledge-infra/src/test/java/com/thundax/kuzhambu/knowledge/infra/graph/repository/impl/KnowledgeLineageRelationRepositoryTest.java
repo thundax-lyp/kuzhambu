@@ -72,7 +72,7 @@ class KnowledgeLineageRelationRepositoryTest {
     }
 
     @Test
-    void saveOrUpdateBatchShouldInsertWhenRelationDoesNotExist() {
+    void batchSaveOrUpdateShouldInsertWhenRelationDoesNotExist() {
         KnowledgeLineageRelationMapper mapper = mock(KnowledgeLineageRelationMapper.class);
         when(mapper.update(any(), any())).thenReturn(0);
         when(mapper.insert(any(KnowledgeLineageRelationDO.class))).thenReturn(1);
@@ -91,7 +91,7 @@ class KnowledgeLineageRelationRepositoryTest {
         relation.setFirstExtractedAt(Instant.now());
         relation.setLastExtractedAt(Instant.now());
 
-        repository.saveOrUpdateBatch(List.of(relation));
+        repository.batchSaveOrUpdate(List.of(relation));
 
         ArgumentCaptor<KnowledgeLineageRelationDO> captor = ArgumentCaptor.forClass(KnowledgeLineageRelationDO.class);
         verify(mapper).insert(captor.capture());

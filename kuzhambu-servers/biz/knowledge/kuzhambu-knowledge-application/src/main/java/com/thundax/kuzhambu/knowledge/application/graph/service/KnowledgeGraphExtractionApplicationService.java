@@ -2,10 +2,18 @@ package com.thundax.kuzhambu.knowledge.application.graph.service;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.ApplyGraphExtractionTaskCandidateCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.CancelGraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageNodeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageRelationQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -14,6 +22,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageN
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.KnowledgeEntityId;
 
 public interface KnowledgeGraphExtractionApplicationService {
 
@@ -23,56 +33,38 @@ public interface KnowledgeGraphExtractionApplicationService {
 
     GraphExtractionTaskResult requestLineageExtraction(RequestLineageExtractionCommand command);
 
-    GraphExtractionTaskResult regenerateTask(
-            String taskType,
-            GraphExtractionTaskId sourceTaskId,
-            String selectionScopeJson,
-            Boolean replaceUnconfirmedOnly,
-            Long requestedBy);
-
     GraphExtractionTaskResult regenerateTask(RegenerateGraphExtractionCommand command);
 
-    PageResult<GraphExtractionTaskResult> pageTasks(
-            String taskType,
-            Long batchJobId,
-            String triggerSource,
-            String status,
-            String sourceContentType,
-            Long sourceContentId,
-            PageQuery pageQuery);
+    PageResult<GraphExtractionTaskResult> pageTasks(GraphExtractionTaskQuery query, PageQuery pageQuery);
 
     GraphExtractionTaskResult getTaskDetail(GraphExtractionTaskId taskId);
 
-    GraphExtractionBatchCancelResult cancelBatch(Long batchJobId, Long requestedBy);
+    GraphExtractionBatchCancelResult cancelBatch(CancelGraphExtractionBatchCommand command);
 
-    PageResult<GraphVersionResult> pageVersions(
-            String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery);
+    PageResult<GraphVersionResult> pageVersions(GraphVersionQuery query, PageQuery pageQuery);
 
-    GraphVersionResult getVersionDetail(Long versionId);
+    GraphVersionResult getVersionDetail(GraphVersionId versionId);
 
-    PageResult<KnowledgeEntityResult> pageEntities(
-            Long versionId, String keyword, String entityType, String confirmationStatus, PageQuery pageQuery);
+    PageResult<KnowledgeEntityResult> pageEntities(KnowledgeEntityQuery query, PageQuery pageQuery);
 
-    KnowledgeEntityResult getEntityDetail(Long entityId);
+    KnowledgeEntityResult getEntityDetail(KnowledgeEntityId entityId);
 
-    PageResult<KnowledgeRelationResult> pageRelations(
-            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery);
+    PageResult<KnowledgeRelationResult> pageRelations(KnowledgeRelationQuery query, PageQuery pageQuery);
 
-    KnowledgeRelationResult getRelationDetail(Long relationId);
+    KnowledgeRelationResult getRelationDetail(KnowledgeRelationQuery query);
 
-    PageResult<KnowledgeLineageNodeResult> pageLineageNodes(
-            Long versionId, String keyword, String nodeType, String confirmationStatus, PageQuery pageQuery);
+    PageResult<KnowledgeLineageNodeResult> pageLineageNodes(KnowledgeLineageNodeQuery query, PageQuery pageQuery);
 
-    KnowledgeLineageNodeResult getLineageNodeDetail(Long nodeId);
+    KnowledgeLineageNodeResult getLineageNodeDetail(KnowledgeLineageNodeQuery query);
 
     PageResult<KnowledgeLineageRelationResult> pageLineageRelations(
-            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery);
+            KnowledgeLineageRelationQuery query, PageQuery pageQuery);
 
-    KnowledgeLineageRelationResult getLineageRelationDetail(Long relationId);
+    KnowledgeLineageRelationResult getLineageRelationDetail(KnowledgeLineageRelationQuery query);
 
     default GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId) {
-        return applyTaskCandidate(taskId, null);
+        return applyTaskCandidate(new ApplyGraphExtractionTaskCandidateCommand(taskId, null));
     }
 
-    GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId, String applyMode);
+    GraphExtractionTaskResult applyTaskCandidate(ApplyGraphExtractionTaskCandidateCommand command);
 }

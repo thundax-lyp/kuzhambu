@@ -181,6 +181,53 @@ class RepositoryApiHardRulesArchitectureTest {
                 "method=reextractLowQualityCategory path=reextract-low-quality-category");
         addLegacyActionVerbAllowances(
                 allowances,
+                "kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/DepartmentController.java",
+                "method=tree",
+                "method=tree path=tree");
+        addLegacyActionVerbAllowances(
+                allowances,
+                "kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/MenuController.java",
+                "method=updateVisibility path=display",
+                "method=tree",
+                "method=tree path=tree");
+        addLegacyActionVerbAllowances(
+                allowances,
+                "kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/RoleController.java",
+                "method=options",
+                "method=options path=options",
+                "method=updateStatus path=enable",
+                "method=menuTree",
+                "method=menuTree path=menu/tree",
+                "method=userTree",
+                "method=userTree path=user/tree",
+                "method=userList",
+                "method=assignUser",
+                "method=assignUser path=user/assign");
+        addLegacyActionVerbAllowances(
+                allowances,
+                "kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/CurrentUserController.java",
+                "method=info",
+                "method=info path=info",
+                "method=menus",
+                "method=menus path=menus",
+                "method=perms",
+                "method=perms path=perms");
+        addLegacyActionVerbAllowances(
+                allowances,
+                "kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/UserController.java",
+                "method=options",
+                "method=options path=options",
+                "method=avatar",
+                "method=avatar path=avatar",
+                "method=updateStatus path=enable",
+                "method=check",
+                "method=check path=check",
+                "method=departmentTree",
+                "method=departmentTree path=department/tree",
+                "method=roleList",
+                "method=avatarImage");
+        addLegacyActionVerbAllowances(
+                allowances,
                 "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/workbench/controller/KnowledgeGraphWorkbenchController.java",
                 "method=listManuscriptTree path=manuscript-tree");
         addLegacyActionVerbAllowances(
@@ -196,10 +243,6 @@ class RepositoryApiHardRulesArchitectureTest {
                 "method=batchDeprecateTags",
                 "method=batchDeprecateTags path=tag/deprecate/batch",
                 "method=getTagGovernanceMetrics path=tag/metrics");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/lineage/controller/KnowledgeLineageController.java",
-                "method=getCanvas path=canvas");
         addLegacyActionVerbAllowances(
                 allowances,
                 "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java",

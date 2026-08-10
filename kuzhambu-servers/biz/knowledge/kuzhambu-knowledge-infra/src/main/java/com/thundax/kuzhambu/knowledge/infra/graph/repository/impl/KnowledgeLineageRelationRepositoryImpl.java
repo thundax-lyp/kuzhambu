@@ -66,7 +66,7 @@ public class KnowledgeLineageRelationRepositoryImpl implements KnowledgeLineageR
     }
 
     @Override
-    public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {
+    public void batchSaveOrUpdate(List<KnowledgeLineageRelation> relations) {
         for (KnowledgeLineageRelation relation : relations == null ? List.<KnowledgeLineageRelation>of() : relations) {
             KnowledgeLineageRelationDO dataObject = KnowledgeLineageRelationPersistenceAssembler.toObject(relation);
             int updated = mapper.update(

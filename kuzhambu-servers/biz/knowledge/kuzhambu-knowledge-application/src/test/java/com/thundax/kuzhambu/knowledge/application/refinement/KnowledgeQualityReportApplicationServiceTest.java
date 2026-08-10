@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTa
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.ReextractLowQualityCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.impl.KnowledgeQualityReportApplicationServiceImpl;
@@ -145,7 +146,7 @@ class KnowledgeQualityReportApplicationServiceTest {
                         null,
                         9L,
                         null)));
-        when(refinementTaskRepository.findLatestDraft("GRAPH", "SANCAI_ENTRY", 1001L, 71L))
+        when(refinementTaskRepository.getByLatestDraft("GRAPH", "SANCAI_ENTRY", 1001L, 71L))
                 .thenReturn(null);
 
         QualityReportDetailResult result = service.generateReport(new GenerateQualityReportCommand(71L, 1L));
@@ -179,10 +180,10 @@ class KnowledgeQualityReportApplicationServiceTest {
         ArgumentCaptor<RequestGraphExtractionCommand> captor =
                 ArgumentCaptor.forClass(RequestGraphExtractionCommand.class);
         verify(fixture.graphExtractionService).requestGraphExtraction(captor.capture());
-        assertEquals("QUALITY_REPORT", captor.getValue().getTriggerSource());
-        assertEquals("SANCAI_ENTRY", captor.getValue().getSourceContentType());
-        assertEquals(2001L, captor.getValue().getSourceContentId());
-        assertEquals(true, captor.getValue().getReplaceUnconfirmedOnly());
+        assertEquals("QUALITY_REPORT", captor.getValue().triggerSource());
+        assertEquals("SANCAI_ENTRY", captor.getValue().sourceContentType());
+        assertEquals(2001L, captor.getValue().sourceContentId());
+        assertEquals(true, captor.getValue().replaceUnconfirmedOnly());
         assertEquals(3001L, result.getTaskId());
         assertEquals(4001L, result.getBatchJobId());
         assertEquals("QUALITY_REPORT", result.getTriggerSource());
@@ -202,11 +203,11 @@ class KnowledgeQualityReportApplicationServiceTest {
         ArgumentCaptor<RequestGraphExtractionCommand> captor =
                 ArgumentCaptor.forClass(RequestGraphExtractionCommand.class);
         verify(fixture.graphExtractionService).requestGraphExtraction(captor.capture());
-        assertEquals(3001L, captor.getValue().getSourceContentId());
+        assertEquals(3001L, captor.getValue().sourceContentId());
         assertEquals(
                 "{\"triggerSource\":\"QUALITY_REPORT\",\"qualityReportId\":1001,\"graphVersionId\":71,\"sourceCategoryCode\":\"myth\",\"sourceCategoryName\":\"神话\",\"sourceContentType\":\"SANCAI_ENTRY\",\"sourceContentIds\":[3001,3002]}",
-                captor.getValue().getSelectionScopeJson());
-        assertEquals(captor.getValue().getSelectionScopeJson(), result.getSelectionScopeJson());
+                captor.getValue().selectionScopeJson());
+        assertEquals(captor.getValue().selectionScopeJson(), result.getSelectionScopeJson());
     }
 
     @Test
@@ -251,12 +252,12 @@ class KnowledgeQualityReportApplicationServiceTest {
                 reportRepository);
         QualityReport report = report();
         report.setGeneratedAt(Instant.ofEpochMilli(1_719_187_200_000L));
-        when(reportRepository.getLatestPublished(71L)).thenReturn(report);
+        when(reportRepository.getByLatestPublished(71L)).thenReturn(report);
         when(reportRepository.getByReportId(1001L)).thenReturn(report);
         when(reportRepository.listIssuesByReportId(1001L)).thenReturn(List.of());
         when(reportRepository.listSourceDetailsByReportId(1001L)).thenReturn(List.of());
         when(annotationRepository.listByGraphVersionId(71L)).thenReturn(List.of());
-        when(refinementTaskRepository.findLatestAppliedByGraphVersionId(71L))
+        when(refinementTaskRepository.getByLatestAppliedGraphVersionId(71L))
                 .thenReturn(new RefinementTask(
                         null,
                         RefinementTaskIdCodec.toDomain(31L),
@@ -276,7 +277,7 @@ class KnowledgeQualityReportApplicationServiceTest {
                         null,
                         null));
 
-        QualityReportDetailResult result = service.latest(71L);
+        QualityReportDetailResult result = service.latest(new LatestQualityReportQuery(71L));
 
         assertEquals(true, result.getStale());
         assertEquals("REFINEMENT_APPLIED_AFTER_REPORT", result.getStaleReason());

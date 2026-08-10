@@ -108,7 +108,7 @@ describe("knowledge lineage service request contracts", () => {
         expect(capturedCalls.at(-1)).toEqual({
             body: query,
             method: "POST",
-            path: "/knowledge/lineage/canvas"
+            path: "/knowledge/lineage/get"
         });
     });
 });

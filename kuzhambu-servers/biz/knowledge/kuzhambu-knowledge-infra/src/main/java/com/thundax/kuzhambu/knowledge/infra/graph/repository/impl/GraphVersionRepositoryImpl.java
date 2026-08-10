@@ -32,7 +32,7 @@ public class GraphVersionRepositoryImpl implements GraphVersionRepository {
     }
 
     @Override
-    public GraphVersion findLatest(
+    public GraphVersion getByLatestSource(
             GraphExtractionTaskType taskType,
             String sourceContentType,
             GraphExtractionSourceContentId sourceContentId) {
@@ -46,7 +46,7 @@ public class GraphVersionRepositoryImpl implements GraphVersionRepository {
     }
 
     @Override
-    public GraphVersion findLatestAppliedByCategoryCode(String sourceCategoryCode) {
+    public GraphVersion getByLatestAppliedCategoryCode(String sourceCategoryCode) {
         QueryWrapper<GraphVersionDO> wrapper = new QueryWrapper<>();
         wrapper.eq("status", "APPLIED")
                 .eq("source_category_code", sourceCategoryCode)

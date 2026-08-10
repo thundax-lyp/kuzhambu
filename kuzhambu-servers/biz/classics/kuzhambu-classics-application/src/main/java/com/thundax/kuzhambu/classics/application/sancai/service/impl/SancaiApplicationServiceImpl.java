@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
@@ -438,7 +439,8 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
             return;
         }
         entry.setContentUpdatedAt(Instant.now());
-        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+        contentApplicationService.ensureVersioned(
+                new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除"));
         repository.deleteEntryById(id);
     }
 
@@ -626,7 +628,8 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     private void markManualSaveVersion(SancaiEntry entry, String changeSummary) {
-        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
+        contentApplicationService.ensureVersioned(
+                new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, changeSummary));
         repository.updateEntry(entry);
     }
 

@@ -9,31 +9,23 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportSt
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import java.time.Instant;
 import java.util.Set;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class ContentExportCommand {
-    private ClassicsExportKind exportKind;
-    private ClassicsContentType contentType;
-    private ClassicsExportFormat exportFormat;
-    private ClassicsExportScopeType scopeType;
-    private String scopeJson;
-    private Instant requestedAt;
-    private Instant expiresAt;
-    private ClassicsExportStatus status;
-    private StorageObjectId storageObjectId;
-    private int itemCount;
-    private int assetCount;
-    private SancaiVisibilityRiskStatus visibilityRiskStatus;
-    private boolean contentChanged;
-    private Long operatorUserId;
-    private Set<String> operatorPermissions;
+public record ContentExportCommand(
+        ClassicsExportKind exportKind,
+        ClassicsContentType contentType,
+        ClassicsExportFormat exportFormat,
+        ClassicsExportScopeType scopeType,
+        String scopeJson,
+        Instant requestedAt,
+        Instant expiresAt,
+        ClassicsExportStatus status,
+        StorageObjectId storageObjectId,
+        int itemCount,
+        int assetCount,
+        SancaiVisibilityRiskStatus visibilityRiskStatus,
+        boolean contentChanged,
+        Long operatorUserId,
+        Set<String> operatorPermissions) {
 
     public ContentExportCommand(
             ClassicsExportKind exportKind,

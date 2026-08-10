@@ -190,19 +190,19 @@ const createRefinementMockHandlers = async (page: Page) => {
             records: [task]
         });
     });
-    await page.route("**/kuzhambu-admin-api/api/knowledge/refinement/task/open", async (route) => {
-        taskOpenPayload = readRequestBody(route.request().postData());
-        await fulfillSuccess(route, detail);
-    });
     await page.route(
-        "**/kuzhambu-admin-api/api/knowledge/refinement/task/detail",
+        "**/kuzhambu-admin-api/api/knowledge/refinement/task/create",
         async (route) => {
-            await readRequestBody(route.request().postData());
+            taskOpenPayload = readRequestBody(route.request().postData());
             await fulfillSuccess(route, detail);
         }
     );
+    await page.route("**/kuzhambu-admin-api/api/knowledge/refinement/task/get", async (route) => {
+        await readRequestBody(route.request().postData());
+        await fulfillSuccess(route, detail);
+    });
     await page.route(
-        "**/kuzhambu-admin-api/api/knowledge/refinement/quality/summary",
+        "**/kuzhambu-admin-api/api/knowledge/refinement/quality/get",
         async (route) => {
             await fulfillSuccess(route, {
                 entityCoverageRate: 0.8,

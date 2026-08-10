@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.knowledge.application.refinement.service;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ApplyRefinementTaskCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementEntityCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageRelationCommand;
@@ -11,12 +12,14 @@ import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefin
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementRelationCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.OpenRefinementTaskCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertQualityAnnotationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementEntityCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualitySummaryQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
@@ -33,7 +36,7 @@ public interface KnowledgeGraphRefinementApplicationService {
 
     PageResult<RefinementWorkbenchItemResult> pageTasks(RefinementWorkbenchQuery query, PageQuery pageQuery);
 
-    RefinementDetailResult openTask(Long graphVersionId, Long openedBy);
+    RefinementDetailResult openTask(OpenRefinementTaskCommand command);
 
     RefinementDetailResult getTaskDetail(RefinementDetailQuery query);
 
@@ -67,7 +70,7 @@ public interface KnowledgeGraphRefinementApplicationService {
 
     void deleteAnnotation(DeleteQualityAnnotationCommand command);
 
-    RefinementApplyResult applyTask(Long refinementTaskId, Long appliedBy);
+    RefinementApplyResult applyTask(ApplyRefinementTaskCommand command);
 
-    QualitySummaryResult qualitySummary(Long refinementTaskId);
+    QualitySummaryResult qualitySummary(QualitySummaryQuery query);
 }

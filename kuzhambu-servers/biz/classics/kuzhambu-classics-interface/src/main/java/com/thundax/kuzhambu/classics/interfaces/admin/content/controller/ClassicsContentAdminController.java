@@ -1,17 +1,13 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.content.controller;
 
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
-import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
-import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
-import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
@@ -80,10 +76,7 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "标签列表")
     @PostMapping("tags/list")
     public List<ClassicsContentResponse> listTags(@Valid @RequestBody ClassicsContentRequest request) {
-        String validContentType = validContentTagType(request == null ? null : request.getContentType());
-        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(
-                requireParameter(request == null ? null : request.getContentId(), "contentId"));
-        return service.listTags(validContentType, contentIdValue).stream()
+        return service.listTags(ClassicsContentInterfaceAssembler.toTagListQuery(request)).stream()
                 .map(ClassicsContentInterfaceAssembler::toTagResponse)
                 .toList();
     }
@@ -155,12 +148,7 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "标签排序")
     @PostMapping("tags/sort")
     public Boolean sortTags(@Valid @RequestBody ClassicsContentTagSortRequest request) {
-        service.sortTags(new ContentTagSortCommand(RequestListHelper.map(
-                RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
-                ClassicsContentTagIdCodec::toDomain)));
+        service.sortTags(ClassicsContentInterfaceAssembler.toTagSortCommand(request));
         return true;
     }
 
@@ -176,9 +164,7 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "问答列表")
     @PostMapping("qa-pairs/list")
     public List<ClassicsContentResponse> listQaPairs(@Valid @RequestBody ClassicsContentRequest request) {
-        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(
-                requireParameter(request == null ? null : request.getContentId(), "contentId"));
-        return service.listQaPairs(request == null ? null : request.getContentType(), contentIdValue).stream()
+        return service.listQaPairs(ClassicsContentInterfaceAssembler.toQaPairListQuery(request)).stream()
                 .map(ClassicsContentInterfaceAssembler::toQaResponse)
                 .toList();
     }
@@ -302,12 +288,7 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "问答排序")
     @PostMapping("qa-pairs/sort")
     public Boolean sortQaPairs(@Valid @RequestBody ClassicsContentQaPairSortRequest request) {
-        service.sortQaPairs(new ContentQaPairSortCommand(RequestListHelper.map(
-                RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
-                ClassicsContentQaPairIdCodec::toDomain)));
+        service.sortQaPairs(ClassicsContentInterfaceAssembler.toQaPairSortCommand(request));
         return true;
     }
 
@@ -323,8 +304,8 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "创建导出任务")
     @PostMapping("exports/create")
     public ClassicsContentResponse createExport(@Valid @RequestBody ClassicsContentRequest request) {
-        ContentExportCommand command = ClassicsContentInterfaceAssembler.toExportCommand(request);
-        command.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
+        ContentExportCommand command =
+                ClassicsContentInterfaceAssembler.toExportCommand(request, KuzhambuContextHolder.currentAuthorities());
         ClassicsExportJobResult result = service.createExportJob(command);
         return ClassicsContentResponse.builder()
                 .id(
@@ -352,8 +333,7 @@ public class ClassicsContentAdminController {
     public PageResponse<ClassicsContentResponse> pageExports(@Valid @RequestBody ClassicsContentRequest request) {
         PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
         return PageResponseHelper.fromPageResult(
-                service.pageExportJobs(
-                        request.getContentType(), request.getExportKind(), request.getStatus(), pageQuery),
+                service.pageExportJobs(ClassicsContentInterfaceAssembler.toExportJobQuery(request), pageQuery),
                 ClassicsContentInterfaceAssembler::toExportResponse);
     }
 

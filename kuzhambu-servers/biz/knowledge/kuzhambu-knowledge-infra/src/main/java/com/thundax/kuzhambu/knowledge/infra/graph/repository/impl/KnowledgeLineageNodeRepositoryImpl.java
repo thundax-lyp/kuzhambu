@@ -64,7 +64,7 @@ public class KnowledgeLineageNodeRepositoryImpl implements KnowledgeLineageNodeR
     }
 
     @Override
-    public void saveOrUpdateBatch(List<KnowledgeLineageNode> nodes) {
+    public void batchSaveOrUpdate(List<KnowledgeLineageNode> nodes) {
         for (KnowledgeLineageNode node : nodes == null ? List.<KnowledgeLineageNode>of() : nodes) {
             KnowledgeLineageNodeDO dataObject = KnowledgeLineageNodePersistenceAssembler.toObject(node);
             int updated = mapper.update(

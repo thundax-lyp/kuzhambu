@@ -14,6 +14,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTa
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
@@ -126,14 +128,14 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
 
     @Override
     public QualityReportDetailResult generateReport(GenerateQualityReportCommand command) {
-        Long graphVersionId = command == null ? null : command.getGraphVersionId();
+        Long graphVersionId = command == null ? null : command.graphVersionId();
         GraphVersion version = graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(graphVersionId));
         List<KnowledgeEntity> entities = entityRepository.listByVersionId(GraphVersionIdCodec.toDomain(graphVersionId));
         List<KnowledgeRelation> relations = relationRepository.listByVersionId(graphVersionId);
         List<KnowledgeLineageNode> lineageNodes = lineageNodeRepository.listByVersionId(graphVersionId);
         List<KnowledgeLineageRelation> lineageRelations = lineageRelationRepository.listByVersionId(graphVersionId);
         List<QualityAnnotation> annotations = qualityAnnotationRepository.listByGraphVersionId(graphVersionId);
-        RefinementTask task = refinementTaskRepository.findLatestDraft(
+        RefinementTask task = refinementTaskRepository.getByLatestDraft(
                 graphVersionTaskTypeValue(version),
                 version.getSourceContentType(),
                 GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId()),
@@ -143,7 +145,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
         Long reportId = idGenerator.nextId().value();
         QualityReport report = buildReport(
                 reportId,
-                command == null ? null : command.getGeneratedBy(),
+                command == null ? null : command.generatedBy(),
                 now,
                 version,
                 entities,
@@ -181,7 +183,8 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
 
     @Override
     @Transactional(readOnly = true)
-    public QualityReportDetailResult detail(Long reportId) {
+    public QualityReportDetailResult detail(QualityReportDetailQuery query) {
+        Long reportId = query == null ? null : query.reportId();
         QualityReport report = qualityReportRepository.getByReportId(reportId);
         if (report == null) {
             return emptyDetail();
@@ -195,25 +198,26 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
 
     @Override
     @Transactional(readOnly = true)
-    public QualityReportDetailResult latest(Long graphVersionId) {
-        QualityReport report = qualityReportRepository.getLatestPublished(graphVersionId);
-        return report == null ? emptyDetail() : detail(report.getReportId());
+    public QualityReportDetailResult latest(LatestQualityReportQuery query) {
+        Long graphVersionId = query == null ? null : query.graphVersionId();
+        QualityReport report = qualityReportRepository.getByLatestPublished(graphVersionId);
+        return report == null ? emptyDetail() : detail(new QualityReportDetailQuery(report.getReportId()));
     }
 
     @Override
     public ReextractLowQualityCategoryResult reextractLowQualityCategory(ReextractLowQualityCategoryCommand command) {
-        if (command == null || command.getReportId() == null) {
+        if (command == null || command.reportId() == null) {
             throw new BizException("Knowledge quality report id is required");
         }
-        if (StringUtils.isBlank(command.getSourceCategoryCode())) {
+        if (StringUtils.isBlank(command.sourceCategoryCode())) {
             throw new BizException("Knowledge quality report source category code is required");
         }
-        QualityReportDetailResult detail = detail(command.getReportId());
+        QualityReportDetailResult detail = detail(new QualityReportDetailQuery(command.reportId()));
         ReportRecord report = detail.getReport();
         if (report == null) {
-            throw new BizException("Knowledge quality report not found: " + command.getReportId());
+            throw new BizException("Knowledge quality report not found: " + command.reportId());
         }
-        List<SourceDetailRecord> targets = lowQualitySourceDetails(detail, command.getSourceCategoryCode());
+        List<SourceDetailRecord> targets = lowQualitySourceDetails(detail, command.sourceCategoryCode());
         if (targets.isEmpty()) {
             throw new BizException("Knowledge quality report source category has no quality issues");
         }
@@ -223,22 +227,22 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
             throw new BizException("Knowledge quality report source category has no source content ids");
         }
         Long sourceContentId = sourceContentIds.get(0);
-        String taskType = StringUtils.defaultIfBlank(command.getTaskType(), TASK_TYPE_GRAPH);
+        String taskType = StringUtils.defaultIfBlank(command.taskType(), TASK_TYPE_GRAPH);
         Boolean replaceUnconfirmedOnly =
-                command.getReplaceUnconfirmedOnly() == null ? Boolean.TRUE : command.getReplaceUnconfirmedOnly();
+                command.replaceUnconfirmedOnly() == null ? Boolean.TRUE : command.replaceUnconfirmedOnly();
         String sourceCategoryName = sourceCategoryName(targets);
         String selectionScopeJson = selectionScopeJson(
-                command.getReportId(),
+                command.reportId(),
                 report.getGraphVersionId(),
-                command.getSourceCategoryCode(),
+                command.sourceCategoryCode(),
                 sourceCategoryName,
                 sourceContentType,
                 sourceContentIds);
         GraphExtractionTaskResult task = requestReextractTask(
                 taskType, selectionScopeJson, replaceUnconfirmedOnly, sourceContentType, sourceContentId, command);
         return new ReextractLowQualityCategoryResult(
-                command.getReportId(),
-                command.getSourceCategoryCode(),
+                command.reportId(),
+                command.sourceCategoryCode(),
                 sourceCategoryName,
                 sourceContentType,
                 sourceContentId,
@@ -477,7 +481,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
             return new ReportStaleInfo(Boolean.FALSE, null, null);
         }
         RefinementTask lastAppliedRefinement =
-                refinementTaskRepository.findLatestAppliedByGraphVersionId(report.getGraphVersionId());
+                refinementTaskRepository.getByLatestAppliedGraphVersionId(report.getGraphVersionId());
         if (lastAppliedRefinement == null || lastAppliedRefinement.getAppliedAt() == null) {
             return new ReportStaleInfo(Boolean.FALSE, null, null);
         }
@@ -701,18 +705,18 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
                         null,
                         sourceContentType,
                         sourceContentId,
-                        command.getRequestedBy(),
+                        command.requestedBy(),
                         null,
                         null,
-                        command.getModelId(),
-                        command.getModelName(),
+                        command.modelId(),
+                        command.modelName(),
                         null,
                         requestId,
                         traceId,
-                        command.getPromptMessagesJson(),
+                        command.promptMessagesJson(),
                         null,
                         null,
-                        command.getInputPayloadJson(),
+                        command.inputPayloadJson(),
                         null,
                         false,
                         DEFAULT_LOCALE));
@@ -726,18 +730,18 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
                         null,
                         sourceContentType,
                         sourceContentId,
-                        command.getRequestedBy(),
+                        command.requestedBy(),
                         null,
                         null,
-                        command.getModelId(),
-                        command.getModelName(),
+                        command.modelId(),
+                        command.modelName(),
                         null,
                         requestId,
                         traceId,
-                        command.getPromptMessagesJson(),
+                        command.promptMessagesJson(),
                         null,
                         null,
-                        command.getInputPayloadJson(),
+                        command.inputPayloadJson(),
                         null,
                         false,
                         DEFAULT_LOCALE));
@@ -751,18 +755,18 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
                         null,
                         sourceContentType,
                         sourceContentId,
-                        command.getRequestedBy(),
+                        command.requestedBy(),
                         null,
                         null,
-                        command.getModelId(),
-                        command.getModelName(),
+                        command.modelId(),
+                        command.modelName(),
                         null,
                         requestId,
                         traceId,
-                        command.getPromptMessagesJson(),
+                        command.promptMessagesJson(),
                         null,
                         null,
-                        command.getInputPayloadJson(),
+                        command.inputPayloadJson(),
                         null,
                         false,
                         DEFAULT_LOCALE));

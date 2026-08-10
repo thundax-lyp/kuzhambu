@@ -77,7 +77,7 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
     }
 
     @Override
-    public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {
+    public void batchSaveOrUpdate(List<KnowledgeRelation> relations) {
         for (KnowledgeRelation relation : relations == null ? List.<KnowledgeRelation>of() : relations) {
             KnowledgeRelationDO dataObject = KnowledgeRelationPersistenceAssembler.toObject(relation);
             int updated = mapper.update(

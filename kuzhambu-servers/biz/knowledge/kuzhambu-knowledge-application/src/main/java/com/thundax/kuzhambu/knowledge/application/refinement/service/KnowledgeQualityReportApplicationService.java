@@ -4,6 +4,8 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
@@ -15,9 +17,9 @@ public interface KnowledgeQualityReportApplicationService {
 
     PageResult<ReportRecord> pageReports(QualityReportQuery query, PageQuery pageQuery);
 
-    QualityReportDetailResult detail(Long reportId);
+    QualityReportDetailResult detail(QualityReportDetailQuery query);
 
-    QualityReportDetailResult latest(Long graphVersionId);
+    QualityReportDetailResult latest(LatestQualityReportQuery query);
 
     ReextractLowQualityCategoryResult reextractLowQualityCategory(ReextractLowQualityCategoryCommand command);
 }

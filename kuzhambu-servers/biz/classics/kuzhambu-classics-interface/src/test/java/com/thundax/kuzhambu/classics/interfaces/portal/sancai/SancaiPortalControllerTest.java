@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
@@ -233,8 +234,9 @@ class SancaiPortalControllerTest {
                 new Class<?>[] {ClassicsContentApplicationService.class},
                 (proxy, method, args) -> {
                     if ("listTags".equals(method.getName())) {
-                        assertEquals("SANCAI_ENTRY", args[0]);
-                        assertEquals(ClassicsContentIdCodec.toDomain(3001L), args[1]);
+                        assertEquals(
+                                new ContentObjectQuery("SANCAI_ENTRY", ClassicsContentIdCodec.toDomain(3001L)),
+                                args[0]);
                         return List.of(tag());
                     }
                     throw new UnsupportedOperationException(method.getName());

@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.classics.application.content.assembler.ClassicsConte
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentItemCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
@@ -611,7 +612,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(11L, result.getContentId());
         assertEquals(ClassicsContentChangeType.AI_APPLIED, repository.lastInsertedVersion.getChangeType());
         assertEquals("AI 应用：标签", repository.lastInsertedVersion.getChangeSummary());
-        assertEquals(1, repository.deleteAiTagsCount);
+        assertEquals(1, repository.deleteByAiTagsCount);
         assertEquals(2, repository.insertTagCount);
         assertEquals(1, repository.insertVersionCount);
         assertEquals(3, repository.tags.size());
@@ -644,12 +645,13 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 ClassicsContentType.SANCAI_ENTRY,
                 11L,
                 AI_CAPABILITY_CLASSICS_TAGS,
-                "{\"tags\":[\"old-ai-tag\",\"new-ai-tag\"]}");
-        command.setTagApplyMode("APPEND");
+                "{\"tags\":[\"old-ai-tag\",\"new-ai-tag\"]}",
+                null,
+                "APPEND");
 
         service.applyAiCandidate(command);
 
-        assertEquals(0, repository.deleteAiTagsCount);
+        assertEquals(0, repository.deleteByAiTagsCount);
         assertEquals(1, repository.insertTagCount);
         assertEquals(3, repository.tags.size());
         assertEquals(
@@ -676,12 +678,17 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> candidateApplied());
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command = applyCommand(
-                11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_TAGS, "{\"tags\":[\"old-ai-tag\"]}");
-        command.setTagApplyMode("APPEND");
+                11L,
+                ClassicsContentType.SANCAI_ENTRY,
+                11L,
+                AI_CAPABILITY_CLASSICS_TAGS,
+                "{\"tags\":[\"old-ai-tag\"]}",
+                null,
+                "APPEND");
 
         service.applyAiCandidate(command);
 
-        assertEquals(0, repository.deleteAiTagsCount);
+        assertEquals(0, repository.deleteByAiTagsCount);
         assertEquals(1, repository.insertTagCount);
         assertEquals(2, repository.tags.size());
         assertEquals(
@@ -709,13 +716,14 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 ClassicsContentType.SANCAI_ENTRY,
                 11L,
                 AI_CAPABILITY_CLASSICS_TAGS,
-                "{\"tags\":[\"new-one\",\"new-two\"]}");
-        command.setTagApplyMode("COVER");
+                "{\"tags\":[\"new-one\",\"new-two\"]}",
+                null,
+                "COVER");
 
         service.applyAiCandidate(command);
 
-        assertEquals(0, repository.deleteAiTagsCount);
-        assertEquals(2, repository.deleteTagByIdCount);
+        assertEquals(0, repository.deleteByAiTagsCount);
+        assertEquals(2, repository.deleteByTagIdCount);
         assertEquals(2, repository.insertTagCount);
         assertEquals(
                 List.of("new-one", "new-two"),
@@ -852,7 +860,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(11L, result.getContentId());
         assertEquals(ClassicsContentChangeType.AI_APPLIED, repository.lastInsertedVersion.getChangeType());
         assertEquals("AI 应用：问答对", repository.lastInsertedVersion.getChangeSummary());
-        assertEquals(0, repository.deleteAiQaPairsCount);
+        assertEquals(0, repository.deleteByAiQaPairsCount);
         assertEquals(2, repository.insertQaPairCount);
         assertEquals(4, repository.qaPairs.size());
         assertEquals(
@@ -1144,14 +1152,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 mock(ClassicsPublicationWriteGuard.class));
     }
 
-    private static AiCandidateBatchRejectContentCommand.Item rejectItem(
+    private static AiCandidateBatchRejectContentItemCommand rejectItem(
             Long candidateId, ClassicsContentType contentType, Long contentId, String capability) {
-        AiCandidateBatchRejectContentCommand.Item item = new AiCandidateBatchRejectContentCommand.Item();
-        item.setCandidateId(candidateId);
-        item.setContentType(contentType);
-        item.setContentId(contentId);
-        item.setCapability(capability);
-        return item;
+        return new AiCandidateBatchRejectContentItemCommand(candidateId, contentType, contentId, null, capability);
     }
 
     private static SancaiVisualAsset visualAsset(Long objectId) {
@@ -1202,15 +1205,19 @@ class ClassicsContentApplicationServiceAiCandidateTest {
             String capability,
             String payload,
             Long objectId) {
-        AiCandidateApplyContentCommand command = new AiCandidateApplyContentCommand();
-        command.setCandidateId(candidateId);
-        command.setContentType(contentType);
-        command.setContentId(contentId);
-        command.setObjectId(objectId);
-        command.setCapability(capability);
-        command.setResultFormat("TEXT");
-        command.setResultPayload(payload);
-        return command;
+        return applyCommand(candidateId, contentType, contentId, capability, payload, objectId, null);
+    }
+
+    private static AiCandidateApplyContentCommand applyCommand(
+            Long candidateId,
+            ClassicsContentType contentType,
+            Long contentId,
+            String capability,
+            String payload,
+            Long objectId,
+            String tagApplyMode) {
+        return new AiCandidateApplyContentCommand(
+                candidateId, contentType, contentId, objectId, capability, "TEXT", payload, null, tagApplyMode);
     }
 
     private static AiCandidateFacadeDto pendingCandidate() {
@@ -1299,9 +1306,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         private int updateSancaiEntryAiCount;
         private int updateWangqiDocumentAiCount;
         private int updateMingCustomsEntryAiCount;
-        private int deleteAiTagsCount;
-        private int deleteAiQaPairsCount;
-        private int deleteTagByIdCount;
+        private int deleteByAiTagsCount;
+        private int deleteByAiQaPairsCount;
+        private int deleteByTagIdCount;
         private int insertTagCount;
         private int insertQaPairCount;
         private SancaiEntry sancaiEntryForAiApply;
@@ -1309,7 +1316,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         private MingCustomsEntry mingCustomsEntryForAiApply;
 
         @Override
-        public ClassicsPublicationContent lockPublicationContent(
+        public ClassicsPublicationContent getByPublicationContentForLock(
                 ClassicsContentType contentType, ClassicsContentId contentId) {
             return null;
         }
@@ -1362,7 +1369,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public ClassicsContentTag getTagById(ClassicsContentTagId id) {
+        public ClassicsContentTag getByTagId(ClassicsContentTagId id) {
             return null;
         }
 
@@ -1377,8 +1384,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public int deleteTagById(String contentType, ClassicsContentId contentId, ClassicsContentTagId id) {
-            deleteTagByIdCount++;
+        public int deleteByTagId(String contentType, ClassicsContentId contentId, ClassicsContentTagId id) {
+            deleteByTagIdCount++;
             tags.removeIf(tag -> tag.getId() != null && tag.getId().equals(id));
             return 1;
         }
@@ -1410,7 +1417,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public ClassicsContentQaPair getQaPairById(ClassicsContentQaPairId id) {
+        public ClassicsContentQaPair getByQaPairId(ClassicsContentQaPairId id) {
             return null;
         }
 
@@ -1425,12 +1432,12 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public int deleteQaPairById(ClassicsContentQaPairId id) {
+        public int deleteByQaPairId(ClassicsContentQaPairId id) {
             return 1;
         }
 
         @Override
-        public ClassicsContentVersion getVersionById(ClassicsContentVersionId id) {
+        public ClassicsContentVersion getByVersionId(ClassicsContentVersionId id) {
             return versions.stream()
                     .filter(version -> version.getId().equals(id))
                     .findFirst()
@@ -1438,12 +1445,12 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public int deleteVersions(String contentType, ClassicsContentId contentId) {
+        public int deleteByVersions(String contentType, ClassicsContentId contentId) {
             return 1;
         }
 
         @Override
-        public SancaiEntry getSancaiEntryForAiApply(ClassicsContentId contentId) {
+        public SancaiEntry getBySancaiEntryForAiApply(ClassicsContentId contentId) {
             return sancaiEntryForAiApply;
         }
 
@@ -1454,7 +1461,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public WangqiDocument getWangqiDocumentForAiApply(ClassicsContentId contentId) {
+        public WangqiDocument getByWangqiDocumentForAiApply(ClassicsContentId contentId) {
             return wangqiDocumentForAiApply;
         }
 
@@ -1465,7 +1472,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public MingCustomsEntry getMingCustomsEntryForAiApply(ClassicsContentId contentId) {
+        public MingCustomsEntry getByMingCustomsEntryForAiApply(ClassicsContentId contentId) {
             return mingCustomsEntryForAiApply;
         }
 
@@ -1476,8 +1483,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public int deleteAiTags(String contentType, ClassicsContentId contentId) {
-            deleteAiTagsCount++;
+        public int deleteByAiTags(String contentType, ClassicsContentId contentId) {
+            deleteByAiTagsCount++;
             tags.removeIf(tag -> tag.getContentType() != null
                     && tag.getContentType().value().equals(contentType)
                     && tag.getContentId() != null
@@ -1487,8 +1494,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public int deleteAiQaPairs(String contentType, ClassicsContentId contentId) {
-            deleteAiQaPairsCount++;
+        public int deleteByAiQaPairs(String contentType, ClassicsContentId contentId) {
+            deleteByAiQaPairsCount++;
             qaPairs.removeIf(pair -> pair.getContentType() != null
                     && pair.getContentType().value().equals(contentType)
                     && pair.getContentId() != null
@@ -1503,7 +1510,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public ClassicsContentExportJob getExportJobById(ClassicsContentExportJobId id) {
+        public ClassicsContentExportJob getByExportJobId(ClassicsContentExportJobId id) {
             return null;
         }
 
@@ -1513,7 +1520,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public int markExportJobCompleted(
+        public int updateExportJobCompleted(
                 ClassicsContentExportJobId id,
                 com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId storageObjectId,
                 Instant expiresAt,
@@ -1523,22 +1530,22 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public int markExportJobFailed(ClassicsContentExportJobId id) {
+        public int updateExportJobFailed(ClassicsContentExportJobId id) {
             return 1;
         }
 
         @Override
-        public int markExportJobExpired(ClassicsContentExportJobId id) {
+        public int updateExportJobExpired(ClassicsContentExportJobId id) {
             return 1;
         }
 
         @Override
-        public int deleteExportJobById(ClassicsContentExportJobId id) {
+        public int deleteByExportJobId(ClassicsContentExportJobId id) {
             return 1;
         }
 
         @Override
-        public PageResult<ClassicsContentExportJob> pageExportJobs(
+        public PageResult<ClassicsContentExportJob> page(
                 String contentType, String exportKind, String status, int pageNo, int pageSize) {
             return new PageResult<>();
         }

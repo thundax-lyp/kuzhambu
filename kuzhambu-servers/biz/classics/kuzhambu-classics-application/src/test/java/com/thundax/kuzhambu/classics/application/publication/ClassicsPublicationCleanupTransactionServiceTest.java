@@ -29,7 +29,8 @@ class ClassicsPublicationCleanupTransactionServiceTest {
         job.setContentType(ClassicsContentType.SANCAI_ENTRY);
         job.setContentId(101L);
         job.setContentDeletedAt(Instant.parse("2026-08-02T06:00:00Z"));
-        when(contentRepository.lockPublicationContent(ClassicsContentType.SANCAI_ENTRY, new ClassicsContentId(101L)))
+        when(contentRepository.getByPublicationContentForLock(
+                        ClassicsContentType.SANCAI_ENTRY, new ClassicsContentId(101L)))
                 .thenReturn(null);
         when(jobRepository.lockByContent(ClassicsContentType.SANCAI_ENTRY, 101L))
                 .thenReturn(job);

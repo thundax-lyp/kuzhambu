@@ -25,7 +25,7 @@ public class ClassicsPublicationWriteGuard {
 
     public ClassicsPublicationContent requireWritable(
             ClassicsContentType contentType, ClassicsContentId contentId, ClassicsPublicationWriteOperation operation) {
-        ClassicsPublicationContent content = contentRepository.lockPublicationContent(contentType, contentId);
+        ClassicsPublicationContent content = contentRepository.getByPublicationContentForLock(contentType, contentId);
         if (content == null) {
             throw conflict("CONTENT_NOT_FOUND");
         }

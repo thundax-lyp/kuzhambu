@@ -88,7 +88,7 @@ describe("knowledge quality report service request contracts", () => {
 
         await service.generateReport(command);
 
-        expectLastCall("POST", "/knowledge/quality/report/generate", command);
+        expectLastCall("POST", "/knowledge/quality/report/create", command);
     });
 
     it("sends page request", async () => {
@@ -108,7 +108,7 @@ describe("knowledge quality report service request contracts", () => {
 
     it("sends detail and latest requests", async () => {
         await service.getReportDetail({ reportId: "1001" });
-        expectLastCall("POST", "/knowledge/quality/report/detail", { reportId: "1001" });
+        expectLastCall("POST", "/knowledge/quality/report/get", { reportId: "1001" });
 
         await service.getLatestReport({ graphVersionId: "71" });
         expectLastCall("POST", "/knowledge/quality/report/latest", { graphVersionId: "71" });
@@ -129,6 +129,6 @@ describe("knowledge quality report service request contracts", () => {
 
         await service.reextractLowQualityCategory(command);
 
-        expectLastCall("POST", "/knowledge/quality/report/reextract-low-quality-category", command);
+        expectLastCall("POST", "/knowledge/quality/report/extract", command);
     });
 });

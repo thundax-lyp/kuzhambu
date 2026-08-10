@@ -115,7 +115,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public ClassicsContentTag getTagById(ClassicsContentTagId id) {
+    public ClassicsContentTag getByTagId(ClassicsContentTagId id) {
         return ClassicsContentPersistenceAssembler.toTagDomain(
                 tagMapper.selectById(ClassicsContentTagIdCodec.toValue(id)));
     }
@@ -144,7 +144,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
                         .set(ClassicsContentTagDO::getStatus, dataObject.getStatus()));
     }
 
-    public int deleteTagById(String contentType, ClassicsContentId contentId, ClassicsContentTagId id) {
+    public int deleteByTagId(String contentType, ClassicsContentId contentId, ClassicsContentTagId id) {
         return tagMapper.delete(new LambdaUpdateWrapper<ClassicsContentTagDO>()
                 .eq(ClassicsContentTagDO::getId, ClassicsContentTagIdCodec.toValue(id))
                 .eq(StringUtils.isNotBlank(contentType), ClassicsContentTagDO::getContentType, contentType)
@@ -180,7 +180,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public ClassicsContentQaPair getQaPairById(ClassicsContentQaPairId id) {
+    public ClassicsContentQaPair getByQaPairId(ClassicsContentQaPairId id) {
         return ClassicsContentPersistenceAssembler.toQaDomain(
                 qaPairMapper.selectById(ClassicsContentQaPairIdCodec.toValue(id)));
     }
@@ -208,12 +208,12 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
                         .set(ClassicsContentQaPairDO::getSource, dataObject.getSource()));
     }
 
-    public int deleteQaPairById(ClassicsContentQaPairId id) {
+    public int deleteByQaPairId(ClassicsContentQaPairId id) {
         return qaPairMapper.deleteById(ClassicsContentQaPairIdCodec.toValue(id));
     }
 
     @Override
-    public SancaiEntry getSancaiEntryForAiApply(ClassicsContentId contentId) {
+    public SancaiEntry getBySancaiEntryForAiApply(ClassicsContentId contentId) {
         return SancaiPersistenceAssembler.toEntryDomain(
                 sancaiMapper.selectById(ClassicsContentIdCodec.toValue(contentId)));
     }
@@ -245,7 +245,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public WangqiDocument getWangqiDocumentForAiApply(ClassicsContentId contentId) {
+    public WangqiDocument getByWangqiDocumentForAiApply(ClassicsContentId contentId) {
         return WangqiDocumentPersistenceAssembler.toDomain(
                 wangqiDocumentMapper.selectById(ClassicsContentIdCodec.toValue(contentId)));
     }
@@ -275,7 +275,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public MingCustomsEntry getMingCustomsEntryForAiApply(ClassicsContentId contentId) {
+    public MingCustomsEntry getByMingCustomsEntryForAiApply(ClassicsContentId contentId) {
         return MingCustomsPersistenceAssembler.toEntryDomain(
                 mingCustomsEntryMapper.selectById(ClassicsContentIdCodec.toValue(contentId)));
     }
@@ -313,7 +313,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public int deleteAiTags(String contentType, ClassicsContentId contentId) {
+    public int deleteByAiTags(String contentType, ClassicsContentId contentId) {
         return tagMapper.delete(new LambdaQueryWrapper<ClassicsContentTagDO>()
                 .eq(StringUtils.isNotBlank(contentType), ClassicsContentTagDO::getContentType, contentType)
                 .eq(
@@ -324,7 +324,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public int deleteAiQaPairs(String contentType, ClassicsContentId contentId) {
+    public int deleteByAiQaPairs(String contentType, ClassicsContentId contentId) {
         return qaPairMapper.delete(new LambdaQueryWrapper<ClassicsContentQaPairDO>()
                 .eq(StringUtils.isNotBlank(contentType), ClassicsContentQaPairDO::getContentType, contentType)
                 .eq(
@@ -335,7 +335,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public void lockContentForVersion(ClassicsContentType contentType, ClassicsContentId contentId) {
+    public void updateContentForVersionLock(ClassicsContentType contentType, ClassicsContentId contentId) {
         Long id = ClassicsContentIdCodec.toValue(contentId);
         if (contentType == null || id == null) {
             return;
@@ -360,7 +360,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public ClassicsPublicationContent lockPublicationContent(
+    public ClassicsPublicationContent getByPublicationContentForLock(
             ClassicsContentType contentType, ClassicsContentId contentId) {
         Long id = ClassicsContentIdCodec.toValue(contentId);
         if (contentType == null || id == null) {
@@ -467,12 +467,12 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
         return ClassicsContentVersionIdCodec.toDomain(dataObject.getId());
     }
 
-    public ClassicsContentVersion getVersionById(ClassicsContentVersionId id) {
+    public ClassicsContentVersion getByVersionId(ClassicsContentVersionId id) {
         return ClassicsContentPersistenceAssembler.toVersionDomain(
                 versionMapper.selectById(ClassicsContentVersionIdCodec.toValue(id)));
     }
 
-    public int deleteVersions(String contentType, ClassicsContentId contentId) {
+    public int deleteByVersions(String contentType, ClassicsContentId contentId) {
         return versionMapper.delete(new LambdaQueryWrapper<ClassicsContentVersionDO>()
                 .eq(ClassicsContentVersionDO::getContentType, contentType)
                 .eq(ClassicsContentVersionDO::getContentId, ClassicsContentIdCodec.toValue(contentId)));
@@ -484,7 +484,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
         return ClassicsContentExportJobIdCodec.toDomain(dataObject.getId());
     }
 
-    public ClassicsContentExportJob getExportJobById(ClassicsContentExportJobId id) {
+    public ClassicsContentExportJob getByExportJobId(ClassicsContentExportJobId id) {
         return ClassicsContentPersistenceAssembler.toExportDomain(
                 exportMapper.selectById(ClassicsContentExportJobIdCodec.toValue(id)));
     }
@@ -494,13 +494,13 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public int markExportJobCompleted(
+    public int updateExportJobCompleted(
             ClassicsContentExportJobId id,
             StorageObjectId storageObjectId,
             Instant expiresAt,
             int itemCount,
             int assetCount) {
-        return exportMapper.markExportJobCompleted(
+        return exportMapper.updateExportJobCompleted(
                 ClassicsContentExportJobIdCodec.toValue(id),
                 ClassicsExportStatus.COMPLETED.value(),
                 StorageObjectIdCodec.toValue(storageObjectId),
@@ -510,13 +510,13 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public int markExportJobFailed(ClassicsContentExportJobId id) {
+    public int updateExportJobFailed(ClassicsContentExportJobId id) {
         return exportMapper.markExportJobStatus(
                 ClassicsContentExportJobIdCodec.toValue(id), ClassicsExportStatus.FAILED.value());
     }
 
     @Override
-    public int markExportJobExpired(ClassicsContentExportJobId id) {
+    public int updateExportJobExpired(ClassicsContentExportJobId id) {
         return exportMapper.update(
                 null,
                 new LambdaUpdateWrapper<ClassicsContentExportJobDO>()
@@ -526,7 +526,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public int deleteExportJobById(ClassicsContentExportJobId id) {
+    public int deleteByExportJobId(ClassicsContentExportJobId id) {
         return exportMapper.deleteById(ClassicsContentExportJobIdCodec.toValue(id));
     }
 
@@ -545,7 +545,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
                 .toList();
     }
 
-    public PageResult<ClassicsContentExportJob> pageExportJobs(
+    public PageResult<ClassicsContentExportJob> page(
             String contentType, String exportKind, String status, int pageNo, int pageSize) {
         LambdaQueryWrapper<ClassicsContentExportJobDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(contentType), ClassicsContentExportJobDO::getContentType, contentType)

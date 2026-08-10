@@ -28,7 +28,8 @@ public class ClassicsPublicationContentCommitApplicationServiceImpl
     @Transactional(rollbackFor = Exception.class)
     public boolean commit(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
         ClassicsContentId contentId = new ClassicsContentId(job.getContentId());
-        ClassicsPublicationContent content = contentRepository.lockPublicationContent(job.getContentType(), contentId);
+        ClassicsPublicationContent content =
+                contentRepository.getByPublicationContentForLock(job.getContentType(), contentId);
         if (content == null
                 || !job.getId().equals(content.getCurrentJobId())
                 || content.getTransitionStatus() != expectedTransition(job)) {
