@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `08-19 graph frontend API 调用同步`：同步图谱抽取和图谱结果前端 API 路径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-08-KNOWLEDGE-GRAPH-REFINEMENT.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-service.ts`；`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-service-contract.test.ts`；`kuzhambu-apps/admin-web/src/pages/knowledge/graph-result/graph-result-service.ts`；`kuzhambu-apps/admin-web/src/pages/knowledge/graph-result/graph-result-service-contract.test.ts`；`kuzhambu-apps/admin-web/e2e/knowledge/graph-extraction/graph-extraction.spec.ts`；`kuzhambu-apps/admin-web/e2e/knowledge/graph-result/graph-result.spec.ts`
-    - 处理动作：将 graph Controller action path 变更同步到 admin-web service、契约测试和 e2e 入口。
-    - 验收点：前端请求路径与后端 graph Controller 保持一致，graph-extraction 与 graph-result 契约测试覆盖更新后的路径。
-    - 重要度：8/10
-
 - [ ] `08-20 refinement-lineage frontend API 调用同步`：同步精修、质量报告和世系前端 API 路径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-08-KNOWLEDGE-GRAPH-REFINEMENT.md`
