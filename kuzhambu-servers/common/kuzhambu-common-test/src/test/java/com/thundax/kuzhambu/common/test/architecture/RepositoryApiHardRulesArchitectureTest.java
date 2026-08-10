@@ -253,10 +253,6 @@ class RepositoryApiHardRulesArchitectureTest {
                 "method=getTagGovernanceMetrics path=tag/metrics");
         addLegacyActionVerbAllowances(
                 allowances,
-                "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/lineage/controller/KnowledgeLineageController.java",
-                "method=getCanvas path=canvas");
-        addLegacyActionVerbAllowances(
-                allowances,
                 "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java",
                 "method=summarizeInvocationLogs",
                 "method=summarizeInvocationLogs path=invocation-log/summary",

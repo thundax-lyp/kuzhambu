@@ -40,7 +40,6 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.knowledge.interfaces.admin.lineage.assembler.KnowledgeLineageInterfaceAssembler",
                         "com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.assembler.KnowledgeTaxonomyInterfaceAssembler",
                         "com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.assembler.KnowledgeGraphWorkbenchInterfaceAssembler",
                         "com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.assembler.KnowledgePortalAtlasInterfaceAssembler",
@@ -52,7 +51,6 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
     private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS,
-                "admin.lineage.controller.request.LineageCanvasRequest",
                 "portal.atlas.controller.request.KnowledgePortalAtlasRequest",
                 "portal.home.controller.request.KnowledgePortalHomeRequest",
                 "portal.quality.controller.request.KnowledgePortalQualityRequest");
@@ -61,21 +59,12 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
     private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
         return List.of(
                 actionVerbAllowance("KnowledgeGraphWorkbenchController"),
-                actionVerbAllowance("KnowledgeLineageController"),
                 actionVerbAllowance("KnowledgeTaxonomyController"));
     }
 
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
-                "admin.lineage.controller.response.LineageCanvasResponse",
-                "admin.lineage.controller.response.LineageCanvasResponse$AvailableFiltersResponse",
-                "admin.lineage.controller.response.LineageCanvasResponse$EmptyResponse",
-                "admin.lineage.controller.response.LineageCanvasResponse$NodeResponse",
-                "admin.lineage.controller.response.LineageCanvasResponse$RelationResponse",
-                "admin.lineage.controller.response.LineageCanvasResponse$SourceRefResponse",
-                "admin.lineage.controller.response.LineageCanvasResponse$SummaryResponse",
-                "admin.lineage.controller.response.LineageCanvasResponse$VersionResponse",
                 "admin.taxonomy.controller.response.TagAliasResponse",
                 "admin.taxonomy.controller.response.TagBatchMergePreviewResponse",
                 "admin.taxonomy.controller.response.TagCategoryResponse",

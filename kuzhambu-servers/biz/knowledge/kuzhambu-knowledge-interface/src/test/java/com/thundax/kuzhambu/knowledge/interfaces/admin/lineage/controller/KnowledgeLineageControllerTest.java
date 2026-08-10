@@ -32,7 +32,7 @@ class KnowledgeLineageControllerTest {
         RequestMapping root = KnowledgeLineageController.class.getAnnotation(RequestMapping.class);
         assertEquals("/api/knowledge/lineage", root.value()[0]);
         Method method = KnowledgeLineageController.class.getDeclaredMethod("getCanvas", LineageCanvasRequest.class);
-        assertEquals("canvas", method.getAnnotation(PostMapping.class).value()[0]);
+        assertEquals("get", method.getAnnotation(PostMapping.class).value()[0]);
         assertEquals(
                 "knowledge:graph:view",
                 method.getAnnotation(HasPermission.class).value()[0]);

@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.lineage.controller.respo
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
 import java.util.List;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
+@Schema
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LineageCanvasResponse implements Serializable {
@@ -40,6 +42,7 @@ public class LineageCanvasResponse implements Serializable {
 
     @Getter
     @Builder
+    @Schema
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class VersionResponse implements Serializable {
@@ -73,6 +76,7 @@ public class LineageCanvasResponse implements Serializable {
 
     @Getter
     @Builder
+    @Schema
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SummaryResponse implements Serializable {
@@ -97,6 +101,7 @@ public class LineageCanvasResponse implements Serializable {
 
     @Getter
     @Builder
+    @Schema
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class NodeResponse implements Serializable {
@@ -148,6 +153,7 @@ public class LineageCanvasResponse implements Serializable {
 
     @Getter
     @Builder
+    @Schema
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RelationResponse implements Serializable {
@@ -196,6 +202,7 @@ public class LineageCanvasResponse implements Serializable {
 
     @Getter
     @Builder
+    @Schema
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SourceRefResponse implements Serializable {
@@ -217,6 +224,7 @@ public class LineageCanvasResponse implements Serializable {
 
     @Getter
     @Builder
+    @Schema
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AvailableFiltersResponse implements Serializable {
@@ -235,6 +243,7 @@ public class LineageCanvasResponse implements Serializable {
 
     @Getter
     @Builder
+    @Schema
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class EmptyResponse implements Serializable {
