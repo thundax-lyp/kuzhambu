@@ -13,6 +13,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphE
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageNodeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
@@ -290,7 +292,7 @@ class KnowledgeGraphExtractionControllerTest {
         KnowledgeGraphExtractionController controller = new KnowledgeGraphExtractionController(service);
         GraphExtractionRequests.LineageNodePageRequest request = new GraphExtractionRequests.LineageNodePageRequest();
         request.setVersionId(71L);
-        when(service.pageLineageNodes(any(), any(), any(), any(), any()))
+        when(service.pageLineageNodes(any(KnowledgeLineageNodeQuery.class), any()))
                 .thenReturn(PageResult.of(
                         1,
                         10,
@@ -311,7 +313,7 @@ class KnowledgeGraphExtractionControllerTest {
 
         var response = controller.pageLineageNodes(request);
 
-        verify(service).pageLineageNodes(any(), any(), any(), any(), any());
+        verify(service).pageLineageNodes(any(KnowledgeLineageNodeQuery.class), any());
         assertEquals(3001L, response.getRecords().get(0).getNodeId());
     }
 
@@ -321,13 +323,14 @@ class KnowledgeGraphExtractionControllerTest {
         KnowledgeGraphExtractionController controller = new KnowledgeGraphExtractionController(service);
         GraphExtractionRequests.LineageNodeIdRequest request = new GraphExtractionRequests.LineageNodeIdRequest();
         request.setNodeId(3001L);
-        when(service.getLineageNodeDetail(3001L))
+        when(service.getLineageNodeDetail(any(KnowledgeLineageNodeQuery.class)))
                 .thenReturn(new KnowledgeLineageNodeResult(
                         3001L, "person:huangdi", "黄帝", "PERSON", 1, "MALE", "CONFIRMED", 71L, "[]", 1L, 2L, 3L));
 
         var response = controller.getLineageNodeDetail(request);
 
-        verify(service).getLineageNodeDetail(3001L);
+        verify(service)
+                .getLineageNodeDetail(argThat(query -> Long.valueOf(3001L).equals(query.nodeId())));
         assertEquals("黄帝", response.getName());
     }
 
@@ -338,7 +341,7 @@ class KnowledgeGraphExtractionControllerTest {
         GraphExtractionRequests.LineageRelationPageRequest request =
                 new GraphExtractionRequests.LineageRelationPageRequest();
         request.setVersionId(71L);
-        when(service.pageLineageRelations(any(), any(), any(), any(), any()))
+        when(service.pageLineageRelations(any(KnowledgeLineageRelationQuery.class), any()))
                 .thenReturn(PageResult.of(
                         1,
                         10,
@@ -359,7 +362,7 @@ class KnowledgeGraphExtractionControllerTest {
 
         var response = controller.pageLineageRelations(request);
 
-        verify(service).pageLineageRelations(any(), any(), any(), any(), any());
+        verify(service).pageLineageRelations(any(KnowledgeLineageRelationQuery.class), any());
         assertEquals("ANCESTOR", response.getRecords().get(0).getRelationType());
     }
 
@@ -370,7 +373,7 @@ class KnowledgeGraphExtractionControllerTest {
         GraphExtractionRequests.LineageRelationIdRequest request =
                 new GraphExtractionRequests.LineageRelationIdRequest();
         request.setRelationId(4001L);
-        when(service.getLineageRelationDetail(4001L))
+        when(service.getLineageRelationDetail(any(KnowledgeLineageRelationQuery.class)))
                 .thenReturn(new KnowledgeLineageRelationResult(
                         4001L,
                         "person:huangdi->person:fuxi:ancestor",
@@ -387,7 +390,8 @@ class KnowledgeGraphExtractionControllerTest {
 
         var response = controller.getLineageRelationDetail(request);
 
-        verify(service).getLineageRelationDetail(4001L);
+        verify(service)
+                .getLineageRelationDetail(argThat(query -> Long.valueOf(4001L).equals(query.relationId())));
         assertEquals("伏羲", response.getTargetName());
     }
 }

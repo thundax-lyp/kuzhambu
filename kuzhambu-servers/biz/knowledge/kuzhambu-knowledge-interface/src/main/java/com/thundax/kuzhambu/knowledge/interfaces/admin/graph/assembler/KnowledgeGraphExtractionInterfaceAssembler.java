@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationE
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageNodeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
@@ -188,6 +190,44 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
     public static KnowledgeRelationQuery toRelationQuery(@NonNull GraphExtractionRequests.RelationIdRequest request) {
         Objects.requireNonNull(request, "request must not be null");
         return new KnowledgeRelationQuery(null, null, null, null, request.getRelationId());
+    }
+
+    @NonNull
+    public static KnowledgeLineageNodeQuery toLineageNodeQuery(
+            @NonNull GraphExtractionRequests.LineageNodePageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new KnowledgeLineageNodeQuery(
+                request.getVersionId(),
+                request.getKeyword(),
+                request.getNodeType(),
+                request.getConfirmationStatus(),
+                null);
+    }
+
+    @NonNull
+    public static KnowledgeLineageNodeQuery toLineageNodeQuery(
+            @NonNull GraphExtractionRequests.LineageNodeIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new KnowledgeLineageNodeQuery(null, null, null, null, request.getNodeId());
+    }
+
+    @NonNull
+    public static KnowledgeLineageRelationQuery toLineageRelationQuery(
+            @NonNull GraphExtractionRequests.LineageRelationPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new KnowledgeLineageRelationQuery(
+                request.getVersionId(),
+                request.getKeyword(),
+                request.getRelationType(),
+                request.getConfirmationStatus(),
+                null);
+    }
+
+    @NonNull
+    public static KnowledgeLineageRelationQuery toLineageRelationQuery(
+            @NonNull GraphExtractionRequests.LineageRelationIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new KnowledgeLineageRelationQuery(null, null, null, null, request.getRelationId());
     }
 
     public static CancelGraphExtractionBatchCommand toCancelBatchCommand(

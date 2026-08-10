@@ -279,10 +279,7 @@ public class KnowledgeGraphExtractionController {
             @Valid @RequestBody GraphExtractionRequests.LineageNodePageRequest request) {
         return PageResponseHelper.fromPageResult(
                 extractionService.pageLineageNodes(
-                        request == null ? null : request.getVersionId(),
-                        request == null ? null : request.getKeyword(),
-                        request == null ? null : request.getNodeType(),
-                        request == null ? null : request.getConfirmationStatus(),
+                        KnowledgeGraphExtractionInterfaceAssembler.toLineageNodeQuery(request),
                         PageInterfaceAssembler.toPageQuery(request)),
                 KnowledgeGraphExtractionInterfaceAssembler::toResponse);
     }
@@ -300,8 +297,8 @@ public class KnowledgeGraphExtractionController {
     @PostMapping("lineage/node/get")
     public GraphExtractionResponses.LineageNodeResponse getLineageNodeDetail(
             @Valid @RequestBody GraphExtractionRequests.LineageNodeIdRequest request) {
-        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(
-                extractionService.getLineageNodeDetail(request == null ? null : request.getNodeId()));
+        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.getLineageNodeDetail(
+                KnowledgeGraphExtractionInterfaceAssembler.toLineageNodeQuery(request)));
     }
 
     @Operation(summary = "分页查询正式世系关系", description = "knowledge:graph:view")
@@ -319,10 +316,7 @@ public class KnowledgeGraphExtractionController {
             @Valid @RequestBody GraphExtractionRequests.LineageRelationPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 extractionService.pageLineageRelations(
-                        request == null ? null : request.getVersionId(),
-                        request == null ? null : request.getKeyword(),
-                        request == null ? null : request.getRelationType(),
-                        request == null ? null : request.getConfirmationStatus(),
+                        KnowledgeGraphExtractionInterfaceAssembler.toLineageRelationQuery(request),
                         PageInterfaceAssembler.toPageQuery(request)),
                 KnowledgeGraphExtractionInterfaceAssembler::toResponse);
     }
@@ -340,7 +334,7 @@ public class KnowledgeGraphExtractionController {
     @PostMapping("lineage/relation/get")
     public GraphExtractionResponses.LineageRelationResponse getLineageRelationDetail(
             @Valid @RequestBody GraphExtractionRequests.LineageRelationIdRequest request) {
-        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(
-                extractionService.getLineageRelationDetail(request == null ? null : request.getRelationId()));
+        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.getLineageRelationDetail(
+                KnowledgeGraphExtractionInterfaceAssembler.toLineageRelationQuery(request)));
     }
 }

@@ -76,16 +76,6 @@ class KnowledgeApplicationArchitectureTest extends AbstractArchitectureTest {
                         + "KnowledgeGraphRefinementApplicationService.qualitySummary(java.lang.Long)"),
                 rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.refinement.service."
                         + "KnowledgeGraphRefinementApplicationService.applyTask(java.lang.Long, java.lang.Long)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                        + "KnowledgeGraphExtractionApplicationService.getLineageRelationDetail(java.lang.Long)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                        + "KnowledgeGraphExtractionApplicationService.getLineageNodeDetail(java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                                + "KnowledgeGraphExtractionApplicationService.pageLineageRelations(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                                + "KnowledgeGraphExtractionApplicationService.pageLineageNodes(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),
                 rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.taxonomy.service."
                         + "KnowledgeTaxonomyReadApplicationService.getTagHint(java.lang.String)"),
                 rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.taxonomy.service."

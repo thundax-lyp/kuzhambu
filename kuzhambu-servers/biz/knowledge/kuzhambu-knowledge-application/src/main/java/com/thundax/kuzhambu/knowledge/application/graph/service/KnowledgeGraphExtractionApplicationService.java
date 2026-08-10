@@ -11,6 +11,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationE
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageNodeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
@@ -51,15 +53,14 @@ public interface KnowledgeGraphExtractionApplicationService {
 
     KnowledgeRelationResult getRelationDetail(KnowledgeRelationQuery query);
 
-    PageResult<KnowledgeLineageNodeResult> pageLineageNodes(
-            Long versionId, String keyword, String nodeType, String confirmationStatus, PageQuery pageQuery);
+    PageResult<KnowledgeLineageNodeResult> pageLineageNodes(KnowledgeLineageNodeQuery query, PageQuery pageQuery);
 
-    KnowledgeLineageNodeResult getLineageNodeDetail(Long nodeId);
+    KnowledgeLineageNodeResult getLineageNodeDetail(KnowledgeLineageNodeQuery query);
 
     PageResult<KnowledgeLineageRelationResult> pageLineageRelations(
-            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery);
+            KnowledgeLineageRelationQuery query, PageQuery pageQuery);
 
-    KnowledgeLineageRelationResult getLineageRelationDetail(Long relationId);
+    KnowledgeLineageRelationResult getLineageRelationDetail(KnowledgeLineageRelationQuery query);
 
     default GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId) {
         return applyTaskCandidate(new ApplyGraphExtractionTaskCandidateCommand(taskId, null));

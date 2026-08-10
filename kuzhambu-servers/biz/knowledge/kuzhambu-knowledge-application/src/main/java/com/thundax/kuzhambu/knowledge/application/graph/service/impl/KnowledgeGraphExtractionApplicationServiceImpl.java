@@ -29,6 +29,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.configure.KnowledgeGraph
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageNodeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
@@ -471,14 +473,14 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     public PageResult<KnowledgeLineageNodeResult> pageLineageNodes(
-            Long versionId, String keyword, String nodeType, String confirmationStatus, PageQuery pageQuery) {
+            KnowledgeLineageNodeQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<KnowledgeLineageNode> nodePage = knowledgeLineageNodeRepository.page(
-                versionId,
-                keyword,
-                nodeType,
-                confirmationStatus,
+                query == null ? null : query.versionId(),
+                query == null ? null : query.keyword(),
+                query == null ? null : query.nodeType(),
+                query == null ? null : query.confirmationStatus(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -491,7 +493,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public KnowledgeLineageNodeResult getLineageNodeDetail(Long nodeId) {
+    public KnowledgeLineageNodeResult getLineageNodeDetail(KnowledgeLineageNodeQuery query) {
+        Long nodeId = query == null ? null : query.nodeId();
         KnowledgeLineageNode node = knowledgeLineageNodeRepository.getByNodeId(nodeId);
         if (node == null) {
             throw new BizException("Knowledge lineage node not found: " + nodeId);
@@ -501,14 +504,14 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     public PageResult<KnowledgeLineageRelationResult> pageLineageRelations(
-            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery) {
+            KnowledgeLineageRelationQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<KnowledgeLineageRelation> relationPage = knowledgeLineageRelationRepository.page(
-                versionId,
-                keyword,
-                relationType,
-                confirmationStatus,
+                query == null ? null : query.versionId(),
+                query == null ? null : query.keyword(),
+                query == null ? null : query.relationType(),
+                query == null ? null : query.confirmationStatus(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -521,7 +524,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public KnowledgeLineageRelationResult getLineageRelationDetail(Long relationId) {
+    public KnowledgeLineageRelationResult getLineageRelationDetail(KnowledgeLineageRelationQuery query) {
+        Long relationId = query == null ? null : query.relationId();
         KnowledgeLineageRelation relation = knowledgeLineageRelationRepository.getByRelationId(relationId);
         if (relation == null) {
             throw new BizException("Knowledge lineage relation not found: " + relationId);
