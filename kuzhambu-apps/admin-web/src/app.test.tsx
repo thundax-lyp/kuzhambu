@@ -205,7 +205,7 @@ describe("App", () => {
         const loginExpireAt = Date.now() + 5 * 60 * 1000;
         vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
             const url = String(input);
-            if (url.endsWith("/auth/session/pre-auth-session")) {
+            if (url.endsWith("/auth/session/pre-auth-session/request")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -610,7 +610,7 @@ describe("App", () => {
         replacePermissions(["audit:view"]);
         vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
             const url = String(input);
-            if (url.endsWith("/audit/log/options")) {
+            if (url.endsWith("/audit/log/options/list")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -670,7 +670,7 @@ describe("App", () => {
                 );
             }
 
-            if (url.endsWith("/audit/log/detail")) {
+            if (url.endsWith("/audit/log/detail/get")) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({

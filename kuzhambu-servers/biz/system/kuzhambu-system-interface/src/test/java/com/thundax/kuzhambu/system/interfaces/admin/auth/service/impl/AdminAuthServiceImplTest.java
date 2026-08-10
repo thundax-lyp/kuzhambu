@@ -43,7 +43,7 @@ class AdminAuthServiceImplTest {
         assertNull(result.getToken());
         ArgumentCaptor<AdminAccessTokenQuery> captor = ArgumentCaptor.forClass(AdminAccessTokenQuery.class);
         verify(adminTokenService).getTokenInfo(captor.capture());
-        assertNull(captor.getValue().getToken());
+        assertNull(captor.getValue().token());
     }
 
     @Test
@@ -62,7 +62,7 @@ class AdminAuthServiceImplTest {
         ArgumentCaptor<RefreshAdminAccessTokenCommand> captor =
                 ArgumentCaptor.forClass(RefreshAdminAccessTokenCommand.class);
         verify(adminTokenService).refreshAccessToken(captor.capture());
-        assertNull(captor.getValue().getRefreshToken());
+        assertNull(captor.getValue().refreshToken());
     }
 
     private AdminAuthServiceImpl authService(AdminSessionTokenApplicationService adminTokenService) {

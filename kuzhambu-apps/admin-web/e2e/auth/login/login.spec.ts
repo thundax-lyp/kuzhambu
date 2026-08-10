@@ -55,7 +55,7 @@ test.describe("login page", () => {
         let loginRequestBody: Record<string, unknown> | undefined;
 
         await page.route(
-            "**/kuzhambu-admin-api/api/auth/session/pre-auth-session",
+            "**/kuzhambu-admin-api/api/auth/session/pre-auth-session/request",
             async (route) => {
                 await fulfillSuccess(route, {
                     loginToken: "login-form-token",

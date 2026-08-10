@@ -9,15 +9,8 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.exception.KuzhambuException;
 import com.thundax.kuzhambu.common.web.util.RequestIpUtils;
-import com.thundax.kuzhambu.system.application.auth.command.CreatePreAuthSessionCommand;
-import com.thundax.kuzhambu.system.application.auth.command.RefreshPreAuthSessionCommand;
-import com.thundax.kuzhambu.system.application.auth.command.ReleasePreAuthSessionCommand;
-import com.thundax.kuzhambu.system.application.auth.command.UpsertPreAuthSessionValueCommand;
 import com.thundax.kuzhambu.system.application.auth.configure.AuthProperties;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidCaptchaException;
-import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
-import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
-import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueValidateQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
 import com.thundax.kuzhambu.system.application.auth.utils.PreAuthCodeHelper;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
@@ -25,7 +18,6 @@ import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalLoginEvent;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
-import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
@@ -43,6 +35,8 @@ import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.Aut
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.TokenVerifyResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthAccessTokenDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenQueryDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenRefreshDTO;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthHelper;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
 import io.swagger.annotations.ApiImplicitParams;
@@ -98,10 +92,13 @@ public class AuthController {
 
     @Operation(summary = "请求预认证会话")
     @ApiImplicitParams({})
-    @PostMapping(value = "pre-auth-session")
+    @PostMapping(value = "pre-auth-session/request")
     @SysLogger(value = "请求预认证会话")
-    public AuthLoginFormResponse preAuthSession() {
-        return AuthInterfaceAssembler.toLoginFormResponse(createPreAuthSession());
+    public AuthLoginFormResponse requestPreAuthSession() {
+        PreAuthSession session = createPreAuthSession();
+        return session == null
+                ? AuthInterfaceAssembler.emptyLoginFormResponse()
+                : AuthInterfaceAssembler.toLoginFormResponse(session);
     }
 
     @Operation(summary = "刷新预认证会话")
@@ -113,7 +110,10 @@ public class AuthController {
             throw AdminResponseExceptions.invalidParameter("refreshToken");
         }
 
-        return AuthInterfaceAssembler.toLoginFormResponse(refreshPreAuthSession(request.getRefreshToken()));
+        PreAuthSession session = refreshPreAuthSession(request.getRefreshToken());
+        return session == null
+                ? AuthInterfaceAssembler.emptyLoginFormResponse()
+                : AuthInterfaceAssembler.toLoginFormResponse(session);
     }
 
     @Operation(summary = "用户/密码登录")
@@ -169,7 +169,7 @@ public class AuthController {
 
     @Operation(summary = "短信登录")
     @ApiImplicitParams({})
-    @PostMapping(value = "login/sms")
+    @PostMapping(value = "sms/login")
     @SysLogger(value = "短信登录")
     public AuthAccessTokenResponse loginBySms(@Valid @RequestBody SmsLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
@@ -192,7 +192,7 @@ public class AuthController {
 
     @Operation(summary = "企业微信登录")
     @ApiImplicitParams({})
-    @PostMapping(value = "login/wecom")
+    @PostMapping(value = "wecom/login")
     @SysLogger(value = "企业微信登录")
     public AuthAccessTokenResponse loginByWecom(@Valid @RequestBody WecomLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
@@ -203,7 +203,7 @@ public class AuthController {
 
     @Operation(summary = "GitHub 登录")
     @ApiImplicitParams({})
-    @PostMapping(value = "login/github")
+    @PostMapping(value = "github/login")
     @SysLogger(value = "GitHub登录")
     public AuthAccessTokenResponse loginByGithub(@Valid @RequestBody GithubLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
@@ -234,11 +234,13 @@ public class AuthController {
 
     @Operation(summary = "校验 token")
     @ApiImplicitParams({})
-    @PostMapping(value = "token/verify")
+    @PostMapping(value = "token/get")
     @IgnoreSysLogger
-    public TokenVerifyResponse verifyToken(@Valid @RequestBody AuthTokenRequest request) {
-        return AuthInterfaceAssembler.toTokenVerifyResponse(
-                authService.getTokenInfo(AdminAuthHelper.tokenLookup(request.getToken())));
+    public TokenVerifyResponse getTokenVerification(@Valid @RequestBody AuthTokenRequest request) {
+        AuthTokenQueryDTO result = authService.getTokenInfo(AdminAuthHelper.tokenLookup(request.getToken()));
+        return result == null
+                ? AuthInterfaceAssembler.inactiveTokenVerifyResponse()
+                : AuthInterfaceAssembler.toTokenVerifyResponse(result);
     }
 
     @Operation(summary = "刷新 token")
@@ -246,30 +248,32 @@ public class AuthController {
     @PostMapping(value = "token/refresh")
     @IgnoreSysLogger
     public AuthAccessTokenResponse refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
-        return AuthInterfaceAssembler.toAccessTokenResponse(
-                authService.refreshAccessToken(AdminAuthHelper.refreshTokenOperation(
-                        request.getClientId(), request.getRefreshToken(), currentRequest())));
+        AuthTokenRefreshDTO result = authService.refreshAccessToken(AdminAuthHelper.refreshTokenOperation(
+                request.getClientId(), request.getRefreshToken(), currentRequest()));
+        return result == null || result.getAccessToken() == null
+                ? AuthInterfaceAssembler.emptyAccessTokenResponse()
+                : AuthInterfaceAssembler.toAccessTokenResponse(result);
     }
 
     private PreAuthSession createPreAuthSession() {
-        if (preAuthSessionService.countActiveSessions() > properties.getMaxLoginCount()) {
+        if (preAuthSessionService.summaryActiveSessionCount() > properties.getMaxLoginCount()) {
             throw AdminResponseExceptions.loginRequestTooMany();
         }
-        PreAuthSession session =
-                preAuthSessionService.create(new CreatePreAuthSessionCommand(properties.getLoginExpiredSeconds()));
+        PreAuthSession session = preAuthSessionService.create(
+                AuthInterfaceAssembler.toCreatePreAuthSessionCommand(properties.getLoginExpiredSeconds()));
         writeCaptcha(session.getId(), PreAuthCodeHelper.generateCaptcha());
         Sm2Crypto.StringKeyPair keyPair = Sm2Crypto.generateKeyPair();
         if (keyPair != null) {
-            preAuthSessionService.upsertValue(new UpsertPreAuthSessionValueCommand(
+            preAuthSessionService.upsertValue(AuthInterfaceAssembler.toUpsertPreAuthSessionValueCommand(
                     session.getId(), PUBLIC_KEY_ITEM, keyPair.getPublicKey(), session.getExpiredAt()));
-            preAuthSessionService.upsertValue(new UpsertPreAuthSessionValueCommand(
+            preAuthSessionService.upsertValue(AuthInterfaceAssembler.toUpsertPreAuthSessionValueCommand(
                     session.getId(), PRIVATE_KEY_ITEM, keyPair.getPrivateKey(), session.getExpiredAt()));
         }
-        return preAuthSessionService.get(preAuthSessionQuery(session.getId()));
+        return preAuthSessionService.get(AuthInterfaceAssembler.toPreAuthSessionQuery(session.getId()));
     }
 
     private PreAuthSession refreshPreAuthSession(String refreshToken) {
-        PreAuthSession session = preAuthSessionService.refresh(new RefreshPreAuthSessionCommand(
+        PreAuthSession session = preAuthSessionService.refresh(AuthInterfaceAssembler.toRefreshPreAuthSessionCommand(
                 requireSessionIdByRefreshToken(refreshToken),
                 properties.getLoginExpiredSeconds(),
                 REFRESH_TOKEN_GRACE_SECONDS));
@@ -278,9 +282,10 @@ public class AuthController {
     }
 
     private void releasePreAuthSession(String loginToken) {
-        PreAuthSessionId sessionId = preAuthSessionService.getIdByToken(preAuthSessionTokenQuery(loginToken));
+        PreAuthSessionId sessionId =
+                preAuthSessionService.getIdByToken(AuthInterfaceAssembler.toPreAuthSessionTokenQuery(loginToken));
         if (sessionId != null) {
-            preAuthSessionService.release(new ReleasePreAuthSessionCommand(sessionId));
+            preAuthSessionService.release(AuthInterfaceAssembler.toReleasePreAuthSessionCommand(sessionId));
         }
     }
 
@@ -291,19 +296,19 @@ public class AuthController {
     }
 
     private boolean validateCaptcha(String loginToken, String captcha) {
-        return preAuthSessionService.existsValidatedValue(new PreAuthSessionValueValidateQuery(
-                requireSessionIdByToken(loginToken), CAPTCHA_ITEM, captcha, null, null));
+        return preAuthSessionService.existsValidatedValue(AuthInterfaceAssembler.toPreAuthSessionValueValidateQuery(
+                requireSessionIdByToken(loginToken), CAPTCHA_ITEM, captcha));
     }
 
     private boolean validateSmsValidateCode(String loginToken, String mobile, String validateCode) {
         PreAuthSessionId sessionId = requireSessionIdByToken(loginToken);
-        return preAuthSessionService.existsValidatedValue(new PreAuthSessionValueValidateQuery(
+        return preAuthSessionService.existsValidatedValue(AuthInterfaceAssembler.toPreAuthSessionValueValidateQuery(
                 sessionId, SMS_VALIDATE_CODE_ITEM, validateCode, SMS_MOBILE_ITEM, mobile));
     }
 
     private String getPrivateKey(String loginToken) {
-        String privateKey = preAuthSessionService.getValue(
-                new PreAuthSessionValueQuery(requireSessionIdByToken(loginToken), PRIVATE_KEY_ITEM));
+        String privateKey = preAuthSessionService.getValue(AuthInterfaceAssembler.toPreAuthSessionValueQuery(
+                requireSessionIdByToken(loginToken), PRIVATE_KEY_ITEM));
         if (StringUtils.isBlank(privateKey)) {
             throw AdminResponseExceptions.invalidToken();
         }
@@ -311,12 +316,13 @@ public class AuthController {
     }
 
     private void writeCaptcha(PreAuthSessionId sessionId, String captcha) {
-        preAuthSessionService.upsertValue(new UpsertPreAuthSessionValueCommand(
+        preAuthSessionService.upsertValue(AuthInterfaceAssembler.toUpsertPreAuthSessionValueCommand(
                 sessionId, CAPTCHA_ITEM, captcha, System.currentTimeMillis() + CAPTCHA_EXPIRED_SECONDS * 1000L));
     }
 
     private PreAuthSessionId requireSessionIdByToken(String token) {
-        PreAuthSessionId sessionId = preAuthSessionService.getIdByToken(preAuthSessionTokenQuery(token));
+        PreAuthSessionId sessionId =
+                preAuthSessionService.getIdByToken(AuthInterfaceAssembler.toPreAuthSessionTokenQuery(token));
         if (sessionId == null) {
             throw AdminResponseExceptions.invalidToken();
         }
@@ -324,8 +330,8 @@ public class AuthController {
     }
 
     private PreAuthSessionId requireSessionIdByRefreshToken(String refreshToken) {
-        PreAuthSessionId sessionId =
-                preAuthSessionService.getIdByRefreshToken(preAuthSessionRefreshTokenQuery(refreshToken));
+        PreAuthSessionId sessionId = preAuthSessionService.getIdByRefreshToken(
+                AuthInterfaceAssembler.toPreAuthSessionRefreshTokenQuery(refreshToken));
         if (sessionId == null) {
             throw AdminResponseExceptions.invalidToken();
         }
@@ -397,22 +403,13 @@ public class AuthController {
         var operation = AdminAuthHelper.accessTokenOperation(user.getId(), loginName, currentRequest);
         operation.setAuthenticationMethod(authenticationMethod);
         operation.setIdentityType(identityType);
-        return AuthInterfaceAssembler.toAccessTokenResponse(authService.createAccessToken(operation));
+        AuthAccessTokenDTO result = authService.createAccessToken(operation);
+        return result == null
+                ? AuthInterfaceAssembler.emptyAccessTokenResponse()
+                : AuthInterfaceAssembler.toAccessTokenResponse(result);
     }
 
     private HttpServletRequest currentRequest() {
         return ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-    }
-
-    private PreAuthSessionQuery preAuthSessionQuery(PreAuthSessionId id) {
-        return new PreAuthSessionQuery(id, null, null);
-    }
-
-    private PreAuthSessionQuery preAuthSessionTokenQuery(String token) {
-        return new PreAuthSessionQuery(null, PreAuthSessionToken.of(token), null);
-    }
-
-    private PreAuthSessionQuery preAuthSessionRefreshTokenQuery(String refreshToken) {
-        return new PreAuthSessionQuery(null, null, PreAuthSessionToken.of(refreshToken));
     }
 }

@@ -69,7 +69,7 @@ public class PrincipalPermissionApplicationServiceImpl
     @Override
     public Set<PermissionCode> createPermissions(CreatePermissionsCommand command) {
         String token = tokenValue(command);
-        String userId = UserIdCodec.toStringValue(command == null ? null : command.getUserId());
+        String userId = UserIdCodec.toStringValue(command == null ? null : command.userId());
         Assert.hasText(token, "token can not be empty");
         Assert.hasText(userId, "userId can not be empty");
 
@@ -99,9 +99,9 @@ public class PrincipalPermissionApplicationServiceImpl
     public boolean isPermitted(PermissionQuery query) {
         return permissionMatcher.matches(
                 toPermissionValues(getPermissions(query)),
-                query == null || query.getPermission() == null
+                query == null || query.permission() == null
                         ? null
-                        : query.getPermission().asString());
+                        : query.permission().asString());
     }
 
     @Override
@@ -208,17 +208,17 @@ public class PrincipalPermissionApplicationServiceImpl
     }
 
     private String tokenValue(CreatePermissionsCommand command) {
-        if (command == null || command.getToken() == null) {
+        if (command == null || command.token() == null) {
             return null;
         }
-        return command.getToken().asString();
+        return command.token().asString();
     }
 
     private String tokenValue(PermissionQuery query) {
-        if (query == null || query.getToken() == null) {
+        if (query == null || query.token() == null) {
             return null;
         }
-        return query.getToken().asString();
+        return query.token().asString();
     }
 
     private Collection<?> snapshotCollection(Collection<?> source) {

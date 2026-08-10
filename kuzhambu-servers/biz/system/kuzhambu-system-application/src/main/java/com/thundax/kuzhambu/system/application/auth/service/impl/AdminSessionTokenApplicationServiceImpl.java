@@ -15,7 +15,6 @@ import com.thundax.kuzhambu.system.application.auth.result.AdminTokenQueryResult
 import com.thundax.kuzhambu.system.application.auth.result.AdminTokenRefreshResult;
 import com.thundax.kuzhambu.system.application.auth.service.AdminSessionTokenApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
-import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
@@ -82,12 +81,12 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
     @Override
     @NonNull
     public AdminAccessTokenResult createAccessToken(CreateAdminAccessTokenCommand command) {
-        UserId userId = command == null ? null : command.getUserId();
-        String loginName = command == null ? null : command.getLoginName();
-        String ip = command == null ? null : command.getIp();
-        String userAgent = command == null ? null : command.getUserAgent();
-        PrincipalAuthenticationMethod authenticationMethod = command == null ? null : command.getAuthenticationMethod();
-        PrincipalIdentityType identityType = command == null ? null : command.getIdentityType();
+        UserId userId = command == null ? null : command.userId();
+        String loginName = command == null ? null : command.loginName();
+        String ip = command == null ? null : command.ip();
+        String userAgent = command == null ? null : command.userAgent();
+        PrincipalAuthenticationMethod authenticationMethod = command == null ? null : command.authenticationMethod();
+        PrincipalIdentityType identityType = command == null ? null : command.identityType();
         PrincipalAuthenticationMethod method =
                 authenticationMethod == null ? PrincipalAuthenticationMethod.PASSWORD : authenticationMethod;
         PrincipalIdentityType type = identityType == null ? PrincipalIdentityType.USER_ACCOUNT : identityType;
@@ -143,7 +142,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
 
     @Override
     public int deleteAccessTokensByUserId(DeleteAdminAccessTokenCommand command) {
-        UserId userId = command == null ? null : command.getUserId();
+        UserId userId = command == null ? null : command.userId();
         List<PrincipalAccessToken> tokens = requirePrincipalAccessTokenRepository()
                 .listByPrincipalKeyAndClientIdAndStatus(
                         PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(userId)),
@@ -197,8 +196,8 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
                     PrincipalLoginEventType.LOGOUT,
                     PrincipalAuthenticationMethod.PASSWORD,
                     null,
-                    command == null ? null : command.getIp(),
-                    command == null ? null : command.getUserAgent(),
+                    command == null ? null : command.ip(),
+                    command == null ? null : command.userAgent(),
                     PrincipalLoginEvent.REASON_USER_LOGOUT);
         }
     }
@@ -230,7 +229,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
         if (refreshTokenRepository == null) {
             throw invalidToken();
         }
-        PrincipalClientId requestedClientId = command == null ? null : command.getClientId();
+        PrincipalClientId requestedClientId = command == null ? null : command.clientId();
         if (requestedClientId == null) {
             requestedClientId = ADMIN_CLIENT_ID;
         }
@@ -246,8 +245,8 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
         AdminAccessTokenResult accessToken = createAccessToken(new CreateAdminAccessTokenCommand(
                 UserIdCodec.toDomain(current.getPrincipalKey().getPrincipalId()),
                 null,
-                command == null ? null : command.getIp(),
-                command == null ? null : command.getUserAgent(),
+                command == null ? null : command.ip(),
+                command == null ? null : command.userAgent(),
                 null,
                 null));
         writeLoginEvent(
@@ -256,8 +255,8 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
                 PrincipalLoginEventType.TOKEN_REFRESH,
                 PrincipalAuthenticationMethod.REFRESH_TOKEN,
                 null,
-                command == null ? null : command.getIp(),
-                command == null ? null : command.getUserAgent(),
+                command == null ? null : command.ip(),
+                command == null ? null : command.userAgent(),
                 PrincipalLoginEvent.REASON_NONE);
         return new AdminTokenRefreshResult(accessToken, accessToken.getRefreshToken());
     }
@@ -270,20 +269,20 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
     @Override
     public int invalidateSessionsByUserId(InvalidateAdminSessionCommand command) {
         return deleteAccessTokensByUserId(
-                new DeleteAdminAccessTokenCommand(null, command == null ? null : command.getUserId(), null, null));
+                new DeleteAdminAccessTokenCommand(null, command == null ? null : command.userId(), null, null));
     }
 
     @Override
     public void recordLoginFailed(RecordPrincipalLoginFailureCommand command) {
         writeLoginEvent(
-                command == null ? null : command.getPrincipalKey(),
+                command == null ? null : command.principalKey(),
                 ADMIN_CLIENT_ID,
                 PrincipalLoginEventType.LOGIN_FAILED,
-                command == null ? null : command.getAuthenticationMethod(),
-                command == null ? null : command.getIdentityType(),
-                command == null ? null : command.getIp(),
-                command == null ? null : command.getUserAgent(),
-                command == null ? null : command.getReason());
+                command == null ? null : command.authenticationMethod(),
+                command == null ? null : command.identityType(),
+                command == null ? null : command.ip(),
+                command == null ? null : command.userAgent(),
+                command == null ? null : command.reason());
     }
 
     private PrincipalAuthSession getActivePrincipalAuthSession(PrincipalAccessToken accessToken, Instant now) {
@@ -410,7 +409,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
     }
 
     private User getUser(UserId userId) {
-        return userService.get(new GetUserQuery(userId));
+        return userService.get(userId);
     }
 
     private String getAccountLoginName(UserId userId) {
@@ -423,10 +422,7 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
     }
 
     private PrincipalIdentityQuery identityQuery(PrincipalKey principalKey, PrincipalIdentityType identityType) {
-        PrincipalIdentityQuery query = new PrincipalIdentityQuery();
-        query.setPrincipalKey(principalKey);
-        query.setIdentityType(identityType);
-        return query;
+        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
     }
 
     private AdminAccessTokenQuery accessTokenQuery(String token) {
@@ -435,30 +431,30 @@ public class AdminSessionTokenApplicationServiceImpl implements AdminSessionToke
 
     private AdminAccessTokenQuery accessTokenQuery(DeleteAdminAccessTokenCommand command) {
         if (command == null) {
-            return new AdminAccessTokenQuery();
+            return new AdminAccessTokenQuery(null);
         }
-        return new AdminAccessTokenQuery(command.getToken());
+        return new AdminAccessTokenQuery(command.token());
     }
 
     private String tokenValue(AdminAccessTokenQuery query) {
-        if (query == null || query.getToken() == null) {
+        if (query == null || query.token() == null) {
             return null;
         }
-        return query.getToken().asString();
+        return query.token().asString();
     }
 
     private String tokenValue(InvalidateAdminSessionCommand command) {
-        if (command == null || command.getToken() == null) {
+        if (command == null || command.token() == null) {
             return null;
         }
-        return command.getToken().asString();
+        return command.token().asString();
     }
 
     private String refreshTokenValue(RefreshAdminAccessTokenCommand command) {
-        if (command == null || command.getRefreshToken() == null) {
+        if (command == null || command.refreshToken() == null) {
             return null;
         }
-        return command.getRefreshToken().asString();
+        return command.refreshToken().asString();
     }
 
     private BizException invalidToken() {

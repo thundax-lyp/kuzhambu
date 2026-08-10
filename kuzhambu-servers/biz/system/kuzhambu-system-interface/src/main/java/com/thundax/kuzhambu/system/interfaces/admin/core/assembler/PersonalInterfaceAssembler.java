@@ -2,6 +2,9 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
@@ -12,6 +15,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.Per
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalInfoResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalMenuResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalPermsResponse;
+import java.util.Objects;
 import java.util.Set;
 import org.springframework.lang.NonNull;
 
@@ -19,6 +23,14 @@ public final class PersonalInterfaceAssembler {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private PersonalInterfaceAssembler() {}
+
+    @NonNull
+    public static PrincipalIdentityQuery toPrincipalIdentityQuery(
+            @NonNull PrincipalKey principalKey, @NonNull PrincipalIdentityType identityType) {
+        Objects.requireNonNull(principalKey, "principalKey must not be null");
+        Objects.requireNonNull(identityType, "identityType must not be null");
+        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
+    }
 
     @NonNull
     public static PersonalInfoResponse toInfoResponse(User entity, String loginName, String avatarUrl) {

@@ -7,14 +7,10 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiResponse;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.exception.KuzhambuException;
-import com.thundax.kuzhambu.system.application.auth.command.UpsertPreAuthSessionValueCommand;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidCaptchaException;
-import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
-import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
 import com.thundax.kuzhambu.system.application.auth.utils.PreAuthCodeHelper;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
-import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.assembler.CaptchaInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.CaptchaRefreshRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.CaptchaRefreshResponse;
@@ -76,7 +72,7 @@ public class CaptchaController {
     @IgnoreSysLogger
     @PostJsonApiExempt(reason = "验证码图片需要浏览器直链读取")
     @GetMapping
-    public void captcha(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void getCaptcha(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String loginToken = request.getParameter("loginToken");
         if (StringUtils.isBlank(loginToken)) {
             writeResponse(response, "AUTH-00006", "invalidate login token");
@@ -115,7 +111,7 @@ public class CaptchaController {
 
     private String createCaptcha(String loginToken) {
         String captcha = PreAuthCodeHelper.generateCaptcha();
-        preAuthSessionService.upsertValue(new UpsertPreAuthSessionValueCommand(
+        preAuthSessionService.upsertValue(CaptchaInterfaceAssembler.toUpsertPreAuthSessionValueCommand(
                 requireSessionIdByToken(loginToken),
                 CAPTCHA_ITEM,
                 captcha,
@@ -124,8 +120,8 @@ public class CaptchaController {
     }
 
     private String getCaptcha(String loginToken) {
-        String captcha = preAuthSessionService.getValue(
-                new PreAuthSessionValueQuery(requireSessionIdByToken(loginToken), CAPTCHA_ITEM));
+        String captcha = preAuthSessionService.getValue(CaptchaInterfaceAssembler.toPreAuthSessionValueQuery(
+                requireSessionIdByToken(loginToken), CAPTCHA_ITEM));
         if (StringUtils.isEmpty(captcha)) {
             throw new InvalidCaptchaException();
         }
@@ -134,7 +130,7 @@ public class CaptchaController {
 
     private PreAuthSessionId requireSessionIdByToken(String token) {
         PreAuthSessionId sessionId =
-                preAuthSessionService.getIdByToken(new PreAuthSessionQuery(null, PreAuthSessionToken.of(token), null));
+                preAuthSessionService.getIdByToken(CaptchaInterfaceAssembler.toPreAuthSessionTokenQuery(token));
         if (sessionId == null) {
             throw AdminResponseExceptions.invalidParameter("loginToken");
         }

@@ -35,7 +35,7 @@ class SystemAuthCurrentUserContractTest {
     @Test
     void authAndCurrentUserRoutesShouldKeepAdminApiPaths() throws Exception {
         assertRequestMapping(AuthController.class, "/api/auth/session");
-        assertPostMapping(AuthController.class, "preAuthSession", "pre-auth-session");
+        assertPostMapping(AuthController.class, "requestPreAuthSession", "pre-auth-session/request");
         assertPostMapping(
                 AuthController.class,
                 "refreshPreAuthSession",
@@ -46,7 +46,7 @@ class SystemAuthCurrentUserContractTest {
         assertPostMapping(AuthController.class, "refreshToken", "token/refresh", TokenRefreshRequest.class);
 
         assertRequestMapping(CaptchaController.class, "/api/auth/captcha");
-        assertGetMapping(CaptchaController.class, "captcha", HttpServletRequest.class, HttpServletResponse.class);
+        assertGetMapping(CaptchaController.class, "getCaptcha", HttpServletRequest.class, HttpServletResponse.class);
         assertPostMapping(CaptchaController.class, "refreshCaptcha", "refresh", CaptchaRefreshRequest.class);
 
         assertRequestMapping(CurrentUserController.class, "/api/sys/current-user");

@@ -160,7 +160,7 @@ test.describe("operations dashboard entries", () => {
                 records: []
             })
         );
-        await page.route("**/kuzhambu-admin-api/api/audit/log/options", (route) =>
+        await page.route("**/kuzhambu-admin-api/api/audit/log/options/list", (route) =>
             fulfillSuccess(route, {
                 actions: [],
                 objectTypes: [],
