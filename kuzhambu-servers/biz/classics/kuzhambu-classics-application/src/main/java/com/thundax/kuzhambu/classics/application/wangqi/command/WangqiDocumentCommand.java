@@ -2,21 +2,12 @@ package com.thundax.kuzhambu.classics.application.wangqi.command;
 
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import java.time.Instant;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class WangqiDocumentCommand {
-    private Long id;
-    private String title;
-    private String summary;
-    private WangqiContentFormat contentFormat;
-    private String content;
-    private Instant documentTime;
-    private Long storageObjectId;
-}
+public record WangqiDocumentCommand(
+        Long id,
+        String title,
+        String summary,
+        WangqiContentFormat contentFormat,
+        String content,
+        Instant documentTime,
+        Long storageObjectId) {}

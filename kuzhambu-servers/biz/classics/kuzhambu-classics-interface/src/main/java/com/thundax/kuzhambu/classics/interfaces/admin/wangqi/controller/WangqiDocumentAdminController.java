@@ -74,10 +74,10 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "分页查询")
     @PostMapping("page")
     public PageResponse<WangqiDocumentResponse> page(@Valid @RequestBody WangqiDocumentRequest request) {
-        var query = WangqiDocumentInterfaceAssembler.toQuery(request);
-        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
         return PageResponseHelper.fromPageResult(
-                service.page(query, PageInterfaceAssembler.toPageQuery(request)),
+                service.page(
+                        WangqiDocumentInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentAuthorities()),
+                        PageInterfaceAssembler.toPageQuery(request)),
                 WangqiDocumentInterfaceAssembler::toResponse);
     }
 
@@ -109,9 +109,10 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "时间线")
     @PostMapping("timeline/list")
     public List<WangqiDocumentResponse> listTimeline(@Valid @RequestBody WangqiDocumentRequest request) {
-        var query = WangqiDocumentInterfaceAssembler.toQuery(request);
-        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
-        return service.listTimeline(query).stream()
+        return service
+                .listTimeline(
+                        WangqiDocumentInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentAuthorities()))
+                .stream()
                 .map(WangqiDocumentInterfaceAssembler::toResponse)
                 .toList();
     }

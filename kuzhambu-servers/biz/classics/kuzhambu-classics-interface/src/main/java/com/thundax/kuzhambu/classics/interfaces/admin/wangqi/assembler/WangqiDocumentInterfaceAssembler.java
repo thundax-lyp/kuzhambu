@@ -17,18 +17,30 @@ import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentSourceFileResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentVersionResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.util.Objects;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 
 public final class WangqiDocumentInterfaceAssembler {
     private WangqiDocumentInterfaceAssembler() {}
 
     public static WangqiDocumentQuery toQuery(WangqiDocumentRequest request) {
+        return toQuery(request, Set.of());
+    }
+
+    @NonNull
+    public static WangqiDocumentQuery toQuery(
+            @NonNull WangqiDocumentRequest request, @NonNull Set<String> operatorPermissions) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(operatorPermissions, "operatorPermissions");
         return new WangqiDocumentQuery(
                 request.getKeyword(),
                 StringUtils.isBlank(request.getSortDirection())
                         ? SortDirection.ASC
                         : SortDirection.valueOf(
-                                request.getSortDirection().trim().toUpperCase()));
+                                request.getSortDirection().trim().toUpperCase()),
+                operatorPermissions);
     }
 
     public static WangqiDocumentCommand toCommand(WangqiDocumentRequest request) {

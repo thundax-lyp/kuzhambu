@@ -248,12 +248,12 @@ class WangqiDocumentAdminControllerTest {
                     }
                     if ("add".equals(method.getName()) || "update".equals(method.getName())) {
                         WangqiDocumentCommand command = (WangqiDocumentCommand) args[0];
-                        assertEquals(400000000001L, command.getId());
-                        assertEquals("王圻文档", command.getTitle());
-                        assertEquals("摘要", command.getSummary());
-                        assertEquals(WangqiContentFormat.MARKDOWN, command.getContentFormat());
-                        assertEquals("正文", command.getContent());
-                        assertEquals(7001L, command.getStorageObjectId());
+                        assertEquals(400000000001L, command.id());
+                        assertEquals("王圻文档", command.title());
+                        assertEquals("摘要", command.summary());
+                        assertEquals(WangqiContentFormat.MARKDOWN, command.contentFormat());
+                        assertEquals("正文", command.content());
+                        assertEquals(7001L, command.storageObjectId());
                         return WangqiDocumentIdCodec.toDomain(400000000001L);
                     }
                     if ("delete".equals(method.getName())) {
@@ -262,10 +262,10 @@ class WangqiDocumentAdminControllerTest {
                     }
                     if ("changeSourceFile".equals(method.getName())) {
                         WangqiDocumentSourceFileCommand command = (WangqiDocumentSourceFileCommand) args[0];
-                        assertEquals(400000000001L, command.getDocumentId());
-                        assertEquals("wangqi.pdf", command.getOriginalFilename());
-                        assertEquals("application/pdf", command.getContentType());
-                        assertEquals(10L, command.getSize());
+                        assertEquals(400000000001L, command.documentId());
+                        assertEquals("wangqi.pdf", command.originalFilename());
+                        assertEquals("application/pdf", command.contentType());
+                        assertEquals(10L, command.size());
                         return sourceFile();
                     }
                     if ("getSourceFile".equals(method.getName())) {
@@ -304,9 +304,9 @@ class WangqiDocumentAdminControllerTest {
 
     private static void assertQuery(Object[] args) {
         WangqiDocumentQuery query = (WangqiDocumentQuery) args[0];
-        assertEquals("王圻", query.getKeyword());
-        assertEquals(SortDirection.DESC, query.getSortDirection());
-        assertEquals(true, query.getOperatorPermissions() != null);
+        assertEquals("王圻", query.keyword());
+        assertEquals(SortDirection.DESC, query.sortDirection());
+        assertEquals(true, query.operatorPermissions() != null);
     }
 
     private static WangqiDocumentRequest request() {

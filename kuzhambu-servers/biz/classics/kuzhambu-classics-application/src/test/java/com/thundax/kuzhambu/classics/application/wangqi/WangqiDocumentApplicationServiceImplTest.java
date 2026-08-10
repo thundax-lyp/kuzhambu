@@ -64,8 +64,7 @@ class WangqiDocumentApplicationServiceImplTest {
         WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
         WangqiDocumentApplicationServiceImpl service = new WangqiDocumentApplicationServiceImpl(
                 repository, null, null, mock(ClassicsPublicationWriteGuard.class));
-        WangqiDocumentQuery query = new WangqiDocumentQuery();
-        query.setOperatorPermissions(Set.of("classics:content:view"));
+        WangqiDocumentQuery query = new WangqiDocumentQuery(null, null, Set.of("classics:content:view"));
 
         PageResult<WangqiDocument> result = service.page(query, new PageQuery(1, 20));
 
