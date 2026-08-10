@@ -228,9 +228,12 @@ export const applyTagMerge = (request: TagMergeCommand) => {
 };
 
 export const previewTagBatchMergeImpact = (request: TagBatchMergeCommand) => {
-    return postJson<TagBatchMergePreviewRecord, TagBatchMergeCommand>(`${API_PREFIX}/tag/merge/list/preview`, {
-        body: request
-    });
+    return postJson<TagBatchMergePreviewRecord, TagBatchMergeCommand>(
+        `${API_PREFIX}/tag/merge/list/preview`,
+        {
+            body: request
+        }
+    );
 };
 
 export const applyTagBatchMerge = (request: TagBatchMergeCommand) => {
