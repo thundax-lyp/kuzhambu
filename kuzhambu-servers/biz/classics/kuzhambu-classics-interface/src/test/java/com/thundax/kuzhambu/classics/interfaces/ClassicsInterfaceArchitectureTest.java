@@ -73,8 +73,6 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
                 "admin.sancai.controller.request.SancaiEntryRequest",
                 "admin.sancai.controller.request.SancaiEntryVersionRequest",
                 "admin.sancai.controller.request.SancaiVolumeRequest",
-                "admin.wangqi.controller.request.WangqiDocumentRequest",
-                "admin.wangqi.controller.request.WangqiDocumentVersionRequest",
                 "portal.sancai.controller.request.SancaiPortalEntrySearchRequest");
     }
 
@@ -92,9 +90,6 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
                 "admin.sancai.controller.response.SancaiEntryResponse",
                 "admin.sancai.controller.response.SancaiEntryVersionResponse",
                 "admin.sancai.controller.response.SancaiVolumeResponse",
-                "admin.wangqi.controller.response.WangqiDocumentResponse",
-                "admin.wangqi.controller.response.WangqiDocumentSourceFileResponse",
-                "admin.wangqi.controller.response.WangqiDocumentVersionResponse",
                 "portal.sancai.controller.response.SancaiPortalCategoryResponse",
                 "portal.sancai.controller.response.SancaiPortalVolumeResponse");
     }

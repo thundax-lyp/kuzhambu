@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
@@ -286,8 +287,10 @@ class WangqiDocumentAdminControllerTest {
                 new Class<?>[] {ClassicsContentApplicationService.class},
                 (proxy, method, args) -> {
                     if ("listVersions".equals(method.getName())) {
-                        assertEquals("WANGQI_DOCUMENT", args[0]);
-                        assertEquals(ClassicsContentIdCodec.toDomain(400000000001L), args[1]);
+                        assertEquals(
+                                new ContentObjectQuery(
+                                        "WANGQI_DOCUMENT", ClassicsContentIdCodec.toDomain(400000000001L)),
+                                args[0]);
                         return List.of(version(9001L, 2, ClassicsContentChangeType.MANUAL_SAVE));
                     }
                     if ("getVersion".equals(method.getName())) {
