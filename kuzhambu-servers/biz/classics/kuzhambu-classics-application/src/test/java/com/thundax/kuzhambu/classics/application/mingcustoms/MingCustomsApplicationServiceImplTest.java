@@ -81,8 +81,8 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, null, mock(ClassicsPublicationWriteGuard.class));
-        MingCustomsQuery query = new MingCustomsQuery();
-        query.setOperatorPermissions(Set.of("classics:content:view"));
+        MingCustomsQuery query =
+                new MingCustomsQuery(null, null, null, null, null, null, Set.of("classics:content:view"));
 
         PageResult<MingCustomsEntry> result = service.page(query, new PageQuery(1, 20));
 
@@ -96,8 +96,8 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, null, mock(ClassicsPublicationWriteGuard.class));
-        MingCustomsQuery query = new MingCustomsQuery();
-        query.setOperatorPermissions(Set.of("classics:content:view"));
+        MingCustomsQuery query =
+                new MingCustomsQuery(null, null, null, null, null, null, Set.of("classics:content:view"));
 
         List<MingCustomsTagCloudItem> result = service.listTagCloud(query);
 
@@ -110,10 +110,8 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, null, mock(ClassicsPublicationWriteGuard.class));
-        MingCustomsQuery query = new MingCustomsQuery();
-        query.setCategory("礼俗");
-        query.setKeyword("祭祀");
-        query.setOperatorPermissions(Set.of("classics:mingcustoms:view"));
+        MingCustomsQuery query =
+                new MingCustomsQuery("礼俗", "祭祀", null, null, null, null, Set.of("classics:mingcustoms:view"));
         when(repository.listTagCloud("礼俗", "祭祀")).thenReturn(List.of(new MingCustomsTagCloudItem(7001L, "祭祀", 2L)));
 
         List<MingCustomsTagCloudItem> result = service.listTagCloud(query);

@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
-import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
@@ -67,10 +66,10 @@ public class MingCustomsAdminController {
     @SysLogger(value = "分页查询")
     @PostMapping("page")
     public PageResponse<MingCustomsResponse> page(@Valid @RequestBody MingCustomsRequest request) {
-        MingCustomsQuery query = MingCustomsInterfaceAssembler.toQuery(request);
-        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
         return PageResponseHelper.fromPageResult(
-                service.page(query, PageInterfaceAssembler.toPageQuery(request)),
+                service.page(
+                        MingCustomsInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentAuthorities()),
+                        PageInterfaceAssembler.toPageQuery(request)),
                 MingCustomsInterfaceAssembler::toResponse);
     }
 
@@ -207,10 +206,11 @@ public class MingCustomsAdminController {
     @SysLogger(value = "标签云")
     @PostMapping("tag-cloud/list")
     public List<MingCustomsTagCloudItemResponse> listTagCloud(@Valid @RequestBody MingCustomsRequest request) {
-        MingCustomsQuery query = MingCustomsInterfaceAssembler.toTagCloudQuery(
-                request == null ? null : request.getCategory(), request == null ? null : request.getKeyword());
-        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
-        return service.listTagCloud(query).stream()
+        MingCustomsRequest effectiveRequest = request == null ? new MingCustomsRequest() : request;
+        return service
+                .listTagCloud(MingCustomsInterfaceAssembler.toTagCloudQuery(
+                        effectiveRequest, KuzhambuContextHolder.currentAuthorities()))
+                .stream()
                 .map(MingCustomsInterfaceAssembler::toTagCloudResponse)
                 .toList();
     }

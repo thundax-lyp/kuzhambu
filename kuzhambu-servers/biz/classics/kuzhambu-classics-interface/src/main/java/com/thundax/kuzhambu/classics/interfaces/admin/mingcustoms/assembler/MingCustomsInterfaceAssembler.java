@@ -17,12 +17,23 @@ import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.res
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsTagCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsVersionResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.util.Objects;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 
 public final class MingCustomsInterfaceAssembler {
     private MingCustomsInterfaceAssembler() {}
 
     public static MingCustomsQuery toQuery(MingCustomsRequest request) {
+        return toQuery(request, Set.of());
+    }
+
+    @NonNull
+    public static MingCustomsQuery toQuery(
+            @NonNull MingCustomsRequest request, @NonNull Set<String> operatorPermissions) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(operatorPermissions, "operatorPermissions");
         return new MingCustomsQuery(
                 request.getCategory(),
                 request.getKeyword(),
@@ -30,11 +41,20 @@ public final class MingCustomsInterfaceAssembler {
                 request.getTagId(),
                 request.getTagNameSnapshot(),
                 sortDirection(request.getSortDirection()),
-                null);
+                operatorPermissions);
     }
 
     public static MingCustomsQuery toTagCloudQuery(String category, String keyword) {
         return new MingCustomsQuery(category, keyword, null, null, null, null, null);
+    }
+
+    @NonNull
+    public static MingCustomsQuery toTagCloudQuery(
+            @NonNull MingCustomsRequest request, @NonNull Set<String> operatorPermissions) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(operatorPermissions, "operatorPermissions");
+        return new MingCustomsQuery(
+                request.getCategory(), request.getKeyword(), null, null, null, null, operatorPermissions);
     }
 
     public static MingCustomsCommand toCommand(MingCustomsRequest request) {

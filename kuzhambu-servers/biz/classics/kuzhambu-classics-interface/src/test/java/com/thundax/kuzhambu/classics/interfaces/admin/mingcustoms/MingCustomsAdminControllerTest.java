@@ -91,9 +91,9 @@ class MingCustomsAdminControllerTest {
 
         ArgumentCaptor<MingCustomsQuery> queryCaptor = ArgumentCaptor.forClass(MingCustomsQuery.class);
         verify(service).page(queryCaptor.capture(), any(PageQuery.class));
-        assertNotNull(queryCaptor.getValue().getOperatorPermissions());
-        assertEquals(7001L, queryCaptor.getValue().getTagId());
-        assertEquals("祭祀", queryCaptor.getValue().getTagNameSnapshot());
+        assertNotNull(queryCaptor.getValue().operatorPermissions());
+        assertEquals(7001L, queryCaptor.getValue().tagId());
+        assertEquals("祭祀", queryCaptor.getValue().tagNameSnapshot());
     }
 
     @Test
@@ -113,9 +113,9 @@ class MingCustomsAdminControllerTest {
         assertEquals(3L, responses.get(0).getCount());
         ArgumentCaptor<MingCustomsQuery> queryCaptor = ArgumentCaptor.forClass(MingCustomsQuery.class);
         verify(service).listTagCloud(queryCaptor.capture());
-        assertEquals("礼俗", queryCaptor.getValue().getCategory());
-        assertEquals("祭祀", queryCaptor.getValue().getKeyword());
-        assertNotNull(queryCaptor.getValue().getOperatorPermissions());
+        assertEquals("礼俗", queryCaptor.getValue().category());
+        assertEquals("祭祀", queryCaptor.getValue().keyword());
+        assertNotNull(queryCaptor.getValue().operatorPermissions());
     }
 
     @Test

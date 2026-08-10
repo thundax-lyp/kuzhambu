@@ -15,14 +15,6 @@ final class ClassicsApplicationCommandQueryRecordAllowances {
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand"),
