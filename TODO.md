@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `09-13 cleanup`：收口验证与现场清理
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-09-KNOWLEDGE-TAXONOMY-PORTAL.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/KnowledgeApplicationCommandQueryRecordAllowances.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/KnowledgeApplicationArchitectureTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/test/java/com/thundax/kuzhambu/knowledge/domain/KnowledgeDomainArchitectureTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/KnowledgeInterfaceArchitectureTest.java`、`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-09-KNOWLEDGE-TAXONOMY-PORTAL.md`、`TODO.md`
-    - 处理动作：确认本切片 allowlist 清零后删除 RUNBOOK 并清空对应 TODO。
-    - 验收点：本 RUNBOOK 被删除，`TODO.md` 不再保留本切片任务，工作区无无关修改。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
