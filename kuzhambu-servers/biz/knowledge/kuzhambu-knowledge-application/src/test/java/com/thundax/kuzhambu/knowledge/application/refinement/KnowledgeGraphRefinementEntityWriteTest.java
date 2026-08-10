@@ -71,7 +71,7 @@ class KnowledgeGraphRefinementEntityWriteTest {
     @Test
     void confirmEntityShouldUpdateDraftStatusOnly() {
         FakeRefinementEntityDraftRepository entityDraftRepository = new FakeRefinementEntityDraftRepository();
-        entityDraftRepository.saveOrUpdateBatch(
+        entityDraftRepository.batchSaveOrUpdate(
                 List.of(entityDraft(31L, 101L, "person:huangdi", "PENDING", "UPDATED")));
         KnowledgeGraphRefinementApplicationServiceImpl service = service(entityDraftRepository);
 
@@ -88,7 +88,7 @@ class KnowledgeGraphRefinementEntityWriteTest {
     @Test
     void deleteEntityShouldMarkDraftAsDeleted() {
         FakeRefinementEntityDraftRepository entityDraftRepository = new FakeRefinementEntityDraftRepository();
-        entityDraftRepository.saveOrUpdateBatch(
+        entityDraftRepository.batchSaveOrUpdate(
                 List.of(entityDraft(31L, 101L, "person:huangdi", "PENDING", "UPDATED")));
         KnowledgeGraphRefinementApplicationServiceImpl service = service(entityDraftRepository);
 
@@ -181,7 +181,7 @@ class KnowledgeGraphRefinementEntityWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementEntityDraft> drafts) {
+        public void batchSaveOrUpdate(List<RefinementEntityDraft> drafts) {
             if (drafts == null || drafts.isEmpty()) {
                 return;
             }
@@ -209,7 +209,7 @@ class KnowledgeGraphRefinementEntityWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementRelationDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementRelationDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {

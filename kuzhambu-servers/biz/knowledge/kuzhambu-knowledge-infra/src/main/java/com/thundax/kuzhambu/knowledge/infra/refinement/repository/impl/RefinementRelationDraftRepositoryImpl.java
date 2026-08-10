@@ -29,7 +29,7 @@ public class RefinementRelationDraftRepositoryImpl implements RefinementRelation
     }
 
     @Override
-    public void saveOrUpdateBatch(List<RefinementRelationDraft> drafts) {
+    public void batchSaveOrUpdate(List<RefinementRelationDraft> drafts) {
         for (RefinementRelationDraft draft : drafts == null ? List.<RefinementRelationDraft>of() : drafts) {
             RefinementRelationDraftDO dataObject = RefinementRelationDraftPersistenceAssembler.toObject(draft);
             if (dataObject.getDraftId() == null) {

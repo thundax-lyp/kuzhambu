@@ -345,7 +345,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementEntityDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementEntityDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -366,7 +366,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementRelationDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementRelationDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {

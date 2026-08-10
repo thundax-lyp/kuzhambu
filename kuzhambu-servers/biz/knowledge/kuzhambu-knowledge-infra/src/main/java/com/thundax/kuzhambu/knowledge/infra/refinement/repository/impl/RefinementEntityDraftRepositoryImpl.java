@@ -29,7 +29,7 @@ public class RefinementEntityDraftRepositoryImpl implements RefinementEntityDraf
     }
 
     @Override
-    public void saveOrUpdateBatch(List<RefinementEntityDraft> drafts) {
+    public void batchSaveOrUpdate(List<RefinementEntityDraft> drafts) {
         for (RefinementEntityDraft draft : drafts == null ? List.<RefinementEntityDraft>of() : drafts) {
             RefinementEntityDraftDO dataObject = RefinementEntityDraftPersistenceAssembler.toObject(draft);
             if (dataObject.getDraftId() == null) {
