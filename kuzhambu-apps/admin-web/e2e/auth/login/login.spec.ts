@@ -16,7 +16,7 @@ const fulfillSuccess = async (route: Route, data: unknown) => {
 };
 
 const mockCurrentUserApis = async (page: Page) => {
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/get", async (route) => {
         await fulfillSuccess(route, {
             id: "user-1",
             loginName: "developer",
@@ -26,7 +26,7 @@ const mockCurrentUserApis = async (page: Page) => {
             superAdmin: false
         });
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menu/list", async (route) => {
         await fulfillSuccess(route, [
             {
                 id: "dashboard",
@@ -36,11 +36,14 @@ const mockCurrentUserApis = async (page: Page) => {
             }
         ]);
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
-        await fulfillSuccess(route, {
-            perms: ["user", "sys:user:view"]
-        });
-    });
+    await page.route(
+        "**/kuzhambu-admin-api/api/sys/current-user/permission/list",
+        async (route) => {
+            await fulfillSuccess(route, {
+                perms: ["user", "sys:user:view"]
+            });
+        }
+    );
 };
 
 test.describe("login page", () => {

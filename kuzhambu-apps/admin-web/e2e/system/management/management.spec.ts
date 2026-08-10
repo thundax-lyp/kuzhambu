@@ -22,7 +22,7 @@ const fulfillSuccess = async (route: Route, data: unknown) => {
 };
 
 const mockShellApis = async (page: Page) => {
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/get", async (route) => {
         await fulfillSuccess(route, {
             id: "user-1",
             loginName: "developer",
@@ -32,7 +32,7 @@ const mockShellApis = async (page: Page) => {
             superAdmin: true
         });
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menu/list", async (route) => {
         await fulfillSuccess(route, [
             {
                 id: "dashboard",
@@ -68,11 +68,14 @@ const mockShellApis = async (page: Page) => {
             }
         ]);
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
-        await fulfillSuccess(route, {
-            perms: ADMIN_PERMISSIONS
-        });
-    });
+    await page.route(
+        "**/kuzhambu-admin-api/api/sys/current-user/permission/list",
+        async (route) => {
+            await fulfillSuccess(route, {
+                perms: ADMIN_PERMISSIONS
+            });
+        }
+    );
     await page.route("**/kuzhambu-admin-api/api/auth/session/token/refresh", async (route) => {
         await fulfillSuccess(route, {
             token: "test-token",
@@ -87,7 +90,7 @@ const mockManagementApis = async (page: Page) => {
     let roleListRequestCount = 0;
     let menuListRequestCount = 0;
 
-    await page.route("**/kuzhambu-admin-api/api/sys/user/department/tree", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/user/department/list", async (route) => {
         await fulfillSuccess(route, [
             {
                 id: "department-1",
@@ -105,7 +108,7 @@ const mockManagementApis = async (page: Page) => {
             }
         ]);
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/user/options", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/user/options/list", async (route) => {
         await fulfillSuccess(route, {
             rankOptions: [{ label: "管理员", value: 9 }],
             statusOptions: [
@@ -150,7 +153,7 @@ const mockManagementApis = async (page: Page) => {
             }
         ]);
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/role/options", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/role/options/list", async (route) => {
         await fulfillSuccess(route, {
             privilegeOptions: [{ label: "管理权限", value: true }],
             statusOptions: [
@@ -159,7 +162,7 @@ const mockManagementApis = async (page: Page) => {
             ]
         });
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/role/menu/tree", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/role/menu/list", async (route) => {
         await fulfillSuccess(route, [
             {
                 id: "menu-1",

@@ -13,14 +13,14 @@ const fulfillSuccess = async (route: Route, data: unknown) => {
 };
 
 const mockShellApis = async (page: Page) => {
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/get", async (route) => {
         await fulfillSuccess(route, {
             id: "1",
             loginName: "developer",
             name: "Developer"
         });
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menu/list", async (route) => {
         await fulfillSuccess(route, [
             {
                 id: "1",
@@ -42,11 +42,14 @@ const mockShellApis = async (page: Page) => {
             }
         ]);
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
-        await fulfillSuccess(route, {
-            perms: ["sys:dict:view", "sys:dict:edit"]
-        });
-    });
+    await page.route(
+        "**/kuzhambu-admin-api/api/sys/current-user/permission/list",
+        async (route) => {
+            await fulfillSuccess(route, {
+                perms: ["sys:dict:view", "sys:dict:edit"]
+            });
+        }
+    );
     await page.route("**/kuzhambu-admin-api/api/auth/session/token/refresh", async (route) => {
         await fulfillSuccess(route, {
             token: "test-token",

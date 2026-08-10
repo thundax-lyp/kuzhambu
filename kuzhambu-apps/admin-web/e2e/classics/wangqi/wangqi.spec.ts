@@ -57,10 +57,10 @@ const readCandidateIdForCapability = (capability: string) => {
 };
 
 const mockShellApis = async (page: Page) => {
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/get", async (route) => {
         await fulfillSuccess(route, { id: "1", loginName: "developer", name: "Developer" });
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menu/list", async (route) => {
         await fulfillSuccess(route, [
             { id: "20", name: "古籍管理", displayParams: '{"icon":"classics"}' },
             {
@@ -72,11 +72,14 @@ const mockShellApis = async (page: Page) => {
             }
         ]);
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
-        await fulfillSuccess(route, {
-            perms: ADMIN_PERMISSIONS
-        });
-    });
+    await page.route(
+        "**/kuzhambu-admin-api/api/sys/current-user/permission/list",
+        async (route) => {
+            await fulfillSuccess(route, {
+                perms: ADMIN_PERMISSIONS
+            });
+        }
+    );
     await page.route("**/kuzhambu-admin-api/api/auth/session/token/refresh", async (route) => {
         await fulfillSuccess(route, {
             token: "test-token",

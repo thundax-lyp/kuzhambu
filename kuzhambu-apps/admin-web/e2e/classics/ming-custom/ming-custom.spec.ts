@@ -19,7 +19,7 @@ test.describe("classics ming customs page", () => {
         versionsListRequests.length = 0;
         versionsGetRequests.length = 0;
         versionsResetRequests.length = 0;
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/get", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(
@@ -31,7 +31,7 @@ test.describe("classics ming customs page", () => {
                 )
             });
         });
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menu/list", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(
@@ -52,21 +52,24 @@ test.describe("classics ming customs page", () => {
                 )
             });
         });
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify(
-                    apiResponse({
-                        perms: [
-                            "classics:mingcustoms:view",
-                            "classics:mingcustoms:edit",
-                            "classics:mingcustoms:delete",
-                            "classics:content:export"
-                        ]
-                    })
-                )
-            });
-        });
+        await page.route(
+            "**/kuzhambu-admin-api/api/sys/current-user/permission/list",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(
+                        apiResponse({
+                            perms: [
+                                "classics:mingcustoms:view",
+                                "classics:mingcustoms:edit",
+                                "classics:mingcustoms:delete",
+                                "classics:content:export"
+                            ]
+                        })
+                    )
+                });
+            }
+        );
         await page.addInitScript(() => {
             window.localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
             window.localStorage.setItem("kuzhambu.admin.refreshToken", "refresh-token");
