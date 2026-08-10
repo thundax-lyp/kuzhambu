@@ -177,9 +177,9 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 draftBootstrapSupport.bootstrapEntityDrafts(taskId, graphVersionId, openedBy));
         relationDraftRepository.batchSaveOrUpdate(
                 draftBootstrapSupport.bootstrapRelationDrafts(taskId, graphVersionId, openedBy));
-        lineageNodeDraftRepository.saveOrUpdateBatch(
+        lineageNodeDraftRepository.batchSaveOrUpdate(
                 draftBootstrapSupport.bootstrapLineageNodeDrafts(taskId, graphVersionId, openedBy));
-        lineageRelationDraftRepository.saveOrUpdateBatch(
+        lineageRelationDraftRepository.batchSaveOrUpdate(
                 draftBootstrapSupport.bootstrapLineageRelationDrafts(taskId, graphVersionId, openedBy));
         return detail(task);
     }
@@ -288,7 +288,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 .orElseGet(RefinementLineageNodeDraft::new);
         boolean created = draft.getDraftId() == null;
         fillLineageNodeDraft(draft, command, created);
-        lineageNodeDraftRepository.saveOrUpdateBatch(List.of(draft));
+        lineageNodeDraftRepository.batchSaveOrUpdate(List.of(draft));
         return toResult(draft);
     }
 
@@ -303,7 +303,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         draft.setOperationType("CONFIRMED");
         draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
-        lineageNodeDraftRepository.saveOrUpdateBatch(List.of(draft));
+        lineageNodeDraftRepository.batchSaveOrUpdate(List.of(draft));
         return toResult(draft);
     }
 
@@ -317,7 +317,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         draft.setOperationType("DELETED");
         draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
-        lineageNodeDraftRepository.saveOrUpdateBatch(List.of(draft));
+        lineageNodeDraftRepository.batchSaveOrUpdate(List.of(draft));
     }
 
     @Override
@@ -331,7 +331,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 .orElseGet(RefinementLineageRelationDraft::new);
         boolean created = draft.getDraftId() == null;
         fillLineageRelationDraft(draft, command, created);
-        lineageRelationDraftRepository.saveOrUpdateBatch(List.of(draft));
+        lineageRelationDraftRepository.batchSaveOrUpdate(List.of(draft));
         return toResult(draft);
     }
 
@@ -347,7 +347,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         draft.setOperationType("CONFIRMED");
         draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
-        lineageRelationDraftRepository.saveOrUpdateBatch(List.of(draft));
+        lineageRelationDraftRepository.batchSaveOrUpdate(List.of(draft));
         return toResult(draft);
     }
 
@@ -362,7 +362,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         draft.setOperationType("DELETED");
         draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
-        lineageRelationDraftRepository.saveOrUpdateBatch(List.of(draft));
+        lineageRelationDraftRepository.batchSaveOrUpdate(List.of(draft));
     }
 
     @Override

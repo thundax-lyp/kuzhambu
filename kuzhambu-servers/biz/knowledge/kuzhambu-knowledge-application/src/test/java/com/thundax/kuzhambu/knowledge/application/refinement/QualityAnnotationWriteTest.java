@@ -196,7 +196,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementLineageNodeDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementLineageNodeDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -212,7 +212,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementLineageRelationDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementLineageRelationDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {

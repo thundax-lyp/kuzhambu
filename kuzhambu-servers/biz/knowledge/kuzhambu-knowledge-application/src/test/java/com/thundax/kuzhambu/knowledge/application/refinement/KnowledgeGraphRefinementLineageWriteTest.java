@@ -76,7 +76,7 @@ class KnowledgeGraphRefinementLineageWriteTest {
     @Test
     void confirmAndDeleteLineageNodeShouldUpdateDraftOnly() {
         FakeRefinementLineageNodeDraftRepository nodeDraftRepository = new FakeRefinementLineageNodeDraftRepository();
-        nodeDraftRepository.saveOrUpdateBatch(List.of(nodeDraft(31L, 301L, "lineage:huangdi", "PENDING", "UPDATED")));
+        nodeDraftRepository.batchSaveOrUpdate(List.of(nodeDraft(31L, 301L, "lineage:huangdi", "PENDING", "UPDATED")));
         KnowledgeGraphRefinementApplicationServiceImpl service =
                 service(nodeDraftRepository, new FakeRefinementLineageRelationDraftRepository());
 
@@ -270,7 +270,7 @@ class KnowledgeGraphRefinementLineageWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementLineageNodeDraft> drafts) {
+        public void batchSaveOrUpdate(List<RefinementLineageNodeDraft> drafts) {
             if (drafts == null || drafts.isEmpty()) {
                 return;
             }
@@ -302,7 +302,7 @@ class KnowledgeGraphRefinementLineageWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementLineageRelationDraft> drafts) {
+        public void batchSaveOrUpdate(List<RefinementLineageRelationDraft> drafts) {
             if (drafts == null || drafts.isEmpty()) {
                 return;
             }
