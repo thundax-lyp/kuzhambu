@@ -30,18 +30,24 @@ public class ClassicsTagBindingSupport {
     }
 
     public ClassicsContentTag bindManualTag(ContentTagCommand command, Integer priority) {
-        return bindTag(command, priority, false);
+        return bindTag(ClassicsContentApplicationAssembler.toTag(command), command.tagNameSnapshot(), priority, false);
     }
 
     public ClassicsContentTag bindAiTag(ContentTagCommand command, Integer priority) {
-        return bindTag(command, priority, true);
+        return bindTag(ClassicsContentApplicationAssembler.toTag(command), command.tagNameSnapshot(), priority, true);
     }
 
-    private ClassicsContentTag bindTag(ContentTagCommand command, Integer priority, boolean aiTag) {
-        ClassicsContentTag tag = ClassicsContentApplicationAssembler.toTag(command);
-        KnowledgeResolveTagFacadeRequest request = KnowledgeResolveTagFacadeRequest.builder()
-                .tagName(command.tagNameSnapshot())
-                .build();
+    public ClassicsContentTag bindManualTag(ClassicsContentTag tag, Integer priority) {
+        return bindTag(tag, tag == null ? null : tag.getTagNameSnapshot(), priority, false);
+    }
+
+    public ClassicsContentTag bindAiTag(ClassicsContentTag tag, Integer priority) {
+        return bindTag(tag, tag == null ? null : tag.getTagNameSnapshot(), priority, true);
+    }
+
+    private ClassicsContentTag bindTag(ClassicsContentTag tag, String tagName, Integer priority, boolean aiTag) {
+        KnowledgeResolveTagFacadeRequest request =
+                KnowledgeResolveTagFacadeRequest.builder().tagName(tagName).build();
         KnowledgeTagFacadeResponse knowledgeTag = aiTag
                 ? knowledgeFacade.resolveOrCreateAiTag(request)
                 : knowledgeFacade.resolveOrCreateManualTag(request);

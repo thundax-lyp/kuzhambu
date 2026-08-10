@@ -12,12 +12,4 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-allowlist-06-cleanup`：13 执行验证并清理现场
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-06-CLASSICS-CONTENT.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-06-CLASSICS-CONTENT.md`、`TODO.md`
-    - 处理动作：运行 RUNBOOK 规定的 formatter、测试、静态检查，并清理已完成 RUNBOOK、已完成 TODO 和临时产物。
-    - 验收点：RUNBOOK Verification 全部通过，RUNBOOK 文件被删除，`TODO.md` 不保留已完成任务，`git status` 无非任务范围文件。
-    - 重要度：10/10
-
 ## 待讨论项

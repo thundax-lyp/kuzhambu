@@ -168,12 +168,6 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
     private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {
         return List.of(
                 constructionViolation(
-                        "com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer#ContentTagCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer#ContentTagCommand:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer#ContentQaPairCommand:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer#ContentTagCommand:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer#ContentQaPairCommand:1"),

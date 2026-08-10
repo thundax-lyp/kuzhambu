@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
@@ -580,13 +581,19 @@ class SancaiAdminControllerTest {
                 new Class<?>[] {ClassicsContentApplicationService.class},
                 (proxy, method, args) -> {
                     if ("listVersions".equals(method.getName())) {
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY.value(), args[0]);
-                        assertEquals(ClassicsContentIdCodec.toDomain(3001L), args[1]);
+                        assertEquals(
+                                new ContentObjectQuery(
+                                        ClassicsContentType.SANCAI_ENTRY.value(),
+                                        ClassicsContentIdCodec.toDomain(3001L)),
+                                args[0]);
                         return List.of(version(9001L, 3001L, 1, ClassicsContentChangeType.MANUAL_SAVE));
                     }
                     if ("listTags".equals(method.getName())) {
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY.value(), args[0]);
-                        assertEquals(ClassicsContentIdCodec.toDomain(3001L), args[1]);
+                        assertEquals(
+                                new ContentObjectQuery(
+                                        ClassicsContentType.SANCAI_ENTRY.value(),
+                                        ClassicsContentIdCodec.toDomain(3001L)),
+                                args[0]);
                         ClassicsContentTag tag = new ClassicsContentTag();
                         tag.setId(ClassicsContentTagIdCodec.toDomain(7001L));
                         tag.setContentType(ClassicsContentType.SANCAI_ENTRY);

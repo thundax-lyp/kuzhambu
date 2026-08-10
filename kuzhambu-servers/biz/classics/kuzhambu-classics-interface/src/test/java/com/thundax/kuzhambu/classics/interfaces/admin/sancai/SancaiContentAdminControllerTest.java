@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
@@ -102,8 +103,9 @@ class SancaiContentAdminControllerTest {
                 new Class<?>[] {ClassicsContentApplicationService.class},
                 (proxy, method, args) -> {
                     if ("listQaPairs".equals(method.getName())) {
-                        assertEquals("SANCAI_ENTRY", args[0]);
-                        assertEquals(ClassicsContentIdCodec.toDomain(3001L), args[1]);
+                        assertEquals(
+                                new ContentObjectQuery("SANCAI_ENTRY", ClassicsContentIdCodec.toDomain(3001L)),
+                                args[0]);
                         return List.of(content());
                     }
                     if ("addQaPair".equals(method.getName()) || "updateQaPair".equals(method.getName())) {
