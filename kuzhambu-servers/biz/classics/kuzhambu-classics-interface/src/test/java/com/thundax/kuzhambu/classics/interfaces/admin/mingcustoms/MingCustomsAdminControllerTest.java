@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -202,6 +203,17 @@ class MingCustomsAdminControllerTest {
         assertEquals("MING_CUSTOMS", versions.get(0).getContentType());
         assertEquals(1, versions.get(0).getVersionNo());
         verify(contentService).listVersions(query);
+    }
+
+    @Test
+    void listVersionsShouldRejectMissingEntryId() {
+        MingCustomsAdminController controller =
+                controller(mock(MingCustomsApplicationService.class), mock(ClassicsContentApplicationService.class));
+        MingCustomsVersionRequest request = new MingCustomsVersionRequest();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> controller.listVersions(request));
+
+        assertTrue(exception.getMessage().contains("id"));
     }
 
     @Test

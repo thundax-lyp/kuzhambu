@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -208,6 +210,16 @@ class WangqiDocumentAdminControllerTest {
         Assertions.assertTrue(response.getHeader("Content-Disposition").startsWith("inline;"));
         Assertions.assertTrue(response.getHeader("Content-Disposition").contains("wangqi.pdf"));
         assertEquals("source-bin", response.getContentAsString());
+    }
+
+    @Test
+    void listVersionsShouldRejectMissingDocumentId() {
+        WangqiDocumentAdminController controller = controller();
+        WangqiDocumentVersionRequest request = new WangqiDocumentVersionRequest();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> controller.listVersions(request));
+
+        assertTrue(exception.getMessage().contains("id"));
     }
 
     @Test

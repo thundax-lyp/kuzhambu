@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import io.swagger.annotations.ApiImplicitParam;
@@ -255,9 +256,10 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "版本列表")
     @PostMapping("versions/list")
     public List<WangqiDocumentVersionResponse> listVersions(@Valid @RequestBody WangqiDocumentVersionRequest request) {
+        Long documentId = requireParameter(request == null ? null : request.getId(), "id");
         return contentService
                 .listVersions(WangqiDocumentInterfaceAssembler.toContentObjectQuery(
-                        ClassicsContentType.WANGQI_DOCUMENT.value(), request.getId()))
+                        ClassicsContentType.WANGQI_DOCUMENT.value(), documentId))
                 .stream()
                 .map(WangqiDocumentInterfaceAssembler::toVersionResponse)
                 .toList();
@@ -304,6 +306,13 @@ public class WangqiDocumentAdminController {
             throw new BizException("王圻版本不属于当前文档");
         }
         return version;
+    }
+
+    private static Long requireParameter(Long value, String fieldName) {
+        if (value == null) {
+            throw AdminResponseExceptions.invalidParameter(fieldName);
+        }
+        return value;
     }
 
     private static String contentDisposition(String originalFilename, boolean download) {

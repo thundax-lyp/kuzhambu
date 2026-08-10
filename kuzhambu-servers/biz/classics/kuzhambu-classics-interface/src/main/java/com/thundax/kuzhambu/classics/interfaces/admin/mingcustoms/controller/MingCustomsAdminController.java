@@ -235,9 +235,10 @@ public class MingCustomsAdminController {
     @SysLogger(value = "版本列表")
     @PostMapping("versions/list")
     public List<MingCustomsVersionResponse> listVersions(@Valid @RequestBody MingCustomsVersionRequest request) {
+        Long entryId = requireParameter(request == null ? null : request.getId(), "id");
         return contentService
                 .listVersions(MingCustomsInterfaceAssembler.toContentObjectQuery(
-                        ClassicsContentType.MING_CUSTOMS.value(), request.getId()))
+                        ClassicsContentType.MING_CUSTOMS.value(), entryId))
                 .stream()
                 .map(MingCustomsInterfaceAssembler::toVersionResponse)
                 .toList();
