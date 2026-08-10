@@ -14,8 +14,6 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialCommand;
-import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
@@ -775,7 +773,7 @@ public class UserController {
             credential.setNeedChangePassword(false);
             credential.setFailedCount(0);
             credential.setFailedLimit(DEFAULT_PASSWORD_FAILED_LIMIT);
-            principalCredentialService.create(createCredentialCommand(credential));
+            principalCredentialService.create(UserInterfaceAssembler.toCreatePrincipalCredentialCommand(credential));
             return;
         }
         credential.setCredentialValue(encryptedPassword);
@@ -784,38 +782,7 @@ public class UserController {
         credential.setFailedCount(0);
         credential.setLockedUntil(null);
         credential.setLastVerifiedAt(null);
-        principalCredentialService.change(changeCredentialCommand(credential));
-    }
-
-    private CreatePrincipalCredentialCommand createCredentialCommand(PrincipalCredential credential) {
-        return new CreatePrincipalCredentialCommand(
-                credential.getPrincipalKey(),
-                credential.getIdentityId(),
-                credential.getCredentialType(),
-                credential.getCredentialValue(),
-                credential.getStatus(),
-                credential.isNeedChangePassword(),
-                credential.getFailedCount(),
-                credential.getFailedLimit(),
-                credential.getLockedUntil(),
-                credential.getExpiresAt(),
-                credential.getLastVerifiedAt());
-    }
-
-    private ChangePrincipalCredentialCommand changeCredentialCommand(PrincipalCredential credential) {
-        return new ChangePrincipalCredentialCommand(
-                credential.getId(),
-                credential.getPrincipalKey(),
-                credential.getIdentityId(),
-                credential.getCredentialType(),
-                credential.getCredentialValue(),
-                credential.getStatus(),
-                credential.isNeedChangePassword(),
-                credential.getFailedCount(),
-                credential.getFailedLimit(),
-                credential.getLockedUntil(),
-                credential.getExpiresAt(),
-                credential.getLastVerifiedAt());
+        principalCredentialService.change(UserInterfaceAssembler.toChangePrincipalCredentialCommand(credential));
     }
 
     private PrincipalIdentity upsertAccountIdentity(User user, String loginName) {
@@ -859,10 +826,7 @@ public class UserController {
 
     private PrincipalCredentialQuery credentialQuery(
             PrincipalIdentityId identityId, PrincipalCredentialType credentialType) {
-        PrincipalCredentialQuery query = new PrincipalCredentialQuery();
-        query.setIdentityId(identityId);
-        query.setCredentialType(credentialType);
-        return query;
+        return UserInterfaceAssembler.toPrincipalCredentialQuery(identityId, credentialType);
     }
 
     private String getPrivateKey(String token) {

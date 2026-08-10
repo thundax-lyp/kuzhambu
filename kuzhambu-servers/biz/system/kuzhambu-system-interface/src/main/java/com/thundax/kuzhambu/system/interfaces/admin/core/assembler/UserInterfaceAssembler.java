@@ -1,13 +1,19 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
@@ -27,6 +33,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.Use
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.UserRoleResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -36,13 +43,60 @@ public final class UserInterfaceAssembler {
     private UserInterfaceAssembler() {}
 
     @NonNull
+    public static CreatePrincipalCredentialCommand toCreatePrincipalCredentialCommand(
+            @NonNull PrincipalCredential credential) {
+        Objects.requireNonNull(credential, "credential must not be null");
+        return new CreatePrincipalCredentialCommand(
+                credential.getPrincipalKey(),
+                credential.getIdentityId(),
+                credential.getCredentialType(),
+                credential.getCredentialValue(),
+                credential.getStatus(),
+                credential.isNeedChangePassword(),
+                credential.getFailedCount(),
+                credential.getFailedLimit(),
+                credential.getLockedUntil(),
+                credential.getExpiresAt(),
+                credential.getLastVerifiedAt());
+    }
+
+    @NonNull
+    public static ChangePrincipalCredentialCommand toChangePrincipalCredentialCommand(
+            @NonNull PrincipalCredential credential) {
+        Objects.requireNonNull(credential, "credential must not be null");
+        return new ChangePrincipalCredentialCommand(
+                credential.getId(),
+                credential.getPrincipalKey(),
+                credential.getIdentityId(),
+                credential.getCredentialType(),
+                credential.getCredentialValue(),
+                credential.getStatus(),
+                credential.isNeedChangePassword(),
+                credential.getFailedCount(),
+                credential.getFailedLimit(),
+                credential.getLockedUntil(),
+                credential.getExpiresAt(),
+                credential.getLastVerifiedAt());
+    }
+
+    @NonNull
+    public static PrincipalCredentialQuery toPrincipalCredentialQuery(
+            @NonNull PrincipalIdentityId identityId, @NonNull PrincipalCredentialType credentialType) {
+        Objects.requireNonNull(identityId, "identityId must not be null");
+        Objects.requireNonNull(credentialType, "credentialType must not be null");
+        return new PrincipalCredentialQuery(null, identityId, credentialType, null, null);
+    }
+
+    @NonNull
     public static CreatePrincipalIdentityCommand toCreatePrincipalIdentityCommand(@NonNull PrincipalIdentity identity) {
+        Objects.requireNonNull(identity, "identity must not be null");
         return new CreatePrincipalIdentityCommand(
                 identity.getPrincipalKey(), identity.getType(), identity.getIdentityValue(), identity.getStatus());
     }
 
     @NonNull
     public static ChangePrincipalIdentityCommand toChangePrincipalIdentityCommand(@NonNull PrincipalIdentity identity) {
+        Objects.requireNonNull(identity, "identity must not be null");
         return new ChangePrincipalIdentityCommand(
                 identity.getId(),
                 identity.getPrincipalKey(),
@@ -53,13 +107,17 @@ public final class UserInterfaceAssembler {
 
     @NonNull
     public static PrincipalIdentityQuery toPrincipalIdentityQuery(
-            PrincipalIdentityType identityType, String identityValue) {
+            @NonNull PrincipalIdentityType identityType, @NonNull String identityValue) {
+        Objects.requireNonNull(identityType, "identityType must not be null");
+        Objects.requireNonNull(identityValue, "identityValue must not be null");
         return new PrincipalIdentityQuery(null, identityType, identityValue, null, null);
     }
 
     @NonNull
     public static PrincipalIdentityQuery toPrincipalIdentityQuery(
-            PrincipalKey principalKey, PrincipalIdentityType identityType) {
+            @NonNull PrincipalKey principalKey, @NonNull PrincipalIdentityType identityType) {
+        Objects.requireNonNull(principalKey, "principalKey must not be null");
+        Objects.requireNonNull(identityType, "identityType must not be null");
         return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
     }
 

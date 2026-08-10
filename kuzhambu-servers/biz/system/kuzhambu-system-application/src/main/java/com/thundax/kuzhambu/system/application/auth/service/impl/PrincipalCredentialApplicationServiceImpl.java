@@ -29,23 +29,21 @@ public class PrincipalCredentialApplicationServiceImpl implements PrincipalCrede
         if (query == null) {
             return null;
         }
-        if (query.getId() != null) {
-            return principalCredentialRepository.getById(query.getId());
+        if (query.id() != null) {
+            return principalCredentialRepository.getById(query.id());
         }
-        if (query.getIdentityId() != null && query.getCredentialType() != null) {
-            return principalCredentialRepository.getByIdentityIdAndType(
-                    query.getIdentityId(), query.getCredentialType());
+        if (query.identityId() != null && query.credentialType() != null) {
+            return principalCredentialRepository.getByIdentityIdAndType(query.identityId(), query.credentialType());
         }
-        if (query.getPrincipalKey() != null && query.getCredentialType() != null) {
-            return principalCredentialRepository.getByPrincipalKeyAndType(
-                    query.getPrincipalKey(), query.getCredentialType());
+        if (query.principalKey() != null && query.credentialType() != null) {
+            return principalCredentialRepository.getByPrincipalKeyAndType(query.principalKey(), query.credentialType());
         }
         return null;
     }
 
     @Override
     public List<PrincipalCredential> list(PrincipalCredentialQuery query) {
-        return principalCredentialRepository.listByPrincipalKeyAndStatus(query.getPrincipalKey(), query.getStatus());
+        return principalCredentialRepository.listByPrincipalKeyAndStatus(query.principalKey(), query.status());
     }
 
     @Override
@@ -64,62 +62,62 @@ public class PrincipalCredentialApplicationServiceImpl implements PrincipalCrede
     @Override
     public void changeStatus(ChangePrincipalCredentialStatusCommand command) {
         PrincipalCredential principalCredential = new PrincipalCredential();
-        principalCredential.setId(command.getId());
-        principalCredential.setStatus(command.getStatus());
+        principalCredential.setId(command.id());
+        principalCredential.setStatus(command.status());
         principalCredentialRepository.updateStatus(principalCredential);
     }
 
     @Override
     public void changeVerifyState(ChangePrincipalCredentialVerifyStateCommand command) {
         PrincipalCredential principalCredential = new PrincipalCredential();
-        principalCredential.setId(command.getId());
-        principalCredential.setStatus(command.getStatus());
-        principalCredential.setFailedCount(command.getFailedCount());
-        principalCredential.setLockedUntil(command.getLockedUntil());
-        principalCredential.setLastVerifiedAt(command.getLastVerifiedAt());
+        principalCredential.setId(command.id());
+        principalCredential.setStatus(command.status());
+        principalCredential.setFailedCount(command.failedCount());
+        principalCredential.setLockedUntil(command.lockedUntil());
+        principalCredential.setLastVerifiedAt(command.lastVerifiedAt());
         principalCredentialRepository.updateVerifyState(principalCredential);
     }
 
     @Override
     public PrincipalCredential recordFailure(RecordPrincipalCredentialFailureCommand command) {
         PrincipalCredential credential = new PrincipalCredential();
-        credential.setId(command.getId());
-        credential.setFailedLimit(command.getFailedLimit());
-        credential.setLockedUntil(command.getLockedUntil());
+        credential.setId(command.id());
+        credential.setFailedLimit(command.failedLimit());
+        credential.setLockedUntil(command.lockedUntil());
         principalCredentialRepository.updateFailure(credential);
         return principalCredentialRepository.getById(credential.getId());
     }
 
     private PrincipalCredential principalCredential(CreatePrincipalCredentialCommand command) {
         PrincipalCredential principalCredential = new PrincipalCredential();
-        principalCredential.setPrincipalKey(command.getPrincipalKey());
-        principalCredential.setIdentityId(command.getIdentityId());
-        principalCredential.setCredentialType(command.getCredentialType());
-        principalCredential.setCredentialValue(command.getCredentialValue());
-        principalCredential.setStatus(command.getStatus());
-        principalCredential.setNeedChangePassword(command.isNeedChangePassword());
-        principalCredential.setFailedCount(command.getFailedCount());
-        principalCredential.setFailedLimit(command.getFailedLimit());
-        principalCredential.setLockedUntil(command.getLockedUntil());
-        principalCredential.setExpiresAt(command.getExpiresAt());
-        principalCredential.setLastVerifiedAt(command.getLastVerifiedAt());
+        principalCredential.setPrincipalKey(command.principalKey());
+        principalCredential.setIdentityId(command.identityId());
+        principalCredential.setCredentialType(command.credentialType());
+        principalCredential.setCredentialValue(command.credentialValue());
+        principalCredential.setStatus(command.status());
+        principalCredential.setNeedChangePassword(command.needChangePassword());
+        principalCredential.setFailedCount(command.failedCount());
+        principalCredential.setFailedLimit(command.failedLimit());
+        principalCredential.setLockedUntil(command.lockedUntil());
+        principalCredential.setExpiresAt(command.expiresAt());
+        principalCredential.setLastVerifiedAt(command.lastVerifiedAt());
         return principalCredential;
     }
 
     private PrincipalCredential principalCredential(ChangePrincipalCredentialCommand command) {
         PrincipalCredential principalCredential = principalCredential(new CreatePrincipalCredentialCommand(
-                command.getPrincipalKey(),
-                command.getIdentityId(),
-                command.getCredentialType(),
-                command.getCredentialValue(),
-                command.getStatus(),
-                command.isNeedChangePassword(),
-                command.getFailedCount(),
-                command.getFailedLimit(),
-                command.getLockedUntil(),
-                command.getExpiresAt(),
-                command.getLastVerifiedAt()));
-        principalCredential.setId(command.getId());
+                command.principalKey(),
+                command.identityId(),
+                command.credentialType(),
+                command.credentialValue(),
+                command.status(),
+                command.needChangePassword(),
+                command.failedCount(),
+                command.failedLimit(),
+                command.lockedUntil(),
+                command.expiresAt(),
+                command.lastVerifiedAt()));
+        principalCredential.setId(command.id());
         return principalCredential;
     }
 }

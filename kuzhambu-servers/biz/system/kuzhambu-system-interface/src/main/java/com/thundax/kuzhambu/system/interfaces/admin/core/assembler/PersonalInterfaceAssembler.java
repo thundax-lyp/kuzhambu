@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.Per
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalInfoResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalMenuResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalPermsResponse;
+import java.util.Objects;
 import java.util.Set;
 import org.springframework.lang.NonNull;
 
@@ -25,7 +26,9 @@ public final class PersonalInterfaceAssembler {
 
     @NonNull
     public static PrincipalIdentityQuery toPrincipalIdentityQuery(
-            PrincipalKey principalKey, PrincipalIdentityType identityType) {
+            @NonNull PrincipalKey principalKey, @NonNull PrincipalIdentityType identityType) {
+        Objects.requireNonNull(principalKey, "principalKey must not be null");
+        Objects.requireNonNull(identityType, "identityType must not be null");
         return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
     }
 
