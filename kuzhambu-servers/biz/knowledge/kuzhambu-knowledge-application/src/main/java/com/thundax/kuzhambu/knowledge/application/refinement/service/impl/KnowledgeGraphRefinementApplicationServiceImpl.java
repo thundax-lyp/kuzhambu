@@ -275,10 +275,10 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     @Override
     public RefinementLineageNodeResult upsertLineageNode(UpsertRefinementLineageNodeCommand command) {
         List<RefinementLineageNodeDraft> drafts =
-                new ArrayList<>(lineageNodeDraftRepository.listByTaskId(command.getRefinementTaskId()));
+                new ArrayList<>(lineageNodeDraftRepository.listByTaskId(command.refinementTaskId()));
         RefinementLineageNodeDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getNodeKey(), command.getNodeKey())
-                        || idEquals(item.getNodeId(), command.getNodeId()))
+                .filter(item ->
+                        keyEquals(item.getNodeKey(), command.nodeKey()) || idEquals(item.getNodeId(), command.nodeId()))
                 .findFirst()
                 .orElseGet(RefinementLineageNodeDraft::new);
         boolean created = draft.getDraftId() == null;
@@ -289,15 +289,14 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     public RefinementLineageNodeResult confirmLineageNode(ConfirmRefinementLineageNodeCommand command) {
-        List<RefinementLineageNodeDraft> drafts =
-                lineageNodeDraftRepository.listByTaskId(command.getRefinementTaskId());
+        List<RefinementLineageNodeDraft> drafts = lineageNodeDraftRepository.listByTaskId(command.refinementTaskId());
         RefinementLineageNodeDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getNodeKey(), command.getNodeKey()))
+                .filter(item -> keyEquals(item.getNodeKey(), command.nodeKey()))
                 .findFirst()
                 .orElseThrow();
         draft.setConfirmationStatus("MANUAL_CONFIRMED");
         draft.setOperationType("CONFIRMED");
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
         lineageNodeDraftRepository.saveOrUpdateBatch(List.of(draft));
         return toResult(draft);
@@ -305,14 +304,13 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     public void deleteLineageNode(DeleteRefinementLineageNodeCommand command) {
-        List<RefinementLineageNodeDraft> drafts =
-                lineageNodeDraftRepository.listByTaskId(command.getRefinementTaskId());
+        List<RefinementLineageNodeDraft> drafts = lineageNodeDraftRepository.listByTaskId(command.refinementTaskId());
         RefinementLineageNodeDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getNodeKey(), command.getNodeKey()))
+                .filter(item -> keyEquals(item.getNodeKey(), command.nodeKey()))
                 .findFirst()
                 .orElseThrow();
         draft.setOperationType("DELETED");
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
         lineageNodeDraftRepository.saveOrUpdateBatch(List.of(draft));
     }
@@ -320,10 +318,10 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     @Override
     public RefinementLineageRelationResult upsertLineageRelation(UpsertRefinementLineageRelationCommand command) {
         List<RefinementLineageRelationDraft> drafts =
-                new ArrayList<>(lineageRelationDraftRepository.listByTaskId(command.getRefinementTaskId()));
+                new ArrayList<>(lineageRelationDraftRepository.listByTaskId(command.refinementTaskId()));
         RefinementLineageRelationDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getRelationKey(), command.getRelationKey())
-                        || idEquals(item.getRelationId(), command.getRelationId()))
+                .filter(item -> keyEquals(item.getRelationKey(), command.relationKey())
+                        || idEquals(item.getRelationId(), command.relationId()))
                 .findFirst()
                 .orElseGet(RefinementLineageRelationDraft::new);
         boolean created = draft.getDraftId() == null;
@@ -335,14 +333,14 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     @Override
     public RefinementLineageRelationResult confirmLineageRelation(ConfirmRefinementLineageRelationCommand command) {
         List<RefinementLineageRelationDraft> drafts =
-                lineageRelationDraftRepository.listByTaskId(command.getRefinementTaskId());
+                lineageRelationDraftRepository.listByTaskId(command.refinementTaskId());
         RefinementLineageRelationDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getRelationKey(), command.getRelationKey()))
+                .filter(item -> keyEquals(item.getRelationKey(), command.relationKey()))
                 .findFirst()
                 .orElseThrow();
         draft.setConfirmationStatus("MANUAL_CONFIRMED");
         draft.setOperationType("CONFIRMED");
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
         lineageRelationDraftRepository.saveOrUpdateBatch(List.of(draft));
         return toResult(draft);
@@ -351,13 +349,13 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     @Override
     public void deleteLineageRelation(DeleteRefinementLineageRelationCommand command) {
         List<RefinementLineageRelationDraft> drafts =
-                lineageRelationDraftRepository.listByTaskId(command.getRefinementTaskId());
+                lineageRelationDraftRepository.listByTaskId(command.refinementTaskId());
         RefinementLineageRelationDraft draft = drafts.stream()
-                .filter(item -> keyEquals(item.getRelationKey(), command.getRelationKey()))
+                .filter(item -> keyEquals(item.getRelationKey(), command.relationKey()))
                 .findFirst()
                 .orElseThrow();
         draft.setOperationType("DELETED");
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(Instant.now());
         lineageRelationDraftRepository.saveOrUpdateBatch(List.of(draft));
     }
@@ -366,18 +364,18 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     public QualityAnnotationResult upsertAnnotation(UpsertQualityAnnotationCommand command) {
         QualityAnnotation annotation = new QualityAnnotation(
                 null,
-                command.getAnnotationId(),
-                command.getObjectType(),
-                command.getObjectKey(),
-                command.getSourceContentType(),
-                command.getSourceContentId(),
-                command.getGraphVersionId(),
-                command.getAnnotationStatus(),
-                command.getAnnotationLabel(),
-                command.getComment(),
-                command.getOperatorId(),
+                command.annotationId(),
+                command.objectType(),
+                command.objectKey(),
+                command.sourceContentType(),
+                command.sourceContentId(),
+                command.graphVersionId(),
+                command.annotationStatus(),
+                command.annotationLabel(),
+                command.comment(),
+                command.operatorId(),
                 Instant.now(),
-                command.getOperatorId(),
+                command.operatorId(),
                 Instant.now());
         qualityAnnotationRepository.saveOrUpdate(annotation);
         return new QualityAnnotationResult(
@@ -423,7 +421,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     public void deleteAnnotation(DeleteQualityAnnotationCommand command) {
-        qualityAnnotationRepository.deleteByAnnotationId(command.getAnnotationId());
+        qualityAnnotationRepository.deleteByAnnotationId(command.annotationId());
     }
 
     @Override
@@ -505,54 +503,54 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     private void fillLineageNodeDraft(
             RefinementLineageNodeDraft draft, UpsertRefinementLineageNodeCommand command, boolean created) {
         Instant now = Instant.now();
-        draft.setRefinementTaskId(command.getRefinementTaskId());
-        draft.setNodeId(command.getNodeId());
+        draft.setRefinementTaskId(command.refinementTaskId());
+        draft.setNodeId(command.nodeId());
         draft.setNodeKey(
-                created && command.getNodeKey() == null
+                created && command.nodeKey() == null
                         ? manualKeySupport.nextLineageNodeKey()
-                        : defaultIfBlank(command.getNodeKey(), draft.getNodeKey()));
-        draft.setOriginType(created && command.getNodeId() == null ? "MANUAL_CREATED" : "AI_EXTRACTED");
-        draft.setOperationType(created && command.getNodeId() == null ? "ADDED" : "UPDATED");
-        draft.setName(command.getName());
-        draft.setNodeType(command.getNodeType());
-        draft.setGeneration(command.getGeneration());
-        draft.setGender(command.getGender());
+                        : defaultIfBlank(command.nodeKey(), draft.getNodeKey()));
+        draft.setOriginType(created && command.nodeId() == null ? "MANUAL_CREATED" : "AI_EXTRACTED");
+        draft.setOperationType(created && command.nodeId() == null ? "ADDED" : "UPDATED");
+        draft.setName(command.name());
+        draft.setNodeType(command.nodeType());
+        draft.setGeneration(command.generation());
+        draft.setGender(command.gender());
         draft.setConfirmationStatus(created ? "PENDING" : defaultIfBlank(draft.getConfirmationStatus(), "PENDING"));
-        draft.setSourceRefsJson(command.getSourceRefsJson());
-        draft.setSortOrder(command.getSortOrder());
+        draft.setSourceRefsJson(command.sourceRefsJson());
+        draft.setSortOrder(command.sortOrder());
         if (created) {
-            draft.setCreatedBy(command.getOperatorId());
+            draft.setCreatedBy(command.operatorId());
             draft.setCreatedAt(now);
         }
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(now);
     }
 
     private void fillLineageRelationDraft(
             RefinementLineageRelationDraft draft, UpsertRefinementLineageRelationCommand command, boolean created) {
         Instant now = Instant.now();
-        draft.setRefinementTaskId(command.getRefinementTaskId());
-        draft.setRelationId(command.getRelationId());
+        draft.setRefinementTaskId(command.refinementTaskId());
+        draft.setRelationId(command.relationId());
         draft.setRelationKey(
-                created && command.getRelationKey() == null
+                created && command.relationKey() == null
                         ? manualKeySupport.nextLineageRelationKey()
-                        : defaultIfBlank(command.getRelationKey(), draft.getRelationKey()));
-        draft.setOriginType(created && command.getRelationId() == null ? "MANUAL_CREATED" : "AI_EXTRACTED");
-        draft.setOperationType(created && command.getRelationId() == null ? "ADDED" : "UPDATED");
-        draft.setSourceNodeKey(command.getSourceNodeKey());
-        draft.setTargetNodeKey(command.getTargetNodeKey());
-        draft.setSourceName(command.getSourceName());
-        draft.setTargetName(command.getTargetName());
-        draft.setRelationType(command.getRelationType());
-        draft.setEvidence(command.getEvidence());
+                        : defaultIfBlank(command.relationKey(), draft.getRelationKey()));
+        draft.setOriginType(created && command.relationId() == null ? "MANUAL_CREATED" : "AI_EXTRACTED");
+        draft.setOperationType(created && command.relationId() == null ? "ADDED" : "UPDATED");
+        draft.setSourceNodeKey(command.sourceNodeKey());
+        draft.setTargetNodeKey(command.targetNodeKey());
+        draft.setSourceName(command.sourceName());
+        draft.setTargetName(command.targetName());
+        draft.setRelationType(command.relationType());
+        draft.setEvidence(command.evidence());
         draft.setConfirmationStatus(created ? "PENDING" : defaultIfBlank(draft.getConfirmationStatus(), "PENDING"));
-        draft.setSourceRefsJson(command.getSourceRefsJson());
-        draft.setSortOrder(command.getSortOrder());
+        draft.setSourceRefsJson(command.sourceRefsJson());
+        draft.setSortOrder(command.sortOrder());
         if (created) {
-            draft.setCreatedBy(command.getOperatorId());
+            draft.setCreatedBy(command.operatorId());
             draft.setCreatedAt(now);
         }
-        draft.setUpdatedBy(command.getOperatorId());
+        draft.setUpdatedBy(command.operatorId());
         draft.setUpdatedAt(now);
     }
 

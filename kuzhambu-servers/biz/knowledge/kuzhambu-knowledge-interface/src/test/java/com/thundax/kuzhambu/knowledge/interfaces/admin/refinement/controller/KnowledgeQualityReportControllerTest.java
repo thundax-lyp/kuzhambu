@@ -53,8 +53,8 @@ class KnowledgeQualityReportControllerTest {
         ArgumentCaptor<GenerateQualityReportCommand> captor =
                 ArgumentCaptor.forClass(GenerateQualityReportCommand.class);
         verify(service).generateReport(captor.capture());
-        assertEquals(71L, captor.getValue().getGraphVersionId());
-        assertEquals(1L, captor.getValue().getGeneratedBy());
+        assertEquals(71L, captor.getValue().graphVersionId());
+        assertEquals(1L, captor.getValue().generatedBy());
         assertEquals("KQR-71", response.getReport().getReportNo());
     }
 
@@ -114,9 +114,9 @@ class KnowledgeQualityReportControllerTest {
         ArgumentCaptor<ReextractLowQualityCategoryCommand> captor =
                 ArgumentCaptor.forClass(ReextractLowQualityCategoryCommand.class);
         verify(service).reextractLowQualityCategory(captor.capture());
-        assertEquals(1001L, captor.getValue().getReportId());
-        assertEquals("myth", captor.getValue().getSourceCategoryCode());
-        assertEquals("GRAPH", captor.getValue().getTaskType());
+        assertEquals(1001L, captor.getValue().reportId());
+        assertEquals("myth", captor.getValue().sourceCategoryCode());
+        assertEquals("GRAPH", captor.getValue().taskType());
         assertEquals(3001L, response.getTaskId());
         assertEquals("QUALITY_REPORT", response.getTriggerSource());
     }
