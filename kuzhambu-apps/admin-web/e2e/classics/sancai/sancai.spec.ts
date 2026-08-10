@@ -6,7 +6,7 @@ const readRequestBody = (postData: string | null) => {
 
 test.describe("classics sancai page", () => {
     test.beforeEach(async ({ page }) => {
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/get", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -20,7 +20,7 @@ test.describe("classics sancai page", () => {
                 })
             });
         });
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menu/list", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -43,18 +43,21 @@ test.describe("classics sancai page", () => {
                 })
             });
         });
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: {
-                        perms: ["classics:sancai:view", "classics:sancai:edit"]
-                    }
-                })
-            });
-        });
+        await page.route(
+            "**/kuzhambu-admin-api/api/sys/current-user/permission/list",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
+                            perms: ["classics:sancai:view", "classics:sancai:edit"]
+                        }
+                    })
+                });
+            }
+        );
         await page.addInitScript(() => {
             window.localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
             window.localStorage.setItem("kuzhambu.admin.refreshToken", "refresh-token");

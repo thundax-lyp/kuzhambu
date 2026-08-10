@@ -110,12 +110,12 @@ describe("auth and current user service request contracts", () => {
 
     it("sends current user reads without frontend-only request fields", async () => {
         await currentUserService.getCurrentUserInfo();
-        expectLastCall("/sys/current-user/info", undefined);
+        expectLastCall("/sys/current-user/get", undefined);
 
         await currentUserService.listCurrentUserMenus();
-        expectLastCall("/sys/current-user/menus", undefined);
+        expectLastCall("/sys/current-user/menu/list", undefined);
 
         await currentUserService.listCurrentUserPerms();
-        expectLastCall("/sys/current-user/perms", undefined);
+        expectLastCall("/sys/current-user/permission/list", undefined);
     });
 });

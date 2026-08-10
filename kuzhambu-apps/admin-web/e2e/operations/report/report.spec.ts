@@ -20,7 +20,7 @@ const fulfillSuccess = async (route: Route, data: unknown) => {
 };
 
 const mockShellApis = async (page: Page) => {
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", (route) =>
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/get", (route) =>
         fulfillSuccess(route, {
             id: "user-1",
             loginName: "developer",
@@ -30,7 +30,7 @@ const mockShellApis = async (page: Page) => {
             superAdmin: true
         })
     );
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", (route) =>
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menu/list", (route) =>
         fulfillSuccess(route, [
             {
                 id: "dashboard",
@@ -52,7 +52,7 @@ const mockShellApis = async (page: Page) => {
             }
         ])
     );
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", (route) =>
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/permission/list", (route) =>
         fulfillSuccess(route, {
             perms: REPORT_PERMISSIONS
         })

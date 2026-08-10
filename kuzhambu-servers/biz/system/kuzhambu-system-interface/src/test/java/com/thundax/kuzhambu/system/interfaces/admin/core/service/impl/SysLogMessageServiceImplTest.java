@@ -67,11 +67,11 @@ class SysLogMessageServiceImplTest {
         service.consumeLog(payload);
 
         assertNotNull(logService.command);
-        assertEquals(UserIdCodec.toDomain(1L), logService.command.getUserId());
-        assertEquals(LogType.ACCESS, logService.command.getType());
-        assertEquals(logDate, logService.command.getLogDate());
-        assertEquals("系统-登录-成功", logService.command.getTitle());
-        assertEquals("/api/auth/session/login", logService.command.getRequestUri());
+        assertEquals(UserIdCodec.toDomain(1L), logService.command.userId());
+        assertEquals(LogType.ACCESS, logService.command.type());
+        assertEquals(logDate, logService.command.logDate());
+        assertEquals("系统-登录-成功", logService.command.title());
+        assertEquals("/api/auth/session/login", logService.command.requestUri());
     }
 
     @Test

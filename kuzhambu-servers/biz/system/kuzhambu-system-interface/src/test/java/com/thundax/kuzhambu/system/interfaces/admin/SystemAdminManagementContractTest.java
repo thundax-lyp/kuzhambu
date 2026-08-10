@@ -47,39 +47,39 @@ class SystemAdminManagementContractTest {
         assertPostMapping(UserController.class, "get", "get", UserIdRequest.class);
         assertPostMapping(UserController.class, "list", "list", UserQueryRequest.class);
         assertPostMapping(UserController.class, "page", "page", UserQueryRequest.class);
-        assertPostMapping(UserController.class, "options", "options");
+        assertPostMapping(UserController.class, "listOptions", "options/list");
         assertPostMapping(UserController.class, "add", "create", UserSaveRequest.class);
         assertPostMapping(UserController.class, "update", "update", UserSaveRequest.class);
         assertPostMapping(UserController.class, "deleteAvatar", "avatar/delete", UserAvatarRequest.class);
-        assertPostMapping(UserController.class, "avatar", "avatar", UserAvatarRequest.class);
-        assertPostMapping(UserController.class, "updateStatus", "enable", List.class);
+        assertPostMapping(UserController.class, "getAvatar", "avatar/get", UserAvatarRequest.class);
+        assertPostMapping(UserController.class, "updateStatus", "status/update", List.class);
         assertPostMapping(UserController.class, "delete", "delete", List.class);
-        assertPostMapping(UserController.class, "check", "check", UserCheckRequest.class);
-        assertPostMapping(UserController.class, "departmentTree", "department/tree");
-        assertPostMapping(UserController.class, "roleList", "role/list");
+        assertPostMapping(UserController.class, "getAvailability", "availability/get", UserCheckRequest.class);
+        assertPostMapping(UserController.class, "listDepartments", "department/list");
+        assertPostMapping(UserController.class, "listRoles", "role/list");
 
         assertRequestMapping(RoleController.class, "/api/sys/role");
         assertPostMapping(RoleController.class, "get", "get", RoleIdRequest.class);
         assertPostMapping(RoleController.class, "list", "list", RoleQueryRequest.class);
-        assertPostMapping(RoleController.class, "options", "options");
+        assertPostMapping(RoleController.class, "listOptions", "options/list");
         assertPostMapping(RoleController.class, "add", "create", RoleSaveRequest.class);
         assertPostMapping(RoleController.class, "update", "update", RoleSaveRequest.class);
-        assertPostMapping(RoleController.class, "updateStatus", "enable", List.class);
+        assertPostMapping(RoleController.class, "updateStatus", "status/update", List.class);
         assertPostMapping(RoleController.class, "sort", "sort", RoleSortRequest.class);
         assertPostMapping(RoleController.class, "delete", "delete", List.class);
-        assertPostMapping(RoleController.class, "menuTree", "menu/tree");
-        assertPostMapping(RoleController.class, "userTree", "user/tree");
-        assertPostMapping(RoleController.class, "userList", "user/list", RoleIdRequest.class);
-        assertPostMapping(RoleController.class, "assignUser", "user/assign", RoleAssignUserRequest.class);
+        assertPostMapping(RoleController.class, "listMenus", "menu/list");
+        assertPostMapping(RoleController.class, "listUserTree", "user-tree/list");
+        assertPostMapping(RoleController.class, "listUsers", "user/list", RoleIdRequest.class);
+        assertPostMapping(RoleController.class, "updateUsers", "user/update", RoleAssignUserRequest.class);
 
         assertRequestMapping(MenuController.class, "/api/sys/menu");
         assertPostMapping(MenuController.class, "get", "get", MenuIdRequest.class);
         assertPostMapping(MenuController.class, "list", "list", MenuQueryRequest.class);
         assertPostMapping(MenuController.class, "add", "create", MenuSaveRequest.class);
         assertPostMapping(MenuController.class, "update", "update", MenuSaveRequest.class);
-        assertPostMapping(MenuController.class, "updateVisibility", "display", List.class);
+        assertPostMapping(MenuController.class, "updateVisibility", "visibility/update", List.class);
         assertPostMapping(MenuController.class, "delete", "delete", List.class);
-        assertPostMapping(MenuController.class, "tree", "tree", List.class);
+        assertPostMapping(MenuController.class, "listTree", "tree/list", List.class);
         assertPostMapping(MenuController.class, "move", "move", MenuMoveRequest.class);
     }
 

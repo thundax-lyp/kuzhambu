@@ -50,9 +50,9 @@ class SystemAuthCurrentUserContractTest {
         assertPostMapping(CaptchaController.class, "refreshCaptcha", "refresh", CaptchaRefreshRequest.class);
 
         assertRequestMapping(CurrentUserController.class, "/api/sys/current-user");
-        assertPostMapping(CurrentUserController.class, "info", "info");
-        assertPostMapping(CurrentUserController.class, "menus", "menus");
-        assertPostMapping(CurrentUserController.class, "perms", "perms");
+        assertPostMapping(CurrentUserController.class, "get", "get");
+        assertPostMapping(CurrentUserController.class, "listMenus", "menu/list");
+        assertPostMapping(CurrentUserController.class, "listPermissions", "permission/list");
     }
 
     @Test

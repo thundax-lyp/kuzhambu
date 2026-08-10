@@ -10,7 +10,7 @@ test.use({ viewport: { width: 1280, height: 800 }, isMobile: false });
 
 test.describe("classics publication jobs page", () => {
     test.beforeEach(async ({ page }) => {
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", (route) =>
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/get", (route) =>
             route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(
@@ -18,7 +18,7 @@ test.describe("classics publication jobs page", () => {
                 )
             })
         );
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", (route) =>
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menu/list", (route) =>
             route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(
@@ -34,7 +34,7 @@ test.describe("classics publication jobs page", () => {
                 )
             })
         );
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", (route) =>
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/permission/list", (route) =>
             route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(apiResponse({ perms: ["classics:publication:view"] }))

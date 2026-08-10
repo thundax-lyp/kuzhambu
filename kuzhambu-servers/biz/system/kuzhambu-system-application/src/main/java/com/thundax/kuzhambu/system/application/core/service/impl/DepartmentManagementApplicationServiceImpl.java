@@ -31,7 +31,7 @@ public class DepartmentManagementApplicationServiceImpl implements DepartmentMan
     }
 
     public Department get(GetDepartmentQuery query) {
-        DepartmentId id = query == null ? null : query.getId();
+        DepartmentId id = query == null ? null : query.id();
         if (id == null) {
             return null;
         }
@@ -40,16 +40,16 @@ public class DepartmentManagementApplicationServiceImpl implements DepartmentMan
 
     public List<Department> list(DepartmentQuery query) {
         return dao.list(
-                query == null ? null : query.getParentId(),
-                query == null ? null : query.getName(),
-                query == null ? null : query.getRemarks());
+                query == null ? null : query.parentId(),
+                query == null ? null : query.name(),
+                query == null ? null : query.remarks());
     }
 
     public PageResult<Department> page(DepartmentQuery query, PageQuery page) {
         return dao.page(
-                query == null ? null : query.getParentId(),
-                query == null ? null : query.getName(),
-                query == null ? null : query.getRemarks(),
+                query == null ? null : query.parentId(),
+                query == null ? null : query.name(),
+                query == null ? null : query.remarks(),
                 page.getPageNo(),
                 page.getPageSize());
     }
@@ -65,7 +65,7 @@ public class DepartmentManagementApplicationServiceImpl implements DepartmentMan
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "Department", id = "#command.id.value()", action = AuditAction.UPDATE, summary = "更新部门")
+    @AuditLog(type = "Department", id = "#command.id().value()", action = AuditAction.UPDATE, summary = "更新部门")
     public void changeInfo(ChangeDepartmentInfoCommand command) {
         Department entity = toDepartment(command);
         dao.update(entity);
@@ -74,11 +74,11 @@ public class DepartmentManagementApplicationServiceImpl implements DepartmentMan
     @Transactional(rollbackFor = Exception.class)
     @AuditLog(
             type = "Department",
-            id = "#command.id == null ? null : #command.id.value()",
+            id = "#command.id() == null ? null : #command.id().value()",
             action = AuditAction.DELETE,
             summary = "删除部门")
     public int remove(RemoveDepartmentCommand command) {
-        DepartmentId id = command == null ? null : command.getId();
+        DepartmentId id = command == null ? null : command.id();
         Department bean = this.get(new GetDepartmentQuery(id));
         if (bean == null) {
             return 0;
@@ -91,36 +91,36 @@ public class DepartmentManagementApplicationServiceImpl implements DepartmentMan
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "Department", id = "#command.fromId.value()", action = AuditAction.UPDATE, summary = "移动部门")
+    @AuditLog(type = "Department", id = "#command.fromId().value()", action = AuditAction.UPDATE, summary = "移动部门")
     public void move(MoveDepartmentCommand command) {
-        dao.moveTreeNode(command.getFromId(), command.getToId(), command.getMoveType());
+        dao.moveTreeNode(command.fromId(), command.toId(), command.moveType());
     }
 
     @Override
     public boolean existsChildRelation(DepartmentQuery query) {
         return query != null
-                && query.getChildId() != null
-                && query.getAncestorId() != null
-                && dao.isChildOf(query.getChildId(), query.getAncestorId());
+                && query.childId() != null
+                && query.ancestorId() != null
+                && dao.isChildOf(query.childId(), query.ancestorId());
     }
 
     private Department toDepartment(CreateDepartmentCommand command) {
         Department department = new Department();
-        department.setId(command.getId());
-        department.setParentId(command.getParentId());
-        department.setName(command.getName());
-        department.setShortName(command.getShortName());
-        department.setRemarks(command.getRemarks());
+        department.setId(command.id());
+        department.setParentId(command.parentId());
+        department.setName(command.name());
+        department.setShortName(command.shortName());
+        department.setRemarks(command.remarks());
         return department;
     }
 
     private Department toDepartment(ChangeDepartmentInfoCommand command) {
         Department department = new Department();
-        department.setId(command.getId());
-        department.setParentId(command.getParentId());
-        department.setName(command.getName());
-        department.setShortName(command.getShortName());
-        department.setRemarks(command.getRemarks());
+        department.setId(command.id());
+        department.setParentId(command.parentId());
+        department.setName(command.name());
+        department.setShortName(command.shortName());
+        department.setRemarks(command.remarks());
         return department;
     }
 }

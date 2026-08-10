@@ -19,7 +19,7 @@ const expectNoPageHorizontalOverflow = async (page: Page) => {
 };
 
 const mockUserManagementApis = async (page: Page) => {
-    await page.route("**/kuzhambu-admin-api/api/sys/user/department/tree", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/user/department/list", async (route) => {
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -124,7 +124,7 @@ const mockUserManagementApis = async (page: Page) => {
             })
         });
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/user/options", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/user/options/list", async (route) => {
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -227,7 +227,7 @@ const readSidebarMetrics = async (page: Page) => {
 
 test.describe("admin layout", () => {
     test.beforeEach(async ({ page }) => {
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/get", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -241,7 +241,7 @@ test.describe("admin layout", () => {
                 })
             });
         });
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menu/list", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -294,18 +294,21 @@ test.describe("admin layout", () => {
                 })
             });
         });
-        await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: {
-                        perms: ["sys:user:view", "operations:report:view"]
-                    }
-                })
-            });
-        });
+        await page.route(
+            "**/kuzhambu-admin-api/api/sys/current-user/permission/list",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
+                            perms: ["sys:user:view", "operations:report:view"]
+                        }
+                    })
+                });
+            }
+        );
         await page.route("**/kuzhambu-admin-api/api/operations/report/page", async (route) => {
             await route.fulfill({
                 contentType: "application/json",

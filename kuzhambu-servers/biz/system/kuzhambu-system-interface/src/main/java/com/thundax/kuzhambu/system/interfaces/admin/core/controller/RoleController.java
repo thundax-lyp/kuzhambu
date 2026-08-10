@@ -10,19 +10,6 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
-import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersCommand;
-import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
-import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
-import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
-import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
-import com.thundax.kuzhambu.system.application.core.query.DictQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
-import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
-import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
-import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.MenuManagementApplicationService;
@@ -41,11 +28,13 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
-import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
-import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.MenuInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.UserInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleAssignUserRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleIdRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleMenuRequest;
@@ -67,6 +56,7 @@ import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,7 +110,7 @@ public class RoleController {
     @SysLogger(value = "读取")
     @PostMapping(value = "get")
     public RoleResponse get(@Valid @RequestBody RoleIdRequest request) {
-        Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
+        Role bean = roleService.get(RoleInterfaceAssembler.toGetQuery(RoleIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -139,9 +129,9 @@ public class RoleController {
     @SysLogger(value = "列表")
     @PostMapping(value = "list")
     public List<RoleResponse> list(@Valid @RequestBody RoleQueryRequest request) {
-        RoleQuery query = RoleInterfaceAssembler.toQuery(request);
-
-        return roleService.list(query).stream().map(role -> toResponse(role)).collect(Collectors.toList());
+        return roleService.list(RoleInterfaceAssembler.toQuery(request)).stream()
+                .map(role -> toResponse(role))
+                .collect(Collectors.toList());
     }
 
     @Operation(summary = "获取角色选项", description = "sys:role:view")
@@ -154,17 +144,17 @@ public class RoleController {
     })
     @HasPermission(value = "sys:role:view")
     @IgnoreSysLogger
-    @PostMapping(value = "options")
-    public RoleOptionsResponse options() {
-        DictQuery statusQuery = new DictQuery();
-        statusQuery.setType(ROLE_STATUS_DICT_TYPE);
-        DictQuery privilegeQuery = new DictQuery();
-        privilegeQuery.setType(ROLE_PRIVILEGE_DICT_TYPE);
+    @PostMapping(value = "options/list")
+    public RoleOptionsResponse listOptions() {
         return RoleOptionsResponse.builder()
                 .statusOptions(OptionInterfaceAssembler.toOptionResponseList(
-                        dictService.list(statusQuery), Dict::getValue, Dict::getLabel))
+                        dictService.list(DictInterfaceAssembler.toTypeQuery(ROLE_STATUS_DICT_TYPE)),
+                        Dict::getValue,
+                        Dict::getLabel))
                 .privilegeOptions(OptionInterfaceAssembler.toOptionResponseList(
-                        dictService.list(privilegeQuery), Dict::getValue, Dict::getLabel))
+                        dictService.list(DictInterfaceAssembler.toTypeQuery(ROLE_PRIVILEGE_DICT_TYPE)),
+                        Dict::getValue,
+                        Dict::getLabel))
                 .build();
     }
 
@@ -183,7 +173,7 @@ public class RoleController {
         validateMenus(request.getMenuList());
 
         if (request.getId() != null) {
-            Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
+            Role bean = roleService.get(RoleInterfaceAssembler.toGetQuery(RoleIdCodec.toDomain(request.getId())));
             if (bean != null) {
                 throw AdminResponseExceptions.objectExists();
             }
@@ -209,7 +199,7 @@ public class RoleController {
     public RoleResponse update(@Valid @RequestBody RoleSaveRequest request) {
         validateMenus(request.getMenuList());
 
-        Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
+        Role bean = roleService.get(RoleInterfaceAssembler.toGetQuery(RoleIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -231,16 +221,16 @@ public class RoleController {
     })
     @HasPermission(value = "sys:role:edit")
     @SysLogger(value = "启用")
-    @PostMapping(value = "enable")
+    @PostMapping(value = "status/update")
     public Boolean updateStatus(@Valid @RequestBody List<RoleStatusRequest> list) {
-        List<ChangeRoleStatusCommand> commandList = new ArrayList<>();
+        List<com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand> commandList =
+                new ArrayList<>();
         for (RoleStatusRequest request : RequestListHelper.present(list)) {
-            Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
+            Role bean = roleService.get(RoleInterfaceAssembler.toGetQuery(RoleIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
-            commandList.add(new ChangeRoleStatusCommand(
-                    bean.getId(), Boolean.TRUE.equals(request.getEnable()) ? RoleStatus.ENABLED : RoleStatus.DISABLED));
+            commandList.add(RoleInterfaceAssembler.toChangeStatusCommand(bean, request));
         }
         if (commandList.isEmpty()) {
             throw AdminResponseExceptions.invalidParameter("list");
@@ -263,8 +253,8 @@ public class RoleController {
     @SysLogger(value = "排序")
     @PostMapping(value = "sort")
     public Boolean sort(@Valid @RequestBody RoleSortRequest request) {
-        roleService.sort(new RoleSortCommand(RequestListHelper.map(
-                readOrderedIds(request == null ? null : request.getOrderedIds()), RoleIdCodec::toDomain)));
+        roleService.sort(
+                RoleInterfaceAssembler.toSortCommand(readOrderedIds(request == null ? null : request.getOrderedIds())));
         return true;
     }
 
@@ -295,7 +285,7 @@ public class RoleController {
     public Boolean delete(@Valid @RequestBody List<RoleIdRequest> list) {
         List<RoleId> idList = new ArrayList<>();
         for (RoleIdRequest request : RequestListHelper.present(list)) {
-            Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
+            Role bean = roleService.get(RoleInterfaceAssembler.toGetQuery(RoleIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -305,7 +295,7 @@ public class RoleController {
             throw AdminResponseExceptions.invalidParameter("list");
         }
 
-        idList.forEach(id -> roleService.remove(new RemoveRoleCommand(id)));
+        idList.forEach(id -> roleService.remove(RoleInterfaceAssembler.toRemoveCommand(id)));
 
         return true;
     }
@@ -320,9 +310,9 @@ public class RoleController {
     })
     @HasPermission({"sys:role:view", "sys:role:edit"})
     @IgnoreSysLogger
-    @PostMapping(value = "menu/tree")
-    public List<RoleMenuResponse> menuTree() {
-        return menuService.list(new MenuQuery()).stream()
+    @PostMapping(value = "menu/list")
+    public List<RoleMenuResponse> listMenus() {
+        return menuService.list(MenuInterfaceAssembler.toListAllQuery()).stream()
                 .map(menu -> RoleInterfaceAssembler.toMenuResponse(menu))
                 .collect(Collectors.toList());
     }
@@ -337,21 +327,21 @@ public class RoleController {
     })
     @HasPermission({"sys:role:view", "sys:role:edit"})
     @IgnoreSysLogger
-    @PostMapping(value = "user/tree")
-    public List<RoleUserTreeNodeResponse> userTree() {
+    @PostMapping(value = "user-tree/list")
+    public List<RoleUserTreeNodeResponse> listUserTree() {
         List<RoleUserTreeNodeResponse> list = new ArrayList<>();
 
-        list.addAll(departmentService.list(new DepartmentQuery()).stream()
+        list.addAll(departmentService.list(DepartmentInterfaceAssembler.toListAllQuery()).stream()
                 .map(department -> RoleInterfaceAssembler.toDepartmentTreeNode(
                         DEPARTMENT_ID_PREFIX + DepartmentIdCodec.toValue(department.getId()), department))
                 .collect(Collectors.toList()));
 
-        list.addAll(userService.list(new UserQuery()).stream()
+        list.addAll(userService.list(UserInterfaceAssembler.toListAllQuery()).stream()
                 .map(user -> RoleInterfaceAssembler.toUserTreeNode(
                         DEPARTMENT_ID_PREFIX,
                         user,
-                        getAccountLoginName(user),
-                        getDepartment(user.getDepartmentId()),
+                        Optional.ofNullable(getAccountLoginName(user)),
+                        Optional.ofNullable(getDepartment(user.getDepartmentId())),
                         this::getDepartment))
                 .collect(Collectors.toList()));
 
@@ -369,14 +359,16 @@ public class RoleController {
     @HasPermission({"sys:role:view", "sys:role:edit"})
     @IgnoreSysLogger
     @PostMapping(value = "user/list")
-    public List<RoleUserResponse> userList(@Valid @RequestBody RoleIdRequest request) {
-        Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
+    public List<RoleUserResponse> listUsers(@Valid @RequestBody RoleIdRequest request) {
+        Role bean = roleService.get(RoleInterfaceAssembler.toGetQuery(RoleIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
 
-        return roleService.listRoleUsers(roleQuery(request.getId())).stream()
-                .map(user -> toUserResponse(userService.get(new GetUserQuery(user.getId()))))
+        return roleService
+                .listRoleUsers(RoleInterfaceAssembler.toIdQuery(RoleIdCodec.toDomain(request.getId())))
+                .stream()
+                .map(user -> toUserResponse(userService.get(UserInterfaceAssembler.toGetQuery(user.getId()))))
                 .collect(Collectors.toList());
     }
 
@@ -390,26 +382,26 @@ public class RoleController {
     })
     @HasPermission(value = "sys:role:edit")
     @SysLogger(value = "授权")
-    @PostMapping(value = "user/assign")
-    public Boolean assignUser(@Valid @RequestBody RoleAssignUserRequest request) {
+    @PostMapping(value = "user/update")
+    public Boolean updateUsers(@Valid @RequestBody RoleAssignUserRequest request) {
         validateAssignUser(request);
 
-        roleService.assignUsers(new AssignRoleUsersCommand(
-                RoleIdCodec.toDomain(request.getRoleId()),
-                request.getUsers().stream()
-                        .map(vo -> UserIdCodec.toDomain(vo.getId()))
-                        .collect(Collectors.toList())));
+        roleService.assignUsers(RoleInterfaceAssembler.toAssignUsersCommand(request));
 
         return true;
     }
 
     private RoleResponse toResponse(Role role) {
-        return RoleInterfaceAssembler.toResponse(role, roleService.listRoleMenus(roleQuery(role)));
+        return RoleInterfaceAssembler.toResponse(
+                role, roleService.listRoleMenus(RoleInterfaceAssembler.toIdQuery(role.getId())));
     }
 
     private RoleUserResponse toUserResponse(User user) {
         return RoleInterfaceAssembler.toUserResponse(
-                user, getAccountLoginName(user), getDepartment(user.getDepartmentId()), this::getDepartment);
+                user,
+                Optional.ofNullable(getAccountLoginName(user)),
+                Optional.ofNullable(getDepartment(user.getDepartmentId())),
+                this::getDepartment);
     }
 
     private String getAccountLoginName(User user) {
@@ -423,11 +415,11 @@ public class RoleController {
     }
 
     private PrincipalIdentityQuery identityQuery(PrincipalKey principalKey, PrincipalIdentityType identityType) {
-        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
+        return RoleInterfaceAssembler.toPrincipalIdentityQuery(principalKey, identityType);
     }
 
     private void validateAssignUser(RoleAssignUserRequest request) {
-        Role roleBean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getRoleId())));
+        Role roleBean = roleService.get(RoleInterfaceAssembler.toGetQuery(RoleIdCodec.toDomain(request.getRoleId())));
         if (roleBean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -437,45 +429,16 @@ public class RoleController {
         }
 
         for (RoleUserRequest userRequest : request.getUsers()) {
-            User userBean = userService.get(new GetUserQuery(UserIdCodec.toDomain(userRequest.getId())));
+            User userBean =
+                    userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(userRequest.getId())));
             if (userBean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
         }
     }
 
-    private UserQuery userQuery(UserId userId) {
-        UserQuery query = new UserQuery();
-        query.setId(userId);
-        return query;
-    }
-
-    private UserQuery userQuery(Long userId) {
-        return userQuery(UserIdCodec.toDomain(userId));
-    }
-
-    private RoleQuery roleQuery(Role role) {
-        return roleQuery(RoleIdCodec.toValue(role.getId()));
-    }
-
-    private GetRoleQuery getRoleQuery(RoleId roleId) {
-        return new GetRoleQuery(roleId);
-    }
-
     private Department getDepartment(DepartmentId departmentId) {
-        return departmentService.get(new GetDepartmentQuery(departmentId));
-    }
-
-    private RoleQuery roleQuery(String roleId) {
-        RoleQuery query = new RoleQuery();
-        query.setId(RoleIdCodec.toDomain(roleId));
-        return query;
-    }
-
-    private RoleQuery roleQuery(Long roleId) {
-        RoleQuery query = new RoleQuery();
-        query.setId(RoleIdCodec.toDomain(roleId));
-        return query;
+        return departmentService.get(DepartmentInterfaceAssembler.toGetQuery(departmentId));
     }
 
     private void validateMenus(List<RoleMenuRequest> requestList) {
@@ -487,7 +450,7 @@ public class RoleController {
                 throw AdminResponseExceptions.invalidParameter("menus.id");
 
             } else {
-                Menu bean = menuService.get(new GetMenuQuery(MenuIdCodec.toDomain(request.getId())));
+                Menu bean = menuService.get(MenuInterfaceAssembler.toGetQuery(MenuIdCodec.toDomain(request.getId())));
                 if (bean == null) {
                     throw AdminResponseExceptions.objectNotFound();
                 }

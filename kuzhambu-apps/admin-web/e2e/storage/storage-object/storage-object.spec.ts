@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 const mockShellApis = async (page: Page) => {
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/get", async (route) => {
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -16,7 +16,7 @@ const mockShellApis = async (page: Page) => {
             })
         });
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menu/list", async (route) => {
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -52,18 +52,21 @@ const mockShellApis = async (page: Page) => {
             })
         });
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
-        await route.fulfill({
-            contentType: "application/json",
-            body: JSON.stringify({
-                code: "COMMON-00000",
-                message: "success",
-                data: {
-                    perms: ["storage:object:view", "storage:object:edit"]
-                }
-            })
-        });
-    });
+    await page.route(
+        "**/kuzhambu-admin-api/api/sys/current-user/permission/list",
+        async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        perms: ["storage:object:view", "storage:object:edit"]
+                    }
+                })
+            });
+        }
+    );
     await page.route("**/kuzhambu-admin-api/api/auth/session/token/refresh", async (route) => {
         await route.fulfill({
             contentType: "application/json",

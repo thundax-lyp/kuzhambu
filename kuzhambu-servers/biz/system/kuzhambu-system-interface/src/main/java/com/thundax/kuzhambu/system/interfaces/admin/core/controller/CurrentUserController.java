@@ -8,23 +8,14 @@ import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
-import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
-import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
-import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
-import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserInfoCommand;
-import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserPasswordCommand;
-import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
-import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
-import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserProfileApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
-import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
@@ -45,6 +36,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
@@ -90,12 +82,14 @@ public class CurrentUserController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    @PostMapping(value = "info")
-    public PersonalInfoResponse info() {
+    @PostMapping(value = "get")
+    public PersonalInfoResponse get() {
         User currentUser = currentUserResolver.requireCurrentUser();
 
         return PersonalInterfaceAssembler.toInfoResponse(
-                currentUser, getAccountLoginName(currentUser), readAvatarUrl(currentUser));
+                currentUser,
+                Optional.ofNullable(getAccountLoginName(currentUser)),
+                Optional.ofNullable(readAvatarUrl(currentUser)));
     }
 
     @Operation(summary = "更新当前用户信息", description = "更新当前登录后台用户的姓名、邮箱和手机号")
@@ -112,20 +106,13 @@ public class CurrentUserController {
     public PersonalInfoResponse updateInfo(@Valid @RequestBody PersonalInfoUpdateRequest request) {
         User currentUser = currentUserResolver.currentUser();
 
-        currentUser = currentUserService.changeInfo(new ChangeCurrentUserInfoCommand(
-                currentUser.getId(),
-                currentUser.getDepartmentId(),
-                request.getEmail(),
-                request.getMobile(),
-                currentUser.getTel(),
-                request.getName(),
-                currentUser.getRank(),
-                currentUser.getPrivilege(),
-                currentUser.getStatus(),
-                currentUser.getRemarks()));
+        currentUser = currentUserService.changeInfo(
+                PersonalInterfaceAssembler.toChangeCurrentUserInfoCommand(currentUser, request));
 
         return PersonalInterfaceAssembler.toInfoResponse(
-                currentUser, getAccountLoginName(currentUser), readAvatarUrl(currentUser));
+                currentUser,
+                Optional.ofNullable(getAccountLoginName(currentUser)),
+                Optional.ofNullable(readAvatarUrl(currentUser)));
     }
 
     @Operation(summary = "更新当前用户密码", description = "校验当前登录后台用户旧密码后更新密码凭据")
@@ -151,7 +138,7 @@ public class CurrentUserController {
         User currentUser = currentUserResolver.currentUser();
 
         currentUserService.changePassword(
-                new ChangeCurrentUserPasswordCommand(currentUser.getId(), oldPassword, password));
+                PersonalInterfaceAssembler.toChangeCurrentUserPasswordCommand(currentUser, oldPassword, password));
 
         return true;
     }
@@ -172,15 +159,15 @@ public class CurrentUserController {
         User currentUser = currentUserResolver.currentUser();
 
         try {
-            currentUserService.changeAvatar(new ChangeCurrentUserAvatarCommand(
-                    currentUser.getId(),
+            currentUserService.changeAvatar(PersonalInterfaceAssembler.toChangeCurrentUserAvatarCommand(
+                    currentUser,
                     request.getAvatar().getInputStream(),
-                    request.getAvatar().getOriginalFilename()));
+                    Optional.ofNullable(request.getAvatar().getOriginalFilename())));
         } catch (IOException e) {
             throw AdminResponseExceptions.system(e.getMessage());
         }
 
-        return PersonalInterfaceAssembler.toAvatarResponse(readAvatarUrl(currentUser));
+        return PersonalInterfaceAssembler.toAvatarResponse(Optional.ofNullable(readAvatarUrl(currentUser)));
     }
 
     @Operation(summary = "删除当前用户头像", description = "删除当前登录后台用户头像文件并返回头像访问信息")
@@ -197,9 +184,9 @@ public class CurrentUserController {
     public PersonalAvatarResponse deleteAvatar() {
         User currentUser = currentUserResolver.currentUser();
 
-        currentUserService.removeAvatar(new RemoveCurrentUserAvatarCommand(currentUser.getId()));
+        currentUserService.removeAvatar(PersonalInterfaceAssembler.toRemoveCurrentUserAvatarCommand(currentUser));
 
-        return PersonalInterfaceAssembler.toAvatarResponse(null);
+        return PersonalInterfaceAssembler.toAvatarResponse(Optional.empty());
     }
 
     @Operation(summary = "当前用户菜单列表", description = "按当前登录后台用户角色和访问等级返回可见菜单树列表")
@@ -212,9 +199,11 @@ public class CurrentUserController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    @PostMapping(value = "menus")
-    public List<PersonalMenuResponse> menus() {
-        return currentUserService.listVisibleMenus(toQuery(currentUserResolver.currentUser())).stream()
+    @PostMapping(value = "menu/list")
+    public List<PersonalMenuResponse> listMenus() {
+        return currentUserService
+                .listVisibleMenus(PersonalInterfaceAssembler.toCurrentUserQuery(currentUserResolver.currentUser()))
+                .stream()
                 .map(PersonalInterfaceAssembler::toMenuResponse)
                 .collect(Collectors.toList());
     }
@@ -229,8 +218,8 @@ public class CurrentUserController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    @PostMapping(value = "perms")
-    public PersonalPermsResponse perms() {
+    @PostMapping(value = "permission/list")
+    public PersonalPermsResponse listPermissions() {
         return PersonalInterfaceAssembler.toPermsResponse(currentUserResolver.currentAuthorities());
     }
 
@@ -245,7 +234,8 @@ public class CurrentUserController {
     }
 
     private String readAvatarUrl(User user) {
-        if (user == null || !currentUserService.existsAvatar(new CurrentUserAvatarQuery(user.getId()))) {
+        if (user == null
+                || !currentUserService.existsAvatar(PersonalInterfaceAssembler.toCurrentUserAvatarQuery(user))) {
             return null;
         }
         return avatarUrlBuilder.build(UserIdCodec.toStringValue(user.getId()));
@@ -255,18 +245,14 @@ public class CurrentUserController {
         return PersonalInterfaceAssembler.toPrincipalIdentityQuery(principalKey, identityType);
     }
 
-    private CurrentUserQuery toQuery(User currentUser) {
-        return new CurrentUserQuery(
-                currentUser.getId(), currentUser.getPrivilege(), currentUser.getStatus(), currentUser.getRank());
-    }
-
     private String getPrivateKey(String token) {
         PreAuthSessionId sessionId =
-                preAuthSessionService.getIdByToken(new PreAuthSessionQuery(null, PreAuthSessionToken.of(token), null));
+                preAuthSessionService.getIdByToken(PersonalInterfaceAssembler.toPreAuthSessionQuery(token));
         if (sessionId == null) {
             throw AdminResponseExceptions.invalidToken();
         }
-        String privateKey = preAuthSessionService.getValue(new PreAuthSessionValueQuery(sessionId, PRIVATE_KEY_ITEM));
+        String privateKey = preAuthSessionService.getValue(
+                PersonalInterfaceAssembler.toPreAuthSessionValueQuery(sessionId, PRIVATE_KEY_ITEM));
         if (StringUtils.isBlank(privateKey)) {
             throw AdminResponseExceptions.invalidToken();
         }

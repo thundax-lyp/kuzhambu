@@ -110,17 +110,17 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
     @Transactional(rollbackFor = Exception.class)
     public User changeInfo(ChangeCurrentUserInfoCommand command) {
         userService.changeInfo(new ChangeUserInfoCommand(
-                command.getUserId(),
-                command.getDepartmentId(),
-                command.getEmail(),
-                command.getMobile(),
-                command.getTel(),
-                command.getName(),
-                command.getRank(),
-                command.getPrivilege(),
-                command.getStatus(),
-                command.getRemarks(),
-                getAccountLoginName(command.getUserId()),
+                command.userId(),
+                command.departmentId(),
+                command.email(),
+                command.mobile(),
+                command.tel(),
+                command.name(),
+                command.rank(),
+                command.privilege(),
+                command.status(),
+                command.remarks(),
+                getAccountLoginName(command.userId()),
                 null));
         return toUser(command);
     }
@@ -128,15 +128,15 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changePassword(ChangeCurrentUserPasswordCommand command) {
-        String oldPassword = command.getOldPassword();
-        String password = command.getPassword();
+        String oldPassword = command.oldPassword();
+        String password = command.password();
         if (StringUtils.isBlank(password)) {
             throw new BizException("SYS-00001", "sys.exception.invalid-parameter", "password");
         } else if (!password.matches(SysApiUtils.PASSWORD_VALIDATE_PATTERN)) {
             throw new BizException(SysApiUtils.PASSWORD_VALIDATE_MESSAGE);
         }
 
-        PrincipalIdentity accountIdentity = getAccountIdentity(command.getUserId());
+        PrincipalIdentity accountIdentity = getAccountIdentity(command.userId());
         PrincipalCredential credential = accountIdentity == null
                 ? null
                 : principalCredentialService.get(
@@ -145,26 +145,26 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
             throw new InvalidPasswordException();
         }
 
-        upsertPassword(command.getUserId(), accountIdentity, PasswordHelper.encrypt(password));
+        upsertPassword(command.userId(), accountIdentity, PasswordHelper.encrypt(password));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UserAvatarResult changeAvatar(ChangeCurrentUserAvatarCommand command) {
-        if (command == null || command.getUserId() == null || command.getInputStream() == null) {
+        if (command == null || command.userId() == null || command.inputStream() == null) {
             throw invalidParameter("avatar");
         }
 
-        removeAvatar(command.getUserId());
+        removeAvatar(command.userId());
 
-        byte[] avatarBytes = readAvatarBytes(command.getInputStream());
+        byte[] avatarBytes = readAvatarBytes(command.inputStream());
         UploadStorageFacadeResponse uploaded = storageFacade.upload(UploadStorageFacadeRequest.builder()
                 .inputStream(new ByteArrayInputStream(avatarBytes))
-                .originalFilename(originalFilename(command.getOriginalFilename()))
+                .originalFilename(originalFilename(command.originalFilename()))
                 .contentType(IMAGE_JPEG)
                 .sizeBytes((long) avatarBytes.length)
                 .ownerType(STORAGE_OWNER_TYPE_USER)
-                .ownerId(String.valueOf(command.getUserId().value()))
+                .ownerId(String.valueOf(command.userId().value()))
                 .objectStatus(STORAGE_OBJECT_STATUS_ACTIVE)
                 .referenceStatus(STORAGE_REFERENCE_STATUS_UNREFERENCED)
                 .remarks(AVATAR_REMARKS)
@@ -175,15 +175,15 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void removeAvatar(RemoveCurrentUserAvatarCommand command) {
-        if (command == null || command.getUserId() == null) {
+        if (command == null || command.userId() == null) {
             throw invalidParameter("userId");
         }
-        removeAvatar(command.getUserId());
+        removeAvatar(command.userId());
     }
 
     @Override
     public UserAvatarResult getAvatar(CurrentUserAvatarQuery query) {
-        UserId userId = query == null ? null : query.getUserId();
+        UserId userId = query == null ? null : query.userId();
         List<StorageObjectFacadeDto> avatars = listAvatarDtos(userId);
         if (avatars.isEmpty()) {
             return null;
@@ -193,7 +193,7 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
 
     @Override
     public InputStream getAvatarInputStream(CurrentUserAvatarQuery query) {
-        UserId userId = query == null ? null : query.getUserId();
+        UserId userId = query == null ? null : query.userId();
         UserAvatarResult avatar = latestAvatar(userId);
         if (avatar == null || storageFacade == null) {
             return null;
@@ -208,23 +208,22 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
 
     @Override
     public boolean existsAvatar(CurrentUserAvatarQuery query) {
-        UserId userId = query == null ? null : query.getUserId();
+        UserId userId = query == null ? null : query.userId();
         UserAvatarResult avatar = latestAvatar(userId);
         return avatar != null && storageFacade.exists(toReadableContentRequest(avatar));
     }
 
     @Override
     public List<Menu> listAccessibleMenus(CurrentUserQuery query) {
-        if (query != null && UserPrivilege.SUPER == query.getPrivilege()) {
-            return sortedMenus(menuService.list(new MenuQuery()));
+        if (query != null && UserPrivilege.SUPER == query.privilege()) {
+            return sortedMenus(menuService.list(new MenuQuery(null, null, null, null, null, null)));
         }
 
-        List<Role> roleList = userService.listUserRoles(userQuery(query.getUserId()));
-        boolean isAdmin = query != null && UserPrivilege.ADMIN == query.getPrivilege()
+        List<Role> roleList = userService.listUserRoles(userQuery(query.userId()));
+        boolean isAdmin = query != null && UserPrivilege.ADMIN == query.privilege()
                 || roleList.stream().anyMatch(Role::isAdmin);
         if (isAdmin) {
-            MenuQuery menuQuery = new MenuQuery();
-            menuQuery.setMaxRank(query.getRank());
+            MenuQuery menuQuery = new MenuQuery(null, null, null, null, null, query.rank());
             return sortedMenus(menuService.list(menuQuery));
         }
 
@@ -233,18 +232,15 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
                 .map(Menu::getId)
                 .distinct()
                 .collect(Collectors.toList());
-        MenuQuery menuQuery = new MenuQuery();
-        menuQuery.setIds(menuIds);
+        MenuQuery menuQuery = new MenuQuery(menuIds, null, null, null, null, null);
         List<Menu> menus = sortedMenus(menuService.list(menuQuery)).stream()
-                .filter(menu -> menu != null && query.getRank().canAccess(menu.getRank()))
+                .filter(menu -> menu != null && query.rank().canAccess(menu.getRank()))
                 .collect(Collectors.toList());
         return sortedMenus(menus);
     }
 
     private RoleQuery roleQuery(Role role) {
-        RoleQuery query = new RoleQuery();
-        query.setId(role.getId());
-        return query;
+        return new RoleQuery(role.getId(), null);
     }
 
     private List<Menu> sortedMenus(List<Menu> menus) {
@@ -252,9 +248,7 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
     }
 
     private UserQuery userQuery(UserId userId) {
-        UserQuery query = new UserQuery();
-        query.setId(userId);
-        return query;
+        return new UserQuery(userId, null, null, null, null, null, null, null, null, null);
     }
 
     private List<StorageObjectFacadeDto> listAvatarDtos(UserId userId) {
@@ -500,16 +494,16 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
 
     private User toUser(ChangeCurrentUserInfoCommand command) {
         User user = new User();
-        user.setId(command.getUserId());
-        user.setDepartmentId(command.getDepartmentId());
-        user.setEmail(command.getEmail());
-        user.setMobile(command.getMobile());
-        user.setTel(command.getTel());
-        user.setName(command.getName());
-        user.setRank(command.getRank());
-        user.setPrivilege(command.getPrivilege());
-        user.setStatus(command.getStatus());
-        user.setRemarks(command.getRemarks());
+        user.setId(command.userId());
+        user.setDepartmentId(command.departmentId());
+        user.setEmail(command.email());
+        user.setMobile(command.mobile());
+        user.setTel(command.tel());
+        user.setName(command.name());
+        user.setRank(command.rank());
+        user.setPrivilege(command.privilege());
+        user.setStatus(command.status());
+        user.setRemarks(command.remarks());
         return user;
     }
 }

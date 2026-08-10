@@ -95,7 +95,7 @@ describe("user service request contracts", () => {
         await userService.changeStatus({
             users: [{ id: "user-1", enable: false }]
         });
-        expectLastRequest("/sys/user/enable", [{ id: "user-1", enable: false }]);
+        expectLastRequest("/sys/user/status/update", [{ id: "user-1", enable: false }]);
 
         await userService.remove(["user-1"]);
         expectLastRequest("/sys/user/delete", [{ id: "user-1" }]);
