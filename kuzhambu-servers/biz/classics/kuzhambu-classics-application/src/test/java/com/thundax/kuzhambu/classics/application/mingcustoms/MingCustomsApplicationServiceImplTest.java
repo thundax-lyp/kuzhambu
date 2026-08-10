@@ -165,7 +165,7 @@ class MingCustomsApplicationServiceImplTest {
 
         service.deleteKeyword(MingCustomsKeywordIdCodec.toDomain(7002L));
 
-        verify(repository).deleteKeywordById(MingCustomsKeywordIdCodec.toDomain(7002L));
+        verify(repository).deleteByKeywordId(MingCustomsKeywordIdCodec.toDomain(7002L));
     }
 
     private static void versionEntryOnEnsure(

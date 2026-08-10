@@ -32,7 +32,6 @@ class ClassicsDomainArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertRepositoryInterfaceMethodNames(
                 classes,
                 NamingArchitectureRuleSupport.legacyRepositoryInterfaceMethodNameAllowances(
-                        "com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository.deleteKeywordById",
                         "com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository.advanceMilestone",
                         "com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository.bindFastGptCollection",
                         "com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository.claimEsCleanup",

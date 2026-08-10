@@ -171,7 +171,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (keyword != null) {
             requireWritable(keyword.getCustomId(), ClassicsPublicationWriteOperation.EDIT);
         }
-        repository.deleteKeywordById(id);
+        repository.deleteByKeywordId(id);
     }
 
     @Override

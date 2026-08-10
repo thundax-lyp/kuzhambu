@@ -161,7 +161,7 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
     }
 
     @Override
-    public int deleteKeywordById(MingCustomsKeywordId id) {
+    public int deleteByKeywordId(MingCustomsKeywordId id) {
         return keywordMapper.deleteById(MingCustomsKeywordIdCodec.toValue(id));
     }
 

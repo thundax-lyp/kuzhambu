@@ -50,7 +50,7 @@ public interface MingCustomsRepository {
 
     int updateKeywordPriority(MingCustomsKeyword keyword);
 
-    int deleteKeywordById(MingCustomsKeywordId id);
+    int deleteByKeywordId(MingCustomsKeywordId id);
 
     List<MingCustomsKeywordCloudItem> listKeywordCloud();
 
