@@ -22,6 +22,7 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentExportCo
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
@@ -99,7 +100,8 @@ class ClassicsContentApplicationServiceImplTest {
         entry.setTitle("entry");
         entry.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
 
-        ClassicsContentVersion version = service.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
+        ClassicsContentVersion version = service.ensureVersioned(
+                new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存"));
 
         assertNotNull(version.getId());
         assertEquals(1, version.getVersionNo());
@@ -117,7 +119,8 @@ class ClassicsContentApplicationServiceImplTest {
         SancaiEntry entry = baseSancaiEntry(101L);
         entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
 
-        ClassicsContentVersion version = service.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "发布条目");
+        ClassicsContentVersion version = service.ensureVersioned(
+                new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "发布条目"));
 
         var snapshot = new ObjectMapper().readTree(version.getSnapshotJson());
         assertEquals("PUBLISHED", snapshot.get("lifecycleStatus").asText());
@@ -140,7 +143,8 @@ class ClassicsContentApplicationServiceImplTest {
         entry.setCurrentVersionedAt(existing.getVersionedAt());
         entry.setContentUpdatedAt(Instant.ofEpochMilli(1_000L));
 
-        ClassicsContentVersion version = service.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
+        ClassicsContentVersion version = service.ensureVersioned(
+                new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存"));
 
         assertEquals(existing, version);
         assertEquals(1, repository.insertedVersions.size());

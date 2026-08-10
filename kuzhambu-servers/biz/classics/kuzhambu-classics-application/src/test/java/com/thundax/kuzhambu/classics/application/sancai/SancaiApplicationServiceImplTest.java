@@ -13,6 +13,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
@@ -92,7 +93,7 @@ class SancaiApplicationServiceImplTest {
 
         service.addEntry(publicCommand(null));
 
-        verify(contentApplicationService).ensureVersioned(any(SancaiEntry.class), any(), any());
+        verify(contentApplicationService).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     @Test
@@ -109,7 +110,7 @@ class SancaiApplicationServiceImplTest {
 
         service.updateEntry(privateDraftCommand(1002L));
 
-        verify(contentApplicationService).ensureVersioned(any(SancaiEntry.class), any(), any());
+        verify(contentApplicationService).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     @Test
@@ -132,7 +133,8 @@ class SancaiApplicationServiceImplTest {
         SancaiEntry savedEntry = entryCaptor.getAllValues().get(0);
         assertEquals(SancaiVolumeIdCodec.toDomain(3002L), savedEntry.getVolumeId());
         assertEquals(100, savedEntry.getPriority());
-        verify(contentApplicationService).ensureVersioned(savedEntry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
+        verify(contentApplicationService)
+                .ensureVersioned(new ContentVersionCommand(savedEntry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存"));
     }
 
     @Test
@@ -167,7 +169,7 @@ class SancaiApplicationServiceImplTest {
         assertThrows(BizException.class, () -> service.updateEntry(publicCommand(1012L, 9090L)));
 
         verify(repository, never()).updateEntry(any());
-        verify(contentApplicationService, never()).ensureVersioned(any(), any(), any());
+        verify(contentApplicationService, never()).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     @Test
@@ -180,7 +182,7 @@ class SancaiApplicationServiceImplTest {
         assertThrows(BizException.class, () -> service.addEntry(publicCommand(null, 9091L)));
 
         verify(repository, never()).insertEntry(any());
-        verify(contentApplicationService, never()).ensureVersioned(any(), any(), any());
+        verify(contentApplicationService, never()).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     @Test
@@ -196,7 +198,8 @@ class SancaiApplicationServiceImplTest {
 
         service.changeEntryStatus(command);
 
-        verify(contentApplicationService).ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "发布条目");
+        verify(contentApplicationService)
+                .ensureVersioned(new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "发布条目"));
     }
 
     @Test
@@ -227,7 +230,7 @@ class SancaiApplicationServiceImplTest {
 
         verify(repository, never()).getEntryById(any());
         verify(repository, never()).updateEntry(any());
-        verify(contentApplicationService, never()).ensureVersioned(any(), any(), any());
+        verify(contentApplicationService, never()).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     @Test
@@ -368,21 +371,23 @@ class SancaiApplicationServiceImplTest {
 
         service.deleteEntry(SancaiEntryIdCodec.toDomain(1005L));
 
-        verify(contentApplicationService).ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+        verify(contentApplicationService)
+                .ensureVersioned(new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除"));
         verify(repository).deleteEntryById(SancaiEntryIdCodec.toDomain(1005L));
     }
 
     private static void versionEntryOnEnsure(
             ClassicsContentApplicationService contentApplicationService, int versionNo) {
         doAnswer(invocation -> {
-                    SancaiEntry entry = invocation.getArgument(0);
+                    ContentVersionCommand command = invocation.getArgument(0);
+                    SancaiEntry entry = (SancaiEntry) command.content();
                     entry.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain((long) versionNo));
                     entry.setCurrentVersionNo(versionNo);
                     entry.setCurrentVersionedAt(Instant.ofEpochMilli(2_000L + versionNo));
                     return null;
                 })
                 .when(contentApplicationService)
-                .ensureVersioned(any(), any(), any());
+                .ensureVersioned(any(ContentVersionCommand.class));
     }
 
     private static void assertLifecycleTransition(
@@ -409,7 +414,8 @@ class SancaiApplicationServiceImplTest {
         assertEquals(20, updatedEntry.getCurrentVersionNo());
         assertNotNull(updatedEntry.getCurrentVersionedAt());
         verify(contentApplicationService)
-                .ensureVersioned(updatedEntry, ClassicsContentChangeType.MANUAL_SAVE, expectedSummary);
+                .ensureVersioned(new ContentVersionCommand(
+                        updatedEntry, ClassicsContentChangeType.MANUAL_SAVE, expectedSummary));
     }
 
     private static void assertInvalidLifecycleTransition(
@@ -427,7 +433,7 @@ class SancaiApplicationServiceImplTest {
 
         assertEquals(currentStatus, entry.getLifecycleStatus());
         verify(repository, never()).updateEntry(any());
-        verify(contentApplicationService, never()).ensureVersioned(any(), any(), any());
+        verify(contentApplicationService, never()).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     private static SancaiEntry existingEntry(long id, SancaiEntryLifecycleStatus lifecycleStatus) {

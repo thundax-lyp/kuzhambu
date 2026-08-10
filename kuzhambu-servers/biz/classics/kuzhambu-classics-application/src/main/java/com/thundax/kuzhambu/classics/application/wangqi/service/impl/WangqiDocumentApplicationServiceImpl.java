@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.classics.application.wangqi.service.impl;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
@@ -7,6 +9,7 @@ import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPub
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentStorageObjectCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
@@ -176,7 +179,9 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void changeStorageObject(WangqiDocumentId id, StorageObjectId storageObjectId) {
+    public void changeStorageObject(WangqiDocumentStorageObjectCommand command) {
+        WangqiDocumentId id = command == null ? null : command.id();
+        StorageObjectId storageObjectId = command == null ? null : command.storageObjectId();
         requireWritable(id, ClassicsPublicationWriteOperation.EDIT);
         repository.updateStorageObjectId(id, storageObjectId);
     }
@@ -191,10 +196,11 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         WangqiDocument document = get(id);
         if (document != null) {
             document.setContentUpdatedAt(Instant.now());
-            contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+            contentApplicationService.ensureVersioned(
+                    new ContentVersionCommand(document, ClassicsContentChangeType.MANUAL_SAVE, "手动删除"));
         }
-        contentApplicationService.deleteVersions(
-                ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(id.value()));
+        contentApplicationService.deleteVersions(new ContentObjectQuery(
+                ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(id.value())));
         storageFacade.unbindOwner(UnbindStorageOwnerFacadeRequest.builder()
                 .ownerType(DOCUMENT_OWNER_TYPE)
                 .ownerId(ownerId(id))
@@ -235,7 +241,8 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     }
 
     private void markVersion(WangqiDocument document, String changeSummary) {
-        contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
+        contentApplicationService.ensureVersioned(
+                new ContentVersionCommand(document, ClassicsContentChangeType.MANUAL_SAVE, changeSummary));
         repository.update(document);
     }
 

@@ -1,7 +1,9 @@
 package com.thundax.kuzhambu.classics.interfaces.portal.sancai.assembler;
 
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.KnowledgeTagId;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
@@ -22,10 +24,19 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.respons
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.response.SancaiPortalVolumeResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 
 public final class SancaiPortalInterfaceAssembler {
     private SancaiPortalInterfaceAssembler() {}
+
+    @NonNull
+    public static ContentObjectQuery toContentObjectQuery(@NonNull String contentType, @NonNull Long contentId) {
+        Objects.requireNonNull(contentType, "contentType");
+        Objects.requireNonNull(contentId, "contentId");
+        return new ContentObjectQuery(contentType, ClassicsContentIdCodec.toDomain(contentId));
+    }
 
     public static SancaiEntryQuery toPublicQuery(SancaiPortalEntrySearchRequest request) {
         SancaiPortalEntrySearchRequest effectiveRequest =

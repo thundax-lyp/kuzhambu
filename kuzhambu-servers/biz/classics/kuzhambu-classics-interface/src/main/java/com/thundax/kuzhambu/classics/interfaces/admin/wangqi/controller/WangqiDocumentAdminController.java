@@ -256,8 +256,8 @@ public class WangqiDocumentAdminController {
     @PostMapping("versions/list")
     public List<WangqiDocumentVersionResponse> listVersions(@Valid @RequestBody WangqiDocumentVersionRequest request) {
         return contentService
-                .listVersions(
-                        ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(request.getId()))
+                .listVersions(WangqiDocumentInterfaceAssembler.toContentObjectQuery(
+                        ClassicsContentType.WANGQI_DOCUMENT.value(), request.getId()))
                 .stream()
                 .map(WangqiDocumentInterfaceAssembler::toVersionResponse)
                 .toList();

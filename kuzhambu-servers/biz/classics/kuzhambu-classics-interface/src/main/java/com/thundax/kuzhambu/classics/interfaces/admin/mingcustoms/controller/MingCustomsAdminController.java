@@ -236,8 +236,8 @@ public class MingCustomsAdminController {
     @PostMapping("versions/list")
     public List<MingCustomsVersionResponse> listVersions(@Valid @RequestBody MingCustomsVersionRequest request) {
         return contentService
-                .listVersions(
-                        ClassicsContentType.MING_CUSTOMS.value(), ClassicsContentIdCodec.toDomain(request.getId()))
+                .listVersions(MingCustomsInterfaceAssembler.toContentObjectQuery(
+                        ClassicsContentType.MING_CUSTOMS.value(), request.getId()))
                 .stream()
                 .map(MingCustomsInterfaceAssembler::toVersionResponse)
                 .toList();

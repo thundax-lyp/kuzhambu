@@ -6,10 +6,8 @@ import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJo
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
-import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
@@ -78,10 +76,7 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "标签列表")
     @PostMapping("tags/list")
     public List<ClassicsContentResponse> listTags(@Valid @RequestBody ClassicsContentRequest request) {
-        String validContentType = validContentTagType(request == null ? null : request.getContentType());
-        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(
-                requireParameter(request == null ? null : request.getContentId(), "contentId"));
-        return service.listTags(validContentType, contentIdValue).stream()
+        return service.listTags(ClassicsContentInterfaceAssembler.toTagListQuery(request)).stream()
                 .map(ClassicsContentInterfaceAssembler::toTagResponse)
                 .toList();
     }
@@ -169,9 +164,7 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "问答列表")
     @PostMapping("qa-pairs/list")
     public List<ClassicsContentResponse> listQaPairs(@Valid @RequestBody ClassicsContentRequest request) {
-        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(
-                requireParameter(request == null ? null : request.getContentId(), "contentId"));
-        return service.listQaPairs(request == null ? null : request.getContentType(), contentIdValue).stream()
+        return service.listQaPairs(ClassicsContentInterfaceAssembler.toQaPairListQuery(request)).stream()
                 .map(ClassicsContentInterfaceAssembler::toQaResponse)
                 .toList();
     }
@@ -340,8 +333,7 @@ public class ClassicsContentAdminController {
     public PageResponse<ClassicsContentResponse> pageExports(@Valid @RequestBody ClassicsContentRequest request) {
         PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
         return PageResponseHelper.fromPageResult(
-                service.pageExportJobs(
-                        request.getContentType(), request.getExportKind(), request.getStatus(), pageQuery),
+                service.pageExportJobs(ClassicsContentInterfaceAssembler.toExportJobQuery(request), pageQuery),
                 ClassicsContentInterfaceAssembler::toExportResponse);
     }
 

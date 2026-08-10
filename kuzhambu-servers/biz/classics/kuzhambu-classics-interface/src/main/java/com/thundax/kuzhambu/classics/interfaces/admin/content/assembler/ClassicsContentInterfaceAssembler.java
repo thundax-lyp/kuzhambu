@@ -9,7 +9,10 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCo
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.query.ContentExportJobQuery;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
@@ -35,7 +38,38 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 
 public final class ClassicsContentInterfaceAssembler {
+    private static final Set<String> CONTENT_TAG_CONTENT_TYPES =
+            Set.of("SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS");
+
     private ClassicsContentInterfaceAssembler() {}
+
+    @NonNull
+    public static ContentObjectQuery toObjectQuery(@NonNull String contentType, @NonNull Long contentId) {
+        Objects.requireNonNull(contentType, "contentType");
+        Objects.requireNonNull(contentId, "contentId");
+        return new ContentObjectQuery(contentType, ClassicsContentIdCodec.toDomain(contentId));
+    }
+
+    @NonNull
+    public static ContentObjectQuery toTagListQuery(@NonNull ClassicsContentRequest request) {
+        Objects.requireNonNull(request, "request");
+        return toObjectQuery(
+                validContentTagType(request.getContentType()), requireParameter(request.getContentId(), "contentId"));
+    }
+
+    @NonNull
+    public static ContentObjectQuery toQaPairListQuery(@NonNull ClassicsContentRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new ContentObjectQuery(
+                request.getContentType(),
+                ClassicsContentIdCodec.toDomain(requireParameter(request.getContentId(), "contentId")));
+    }
+
+    @NonNull
+    public static ContentExportJobQuery toExportJobQuery(@NonNull ClassicsContentRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new ContentExportJobQuery(request.getContentType(), request.getExportKind(), request.getStatus());
+    }
 
     @NonNull
     public static ContentTagCommand toTagCommand(@NonNull ClassicsContentRequest request) {
@@ -250,6 +284,20 @@ public final class ClassicsContentInterfaceAssembler {
 
     private static ClassicsContentSource source(String value) {
         return StringUtils.isBlank(value) ? ClassicsContentSource.MANUAL : ClassicsContentSource.from(value);
+    }
+
+    private static String validContentTagType(String contentType) {
+        if (StringUtils.isBlank(contentType) || !CONTENT_TAG_CONTENT_TYPES.contains(contentType)) {
+            throw AdminResponseExceptions.invalidParameter("contentType不支持标签管理");
+        }
+        return contentType;
+    }
+
+    private static <T> T requireParameter(T value, String field) {
+        if (value == null || (value instanceof String stringValue && StringUtils.isBlank(stringValue))) {
+            throw AdminResponseExceptions.invalidParameter(field + "不能为空");
+        }
+        return value;
     }
 
     private static String exportContentUrl(ClassicsContentExportJobId jobId) {

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
@@ -190,7 +191,8 @@ class MingCustomsAdminControllerTest {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
         ClassicsContentId entryId = ClassicsContentIdCodec.toDomain(500000000001L);
-        when(contentService.listVersions("MING_CUSTOMS", entryId))
+        ContentObjectQuery query = new ContentObjectQuery("MING_CUSTOMS", entryId);
+        when(contentService.listVersions(query))
                 .thenReturn(List.of(version(9001L, ClassicsContentType.MING_CUSTOMS, entryId)));
         MingCustomsAdminController controller = controller(service, contentService);
 
@@ -199,7 +201,7 @@ class MingCustomsAdminControllerTest {
         assertEquals(1, versions.size());
         assertEquals("MING_CUSTOMS", versions.get(0).getContentType());
         assertEquals(1, versions.get(0).getVersionNo());
-        verify(contentService).listVersions("MING_CUSTOMS", entryId);
+        verify(contentService).listVersions(query);
     }
 
     @Test

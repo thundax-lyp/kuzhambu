@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.mingcustoms.service.impl;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
@@ -119,7 +120,8 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
             return;
         }
         entry.setContentUpdatedAt(Instant.now());
-        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+        contentApplicationService.ensureVersioned(
+                new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除"));
         repository.deleteById(id);
     }
 
@@ -247,7 +249,8 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     }
 
     private void markManualSaveVersion(MingCustomsEntry entry) {
-        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
+        contentApplicationService.ensureVersioned(
+                new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存"));
         repository.update(entry);
     }
 

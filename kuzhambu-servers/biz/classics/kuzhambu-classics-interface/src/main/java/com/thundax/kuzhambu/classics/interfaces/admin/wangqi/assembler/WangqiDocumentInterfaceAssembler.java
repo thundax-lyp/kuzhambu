@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler;
 
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
@@ -27,6 +28,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 public final class WangqiDocumentInterfaceAssembler {
     private WangqiDocumentInterfaceAssembler() {}
+
+    @NonNull
+    public static ContentObjectQuery toContentObjectQuery(@NonNull String contentType, @NonNull Long contentId) {
+        Objects.requireNonNull(contentType, "contentType");
+        Objects.requireNonNull(contentId, "contentId");
+        return new ContentObjectQuery(contentType, ClassicsContentIdCodec.toDomain(contentId));
+    }
 
     @NonNull
     public static WangqiDocumentQuery toQuery(@NonNull WangqiDocumentRequest request) {

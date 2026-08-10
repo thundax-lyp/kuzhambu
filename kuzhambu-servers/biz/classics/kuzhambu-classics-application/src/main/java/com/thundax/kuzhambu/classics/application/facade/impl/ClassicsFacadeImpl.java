@@ -265,9 +265,9 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         if (entry == null) {
             return null;
         }
-        List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(contentType, domainContentId);
-        List<ClassicsContentQaPair> qaPairs =
-                classicsContentApplicationService.listQaPairs(contentType, domainContentId);
+        var query = classicsFacadeAssembler.toContentObjectQuery(contentType, domainContentId);
+        List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(query);
+        List<ClassicsContentQaPair> qaPairs = classicsContentApplicationService.listQaPairs(query);
         return classicsFacadeAssembler.toQaKnowledgeFacadeDto(
                 sourceContent, entry.getOriginalText(), entry.getTranslationText(), null, null, tags, qaPairs);
     }
@@ -282,9 +282,9 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         if (entry == null) {
             return null;
         }
-        List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(contentType, domainContentId);
-        List<ClassicsContentQaPair> qaPairs =
-                classicsContentApplicationService.listQaPairs(contentType, domainContentId);
+        var query = classicsFacadeAssembler.toContentObjectQuery(contentType, domainContentId);
+        List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(query);
+        List<ClassicsContentQaPair> qaPairs = classicsContentApplicationService.listQaPairs(query);
         return classicsFacadeAssembler.toQaKnowledgeFacadeDto(
                 sourceContent, entry.getOriginalText(), entry.getTranslationText(), null, null, tags, qaPairs);
     }
@@ -300,9 +300,9 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         if (document == null) {
             return null;
         }
-        List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(contentType, domainContentId);
-        List<ClassicsContentQaPair> qaPairs =
-                classicsContentApplicationService.listQaPairs(contentType, domainContentId);
+        var query = classicsFacadeAssembler.toContentObjectQuery(contentType, domainContentId);
+        List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(query);
+        List<ClassicsContentQaPair> qaPairs = classicsContentApplicationService.listQaPairs(query);
         return classicsFacadeAssembler.toQaKnowledgeFacadeDto(
                 sourceContent, null, null, document.getContent(), null, tags, qaPairs);
     }
@@ -318,9 +318,9 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         if (entry == null) {
             return null;
         }
-        List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(contentType, domainContentId);
-        List<ClassicsContentQaPair> qaPairs =
-                classicsContentApplicationService.listQaPairs(contentType, domainContentId);
+        var query = classicsFacadeAssembler.toContentObjectQuery(contentType, domainContentId);
+        List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(query);
+        List<ClassicsContentQaPair> qaPairs = classicsContentApplicationService.listQaPairs(query);
         return classicsFacadeAssembler.toQaKnowledgeFacadeDto(
                 sourceContent, null, null, entry.getContent(), entry.getOriginalExcerpts(), tags, qaPairs);
     }

@@ -141,9 +141,6 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
                 publicationWorkflow(
                         "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
                                 + "ClassicsPublicationReconcileApplicationService.succeed(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob, java.time.Instant)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.wangqi.service."
-                                + "WangqiDocumentApplicationService.changeStorageObject(com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId, com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId)"),
                 publicationWorkflow(
                         "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
                                 + "ClassicsPublicationSnapshotBindApplicationService.bind(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob, com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken)"),
@@ -156,30 +153,6 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
                 rawParameters(
                         "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.search.service."
                                 + "ClassicsSearchContentApplicationService.listWorkbenchContents(java.lang.String, java.lang.String)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.content.service."
-                                + "ClassicsContentApplicationService.sortQaPairs(java.lang.String, com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId, com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.content.service."
-                                + "ClassicsContentApplicationService.deleteVersions(java.lang.String, com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.content.service."
-                                + "ClassicsContentApplicationService.pageExportJobs(java.lang.String, java.lang.String, java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.content.service."
-                                + "ClassicsContentApplicationService.listTags(java.lang.String, com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.content.service."
-                                + "ClassicsContentApplicationService.ensureVersioned(com.thundax.kuzhambu.classics.domain.content.model.Versionable, com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType, java.lang.String)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.content.service."
-                                + "ClassicsContentApplicationService.listVersions(java.lang.String, com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.content.service."
-                                + "ClassicsContentApplicationService.listQaPairs(java.lang.String, com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.content.service."
-                                + "ClassicsContentApplicationService.applyAiResult(com.thundax.kuzhambu.classics.domain.content.model.Versionable, java.lang.String)"),
                 publicationWorkflow(
                         "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
                                 + "ClassicsPublicationContentCommitApplicationService.commit(com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob, com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken)"));

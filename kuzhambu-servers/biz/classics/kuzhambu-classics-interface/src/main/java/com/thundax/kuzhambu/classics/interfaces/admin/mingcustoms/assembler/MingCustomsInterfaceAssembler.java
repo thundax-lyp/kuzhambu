@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler;
 
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
@@ -29,6 +30,13 @@ import org.springframework.lang.NonNull;
 
 public final class MingCustomsInterfaceAssembler {
     private MingCustomsInterfaceAssembler() {}
+
+    @NonNull
+    public static ContentObjectQuery toContentObjectQuery(@NonNull String contentType, @NonNull Long contentId) {
+        Objects.requireNonNull(contentType, "contentType");
+        Objects.requireNonNull(contentId, "contentId");
+        return new ContentObjectQuery(contentType, ClassicsContentIdCodec.toDomain(contentId));
+    }
 
     @NonNull
     public static MingCustomsQuery toQuery(@NonNull MingCustomsRequest request) {

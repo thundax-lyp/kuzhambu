@@ -20,6 +20,9 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCo
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
+import com.thundax.kuzhambu.classics.application.content.query.ContentExportJobQuery;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
@@ -188,9 +191,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     @Override
-    public List<ClassicsContentTag> listTags(String contentType, ClassicsContentId contentId) {
-        requireTagScope(contentType, contentId);
-        return repository.listTags(contentType, contentId, SortDirection.ASC);
+    public List<ClassicsContentTag> listTags(ContentObjectQuery query) {
+        requireTagScope(query == null ? null : query.contentType(), query == null ? null : query.contentId());
+        return repository.listTags(
+                query == null ? null : query.contentType(),
+                query == null ? null : query.contentId(),
+                SortDirection.ASC);
     }
 
     @Override
@@ -300,8 +306,11 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     @Override
-    public List<ClassicsContentQaPair> listQaPairs(String contentType, ClassicsContentId contentId) {
-        return repository.listQaPairs(contentType, contentId, SortDirection.ASC);
+    public List<ClassicsContentQaPair> listQaPairs(ContentObjectQuery query) {
+        return repository.listQaPairs(
+                query == null ? null : query.contentType(),
+                query == null ? null : query.contentId(),
+                SortDirection.ASC);
     }
 
     @Override
@@ -332,12 +341,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Transactional(rollbackFor = Exception.class)
     public void sortQaPairs(ContentQaPairSortCommand command) {
         sortQaPairs(command, repository.listQaPairs(SortDirection.ASC));
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void sortQaPairs(String contentType, ClassicsContentId contentId, ContentQaPairSortCommand command) {
-        sortQaPairs(command, repository.listQaPairs(contentType, contentId, SortDirection.ASC));
     }
 
     private void sortQaPairs(ContentQaPairSortCommand command, List<ClassicsContentQaPair> currentQaPairs) {
@@ -373,8 +376,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     @Override
-    public List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId) {
-        return repository.listVersions(contentType, contentId);
+    public List<ClassicsContentVersion> listVersions(ContentObjectQuery query) {
+        return repository.listVersions(
+                query == null ? null : query.contentType(), query == null ? null : query.contentId());
     }
 
     @Override
@@ -384,14 +388,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int deleteVersions(String contentType, ClassicsContentId contentId) {
-        return repository.deleteVersions(contentType, contentId);
+    public int deleteVersions(ContentObjectQuery query) {
+        return repository.deleteVersions(
+                query == null ? null : query.contentType(), query == null ? null : query.contentId());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ClassicsContentVersion ensureVersioned(
-            Versionable content, ClassicsContentChangeType changeType, String changeSummary) {
+    public ClassicsContentVersion ensureVersioned(ContentVersionCommand command) {
+        Versionable content = command == null ? null : command.content();
         if (content == null) {
             return null;
         }
@@ -405,21 +410,19 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 versioningSupport.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
                 Instant.now(),
                 snapshotJson(content),
-                changeType,
-                changeSummary);
+                command.changeType(),
+                command.changeSummary());
         ClassicsContentVersionId versionId = repository.insertVersion(version);
         version.setId(versionId);
         versioningSupport.markVersioned(content, version);
         return version;
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ClassicsContentVersion applyAiResult(Versionable content, String changeSummary) {
+    private ClassicsContentVersion applyAiResult(Versionable content, String changeSummary) {
         if (content != null) {
             requireWritable(content.contentType(), content.contentId());
         }
-        return ensureVersioned(content, ClassicsContentChangeType.AI_APPLIED, changeSummary);
+        return ensureVersioned(new ContentVersionCommand(content, ClassicsContentChangeType.AI_APPLIED, changeSummary));
     }
 
     @Override
@@ -1138,7 +1141,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             return;
         }
         touchContentUpdatedAt(contentType, content);
-        ensureVersioned(content, changeType, changeSummary);
+        ensureVersioned(new ContentVersionCommand(content, changeType, changeSummary));
         persistVersionMarkers(content);
     }
 
@@ -1408,9 +1411,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     @Override
-    public PageResult<ClassicsContentExportJob> pageExportJobs(
-            String contentType, String exportKind, String status, PageQuery page) {
-        return repository.pageExportJobs(contentType, exportKind, status, page.getPageNo(), page.getPageSize());
+    public PageResult<ClassicsContentExportJob> pageExportJobs(ContentExportJobQuery query, PageQuery page) {
+        return repository.pageExportJobs(
+                query == null ? null : query.contentType(),
+                query == null ? null : query.exportKind(),
+                query == null ? null : query.status(),
+                page.getPageNo(),
+                page.getPageSize());
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationSnapshotBindApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationPayloadAssembler;
@@ -52,8 +53,8 @@ public class ClassicsPublicationSnapshotBindApplicationServiceImpl
         }
 
         Versionable content = currentContent(job.getContentType(), contentId);
-        ClassicsContentVersion version =
-                contentApplicationService.ensureVersioned(content, ClassicsContentChangeType.MANUAL_SAVE, "发布正式版本");
+        ClassicsContentVersion version = contentApplicationService.ensureVersioned(
+                new ContentVersionCommand(content, ClassicsContentChangeType.MANUAL_SAVE, "发布正式版本"));
         if (version == null || version.getId() == null) {
             throw new IllegalStateException("FORMAL_VERSION_MISSING");
         }

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
@@ -58,7 +59,7 @@ class MingCustomsApplicationServiceImplTest {
 
         service.add(publicCommand(null));
 
-        verify(contentApplicationService).ensureVersioned(any(MingCustomsEntry.class), any(), any());
+        verify(contentApplicationService).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     @Test
@@ -73,7 +74,7 @@ class MingCustomsApplicationServiceImplTest {
 
         service.update(publicCommand(MingCustomsEntryIdCodec.toDomain(3009L)));
 
-        verify(contentApplicationService).ensureVersioned(any(MingCustomsEntry.class), any(), any());
+        verify(contentApplicationService).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     @Test
@@ -136,7 +137,8 @@ class MingCustomsApplicationServiceImplTest {
 
         service.delete(MingCustomsEntryIdCodec.toDomain(3003L));
 
-        verify(contentApplicationService).ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+        verify(contentApplicationService)
+                .ensureVersioned(new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除"));
         verify(repository).deleteById(MingCustomsEntryIdCodec.toDomain(3003L));
     }
 
@@ -169,12 +171,13 @@ class MingCustomsApplicationServiceImplTest {
     private static void versionEntryOnEnsure(
             ClassicsContentApplicationService contentApplicationService, int versionNo) {
         doAnswer(invocation -> {
-                    MingCustomsEntry entry = invocation.getArgument(0);
+                    ContentVersionCommand command = invocation.getArgument(0);
+                    MingCustomsEntry entry = (MingCustomsEntry) command.content();
                     entry.setCurrentVersionNo(versionNo);
                     return null;
                 })
                 .when(contentApplicationService)
-                .ensureVersioned(any(), any(), any());
+                .ensureVersioned(any(ContentVersionCommand.class));
     }
 
     private static MingCustomsCommand publicCommand(MingCustomsEntryId id) {

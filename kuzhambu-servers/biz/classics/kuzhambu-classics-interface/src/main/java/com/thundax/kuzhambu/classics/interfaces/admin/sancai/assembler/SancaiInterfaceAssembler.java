@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler;
 
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
@@ -32,11 +33,20 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.web.response.DictResponse;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 
 public final class SancaiInterfaceAssembler {
     private SancaiInterfaceAssembler() {}
+
+    @NonNull
+    public static ContentObjectQuery toContentObjectQuery(@NonNull String contentType, @NonNull Long contentId) {
+        Objects.requireNonNull(contentType, "contentType");
+        Objects.requireNonNull(contentId, "contentId");
+        return ClassicsContentInterfaceAssembler.toObjectQuery(contentType, contentId);
+    }
 
     public static SancaiEntryQuery toQuery(SancaiEntryPageRequest request) {
         SancaiEntryQuery query = new SancaiEntryQuery();
