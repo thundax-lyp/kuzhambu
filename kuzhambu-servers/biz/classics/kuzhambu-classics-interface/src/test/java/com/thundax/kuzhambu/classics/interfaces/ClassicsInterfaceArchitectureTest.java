@@ -58,23 +58,13 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {
-        return modelAnnotationAllowances(
-                ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS,
-                "portal.sancai.controller.request.SancaiPortalEntrySearchRequest");
+        return modelAnnotationAllowances(ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS);
     }
 
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
-                "admin.common.response.ClassicsBatchOperationResponse",
-                "admin.sancai.controller.response.SancaiAssetResponse",
-                "admin.sancai.controller.response.SancaiCategoryResponse",
-                "admin.sancai.controller.response.SancaiContentResponse",
-                "admin.sancai.controller.response.SancaiEntryResponse",
-                "admin.sancai.controller.response.SancaiEntryVersionResponse",
-                "admin.sancai.controller.response.SancaiVolumeResponse",
-                "portal.sancai.controller.response.SancaiPortalCategoryResponse",
-                "portal.sancai.controller.response.SancaiPortalVolumeResponse");
+                "admin.common.response.ClassicsBatchOperationResponse");
     }
 
     private static List<ArchitectureRuleAllowance> modelAnnotationAllowances(String ruleName, String... classNames) {
