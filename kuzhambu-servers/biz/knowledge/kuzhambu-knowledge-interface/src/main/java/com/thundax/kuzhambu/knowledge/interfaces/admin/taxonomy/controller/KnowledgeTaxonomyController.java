@@ -123,7 +123,7 @@ public class KnowledgeTaxonomyController {
     })
     @HasPermission("knowledge:taxonomy:edit")
     @SysLogger(value = "变更分类状态")
-    @PostMapping("category/status")
+    @PostMapping("category/status/change")
     public Boolean changeCategoryStatus(@Valid @RequestBody TagCategoryStatusRequest request) {
         taxonomyService.changeCategoryStatus(KnowledgeTaxonomyInterfaceAssembler.toCategoryStatusCommand(request));
         return true;
@@ -158,7 +158,7 @@ public class KnowledgeTaxonomyController {
     })
     @HasPermission("knowledge:taxonomy:view")
     @SysLogger(value = "标签详情")
-    @PostMapping("tag/detail")
+    @PostMapping("tag/detail/get")
     public TagDetailResponse getTagDetail(@Valid @RequestBody TagDetailRequest request) {
         TagId tagId = TagIdCodec.toDomain(request.getTagId());
         return KnowledgeTaxonomyInterfaceAssembler.toResponse(taxonomyService.getTagDetail(tagId));
@@ -206,7 +206,7 @@ public class KnowledgeTaxonomyController {
     })
     @HasPermission("knowledge:taxonomy:edit")
     @SysLogger(value = "变更标签状态")
-    @PostMapping("tag/status")
+    @PostMapping("tag/status/change")
     public Boolean changeTagStatus(@Valid @RequestBody TagStatusRequest request) {
         taxonomyService.changeTagStatus(KnowledgeTaxonomyInterfaceAssembler.toStatusCommand(request));
         return true;
@@ -257,8 +257,8 @@ public class KnowledgeTaxonomyController {
     })
     @HasPermission("knowledge:taxonomy:review")
     @SysLogger(value = "批量审核标签")
-    @PostMapping("tag/review/batch")
-    public Boolean batchReviewTags(@Valid @RequestBody TagBatchReviewRequest request) {
+    @PostMapping("tag/review/list")
+    public Boolean reviewTagBatch(@Valid @RequestBody TagBatchReviewRequest request) {
         taxonomyService.batchReviewTags(KnowledgeTaxonomyInterfaceAssembler.toBatchReviewCommand(request));
         return true;
     }
@@ -321,7 +321,7 @@ public class KnowledgeTaxonomyController {
     })
     @HasPermission("knowledge:taxonomy:view")
     @SysLogger(value = "批量预览标签合并")
-    @PostMapping("tag/merge/batch-preview")
+    @PostMapping("tag/merge/list/preview")
     public TagBatchMergePreviewResponse previewTagBatchMergeImpact(@Valid @RequestBody TagBatchMergeRequest request) {
         return KnowledgeTaxonomyInterfaceAssembler.toResponse(taxonomyService.previewTagBatchMergeImpact(
                 KnowledgeTaxonomyInterfaceAssembler.toBatchMergePreviewQuery(request)));
@@ -353,7 +353,7 @@ public class KnowledgeTaxonomyController {
     })
     @HasPermission("knowledge:taxonomy:edit")
     @SysLogger(value = "批量执行标签合并")
-    @PostMapping("tag/merge/batch-apply")
+    @PostMapping("tag/merge/list/apply")
     public Boolean applyTagBatchMerge(@Valid @RequestBody TagBatchMergeRequest request) {
         taxonomyService.applyTagBatchMerge(KnowledgeTaxonomyInterfaceAssembler.toBatchMergeCommand(request));
         return true;
@@ -385,8 +385,8 @@ public class KnowledgeTaxonomyController {
     })
     @HasPermission("knowledge:taxonomy:edit")
     @SysLogger(value = "批量废弃标签")
-    @PostMapping("tag/deprecate/batch")
-    public Boolean batchDeprecateTags(@Valid @RequestBody TagBatchDeprecateRequest request) {
+    @PostMapping("tag/deprecate/list")
+    public Boolean deprecateTags(@Valid @RequestBody TagBatchDeprecateRequest request) {
         taxonomyService.batchDeprecateTags(KnowledgeTaxonomyInterfaceAssembler.toBatchDeprecateCommand(request));
         return true;
     }
@@ -401,7 +401,7 @@ public class KnowledgeTaxonomyController {
     })
     @HasPermission("knowledge:taxonomy:view")
     @SysLogger(value = "标签治理统计")
-    @PostMapping("tag/metrics")
+    @PostMapping("tag/metrics/list")
     public TagGovernanceMetricsResponse getTagGovernanceMetrics(
             @Valid @RequestBody TagGovernanceMetricsRequest request) {
         return KnowledgeTaxonomyInterfaceAssembler.toResponse(

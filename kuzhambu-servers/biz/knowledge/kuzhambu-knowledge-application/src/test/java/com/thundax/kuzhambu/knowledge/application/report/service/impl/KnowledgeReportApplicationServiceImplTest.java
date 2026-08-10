@@ -18,8 +18,8 @@ class KnowledgeReportApplicationServiceImplTest {
     void summaryShouldMapCoverageTopTagsCategoryDistributionsAndMonthlyTags() {
         TagGovernanceMetricsRepository repository = mock(TagGovernanceMetricsRepository.class);
         KnowledgeReportApplicationServiceImpl service = new KnowledgeReportApplicationServiceImpl(repository);
-        when(repository.getTagCoverageRate()).thenReturn(new BigDecimal("0.8750"));
-        when(repository.getMetrics(10, 6))
+        when(repository.getByTagCoverageRate()).thenReturn(new BigDecimal("0.8750"));
+        when(repository.getByTopLimitAndRecentMonths(10, 6))
                 .thenReturn(new TagGovernanceMetrics(
                         List.of(new TagGovernanceMetrics.TagUsageMetric("礼制", 12L)),
                         List.of(new TagGovernanceMetrics.CategoryDistributionMetric("礼学", 8L)),

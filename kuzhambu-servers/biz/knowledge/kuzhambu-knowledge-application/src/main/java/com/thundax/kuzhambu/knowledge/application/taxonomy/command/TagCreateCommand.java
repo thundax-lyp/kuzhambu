@@ -4,21 +4,12 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatu
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
 import java.time.Instant;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class TagCreateCommand {
-    private TagId id;
-    private String name;
-    private TagCategoryId categoryId;
-    private String description;
-    private TagReviewStatus reviewStatus;
-    private String reviewNote;
-    private Instant reviewedAt;
-}
+public record TagCreateCommand(
+        TagId id,
+        String name,
+        TagCategoryId categoryId,
+        String description,
+        TagReviewStatus reviewStatus,
+        String reviewNote,
+        Instant reviewedAt) {}

@@ -21,7 +21,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchDepre
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand.TagCandidateApplyItemCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyItem;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
@@ -120,12 +120,12 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     @Override
     public PageResult<TagCategoryResult> pageCategories(TagCategoryQuery query, PageQuery page) {
-        TagCategoryQuery effectiveQuery = query == null ? new TagCategoryQuery() : query;
+        TagCategoryQuery effectiveQuery = query == null ? new TagCategoryQuery(null, null, null) : query;
         PageQuery effectivePage = normalize(page);
 
         PageResult<TagCategory> pageResult = tagCategoryRepository.page(
-                normalizeQueryText(effectiveQuery.getName()),
-                effectiveQuery.getStatus(),
+                normalizeQueryText(effectiveQuery.name()),
+                effectiveQuery.status(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
 
@@ -143,15 +143,15 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public TagCategoryId createCategory(TagCategoryCreateCommand command) {
         TagCategoryCreateCommand effective = ensureCommand(command, "标签分类创建命令");
-        TagCategoryId categoryId = ensureId(effective.getId(), "categoryId");
-        String name = trimText(effective.getName(), "分类名称");
+        TagCategoryId categoryId = ensureId(effective.id(), "categoryId");
+        String name = trimText(effective.name(), "分类名称");
 
         TagCategory category = new TagCategory();
         category.setId(categoryId);
         category.setName(name);
-        category.setDescription(trimOptionalText(effective.getDescription()));
+        category.setDescription(trimOptionalText(effective.description()));
         category.setPriority(tagCategoryRepository.maxPriority() + 1);
-        category.setStatus(effective.getStatus() == null ? TagCategoryStatus.ENABLED : effective.getStatus());
+        category.setStatus(effective.status() == null ? TagCategoryStatus.ENABLED : effective.status());
 
         if (tagCategoryRepository.countByName(name, categoryId) > 0) {
             throw new BizException("标签分类名已存在: " + name);
@@ -164,14 +164,14 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void updateCategory(TagCategoryUpdateCommand command) {
         TagCategoryUpdateCommand effective = ensureCommand(command, "标签分类更新命令");
-        TagCategoryId categoryId = ensureId(effective.getId(), "categoryId");
-        String name = trimText(effective.getName(), "分类名称");
+        TagCategoryId categoryId = ensureId(effective.id(), "categoryId");
+        String name = trimText(effective.name(), "分类名称");
 
         TagCategory category = getExistingCategory(categoryId);
         TagCategory updated = new TagCategory();
         updated.setId(category.getId());
         updated.setName(name);
-        updated.setDescription(trimOptionalText(effective.getDescription()));
+        updated.setDescription(trimOptionalText(effective.description()));
         updated.setPriority(category.getPriority());
         updated.setStatus(category.getStatus());
 
@@ -188,10 +188,10 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void changeCategoryStatus(TagCategoryStatusCommand command) {
         TagCategoryStatusCommand effective = ensureCommand(command, "标签分类状态命令");
-        TagCategoryId categoryId = ensureId(effective.getId(), "categoryId");
+        TagCategoryId categoryId = ensureId(effective.id(), "categoryId");
 
         TagCategory category = getExistingCategory(categoryId);
-        TagCategoryStatus status = requireStatus(effective.getStatus(), "categoryStatus");
+        TagCategoryStatus status = requireStatus(effective.status(), "categoryStatus");
 
         if (TagCategoryStatus.DISABLED == status
                 && category != null
@@ -210,15 +210,15 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     @Override
     public PageResult<TagResult> pageTags(TagQuery query, PageQuery page) {
-        TagQuery effectiveQuery = query == null ? new TagQuery() : query;
+        TagQuery effectiveQuery = query == null ? new TagQuery(null, null, null, null, null, null) : query;
         PageQuery effectivePage = normalize(page);
 
         PageResult<Tag> pageResult = tagRepository.page(
-                normalizeQueryText(effectiveQuery.getName()),
-                effectiveQuery.getCategoryId(),
-                effectiveQuery.getStatus(),
-                effectiveQuery.getSource(),
-                effectiveQuery.getReviewStatus(),
+                normalizeQueryText(effectiveQuery.name()),
+                effectiveQuery.categoryId(),
+                effectiveQuery.status(),
+                effectiveQuery.source(),
+                effectiveQuery.reviewStatus(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
 
@@ -230,7 +230,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .filter(Objects::nonNull)
                         .map(tag -> TaxonomyApplicationAssembler.toResult(
                                 tag,
-                                getCategoryName(tag.getCategoryId()),
+                                nonNullText(getCategoryName(tag.getCategoryId())),
                                 tagContentRefRepository.countByTagId(tag.getId())))
                         .collect(Collectors.toList()));
     }
@@ -241,16 +241,16 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         return TaxonomyApplicationAssembler.toDetailResult(
                 tag,
-                tagAliasRepository.listByTagId(tag.getId()),
-                tagContentRefRepository.listByTagId(tag.getId()),
-                getCategoryName(tag.getCategoryId()));
+                nonNullList(tagAliasRepository.listByTagId(tag.getId())),
+                nonNullList(tagContentRefRepository.listByTagId(tag.getId())),
+                nonNullText(getCategoryName(tag.getCategoryId())));
     }
 
     @Override
     public TagMergePreviewResult previewTagMergeImpact(TagMergePreviewQuery query) {
         ensureCommand(query, "标签合并影响预览查询");
-        Tag sourceTag = ensureTagExists(query.getSourceTagId());
-        Tag targetTag = ensureTagExists(query.getTargetTagId());
+        Tag sourceTag = ensureTagExists(query.sourceTagId());
+        Tag targetTag = ensureTagExists(query.targetTagId());
         List<TagAlias> aliasesToMerge = tagAliasRepository.listByTagId(sourceTag.getId());
         List<TagContentRef> impactedContentRefs = tagContentRefRepository.listByTagId(sourceTag.getId());
         int pendingReviewCount = sourceTag.getReviewStatus() == TagReviewStatus.PENDING ? 1 : 0;
@@ -258,13 +258,13 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         return new TagMergePreviewResult(
                 TaxonomyApplicationAssembler.toResult(
-                        sourceTag, getCategoryName(sourceTag.getCategoryId()), impactedContentRefs.size()),
+                        sourceTag, nonNullText(getCategoryName(sourceTag.getCategoryId())), impactedContentRefs.size()),
                 TaxonomyApplicationAssembler.toResult(
                         targetTag,
-                        getCategoryName(targetTag.getCategoryId()),
+                        nonNullText(getCategoryName(targetTag.getCategoryId())),
                         tagContentRefRepository.countByTagId(targetTag.getId())),
-                TaxonomyApplicationAssembler.toAliasResultList(aliasesToMerge),
-                TaxonomyApplicationAssembler.toContentRefResultList(impactedContentRefs),
+                TaxonomyApplicationAssembler.toAliasResultList(nonNullList(aliasesToMerge)),
+                TaxonomyApplicationAssembler.toContentRefResultList(nonNullList(impactedContentRefs)),
                 pendingReviewCount,
                 governedRecordCount);
     }
@@ -272,8 +272,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Override
     public TagBatchMergePreviewResult previewTagBatchMergeImpact(TagBatchMergePreviewQuery query) {
         TagBatchMergePreviewQuery effective = ensureCommand(query, "标签批量合并影响预览查询");
-        List<TagId> sourceTagIds = normalizeTagIds(effective.getSourceTagIds(), "sourceTagIds");
-        Tag targetTag = ensureTagUsableForBatchMergeTarget(ensureTagExists(effective.getTargetTagId()));
+        List<TagId> sourceTagIds = normalizeTagIds(effective.sourceTagIds(), "sourceTagIds");
+        Tag targetTag = ensureTagUsableForBatchMergeTarget(ensureTagExists(effective.targetTagId()));
         List<Tag> sourceTags = getExistingTags(sourceTagIds, "sourceTagIds");
         ensureBatchMergeSourceTags(sourceTags, targetTag);
 
@@ -293,15 +293,15 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                 sourceTags.stream()
                         .map(tag -> TaxonomyApplicationAssembler.toResult(
                                 tag,
-                                getCategoryName(tag.getCategoryId()),
+                                nonNullText(getCategoryName(tag.getCategoryId())),
                                 tagContentRefRepository.countByTagId(tag.getId())))
                         .collect(Collectors.toList()),
                 TaxonomyApplicationAssembler.toResult(
                         targetTag,
-                        getCategoryName(targetTag.getCategoryId()),
+                        nonNullText(getCategoryName(targetTag.getCategoryId())),
                         tagContentRefRepository.countByTagId(targetTag.getId())),
-                TaxonomyApplicationAssembler.toAliasResultList(aliasesToMerge),
-                TaxonomyApplicationAssembler.toContentRefResultList(impactedContentRefs),
+                TaxonomyApplicationAssembler.toAliasResultList(nonNullList(aliasesToMerge)),
+                TaxonomyApplicationAssembler.toContentRefResultList(nonNullList(impactedContentRefs)),
                 pendingReviewCount,
                 governedRecordCount);
     }
@@ -310,8 +310,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void applyTagMerge(TagMergeCommand command) {
         TagMergeCommand effective = ensureCommand(command, "标签合并命令");
-        Tag sourceTag = ensureTagExists(effective.getSourceTagId());
-        Tag targetTag = ensureTagExists(effective.getTargetTagId());
+        Tag sourceTag = ensureTagExists(effective.sourceTagId());
+        Tag targetTag = ensureTagExists(effective.targetTagId());
         List<TagContentRef> sourceContentRefs = tagContentRefRepository.listByTagId(sourceTag.getId());
         sourceTag.mergeInto(targetTag);
         if (tagRepository.update(sourceTag) != 1) {
@@ -331,8 +331,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void applyTagBatchMerge(TagBatchMergeCommand command) {
         TagBatchMergeCommand effective = ensureCommand(command, "标签批量合并命令");
-        List<TagId> sourceTagIds = normalizeTagIds(effective.getSourceTagIds(), "sourceTagIds");
-        Tag targetTag = ensureTagUsableForBatchMergeTarget(ensureTagExists(effective.getTargetTagId()));
+        List<TagId> sourceTagIds = normalizeTagIds(effective.sourceTagIds(), "sourceTagIds");
+        Tag targetTag = ensureTagUsableForBatchMergeTarget(ensureTagExists(effective.targetTagId()));
         List<Tag> sourceTags = getExistingTags(sourceTagIds, "sourceTagIds");
         ensureBatchMergeSourceTags(sourceTags, targetTag);
 
@@ -362,14 +362,14 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public TagId createTag(TagCreateCommand command) {
         TagCreateCommand effective = ensureCommand(command, "标签创建命令");
-        TagId tagId = ensureId(effective.getId(), "tagId");
-        String name = trimText(effective.getName(), "标签名称");
+        TagId tagId = ensureId(effective.id(), "tagId");
+        String name = trimText(effective.name(), "标签名称");
 
         if (tagRepository.countByName(name, null) > 0) {
             throw new BizException("标签名已存在: " + name);
         }
 
-        TagCategoryId categoryId = normalizeId(effective.getCategoryId());
+        TagCategoryId categoryId = normalizeId(effective.categoryId());
         if (categoryId != null) {
             TagCategory category = getExistingCategory(categoryId);
             if (category.getStatus() != TagCategoryStatus.ENABLED) {
@@ -381,13 +381,13 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         tag.setId(tagId);
         tag.setName(name);
         tag.setCategoryId(categoryId);
-        tag.setDescription(trimOptionalText(effective.getDescription()));
+        tag.setDescription(trimOptionalText(effective.description()));
         tag.setStatus(TagStatus.ENABLED);
         tag.setSource(TagSource.MANUAL);
         tag.setReviewStatus(TagReviewStatus.APPROVED);
-        tag.setReviewNote(trimOptionalText(effective.getReviewNote()));
+        tag.setReviewNote(trimOptionalText(effective.reviewNote()));
         tag.setCreatedAt(Instant.now());
-        tag.setReviewedAt(effective.getReviewedAt() == null ? Instant.now() : effective.getReviewedAt());
+        tag.setReviewedAt(effective.reviewedAt() == null ? Instant.now() : effective.reviewedAt());
 
         return tagRepository.insert(tag);
     }
@@ -396,15 +396,15 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void updateTag(TagUpdateCommand command) {
         TagUpdateCommand effective = ensureCommand(command, "标签更新命令");
-        TagId tagId = ensureId(effective.getId(), "tagId");
+        TagId tagId = ensureId(effective.id(), "tagId");
         Tag existing = ensureTagExists(tagId);
-        String name = trimText(effective.getName(), "标签名称");
+        String name = trimText(effective.name(), "标签名称");
 
         if (tagRepository.countByName(name, tagId) > 0) {
             throw new BizException("标签名已存在: " + name);
         }
 
-        TagCategoryId categoryId = normalizeId(effective.getCategoryId());
+        TagCategoryId categoryId = normalizeId(effective.categoryId());
         if (categoryId != null) {
             getExistingCategory(categoryId);
         }
@@ -413,7 +413,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         updated.setId(existing.getId());
         updated.setName(name);
         updated.setCategoryId(categoryId);
-        updated.setDescription(trimOptionalText(effective.getDescription()));
+        updated.setDescription(trimOptionalText(effective.description()));
         updated.setStatus(existing.getStatus());
         updated.setSource(existing.getSource());
         updated.setReviewStatus(existing.getReviewStatus());
@@ -430,9 +430,9 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void changeTagStatus(TagStatusCommand command) {
         TagStatusCommand effective = ensureCommand(command, "标签状态命令");
-        TagId tagId = ensureId(effective.getId(), "tagId");
+        TagId tagId = ensureId(effective.id(), "tagId");
         Tag tag = ensureTagExists(tagId);
-        TagStatus status = requireStatus(effective.getStatus(), "tagStatus");
+        TagStatus status = requireStatus(effective.status(), "tagStatus");
 
         Tag updated = new Tag();
         updated.setId(tag.getId());
@@ -455,7 +455,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void deprecateTag(TagDeprecateCommand command) {
         TagDeprecateCommand effective = ensureCommand(command, "标签废弃命令");
-        Tag tag = ensureTagExists(ensureId(effective.getId(), "tagId"));
+        Tag tag = ensureTagExists(ensureId(effective.id(), "tagId"));
         tag.deprecate(Instant.now(), null);
         if (tagRepository.update(tag) != 1) {
             throw new BizException("标签废弃状态更新失败");
@@ -466,7 +466,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void batchDeprecateTags(TagBatchDeprecateCommand command) {
         TagBatchDeprecateCommand effective = ensureCommand(command, "标签批量废弃命令");
-        List<Tag> tags = getExistingTags(normalizeTagIds(effective.getTagIds(), "tagIds"), "tagIds");
+        List<Tag> tags = getExistingTags(normalizeTagIds(effective.tagIds(), "tagIds"), "tagIds");
         for (Tag tag : tags) {
             if (tag.isDeprecated()) {
                 throw new BizException("标签已废弃: " + tag.getId().value());
@@ -483,8 +483,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Override
     public TagGovernanceMetricsResult getTagGovernanceMetrics(TagGovernanceMetricsQuery query) {
         TagGovernanceMetricsQuery effective = ensureCommand(query, "标签治理统计查询");
-        TagGovernanceMetrics metrics =
-                tagGovernanceMetricsRepository.getMetrics(effective.getTopLimit(), effective.getRecentMonths());
+        TagGovernanceMetrics metrics = tagGovernanceMetricsRepository.getByTopLimitAndRecentMonths(
+                effective.topLimit(), effective.recentMonths());
         return new TagGovernanceMetricsResult(
                 metrics.getTopTags().stream()
                         .map(item -> new TagGovernanceMetricsResult.TagUsageMetric(
@@ -506,10 +506,10 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     @Override
     public PageResult<TagResult> pagePendingTags(TagReviewQuery query, PageQuery page) {
-        TagReviewQuery effectiveQuery = query == null ? new TagReviewQuery() : query;
+        TagReviewQuery effectiveQuery = query == null ? new TagReviewQuery(null, null, null) : query;
         PageQuery effectivePage = normalize(page);
 
-        PageResult<Tag> pageResult = tagRepository.pagePending(effectivePage.getPageNo(), effectivePage.getPageSize());
+        PageResult<Tag> pageResult = tagRepository.listPending(effectivePage.getPageNo(), effectivePage.getPageSize());
 
         return PageResult.of(
                 pageResult.getPageNo(),
@@ -520,7 +520,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .filter(tag -> keepOnlyPending(tag, effectiveQuery))
                         .map(tag -> TaxonomyApplicationAssembler.toResult(
                                 tag,
-                                getCategoryName(tag.getCategoryId()),
+                                nonNullText(getCategoryName(tag.getCategoryId())),
                                 tagContentRefRepository.countByTagId(tag.getId())))
                         .collect(Collectors.toList()));
     }
@@ -529,9 +529,9 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void reviewTag(TagReviewCommand command) {
         TagReviewCommand effective = ensureCommand(command, "标签审核命令");
-        Tag tag = ensureTagExists(effective.getId());
-        String decision = normalizeDecision(effective.getDecision());
-        String reviewNote = trimOptionalText(effective.getReviewNote());
+        Tag tag = ensureTagExists(effective.id());
+        String decision = normalizeDecision(effective.decision());
+        String reviewNote = trimOptionalText(effective.reviewNote());
 
         Tag reviewed = new Tag();
         reviewed.setId(tag.getId());
@@ -570,12 +570,12 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void batchReviewTags(TagBatchReviewCommand command) {
         TagBatchReviewCommand effective = ensureCommand(command, "标签批量审核命令");
-        String decision = normalizeDecision(effective.getDecision());
-        String reviewNote = trimOptionalText(effective.getReviewNote());
-        List<Tag> tags = getExistingTags(normalizeTagIds(effective.getTagIds(), "tagIds"), "tagIds");
+        String decision = normalizeDecision(effective.decision());
+        String reviewNote = trimOptionalText(effective.reviewNote());
+        List<Tag> tags = getExistingTags(normalizeTagIds(effective.tagIds(), "tagIds"), "tagIds");
         TagCategoryId categoryId = null;
         if (APPROVE_DECISION.equals(decision)) {
-            categoryId = ensureId(effective.getCategoryId(), "categoryId");
+            categoryId = ensureId(effective.categoryId(), "categoryId");
             TagCategory category = getExistingCategory(categoryId);
             if (category.getStatus() != TagCategoryStatus.ENABLED) {
                 throw new BizException("审核通过标签必须关联启用中的分类");
@@ -602,17 +602,17 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Override
     public TagExtractionResult extractTags(TagExtractionCommand command) {
         TagExtractionCommand effective = ensureCommand(command, "标签抽取命令");
-        String sourceContentType = trimText(effective.getSourceContentType(), "sourceContentType");
-        Long sourceContentId = ensureId(effective.getSourceContentId(), "sourceContentId");
-        String contentText = trimText(effective.getContentText(), "contentText");
-        Long modelId = ensureId(effective.getModelId(), "modelId");
-        String modelName = trimText(effective.getModelName(), "modelName");
-        Long requestedBy = ensureId(effective.getRequestedBy(), "requestedBy");
-        int maxTags = effective.getMaxTags() == null ? 10 : effective.getMaxTags();
+        String sourceContentType = trimText(effective.sourceContentType(), "sourceContentType");
+        Long sourceContentId = ensureId(effective.sourceContentId(), "sourceContentId");
+        String contentText = trimText(effective.contentText(), "contentText");
+        Long modelId = ensureId(effective.modelId(), "modelId");
+        String modelName = trimText(effective.modelName(), "modelName");
+        Long requestedBy = ensureId(effective.requestedBy(), "requestedBy");
+        int maxTags = effective.maxTags() == null ? 10 : effective.maxTags();
         if (maxTags < 1) {
             throw new BizException("maxTags must be greater than 0");
         }
-        boolean allowNewTags = effective.getAllowNewTags() == null || Boolean.TRUE.equals(effective.getAllowNewTags());
+        boolean allowNewTags = effective.allowNewTags() == null || Boolean.TRUE.equals(effective.allowNewTags());
 
         String requestId = "knowledge-tag-" + UUID.randomUUID();
         KnowledgeAiExtractionFacadeResponse response =
@@ -626,7 +626,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .serviceRole("KNOWLEDGE")
                         .modelId(modelId)
                         .modelName(modelName)
-                        .promptVersionId(effective.getPromptVersionId())
+                        .promptVersionId(effective.promptVersionId())
                         .requestId(requestId)
                         .traceId(requestId)
                         .promptMessagesJson(promptMessagesJson())
@@ -652,9 +652,9 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void applyExtractedTags(TagCandidateApplyCommand command) {
         TagCandidateApplyCommand effective = ensureCommand(command, "标签候选应用命令");
-        Long candidateId = ensureId(effective.getAiCandidateId(), "aiCandidateId");
-        Long reviewedBy = ensureId(effective.getReviewedBy(), "reviewedBy");
-        List<TagCandidateApplyItemCommand> selectedTags = effective.getSelectedTags();
+        Long candidateId = ensureId(effective.aiCandidateId(), "aiCandidateId");
+        Long reviewedBy = ensureId(effective.reviewedBy(), "reviewedBy");
+        List<TagCandidateApplyItem> selectedTags = effective.selectedTags();
         if (selectedTags == null || selectedTags.isEmpty()) {
             throw new BizException("selectedTags must not be empty");
         }
@@ -675,8 +675,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .capability(CAPABILITY_KNOWLEDGE_TAG_EXTRACT)
                         .build());
 
-        for (TagCandidateApplyItemCommand item : selectedTags) {
-            applySelectedTag(item, effective.getReviewNote());
+        for (TagCandidateApplyItem item : selectedTags) {
+            applySelectedTag(item, effective.reviewNote());
         }
         aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
                 .candidateId(pendingCandidate.getCandidateId())
@@ -689,16 +689,16 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Override
     public List<TagAliasResult> listTagAliases(TagId tagId) {
         Tag tag = ensureTagExists(tagId);
-        return TaxonomyApplicationAssembler.toAliasResultList(tagAliasRepository.listByTagId(tag.getId()));
+        return TaxonomyApplicationAssembler.toAliasResultList(nonNullList(tagAliasRepository.listByTagId(tag.getId())));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public TagAliasId createTagAlias(TagAliasCreateCommand command) {
         TagAliasCreateCommand effective = ensureCommand(command, "标签别名创建命令");
-        TagAliasId aliasId = ensureId(effective.getId(), "aliasId");
-        String name = trimText(effective.getName(), "别名");
-        TagId tagId = ensureId(effective.getTagId(), "tagId");
+        TagAliasId aliasId = ensureId(effective.id(), "aliasId");
+        String name = trimText(effective.name(), "别名");
+        TagId tagId = ensureId(effective.tagId(), "tagId");
         ensureTagExists(tagId);
 
         if (tagAliasRepository.countByName(name, aliasId) > 0) {
@@ -709,7 +709,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         alias.setId(aliasId);
         alias.setTagId(tagId);
         alias.setName(name);
-        alias.setSource(effective.getSource() == null ? TagSource.MANUAL : effective.getSource());
+        alias.setSource(effective.source() == null ? TagSource.MANUAL : effective.source());
 
         return tagAliasRepository.insert(alias);
     }
@@ -718,14 +718,14 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void removeTagAlias(TagAliasRemoveCommand command) {
         TagAliasRemoveCommand effective = ensureCommand(command, "标签别名删除命令");
-        TagAliasId id = ensureId(effective.getId(), "aliasId");
+        TagAliasId id = ensureId(effective.id(), "aliasId");
         tagAliasRepository.deleteById(id);
     }
 
-    private void applySelectedTag(TagCandidateApplyItemCommand item, String reviewNote) {
-        TagCandidateApplyItemCommand effective = ensureCommand(item, "标签候选项");
-        String name = trimText(effective.getName(), "name");
-        TagId matchedTagId = parseTagId(effective.getMatchedExistingTagId());
+    private void applySelectedTag(TagCandidateApplyItem item, String reviewNote) {
+        TagCandidateApplyItem effective = ensureCommand(item, "标签候选项");
+        String name = trimText(effective.name(), "name");
+        TagId matchedTagId = parseTagId(effective.matchedExistingTagId());
         if (matchedTagId != null) {
             ensureTagExists(matchedTagId);
             return;
@@ -737,8 +737,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         Tag tag = new Tag();
         tag.setId(TagIdCodec.toDomain(idGenerator.nextId().value()));
         tag.setName(name);
-        tag.setCategoryId(parseCategoryId(effective.getCategoryId()));
-        tag.setDescription(trimOptionalText(effective.getReason()));
+        tag.setCategoryId(parseCategoryId(effective.categoryId()));
+        tag.setDescription(trimOptionalText(effective.reason()));
         tag.setStatus(TagStatus.ENABLED);
         tag.setSource(TagSource.AI_EXTRACTED);
         tag.setReviewStatus(TagReviewStatus.PENDING);
@@ -759,26 +759,26 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     private Map<String, Object> candidateApplyPayload(TagCandidateApplyCommand command, Long reviewedBy) {
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("aiCandidateId", command.getAiCandidateId());
+        payload.put("aiCandidateId", command.aiCandidateId());
         payload.put("reviewedBy", reviewedBy);
-        payload.put("reviewNote", trimOptionalText(command.getReviewNote()));
+        payload.put("reviewNote", trimOptionalText(command.reviewNote()));
         payload.put(
                 "selectedTags",
-                command.getSelectedTags().stream()
+                command.selectedTags().stream()
                         .filter(Objects::nonNull)
                         .map(this::candidateApplyItemPayload)
                         .collect(Collectors.toList()));
         return payload;
     }
 
-    private Map<String, Object> candidateApplyItemPayload(TagCandidateApplyItemCommand item) {
+    private Map<String, Object> candidateApplyItemPayload(TagCandidateApplyItem item) {
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("name", item.getName());
-        payload.put("categoryId", item.getCategoryId());
-        payload.put("categoryName", item.getCategoryName());
-        payload.put("confidence", item.getConfidence());
-        payload.put("reason", item.getReason());
-        payload.put("matchedExistingTagId", item.getMatchedExistingTagId());
+        payload.put("name", item.name());
+        payload.put("categoryId", item.categoryId());
+        payload.put("categoryName", item.categoryName());
+        payload.put("confidence", item.confidence());
+        payload.put("reason", item.reason());
+        payload.put("matchedExistingTagId", item.matchedExistingTagId());
         return payload;
     }
 
@@ -808,7 +808,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("contentType", sourceContentType);
         payload.put("contentId", sourceContentId);
-        payload.put("sourceTitle", trimOptionalText(command.getContentTitle()));
+        payload.put("sourceTitle", trimOptionalText(command.contentTitle()));
         payload.put("sourceText", contentText);
         payload.put("existingTags", existingTagPayloads());
         payload.put("categories", categoryPayloads());
@@ -957,6 +957,14 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         return category == null ? null : category.getName();
     }
 
+    private String nonNullText(String text) {
+        return text == null ? "" : text;
+    }
+
+    private <T> List<T> nonNullList(List<T> list) {
+        return list == null ? List.of() : list;
+    }
+
     private List<TagId> normalizeTagIds(List<TagId> tagIds, String field) {
         if (tagIds == null || tagIds.isEmpty()) {
             throw new BizException("参数不能为空: " + field);
@@ -1067,10 +1075,10 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         if (tag.getReviewStatus() != TagReviewStatus.PENDING || !isAiGeneratedSource(tag.getSource())) {
             return false;
         }
-        if (query != null && query.getSource() != null && !isAiGeneratedSource(query.getSource())) {
+        if (query != null && query.source() != null && !isAiGeneratedSource(query.source())) {
             return false;
         }
-        String name = StringUtils.trimToNull(query == null ? null : query.getName());
+        String name = StringUtils.trimToNull(query == null ? null : query.name());
         if (name != null && !StringUtils.containsIgnoreCase(tag.getName(), name)) {
             return false;
         }

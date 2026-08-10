@@ -52,8 +52,8 @@ public class KnowledgeFacadeImpl implements KnowledgeFacade {
         if (request == null) {
             return null;
         }
-        return knowledgeFacadeAssembler.toTagHintResponse(
-                knowledgeTaxonomyReadApplicationService.getTagHint(request.getTerm()));
+        return knowledgeFacadeAssembler.toTagHintResponse(knowledgeTaxonomyReadApplicationService.getTagHint(
+                knowledgeFacadeAssembler.toDiscoveryTagHintQuery(request)));
     }
 
     @Override
@@ -62,8 +62,8 @@ public class KnowledgeFacadeImpl implements KnowledgeFacade {
         if (request == null) {
             return null;
         }
-        return knowledgeFacadeAssembler.toEntityHintsResponse(
-                knowledgeTaxonomyReadApplicationService.listEntityHints(request.getTerm()));
+        return knowledgeFacadeAssembler.toEntityHintsResponse(knowledgeTaxonomyReadApplicationService.listEntityHints(
+                knowledgeFacadeAssembler.toDiscoveryEntityHintQuery(request)));
     }
 
     @Override

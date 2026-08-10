@@ -177,9 +177,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 mock(KnowledgeQualityReportApplicationService.class),
                 mock(KnowledgeLineageReadApplicationService.class));
 
-        KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
-        query.setLevel("detail");
-        query.setEntityId(3001L);
+        KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery("detail", null, 3001L, null, null, null, null);
         KnowledgePortalAtlasResult result = service.getAtlas(query);
 
         assertEquals("detail", result.getCurrentLevel());
@@ -250,8 +248,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 mock(KnowledgeQualityReportApplicationService.class),
                 mock(KnowledgeLineageReadApplicationService.class));
 
-        KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
-        query.setLevel("overview");
+        KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery("overview", null, null, null, null, null, null);
         KnowledgePortalAtlasResult result = service.getAtlas(query);
 
         assertEquals("overview", result.getCurrentLevel());
@@ -313,9 +310,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 mock(KnowledgeQualityReportApplicationService.class),
                 mock(KnowledgeLineageReadApplicationService.class));
 
-        KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
-        query.setLevel("category");
-        query.setCategoryCode("ANIMALS");
+        KnowledgePortalAtlasQuery query =
+                new KnowledgePortalAtlasQuery("category", "ANIMALS", null, null, null, null, null);
         KnowledgePortalAtlasResult result = service.getAtlas(query);
 
         assertEquals("category", result.getCurrentLevel());
@@ -346,9 +342,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 mock(KnowledgeQualityReportApplicationService.class),
                 mock(KnowledgeLineageReadApplicationService.class));
 
-        KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
-        query.setLevel("category");
-        query.setCategoryCode("ASTRONOMY");
+        KnowledgePortalAtlasQuery query =
+                new KnowledgePortalAtlasQuery("category", "ASTRONOMY", null, null, null, null, null);
         KnowledgePortalAtlasResult result = service.getAtlas(query);
 
         assertEquals("category", result.getCurrentLevel());

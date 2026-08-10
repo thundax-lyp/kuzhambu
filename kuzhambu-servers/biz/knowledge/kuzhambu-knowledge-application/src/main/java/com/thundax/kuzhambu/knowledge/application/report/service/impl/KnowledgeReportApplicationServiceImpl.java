@@ -28,11 +28,11 @@ public class KnowledgeReportApplicationServiceImpl implements KnowledgeReportApp
     @Override
     public KnowledgeReportSummaryResult summary(Instant periodStart, Instant periodEnd, String bucketType) {
         TagGovernanceMetrics metrics =
-                tagGovernanceMetricsRepository.getMetrics(DEFAULT_TOP_LIMIT, DEFAULT_RECENT_MONTHS);
+                tagGovernanceMetricsRepository.getByTopLimitAndRecentMonths(DEFAULT_TOP_LIMIT, DEFAULT_RECENT_MONTHS);
         return new KnowledgeReportSummaryResult(
                 periodStart,
                 periodEnd,
-                tagGovernanceMetricsRepository.getTagCoverageRate(),
+                tagGovernanceMetricsRepository.getByTagCoverageRate(),
                 mapTopTags(metrics),
                 mapCategoryDistributions(metrics),
                 mapMonthlyNewTags(metrics));

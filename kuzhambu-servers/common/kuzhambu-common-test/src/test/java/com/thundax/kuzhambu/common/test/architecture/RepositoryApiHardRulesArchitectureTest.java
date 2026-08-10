@@ -163,19 +163,6 @@ class RepositoryApiHardRulesArchitectureTest {
                 "method=listManuscriptTree path=manuscript-tree");
         addLegacyActionVerbAllowances(
                 allowances,
-                "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/KnowledgeTaxonomyController.java",
-                "method=changeCategoryStatus path=category/status",
-                "method=getTagDetail path=tag/detail",
-                "method=changeTagStatus path=tag/status",
-                "method=batchReviewTags",
-                "method=batchReviewTags path=tag/review/batch",
-                "method=previewTagBatchMergeImpact path=tag/merge/batch-preview",
-                "method=applyTagBatchMerge path=tag/merge/batch-apply",
-                "method=batchDeprecateTags",
-                "method=batchDeprecateTags path=tag/deprecate/batch",
-                "method=getTagGovernanceMetrics path=tag/metrics");
-        addLegacyActionVerbAllowances(
-                allowances,
                 "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java",
                 "method=summarizeInvocationLogs",
                 "method=summarizeInvocationLogs path=invocation-log/summary",

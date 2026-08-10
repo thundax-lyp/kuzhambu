@@ -67,16 +67,16 @@ class KnowledgeTaxonomyControllerTest {
         ArgumentCaptor<TagExtractionCommand> captor = ArgumentCaptor.forClass(TagExtractionCommand.class);
         verify(taxonomyService).extractTags(captor.capture());
         TagExtractionCommand command = captor.getValue();
-        assertEquals("SANCAI_ENTRY", command.getSourceContentType());
-        assertEquals(1001L, command.getSourceContentId());
-        assertEquals("条目标题", command.getContentTitle());
-        assertEquals("正文片段", command.getContentText());
-        assertEquals(401L, command.getModelId());
-        assertEquals("gpt-5", command.getModelName());
-        assertEquals(301L, command.getPromptVersionId());
-        assertEquals(8, command.getMaxTags());
-        assertEquals(true, command.getAllowNewTags());
-        assertEquals(201L, command.getRequestedBy());
+        assertEquals("SANCAI_ENTRY", command.sourceContentType());
+        assertEquals(1001L, command.sourceContentId());
+        assertEquals("条目标题", command.contentTitle());
+        assertEquals("正文片段", command.contentText());
+        assertEquals(401L, command.modelId());
+        assertEquals("gpt-5", command.modelName());
+        assertEquals(301L, command.promptVersionId());
+        assertEquals(8, command.maxTags());
+        assertEquals(true, command.allowNewTags());
+        assertEquals(201L, command.requestedBy());
         assertEquals(501L, response.getAiCallId());
         assertEquals(601L, response.getAiCandidateId());
         assertEquals("SUCCEEDED", response.getStatus());
@@ -106,16 +106,16 @@ class KnowledgeTaxonomyControllerTest {
         ArgumentCaptor<TagCandidateApplyCommand> captor = ArgumentCaptor.forClass(TagCandidateApplyCommand.class);
         verify(taxonomyService).applyExtractedTags(captor.capture());
         TagCandidateApplyCommand command = captor.getValue();
-        assertEquals(601L, command.getAiCandidateId());
-        assertEquals("AI 审核", command.getReviewNote());
-        assertEquals(201L, command.getReviewedBy());
-        assertEquals(1, command.getSelectedTags().size());
-        assertEquals("礼制", command.getSelectedTags().get(0).getName());
-        assertEquals("11", command.getSelectedTags().get(0).getCategoryId());
-        assertEquals("制度", command.getSelectedTags().get(0).getCategoryName());
-        assertEquals(new BigDecimal("0.91"), command.getSelectedTags().get(0).getConfidence());
-        assertEquals("匹配既有标签", command.getSelectedTags().get(0).getReason());
-        assertEquals("21", command.getSelectedTags().get(0).getMatchedExistingTagId());
+        assertEquals(601L, command.aiCandidateId());
+        assertEquals("AI 审核", command.reviewNote());
+        assertEquals(201L, command.reviewedBy());
+        assertEquals(1, command.selectedTags().size());
+        assertEquals("礼制", command.selectedTags().get(0).name());
+        assertEquals("11", command.selectedTags().get(0).categoryId());
+        assertEquals("制度", command.selectedTags().get(0).categoryName());
+        assertEquals(new BigDecimal("0.91"), command.selectedTags().get(0).confidence());
+        assertEquals("匹配既有标签", command.selectedTags().get(0).reason());
+        assertEquals("21", command.selectedTags().get(0).matchedExistingTagId());
     }
 
     @Test
@@ -202,9 +202,9 @@ class KnowledgeTaxonomyControllerTest {
 
         ArgumentCaptor<TagBatchMergePreviewQuery> captor = ArgumentCaptor.forClass(TagBatchMergePreviewQuery.class);
         verify(taxonomyService).previewTagBatchMergeImpact(captor.capture());
-        assertEquals(2, captor.getValue().getSourceTagIds().size());
-        assertEquals(1001L, captor.getValue().getSourceTagIds().get(0).value());
-        assertEquals(1002L, captor.getValue().getTargetTagId().value());
+        assertEquals(2, captor.getValue().sourceTagIds().size());
+        assertEquals(1001L, captor.getValue().sourceTagIds().get(0).value());
+        assertEquals(1002L, captor.getValue().targetTagId().value());
         assertEquals(2, response.getSourceTags().size());
         assertEquals("祭祀", response.getTargetTag().getName());
         assertEquals("礼法", response.getAliasesToMerge().get(0).getName());
@@ -225,9 +225,9 @@ class KnowledgeTaxonomyControllerTest {
 
         ArgumentCaptor<TagBatchMergeCommand> captor = ArgumentCaptor.forClass(TagBatchMergeCommand.class);
         verify(taxonomyService).applyTagBatchMerge(captor.capture());
-        assertEquals(2, captor.getValue().getSourceTagIds().size());
-        assertEquals(1003L, captor.getValue().getSourceTagIds().get(1).value());
-        assertEquals(1002L, captor.getValue().getTargetTagId().value());
+        assertEquals(2, captor.getValue().sourceTagIds().size());
+        assertEquals(1003L, captor.getValue().sourceTagIds().get(1).value());
+        assertEquals(1002L, captor.getValue().targetTagId().value());
     }
 
     @Test
@@ -237,12 +237,12 @@ class KnowledgeTaxonomyControllerTest {
         TagBatchDeprecateRequest request = new TagBatchDeprecateRequest();
         request.setTagIds(List.of("1001", "1003"));
 
-        assertTrue(controller.batchDeprecateTags(request));
+        assertTrue(controller.deprecateTags(request));
 
         ArgumentCaptor<TagBatchDeprecateCommand> captor = ArgumentCaptor.forClass(TagBatchDeprecateCommand.class);
         verify(taxonomyService).batchDeprecateTags(captor.capture());
-        assertEquals(2, captor.getValue().getTagIds().size());
-        assertEquals(1001L, captor.getValue().getTagIds().get(0).value());
+        assertEquals(2, captor.getValue().tagIds().size());
+        assertEquals(1001L, captor.getValue().tagIds().get(0).value());
     }
 
     @Test
@@ -255,39 +255,39 @@ class KnowledgeTaxonomyControllerTest {
         request.setCategoryId("11");
         request.setReviewNote("批量通过");
 
-        assertTrue(controller.batchReviewTags(request));
+        assertTrue(controller.reviewTagBatch(request));
 
         ArgumentCaptor<TagBatchReviewCommand> captor = ArgumentCaptor.forClass(TagBatchReviewCommand.class);
         verify(taxonomyService).batchReviewTags(captor.capture());
-        assertEquals(2, captor.getValue().getTagIds().size());
-        assertEquals("APPROVE", captor.getValue().getDecision());
-        assertEquals(11L, captor.getValue().getCategoryId().value());
-        assertEquals("批量通过", captor.getValue().getReviewNote());
+        assertEquals(2, captor.getValue().tagIds().size());
+        assertEquals("APPROVE", captor.getValue().decision());
+        assertEquals(11L, captor.getValue().categoryId().value());
+        assertEquals("批量通过", captor.getValue().reviewNote());
     }
 
     @Test
     void batchEndpointsShouldKeepExpectedRoutesPermissionsAndAuditText() throws Exception {
         assertEndpoint(
                 "previewTagBatchMergeImpact",
-                "tag/merge/batch-preview",
+                "tag/merge/list/preview",
                 "knowledge:taxonomy:view",
                 "批量预览标签合并",
                 TagBatchMergeRequest.class);
         assertEndpoint(
                 "applyTagBatchMerge",
-                "tag/merge/batch-apply",
+                "tag/merge/list/apply",
                 "knowledge:taxonomy:edit",
                 "批量执行标签合并",
                 TagBatchMergeRequest.class);
         assertEndpoint(
-                "batchDeprecateTags",
-                "tag/deprecate/batch",
+                "deprecateTags",
+                "tag/deprecate/list",
                 "knowledge:taxonomy:edit",
                 "批量废弃标签",
                 TagBatchDeprecateRequest.class);
         assertEndpoint(
-                "batchReviewTags",
-                "tag/review/batch",
+                "reviewTagBatch",
+                "tag/review/list",
                 "knowledge:taxonomy:review",
                 "批量审核标签",
                 TagBatchReviewRequest.class);

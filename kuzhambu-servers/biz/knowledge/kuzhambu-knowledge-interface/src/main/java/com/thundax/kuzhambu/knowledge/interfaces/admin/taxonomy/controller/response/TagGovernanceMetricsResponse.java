@@ -6,11 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
 import java.util.List;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
+@Builder
 @Schema(name = "TagGovernanceMetricsResponse", description = "标签治理统计响应")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -33,7 +33,7 @@ public class TagGovernanceMetricsResponse implements Serializable {
     private List<MonthlyNewTagMetric> monthlyNewTags;
 
     @Getter
-    @Setter
+    @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TagUsageMetric implements Serializable {
@@ -48,7 +48,7 @@ public class TagGovernanceMetricsResponse implements Serializable {
     }
 
     @Getter
-    @Setter
+    @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class CategoryDistributionMetric implements Serializable {
@@ -63,7 +63,7 @@ public class TagGovernanceMetricsResponse implements Serializable {
     }
 
     @Getter
-    @Setter
+    @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SourceRatioMetric implements Serializable {
@@ -78,7 +78,7 @@ public class TagGovernanceMetricsResponse implements Serializable {
     }
 
     @Getter
-    @Setter
+    @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MonthlyNewTagMetric implements Serializable {

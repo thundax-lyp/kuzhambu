@@ -130,14 +130,14 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
     @Override
     public KnowledgePortalAtlasResult getAtlas(KnowledgePortalAtlasQuery query) {
         KnowledgePortalAtlasQuery effectiveQuery = normalizeAtlasQuery(query);
-        if ("overview".equalsIgnoreCase(effectiveQuery.getLevel())) {
+        if ("overview".equalsIgnoreCase(effectiveQuery.level())) {
             return buildOverviewAtlas();
         }
-        if ("category".equalsIgnoreCase(effectiveQuery.getLevel())) {
-            return buildCategoryAtlas(effectiveQuery.getCategoryCode());
+        if ("category".equalsIgnoreCase(effectiveQuery.level())) {
+            return buildCategoryAtlas(effectiveQuery.categoryCode());
         }
-        if ("detail".equalsIgnoreCase(effectiveQuery.getLevel())) {
-            return buildDetailAtlas(effectiveQuery.getEntityId());
+        if ("detail".equalsIgnoreCase(effectiveQuery.level())) {
+            return buildDetailAtlas(effectiveQuery.entityId());
         }
         return buildOverviewAtlas();
     }
@@ -562,10 +562,14 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
         if (query == null) {
             return new KnowledgePortalAtlasQuery("overview", null, null, null, null, null, null);
         }
-        if (query.getLevel() == null || query.getLevel().isBlank()) {
-            query.setLevel("overview");
-        }
-        return query;
+        return new KnowledgePortalAtlasQuery(
+                query.level() == null || query.level().isBlank() ? "overview" : query.level(),
+                query.categoryCode(),
+                query.entityId(),
+                query.knowledgeBase(),
+                query.keyword(),
+                query.tag(),
+                query.timeRange());
     }
 
     @Override

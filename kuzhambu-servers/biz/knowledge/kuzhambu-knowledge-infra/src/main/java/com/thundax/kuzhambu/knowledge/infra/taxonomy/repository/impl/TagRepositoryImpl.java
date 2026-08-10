@@ -85,7 +85,7 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public PageResult<Tag> pagePending(int pageNo, int pageSize) {
+    public PageResult<Tag> listPending(int pageNo, int pageSize) {
         IPage<TagDO> dataObjectPage = mapper.selectPage(
                 new Page<>(pageNo, pageSize),
                 buildQueryWrapper(null, null, null, TagSource.AI_EXTRACTED, TagReviewStatus.PENDING)

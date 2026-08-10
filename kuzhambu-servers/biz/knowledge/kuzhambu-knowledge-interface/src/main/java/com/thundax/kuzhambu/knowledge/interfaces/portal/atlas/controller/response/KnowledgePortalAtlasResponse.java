@@ -1,15 +1,17 @@
 package com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Builder
+@Schema(name = "KnowledgePortalAtlasResponse", description = "Atlas 知识门户响应")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class KnowledgePortalAtlasResponse {
     private String currentLevel;
     private List<BreadcrumbItemResponse> breadcrumbItems;
@@ -20,9 +22,10 @@ public class KnowledgePortalAtlasResponse {
     private CanvasViewResponse canvasView;
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "BreadcrumbItemResponse", description = "面包屑项")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class BreadcrumbItemResponse {
         private String level;
         private String label;
@@ -30,9 +33,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "OverviewViewResponse", description = "Atlas overview 视图")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class OverviewViewResponse {
         private String summaryTitle;
         private String summarySubtitle;
@@ -40,9 +44,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "OverviewCategoryCardResponse", description = "Atlas 分类卡片")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class OverviewCategoryCardResponse {
         private String categoryCode;
         private String categoryName;
@@ -54,9 +59,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "CategoryViewResponse", description = "Atlas 分类视图")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class CategoryViewResponse {
         private String categoryCode;
         private String categoryName;
@@ -68,9 +74,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "CategoryEntityHighlightResponse", description = "Atlas 分类实体高亮")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class CategoryEntityHighlightResponse {
         private String entityId;
         private String entityName;
@@ -80,9 +87,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "DetailViewResponse", description = "Atlas 详情视图")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class DetailViewResponse {
         private FocusNodeResponse focusNode;
         private List<RelationGroupResponse> relationGroups;
@@ -92,9 +100,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "FocusNodeResponse", description = "Atlas 聚焦节点")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FocusNodeResponse {
         private String id;
         private String title;
@@ -106,9 +115,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "RelationGroupResponse", description = "Atlas 关系分组")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RelationGroupResponse {
         private String groupKey;
         private String groupLabel;
@@ -116,9 +126,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "RelationItemResponse", description = "Atlas 关系项")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RelationItemResponse {
         private String sourceId;
         private String sourceLabel;
@@ -130,9 +141,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "SourceReferenceResponse", description = "Atlas 来源引用")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SourceReferenceResponse {
         private String sourceId;
         private String sourceTitle;
@@ -143,9 +155,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "RelatedTagResponse", description = "Atlas 关联标签")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RelatedTagResponse {
         private String tagId;
         private String tagName;
@@ -154,9 +167,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "TimelineItemResponse", description = "Atlas 时间轴条目")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TimelineItemResponse {
         private String timeLabel;
         private String title;
@@ -165,9 +179,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "AvailableFiltersResponse", description = "Atlas 过滤条件")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AvailableFiltersResponse {
         private List<String> knowledgeBases;
         private List<String> entityTypes;
@@ -177,9 +192,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "CanvasViewResponse", description = "Atlas 画布视图")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class CanvasViewResponse {
         private String mode;
         private String title;
@@ -193,9 +209,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "CanvasNodeResponse", description = "Atlas 画布节点")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class CanvasNodeResponse {
         private String id;
         private String kind;
@@ -213,9 +230,10 @@ public class KnowledgePortalAtlasResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "CanvasEdgeResponse", description = "Atlas 画布边")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class CanvasEdgeResponse {
         private String id;
         private String source;

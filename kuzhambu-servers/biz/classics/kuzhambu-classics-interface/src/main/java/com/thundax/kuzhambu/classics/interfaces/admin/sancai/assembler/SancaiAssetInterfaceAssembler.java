@@ -165,174 +165,147 @@ public final class SancaiAssetInterfaceAssembler {
     @NonNull
     public static SancaiAssetResponse toImageResponse(@NonNull SancaiEntryImage image) {
         Objects.requireNonNull(image, "image");
-        return image == null
-                ? SancaiAssetResponse.builder().build()
-                : SancaiAssetResponse.builder()
-                        .id(image.getId() == null ? null : image.getId().value())
-                        .entryId(
-                                image.getEntryId() == null
-                                        ? null
-                                        : image.getEntryId().value())
-                        .storageObjectId(
-                                image.getStorageObjectId() == null
-                                        ? null
-                                        : image.getStorageObjectId().value())
-                        .imageType(
-                                image.getImageType() == null
-                                        ? null
-                                        : image.getImageType().value())
-                        .title(image.getTitle())
-                        .currentUsed(image.isCurrentUsed())
-                        .build();
+        return SancaiAssetResponse.builder()
+                .id(image.getId() == null ? null : image.getId().value())
+                .entryId(image.getEntryId() == null ? null : image.getEntryId().value())
+                .storageObjectId(
+                        image.getStorageObjectId() == null
+                                ? null
+                                : image.getStorageObjectId().value())
+                .imageType(
+                        image.getImageType() == null
+                                ? null
+                                : image.getImageType().value())
+                .title(image.getTitle())
+                .currentUsed(image.isCurrentUsed())
+                .build();
     }
 
     @NonNull
     public static SancaiAssetResponse toImageResourceResponse(@NonNull SancaiEntryImageResource resource) {
         Objects.requireNonNull(resource, "resource");
-        return resource == null
-                ? SancaiAssetResponse.builder().build()
-                : SancaiAssetResponse.builder()
-                        .id(resource.getImageId())
-                        .entryId(resource.getEntryId())
-                        .storageObjectId(resource.getStorageObjectId())
-                        .originalFilename(resource.getOriginalFilename())
-                        .contentType(resource.getContentType())
-                        .size(resource.getSize())
-                        .previewUrl(resource.getPreviewUrl())
-                        .downloadUrl(resource.getDownloadUrl())
-                        .build();
+        return SancaiAssetResponse.builder()
+                .id(resource.getImageId())
+                .entryId(resource.getEntryId())
+                .storageObjectId(resource.getStorageObjectId())
+                .originalFilename(resource.getOriginalFilename())
+                .contentType(resource.getContentType())
+                .size(resource.getSize())
+                .previewUrl(resource.getPreviewUrl())
+                .downloadUrl(resource.getDownloadUrl())
+                .build();
     }
 
     @NonNull
     public static SancaiAssetResponse toDraftResponse(@NonNull SancaiEntryDraft draft) {
         Objects.requireNonNull(draft, "draft");
-        return draft == null
-                ? SancaiAssetResponse.builder().build()
-                : SancaiAssetResponse.builder()
-                        .id(draft.getId() == null ? null : draft.getId().value())
-                        .entryId(
-                                draft.getEntryId() == null
-                                        ? null
-                                        : draft.getEntryId().value())
-                        .draftJson(draft.getDraftJson())
-                        .build();
+        return SancaiAssetResponse.builder()
+                .id(draft.getId() == null ? null : draft.getId().value())
+                .entryId(draft.getEntryId() == null ? null : draft.getEntryId().value())
+                .draftJson(draft.getDraftJson())
+                .build();
     }
 
     @NonNull
     public static SancaiAssetResponse toVisualAssetResponse(@NonNull SancaiVisualAsset visualAsset) {
         Objects.requireNonNull(visualAsset, "visualAsset");
-        Long sourceStorageObjectId = visualAsset == null || visualAsset.getSourceImageStorageObjectId() == null
+        Long sourceStorageObjectId = visualAsset.getSourceImageStorageObjectId() == null
                 ? null
                 : visualAsset.getSourceImageStorageObjectId().value();
-        Long generatedStorageObjectId = visualAsset == null || visualAsset.getGeneratedImageStorageObjectId() == null
+        Long generatedStorageObjectId = visualAsset.getGeneratedImageStorageObjectId() == null
                 ? null
                 : visualAsset.getGeneratedImageStorageObjectId().value();
-        Long visualAssetId = visualAsset == null || visualAsset.getId() == null
-                ? null
-                : visualAsset.getId().value();
-        Long entryId = visualAsset == null || visualAsset.getEntryId() == null
+        Long visualAssetId =
+                visualAsset.getId() == null ? null : visualAsset.getId().value();
+        Long entryId = visualAsset.getEntryId() == null
                 ? null
                 : visualAsset.getEntryId().value();
-        return visualAsset == null
-                ? SancaiAssetResponse.builder().build()
-                : SancaiAssetResponse.builder()
-                        .id(visualAssetId)
-                        .visualAssetId(visualAssetId)
-                        .entryId(entryId)
-                        .versionNo(visualAsset.getVersionNo())
-                        .status(
-                                visualAsset.getStatus() == null
-                                        ? null
-                                        : visualAsset.getStatus().value())
-                        .sourceImageStorageObjectId(sourceStorageObjectId)
-                        .generatedImageStorageObjectId(generatedStorageObjectId)
-                        .currentUsed(visualAsset.isCurrentUsed())
-                        .textWeight(visualAsset.getTextWeight())
-                        .imageWeight(visualAsset.getImageWeight())
-                        .imageAnalysisMarkdown(visualAsset.getImageAnalysisMarkdown())
-                        .fusionDescription(visualAsset.getFusionDescription())
-                        .visualDescription(visualAsset.getVisualDescription())
-                        .generationParamsJson(visualAsset.getGenerationParamsJson())
-                        .sourcePreviewUrl(
-                                visualAssetContentUrl(entryId, visualAssetId, sourceStorageObjectId, "source-content"))
-                        .sourceDownloadUrl(visualAssetContentDownloadUrl(
-                                entryId, visualAssetId, sourceStorageObjectId, "source-content"))
-                        .generatedPreviewUrl(visualAssetContentUrl(
-                                entryId, visualAssetId, generatedStorageObjectId, "generated-content"))
-                        .generatedDownloadUrl(visualAssetContentDownloadUrl(
-                                entryId, visualAssetId, generatedStorageObjectId, "generated-content"))
-                        .build();
+        return SancaiAssetResponse.builder()
+                .id(visualAssetId)
+                .visualAssetId(visualAssetId)
+                .entryId(entryId)
+                .versionNo(visualAsset.getVersionNo())
+                .status(
+                        visualAsset.getStatus() == null
+                                ? null
+                                : visualAsset.getStatus().value())
+                .sourceImageStorageObjectId(sourceStorageObjectId)
+                .generatedImageStorageObjectId(generatedStorageObjectId)
+                .currentUsed(visualAsset.isCurrentUsed())
+                .textWeight(visualAsset.getTextWeight())
+                .imageWeight(visualAsset.getImageWeight())
+                .imageAnalysisMarkdown(visualAsset.getImageAnalysisMarkdown())
+                .fusionDescription(visualAsset.getFusionDescription())
+                .visualDescription(visualAsset.getVisualDescription())
+                .generationParamsJson(visualAsset.getGenerationParamsJson())
+                .sourcePreviewUrl(
+                        visualAssetContentUrl(entryId, visualAssetId, sourceStorageObjectId, "source-content"))
+                .sourceDownloadUrl(
+                        visualAssetContentDownloadUrl(entryId, visualAssetId, sourceStorageObjectId, "source-content"))
+                .generatedPreviewUrl(
+                        visualAssetContentUrl(entryId, visualAssetId, generatedStorageObjectId, "generated-content"))
+                .generatedDownloadUrl(visualAssetContentDownloadUrl(
+                        entryId, visualAssetId, generatedStorageObjectId, "generated-content"))
+                .build();
     }
 
     @NonNull
     public static SancaiAssetResponse toShowcaseResponse(@NonNull SancaiShowcase showcase) {
         Objects.requireNonNull(showcase, "showcase");
-        Long showcaseId = showcase == null || showcase.getId() == null
-                ? null
-                : showcase.getId().value();
-        Long storageObjectId = showcase == null || showcase.getStorageObjectId() == null
+        Long showcaseId = showcase.getId() == null ? null : showcase.getId().value();
+        Long storageObjectId = showcase.getStorageObjectId() == null
                 ? null
                 : showcase.getStorageObjectId().value();
-        boolean completed =
-                showcase != null && showcase.getStatus() == SancaiShowcaseStatus.COMPLETED && storageObjectId != null;
-        return showcase == null
-                ? SancaiAssetResponse.builder().build()
-                : SancaiAssetResponse.builder()
-                        .id(showcaseId)
-                        .status(
-                                showcase.getStatus() == null
-                                        ? null
-                                        : showcase.getStatus().value())
-                        .requestedAt(showcase.getRequestedAt())
-                        .completedAt(showcase.getCompletedAt())
-                        .scopeJson(showcase.getScopeJson())
-                        .scopeTitle(showcase.getScopeTitle())
-                        .storageObjectId(showcase.getStorageObjectId() == null ? null : storageObjectId)
-                        .entryCount(showcase.getEntryCount())
-                        .assetCount(showcase.getAssetCount())
-                        .visibilityRiskStatus(
-                                showcase.getVisibilityRiskStatus() == null
-                                        ? null
-                                        : showcase.getVisibilityRiskStatus().value())
-                        .filename(showcase.getFilename())
-                        .contentType(showcase.getContentType())
-                        .sizeBytes(showcase.getSizeBytes())
-                        .sha256(showcase.getSha256())
-                        .failureType(showcase.getFailureType())
-                        .failureMessage(showcase.getFailureMessage())
-                        .contentUrl(completed ? showcaseUrl(showcaseId) : null)
-                        .downloadUrl(completed ? showcaseDownloadUrl(showcaseId) : null)
-                        .build();
+        boolean completed = showcase.getStatus() == SancaiShowcaseStatus.COMPLETED && storageObjectId != null;
+        return SancaiAssetResponse.builder()
+                .id(showcaseId)
+                .status(
+                        showcase.getStatus() == null
+                                ? null
+                                : showcase.getStatus().value())
+                .requestedAt(showcase.getRequestedAt())
+                .completedAt(showcase.getCompletedAt())
+                .scopeJson(showcase.getScopeJson())
+                .scopeTitle(showcase.getScopeTitle())
+                .storageObjectId(showcase.getStorageObjectId() == null ? null : storageObjectId)
+                .entryCount(showcase.getEntryCount())
+                .assetCount(showcase.getAssetCount())
+                .visibilityRiskStatus(
+                        showcase.getVisibilityRiskStatus() == null
+                                ? null
+                                : showcase.getVisibilityRiskStatus().value())
+                .filename(showcase.getFilename())
+                .contentType(showcase.getContentType())
+                .sizeBytes(showcase.getSizeBytes())
+                .sha256(showcase.getSha256())
+                .failureType(showcase.getFailureType())
+                .failureMessage(showcase.getFailureMessage())
+                .contentUrl(completed ? showcaseUrl(showcaseId) : null)
+                .downloadUrl(completed ? showcaseDownloadUrl(showcaseId) : null)
+                .build();
     }
 
     @NonNull
     public static SancaiAssetResponse toShowcaseJobResponse(@NonNull SancaiShowcaseJobResult result) {
         Objects.requireNonNull(result, "result");
-        Long showcaseId = result == null || result.getShowcaseId() == null
-                ? null
-                : result.getShowcaseId().value();
-        Long storageObjectId = result == null || result.getStorageObjectId() == null
+        Long showcaseId =
+                result.getShowcaseId() == null ? null : result.getShowcaseId().value();
+        Long storageObjectId = result.getStorageObjectId() == null
                 ? null
                 : result.getStorageObjectId().value();
-        boolean completed =
-                result != null && result.getStatus() == SancaiShowcaseStatus.COMPLETED && storageObjectId != null;
-        return result == null
-                ? SancaiAssetResponse.builder().build()
-                : SancaiAssetResponse.builder()
-                        .id(showcaseId)
-                        .status(
-                                result.getStatus() == null
-                                        ? null
-                                        : result.getStatus().value())
-                        .storageObjectId(storageObjectId)
-                        .filename(result.getFilename())
-                        .sizeBytes(result.getSizeBytes())
-                        .sha256(result.getSha256())
-                        .failureType(result.getFailureType())
-                        .failureMessage(result.getFailureMessage())
-                        .contentUrl(completed ? showcaseUrl(showcaseId) : null)
-                        .downloadUrl(completed ? showcaseDownloadUrl(showcaseId) : null)
-                        .build();
+        boolean completed = result.getStatus() == SancaiShowcaseStatus.COMPLETED && storageObjectId != null;
+        return SancaiAssetResponse.builder()
+                .id(showcaseId)
+                .status(result.getStatus() == null ? null : result.getStatus().value())
+                .storageObjectId(storageObjectId)
+                .filename(result.getFilename())
+                .sizeBytes(result.getSizeBytes())
+                .sha256(result.getSha256())
+                .failureType(result.getFailureType())
+                .failureMessage(result.getFailureMessage())
+                .contentUrl(completed ? showcaseUrl(showcaseId) : null)
+                .downloadUrl(completed ? showcaseDownloadUrl(showcaseId) : null)
+                .build();
     }
 
     private static String showcaseUrl(Long showcaseId) {

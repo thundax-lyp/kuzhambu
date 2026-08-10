@@ -94,7 +94,7 @@ describe("taxonomy service merge contracts", () => {
         });
 
         await service.getTagGovernanceMetrics({ topLimit: 10, recentMonths: 6 });
-        expectLastCall("POST", "/knowledge/taxonomy/tag/metrics", {
+        expectLastCall("POST", "/knowledge/taxonomy/tag/metrics/list", {
             topLimit: 10,
             recentMonths: 6
         });
@@ -107,13 +107,13 @@ describe("taxonomy service merge contracts", () => {
         };
 
         await service.previewTagBatchMergeImpact(batchMergeRequest);
-        expectLastCall("POST", "/knowledge/taxonomy/tag/merge/batch-preview", batchMergeRequest);
+        expectLastCall("POST", "/knowledge/taxonomy/tag/merge/list/preview", batchMergeRequest);
 
         await service.applyTagBatchMerge(batchMergeRequest);
-        expectLastCall("POST", "/knowledge/taxonomy/tag/merge/batch-apply", batchMergeRequest);
+        expectLastCall("POST", "/knowledge/taxonomy/tag/merge/list/apply", batchMergeRequest);
 
         await service.deprecateBatchTags({ tagIds: ["1001", "1003"] });
-        expectLastCall("POST", "/knowledge/taxonomy/tag/deprecate/batch", {
+        expectLastCall("POST", "/knowledge/taxonomy/tag/deprecate/list", {
             tagIds: ["1001", "1003"]
         });
 
@@ -124,7 +124,7 @@ describe("taxonomy service merge contracts", () => {
             reviewNote: "批量通过"
         };
         await service.reviewBatchTags(batchReviewRequest);
-        expectLastCall("POST", "/knowledge/taxonomy/tag/review/batch", batchReviewRequest);
+        expectLastCall("POST", "/knowledge/taxonomy/tag/review/list", batchReviewRequest);
     });
 
     it("sends tag extraction and candidate apply requests", async () => {

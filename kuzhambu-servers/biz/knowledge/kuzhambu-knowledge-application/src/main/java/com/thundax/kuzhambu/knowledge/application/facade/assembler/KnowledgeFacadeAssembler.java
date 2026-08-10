@@ -4,6 +4,8 @@ import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportS
 import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportSummaryResult.CategoryDistributionResult;
 import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportSummaryResult.MonthlyNewTagResult;
 import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportSummaryResult.TopTagResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryEntityHintQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryTagHintQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryEntityHintResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
@@ -16,6 +18,7 @@ import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeEntityHintFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeMonthlyNewTagFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeTopTagFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeContentTagRefFacadeRequest;
+import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeDiscoveryTermFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeRemoveContentTagRefFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeEntityHintsFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
@@ -23,6 +26,8 @@ import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagFacadeResponse
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagHintFacadeResponse;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -141,5 +146,17 @@ public class KnowledgeFacadeAssembler {
                         .contentRefCount(result.getContentRefCount())
                         .build())
                 .toList();
+    }
+
+    public @NonNull DiscoveryTagHintQuery toDiscoveryTagHintQuery(
+            @NonNull KnowledgeDiscoveryTermFacadeRequest request) {
+        return new DiscoveryTagHintQuery(
+                Objects.requireNonNull(request, "request").getTerm());
+    }
+
+    public @NonNull DiscoveryEntityHintQuery toDiscoveryEntityHintQuery(
+            @NonNull KnowledgeDiscoveryTermFacadeRequest request) {
+        return new DiscoveryEntityHintQuery(
+                Objects.requireNonNull(request, "request").getTerm());
     }
 }

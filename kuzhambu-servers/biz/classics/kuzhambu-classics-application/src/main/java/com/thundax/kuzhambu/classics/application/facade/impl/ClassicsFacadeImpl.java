@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.classics.application.facade.assembler.ClassicsFacade
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
@@ -98,9 +99,11 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         if (request == null) {
             return null;
         }
-        return classicsFacadeAssembler.toPublicContentFacadeResponse(
-                classicsSearchContentApplicationService.getPublicContent(classicsFacadeAssembler.toSearchContentQuery(
-                        request.getContentType(), request.getContentId())));
+        ClassicsSearchSourceContent sourceContent = classicsSearchContentApplicationService.getPublicContent(
+                classicsFacadeAssembler.toSearchContentQuery(request.getContentType(), request.getContentId()));
+        return sourceContent == null
+                ? ClassicsPublicContentFacadeResponse.builder().build()
+                : classicsFacadeAssembler.toPublicContentFacadeResponse(sourceContent);
     }
 
     @Override
@@ -138,10 +141,11 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         if (request == null) {
             return null;
         }
-        return classicsFacadeAssembler.toPublicContentFacadeResponse(
-                classicsSearchContentApplicationService.getWorkbenchContent(
-                        classicsFacadeAssembler.toSearchContentQuery(
-                                request.getContentType(), request.getContentId())));
+        ClassicsSearchSourceContent sourceContent = classicsSearchContentApplicationService.getWorkbenchContent(
+                classicsFacadeAssembler.toSearchContentQuery(request.getContentType(), request.getContentId()));
+        return sourceContent == null
+                ? ClassicsPublicContentFacadeResponse.builder().build()
+                : classicsFacadeAssembler.toPublicContentFacadeResponse(sourceContent);
     }
 
     @Override
@@ -162,13 +166,13 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         ClassicsContentId domainContentId = ClassicsContentIdCodec.toDomain(contentId);
         return switch (contentType) {
             case SANCAI_ENTRY ->
-                classicsFacadeAssembler.toQaKnowledgeFacadeResponse(
+                toQaKnowledgeFacadeResponse(
                         getSancaiQaKnowledge(request.getContentType(), request.getContentId(), domainContentId));
             case WANGQI_DOCUMENT ->
-                classicsFacadeAssembler.toQaKnowledgeFacadeResponse(
+                toQaKnowledgeFacadeResponse(
                         getWangqiQaKnowledge(request.getContentType(), request.getContentId(), domainContentId));
             case MING_CUSTOMS ->
-                classicsFacadeAssembler.toQaKnowledgeFacadeResponse(
+                toQaKnowledgeFacadeResponse(
                         getMingCustomsQaKnowledge(request.getContentType(), request.getContentId(), domainContentId));
         };
     }
@@ -191,10 +195,21 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         ClassicsContentId domainContentId = ClassicsContentIdCodec.toDomain(contentId);
         return switch (contentType) {
             case SANCAI_ENTRY ->
-                classicsFacadeAssembler.toQaKnowledgeFacadeResponse(getSancaiWorkbenchQaKnowledge(
+                toQaKnowledgeFacadeResponse(getSancaiWorkbenchQaKnowledge(
                         request.getContentType(), request.getContentId(), domainContentId));
-            case WANGQI_DOCUMENT, MING_CUSTOMS -> getQaKnowledge(request);
+            case WANGQI_DOCUMENT, MING_CUSTOMS -> {
+                ClassicsQaKnowledgeFacadeResponse response = getQaKnowledge(request);
+                yield response == null
+                        ? ClassicsQaKnowledgeFacadeResponse.builder().build()
+                        : response;
+            }
         };
+    }
+
+    private ClassicsQaKnowledgeFacadeResponse toQaKnowledgeFacadeResponse(ClassicsQaKnowledgeFacadeDto knowledge) {
+        return knowledge == null
+                ? ClassicsQaKnowledgeFacadeResponse.builder().build()
+                : classicsFacadeAssembler.toQaKnowledgeFacadeResponse(knowledge);
     }
 
     @Override

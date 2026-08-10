@@ -60,56 +60,90 @@ class KnowledgePortalAtlasControllerTest {
         assertTrue(queryNode.has("tag"));
         assertTrue(queryNode.has("timeRange"));
 
-        var response = new KnowledgePortalAtlasResponse(
-                "detail",
-                List.of(new KnowledgePortalAtlasResponse.BreadcrumbItemResponse(
-                        "detail", "黄帝", "/knowledge/atlas?level=detail&entityId=3001")),
-                null,
-                null,
-                new KnowledgePortalAtlasResponse.DetailViewResponse(
-                        new KnowledgePortalAtlasResponse.FocusNodeResponse(
-                                "3001", "黄帝", "PERSON", "上古始祖", "CONFIRMED", 0.95D, null),
-                        List.of(new KnowledgePortalAtlasResponse.RelationGroupResponse(
-                                "ANCESTOR",
-                                "ANCESTOR",
-                                List.of(new KnowledgePortalAtlasResponse.RelationItemResponse(
-                                        "person:huangdi",
-                                        "黄帝",
-                                        "ANCESTOR",
-                                        "person:shaodian",
-                                        "少典",
-                                        "ANCESTOR",
-                                        0.95D)))),
-                        List.of(new KnowledgePortalAtlasResponse.SourceReferenceResponse(
-                                "1001", "三才图会", "SANCAI_ENTRY", "摘要", 1L, "/knowledge/atlas")),
-                        List.of(new KnowledgePortalAtlasResponse.TimelineItemResponse(
-                                "首次抽取", "知识首次进入图谱", "说明", "/knowledge/atlas")),
-                        List.of(new KnowledgePortalAtlasResponse.RelatedTagResponse("11", "上古", "时代", 0.88D))),
-                new KnowledgePortalAtlasResponse.AvailableFiltersResponse(
-                        List.of("SANCAI_ENTRY"), List.of("PERSON"), List.of("ANCESTOR"), List.of("上古"), List.of("30d")),
-                new KnowledgePortalAtlasResponse.CanvasViewResponse(
-                        "detail",
-                        "黄帝关系图谱",
-                        "展示实体及其一跳关系。",
-                        "entity:3001",
-                        false,
-                        null,
-                        null,
-                        List.of(new KnowledgePortalAtlasResponse.CanvasNodeResponse(
-                                "entity:3001",
-                                "entity",
-                                "黄帝",
-                                "PERSON",
-                                "置信度",
-                                95L,
-                                "CONFIRMED",
-                                "PEOPLE",
-                                3001L,
-                                "/knowledge/atlas?level=detail&entityId=3001",
-                                0.95D,
-                                0D,
-                                0D)),
-                        List.of()));
+        var response = KnowledgePortalAtlasResponse.builder()
+                .currentLevel("detail")
+                .breadcrumbItems(List.of(KnowledgePortalAtlasResponse.BreadcrumbItemResponse.builder()
+                        .level("detail")
+                        .label("黄帝")
+                        .href("/knowledge/atlas?level=detail&entityId=3001")
+                        .build()))
+                .detailView(KnowledgePortalAtlasResponse.DetailViewResponse.builder()
+                        .focusNode(KnowledgePortalAtlasResponse.FocusNodeResponse.builder()
+                                .id("3001")
+                                .title("黄帝")
+                                .type("PERSON")
+                                .summary("上古始祖")
+                                .status("CONFIRMED")
+                                .confidence(0.95D)
+                                .coverImageUrl(null)
+                                .build())
+                        .relationGroups(List.of(KnowledgePortalAtlasResponse.RelationGroupResponse.builder()
+                                .groupKey("ANCESTOR")
+                                .groupLabel("ANCESTOR")
+                                .relations(List.of(KnowledgePortalAtlasResponse.RelationItemResponse.builder()
+                                        .sourceId("person:huangdi")
+                                        .sourceLabel("黄帝")
+                                        .relationLabel("ANCESTOR")
+                                        .targetId("person:shaodian")
+                                        .targetLabel("少典")
+                                        .relationType("ANCESTOR")
+                                        .weight(0.95D)
+                                        .build()))
+                                .build()))
+                        .sourceReferences(List.of(KnowledgePortalAtlasResponse.SourceReferenceResponse.builder()
+                                .sourceId("1001")
+                                .sourceTitle("三才图会")
+                                .sourceType("SANCAI_ENTRY")
+                                .snippet("摘要")
+                                .updatedAt(1L)
+                                .href("/knowledge/atlas")
+                                .build()))
+                        .timelineItems(List.of(KnowledgePortalAtlasResponse.TimelineItemResponse.builder()
+                                .timeLabel("首次抽取")
+                                .title("知识首次进入图谱")
+                                .description("说明")
+                                .href("/knowledge/atlas")
+                                .build()))
+                        .relatedTags(List.of(KnowledgePortalAtlasResponse.RelatedTagResponse.builder()
+                                .tagId("11")
+                                .tagName("上古")
+                                .tagCategory("时代")
+                                .score(0.88D)
+                                .build()))
+                        .build())
+                .availableFilters(KnowledgePortalAtlasResponse.AvailableFiltersResponse.builder()
+                        .knowledgeBases(List.of("SANCAI_ENTRY"))
+                        .entityTypes(List.of("PERSON"))
+                        .relationTypes(List.of("ANCESTOR"))
+                        .tagNames(List.of("上古"))
+                        .timeRanges(List.of("30d"))
+                        .build())
+                .canvasView(KnowledgePortalAtlasResponse.CanvasViewResponse.builder()
+                        .mode("detail")
+                        .title("黄帝关系图谱")
+                        .description("展示实体及其一跳关系。")
+                        .focusNodeId("entity:3001")
+                        .empty(false)
+                        .emptyTitle(null)
+                        .emptyDescription(null)
+                        .nodes(List.of(KnowledgePortalAtlasResponse.CanvasNodeResponse.builder()
+                                .id("entity:3001")
+                                .kind("entity")
+                                .label("黄帝")
+                                .subtitle("PERSON")
+                                .metricLabel("置信度")
+                                .metricValue(95L)
+                                .status("CONFIRMED")
+                                .categoryCode("PEOPLE")
+                                .entityId(3001L)
+                                .href("/knowledge/atlas?level=detail&entityId=3001")
+                                .weight(0.95D)
+                                .x(0D)
+                                .y(0D)
+                                .build()))
+                        .edges(List.of())
+                        .build())
+                .build();
         var node = OBJECT_MAPPER.valueToTree(response);
         assertTrue(node.has("currentLevel"));
         assertTrue(node.has("breadcrumbItems"));

@@ -24,7 +24,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchDepre
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand.TagCandidateApplyItemCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyItem;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagDeprecateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
@@ -77,7 +77,7 @@ class TaxonomyApplicationServiceImplTest {
                 mock(TagContentRefRepository.class),
                 mock(KnowledgeTagBindingDomainService.class),
                 metricsRepository);
-        when(metricsRepository.getMetrics(10, 6))
+        when(metricsRepository.getByTopLimitAndRecentMonths(10, 6))
                 .thenReturn(new TagGovernanceMetrics(
                         List.of(new TagGovernanceMetrics.TagUsageMetric("礼制", 3L)),
                         List.of(new TagGovernanceMetrics.CategoryDistributionMetric("礼学", 2L)),
@@ -595,8 +595,8 @@ class TaxonomyApplicationServiceImplTest {
         service.applyExtractedTags(new TagCandidateApplyCommand(
                 601L,
                 List.of(
-                        new TagCandidateApplyItemCommand("礼制", "11", "制度", new BigDecimal("0.91"), "匹配既有标签", "21"),
-                        new TagCandidateApplyItemCommand("新礼俗", "12", "民俗", new BigDecimal("0.82"), "新的候选标签", null)),
+                        new TagCandidateApplyItem("礼制", "11", "制度", new BigDecimal("0.91"), "匹配既有标签", "21"),
+                        new TagCandidateApplyItem("新礼俗", "12", "民俗", new BigDecimal("0.82"), "新的候选标签", null)),
                 "AI 审核",
                 201L));
 

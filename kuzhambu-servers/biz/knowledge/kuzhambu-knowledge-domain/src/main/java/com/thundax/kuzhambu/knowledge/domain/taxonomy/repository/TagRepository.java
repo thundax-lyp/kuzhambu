@@ -28,7 +28,7 @@ public interface TagRepository {
             int pageNo,
             int pageSize);
 
-    PageResult<Tag> pagePending(int pageNo, int pageSize);
+    PageResult<Tag> listPending(int pageNo, int pageSize);
 
     int countByName(String name, TagId excludedId);
 

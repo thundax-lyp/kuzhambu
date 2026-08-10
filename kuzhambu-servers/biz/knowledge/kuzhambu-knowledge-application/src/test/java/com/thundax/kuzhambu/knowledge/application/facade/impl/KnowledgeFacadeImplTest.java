@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.knowledge.application.facade.assembler.KnowledgeFacadeAssembler;
 import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportSummaryResult;
 import com.thundax.kuzhambu.knowledge.application.report.service.KnowledgeReportApplicationService;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryEntityHintQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryTagHintQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryEntityHintResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.KnowledgeTaxonomyReadApplicationService;
@@ -71,9 +73,9 @@ class KnowledgeFacadeImplTest {
     void discoveryReadMethodsShouldDelegateAndMapFacadeResponses() {
         KnowledgeTaxonomyReadApplicationService knowledgeTaxonomyReadApplicationService =
                 mock(KnowledgeTaxonomyReadApplicationService.class);
-        when(knowledgeTaxonomyReadApplicationService.getTagHint("礼制"))
+        when(knowledgeTaxonomyReadApplicationService.getTagHint(new DiscoveryTagHintQuery("礼制")))
                 .thenReturn(new DiscoveryTagHintResult("礼制", "礼制", "礼制", null, 6L));
-        when(knowledgeTaxonomyReadApplicationService.listEntityHints("礼制"))
+        when(knowledgeTaxonomyReadApplicationService.listEntityHints(new DiscoveryEntityHintQuery("礼制")))
                 .thenReturn(List.of(new DiscoveryEntityHintResult("礼制", "礼制", "周礼", "BOOK", 2L)));
         KnowledgeFacadeImpl facade = newFacade(
                 mock(KnowledgeReportApplicationService.class),
