@@ -11,6 +11,8 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
@@ -79,6 +81,40 @@ class KnowledgeQualityReportControllerTest {
         assertEquals(1, pageCaptor.getValue().getPageNo());
         assertEquals(10, pageCaptor.getValue().getPageSize());
         assertEquals("KQR-71", response.getRecords().get(0).getReportNo());
+    }
+
+    @Test
+    void detailShouldMapQueryAndResponse() {
+        KnowledgeQualityReportApplicationService service = mock(KnowledgeQualityReportApplicationService.class);
+        KnowledgeQualityReportController controller = new KnowledgeQualityReportController(service);
+        QualityReportRequests.DetailRequest request = new QualityReportRequests.DetailRequest();
+        request.setReportId(1001L);
+        when(service.detail(any()))
+                .thenReturn(new QualityReportDetailResult(reportRecord(), List.of(), List.of(), List.of()));
+
+        var response = controller.detail(request);
+
+        ArgumentCaptor<QualityReportDetailQuery> captor = ArgumentCaptor.forClass(QualityReportDetailQuery.class);
+        verify(service).detail(captor.capture());
+        assertEquals(1001L, captor.getValue().reportId());
+        assertEquals("KQR-71", response.getReport().getReportNo());
+    }
+
+    @Test
+    void latestShouldMapQueryAndResponse() {
+        KnowledgeQualityReportApplicationService service = mock(KnowledgeQualityReportApplicationService.class);
+        KnowledgeQualityReportController controller = new KnowledgeQualityReportController(service);
+        QualityReportRequests.LatestRequest request = new QualityReportRequests.LatestRequest();
+        request.setGraphVersionId(71L);
+        when(service.latest(any()))
+                .thenReturn(new QualityReportDetailResult(reportRecord(), List.of(), List.of(), List.of()));
+
+        var response = controller.latest(request);
+
+        ArgumentCaptor<LatestQualityReportQuery> captor = ArgumentCaptor.forClass(LatestQualityReportQuery.class);
+        verify(service).latest(captor.capture());
+        assertEquals(71L, captor.getValue().graphVersionId());
+        assertEquals("KQR-71", response.getReport().getReportNo());
     }
 
     @Test

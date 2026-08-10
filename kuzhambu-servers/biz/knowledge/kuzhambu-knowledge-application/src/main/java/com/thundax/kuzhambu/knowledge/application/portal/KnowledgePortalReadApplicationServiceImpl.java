@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAt
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalAtlasResult;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalHomeResult;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalQualityResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.IssueRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
@@ -569,8 +570,9 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
 
     @Override
     public KnowledgePortalQualityResult getQuality() {
-        QualityReportDetailResult detail =
-                qualityReportApplicationService == null ? null : qualityReportApplicationService.latest(null);
+        QualityReportDetailResult detail = qualityReportApplicationService == null
+                ? null
+                : qualityReportApplicationService.latest(new LatestQualityReportQuery(null));
         ReportRecord report = detail == null ? null : detail.getReport();
         if (report == null) {
             return qualityEmptyState();

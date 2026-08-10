@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTa
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.ReextractLowQualityCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.impl.KnowledgeQualityReportApplicationServiceImpl;
@@ -276,7 +277,7 @@ class KnowledgeQualityReportApplicationServiceTest {
                         null,
                         null));
 
-        QualityReportDetailResult result = service.latest(71L);
+        QualityReportDetailResult result = service.latest(new LatestQualityReportQuery(71L));
 
         assertEquals(true, result.getStale());
         assertEquals("REFINEMENT_APPLIED_AFTER_REPORT", result.getStaleReason());

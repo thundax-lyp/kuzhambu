@@ -14,6 +14,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTa
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
@@ -181,7 +183,8 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
 
     @Override
     @Transactional(readOnly = true)
-    public QualityReportDetailResult detail(Long reportId) {
+    public QualityReportDetailResult detail(QualityReportDetailQuery query) {
+        Long reportId = query == null ? null : query.reportId();
         QualityReport report = qualityReportRepository.getByReportId(reportId);
         if (report == null) {
             return emptyDetail();
@@ -195,9 +198,10 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
 
     @Override
     @Transactional(readOnly = true)
-    public QualityReportDetailResult latest(Long graphVersionId) {
+    public QualityReportDetailResult latest(LatestQualityReportQuery query) {
+        Long graphVersionId = query == null ? null : query.graphVersionId();
         QualityReport report = qualityReportRepository.getLatestPublished(graphVersionId);
-        return report == null ? emptyDetail() : detail(report.getReportId());
+        return report == null ? emptyDetail() : detail(new QualityReportDetailQuery(report.getReportId()));
     }
 
     @Override
@@ -208,7 +212,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
         if (StringUtils.isBlank(command.sourceCategoryCode())) {
             throw new BizException("Knowledge quality report source category code is required");
         }
-        QualityReportDetailResult detail = detail(command.reportId());
+        QualityReportDetailResult detail = detail(new QualityReportDetailQuery(command.reportId()));
         ReportRecord report = detail.getReport();
         if (report == null) {
             throw new BizException("Knowledge quality report not found: " + command.reportId());

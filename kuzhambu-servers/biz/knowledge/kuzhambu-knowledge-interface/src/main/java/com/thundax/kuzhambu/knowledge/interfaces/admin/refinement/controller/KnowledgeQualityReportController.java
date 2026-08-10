@@ -83,7 +83,7 @@ public class KnowledgeQualityReportController {
     public QualityReportResponses.DetailResponse detail(
             @Valid @RequestBody QualityReportRequests.DetailRequest request) {
         return KnowledgeQualityReportInterfaceAssembler.toResponse(
-                qualityReportService.detail(request == null ? null : request.getReportId()));
+                qualityReportService.detail(KnowledgeQualityReportInterfaceAssembler.toDetailQuery(request)));
     }
 
     @Operation(summary = "获取最新质量报告", description = "knowledge:quality-report:view")
@@ -100,7 +100,7 @@ public class KnowledgeQualityReportController {
     public QualityReportResponses.DetailResponse latest(
             @Valid @RequestBody QualityReportRequests.LatestRequest request) {
         return KnowledgeQualityReportInterfaceAssembler.toResponse(
-                qualityReportService.latest(request == null ? null : request.getGraphVersionId()));
+                qualityReportService.latest(KnowledgeQualityReportInterfaceAssembler.toLatestQuery(request)));
     }
 
     @Operation(summary = "重提取低质量门类", description = "knowledge:graph:edit")

@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTa
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphEntityTypes;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateApplyResult;
@@ -487,7 +488,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
         if (version == null || version.getVersionId() == null) {
             return null;
         }
-        QualityReportDetailResult detail = qualityReportApplicationService.latest(version.getVersionId());
+        QualityReportDetailResult detail =
+                qualityReportApplicationService.latest(new LatestQualityReportQuery(version.getVersionId()));
         QualityReportDetailResult.ReportRecord report = detail == null ? null : detail.getReport();
         if (report == null) {
             return null;

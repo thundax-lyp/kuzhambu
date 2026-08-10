@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAt
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalAtlasResult;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalHomeResult;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalQualityResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.IssueRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
@@ -367,7 +368,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
     void getQualityShouldReadLatestPublishedReportSnapshot() {
         KnowledgeQualityReportApplicationService qualityReportService =
                 mock(KnowledgeQualityReportApplicationService.class);
-        when(qualityReportService.latest(null))
+        when(qualityReportService.latest(new LatestQualityReportQuery(null)))
                 .thenReturn(new QualityReportDetailResult(
                         new ReportRecord(
                                 9001L,
@@ -444,7 +445,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
     void getQualityShouldReturnEmptyStateWhenNoQualityReportExists() {
         KnowledgeQualityReportApplicationService qualityReportService =
                 mock(KnowledgeQualityReportApplicationService.class);
-        when(qualityReportService.latest(null))
+        when(qualityReportService.latest(new LatestQualityReportQuery(null)))
                 .thenReturn(new QualityReportDetailResult(null, List.of(), List.of(), List.of()));
         KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
                 mock(TagRepository.class),

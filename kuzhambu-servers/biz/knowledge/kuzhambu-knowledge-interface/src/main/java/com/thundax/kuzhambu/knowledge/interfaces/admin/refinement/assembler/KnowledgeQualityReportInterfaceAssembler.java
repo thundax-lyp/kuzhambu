@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.assembler;
 
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
@@ -42,6 +44,14 @@ public final class KnowledgeQualityReportInterfaceAssembler {
                 request == null ? null : request.getSourceContentType(),
                 request == null ? null : request.getSourceContentId(),
                 request == null ? null : request.getReportStatus());
+    }
+
+    public static QualityReportDetailQuery toDetailQuery(QualityReportRequests.DetailRequest request) {
+        return new QualityReportDetailQuery(request == null ? null : request.getReportId());
+    }
+
+    public static LatestQualityReportQuery toLatestQuery(QualityReportRequests.LatestRequest request) {
+        return new LatestQualityReportQuery(request == null ? null : request.getGraphVersionId());
     }
 
     public static QualityReportResponses.DetailResponse toResponse(QualityReportDetailResult result) {

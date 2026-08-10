@@ -66,10 +66,6 @@ class KnowledgeApplicationArchitectureTest extends AbstractArchitectureTest {
                                 + "KnowledgeGraphWorkbenchApplicationService.getLatestCandidate(java.lang.String, java.lang.Long, java.lang.String)"),
                 rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.workbench.service."
                         + "KnowledgeGraphWorkbenchApplicationService.applyCandidate(java.lang.Long)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.refinement.service."
-                        + "KnowledgeQualityReportApplicationService.detail(java.lang.Long)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.refinement.service."
-                        + "KnowledgeQualityReportApplicationService.latest(java.lang.Long)"),
                 rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.taxonomy.service."
                         + "KnowledgeTaxonomyReadApplicationService.getTagHint(java.lang.String)"),
                 rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.taxonomy.service."
