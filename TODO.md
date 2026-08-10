@@ -10,16 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `07-role-frontend-contract`：补齐 Role 前端契约与 E2E
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-05-SYSTEM-CORE.md`
-    - 范围对象：
-        - `kuzhambu-apps/admin-web/src/pages/system/role/role-service-contract.test.ts`
-        - `kuzhambu-apps/admin-web/e2e/system/management/management.spec.ts`
-    - 处理动作：同步 Role action path 变更后的前端 contract test 和 management E2E。
-    - 验收点：Role 前端契约断言和 E2E 路径与后端 controller action 一致。
-    - 重要度：8/10
-
 - [ ] `08-user`：清理 User record 与构造边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-05-SYSTEM-CORE.md`
