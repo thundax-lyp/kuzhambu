@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `08-02 graph-lineage command-query record`：迁移 graph Command 与 lineage Query 为 Java record
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-08-KNOWLEDGE-GRAPH-REFINEMENT.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/graph/command/RegenerateGraphExtractionCommand.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/graph/command/RequestGraphExtractionCommand.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/graph/command/RequestLineageExtractionCommand.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/graph/command/RequestRelationExtractionCommand.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/lineage/query/LineageCanvasQuery.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/KnowledgeApplicationCommandQueryRecordAllowances.java`
-    - 处理动作：移除 Lombok bean 形态并改为只含组件字段的 record，同步删除对应 `COMMAND_QUERY_RECORD` allowance。
-    - 验收点：五个生产契约文件不再依赖 getter/setter 或 Lombok，allowlist 中不再包含对应 class key。
-    - 重要度：10/10
-
 - [ ] `08-03 refinement entity-relation command-query record`：迁移精修实体与关系 Command/Query 为 Java record
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-08-KNOWLEDGE-GRAPH-REFINEMENT.md`

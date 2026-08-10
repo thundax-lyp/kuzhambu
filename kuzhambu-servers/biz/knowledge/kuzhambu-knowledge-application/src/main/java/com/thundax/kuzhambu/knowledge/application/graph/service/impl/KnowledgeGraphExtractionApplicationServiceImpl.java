@@ -140,38 +140,38 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult requestRelationExtraction(RequestRelationExtractionCommand command) {
         validateCommandBase(
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getInputPayloadJson());
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.inputPayloadJson());
         return requestTasks(
                 TASK_TYPE_RELATION,
-                command == null ? null : command.getScopeType(),
-                command == null ? null : command.getScopeJson(),
-                command == null ? null : command.getTriggerSource(),
-                command == null ? null : command.getSelectionScopeJson(),
-                command == null ? null : command.getReplaceUnconfirmedOnly(),
-                command == null ? null : command.getParentTaskId(),
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getSourceContentId(),
-                command == null ? null : command.getRequestedBy(),
-                command == null ? null : command.getServiceId(),
-                command == null ? null : command.getServiceRole(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getPromptVersionId(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getPromptVariablesJson(),
-                command == null ? null : command.getPromptHash(),
-                command == null ? null : command.getInputPayloadJson(),
-                command == null ? null : command.getOutputSchemaJson(),
-                command != null && command.isForceJson(),
-                command == null ? null : command.getLocale(),
+                command == null ? null : command.scopeType(),
+                command == null ? null : command.scopeJson(),
+                command == null ? null : command.triggerSource(),
+                command == null ? null : command.selectionScopeJson(),
+                command == null ? null : command.replaceUnconfirmedOnly(),
+                command == null ? null : command.parentTaskId(),
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.sourceContentId(),
+                command == null ? null : command.requestedBy(),
+                command == null ? null : command.serviceId(),
+                command == null ? null : command.serviceRole(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.promptVersionId(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.promptVariablesJson(),
+                command == null ? null : command.promptHash(),
+                command == null ? null : command.inputPayloadJson(),
+                command == null ? null : command.outputSchemaJson(),
+                command != null && command.forceJson(),
+                command == null ? null : command.locale(),
                 resolveOperation(TASK_TYPE_RELATION));
     }
 
@@ -179,38 +179,38 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult requestGraphExtraction(RequestGraphExtractionCommand command) {
         validateCommandBase(
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getInputPayloadJson());
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.inputPayloadJson());
         return requestTasks(
                 TASK_TYPE_GRAPH,
-                command == null ? null : command.getScopeType(),
-                command == null ? null : command.getScopeJson(),
-                command == null ? null : command.getTriggerSource(),
-                command == null ? null : command.getSelectionScopeJson(),
-                command == null ? null : command.getReplaceUnconfirmedOnly(),
-                command == null ? null : command.getParentTaskId(),
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getSourceContentId(),
-                command == null ? null : command.getRequestedBy(),
-                command == null ? null : command.getServiceId(),
-                command == null ? null : command.getServiceRole(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getPromptVersionId(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getPromptVariablesJson(),
-                command == null ? null : command.getPromptHash(),
-                command == null ? null : command.getInputPayloadJson(),
-                command == null ? null : command.getOutputSchemaJson(),
-                command != null && command.isForceJson(),
-                command == null ? null : command.getLocale(),
+                command == null ? null : command.scopeType(),
+                command == null ? null : command.scopeJson(),
+                command == null ? null : command.triggerSource(),
+                command == null ? null : command.selectionScopeJson(),
+                command == null ? null : command.replaceUnconfirmedOnly(),
+                command == null ? null : command.parentTaskId(),
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.sourceContentId(),
+                command == null ? null : command.requestedBy(),
+                command == null ? null : command.serviceId(),
+                command == null ? null : command.serviceRole(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.promptVersionId(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.promptVariablesJson(),
+                command == null ? null : command.promptHash(),
+                command == null ? null : command.inputPayloadJson(),
+                command == null ? null : command.outputSchemaJson(),
+                command != null && command.forceJson(),
+                command == null ? null : command.locale(),
                 resolveOperation(TASK_TYPE_GRAPH));
     }
 
@@ -218,38 +218,38 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult requestLineageExtraction(RequestLineageExtractionCommand command) {
         validateCommandBase(
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getInputPayloadJson());
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.inputPayloadJson());
         return requestTasks(
                 TASK_TYPE_LINEAGE,
-                command == null ? null : command.getScopeType(),
-                command == null ? null : command.getScopeJson(),
-                command == null ? null : command.getTriggerSource(),
-                command == null ? null : command.getSelectionScopeJson(),
-                command == null ? null : command.getReplaceUnconfirmedOnly(),
-                command == null ? null : command.getParentTaskId(),
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getSourceContentId(),
-                command == null ? null : command.getRequestedBy(),
-                command == null ? null : command.getServiceId(),
-                command == null ? null : command.getServiceRole(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getPromptVersionId(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getPromptVariablesJson(),
-                command == null ? null : command.getPromptHash(),
-                command == null ? null : command.getInputPayloadJson(),
-                command == null ? null : command.getOutputSchemaJson(),
-                command != null && command.isForceJson(),
-                command == null ? null : command.getLocale(),
+                command == null ? null : command.scopeType(),
+                command == null ? null : command.scopeJson(),
+                command == null ? null : command.triggerSource(),
+                command == null ? null : command.selectionScopeJson(),
+                command == null ? null : command.replaceUnconfirmedOnly(),
+                command == null ? null : command.parentTaskId(),
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.sourceContentId(),
+                command == null ? null : command.requestedBy(),
+                command == null ? null : command.serviceId(),
+                command == null ? null : command.serviceRole(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.promptVersionId(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.promptVariablesJson(),
+                command == null ? null : command.promptHash(),
+                command == null ? null : command.inputPayloadJson(),
+                command == null ? null : command.outputSchemaJson(),
+                command != null && command.forceJson(),
+                command == null ? null : command.locale(),
                 resolveOperation(TASK_TYPE_LINEAGE));
     }
 
@@ -303,18 +303,18 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Override
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult regenerateTask(RegenerateGraphExtractionCommand command) {
-        GraphExtractionTaskId sourceTaskId = command == null ? null : command.getSourceTaskId();
+        GraphExtractionTaskId sourceTaskId = command == null ? null : command.sourceTaskId();
         GraphExtractionTask sourceTask = repository.getByTaskId(sourceTaskId);
         if (sourceTask == null) {
             throw new BizException(
                     "Knowledge graph source task not found: " + (sourceTaskId == null ? null : sourceTaskId.value()));
         }
         validateRegenerateSourceTask(sourceTask);
-        String commandTaskType = command == null ? null : command.getTaskType();
-        String commandTriggerSource = command == null ? null : command.getTriggerSource();
-        String commandSelectionScopeJson = command == null ? null : command.getSelectionScopeJson();
-        Boolean commandReplaceUnconfirmedOnly = command == null ? null : command.getReplaceUnconfirmedOnly();
-        Long commandRequestedBy = command == null ? null : command.getRequestedBy();
+        String commandTaskType = command == null ? null : command.taskType();
+        String commandTriggerSource = command == null ? null : command.triggerSource();
+        String commandSelectionScopeJson = command == null ? null : command.selectionScopeJson();
+        Boolean commandReplaceUnconfirmedOnly = command == null ? null : command.replaceUnconfirmedOnly();
+        Long commandRequestedBy = command == null ? null : command.requestedBy();
         String sourceTaskType = taskTypeValue(sourceTask);
         String resolvedTaskType = StringUtils.defaultIfBlank(commandTaskType, sourceTaskType);
         if (!StringUtils.equals(resolvedTaskType, sourceTaskType)) {

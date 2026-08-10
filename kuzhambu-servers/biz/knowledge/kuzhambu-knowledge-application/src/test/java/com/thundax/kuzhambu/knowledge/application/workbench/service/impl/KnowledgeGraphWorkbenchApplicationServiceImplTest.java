@@ -93,16 +93,16 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
                 ArgumentCaptor.forClass(RequestGraphExtractionCommand.class);
         verify(fixtures.graphExtractionApplicationService).requestGraphExtraction(captor.capture());
         RequestGraphExtractionCommand command = captor.getValue();
-        assertEquals("CLASSICS_MANUSCRIPT", command.getScopeType());
-        assertEquals("{\"sourceContentType\":\"SANCAI_ENTRY\",\"sourceContentId\":1001}", command.getScopeJson());
-        assertEquals("MANUAL", command.getTriggerSource());
-        assertNull(command.getSelectionScopeJson());
-        assertEquals(Boolean.TRUE, command.getReplaceUnconfirmedOnly());
-        assertEquals("SANCAI_ENTRY", command.getSourceContentType());
-        assertEquals(1001L, command.getSourceContentId());
-        assertEquals(99L, command.getRequestedBy());
-        assertEquals("[{\"role\":\"system\",\"content\":\"extract\"}]", command.getPromptMessagesJson());
-        assertEquals("{\"content\":\"三才稿件\"}", command.getInputPayloadJson());
+        assertEquals("CLASSICS_MANUSCRIPT", command.scopeType());
+        assertEquals("{\"sourceContentType\":\"SANCAI_ENTRY\",\"sourceContentId\":1001}", command.scopeJson());
+        assertEquals("MANUAL", command.triggerSource());
+        assertNull(command.selectionScopeJson());
+        assertEquals(Boolean.TRUE, command.replaceUnconfirmedOnly());
+        assertEquals("SANCAI_ENTRY", command.sourceContentType());
+        assertEquals(1001L, command.sourceContentId());
+        assertEquals(99L, command.requestedBy());
+        assertEquals("[{\"role\":\"system\",\"content\":\"extract\"}]", command.promptMessagesJson());
+        assertEquals("{\"content\":\"三才稿件\"}", command.inputPayloadJson());
     }
 
     @Test

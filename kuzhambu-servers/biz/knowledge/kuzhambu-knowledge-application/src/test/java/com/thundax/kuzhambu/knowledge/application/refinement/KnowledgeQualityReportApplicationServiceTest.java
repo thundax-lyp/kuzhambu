@@ -179,10 +179,10 @@ class KnowledgeQualityReportApplicationServiceTest {
         ArgumentCaptor<RequestGraphExtractionCommand> captor =
                 ArgumentCaptor.forClass(RequestGraphExtractionCommand.class);
         verify(fixture.graphExtractionService).requestGraphExtraction(captor.capture());
-        assertEquals("QUALITY_REPORT", captor.getValue().getTriggerSource());
-        assertEquals("SANCAI_ENTRY", captor.getValue().getSourceContentType());
-        assertEquals(2001L, captor.getValue().getSourceContentId());
-        assertEquals(true, captor.getValue().getReplaceUnconfirmedOnly());
+        assertEquals("QUALITY_REPORT", captor.getValue().triggerSource());
+        assertEquals("SANCAI_ENTRY", captor.getValue().sourceContentType());
+        assertEquals(2001L, captor.getValue().sourceContentId());
+        assertEquals(true, captor.getValue().replaceUnconfirmedOnly());
         assertEquals(3001L, result.getTaskId());
         assertEquals(4001L, result.getBatchJobId());
         assertEquals("QUALITY_REPORT", result.getTriggerSource());
@@ -202,11 +202,11 @@ class KnowledgeQualityReportApplicationServiceTest {
         ArgumentCaptor<RequestGraphExtractionCommand> captor =
                 ArgumentCaptor.forClass(RequestGraphExtractionCommand.class);
         verify(fixture.graphExtractionService).requestGraphExtraction(captor.capture());
-        assertEquals(3001L, captor.getValue().getSourceContentId());
+        assertEquals(3001L, captor.getValue().sourceContentId());
         assertEquals(
                 "{\"triggerSource\":\"QUALITY_REPORT\",\"qualityReportId\":1001,\"graphVersionId\":71,\"sourceCategoryCode\":\"myth\",\"sourceCategoryName\":\"神话\",\"sourceContentType\":\"SANCAI_ENTRY\",\"sourceContentIds\":[3001,3002]}",
-                captor.getValue().getSelectionScopeJson());
-        assertEquals(captor.getValue().getSelectionScopeJson(), result.getSelectionScopeJson());
+                captor.getValue().selectionScopeJson());
+        assertEquals(captor.getValue().selectionScopeJson(), result.getSelectionScopeJson());
     }
 
     @Test

@@ -78,12 +78,12 @@ class KnowledgeGraphExtractionControllerTest {
         var response = controller.regenerateTask(request);
 
         verify(service)
-                .regenerateTask(argThat(command -> "GRAPH".equals(command.getTaskType())
-                        && command.getSourceTaskId().value() == 88L
-                        && "REFINEMENT_APPLIED".equals(command.getTriggerSource())
-                        && "{\"sourceContentIds\":[88,89]}".equals(command.getSelectionScopeJson())
-                        && Boolean.TRUE.equals(command.getReplaceUnconfirmedOnly())
-                        && command.getRequestedBy() == 99L));
+                .regenerateTask(argThat(command -> "GRAPH".equals(command.taskType())
+                        && command.sourceTaskId().value() == 88L
+                        && "REFINEMENT_APPLIED".equals(command.triggerSource())
+                        && "{\"sourceContentIds\":[88,89]}".equals(command.selectionScopeJson())
+                        && Boolean.TRUE.equals(command.replaceUnconfirmedOnly())
+                        && command.requestedBy() == 99L));
         assertEquals("9001", response.getTaskId());
         assertEquals(1001L, response.getBatchJobId());
         assertEquals("REFINEMENT_APPLIED", response.getTriggerSource());

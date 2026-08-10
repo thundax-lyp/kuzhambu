@@ -221,10 +221,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 aiService,
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
-        RequestRelationExtractionCommand command = relationCommand();
-        command.setSelectionScopeJson("{\"sourceContentIds\":[11,12]}");
-        command.setTriggerSource("QUALITY_REPORT");
-        command.setReplaceUnconfirmedOnly(Boolean.TRUE);
+        RequestRelationExtractionCommand command =
+                relationCommand("QUALITY_REPORT", "{\"sourceContentIds\":[11,12]}", Boolean.TRUE);
 
         GraphExtractionTaskResult result = service.requestRelationExtraction(command);
 
@@ -264,8 +262,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
-        RequestRelationExtractionCommand command = relationCommand();
-        command.setSelectionScopeJson("{bad-json");
+        RequestRelationExtractionCommand command = relationCommand(null, "{bad-json", null);
 
         BizException exception = assertThrows(BizException.class, () -> service.requestRelationExtraction(command));
 
@@ -288,9 +285,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 aiService,
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
-        RequestGraphExtractionCommand command = graphCommand();
-        command.setModelId(null);
-        command.setModelName(null);
+        RequestGraphExtractionCommand command = graphCommand(null, null);
 
         GraphExtractionTaskResult result = service.requestGraphExtraction(command);
 
@@ -974,9 +969,18 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     private RequestRelationExtractionCommand relationCommand() {
+        return relationCommand(null, null, null);
+    }
+
+    private RequestRelationExtractionCommand relationCommand(
+            String triggerSource, String selectionScopeJson, Boolean replaceUnconfirmedOnly) {
         return new RequestRelationExtractionCommand(
                 "ENTRY",
                 "{\"entryIds\":[1]}",
+                triggerSource,
+                selectionScopeJson,
+                replaceUnconfirmedOnly,
+                null,
                 "SANCAI_ENTRY",
                 1L,
                 2L,
@@ -997,16 +1001,24 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     private RequestGraphExtractionCommand graphCommand() {
+        return graphCommand(10L, "model-a");
+    }
+
+    private RequestGraphExtractionCommand graphCommand(Long modelId, String modelName) {
         return new RequestGraphExtractionCommand(
                 "ENTRY",
                 "{\"entryIds\":[1]}",
+                null,
+                null,
+                null,
+                null,
                 "SANCAI_ENTRY",
                 1L,
                 2L,
                 3L,
                 "knowledge-admin",
-                10L,
-                "model-a",
+                modelId,
+                modelName,
                 20L,
                 "req-1",
                 "trace-1",

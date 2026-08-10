@@ -21,9 +21,13 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
     private KnowledgeGraphExtractionInterfaceAssembler() {}
 
     public static RequestRelationExtractionCommand toRelationCommand(GraphExtractionRequests.CreateRequest request) {
-        RequestRelationExtractionCommand command = new RequestRelationExtractionCommand(
+        return new RequestRelationExtractionCommand(
                 request == null ? null : request.getScopeType(),
                 request == null ? null : request.getScopeJson(),
+                request == null ? null : request.getTriggerSource(),
+                request == null ? null : request.getSelectionScopeJson(),
+                request == null ? null : request.getReplaceUnconfirmedOnly(),
+                null,
                 request == null ? null : request.getSourceContentType(),
                 request == null ? null : request.getSourceContentId(),
                 request == null ? null : request.getRequestedBy(),
@@ -41,16 +45,16 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 request == null ? null : request.getOutputSchemaJson(),
                 request != null && Boolean.TRUE.equals(request.getForceJson()),
                 request == null ? null : request.getLocale());
-        command.setTriggerSource(request == null ? null : request.getTriggerSource());
-        command.setSelectionScopeJson(request == null ? null : request.getSelectionScopeJson());
-        command.setReplaceUnconfirmedOnly(request == null ? null : request.getReplaceUnconfirmedOnly());
-        return command;
     }
 
     public static RequestGraphExtractionCommand toGraphCommand(GraphExtractionRequests.CreateRequest request) {
-        RequestGraphExtractionCommand command = new RequestGraphExtractionCommand(
+        return new RequestGraphExtractionCommand(
                 request == null ? null : request.getScopeType(),
                 request == null ? null : request.getScopeJson(),
+                request == null ? null : request.getTriggerSource(),
+                request == null ? null : request.getSelectionScopeJson(),
+                request == null ? null : request.getReplaceUnconfirmedOnly(),
+                null,
                 request == null ? null : request.getSourceContentType(),
                 request == null ? null : request.getSourceContentId(),
                 request == null ? null : request.getRequestedBy(),
@@ -68,16 +72,16 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 request == null ? null : request.getOutputSchemaJson(),
                 request != null && Boolean.TRUE.equals(request.getForceJson()),
                 request == null ? null : request.getLocale());
-        command.setTriggerSource(request == null ? null : request.getTriggerSource());
-        command.setSelectionScopeJson(request == null ? null : request.getSelectionScopeJson());
-        command.setReplaceUnconfirmedOnly(request == null ? null : request.getReplaceUnconfirmedOnly());
-        return command;
     }
 
     public static RequestLineageExtractionCommand toLineageCommand(GraphExtractionRequests.CreateRequest request) {
-        RequestLineageExtractionCommand command = new RequestLineageExtractionCommand(
+        return new RequestLineageExtractionCommand(
                 request == null ? null : request.getScopeType(),
                 request == null ? null : request.getScopeJson(),
+                request == null ? null : request.getTriggerSource(),
+                request == null ? null : request.getSelectionScopeJson(),
+                request == null ? null : request.getReplaceUnconfirmedOnly(),
+                null,
                 request == null ? null : request.getSourceContentType(),
                 request == null ? null : request.getSourceContentId(),
                 request == null ? null : request.getRequestedBy(),
@@ -95,10 +99,6 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 request == null ? null : request.getOutputSchemaJson(),
                 request != null && Boolean.TRUE.equals(request.getForceJson()),
                 request == null ? null : request.getLocale());
-        command.setTriggerSource(request == null ? null : request.getTriggerSource());
-        command.setSelectionScopeJson(request == null ? null : request.getSelectionScopeJson());
-        command.setReplaceUnconfirmedOnly(request == null ? null : request.getReplaceUnconfirmedOnly());
-        return command;
     }
 
     public static GraphExtractionTaskId toTaskId(GraphExtractionRequests.TaskIdRequest request) {

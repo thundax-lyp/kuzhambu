@@ -15,16 +15,6 @@ final class KnowledgeApplicationCommandQueryRecordAllowances {
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.lineage.query.LineageCanvasQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementEntityCommand"),
