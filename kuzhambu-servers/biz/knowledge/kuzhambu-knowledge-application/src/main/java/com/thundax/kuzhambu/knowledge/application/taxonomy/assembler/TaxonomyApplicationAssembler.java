@@ -9,18 +9,17 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagCategory;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagContentRef;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.springframework.lang.NonNull;
 
 public final class TaxonomyApplicationAssembler {
     private TaxonomyApplicationAssembler() {}
 
-    public static TagCategoryResult toResult(TagCategory category) {
-        if (category == null) {
-            return new TagCategoryResult();
-        }
+    @NonNull
+    public static TagCategoryResult toResult(@NonNull TagCategory category) {
+        Objects.requireNonNull(category, "category must not be null");
 
         return new TagCategoryResult(
                 category.getId() == null
@@ -32,10 +31,12 @@ public final class TaxonomyApplicationAssembler {
                 category.getStatus() == null ? null : category.getStatus().value());
     }
 
-    public static TagResult toResult(Tag tag, String categoryName, int contentRefCount, String categoryId) {
-        if (tag == null) {
-            return new TagResult();
-        }
+    @NonNull
+    public static TagResult toResult(
+            @NonNull Tag tag, @NonNull String categoryName, int contentRefCount, @NonNull String categoryId) {
+        Objects.requireNonNull(tag, "tag must not be null");
+        Objects.requireNonNull(categoryName, "categoryName must not be null");
+        Objects.requireNonNull(categoryId, "categoryId must not be null");
 
         return new TagResult(
                 tag.getId() == null ? null : String.valueOf(tag.getId().value()),
@@ -51,32 +52,42 @@ public final class TaxonomyApplicationAssembler {
                 tag.getReviewedAt() == null ? null : tag.getReviewedAt().toEpochMilli());
     }
 
-    public static TagResult toResult(Tag tag, String categoryName, int contentRefCount, Long categoryId) {
-        return toResult(tag, categoryName, contentRefCount, categoryId == null ? null : String.valueOf(categoryId));
+    @NonNull
+    public static TagResult toResult(
+            @NonNull Tag tag, @NonNull String categoryName, int contentRefCount, @NonNull Long categoryId) {
+        return toResult(tag, categoryName, contentRefCount, String.valueOf(categoryId));
     }
 
-    public static TagResult toResult(Tag tag, String categoryName, int contentRefCount) {
+    @NonNull
+    public static TagResult toResult(@NonNull Tag tag, @NonNull String categoryName, int contentRefCount) {
+        Objects.requireNonNull(tag, "tag must not be null");
+        Objects.requireNonNull(categoryName, "categoryName must not be null");
         return toResult(
                 tag,
                 categoryName,
                 contentRefCount,
-                tag == null || tag.getCategoryId() == null
-                        ? null
+                tag.getCategoryId() == null
+                        ? ""
                         : String.valueOf(tag.getCategoryId().value()));
     }
 
+    @NonNull
     public static TagDetailResult toDetailResult(
-            Tag tag, List<TagAlias> aliases, List<TagContentRef> refs, String categoryName) {
+            @NonNull Tag tag,
+            @NonNull List<TagAlias> aliases,
+            @NonNull List<TagContentRef> refs,
+            @NonNull String categoryName) {
+        Objects.requireNonNull(tag, "tag must not be null");
+        Objects.requireNonNull(aliases, "aliases must not be null");
+        Objects.requireNonNull(refs, "refs must not be null");
+        Objects.requireNonNull(categoryName, "categoryName must not be null");
         return new TagDetailResult(
-                toResult(tag, categoryName, refs == null ? 0 : refs.size()),
-                toAliasResultList(aliases),
-                toContentRefResultList(refs));
+                toResult(tag, categoryName, refs.size()), toAliasResultList(aliases), toContentRefResultList(refs));
     }
 
+    @NonNull
     public static TagAliasResult toAliasResult(TagAlias alias) {
-        if (alias == null) {
-            return new TagAliasResult();
-        }
+        Objects.requireNonNull(alias, "alias must not be null");
 
         return new TagAliasResult(
                 alias.getId() == null ? null : String.valueOf(alias.getId().value()),
@@ -84,19 +95,18 @@ public final class TaxonomyApplicationAssembler {
                 alias.getSource() == null ? null : alias.getSource().value());
     }
 
+    @NonNull
     public static List<TagAliasResult> toAliasResultList(List<TagAlias> list) {
-        return list == null
-                ? new ArrayList<>()
-                : list.stream()
-                        .filter(Objects::nonNull)
-                        .map(TaxonomyApplicationAssembler::toAliasResult)
-                        .collect(Collectors.toList());
+        Objects.requireNonNull(list, "list must not be null");
+        return list.stream()
+                .filter(Objects::nonNull)
+                .map(TaxonomyApplicationAssembler::toAliasResult)
+                .collect(Collectors.toList());
     }
 
+    @NonNull
     public static TagContentRefResult toContentRefResult(TagContentRef ref) {
-        if (ref == null) {
-            return new TagContentRefResult();
-        }
+        Objects.requireNonNull(ref, "ref must not be null");
 
         return new TagContentRefResult(
                 ref.getId() == null ? null : String.valueOf(ref.getId().value()),
@@ -106,12 +116,12 @@ public final class TaxonomyApplicationAssembler {
                 ref.getSource() == null ? null : ref.getSource().value());
     }
 
+    @NonNull
     public static List<TagContentRefResult> toContentRefResultList(List<TagContentRef> list) {
-        return list == null
-                ? new ArrayList<>()
-                : list.stream()
-                        .filter(Objects::nonNull)
-                        .map(TaxonomyApplicationAssembler::toContentRefResult)
-                        .collect(Collectors.toList());
+        Objects.requireNonNull(list, "list must not be null");
+        return list.stream()
+                .filter(Objects::nonNull)
+                .map(TaxonomyApplicationAssembler::toContentRefResult)
+                .collect(Collectors.toList());
     }
 }

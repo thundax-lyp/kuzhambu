@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.knowledge.application.taxonomy.service.impl;
 
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryEntityHintQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryTagHintQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryEntityHintResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.KnowledgeTaxonomyReadApplicationService;
@@ -31,32 +33,37 @@ public class KnowledgeTaxonomyReadApplicationServiceImpl implements KnowledgeTax
     }
 
     @Override
-    public DiscoveryTagHintResult getTagHint(String term) {
-        String normalizedTerm = normalizeTerm(term);
+    public DiscoveryTagHintResult getTagHint(DiscoveryTagHintQuery query) {
+        DiscoveryTagHintQuery effectiveQuery = query == null ? new DiscoveryTagHintQuery(null) : query;
+        String normalizedTerm = normalizeTerm(effectiveQuery.term());
         if (normalizedTerm == null) {
-            return new DiscoveryTagHintResult(term, null, null, null, 0L);
+            return new DiscoveryTagHintResult(effectiveQuery.term(), null, null, null, 0L);
         }
 
         Tag directTag = tagRepository.getByName(normalizedTerm);
         if (directTag != null && directTag.getId() != null) {
-            return new DiscoveryTagHintResult(term, normalizedTerm, directTag.getName(), null, (long)
+            return new DiscoveryTagHintResult(effectiveQuery.term(), normalizedTerm, directTag.getName(), null, (long)
                     tagContentRefRepository.countByTagId(directTag.getId()));
         }
 
         TagAlias alias = tagAliasRepository.getByName(normalizedTerm);
         if (alias == null || alias.getTagId() == null) {
-            return new DiscoveryTagHintResult(term, normalizedTerm, null, null, 0L);
+            return new DiscoveryTagHintResult(effectiveQuery.term(), normalizedTerm, null, null, 0L);
         }
         Tag targetTag = tagRepository.getByTagId(alias.getTagId());
         Long contentRefCount = targetTag == null || targetTag.getId() == null
                 ? 0L
                 : (long) tagContentRefRepository.countByTagId(targetTag.getId());
         return new DiscoveryTagHintResult(
-                term, normalizedTerm, targetTag == null ? null : targetTag.getName(), alias.getName(), contentRefCount);
+                effectiveQuery.term(),
+                normalizedTerm,
+                targetTag == null ? null : targetTag.getName(),
+                alias.getName(),
+                contentRefCount);
     }
 
     @Override
-    public List<DiscoveryEntityHintResult> listEntityHints(String term) {
+    public List<DiscoveryEntityHintResult> listEntityHints(DiscoveryEntityHintQuery query) {
         return List.of();
     }
 

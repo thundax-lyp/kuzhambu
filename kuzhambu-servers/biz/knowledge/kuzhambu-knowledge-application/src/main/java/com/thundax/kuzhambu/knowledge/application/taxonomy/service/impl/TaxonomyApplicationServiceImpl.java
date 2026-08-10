@@ -230,7 +230,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .filter(Objects::nonNull)
                         .map(tag -> TaxonomyApplicationAssembler.toResult(
                                 tag,
-                                getCategoryName(tag.getCategoryId()),
+                                nonNullText(getCategoryName(tag.getCategoryId())),
                                 tagContentRefRepository.countByTagId(tag.getId())))
                         .collect(Collectors.toList()));
     }
@@ -241,9 +241,9 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         return TaxonomyApplicationAssembler.toDetailResult(
                 tag,
-                tagAliasRepository.listByTagId(tag.getId()),
-                tagContentRefRepository.listByTagId(tag.getId()),
-                getCategoryName(tag.getCategoryId()));
+                nonNullList(tagAliasRepository.listByTagId(tag.getId())),
+                nonNullList(tagContentRefRepository.listByTagId(tag.getId())),
+                nonNullText(getCategoryName(tag.getCategoryId())));
     }
 
     @Override
@@ -258,13 +258,13 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         return new TagMergePreviewResult(
                 TaxonomyApplicationAssembler.toResult(
-                        sourceTag, getCategoryName(sourceTag.getCategoryId()), impactedContentRefs.size()),
+                        sourceTag, nonNullText(getCategoryName(sourceTag.getCategoryId())), impactedContentRefs.size()),
                 TaxonomyApplicationAssembler.toResult(
                         targetTag,
-                        getCategoryName(targetTag.getCategoryId()),
+                        nonNullText(getCategoryName(targetTag.getCategoryId())),
                         tagContentRefRepository.countByTagId(targetTag.getId())),
-                TaxonomyApplicationAssembler.toAliasResultList(aliasesToMerge),
-                TaxonomyApplicationAssembler.toContentRefResultList(impactedContentRefs),
+                TaxonomyApplicationAssembler.toAliasResultList(nonNullList(aliasesToMerge)),
+                TaxonomyApplicationAssembler.toContentRefResultList(nonNullList(impactedContentRefs)),
                 pendingReviewCount,
                 governedRecordCount);
     }
@@ -293,15 +293,15 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                 sourceTags.stream()
                         .map(tag -> TaxonomyApplicationAssembler.toResult(
                                 tag,
-                                getCategoryName(tag.getCategoryId()),
+                                nonNullText(getCategoryName(tag.getCategoryId())),
                                 tagContentRefRepository.countByTagId(tag.getId())))
                         .collect(Collectors.toList()),
                 TaxonomyApplicationAssembler.toResult(
                         targetTag,
-                        getCategoryName(targetTag.getCategoryId()),
+                        nonNullText(getCategoryName(targetTag.getCategoryId())),
                         tagContentRefRepository.countByTagId(targetTag.getId())),
-                TaxonomyApplicationAssembler.toAliasResultList(aliasesToMerge),
-                TaxonomyApplicationAssembler.toContentRefResultList(impactedContentRefs),
+                TaxonomyApplicationAssembler.toAliasResultList(nonNullList(aliasesToMerge)),
+                TaxonomyApplicationAssembler.toContentRefResultList(nonNullList(impactedContentRefs)),
                 pendingReviewCount,
                 governedRecordCount);
     }
@@ -520,7 +520,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .filter(tag -> keepOnlyPending(tag, effectiveQuery))
                         .map(tag -> TaxonomyApplicationAssembler.toResult(
                                 tag,
-                                getCategoryName(tag.getCategoryId()),
+                                nonNullText(getCategoryName(tag.getCategoryId())),
                                 tagContentRefRepository.countByTagId(tag.getId())))
                         .collect(Collectors.toList()));
     }
@@ -689,7 +689,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Override
     public List<TagAliasResult> listTagAliases(TagId tagId) {
         Tag tag = ensureTagExists(tagId);
-        return TaxonomyApplicationAssembler.toAliasResultList(tagAliasRepository.listByTagId(tag.getId()));
+        return TaxonomyApplicationAssembler.toAliasResultList(nonNullList(tagAliasRepository.listByTagId(tag.getId())));
     }
 
     @Override
@@ -955,6 +955,14 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         TagCategory category = tagCategoryRepository.getByCategoryId(categoryId);
         return category == null ? null : category.getName();
+    }
+
+    private String nonNullText(String text) {
+        return text == null ? "" : text;
+    }
+
+    private <T> List<T> nonNullList(List<T> list) {
+        return list == null ? List.of() : list;
     }
 
     private List<TagId> normalizeTagIds(List<TagId> tagIds, String field) {

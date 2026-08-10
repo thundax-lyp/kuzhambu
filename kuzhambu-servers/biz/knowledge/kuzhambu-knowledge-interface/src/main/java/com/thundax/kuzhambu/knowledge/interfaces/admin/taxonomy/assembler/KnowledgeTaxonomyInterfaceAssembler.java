@@ -18,6 +18,8 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeComma
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryEntityHintQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryTagHintQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
@@ -85,6 +87,14 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                         ? null
                         : TagCategoryStatus.from(request.getStatus()),
                 resolveSortDirection(request == null ? null : request.getSortDirection()));
+    }
+
+    public static DiscoveryTagHintQuery toTagHintQuery(String term) {
+        return new DiscoveryTagHintQuery(term);
+    }
+
+    public static DiscoveryEntityHintQuery toEntityHintQuery(String term) {
+        return new DiscoveryEntityHintQuery(term);
     }
 
     public static TagCategoryCreateCommand toCategoryCreateCommand(TagCategoryCreateRequest request) {

@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryEntityHintQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryTagHintQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagAliasIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
@@ -36,7 +38,7 @@ class KnowledgeTaxonomyReadApplicationServiceImplTest {
         KnowledgeTaxonomyReadApplicationServiceImpl service = new KnowledgeTaxonomyReadApplicationServiceImpl(
                 tagRepository, tagAliasRepository, tagContentRefRepository);
 
-        DiscoveryTagHintResult result = service.getTagHint("节俗");
+        DiscoveryTagHintResult result = service.getTagHint(new DiscoveryTagHintQuery("节俗"));
 
         assertEquals("节俗", result.getNormalizedTerm());
         assertEquals("民俗", result.getMatchedTagName());
@@ -49,6 +51,6 @@ class KnowledgeTaxonomyReadApplicationServiceImplTest {
         KnowledgeTaxonomyReadApplicationServiceImpl service = new KnowledgeTaxonomyReadApplicationServiceImpl(
                 mock(TagRepository.class), mock(TagAliasRepository.class), mock(TagContentRefRepository.class));
 
-        assertTrue(service.listEntityHints("礼制").isEmpty());
+        assertTrue(service.listEntityHints(new DiscoveryEntityHintQuery("礼制")).isEmpty());
     }
 }
