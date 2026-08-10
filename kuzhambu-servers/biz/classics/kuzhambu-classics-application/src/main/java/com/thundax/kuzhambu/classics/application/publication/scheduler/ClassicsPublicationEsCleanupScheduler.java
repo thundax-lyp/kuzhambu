@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.scheduler;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationCleanupApplicationService;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
@@ -44,8 +45,9 @@ public class ClassicsPublicationEsCleanupScheduler {
 
     private void cleanup(ClassicsPublicationJob job, Instant now) {
         String token = UUID.randomUUID().toString();
-        if (!transactionService.claimEs(job, token, now, now.plus(properties.getCleanupLease()))
-                || !transactionService.qualify(job, token, true)) {
+        if (!transactionService.claimEs(ClassicsPublicationWorkflowCommand.cleanupClaim(
+                        job, token, now, now.plus(properties.getCleanupLease()), true))
+                || !transactionService.qualify(ClassicsPublicationWorkflowCommand.cleanup(job, token, true))) {
             return;
         }
         try {
@@ -53,9 +55,10 @@ public class ClassicsPublicationEsCleanupScheduler {
                     .documentId(job.getEsDocumentId())
                     .occurredAt(clock.instant())
                     .build());
-            transactionService.complete(job, token, true);
+            transactionService.complete(ClassicsPublicationWorkflowCommand.cleanup(job, token, true));
         } catch (RuntimeException exception) {
-            transactionService.fail(job, token, true, detail(exception, clock.instant()));
+            transactionService.fail(ClassicsPublicationWorkflowCommand.cleanupFailure(
+                    job, token, true, detail(exception, clock.instant())));
         }
     }
 

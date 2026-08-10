@@ -1,17 +1,16 @@
 package com.thundax.kuzhambu.classics.application.publication.service;
 
-import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
-import java.time.Instant;
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 
 public interface ClassicsPublicationCleanupApplicationService {
 
-    boolean claimEs(ClassicsPublicationJob job, String token, Instant now, Instant expiresAt);
+    boolean claimEs(ClassicsPublicationWorkflowCommand command);
 
-    boolean claimFastGpt(ClassicsPublicationJob job, String token, Instant now, Instant expiresAt);
+    boolean claimFastGpt(ClassicsPublicationWorkflowCommand command);
 
-    boolean qualify(ClassicsPublicationJob claimedJob, String token, boolean es);
+    boolean qualify(ClassicsPublicationWorkflowCommand command);
 
-    boolean complete(ClassicsPublicationJob job, String token, boolean es);
+    boolean complete(ClassicsPublicationWorkflowCommand command);
 
-    boolean fail(ClassicsPublicationJob job, String token, boolean es, String detailJson);
+    boolean fail(ClassicsPublicationWorkflowCommand command);
 }

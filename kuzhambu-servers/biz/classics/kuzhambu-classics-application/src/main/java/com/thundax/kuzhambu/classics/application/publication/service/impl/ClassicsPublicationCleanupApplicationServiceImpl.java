@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationCleanupApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
@@ -8,7 +9,6 @@ import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPub
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
-import java.time.Instant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,19 +25,24 @@ public class ClassicsPublicationCleanupApplicationServiceImpl implements Classic
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean claimEs(ClassicsPublicationJob job, String token, Instant now, Instant expiresAt) {
-        return jobRepository.claimEsCleanup(job.getId(), token, now, expiresAt) == 1;
+    public boolean claimEs(ClassicsPublicationWorkflowCommand command) {
+        return jobRepository.claimEsCleanup(
+                        command.job().getId(), command.cleanupToken(), command.occurredAt(), command.expiresAt())
+                == 1;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean claimFastGpt(ClassicsPublicationJob job, String token, Instant now, Instant expiresAt) {
-        return jobRepository.claimFastGptCleanup(job.getId(), token, now, expiresAt) == 1;
+    public boolean claimFastGpt(ClassicsPublicationWorkflowCommand command) {
+        return jobRepository.claimFastGptCleanup(
+                        command.job().getId(), command.cleanupToken(), command.occurredAt(), command.expiresAt())
+                == 1;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean qualify(ClassicsPublicationJob claimedJob, String token, boolean es) {
+    public boolean qualify(ClassicsPublicationWorkflowCommand command) {
+        ClassicsPublicationJob claimedJob = command.job();
         ClassicsPublicationContent content = contentRepository.getByPublicationContentForLock(
                 claimedJob.getContentType(), new ClassicsContentId(claimedJob.getContentId()));
         ClassicsPublicationJob current =
@@ -45,10 +50,10 @@ public class ClassicsPublicationCleanupApplicationServiceImpl implements Classic
         boolean currentJob = current != null && claimedJob.getId().equals(current.getId());
         boolean eligible = currentJob && eligibleContent(content, current);
         if (!eligible) {
-            if (es) {
-                jobRepository.releaseEsCleanupClaim(claimedJob.getId(), token);
+            if (command.es()) {
+                jobRepository.releaseEsCleanupClaim(claimedJob.getId(), command.cleanupToken());
             } else {
-                jobRepository.releaseFastGptCleanupClaim(claimedJob.getId(), token);
+                jobRepository.releaseFastGptCleanupClaim(claimedJob.getId(), command.cleanupToken());
             }
         }
         return eligible;
@@ -56,19 +61,21 @@ public class ClassicsPublicationCleanupApplicationServiceImpl implements Classic
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean complete(ClassicsPublicationJob job, String token, boolean es) {
-        return (es
-                        ? jobRepository.completeEsCleanup(job.getId(), token)
-                        : jobRepository.completeFastGptCleanup(job.getId(), token))
+    public boolean complete(ClassicsPublicationWorkflowCommand command) {
+        return (command.es()
+                        ? jobRepository.completeEsCleanup(command.job().getId(), command.cleanupToken())
+                        : jobRepository.completeFastGptCleanup(command.job().getId(), command.cleanupToken()))
                 == 1;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean fail(ClassicsPublicationJob job, String token, boolean es, String detailJson) {
-        return (es
-                        ? jobRepository.failEsCleanup(job.getId(), token, detailJson)
-                        : jobRepository.failFastGptCleanup(job.getId(), token, detailJson))
+    public boolean fail(ClassicsPublicationWorkflowCommand command) {
+        return (command.es()
+                        ? jobRepository.failEsCleanup(
+                                command.job().getId(), command.cleanupToken(), command.detailJson())
+                        : jobRepository.failFastGptCleanup(
+                                command.job().getId(), command.cleanupToken(), command.detailJson()))
                 == 1;
     }
 

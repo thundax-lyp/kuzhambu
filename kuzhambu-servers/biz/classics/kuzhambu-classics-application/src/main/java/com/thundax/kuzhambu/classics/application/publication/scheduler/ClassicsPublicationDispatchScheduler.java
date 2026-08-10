@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.scheduler;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationExecutorConfiguration;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationExecutionApplicationService;
@@ -57,21 +58,22 @@ public class ClassicsPublicationDispatchScheduler {
     private void dispatch(ClassicsPublicationJob job, Instant now) {
         ClassicsPublicationExecutionToken token =
                 new ClassicsPublicationExecutionToken(UUID.randomUUID().toString());
-        if (!transactionService.claim(job.getId(), token, now, now.plus(properties.getDispatchLease()))) {
+        if (!transactionService.claim(ClassicsPublicationWorkflowCommand.executionClaim(
+                job.getId(), token, now, now.plus(properties.getDispatchLease())))) {
             return;
         }
         try {
             taskExecutor.execute(() -> execute(job, token));
         } catch (TaskRejectedException exception) {
-            transactionService.releaseClaim(job.getId(), token);
+            transactionService.releaseClaim(ClassicsPublicationWorkflowCommand.execution(job.getId(), token));
             LOGGER.warn("publication_dispatch_rejected jobId={}", job.getId());
         }
     }
 
     private void execute(ClassicsPublicationJob claimedJob, ClassicsPublicationExecutionToken token) {
         Instant startedAt = clock.instant();
-        ClassicsPublicationJob job = transactionService.start(
-                claimedJob.getId(), token, startedAt, startedAt.plus(properties.getSliceLease()));
+        ClassicsPublicationJob job = transactionService.start(ClassicsPublicationWorkflowCommand.executionStart(
+                claimedJob.getId(), token, startedAt, startedAt.plus(properties.getSliceLease())));
         if (job == null) {
             return;
         }
@@ -100,9 +102,10 @@ public class ClassicsPublicationDispatchScheduler {
         String detail = failureDetail(job, exception, failedAt);
         boolean terminal = job.getAttemptCount() >= job.getMaxAttempts();
         boolean updated = terminal
-                ? transactionService.fail(job.getId(), token, failedAt, reason, detail)
-                : transactionService.retry(
-                        job.getId(), token, failedAt.plus(properties.getRetryDelay()), reason, detail);
+                ? transactionService.fail(ClassicsPublicationWorkflowCommand.executionFailure(
+                        job.getId(), token, failedAt, reason, detail))
+                : transactionService.retry(ClassicsPublicationWorkflowCommand.executionRetry(
+                        job.getId(), token, failedAt.plus(properties.getRetryDelay()), reason, detail));
         LOGGER.warn(
                 "publication_slice_failed jobId={} milestone={} attempt={} terminal={} updated={} elapsedMs={} reason={}",
                 job.getId(),

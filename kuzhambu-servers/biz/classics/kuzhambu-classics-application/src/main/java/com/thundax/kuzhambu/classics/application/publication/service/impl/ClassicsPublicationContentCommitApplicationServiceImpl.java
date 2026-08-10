@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationContentCommitApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
@@ -26,7 +27,9 @@ public class ClassicsPublicationContentCommitApplicationServiceImpl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean commit(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
+    public boolean commit(ClassicsPublicationWorkflowCommand command) {
+        ClassicsPublicationJob job = command.job();
+        ClassicsPublicationExecutionToken executionToken = command.executionToken();
         ClassicsContentId contentId = new ClassicsContentId(job.getContentId());
         ClassicsPublicationContent content =
                 contentRepository.getByPublicationContentForLock(job.getContentType(), contentId);

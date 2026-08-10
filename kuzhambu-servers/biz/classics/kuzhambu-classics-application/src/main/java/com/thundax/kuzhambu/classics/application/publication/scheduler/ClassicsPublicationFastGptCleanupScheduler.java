@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.scheduler;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationCleanupApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationFastGptGateway;
@@ -45,16 +46,18 @@ public class ClassicsPublicationFastGptCleanupScheduler {
 
     private void cleanup(ClassicsPublicationJob job, Instant now) {
         String token = UUID.randomUUID().toString();
-        if (!transactionService.claimFastGpt(job, token, now, now.plus(properties.getCleanupLease()))
-                || !transactionService.qualify(job, token, false)) {
+        if (!transactionService.claimFastGpt(ClassicsPublicationWorkflowCommand.cleanupClaim(
+                        job, token, now, now.plus(properties.getCleanupLease()), false))
+                || !transactionService.qualify(ClassicsPublicationWorkflowCommand.cleanup(job, token, false))) {
             return;
         }
         try {
             fastGptGateway.disable(job.getFastGptCollectionId());
             fastGptGateway.delete(job.getFastGptCollectionId());
-            transactionService.complete(job, token, false);
+            transactionService.complete(ClassicsPublicationWorkflowCommand.cleanup(job, token, false));
         } catch (RuntimeException exception) {
-            transactionService.fail(job, token, false, detail(exception, clock.instant()));
+            transactionService.fail(ClassicsPublicationWorkflowCommand.cleanupFailure(
+                    job, token, false, detail(exception, clock.instant())));
         }
     }
 

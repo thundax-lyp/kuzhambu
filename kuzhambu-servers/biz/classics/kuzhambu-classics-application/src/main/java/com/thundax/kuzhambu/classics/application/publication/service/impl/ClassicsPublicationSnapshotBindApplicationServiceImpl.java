@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
 import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationSnapshotBindApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationPayloadAssembler;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
@@ -43,7 +44,9 @@ public class ClassicsPublicationSnapshotBindApplicationServiceImpl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean bind(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
+    public boolean bind(ClassicsPublicationWorkflowCommand command) {
+        ClassicsPublicationJob job = command.job();
+        ClassicsPublicationExecutionToken executionToken = command.executionToken();
         ClassicsContentId contentId = new ClassicsContentId(job.getContentId());
         ClassicsPublicationContent state =
                 contentRepository.getByPublicationContentForLock(job.getContentType(), contentId);

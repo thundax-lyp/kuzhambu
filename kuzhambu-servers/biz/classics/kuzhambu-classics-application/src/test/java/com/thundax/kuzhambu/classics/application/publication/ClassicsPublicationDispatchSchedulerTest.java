@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.classics.application.publication;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -14,7 +14,6 @@ import com.thundax.kuzhambu.classics.application.publication.scheduler.ClassicsP
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationStepExecutor;
 import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationExecutionApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
 import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import java.time.Clock;
@@ -45,13 +44,16 @@ class ClassicsPublicationDispatchSchedulerTest {
         ClassicsPublicationJobId jobId = new ClassicsPublicationJobId(101L);
         when(job.getId()).thenReturn(jobId);
         when(fixture.jobRepository.listDispatchCandidates(NOW, 20)).thenReturn(List.of(job));
-        when(fixture.transactionService.claim(eq(jobId), any(), eq(NOW), eq(NOW.plusSeconds(30))))
+        when(fixture.transactionService.claim(argThat(command -> jobId.equals(command.jobId())
+                        && NOW.equals(command.occurredAt())
+                        && NOW.plusSeconds(30).equals(command.expiresAt()))))
                 .thenReturn(true);
         doThrow(new TaskRejectedException("full")).when(fixture.taskExecutor).execute(any(Runnable.class));
 
         fixture.scheduler.dispatch();
 
-        verify(fixture.transactionService).releaseClaim(eq(jobId), any(ClassicsPublicationExecutionToken.class));
+        verify(fixture.transactionService)
+                .releaseClaim(argThat(command -> jobId.equals(command.jobId()) && command.executionToken() != null));
     }
 
     private static final class Fixture {

@@ -12,22 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `5 发布ApplicationService方法形态`：5. 清理发布 ApplicationService 方法形态
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-07-CLASSICS-SANCAI-PUBLICATION.md`
-    - 范围对象：
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/publication/service/ClassicsPublicationApplicationService.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/publication/service/ClassicsPublicationCleanupApplicationService.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/publication/service/ClassicsPublicationExecutionApplicationService.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/publication/service/ClassicsPublicationReconcileApplicationService.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/publication/service/ClassicsPublicationSnapshotBindApplicationService.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/publication/service/ClassicsPublicationContentCommitApplicationService.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/ClassicsApplicationArchitectureTest.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/publication/ClassicsPublicationStepExecutorTest.java`
-    - 处理动作：对发布 workflow service 方法做最小结构调整，引入专用 Command 或迁入 support/executor 语义边界。
-    - 验收点：发布状态机语义不变；发布相关测试通过；可安全收敛的 publication `METHOD_SHAPE` allowlist key 已删除。
-    - 重要度：8/10
-
 - [ ] `6 清理报表搜索方法形态`：6. 清理 cleanup/report/search ApplicationService 方法形态
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-07-CLASSICS-SANCAI-PUBLICATION.md`

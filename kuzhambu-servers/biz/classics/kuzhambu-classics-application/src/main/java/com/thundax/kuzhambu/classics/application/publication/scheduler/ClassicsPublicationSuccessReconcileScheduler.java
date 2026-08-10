@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.scheduler;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationReconcileApplicationService;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
@@ -32,6 +33,7 @@ public class ClassicsPublicationSuccessReconcileScheduler {
         }
         jobRepository
                 .listSuccessReconcileCandidates(properties.getClaimLimit())
-                .forEach(job -> transactionService.succeed(job, clock.instant()));
+                .forEach(job -> transactionService.succeed(
+                        ClassicsPublicationWorkflowCommand.reconcileSuccess(job, clock.instant())));
     }
 }

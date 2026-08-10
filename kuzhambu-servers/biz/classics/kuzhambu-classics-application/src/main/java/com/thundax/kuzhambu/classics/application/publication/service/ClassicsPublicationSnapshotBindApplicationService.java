@@ -1,9 +1,8 @@
 package com.thundax.kuzhambu.classics.application.publication.service;
 
-import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 
 public interface ClassicsPublicationSnapshotBindApplicationService {
 
-    boolean bind(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken);
+    boolean bind(ClassicsPublicationWorkflowCommand command);
 }

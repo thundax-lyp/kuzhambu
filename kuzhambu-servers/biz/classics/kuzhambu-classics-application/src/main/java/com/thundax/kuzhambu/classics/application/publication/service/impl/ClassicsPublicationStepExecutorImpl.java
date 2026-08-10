@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationPayload;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationContentCommitApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationSnapshotBindApplicationService;
@@ -64,14 +65,16 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
             return false;
         }
         return switch (next) {
-            case SNAPSHOT_READY -> snapshotBindService.bind(job, executionToken);
+            case SNAPSHOT_READY ->
+                snapshotBindService.bind(ClassicsPublicationWorkflowCommand.step(job, executionToken));
             case ES_PREPARED -> prepareSearch(job, executionToken);
             case FASTGPT_PREPARED -> prepareFastGpt(job, executionToken);
             case ES_READY -> readySearch(job, executionToken);
             case FASTGPT_READY -> enableFastGpt(job, executionToken);
             case ES_DISABLED -> offlineSearch(job, executionToken);
             case FASTGPT_DISABLED -> disableFastGpt(job, executionToken);
-            case CONTENT_COMMITTED -> contentCommitService.commit(job, executionToken);
+            case CONTENT_COMMITTED ->
+                contentCommitService.commit(ClassicsPublicationWorkflowCommand.step(job, executionToken));
             case QUEUED -> false;
         };
     }
