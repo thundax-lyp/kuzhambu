@@ -65,18 +65,7 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyApplicationServiceBoundaryAllowances() {
-        return List.of(
-                rawNoArg("METHOD_SHAPE:com.thundax.kuzhambu.system.application.auth.service."
-                        + "PreAuthSessionApplicationService.countActiveSessions()"),
-                rawNoArg("COUNT_RETURN:com.thundax.kuzhambu.system.application.auth.service."
-                        + "PreAuthSessionApplicationService.countActiveSessions()"));
-    }
-
-    private static ArchitectureRuleAllowance rawNoArg(String key) {
-        return ArchitectureRuleAllowance.of(
-                key,
-                "PreAuthSessionApplicationService.countActiveSessions is a legacy no-argument count method with an int return type.",
-                "Change the return type to primitive long and decide whether the method should be renamed to a supported no-argument read shape or accept an explicit Query.");
+        return Collections.emptyList();
     }
 
     private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {

@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ARCHUNIT-SYSTEM-AUTH-04-02`：迁移 pre-auth session contract 与 count 方法形态
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-04-SYSTEM-AUTH-AUDIT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/CreatePreAuthSessionCommand.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/RefreshPreAuthSessionCommand.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/ReleasePreAuthSessionCommand.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/command/UpsertPreAuthSessionValueCommand.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/query/PreAuthSessionQuery.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/query/PreAuthSessionValueQuery.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/query/PreAuthSessionValueValidateQuery.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/PreAuthSessionApplicationService.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/auth/service/impl/PreAuthSessionApplicationServiceImpl.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/test/java/com/thundax/kuzhambu/system/application/SystemApplicationCommandQueryRecordAllowances.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/test/java/com/thundax/kuzhambu/system/application/SystemApplicationArchitectureTest.java`
-    - 处理动作：将 pre-auth session command/query 改为 record，并修正 `countActiveSessions()` 的返回值和合法方法形态。
-    - 验收点：RUNBOOK 中 pre-auth session record key、`METHOD_SHAPE` key 和 `COUNT_RETURN` key 已删除，system application 架构测试通过。
-    - 重要度：9/10
-
 - [ ] `ARCHUNIT-SYSTEM-AUTH-04-03`：迁移 auth controller 与 captcha controller 的 pre-auth 构造点
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-04-SYSTEM-AUTH-AUDIT.md`

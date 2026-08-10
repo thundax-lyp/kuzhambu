@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionI
 
 public interface PreAuthSessionApplicationService {
 
-    int countActiveSessions();
+    long summaryActiveSessionCount();
 
     PreAuthSession create(CreatePreAuthSessionCommand command);
 

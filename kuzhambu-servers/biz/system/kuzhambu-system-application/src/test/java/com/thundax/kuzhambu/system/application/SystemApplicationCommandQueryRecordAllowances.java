@@ -33,8 +33,6 @@ final class SystemApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.CreatePreAuthSessionCommand"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalCredentialCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalIdentityCommand"),
@@ -52,19 +50,8 @@ final class SystemApplicationCommandQueryRecordAllowances {
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalLoginFailureCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.RefreshAdminAccessTokenCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.RefreshPreAuthSessionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.ReleasePreAuthSessionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.UpsertPreAuthSessionValueCommand"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.AdminAccessTokenQuery"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.PermissionQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueValidateQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery"),
                 legacy(

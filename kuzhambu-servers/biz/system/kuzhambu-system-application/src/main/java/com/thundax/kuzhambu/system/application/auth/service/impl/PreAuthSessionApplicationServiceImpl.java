@@ -34,30 +34,30 @@ public class PreAuthSessionApplicationServiceImpl implements PreAuthSessionAppli
     }
 
     @Override
-    public int countActiveSessions() {
+    public long summaryActiveSessionCount() {
         return preAuthSessionRepository.count();
     }
 
     @Override
     public PreAuthSession create(CreatePreAuthSessionCommand command) {
-        PreAuthSession session = PreAuthSession.create(command.getExpiredSeconds());
+        PreAuthSession session = PreAuthSession.create(command.expiredSeconds());
         preAuthSessionRepository.insert(session);
         return session;
     }
 
     @Override
     public PreAuthSessionId getIdByToken(PreAuthSessionQuery query) {
-        return preAuthSessionRepository.getByToken(query == null ? null : query.getToken());
+        return preAuthSessionRepository.getByToken(query == null ? null : query.token());
     }
 
     @Override
     public PreAuthSessionId getIdByRefreshToken(PreAuthSessionQuery query) {
-        return preAuthSessionRepository.getByRefreshToken(query == null ? null : query.getRefreshToken());
+        return preAuthSessionRepository.getByRefreshToken(query == null ? null : query.refreshToken());
     }
 
     @Override
     public PreAuthSession get(PreAuthSessionQuery query) {
-        PreAuthSession session = preAuthSessionRepository.getById(query == null ? null : query.getId());
+        PreAuthSession session = preAuthSessionRepository.getById(query == null ? null : query.id());
         if (session == null || session.isExpired()) {
             throw new BizException("AUTH-00006", "auth.exception.invalid-token", "token 已失效");
         }
@@ -66,27 +66,27 @@ public class PreAuthSessionApplicationServiceImpl implements PreAuthSessionAppli
 
     @Override
     public PreAuthSession refresh(RefreshPreAuthSessionCommand command) {
-        PreAuthSession session = get(new PreAuthSessionQuery(command.getId(), null, null));
-        session.refresh(command.getExpiredSeconds(), command.getRefreshTokenGraceSeconds());
+        PreAuthSession session = get(new PreAuthSessionQuery(command.id(), null, null));
+        session.refresh(command.expiredSeconds(), command.refreshTokenGraceSeconds());
         preAuthSessionRepository.update(session);
         return session;
     }
 
     @Override
     public void release(ReleasePreAuthSessionCommand command) {
-        preAuthSessionRepository.deleteById(command.getId());
+        preAuthSessionRepository.deleteById(command.id());
     }
 
     @Override
     public void upsertValue(UpsertPreAuthSessionValueCommand command) {
-        PreAuthSession session = get(new PreAuthSessionQuery(command.getId(), null, null));
-        session.upsertValue(command.getName(), command.getValue(), command.getExpiredAt());
+        PreAuthSession session = get(new PreAuthSessionQuery(command.id(), null, null));
+        session.upsertValue(command.name(), command.value(), command.expiredAt());
         preAuthSessionRepository.update(session);
     }
 
     @Override
     public String getValue(PreAuthSessionValueQuery query) {
-        return get(new PreAuthSessionQuery(query.getId(), null, null)).findValue(query.getName());
+        return get(new PreAuthSessionQuery(query.id(), null, null)).findValue(query.name());
     }
 
     @Override
@@ -94,14 +94,14 @@ public class PreAuthSessionApplicationServiceImpl implements PreAuthSessionAppli
         if (query == null) {
             return false;
         }
-        if (captchaWhitelistPolicy.matches(query.getValue())) {
+        if (captchaWhitelistPolicy.matches(query.value())) {
             return true;
         }
-        PreAuthSession session = get(new PreAuthSessionQuery(query.getId(), null, null));
-        if (!StringUtils.equals(query.getValue(), session.findValue(query.getName()))) {
+        PreAuthSession session = get(new PreAuthSessionQuery(query.id(), null, null));
+        if (!StringUtils.equals(query.value(), session.findValue(query.name()))) {
             return false;
         }
-        return StringUtils.isBlank(query.getBindName())
-                || StringUtils.equals(query.getBindValue(), session.findValue(query.getBindName()));
+        return StringUtils.isBlank(query.bindName())
+                || StringUtils.equals(query.bindValue(), session.findValue(query.bindName()));
     }
 }
