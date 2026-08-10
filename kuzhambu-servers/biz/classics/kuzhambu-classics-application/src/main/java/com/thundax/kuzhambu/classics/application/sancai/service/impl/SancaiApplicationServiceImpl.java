@@ -105,7 +105,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     public SancaiCategory getCategory(SancaiCategoryId id) {
-        return repository.getCategoryById(id);
+        return repository.getByCategoryId(id);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         }
         SancaiCategory category = toNewCategory(command);
         category.setId(SancaiCategoryIdCodec.toDomain(command.id()));
-        SancaiCategory oldCategory = repository.getCategoryById(category.getId());
+        SancaiCategory oldCategory = repository.getByCategoryId(category.getId());
         if (oldCategory == null) {
             throw categoryNotFound();
         }
@@ -154,7 +154,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (repository.countVolumesByCategoryId(id) > 0) {
             throw new BizException("三才图会门类下仍有关联卷，不能删除");
         }
-        if (repository.deleteCategoryById(id) != 1) {
+        if (repository.deleteByCategoryId(id) != 1) {
             throw categoryNotFound();
         }
     }
@@ -166,7 +166,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     public SancaiVolume getVolume(SancaiVolumeId id) {
-        return id == null ? null : repository.getVolumeById(id);
+        return id == null ? null : repository.getByVolumeId(id);
     }
 
     @Override
@@ -185,7 +185,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         }
         SancaiVolume volume = toNewVolume(command);
         volume.setId(SancaiVolumeIdCodec.toDomain(command.id()));
-        SancaiVolume oldVolume = repository.getVolumeById(volume.getId());
+        SancaiVolume oldVolume = repository.getByVolumeId(volume.getId());
         if (oldVolume == null) {
             throw volumeNotFound();
         }
@@ -205,7 +205,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (repository.countEntriesByVolumeId(id) > 0) {
             throw new BizException("三才图会卷下仍有关联条目，不能删除");
         }
-        if (repository.deleteVolumeById(id) != 1) {
+        if (repository.deleteByVolumeId(id) != 1) {
             throw volumeNotFound();
         }
     }
@@ -256,7 +256,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     public SancaiEntry getEntry(SancaiEntryId id) {
-        return id == null ? null : repository.getEntryById(id);
+        return id == null ? null : repository.getByEntryId(id);
     }
 
     @Override
@@ -276,11 +276,11 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     @Override
-    public PageResult<SancaiEntry> pageEntries(SancaiEntryQuery query, PageQuery page) {
+    public PageResult<SancaiEntry> page(SancaiEntryQuery query, PageQuery page) {
         if (hasPermissionContext(query) && !canView(query.operatorPermissions())) {
             return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
         }
-        return repository.pageEntries(
+        return repository.page(
                 query == null ? null : SancaiCategoryIdCodec.toDomain(query.categoryId()),
                 query == null ? null : SancaiVolumeIdCodec.toDomain(query.volumeId()),
                 query == null ? null : query.keyword(),
@@ -325,7 +325,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
                         .map(SancaiEntryIdCodec::toDomain)
                         .toList();
         Map<Long, SancaiEntry> entryById = new LinkedHashMap<>();
-        repository.listEntriesByIds(ids).forEach(entry -> {
+        repository.listEntriesByIdList(ids).forEach(entry -> {
             Long idValue = SancaiEntryIdCodec.toValue(entry.getId());
             if (idValue != null) {
                 entryById.put(idValue, entry);
@@ -390,7 +390,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         }
         SancaiEntryId currentEntryId = SancaiEntryIdCodec.toDomain(command.id());
         requireWritable(currentEntryId, ClassicsPublicationWriteOperation.EDIT);
-        SancaiEntry currentEntry = repository.getEntryById(currentEntryId);
+        SancaiEntry currentEntry = repository.getByEntryId(currentEntryId);
         if (currentEntry == null) {
             throw new BizException("三才图会条目不存在");
         }
@@ -417,7 +417,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         }
         SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command.id());
         requireWritable(entryId, ClassicsPublicationWriteOperation.EDIT);
-        SancaiEntry entry = repository.getEntryById(entryId);
+        SancaiEntry entry = repository.getByEntryId(entryId);
         if (entry == null) {
             return;
         }
@@ -433,14 +433,14 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteEntry(SancaiEntryId id) {
         prepareDeletion(id);
-        SancaiEntry entry = repository.getEntryById(id);
+        SancaiEntry entry = repository.getByEntryId(id);
         if (entry == null) {
             return;
         }
         entry.setContentUpdatedAt(Instant.now());
         contentApplicationService.ensureVersioned(
                 new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除"));
-        repository.deleteEntryById(id);
+        repository.deleteByEntryId(id);
     }
 
     private void requireWritable(SancaiEntryId id, ClassicsPublicationWriteOperation operation) {
@@ -581,7 +581,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
             throw invalidVolume("categoryId/title");
         }
         SancaiCategoryId categoryId = SancaiCategoryIdCodec.toDomain(command.categoryId());
-        if (repository.getCategoryById(categoryId) == null) {
+        if (repository.getByCategoryId(categoryId) == null) {
             throw categoryNotFound();
         }
         SancaiVolume volume = new SancaiVolume();
@@ -596,7 +596,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
             throw invalidVolume("volumeId");
         }
         SancaiVolumeId targetVolumeId = SancaiVolumeIdCodec.toDomain(volumeId);
-        if (repository.getVolumeById(targetVolumeId) == null) {
+        if (repository.getByVolumeId(targetVolumeId) == null) {
             throw volumeNotFound();
         }
         return targetVolumeId;

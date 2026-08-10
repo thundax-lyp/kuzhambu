@@ -73,8 +73,7 @@ class SancaiPortalControllerTest {
                         .getDeclaredMethod("listVolumes", SancaiPortalEntrySearchRequest.class)
                         .getAnnotation(PostMapping.class)
                         .value()[0]);
-        Method entries =
-                SancaiPortalController.class.getDeclaredMethod("pageEntries", SancaiPortalEntrySearchRequest.class);
+        Method entries = SancaiPortalController.class.getDeclaredMethod("page", SancaiPortalEntrySearchRequest.class);
         assertEquals("entries/page", entries.getAnnotation(PostMapping.class).value()[0]);
         assertEquals(
                 "entries/get",
@@ -100,7 +99,7 @@ class SancaiPortalControllerTest {
         request.setPageNo(0);
         request.setPageSize(200);
 
-        var page = controller.pageEntries(request);
+        var page = controller.page(request);
 
         assertEquals(1, page.getRecords().size());
         assertEquals("天地", page.getRecords().get(0).getTitle());

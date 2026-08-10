@@ -266,11 +266,10 @@ public class SancaiAdminController {
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "分页查询")
     @PostMapping("entries/page")
-    public PageResponse<SancaiEntryResponse> pageEntries(@Valid @RequestBody SancaiEntryPageRequest request) {
+    public PageResponse<SancaiEntryResponse> page(@Valid @RequestBody SancaiEntryPageRequest request) {
         var query = SancaiInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentAuthorities());
         return PageResponseHelper.fromPageResult(
-                service.pageEntries(query, PageInterfaceAssembler.toPageQuery(request)),
-                SancaiInterfaceAssembler::toResponse);
+                service.page(query, PageInterfaceAssembler.toPageQuery(request)), SancaiInterfaceAssembler::toResponse);
     }
 
     @Operation(summary = "查询三才图会条目", description = "classics:sancai:view")

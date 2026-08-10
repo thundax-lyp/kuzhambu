@@ -88,8 +88,7 @@ public class SancaiPortalController {
 
     @Operation(summary = "分页查询三才图会门户公开条目", description = "公开访问")
     @PostMapping("entries/page")
-    public PageResponse<SancaiPortalEntryResponse> pageEntries(
-            @Valid @RequestBody SancaiPortalEntrySearchRequest request) {
+    public PageResponse<SancaiPortalEntryResponse> page(@Valid @RequestBody SancaiPortalEntrySearchRequest request) {
         SancaiPortalEntrySearchRequest effectiveRequest =
                 request == null ? new SancaiPortalEntrySearchRequest() : request;
         effectiveRequest.setKeyword(SancaiPortalInterfaceAssembler.normalizeKeyword(effectiveRequest.getKeyword()));

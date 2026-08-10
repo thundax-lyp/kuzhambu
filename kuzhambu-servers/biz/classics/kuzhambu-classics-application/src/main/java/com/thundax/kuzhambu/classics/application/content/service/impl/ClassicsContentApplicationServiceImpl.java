@@ -1581,10 +1581,10 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private String sancaiSnapshotJson(SancaiEntry entry, List<SancaiEntryImage> images) {
         SancaiVolume volume = sancaiRepository == null || entry.getVolumeId() == null
                 ? null
-                : sancaiRepository.getVolumeById(entry.getVolumeId());
+                : sancaiRepository.getByVolumeId(entry.getVolumeId());
         SancaiCategory category = sancaiRepository == null || volume == null || volume.getCategoryId() == null
                 ? null
-                : sancaiRepository.getCategoryById(volume.getCategoryId());
+                : sancaiRepository.getByCategoryId(volume.getCategoryId());
         List<ClassicsContentTag> tags =
                 repository.listTags(ClassicsContentType.SANCAI_ENTRY.value(), entry.contentId(), SortDirection.ASC);
         List<ClassicsContentQaPair> qaPairs =

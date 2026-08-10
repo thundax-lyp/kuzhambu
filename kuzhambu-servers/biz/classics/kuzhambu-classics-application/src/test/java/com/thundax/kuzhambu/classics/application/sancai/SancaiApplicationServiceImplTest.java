@@ -65,8 +65,8 @@ class SancaiApplicationServiceImplTest {
         SancaiApplicationServiceImpl service = new SancaiApplicationServiceImpl(
                 repository, contentApplicationService, writeGuard, mock(DiscoverySearchPublicationFacade.class));
         SancaiEntry entry = existingEntry(1001L, SancaiEntryLifecycleStatus.DRAFT);
-        when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1001L))).thenReturn(entry);
-        when(repository.getVolumeById(SancaiVolumeIdCodec.toDomain(2001L))).thenReturn(volume(2001L));
+        when(repository.getByEntryId(SancaiEntryIdCodec.toDomain(1001L))).thenReturn(entry);
+        when(repository.getByVolumeId(SancaiVolumeIdCodec.toDomain(2001L))).thenReturn(volume(2001L));
         when(repository.updateEntry(any())).thenReturn(1);
         versionEntryOnEnsure(contentApplicationService, 1);
 
@@ -86,7 +86,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         SancaiApplicationServiceImpl service = service(repository, contentApplicationService);
-        when(repository.getVolumeById(SancaiVolumeIdCodec.toDomain(2001L))).thenReturn(volume(2001L));
+        when(repository.getByVolumeId(SancaiVolumeIdCodec.toDomain(2001L))).thenReturn(volume(2001L));
         when(repository.maxEntryPriority()).thenReturn(9);
         when(repository.insertEntry(any())).thenReturn(SancaiEntryIdCodec.toDomain(1001L));
         versionEntryOnEnsure(contentApplicationService, 3);
@@ -103,8 +103,8 @@ class SancaiApplicationServiceImplTest {
         SancaiApplicationServiceImpl service = service(repository, contentApplicationService);
         SancaiEntry entry = existingEntry(1002L, SancaiEntryLifecycleStatus.DRAFT);
         entry.setPriority(12);
-        when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1002L))).thenReturn(entry);
-        when(repository.getVolumeById(SancaiVolumeIdCodec.toDomain(2001L))).thenReturn(volume(2001L));
+        when(repository.getByEntryId(SancaiEntryIdCodec.toDomain(1002L))).thenReturn(entry);
+        when(repository.getByVolumeId(SancaiVolumeIdCodec.toDomain(2001L))).thenReturn(volume(2001L));
         when(repository.updateEntry(any())).thenReturn(1);
         versionEntryOnEnsure(contentApplicationService, 4);
 
@@ -120,8 +120,8 @@ class SancaiApplicationServiceImplTest {
         SancaiApplicationServiceImpl service = service(repository, contentApplicationService);
         SancaiEntry currentEntry = existingEntry(1010L, SancaiEntryLifecycleStatus.PUBLISHED);
         currentEntry.setPriority(12);
-        when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1010L))).thenReturn(currentEntry);
-        when(repository.getVolumeById(SancaiVolumeIdCodec.toDomain(3002L))).thenReturn(volume(3002L));
+        when(repository.getByEntryId(SancaiEntryIdCodec.toDomain(1010L))).thenReturn(currentEntry);
+        when(repository.getByVolumeId(SancaiVolumeIdCodec.toDomain(3002L))).thenReturn(volume(3002L));
         when(repository.maxEntryPriority()).thenReturn(99);
         when(repository.updateEntry(any())).thenReturn(1);
         versionEntryOnEnsure(contentApplicationService, 9);
@@ -144,8 +144,8 @@ class SancaiApplicationServiceImplTest {
         SancaiApplicationServiceImpl service = service(repository, contentApplicationService);
         SancaiEntry currentEntry = existingEntry(1011L, SancaiEntryLifecycleStatus.PUBLISHED);
         currentEntry.setPriority(44);
-        when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1011L))).thenReturn(currentEntry);
-        when(repository.getVolumeById(SancaiVolumeIdCodec.toDomain(2001L))).thenReturn(volume(2001L));
+        when(repository.getByEntryId(SancaiEntryIdCodec.toDomain(1011L))).thenReturn(currentEntry);
+        when(repository.getByVolumeId(SancaiVolumeIdCodec.toDomain(2001L))).thenReturn(volume(2001L));
         when(repository.updateEntry(any())).thenReturn(1);
         versionEntryOnEnsure(contentApplicationService, 10);
 
@@ -163,8 +163,8 @@ class SancaiApplicationServiceImplTest {
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         SancaiApplicationServiceImpl service = service(repository, contentApplicationService);
         SancaiEntry currentEntry = existingEntry(1012L, SancaiEntryLifecycleStatus.PUBLISHED);
-        when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1012L))).thenReturn(currentEntry);
-        when(repository.getVolumeById(SancaiVolumeIdCodec.toDomain(9090L))).thenReturn(null);
+        when(repository.getByEntryId(SancaiEntryIdCodec.toDomain(1012L))).thenReturn(currentEntry);
+        when(repository.getByVolumeId(SancaiVolumeIdCodec.toDomain(9090L))).thenReturn(null);
 
         assertThrows(BizException.class, () -> service.updateEntry(publicCommand(1012L, 9090L)));
 
@@ -177,7 +177,7 @@ class SancaiApplicationServiceImplTest {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         SancaiApplicationServiceImpl service = service(repository, contentApplicationService);
-        when(repository.getVolumeById(SancaiVolumeIdCodec.toDomain(9091L))).thenReturn(null);
+        when(repository.getByVolumeId(SancaiVolumeIdCodec.toDomain(9091L))).thenReturn(null);
 
         assertThrows(BizException.class, () -> service.addEntry(publicCommand(null, 9091L)));
 
@@ -191,7 +191,7 @@ class SancaiApplicationServiceImplTest {
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         SancaiApplicationServiceImpl service = service(repository, contentApplicationService);
         SancaiEntry entry = existingEntry(1003L, SancaiEntryLifecycleStatus.DRAFT);
-        when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1003L))).thenReturn(entry);
+        when(repository.getByEntryId(SancaiEntryIdCodec.toDomain(1003L))).thenReturn(entry);
         when(repository.updateEntry(any())).thenReturn(1);
         versionEntryOnEnsure(contentApplicationService, 5);
         SancaiEntryStatusCommand command = new SancaiEntryStatusCommand(1003L, SancaiEntryLifecycleStatus.PUBLISHED);
@@ -228,7 +228,7 @@ class SancaiApplicationServiceImplTest {
 
         assertThrows(BizException.class, () -> service.changeEntryStatus(command));
 
-        verify(repository, never()).getEntryById(any());
+        verify(repository, never()).getByEntryId(any());
         verify(repository, never()).updateEntry(any());
         verify(contentApplicationService, never()).ensureVersioned(any(ContentVersionCommand.class));
     }
@@ -240,12 +240,12 @@ class SancaiApplicationServiceImplTest {
         SancaiEntryQuery query = new SancaiEntryQuery(
                 null, null, null, null, null, null, null, null, SortDirection.ASC, Set.of("classics:content:view"));
 
-        PageResult<SancaiEntry> result = service.pageEntries(query, new PageQuery(1, 20));
+        PageResult<SancaiEntry> result = service.page(query, new PageQuery(1, 20));
 
         assertEquals(0, result.getTotalCount());
         assertEquals(0, result.getRecords().size());
         verify(repository, never())
-                .pageEntries(any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), anyInt());
+                .page(any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), anyInt());
     }
 
     @Test
@@ -254,10 +254,10 @@ class SancaiApplicationServiceImplTest {
         SancaiApplicationServiceImpl service = service(repository, null);
         SancaiEntryQuery query = new SancaiEntryQuery(2L, 101L, "天文", null, null, null, null, null, SortDirection.ASC);
 
-        service.pageEntries(query, new PageQuery(1, 20));
+        service.page(query, new PageQuery(1, 20));
 
         verify(repository)
-                .pageEntries(
+                .page(
                         eq(SancaiCategoryIdCodec.toDomain(2L)),
                         eq(SancaiVolumeIdCodec.toDomain(101L)),
                         eq("天文"),
@@ -310,7 +310,7 @@ class SancaiApplicationServiceImplTest {
                         .totalCount(2)
                         .records(List.of(candidate("1002", "11", "21"), candidate("1001", "11", "21")))
                         .build());
-        when(repository.listEntriesByIds(
+        when(repository.listEntriesByIdList(
                         List.of(SancaiEntryIdCodec.toDomain(1002L), SancaiEntryIdCodec.toDomain(1001L))))
                 .thenReturn(List.of(
                         existingEntry(1001L, SancaiEntryLifecycleStatus.DRAFT),
@@ -330,7 +330,7 @@ class SancaiApplicationServiceImplTest {
         assertEquals(1002L, result.getRecords().get(0).getId().value());
         assertEquals(1001L, result.getRecords().get(1).getId().value());
         verify(repository, never())
-                .pageEntries(any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), anyInt());
+                .page(any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), anyInt());
     }
 
     @Test
@@ -360,14 +360,14 @@ class SancaiApplicationServiceImplTest {
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         SancaiApplicationServiceImpl service = service(repository, contentApplicationService);
         SancaiEntry entry = existingEntry(1005L, SancaiEntryLifecycleStatus.PUBLISHED);
-        when(repository.getEntryById(SancaiEntryIdCodec.toDomain(1005L))).thenReturn(entry);
+        when(repository.getByEntryId(SancaiEntryIdCodec.toDomain(1005L))).thenReturn(entry);
         versionEntryOnEnsure(contentApplicationService, 7);
 
         service.deleteEntry(SancaiEntryIdCodec.toDomain(1005L));
 
         verify(contentApplicationService)
                 .ensureVersioned(new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除"));
-        verify(repository).deleteEntryById(SancaiEntryIdCodec.toDomain(1005L));
+        verify(repository).deleteByEntryId(SancaiEntryIdCodec.toDomain(1005L));
     }
 
     private static void versionEntryOnEnsure(
@@ -393,7 +393,7 @@ class SancaiApplicationServiceImplTest {
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         SancaiApplicationServiceImpl service = service(repository, contentApplicationService);
         SancaiEntry entry = existingEntry(id, currentStatus);
-        when(repository.getEntryById(SancaiEntryIdCodec.toDomain(id))).thenReturn(entry);
+        when(repository.getByEntryId(SancaiEntryIdCodec.toDomain(id))).thenReturn(entry);
         when(repository.updateEntry(any())).thenReturn(1);
         versionEntryOnEnsure(contentApplicationService, 20);
 
@@ -418,7 +418,7 @@ class SancaiApplicationServiceImplTest {
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         SancaiApplicationServiceImpl service = service(repository, contentApplicationService);
         SancaiEntry entry = existingEntry(id, currentStatus);
-        when(repository.getEntryById(SancaiEntryIdCodec.toDomain(id))).thenReturn(entry);
+        when(repository.getByEntryId(SancaiEntryIdCodec.toDomain(id))).thenReturn(entry);
 
         assertThrows(
                 BizException.class,

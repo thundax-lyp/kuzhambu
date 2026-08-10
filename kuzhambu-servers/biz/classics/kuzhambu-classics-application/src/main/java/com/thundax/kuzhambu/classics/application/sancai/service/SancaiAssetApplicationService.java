@@ -94,5 +94,5 @@ public interface SancaiAssetApplicationService {
 
     void deleteShowcase(SancaiShowcaseId showcaseId);
 
-    PageResult<SancaiShowcase> pageShowcases(SancaiShowcaseQuery query, PageQuery page);
+    PageResult<SancaiShowcase> page(SancaiShowcaseQuery query, PageQuery page);
 }

@@ -15,12 +15,12 @@ import java.util.List;
 public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
 
     @Override
-    public List<SancaiCategory> listCategoriesByIds(List<Long> idList) {
+    public List<SancaiCategory> listCategoriesByIdList(List<Long> idList) {
         return List.of();
     }
 
     @Override
-    public SancaiCategory getCategoryById(SancaiCategoryId id) {
+    public SancaiCategory getByCategoryId(SancaiCategoryId id) {
         return null;
     }
 
@@ -61,12 +61,12 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
     }
 
     @Override
-    public int deleteCategoryById(SancaiCategoryId id) {
+    public int deleteByCategoryId(SancaiCategoryId id) {
         return 0;
     }
 
     @Override
-    public SancaiVolume getVolumeById(SancaiVolumeId id) {
+    public SancaiVolume getByVolumeId(SancaiVolumeId id) {
         return null;
     }
 
@@ -96,7 +96,7 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
     }
 
     @Override
-    public int deleteVolumeById(SancaiVolumeId id) {
+    public int deleteByVolumeId(SancaiVolumeId id) {
         return 0;
     }
 
@@ -111,7 +111,7 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
     }
 
     @Override
-    public List<SancaiEntry> listEntriesByIds(List<SancaiEntryId> ids) {
+    public List<SancaiEntry> listEntriesByIdList(List<SancaiEntryId> ids) {
         return List.of();
     }
 
@@ -131,12 +131,12 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
     }
 
     @Override
-    public SancaiEntry getEntryById(SancaiEntryId id) {
+    public SancaiEntry getByEntryId(SancaiEntryId id) {
         return null;
     }
 
     @Override
-    public PageResult<SancaiEntry> pageEntries(
+    public PageResult<SancaiEntry> page(
             SancaiCategoryId categoryId,
             SancaiVolumeId volumeId,
             String keyword,
@@ -186,7 +186,7 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
     }
 
     @Override
-    public int deleteEntryById(SancaiEntryId id) {
+    public int deleteByEntryId(SancaiEntryId id) {
         return 0;
     }
 

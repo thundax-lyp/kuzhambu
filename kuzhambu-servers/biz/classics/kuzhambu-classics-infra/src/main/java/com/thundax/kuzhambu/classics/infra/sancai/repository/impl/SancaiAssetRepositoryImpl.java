@@ -66,7 +66,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public SancaiEntryDraft getLatestDraftByEntryId(SancaiEntryId entryId) {
+    public SancaiEntryDraft getByEntryIdLatestDraft(SancaiEntryId entryId) {
         LambdaQueryWrapper<SancaiEntryDraftDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SancaiEntryDraftDO::getEntryId, SancaiEntryIdCodec.toValue(entryId))
                 .orderByDesc(SancaiEntryDraftDO::getAutosavedAt)
@@ -75,7 +75,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public int deleteDraftByEntryId(SancaiEntryId entryId) {
+    public int deleteByDraftEntryId(SancaiEntryId entryId) {
         return draftMapper.delete(new LambdaQueryWrapper<SancaiEntryDraftDO>()
                 .eq(SancaiEntryDraftDO::getEntryId, SancaiEntryIdCodec.toValue(entryId)));
     }
@@ -95,7 +95,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public int deleteDraftById(SancaiEntryDraftId id) {
+    public int deleteByDraftId(SancaiEntryDraftId id) {
         return draftMapper.deleteById(SancaiEntryDraftIdCodec.toValue(id));
     }
 
@@ -121,12 +121,12 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public int deleteImageById(SancaiEntryImageId id) {
+    public int deleteByImageId(SancaiEntryImageId id) {
         return imageMapper.deleteById(SancaiEntryImageIdCodec.toValue(id));
     }
 
     @Override
-    public SancaiEntryImage getImageById(SancaiEntryImageId id) {
+    public SancaiEntryImage getByImageId(SancaiEntryImageId id) {
         return SancaiAssetPersistenceAssembler.toImageDomain(
                 imageMapper.selectById(SancaiEntryImageIdCodec.toValue(id)));
     }
@@ -156,7 +156,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public int clearCurrentImagesByEntryId(SancaiEntryId entryId) {
+    public int updateCurrentImagesClearedByEntryId(SancaiEntryId entryId) {
         return imageMapper.update(
                 null,
                 new LambdaUpdateWrapper<SancaiEntryImageDO>()
@@ -165,7 +165,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public int markImageCurrent(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+    public int updateImageCurrent(SancaiEntryId entryId, SancaiEntryImageId imageId) {
         return imageMapper.update(
                 null,
                 new LambdaUpdateWrapper<SancaiEntryImageDO>()
@@ -202,7 +202,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public SancaiVisualAsset getVisualAssetById(SancaiVisualAssetId visualAssetId) {
+    public SancaiVisualAsset getByVisualAssetId(SancaiVisualAssetId visualAssetId) {
         return SancaiAssetPersistenceAssembler.toVisualAssetDomain(
                 visualAssetMapper.selectById(SancaiVisualAssetIdCodec.toValue(visualAssetId)));
     }
@@ -273,7 +273,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public SancaiShowcase getShowcaseById(SancaiShowcaseId id) {
+    public SancaiShowcase getByShowcaseId(SancaiShowcaseId id) {
         return SancaiAssetPersistenceAssembler.toShowcaseDomain(
                 showcaseMapper.selectById(SancaiShowcaseIdCodec.toValue(id)));
     }
@@ -284,12 +284,12 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public int markShowcaseCompleted(SancaiShowcaseId id, StorageObjectId storageObjectId, int entryCount) {
-        return markShowcaseCompleted(id, storageObjectId, entryCount, 0, null, null, null, null);
+    public int updateShowcaseCompleted(SancaiShowcaseId id, StorageObjectId storageObjectId, int entryCount) {
+        return updateShowcaseCompleted(id, storageObjectId, entryCount, 0, null, null, null, null);
     }
 
     @Override
-    public int markShowcaseCompleted(
+    public int updateShowcaseCompleted(
             SancaiShowcaseId id,
             StorageObjectId storageObjectId,
             int entryCount,
@@ -316,12 +316,12 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public int markShowcaseFailed(SancaiShowcaseId id) {
-        return markShowcaseFailed(id, null, null);
+    public int updateShowcaseFailed(SancaiShowcaseId id) {
+        return updateShowcaseFailed(id, null, null);
     }
 
     @Override
-    public int markShowcaseFailed(SancaiShowcaseId id, String failureType, String failureMessage) {
+    public int updateShowcaseFailed(SancaiShowcaseId id, String failureType, String failureMessage) {
         return showcaseMapper.update(
                 null,
                 new LambdaUpdateWrapper<SancaiShowcaseDO>()
@@ -333,7 +333,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public int markShowcaseExpired(SancaiShowcaseId id) {
+    public int updateShowcaseExpired(SancaiShowcaseId id) {
         return showcaseMapper.update(
                 null,
                 new LambdaUpdateWrapper<SancaiShowcaseDO>()
@@ -342,17 +342,17 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public int deleteShowcaseById(SancaiShowcaseId id) {
+    public int deleteByShowcaseId(SancaiShowcaseId id) {
         return showcaseMapper.deleteById(SancaiShowcaseIdCodec.toValue(id));
     }
 
     @Override
-    public PageResult<SancaiShowcase> pageShowcases(String status, int pageNo, int pageSize) {
-        return pageShowcases(null, status, null, null, null, pageNo, pageSize);
+    public PageResult<SancaiShowcase> page(String status, int pageNo, int pageSize) {
+        return page(null, status, null, null, null, pageNo, pageSize);
     }
 
     @Override
-    public PageResult<SancaiShowcase> pageShowcases(
+    public PageResult<SancaiShowcase> page(
             String keyword,
             String status,
             String visibilityRiskStatus,

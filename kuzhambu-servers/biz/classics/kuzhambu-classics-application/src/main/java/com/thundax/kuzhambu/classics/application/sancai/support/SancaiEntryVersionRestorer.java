@@ -54,7 +54,7 @@ public class SancaiEntryVersionRestorer {
         JsonNode snapshot = readSnapshot(version.getSnapshotJson());
         validateSnapshot(version, snapshot);
 
-        SancaiEntry current = repository.getEntryById(
+        SancaiEntry current = repository.getByEntryId(
                 SancaiEntryIdCodec.toDomain(version.getContentId().value()));
         if (current == null) {
             throw new BizException("三才图会条目不存在，无法恢复历史版本");

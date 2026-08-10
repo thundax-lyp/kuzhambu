@@ -46,7 +46,7 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
-    public List<SancaiCategory> listCategoriesByIds(List<Long> idList) {
+    public List<SancaiCategory> listCategoriesByIdList(List<Long> idList) {
         if (idList == null || idList.isEmpty()) {
             return List.of();
         }
@@ -54,7 +54,7 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
-    public SancaiCategory getCategoryById(SancaiCategoryId id) {
+    public SancaiCategory getByCategoryId(SancaiCategoryId id) {
         return SancaiPersistenceAssembler.toCategoryDomain(categoryMapper.selectById(id == null ? null : id.value()));
     }
 
@@ -186,12 +186,12 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
-    public int deleteCategoryById(SancaiCategoryId id) {
+    public int deleteByCategoryId(SancaiCategoryId id) {
         return categoryMapper.deleteById(SancaiCategoryIdCodec.toValue(id));
     }
 
     @Override
-    public SancaiVolume getVolumeById(SancaiVolumeId id) {
+    public SancaiVolume getByVolumeId(SancaiVolumeId id) {
         return SancaiPersistenceAssembler.toVolumeDomain(volumeMapper.selectById(SancaiVolumeIdCodec.toValue(id)));
     }
 
@@ -237,7 +237,7 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
-    public int deleteVolumeById(SancaiVolumeId id) {
+    public int deleteByVolumeId(SancaiVolumeId id) {
         return volumeMapper.deleteById(SancaiVolumeIdCodec.toValue(id));
     }
 
@@ -257,7 +257,7 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
-    public List<SancaiEntry> listEntriesByIds(List<SancaiEntryId> ids) {
+    public List<SancaiEntry> listEntriesByIdList(List<SancaiEntryId> ids) {
         if (ids == null || ids.isEmpty()) {
             return List.of();
         }
@@ -290,12 +290,12 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
-    public SancaiEntry getEntryById(SancaiEntryId id) {
+    public SancaiEntry getByEntryId(SancaiEntryId id) {
         return SancaiPersistenceAssembler.toEntryDomain(entryMapper.selectById(SancaiEntryIdCodec.toValue(id)));
     }
 
     @Override
-    public PageResult<SancaiEntry> pageEntries(
+    public PageResult<SancaiEntry> page(
             SancaiCategoryId categoryId,
             SancaiVolumeId volumeId,
             String keyword,
@@ -475,7 +475,7 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
-    public int deleteEntryById(SancaiEntryId id) {
+    public int deleteByEntryId(SancaiEntryId id) {
         return entryMapper.deleteById(SancaiEntryIdCodec.toValue(id));
     }
 

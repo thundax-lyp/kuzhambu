@@ -80,7 +80,7 @@ class SancaiAdminControllerTest {
         assertPostMapping(SancaiAdminController.class, "addVolume", "volumes/add", SancaiVolumeRequest.class);
         assertPostMapping(SancaiAdminController.class, "updateVolume", "volumes/update", SancaiVolumeRequest.class);
         assertPostMapping(SancaiAdminController.class, "deleteVolume", "volumes/delete", SancaiVolumeRequest.class);
-        assertPostMapping(SancaiAdminController.class, "pageEntries", "entries/page", SancaiEntryPageRequest.class);
+        assertPostMapping(SancaiAdminController.class, "page", "entries/page", SancaiEntryPageRequest.class);
         assertPostMapping(SancaiAdminController.class, "listEntries", "entries/list", SancaiEntryPageRequest.class);
         assertPostMapping(SancaiAdminController.class, "getEntry", "entries/get", SancaiEntryRequest.class);
         assertPostMapping(SancaiAdminController.class, "addEntry", "entries/add", SancaiEntryRequest.class);
@@ -361,8 +361,7 @@ class SancaiAdminControllerTest {
         pageRequest.setSortDirection("ASC");
         pageRequest.setPageNo(1);
         pageRequest.setPageSize(50);
-        assertEquals(
-                "天地", controller.pageEntries(pageRequest).getRecords().get(0).getTitle());
+        assertEquals("天地", controller.page(pageRequest).getRecords().get(0).getTitle());
         assertEquals("天地", controller.listEntries(pageRequest).get(0).getTitle());
 
         SancaiEntryRequest entryRequest = new SancaiEntryRequest();
@@ -444,7 +443,7 @@ class SancaiAdminControllerTest {
         SancaiEntryPageRequest request = new SancaiEntryPageRequest();
         request.setLifecycleStatus("UNKNOWN");
 
-        assertThrows(RuntimeException.class, () -> controller.pageEntries(request));
+        assertThrows(RuntimeException.class, () -> controller.page(request));
     }
 
     private static SancaiApplicationService sancaiService() {
@@ -512,7 +511,7 @@ class SancaiAdminControllerTest {
                         assertEquals(SancaiVolumeIdCodec.toDomain(101L), args[0]);
                         return null;
                     }
-                    if ("pageEntries".equals(method.getName())) {
+                    if ("page".equals(method.getName())) {
                         SancaiEntryQuery query = (SancaiEntryQuery) args[0];
                         PageQuery page = (PageQuery) args[1];
                         assertEquals(101L, query.volumeId());
