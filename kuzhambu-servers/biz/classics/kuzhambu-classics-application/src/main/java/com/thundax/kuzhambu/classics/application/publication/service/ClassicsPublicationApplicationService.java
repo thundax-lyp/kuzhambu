@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationBatchCreateCommand;
 import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationCreateCommand;
 import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobQuery;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationCreateResult;
@@ -12,7 +13,7 @@ import java.util.List;
 public interface ClassicsPublicationApplicationService {
     ClassicsPublicationCreateResult create(ClassicsPublicationCreateCommand command);
 
-    List<ClassicsPublicationCreateResult> createBatch(List<ClassicsPublicationCreateCommand> commands);
+    List<ClassicsPublicationCreateResult> createBatch(ClassicsPublicationBatchCreateCommand command);
 
     ClassicsPublicationJobView get(ClassicsPublicationJobId id);
 

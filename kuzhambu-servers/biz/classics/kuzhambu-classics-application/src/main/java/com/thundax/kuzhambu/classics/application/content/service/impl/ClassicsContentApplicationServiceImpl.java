@@ -38,6 +38,9 @@ import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPub
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetFusionCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetVersionCommand;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
 import com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer;
@@ -803,31 +806,50 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
         SancaiVisualAsset visualAsset = requireSancaiVisualAsset(contentId, command);
         visualAsset.setImageAnalysisMarkdown(parseRequiredCandidateText(command, "图片理解"));
-        sancaiAssetApplicationService.updateVisualAsset(visualAsset);
+        sancaiAssetApplicationService.updateVisualAsset(toVisualAssetCommand(visualAsset));
     }
 
     private void applySancaiVisualDescriptionCandidate(
             ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
         SancaiVisualAsset visualAsset = requireSancaiVisualAsset(contentId, command);
         visualAsset.setVisualDescription(parseRequiredCandidateText(command, "视觉描述"));
-        sancaiAssetApplicationService.updateVisualAsset(visualAsset);
+        sancaiAssetApplicationService.updateVisualAsset(toVisualAssetCommand(visualAsset));
     }
 
     private void applySancaiFusionCandidate(ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
         SancaiVisualAsset visualAsset = requireSancaiVisualAsset(contentId, command);
-        sancaiAssetApplicationService.applyFusionDescription(
+        sancaiAssetApplicationService.applyFusionDescription(new SancaiVisualAssetFusionCommand(
                 SancaiEntryIdCodec.toDomain(contentId.value()),
                 visualAsset.getId(),
-                parseRequiredCandidateText(command, "信息融合"));
+                parseRequiredCandidateText(command, "信息融合")));
     }
 
     private SancaiVisualAsset applySancaiImageGenCandidate(
             ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
         SancaiVisualAsset visualAsset = requireSancaiVisualAsset(contentId, command);
-        return sancaiAssetApplicationService.createGeneratedVisualAssetVersion(
+        return sancaiAssetApplicationService.createGeneratedVisualAssetVersion(new SancaiVisualAssetVersionCommand(
                 SancaiEntryIdCodec.toDomain(contentId.value()),
                 visualAsset.getId(),
-                StorageObjectIdCodec.toDomain(parseGeneratedStorageObjectId(command)));
+                StorageObjectIdCodec.toDomain(parseGeneratedStorageObjectId(command))));
+    }
+
+    private static SancaiVisualAssetCommand toVisualAssetCommand(SancaiVisualAsset visualAsset) {
+        return visualAsset == null
+                ? null
+                : new SancaiVisualAssetCommand(
+                        visualAsset.getId(),
+                        visualAsset.getEntryId(),
+                        visualAsset.getVersionNo(),
+                        visualAsset.getStatus(),
+                        visualAsset.getSourceImageStorageObjectId(),
+                        visualAsset.getGeneratedImageStorageObjectId(),
+                        visualAsset.isCurrentUsed(),
+                        visualAsset.getTextWeight(),
+                        visualAsset.getImageWeight(),
+                        visualAsset.getImageAnalysisMarkdown(),
+                        visualAsset.getFusionDescription(),
+                        visualAsset.getVisualDescription(),
+                        visualAsset.getGenerationParamsJson());
     }
 
     private SancaiVisualAsset requireSancaiVisualAsset(
@@ -1559,10 +1581,10 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private String sancaiSnapshotJson(SancaiEntry entry, List<SancaiEntryImage> images) {
         SancaiVolume volume = sancaiRepository == null || entry.getVolumeId() == null
                 ? null
-                : sancaiRepository.getVolumeById(entry.getVolumeId());
+                : sancaiRepository.getByVolumeId(entry.getVolumeId());
         SancaiCategory category = sancaiRepository == null || volume == null || volume.getCategoryId() == null
                 ? null
-                : sancaiRepository.getCategoryById(volume.getCategoryId());
+                : sancaiRepository.getByCategoryId(volume.getCategoryId());
         List<ClassicsContentTag> tags =
                 repository.listTags(ClassicsContentType.SANCAI_ENTRY.value(), entry.contentId(), SortDirection.ASC);
         List<ClassicsContentQaPair> qaPairs =

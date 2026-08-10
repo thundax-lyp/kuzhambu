@@ -8,10 +8,6 @@ import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
-import com.thundax.kuzhambu.system.application.core.command.MoveDepartmentCommand;
-import com.thundax.kuzhambu.system.application.core.command.RemoveDepartmentCommand;
-import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
@@ -81,9 +77,7 @@ public class DepartmentController {
     @SysLogger(value = "列表")
     @PostMapping(value = "list")
     public List<DepartmentResponse> list(@Valid @RequestBody DepartmentQueryRequest request) {
-        DepartmentQuery query = DepartmentInterfaceAssembler.toQuery(request);
-
-        return departmentService.list(query).stream()
+        return departmentService.list(DepartmentInterfaceAssembler.toQuery(request)).stream()
                 .map(department -> DepartmentInterfaceAssembler.toResponse(department, this::getDepartment))
                 .collect(Collectors.toList());
     }
@@ -175,7 +169,7 @@ public class DepartmentController {
             throw AdminResponseExceptions.invalidParameter("list");
         }
 
-        idList.forEach(id -> departmentService.remove(new RemoveDepartmentCommand(id)));
+        idList.forEach(id -> departmentService.remove(DepartmentInterfaceAssembler.toRemoveCommand(id)));
 
         return true;
     }
@@ -190,9 +184,9 @@ public class DepartmentController {
     })
     @HasPermission(value = "super")
     @SysLogger(value = "读取")
-    @PostMapping(value = "tree")
-    public List<DepartmentResponse> tree(@Valid @RequestBody List<DepartmentIdRequest> excludeList) {
-        List<Department> beanList = departmentService.list(new DepartmentQuery());
+    @PostMapping(value = "tree/list")
+    public List<DepartmentResponse> listTree(@Valid @RequestBody List<DepartmentIdRequest> excludeList) {
+        List<Department> beanList = departmentService.list(DepartmentInterfaceAssembler.toListAllQuery());
 
         Set<DepartmentId> excludeIds = new HashSet<>(
                 RequestListHelper.map(excludeList, request -> DepartmentIdCodec.toDomain(request.getId())));
@@ -246,12 +240,14 @@ public class DepartmentController {
             throw AdminResponseExceptions.objectNotFound();
         }
 
-        if (toBean.equals(fromBean) || departmentService.existsChildRelation(childRelationQuery(toBean, fromBean))) {
+        if (toBean.equals(fromBean)
+                || departmentService.existsChildRelation(
+                        DepartmentInterfaceAssembler.toChildRelationQuery(toBean, fromBean))) {
             throw AdminResponseExceptions.moveTreeNode();
         }
 
         departmentService.move(
-                new MoveDepartmentCommand(fromBean.getId(), toBean.getId(), readMoveTreeNodeType(request)));
+                DepartmentInterfaceAssembler.toMoveCommand(fromBean, toBean, readMoveTreeNodeType(request)));
 
         return true;
     }
@@ -269,14 +265,7 @@ public class DepartmentController {
         }
     }
 
-    private DepartmentQuery childRelationQuery(Department child, Department ancestor) {
-        DepartmentQuery query = new DepartmentQuery();
-        query.setChildId(child.getId());
-        query.setAncestorId(ancestor.getId());
-        return query;
-    }
-
     private Department getDepartment(DepartmentId departmentId) {
-        return departmentService.get(new GetDepartmentQuery(departmentId));
+        return departmentService.get(DepartmentInterfaceAssembler.toGetQuery(departmentId));
     }
 }

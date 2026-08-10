@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationReconcileApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
@@ -8,7 +9,6 @@ import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPub
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
-import java.time.Instant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,13 +26,14 @@ public class ClassicsPublicationReconcileApplicationServiceImpl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean succeed(ClassicsPublicationJob job, Instant finishedAt) {
-        return jobRepository.markSucceeded(job.getId(), finishedAt) == 1;
+    public boolean succeed(ClassicsPublicationWorkflowCommand command) {
+        return jobRepository.markSucceeded(command.job().getId(), command.occurredAt()) == 1;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean reconcileFailure(ClassicsPublicationJob job) {
+    public boolean reconcileFailure(ClassicsPublicationWorkflowCommand command) {
+        ClassicsPublicationJob job = command.job();
         ClassicsPublicationContent content = contentRepository.getByPublicationContentForLock(
                 job.getContentType(), new ClassicsContentId(job.getContentId()));
         if (content == null) {

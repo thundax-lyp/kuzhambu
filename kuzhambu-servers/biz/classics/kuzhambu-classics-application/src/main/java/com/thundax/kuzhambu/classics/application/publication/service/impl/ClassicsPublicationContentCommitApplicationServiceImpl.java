@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationContentCommitApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
@@ -7,7 +8,6 @@ import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPub
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +26,8 @@ public class ClassicsPublicationContentCommitApplicationServiceImpl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean commit(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
+    public boolean commit(ClassicsPublicationWorkflowCommand command) {
+        ClassicsPublicationJob job = command.job();
         ClassicsContentId contentId = new ClassicsContentId(job.getContentId());
         ClassicsPublicationContent content =
                 contentRepository.getByPublicationContentForLock(job.getContentType(), contentId);
@@ -47,7 +48,7 @@ public class ClassicsPublicationContentCommitApplicationServiceImpl
         }
         int advanced = jobRepository.advanceMilestone(
                 job.getId(),
-                executionToken,
+                command.executionToken(),
                 job.getJobStatus(),
                 ClassicsPublicationJobStatus.CONTENT_COMMITTED,
                 null,

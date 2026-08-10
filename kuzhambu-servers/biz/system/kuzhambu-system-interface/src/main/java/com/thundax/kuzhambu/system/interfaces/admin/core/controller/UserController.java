@@ -14,25 +14,13 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
-import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.utils.PasswordHelper;
-import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
-import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
-import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
-import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
-import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
-import com.thundax.kuzhambu.system.application.core.query.DictQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
-import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserProfileApplicationService;
@@ -49,7 +37,6 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityStat
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
-import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
@@ -59,13 +46,13 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
-import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
-import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
-import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.UserInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserAvatarRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserCheckRequest;
@@ -93,6 +80,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -166,7 +154,7 @@ public class UserController {
     @PostMapping(value = "get")
     @WrappedApiResponse
     public UserResponse get(@Valid @RequestBody UserIdRequest request) {
-        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
+        User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -220,18 +208,18 @@ public class UserController {
     })
     @HasPermission(value = "sys:user:view")
     @IgnoreSysLogger
-    @PostMapping(value = "options")
+    @PostMapping(value = "options/list")
     @WrappedApiResponse
-    public UserOptionsResponse options() {
-        DictQuery statusQuery = new DictQuery();
-        statusQuery.setType(USER_STATUS_DICT_TYPE);
-        DictQuery rankQuery = new DictQuery();
-        rankQuery.setType(USER_RANK_DICT_TYPE);
+    public UserOptionsResponse listOptions() {
         return UserOptionsResponse.builder()
                 .statusOptions(OptionInterfaceAssembler.toOptionResponseList(
-                        dictService.list(statusQuery), Dict::getValue, Dict::getLabel))
+                        dictService.list(DictInterfaceAssembler.toTypeQuery(USER_STATUS_DICT_TYPE)),
+                        Dict::getValue,
+                        Dict::getLabel))
                 .rankOptions(OptionInterfaceAssembler.toOptionResponseList(
-                        dictService.list(rankQuery), Dict::getValue, Dict::getLabel))
+                        dictService.list(DictInterfaceAssembler.toTypeQuery(USER_RANK_DICT_TYPE)),
+                        Dict::getValue,
+                        Dict::getLabel))
                 .build();
     }
 
@@ -270,7 +258,7 @@ public class UserController {
         String encryptedPassword = PasswordHelper.encrypt(request.getLoginPass());
 
         if (entity.getId() != null) {
-            User bean = userService.get(getUserQuery(entity.getId()));
+            User bean = userService.get(UserInterfaceAssembler.toGetQuery(entity.getId()));
             if (bean != null) {
                 throw AdminResponseExceptions.objectExists();
             }
@@ -312,7 +300,7 @@ public class UserController {
         }
         validateUniqueContact(request);
 
-        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
+        User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -351,14 +339,16 @@ public class UserController {
     @PostMapping(value = "avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @WrappedApiResponse
     public Boolean uploadAvatar(@RequestParam("id") String id, MultipartFile avatar) {
-        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(Long.valueOf(id))));
+        User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(Long.valueOf(id))));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
         validateEditableUser(currentUserResolver.currentUser(), bean);
         try {
-            currentUserService.changeAvatar(new ChangeCurrentUserAvatarCommand(
-                    UserIdCodec.toDomain(Long.valueOf(id)), avatar.getInputStream(), avatar.getOriginalFilename()));
+            currentUserService.changeAvatar(UserInterfaceAssembler.toChangeCurrentUserAvatarCommand(
+                    UserIdCodec.toDomain(Long.valueOf(id)),
+                    avatar.getInputStream(),
+                    Optional.ofNullable(avatar.getOriginalFilename())));
         } catch (IOException e) {
             throw AdminResponseExceptions.system(e.getMessage());
         }
@@ -378,12 +368,13 @@ public class UserController {
     @PostMapping(value = "avatar/delete")
     @WrappedApiResponse
     public Boolean deleteAvatar(@Valid @RequestBody UserAvatarRequest request) {
-        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
+        User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
         validateEditableUser(currentUserResolver.currentUser(), bean);
-        currentUserService.removeAvatar(new RemoveCurrentUserAvatarCommand(UserIdCodec.toDomain(request.getId())));
+        currentUserService.removeAvatar(
+                UserInterfaceAssembler.toRemoveCurrentUserAvatarCommand(UserIdCodec.toDomain(request.getId())));
         return true;
     }
 
@@ -397,8 +388,8 @@ public class UserController {
     })
     @HasPermission(value = "sys:user:view")
     @IgnoreSysLogger
-    @PostMapping(value = "avatar")
-    public String avatar(@Valid @RequestBody UserAvatarRequest request) {
+    @PostMapping(value = "avatar/get")
+    public String getAvatar(@Valid @RequestBody UserAvatarRequest request) {
         return readAvatarUrl(UserIdCodec.toDomain(request.getId()));
     }
 
@@ -412,22 +403,19 @@ public class UserController {
     })
     @HasPermission(value = "sys:user:edit")
     @SysLogger(value = "启用")
-    @PostMapping(value = "enable")
+    @PostMapping(value = "status/update")
     @WrappedApiResponse
     public Boolean updateStatus(@Valid @RequestBody List<UserStatusRequest> list) {
         User currentUser = currentUserResolver.currentUser();
 
         List<ChangeUserStatusCommand> commandList = new ArrayList<>();
         for (UserStatusRequest request : RequestListHelper.present(list)) {
-            User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
+            User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
             validateEditableStatusUser(currentUser, bean);
-            commandList.add(new ChangeUserStatusCommand(
-                    bean.getId(),
-                    Boolean.TRUE.equals(request.getEnable()) ? UserStatus.ENABLED : UserStatus.DISABLED,
-                    bean));
+            commandList.add(UserInterfaceAssembler.toChangeStatusCommand(bean, request));
         }
         if (commandList.isEmpty()) {
             throw AdminResponseExceptions.invalidParameter("list");
@@ -455,7 +443,7 @@ public class UserController {
 
         List<UserId> idList = new ArrayList<>();
         for (UserIdRequest request : RequestListHelper.present(list)) {
-            User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
+            User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -466,7 +454,7 @@ public class UserController {
             throw AdminResponseExceptions.invalidParameter("list");
         }
 
-        idList.forEach(id -> userService.remove(new RemoveUserCommand(id)));
+        idList.forEach(id -> userService.remove(UserInterfaceAssembler.toRemoveCommand(id)));
 
         return true;
     }
@@ -481,9 +469,9 @@ public class UserController {
     })
     @HasPermission(value = "sys:user:view")
     @IgnoreSysLogger
-    @PostMapping(value = "check")
+    @PostMapping(value = "availability/get")
     @WrappedApiResponse
-    public Boolean check(@Valid @RequestBody UserCheckRequest request) {
+    public Boolean getAvailability(@Valid @RequestBody UserCheckRequest request) {
         return isLoginNameAvailable(request.getLoginName(), request.getId());
     }
 
@@ -497,10 +485,10 @@ public class UserController {
     })
     @HasPermission(value = "sys:user:view")
     @IgnoreSysLogger
-    @PostMapping(value = "department/tree")
+    @PostMapping(value = "department/list")
     @WrappedApiResponse
-    public List<UserDepartmentResponse> departmentTree() {
-        return departmentService.list(new DepartmentQuery()).stream()
+    public List<UserDepartmentResponse> listDepartments() {
+        return departmentService.list(DepartmentInterfaceAssembler.toListAllQuery()).stream()
                 .map(department -> UserInterfaceAssembler.toDepartmentResponse(department, this::getDepartment))
                 .collect(Collectors.toList());
     }
@@ -517,10 +505,8 @@ public class UserController {
     @IgnoreSysLogger
     @PostMapping(value = "role/list")
     @WrappedApiResponse
-    public List<UserRoleResponse> roleList() {
-        RoleQuery query = new RoleQuery();
-        query.setStatus(RoleStatus.ENABLED);
-        return roleService.list(query).stream()
+    public List<UserRoleResponse> listRoles() {
+        return roleService.list(RoleInterfaceAssembler.toEnabledQuery()).stream()
                 .map(role -> UserInterfaceAssembler.toRoleResponse(role))
                 .collect(Collectors.toList());
     }
@@ -537,14 +523,14 @@ public class UserController {
     @IgnoreSysLogger
     @PostJsonApiExempt(reason = "头像图片需要浏览器直链读取")
     @GetMapping(value = "avatar")
-    public void avatarImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void getAvatarImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String userId = request.getParameter("id");
         if (StringUtils.isBlank(userId)) {
             response.sendError(HttpStatus.NOT_FOUND.value());
             return;
         }
 
-        CurrentUserAvatarQuery avatarQuery = new CurrentUserAvatarQuery(UserIdCodec.toDomain(Long.valueOf(userId)));
+        var avatarQuery = UserInterfaceAssembler.toCurrentUserAvatarQuery(UserIdCodec.toDomain(Long.valueOf(userId)));
         UserAvatarResult avatar = currentUserService.getAvatar(avatarQuery);
         InputStream inputStream = currentUserService.getAvatarInputStream(avatarQuery);
         if (avatar == null || inputStream == null) {
@@ -568,18 +554,17 @@ public class UserController {
     }
 
     private UserQuery readQuery(UserQueryRequest request) {
-        UserQuery query = UserInterfaceAssembler.toQuery(request);
+        DepartmentId departmentId = null;
 
         if (request.getDepartmentId() != null) {
             Department department = getDepartment(DepartmentIdCodec.toDomain(request.getDepartmentId()));
             if (department == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
-
-            query.setDepartmentId(department.getId());
+            departmentId = department.getId();
         }
 
-        return query;
+        return UserInterfaceAssembler.toQuery(request, Optional.ofNullable(departmentId));
     }
 
     private void validateDepartment(UserDepartmentRequest request) {
@@ -603,7 +588,7 @@ public class UserController {
                 throw AdminResponseExceptions.invalidParameter("roles.id");
 
             } else {
-                Role bean = roleService.get(getRoleQuery(RoleIdCodec.toDomain(request.getId())));
+                Role bean = roleService.get(RoleInterfaceAssembler.toGetQuery(RoleIdCodec.toDomain(request.getId())));
                 if (bean == null) {
                     throw AdminResponseExceptions.objectNotFound();
                 }
@@ -635,18 +620,14 @@ public class UserController {
     private void validateUniqueContact(UserSaveRequest request) {
         UserId excludedId = UserIdCodec.toDomain(request.getId());
         if (StringUtils.isNotBlank(request.getEmail())) {
-            UserQuery query = new UserQuery();
-            query.setEmail(request.getEmail());
-            query.setExcludedId(excludedId);
-            if (userService.existsEmail(query)) {
+            if (userService.existsEmail(
+                    UserInterfaceAssembler.toEmailQuery(request.getEmail(), Optional.ofNullable(excludedId)))) {
                 throw AdminResponseExceptions.invalidParameter("email");
             }
         }
         if (StringUtils.isNotBlank(request.getMobile())) {
-            UserQuery query = new UserQuery();
-            query.setMobile(request.getMobile());
-            query.setExcludedId(excludedId);
-            if (userService.existsMobile(query)) {
+            if (userService.existsMobile(
+                    UserInterfaceAssembler.toMobileQuery(request.getMobile(), Optional.ofNullable(excludedId)))) {
                 throw AdminResponseExceptions.invalidParameter("mobile");
             }
         }
@@ -708,40 +689,26 @@ public class UserController {
         Department department = getDepartment(user.getDepartmentId());
         return UserInterfaceAssembler.toResponse(
                 user,
-                getAccountLoginName(user.getId()),
-                department,
+                Optional.ofNullable(getAccountLoginName(user.getId())),
+                Optional.ofNullable(department),
                 loadUserRoles(user),
-                readAvatarUrl(user.getId()),
+                Optional.ofNullable(readAvatarUrl(user.getId())),
                 this::getDepartment);
     }
 
     private List<Role> loadUserRoles(User user) {
-        List<Role> userRoles = userService.listUserRoles(userQuery(user.getId()));
+        List<Role> userRoles = userService.listUserRoles(UserInterfaceAssembler.toUserRolesQuery(user.getId()));
         if (userRoles == null) {
             return new ArrayList<>();
         }
         return userRoles.stream()
-                .map(role -> role == null ? null : roleService.get(getRoleQuery(role.getId())))
+                .map(role -> role == null ? null : roleService.get(RoleInterfaceAssembler.toGetQuery(role.getId())))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
-    private UserQuery userQuery(UserId userId) {
-        UserQuery query = new UserQuery();
-        query.setId(userId);
-        return query;
-    }
-
-    private GetUserQuery getUserQuery(UserId userId) {
-        return new GetUserQuery(userId);
-    }
-
-    private GetRoleQuery getRoleQuery(RoleId roleId) {
-        return new GetRoleQuery(roleId);
-    }
-
     private Department getDepartment(DepartmentId departmentId) {
-        return departmentService.get(new GetDepartmentQuery(departmentId));
+        return departmentService.get(DepartmentInterfaceAssembler.toGetQuery(departmentId));
     }
 
     private String getAccountLoginName(UserId userId) {
@@ -831,11 +798,12 @@ public class UserController {
 
     private String getPrivateKey(String token) {
         PreAuthSessionId sessionId =
-                preAuthSessionService.getIdByToken(new PreAuthSessionQuery(null, PreAuthSessionToken.of(token), null));
+                preAuthSessionService.getIdByToken(UserInterfaceAssembler.toPreAuthSessionQuery(token));
         if (sessionId == null) {
             throw AdminResponseExceptions.invalidToken();
         }
-        String privateKey = preAuthSessionService.getValue(new PreAuthSessionValueQuery(sessionId, PRIVATE_KEY_ITEM));
+        String privateKey = preAuthSessionService.getValue(
+                UserInterfaceAssembler.toPreAuthSessionValueQuery(sessionId, PRIVATE_KEY_ITEM));
         if (StringUtils.isBlank(privateKey)) {
             throw AdminResponseExceptions.invalidToken();
         }
@@ -843,7 +811,7 @@ public class UserController {
     }
 
     private String readAvatarUrl(UserId userId) {
-        if (!currentUserService.existsAvatar(new CurrentUserAvatarQuery(userId))) {
+        if (!currentUserService.existsAvatar(UserInterfaceAssembler.toCurrentUserAvatarQuery(userId))) {
             return null;
         }
         return avatarUrlBuilder.build(UserIdCodec.toStringValue(userId));

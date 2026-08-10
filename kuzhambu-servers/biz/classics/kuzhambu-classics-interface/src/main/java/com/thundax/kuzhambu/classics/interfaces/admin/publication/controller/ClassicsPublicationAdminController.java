@@ -54,6 +54,6 @@ public class ClassicsPublicationAdminController {
     @PostMapping("get")
     public ClassicsPublicationJobResponse get(@Valid @RequestBody ClassicsPublicationJobGetRequest request) {
         return ClassicsPublicationInterfaceAssembler.toResponse(
-                service.get(ClassicsPublicationJobIdCodec.toDomain(request.id())));
+                service.get(ClassicsPublicationJobIdCodec.toDomain(request.getId())));
     }
 }

@@ -54,44 +54,15 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
                         "com.thundax.kuzhambu.classics.interfaces.admin.publication.assembler.ClassicsPublicationInterfaceAssembler",
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiAssetInterfaceAssembler",
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiInterfaceAssembler",
                         "com.thundax.kuzhambu.classics.interfaces.portal.sancai.assembler.SancaiPortalInterfaceAssembler"));
     }
 
     private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {
-        return modelAnnotationAllowances(
-                ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS,
-                "admin.publication.controller.request.ClassicsPublicationActionRequest",
-                "admin.publication.controller.request.ClassicsPublicationBatchActionRequest",
-                "admin.publication.controller.request.ClassicsPublicationJobGetRequest",
-                "admin.publication.controller.request.ClassicsPublicationJobPageRequest",
-                "admin.sancai.controller.request.SancaiAssetRequest",
-                "admin.sancai.controller.request.SancaiCategoryRequest",
-                "admin.sancai.controller.request.SancaiContentRequest",
-                "admin.sancai.controller.request.SancaiEntryPageRequest",
-                "admin.sancai.controller.request.SancaiEntryRequest",
-                "admin.sancai.controller.request.SancaiEntryVersionRequest",
-                "admin.sancai.controller.request.SancaiVolumeRequest",
-                "portal.sancai.controller.request.SancaiPortalEntrySearchRequest");
+        return modelAnnotationAllowances(ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS);
     }
 
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
-        return modelAnnotationAllowances(
-                ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
-                "admin.common.response.ClassicsBatchOperationResponse",
-                "admin.publication.controller.response.ClassicsPublicationBatchItemResponse",
-                "admin.publication.controller.response.ClassicsPublicationBatchResponse",
-                "admin.publication.controller.response.ClassicsPublicationCreateResponse",
-                "admin.publication.controller.response.ClassicsPublicationJobResponse",
-                "admin.sancai.controller.response.SancaiAssetResponse",
-                "admin.sancai.controller.response.SancaiCategoryResponse",
-                "admin.sancai.controller.response.SancaiContentResponse",
-                "admin.sancai.controller.response.SancaiEntryResponse",
-                "admin.sancai.controller.response.SancaiEntryVersionResponse",
-                "admin.sancai.controller.response.SancaiVolumeResponse",
-                "portal.sancai.controller.response.SancaiPortalCategoryResponse",
-                "portal.sancai.controller.response.SancaiPortalVolumeResponse");
+        return modelAnnotationAllowances(ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS);
     }
 
     private static List<ArchitectureRuleAllowance> modelAnnotationAllowances(String ruleName, String... classNames) {

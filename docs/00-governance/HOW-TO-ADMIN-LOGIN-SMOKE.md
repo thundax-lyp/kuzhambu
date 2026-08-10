@@ -81,7 +81,7 @@ GET /kuzhambu-admin-api/api/auth/captcha?loginToken={loginToken}&width=150&heigh
 
 admin 登录不是直接提交明文密码。流程是：
 
-1. `POST /kuzhambu-admin-api/api/auth/session/pre-auth-session`
+1. `POST /kuzhambu-admin-api/api/auth/session/pre-auth-session/request`
 2. 从响应 `data` 读取 `loginToken`、`refreshToken`、`publicKey`
 3. 使用 `publicKey` 对明文密码做 SM2 加密，模式为 `0`
 4. `POST /kuzhambu-admin-api/api/auth/session/login`
@@ -118,7 +118,7 @@ mvn spring-boot:run
 
 ```sh
 PRE_AUTH_JSON=$(curl -fsS -X POST \
-  http://127.0.0.1:20010/kuzhambu-admin-api/api/auth/session/pre-auth-session \
+  http://127.0.0.1:20010/kuzhambu-admin-api/api/auth/session/pre-auth-session/request \
   -H 'Content-Type: application/json' \
   -d '{}')
 

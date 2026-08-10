@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationCleanupApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
@@ -35,7 +36,8 @@ class ClassicsPublicationCleanupTransactionServiceTest {
         when(jobRepository.lockByContent(ClassicsContentType.SANCAI_ENTRY, 101L))
                 .thenReturn(job);
 
-        assertTrue(service.qualify(job, "cleanup-token", true));
+        assertTrue(service.qualify(new ClassicsPublicationWorkflowCommand(
+                job, null, null, "cleanup-token", null, null, null, null, true)));
 
         verify(jobRepository, never()).releaseEsCleanupClaim(job.getId(), "cleanup-token");
     }

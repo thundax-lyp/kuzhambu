@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.publication.assembler.ClassicsPublicationFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationPayload;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationContentCommitApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationSnapshotBindApplicationService;
@@ -32,6 +33,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
     private final Clock clock;
     private final ClassicsPublicationSnapshotBindApplicationService snapshotBindService;
     private final ClassicsPublicationContentCommitApplicationService contentCommitService;
+    private final ClassicsPublicationFacadeAssembler facadeAssembler;
 
     public ClassicsPublicationStepExecutorImpl(
             ClassicsPublicationJobRepository jobRepository,
@@ -41,7 +43,8 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
             ClassicsPublicationPayloadAssembler payloadAssembler,
             Clock clock,
             ClassicsPublicationSnapshotBindApplicationService snapshotBindService,
-            ClassicsPublicationContentCommitApplicationService contentCommitService) {
+            ClassicsPublicationContentCommitApplicationService contentCommitService,
+            ClassicsPublicationFacadeAssembler facadeAssembler) {
         this.jobRepository = jobRepository;
         this.contentRepository = contentRepository;
         this.searchFacade = searchFacade;
@@ -50,6 +53,7 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
         this.clock = clock;
         this.snapshotBindService = snapshotBindService;
         this.contentCommitService = contentCommitService;
+        this.facadeAssembler = facadeAssembler;
     }
 
     @Override
@@ -64,14 +68,15 @@ public class ClassicsPublicationStepExecutorImpl implements ClassicsPublicationS
             return false;
         }
         return switch (next) {
-            case SNAPSHOT_READY -> snapshotBindService.bind(job, executionToken);
+            case SNAPSHOT_READY -> snapshotBindService.bind(facadeAssembler.toSnapshotBindCommand(job, executionToken));
             case ES_PREPARED -> prepareSearch(job, executionToken);
             case FASTGPT_PREPARED -> prepareFastGpt(job, executionToken);
             case ES_READY -> readySearch(job, executionToken);
             case FASTGPT_READY -> enableFastGpt(job, executionToken);
             case ES_DISABLED -> offlineSearch(job, executionToken);
             case FASTGPT_DISABLED -> disableFastGpt(job, executionToken);
-            case CONTENT_COMMITTED -> contentCommitService.commit(job, executionToken);
+            case CONTENT_COMMITTED ->
+                contentCommitService.commit(facadeAssembler.toContentCommitCommand(job, executionToken));
             case QUEUED -> false;
         };
     }

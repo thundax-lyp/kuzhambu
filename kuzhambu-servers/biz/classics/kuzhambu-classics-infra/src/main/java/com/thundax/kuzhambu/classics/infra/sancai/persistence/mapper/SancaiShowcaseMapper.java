@@ -16,7 +16,7 @@ public interface SancaiShowcaseMapper extends BaseMapper<SancaiShowcaseDO> {
                 entry_count = #{entryCount}
             where id = #{id}
             """)
-    int markShowcaseCompleted(
+    int updateShowcaseCompleted(
             @Param("id") Long id,
             @Param("status") String status,
             @Param("storageObjectId") Long storageObjectId,

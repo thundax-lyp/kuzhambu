@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.report.query.ClassicsReportSummaryQuery;
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
@@ -60,7 +61,8 @@ class ClassicsReportApplicationServiceImplTest {
         when(mingCustomsRepository.list(null, null, null, null, null, SortDirection.ASC))
                 .thenReturn(List.of(mingCustomsEntry("明礼汇编", instant(1_718_172_800_000L))));
 
-        ClassicsReportSummaryResult result = service.summary(date(1_718_000_000_000L), date(1_718_259_200_000L), "DAY");
+        ClassicsReportSummaryResult result = service.summary(
+                new ClassicsReportSummaryQuery(date(1_718_000_000_000L), date(1_718_259_200_000L), "DAY"));
 
         assertEquals(4L, result.getContentCount());
         assertEquals(1L, result.getTranslatedContentCount());

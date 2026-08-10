@@ -49,7 +49,7 @@ public class RoleManagementApplicationServiceImpl implements RoleManagementAppli
     }
 
     public Role get(GetRoleQuery query) {
-        RoleId id = query == null ? null : query.getId();
+        RoleId id = query == null ? null : query.id();
         if (id == null) {
             return null;
         }
@@ -58,16 +58,12 @@ public class RoleManagementApplicationServiceImpl implements RoleManagementAppli
 
     public List<Role> list(RoleQuery query) {
         return dao.list(
-                query == null || query.getStatus() == null
-                        ? null
-                        : query.getStatus().value());
+                query == null || query.status() == null ? null : query.status().value());
     }
 
     public PageResult<Role> page(RoleQuery query, PageQuery page) {
         return dao.page(
-                query == null || query.getStatus() == null
-                        ? null
-                        : query.getStatus().value(),
+                query == null || query.status() == null ? null : query.status().value(),
                 page.getPageNo(),
                 page.getPageSize());
     }
@@ -79,7 +75,7 @@ public class RoleManagementApplicationServiceImpl implements RoleManagementAppli
         Role role = toRole(command);
         role.setPriority(dao.maxPriority() + PRIORITY_STEP);
         role.setId(dao.insert(role));
-        afterWrite(role, command.getMenuIdList());
+        afterWrite(role, command.menuIdList());
         return role.getId();
     }
 
@@ -87,7 +83,7 @@ public class RoleManagementApplicationServiceImpl implements RoleManagementAppli
     @Transactional(rollbackFor = Exception.class)
     public void sort(RoleSortCommand command) {
         List<RoleId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
+                command == null || command.orderedIds() == null ? Collections.emptyList() : command.orderedIds();
         if (orderedIdList.isEmpty()) {
             throw new BizException(
                     ErrorCode.SORT_EMPTY_INPUT.getCode(),
@@ -110,14 +106,14 @@ public class RoleManagementApplicationServiceImpl implements RoleManagementAppli
     @Transactional(rollbackFor = Exception.class)
     @AuditLog(
             type = "Role",
-            id = "#command.id.value()",
+            id = "#command.id().value()",
             action = AuditAction.UPDATE,
             summary = "更新角色",
             recordWhenUnchanged = true)
     public void changeInfo(ChangeRoleInfoCommand command) {
         Role role = toRole(command);
         dao.update(role);
-        afterWrite(role, command.getMenuIdList());
+        afterWrite(role, command.menuIdList());
     }
 
     private void afterWrite(Role role, List<MenuId> menuIdList) {
@@ -133,15 +129,15 @@ public class RoleManagementApplicationServiceImpl implements RoleManagementAppli
     @Transactional(rollbackFor = Exception.class)
     @AuditLog(
             type = "Role",
-            id = "#command.roleId.value()",
+            id = "#command.roleId().value()",
             action = AuditAction.UPDATE_RELATION,
             summary = "分配角色用户",
             recordWhenUnchanged = true)
     public void assignUsers(AssignRoleUsersCommand command) {
-        dao.deleteRoleUser(command.getRoleId());
+        dao.deleteRoleUser(command.roleId());
 
-        if (command.getUserIds() != null && !command.getUserIds().isEmpty()) {
-            dao.insertRoleUser(command.getRoleId(), command.getUserIds());
+        if (command.userIds() != null && !command.userIds().isEmpty()) {
+            dao.insertRoleUser(command.roleId(), command.userIds());
         }
 
         notifyCacheChanged();
@@ -151,14 +147,14 @@ public class RoleManagementApplicationServiceImpl implements RoleManagementAppli
     @Transactional(rollbackFor = Exception.class)
     @AuditLog(
             type = "Role",
-            id = "#command.id.value()",
+            id = "#command.id().value()",
             action = AuditAction.UPDATE,
             summary = "变更角色状态",
             recordWhenUnchanged = true)
     public int changeStatus(ChangeRoleStatusCommand command) {
         Role role = new Role();
-        role.setId(command.getId());
-        role.setStatus(command.getStatus());
+        role.setId(command.id());
+        role.setStatus(command.status());
         int result = dao.updateStatus(role);
 
         notifyCacheChanged();
@@ -169,11 +165,11 @@ public class RoleManagementApplicationServiceImpl implements RoleManagementAppli
     @Transactional(rollbackFor = Exception.class)
     @AuditLog(
             type = "Role",
-            id = "#command.id == null ? null : #command.id.value()",
+            id = "#command.id() == null ? null : #command.id().value()",
             action = AuditAction.DELETE,
             summary = "删除角色")
     public int remove(RemoveRoleCommand command) {
-        RoleId id = command == null ? null : command.getId();
+        RoleId id = command == null ? null : command.id();
         Role role = get(new GetRoleQuery(id));
         if (role == null) {
             return 0;
@@ -190,13 +186,13 @@ public class RoleManagementApplicationServiceImpl implements RoleManagementAppli
 
     @Override
     public List<User> listRoleUsers(RoleQuery query) {
-        List<UserId> userIdList = dao.listRoleUsers(query.getId());
+        List<UserId> userIdList = dao.listRoleUsers(query.id());
         return userIdList.stream().map(this::newUser).collect(Collectors.toList());
     }
 
     @Override
     public List<Menu> listRoleMenus(RoleQuery query) {
-        List<MenuId> menuIdList = dao.listRoleMenus(query.getId());
+        List<MenuId> menuIdList = dao.listRoleMenus(query.id());
         return menuIdList.stream().map(this::newMenu).collect(Collectors.toList());
     }
 
@@ -240,21 +236,21 @@ public class RoleManagementApplicationServiceImpl implements RoleManagementAppli
 
     private Role toRole(CreateRoleCommand command) {
         Role role = new Role();
-        role.setId(command.getId());
-        role.setName(command.getName());
-        role.setPrivilege(command.getPrivilege());
-        role.setStatus(command.getStatus());
-        role.setRemarks(command.getRemarks());
+        role.setId(command.id());
+        role.setName(command.name());
+        role.setPrivilege(command.privilege());
+        role.setStatus(command.status());
+        role.setRemarks(command.remarks());
         return role;
     }
 
     private Role toRole(ChangeRoleInfoCommand command) {
         Role role = new Role();
-        role.setId(command.getId());
-        role.setName(command.getName());
-        role.setPrivilege(command.getPrivilege());
-        role.setStatus(command.getStatus());
-        role.setRemarks(command.getRemarks());
+        role.setId(command.id());
+        role.setName(command.name());
+        role.setPrivilege(command.privilege());
+        role.setStatus(command.status());
+        role.setRemarks(command.remarks());
         return role;
     }
 }

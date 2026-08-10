@@ -10,8 +10,6 @@ import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
-import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.SystemLogApplicationService;
@@ -25,6 +23,7 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.LogInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.LogPageRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.LogResponse;
@@ -33,6 +32,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -82,14 +82,19 @@ public class LogController {
     private LogResponse toResponse(Log log) {
         User user = getLogUser(log);
         Department department = user == null ? null : getDepartment(user.getDepartmentId());
-        return LogInterfaceAssembler.toResponse(log, user, getAccountLoginName(user), department, this::getDepartment);
+        return LogInterfaceAssembler.toResponse(
+                log,
+                Optional.ofNullable(user),
+                Optional.ofNullable(getAccountLoginName(user)),
+                Optional.ofNullable(department),
+                this::getDepartment);
     }
 
     private User getLogUser(Log log) {
         if (log == null || log.getUserId() == null) {
             return null;
         }
-        return userService.get(new GetUserQuery(log.getUserId()));
+        return userService.get(LogInterfaceAssembler.toUserQuery(log.getUserId()));
     }
 
     private String getAccountLoginName(User user) {
@@ -103,10 +108,10 @@ public class LogController {
     }
 
     private PrincipalIdentityQuery identityQuery(PrincipalKey principalKey, PrincipalIdentityType identityType) {
-        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
+        return LogInterfaceAssembler.toPrincipalIdentityQuery(principalKey, identityType);
     }
 
     private Department getDepartment(DepartmentId departmentId) {
-        return departmentService.get(new GetDepartmentQuery(departmentId));
+        return departmentService.get(DepartmentInterfaceAssembler.toGetQuery(departmentId));
     }
 }

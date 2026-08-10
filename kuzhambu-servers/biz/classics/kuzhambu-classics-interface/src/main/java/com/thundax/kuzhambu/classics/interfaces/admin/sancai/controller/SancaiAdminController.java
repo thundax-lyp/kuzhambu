@@ -1,9 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySortCommand;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
@@ -36,7 +33,6 @@ import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
-import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.DictResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
@@ -270,12 +266,10 @@ public class SancaiAdminController {
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "分页查询")
     @PostMapping("entries/page")
-    public PageResponse<SancaiEntryResponse> pageEntries(@Valid @RequestBody SancaiEntryPageRequest request) {
-        var query = SancaiInterfaceAssembler.toQuery(request);
-        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
+    public PageResponse<SancaiEntryResponse> page(@Valid @RequestBody SancaiEntryPageRequest request) {
+        var query = SancaiInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentAuthorities());
         return PageResponseHelper.fromPageResult(
-                service.pageEntries(query, PageInterfaceAssembler.toPageQuery(request)),
-                SancaiInterfaceAssembler::toResponse);
+                service.page(query, PageInterfaceAssembler.toPageQuery(request)), SancaiInterfaceAssembler::toResponse);
     }
 
     @Operation(summary = "查询三才图会条目", description = "classics:sancai:view")
@@ -290,8 +284,7 @@ public class SancaiAdminController {
     @SysLogger(value = "条目列表")
     @PostMapping("entries/list")
     public List<SancaiEntryResponse> listEntries(@Valid @RequestBody SancaiEntryPageRequest request) {
-        var query = SancaiInterfaceAssembler.toQuery(request);
-        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
+        var query = SancaiInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentAuthorities());
         return service.listEntries(query).stream()
                 .map(SancaiInterfaceAssembler::toResponse)
                 .toList();
@@ -434,12 +427,7 @@ public class SancaiAdminController {
     @SysLogger(value = "门类排序")
     @PostMapping("categories/sort")
     public Boolean sortCategories(@Valid @RequestBody SancaiCategorySortRequest request) {
-        service.sortCategories(new SancaiCategorySortCommand(RequestListHelper.map(
-                RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
-                SancaiCategoryIdCodec::toDomain)));
+        service.sortCategories(SancaiInterfaceAssembler.toSortCommand(request));
         return true;
     }
 
@@ -455,12 +443,7 @@ public class SancaiAdminController {
     @SysLogger(value = "卷排序")
     @PostMapping("volumes/sort")
     public Boolean sortVolumes(@Valid @RequestBody SancaiVolumeSortRequest request) {
-        service.sortVolumes(new SancaiVolumeSortCommand(RequestListHelper.map(
-                RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
-                SancaiVolumeIdCodec::toDomain)));
+        service.sortVolumes(SancaiInterfaceAssembler.toSortCommand(request));
         return true;
     }
 
@@ -476,12 +459,7 @@ public class SancaiAdminController {
     @SysLogger(value = "条目排序")
     @PostMapping("entries/sort")
     public Boolean sortEntries(@Valid @RequestBody SancaiEntrySortRequest request) {
-        service.sortEntries(new SancaiEntrySortCommand(RequestListHelper.map(
-                RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
-                SancaiEntryIdCodec::toDomain)));
+        service.sortEntries(SancaiInterfaceAssembler.toSortCommand(request));
         return true;
     }
 

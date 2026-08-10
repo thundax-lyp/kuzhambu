@@ -3,15 +3,13 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqMessage;
 import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqSender;
-import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
-import com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand;
-import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.SystemLogApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.LogInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
 import java.io.File;
 import java.time.Instant;
@@ -56,7 +54,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
         try {
             SysLogDTO sysLog = objectMapper.readValue(payload, SysLogDTO.class);
             if (sysLog != null) {
-                logService.create(sysLog.toCreateCommand());
+                logService.create(LogInterfaceAssembler.toCreateCommand(sysLog.toLog()));
 
                 try {
                     String filename =
@@ -77,11 +75,10 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
 
     @Scheduled(cron = "0 0 0/4 * * ?")
     void doTask() {
-        LogQuery query = new LogQuery();
         Instant now = Instant.now();
-        query.setBeginDate(now.minusSeconds(9999L * 24L * 60L * 60L));
-        query.setEndDate(now.minusSeconds(logProperties().getAliveDays() * 24L * 60L * 60L));
-        logService.deleteByCondition(new DeleteLogCommand(query));
+        logService.deleteByCondition(LogInterfaceAssembler.toDeleteCommand(
+                now.minusSeconds(9999L * 24L * 60L * 60L),
+                now.minusSeconds(logProperties().getAliveDays() * 24L * 60L * 60L)));
     }
 
     private KuzhambuProperties.LogProperties logProperties() {
@@ -123,19 +120,20 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
                             log.getRemarks());
         }
 
-        private CreateLogCommand toCreateCommand() {
-            return new CreateLogCommand(
-                    LogIdCodec.toDomain(id),
-                    UserIdCodec.toDomain(userId),
-                    type == null ? null : LogType.from(type),
-                    logDate,
-                    title,
-                    remoteAddr,
-                    userAgent,
-                    method,
-                    requestUri,
-                    requestParams,
-                    remarks);
+        private Log toLog() {
+            Log log = new Log();
+            log.setId(LogIdCodec.toDomain(id));
+            log.setUserId(UserIdCodec.toDomain(userId));
+            log.setType(type == null ? null : LogType.from(type));
+            log.setLogDate(logDate);
+            log.setTitle(title);
+            log.setRemoteAddr(remoteAddr);
+            log.setUserAgent(userAgent);
+            log.setMethod(method);
+            log.setRequestUri(requestUri);
+            log.setRequestParams(requestParams);
+            log.setRemarks(remarks);
+            return log;
         }
     }
 }

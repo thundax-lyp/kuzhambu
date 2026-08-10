@@ -1,15 +1,11 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller;
 
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
-import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiAssetInterfaceAssembler;
@@ -23,7 +19,6 @@ import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
-import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -126,16 +121,13 @@ public class SancaiAssetAdminController {
             @RequestParam(value = "replaceImageId", required = false) Long replaceImageId) {
         try {
             return SancaiAssetInterfaceAssembler.toImageResourceResponse(
-                    service.uploadImage(new SancaiEntryImageUploadCommand(
+                    service.uploadImage(SancaiAssetInterfaceAssembler.toImageUploadCommand(
                             entryId,
-                            file == null ? null : file.getInputStream(),
-                            file == null ? null : file.getOriginalFilename(),
-                            file == null ? null : file.getContentType(),
-                            file == null ? 0L : file.getSize(),
-                            title,
-                            StringUtils.isBlank(imageType) ? null : SancaiEntryImageType.from(imageType),
-                            Boolean.TRUE.equals(currentUsed),
-                            replaceImageId)));
+                            file,
+                            title == null ? "" : title,
+                            imageType == null ? "" : imageType,
+                            currentUsed == null ? true : currentUsed,
+                            replaceImageId == null ? -1L : replaceImageId)));
         } catch (IOException exception) {
             throw new BizException("三才图片上传失败：" + exception.getMessage());
         }
@@ -195,9 +187,9 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "切换当前图片")
     @PostMapping("images/current/change")
     public Boolean changeCurrentImage(@Valid @RequestBody SancaiAssetRequest request) {
-        service.useImage(
-                SancaiEntryIdCodec.toDomain(requireLong(request == null ? null : request.getEntryId(), "entryId")),
-                SancaiEntryImageIdCodec.toDomain(requireLong(request == null ? null : request.getId(), "id")));
+        requireLong(request == null ? null : request.getEntryId(), "entryId");
+        requireLong(request == null ? null : request.getId(), "id");
+        service.useImage(SancaiAssetInterfaceAssembler.toImageUseCommand(request));
         return true;
     }
 
@@ -213,12 +205,7 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "图片排序")
     @PostMapping("images/sort")
     public Boolean sortImages(@Valid @RequestBody SancaiEntryImageSortRequest request) {
-        service.sortImages(new SancaiEntryImageSortCommand(RequestListHelper.map(
-                RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
-                SancaiEntryImageIdCodec::toDomain)));
+        service.sortImages(SancaiAssetInterfaceAssembler.toImageSortCommand(request));
         return true;
     }
 
@@ -242,8 +229,7 @@ public class SancaiAssetAdminController {
             throws IOException {
         SancaiEntryImageContent imageContent;
         try {
-            imageContent = service.getImageContent(
-                    SancaiEntryIdCodec.toDomain(entryId), SancaiEntryImageIdCodec.toDomain(imageId));
+            imageContent = service.getImageContent(SancaiAssetInterfaceAssembler.toImageContentQuery(entryId, imageId));
         } catch (BizException exception) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -334,7 +320,7 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "更新视觉资产")
     @PostMapping("visual-assets/update")
     public SancaiAssetResponse updateVisualAsset(@Valid @RequestBody SancaiAssetRequest request) {
-        Long visualAssetId = service.updateVisualAsset(SancaiAssetInterfaceAssembler.toVisualAsset(request))
+        Long visualAssetId = service.updateVisualAsset(SancaiAssetInterfaceAssembler.toVisualAssetCommand(request))
                 .value();
         return SancaiAssetResponse.builder()
                 .id(visualAssetId)
@@ -354,9 +340,7 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "切换当前视觉资产")
     @PostMapping("visual-assets/current/change")
     public Boolean changeCurrentVisualAsset(@Valid @RequestBody SancaiAssetRequest request) {
-        service.useVisualAsset(
-                SancaiEntryIdCodec.toDomain(request.getEntryId()),
-                SancaiVisualAssetIdCodec.toDomain(request.getVisualAssetId()));
+        service.useVisualAsset(SancaiAssetInterfaceAssembler.toVisualAssetUseCommand(request));
         return true;
     }
 
@@ -392,9 +376,9 @@ public class SancaiAssetAdminController {
         try {
             content = sourceContent
                     ? service.getVisualAssetSourceContent(
-                            SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId))
+                            SancaiAssetInterfaceAssembler.toVisualAssetContentQuery(entryId, visualAssetId))
                     : service.getVisualAssetGeneratedContent(
-                            SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId));
+                            SancaiAssetInterfaceAssembler.toVisualAssetContentQuery(entryId, visualAssetId));
         } catch (BizException exception) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;

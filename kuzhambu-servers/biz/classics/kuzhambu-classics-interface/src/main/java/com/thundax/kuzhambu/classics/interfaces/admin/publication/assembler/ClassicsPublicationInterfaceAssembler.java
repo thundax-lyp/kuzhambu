@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.publication.assembler;
 
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationBatchCreateCommand;
 import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationCreateCommand;
 import com.thundax.kuzhambu.classics.application.publication.query.ClassicsPublicationJobQuery;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationCreateResult;
@@ -18,6 +19,8 @@ import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.res
 import com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.response.ClassicsPublicationJobResponse;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class ClassicsPublicationInterfaceAssembler {
     private ClassicsPublicationInterfaceAssembler() {}
@@ -26,18 +29,29 @@ public final class ClassicsPublicationInterfaceAssembler {
             ClassicsPublicationActionRequest request,
             ClassicsContentType contentType,
             ClassicsPublicationJobType jobType) {
-        return new ClassicsPublicationCreateCommand(contentType, new ClassicsContentId(request.id()), jobType);
+        return new ClassicsPublicationCreateCommand(contentType, new ClassicsContentId(request.getId()), jobType);
     }
 
     public static List<ClassicsPublicationCreateCommand> toCommands(
             ClassicsPublicationBatchActionRequest request,
             ClassicsContentType contentType,
             ClassicsPublicationJobType jobType) {
-        return new LinkedHashSet<>(request.ids())
+        return new LinkedHashSet<>(request.getIds())
                 .stream()
                         .map(id ->
                                 new ClassicsPublicationCreateCommand(contentType, new ClassicsContentId(id), jobType))
                         .toList();
+    }
+
+    @NonNull
+    public static ClassicsPublicationBatchCreateCommand toBatchCreateCommand(
+            @NonNull ClassicsPublicationBatchActionRequest request,
+            @NonNull ClassicsContentType contentType,
+            @NonNull ClassicsPublicationJobType jobType) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(contentType, "contentType");
+        Objects.requireNonNull(jobType, "jobType");
+        return new ClassicsPublicationBatchCreateCommand(toCommands(request, contentType, jobType));
     }
 
     public static ClassicsPublicationCreateResponse toResponse(ClassicsPublicationCreateResult result) {

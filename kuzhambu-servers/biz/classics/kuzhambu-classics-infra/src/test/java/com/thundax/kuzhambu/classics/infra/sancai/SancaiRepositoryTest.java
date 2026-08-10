@@ -57,9 +57,9 @@ class SancaiRepositoryTest {
                 repositorySource.contains("listImagesByEntryId(SancaiEntryId entryId, SortDirection sortDirection)"));
         assertTrue(
                 repositorySource.contains(".eq(SancaiEntryImageDO::getEntryId, SancaiEntryIdCodec.toValue(entryId))"));
-        assertTrue(repositorySource.contains("clearCurrentImagesByEntryId(SancaiEntryId entryId)"));
+        assertTrue(repositorySource.contains("updateCurrentImagesClearedByEntryId(SancaiEntryId entryId)"));
         assertTrue(repositorySource.contains(".set(SancaiEntryImageDO::getCurrentUsed, false)"));
-        assertTrue(repositorySource.contains("markImageCurrent(SancaiEntryId entryId, SancaiEntryImageId imageId)"));
+        assertTrue(repositorySource.contains("updateImageCurrent(SancaiEntryId entryId, SancaiEntryImageId imageId)"));
         assertTrue(
                 repositorySource.contains(".eq(SancaiEntryImageDO::getId, SancaiEntryImageIdCodec.toValue(imageId))"));
         assertTrue(repositorySource.contains(".set(SancaiEntryImageDO::getCurrentUsed, true)"));

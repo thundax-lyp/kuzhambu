@@ -1,11 +1,8 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller;
 
-import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
-import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
-import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiInterfaceAssembler;
@@ -16,15 +13,12 @@ import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
-import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
-import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,7 +67,7 @@ public class SancaiContentAdminController {
     @SysLogger(value = "内容新增")
     @PostMapping("add")
     public SancaiContentResponse addContent(@Valid @RequestBody SancaiContentRequest request) {
-        ClassicsContentQaPairId id = service.addQaPair(toCommand(request));
+        ClassicsContentQaPairId id = service.addQaPair(SancaiInterfaceAssembler.toContentQaPairCommand(request));
         return SancaiContentResponse.builder()
                 .id(id == null ? null : id.value())
                 .build();
@@ -91,7 +85,7 @@ public class SancaiContentAdminController {
     @SysLogger(value = "内容更新")
     @PostMapping("update")
     public SancaiContentResponse updateContent(@Valid @RequestBody SancaiContentRequest request) {
-        ClassicsContentQaPairId id = service.updateQaPair(toCommand(request));
+        ClassicsContentQaPairId id = service.updateQaPair(SancaiInterfaceAssembler.toContentQaPairCommand(request));
         return SancaiContentResponse.builder()
                 .id(id == null ? null : id.value())
                 .build();
@@ -124,25 +118,8 @@ public class SancaiContentAdminController {
     @SysLogger(value = "内容排序")
     @PostMapping("sort")
     public Boolean sortContents(@Valid @RequestBody SancaiContentSortRequest request) {
-        service.sortQaPairs(new ContentQaPairSortCommand(RequestListHelper.map(
-                RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
-                ClassicsContentQaPairIdCodec::toDomain)));
+        service.sortQaPairs(SancaiInterfaceAssembler.toContentQaPairSortCommand(request));
         return true;
-    }
-
-    private static ContentQaPairCommand toCommand(SancaiContentRequest request) {
-        return new ContentQaPairCommand(
-                request.getId(),
-                ClassicsContentType.SANCAI_ENTRY,
-                request.getEntryId(),
-                request.getQuestion(),
-                request.getAnswer(),
-                StringUtils.isBlank(request.getSource())
-                        ? ClassicsContentSource.MANUAL
-                        : ClassicsContentSource.from(request.getSource()));
     }
 
     private static SancaiContentResponse toResponse(ClassicsContentQaPair content) {

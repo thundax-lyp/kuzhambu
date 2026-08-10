@@ -176,7 +176,7 @@ const installFetchMock = () => {
                 }
             ]);
         }
-        if (path.endsWith("/sys/current-user/info")) {
+        if (path.endsWith("/sys/current-user/get")) {
             return apiResponse({
                 id: "99",
                 loginName: "admin",

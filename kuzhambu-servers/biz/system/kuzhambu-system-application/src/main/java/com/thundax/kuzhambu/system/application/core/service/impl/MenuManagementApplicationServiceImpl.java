@@ -38,7 +38,7 @@ public class MenuManagementApplicationServiceImpl implements MenuManagementAppli
     }
 
     public Menu get(GetMenuQuery query) {
-        MenuId id = query == null ? null : query.getId();
+        MenuId id = query == null ? null : query.id();
         if (id == null) {
             return null;
         }
@@ -46,23 +46,23 @@ public class MenuManagementApplicationServiceImpl implements MenuManagementAppli
     }
 
     public List<Menu> list(MenuQuery query) {
-        if (query != null && query.getIds() != null) {
-            return dao.listByIds(query.getIds());
+        if (query != null && query.ids() != null) {
+            return dao.listByIds(query.ids());
         }
         return dao.list(
-                query == null ? null : query.getParentId(),
-                query == null || query.getVisibility() == null
+                query == null ? null : query.parentId(),
+                query == null || query.visibility() == null
                         ? null
-                        : query.getVisibility().value(),
+                        : query.visibility().value(),
                 maxRankValue(query));
     }
 
     public PageResult<Menu> page(MenuQuery query, PageQuery page) {
         return dao.page(
-                query == null ? null : query.getParentId(),
-                query == null || query.getVisibility() == null
+                query == null ? null : query.parentId(),
+                query == null || query.visibility() == null
                         ? null
-                        : query.getVisibility().value(),
+                        : query.visibility().value(),
                 maxRankValue(query),
                 page.getPageNo(),
                 page.getPageSize());
@@ -80,7 +80,7 @@ public class MenuManagementApplicationServiceImpl implements MenuManagementAppli
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "Menu", id = "#command.id.value()", action = AuditAction.UPDATE, summary = "更新菜单")
+    @AuditLog(type = "Menu", id = "#command.id().value()", action = AuditAction.UPDATE, summary = "更新菜单")
     public void changeInfo(ChangeMenuInfoCommand command) {
         Menu menu = toMenu(command);
         dao.update(menu);
@@ -93,11 +93,11 @@ public class MenuManagementApplicationServiceImpl implements MenuManagementAppli
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "Menu", id = "#command.id.value()", action = AuditAction.UPDATE, summary = "变更菜单可见性")
+    @AuditLog(type = "Menu", id = "#command.id().value()", action = AuditAction.UPDATE, summary = "变更菜单可见性")
     public int changeVisibility(ChangeMenuVisibilityCommand command) {
         Menu menu = new Menu();
-        menu.setId(command.getId());
-        menu.setVisibility(command.getVisibility());
+        menu.setId(command.id());
+        menu.setVisibility(command.visibility());
         int result = dao.updateVisibility(menu);
         notifyCacheChanged();
         return result;
@@ -106,11 +106,11 @@ public class MenuManagementApplicationServiceImpl implements MenuManagementAppli
     @Transactional(rollbackFor = Exception.class)
     @AuditLog(
             type = "Menu",
-            id = "#command.id == null ? null : #command.id.value()",
+            id = "#command.id() == null ? null : #command.id().value()",
             action = AuditAction.DELETE,
             summary = "删除菜单")
     public int remove(RemoveMenuCommand command) {
-        MenuId id = command == null ? null : command.getId();
+        MenuId id = command == null ? null : command.id();
         dao.deleteMenuRole(id);
         Menu bean = this.get(new GetMenuQuery(id));
         if (bean == null) {
@@ -126,18 +126,18 @@ public class MenuManagementApplicationServiceImpl implements MenuManagementAppli
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "Menu", id = "#command.fromId.value()", action = AuditAction.UPDATE, summary = "移动菜单")
+    @AuditLog(type = "Menu", id = "#command.fromId().value()", action = AuditAction.UPDATE, summary = "移动菜单")
     public void move(MoveMenuCommand command) {
-        dao.moveTreeNode(command.getFromId(), command.getToId(), command.getMoveType());
+        dao.moveTreeNode(command.fromId(), command.toId(), command.moveType());
         notifyCacheChanged();
     }
 
     @Override
     public boolean existsChildRelation(MenuQuery query) {
         return query != null
-                && query.getChildId() != null
-                && query.getAncestorId() != null
-                && dao.isChildOf(query.getChildId(), query.getAncestorId());
+                && query.childId() != null
+                && query.ancestorId() != null
+                && dao.isChildOf(query.childId(), query.ancestorId());
     }
 
     private void notifyCacheChanged() {
@@ -145,7 +145,7 @@ public class MenuManagementApplicationServiceImpl implements MenuManagementAppli
     }
 
     private Integer maxRankValue(MenuQuery query) {
-        return query == null || query.getMaxRank() == null ? null : AccessRankCodec.toValue(query.getMaxRank());
+        return query == null || query.maxRank() == null ? null : AccessRankCodec.toValue(query.maxRank());
     }
 
     public interface CacheChangedListener {
@@ -161,31 +161,31 @@ public class MenuManagementApplicationServiceImpl implements MenuManagementAppli
 
     private Menu toMenu(CreateMenuCommand command) {
         Menu menu = new Menu();
-        menu.setId(command.getId());
-        menu.setParentId(command.getParentId());
-        menu.setName(command.getName());
-        menu.setPerms(command.getPerms());
-        menu.setRank(command.getRank());
-        menu.setVisibility(command.getVisibility());
-        menu.setDisplayParams(command.getDisplayParams());
-        menu.setUrl(command.getUrl());
-        menu.setTarget(command.getTarget());
-        menu.setRemarks(command.getRemarks());
+        menu.setId(command.id());
+        menu.setParentId(command.parentId());
+        menu.setName(command.name());
+        menu.setPerms(command.perms());
+        menu.setRank(command.rank());
+        menu.setVisibility(command.visibility());
+        menu.setDisplayParams(command.displayParams());
+        menu.setUrl(command.url());
+        menu.setTarget(command.target());
+        menu.setRemarks(command.remarks());
         return menu;
     }
 
     private Menu toMenu(ChangeMenuInfoCommand command) {
         Menu menu = new Menu();
-        menu.setId(command.getId());
-        menu.setParentId(command.getParentId());
-        menu.setName(command.getName());
-        menu.setPerms(command.getPerms());
-        menu.setRank(command.getRank());
-        menu.setVisibility(command.getVisibility());
-        menu.setDisplayParams(command.getDisplayParams());
-        menu.setUrl(command.getUrl());
-        menu.setTarget(command.getTarget());
-        menu.setRemarks(command.getRemarks());
+        menu.setId(command.id());
+        menu.setParentId(command.parentId());
+        menu.setName(command.name());
+        menu.setPerms(command.perms());
+        menu.setRank(command.rank());
+        menu.setVisibility(command.visibility());
+        menu.setDisplayParams(command.displayParams());
+        menu.setUrl(command.url());
+        menu.setTarget(command.target());
+        menu.setRemarks(command.remarks());
         return menu;
     }
 }

@@ -185,10 +185,8 @@ class CurrentUserProfileApplicationServiceImplTest {
         when(roleService.listRoleMenus(any(RoleQuery.class))).thenReturn(List.of(grantedMenu, deniedMenu));
         when(menuService.list(any(MenuQuery.class))).thenReturn(List.of(grantedMenu, deniedMenu));
 
-        CurrentUserQuery query = new CurrentUserQuery();
-        query.setUserId(UserIdCodec.toDomain(100L));
-        query.setPrivilege(UserPrivilege.NORMAL);
-        query.setRank(AccessRank.of(5));
+        CurrentUserQuery query =
+                new CurrentUserQuery(UserIdCodec.toDomain(100L), UserPrivilege.NORMAL, null, AccessRank.of(5));
 
         List<Menu> menus = service.listAccessibleMenus(query);
 

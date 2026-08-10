@@ -55,7 +55,7 @@ public interface SancaiApplicationService {
 
     boolean isPortalReadyEntry(SancaiEntryId id);
 
-    PageResult<SancaiEntry> pageEntries(SancaiEntryQuery query, PageQuery page);
+    PageResult<SancaiEntry> page(SancaiEntryQuery query, PageQuery page);
 
     PageResult<SancaiEntry> pagePortalReadyEntries(SancaiEntryQuery query, PageQuery page);
 

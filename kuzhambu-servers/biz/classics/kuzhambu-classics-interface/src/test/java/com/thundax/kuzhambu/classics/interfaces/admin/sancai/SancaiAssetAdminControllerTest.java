@@ -6,6 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageUseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetUseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiImageContentQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiVisualAssetContentQuery;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
@@ -308,23 +312,24 @@ class SancaiAssetAdminControllerTest {
                     }
                     if ("uploadImage".equals(method.getName())) {
                         SancaiEntryImageUploadCommand command = (SancaiEntryImageUploadCommand) args[0];
-                        assertEquals(3001L, command.getEntryId());
-                        assertEquals("三才图.png", command.getOriginalFilename());
-                        assertEquals("image/png", command.getContentType());
-                        assertEquals(9L, command.getSize());
-                        assertEquals("山川图", command.getTitle());
-                        assertEquals(SancaiEntryImageType.ORIGINAL, command.getImageType());
-                        assertEquals(8001L, command.getReplaceImageId());
+                        assertEquals(3001L, command.entryId());
+                        assertEquals("三才图.png", command.originalFilename());
+                        assertEquals("image/png", command.contentType());
+                        assertEquals(9L, command.size());
+                        assertEquals("山川图", command.title());
+                        assertEquals(SancaiEntryImageType.ORIGINAL, command.imageType());
+                        assertEquals(8001L, command.replaceImageId());
                         return imageResource();
                     }
                     if ("getImageContent".equals(method.getName())) {
-                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
-                        assertEquals(SancaiEntryImageIdCodec.toDomain(8002L), args[1]);
+                        SancaiImageContentQuery query = (SancaiImageContentQuery) args[0];
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), query.entryId());
+                        assertEquals(SancaiEntryImageIdCodec.toDomain(8002L), query.imageId());
                         return new SancaiEntryImageContent(3001L, 8002L, 7001L, storedContent());
                     }
                     if ("sortImages".equals(method.getName())) {
                         SancaiEntryImageSortCommand command = (SancaiEntryImageSortCommand) args[0];
-                        assertEquals(List.of(SancaiEntryImageIdCodec.toDomain(8002L)), command.getOrderedIds());
+                        assertEquals(List.of(SancaiEntryImageIdCodec.toDomain(8002L)), command.orderedIds());
                         return null;
                     }
                     if ("deleteImage".equals(method.getName())) {
@@ -332,8 +337,9 @@ class SancaiAssetAdminControllerTest {
                         return null;
                     }
                     if ("useImage".equals(method.getName())) {
-                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
-                        assertEquals(SancaiEntryImageIdCodec.toDomain(8002L), args[1]);
+                        SancaiImageUseCommand command = (SancaiImageUseCommand) args[0];
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), command.entryId());
+                        assertEquals(SancaiEntryImageIdCodec.toDomain(8002L), command.imageId());
                         return null;
                     }
                     if ("listImages".equals(method.getName())) {
@@ -344,8 +350,9 @@ class SancaiAssetAdminControllerTest {
                         return SancaiVisualAssetIdCodec.toDomain(5001L);
                     }
                     if ("useVisualAsset".equals(method.getName())) {
-                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
-                        assertEquals(SancaiVisualAssetIdCodec.toDomain(5001L), args[1]);
+                        SancaiVisualAssetUseCommand command = (SancaiVisualAssetUseCommand) args[0];
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), command.entryId());
+                        assertEquals(SancaiVisualAssetIdCodec.toDomain(5001L), command.visualAssetId());
                         return null;
                     }
                     if ("listVisualAssets".equals(method.getName())) {
@@ -353,13 +360,15 @@ class SancaiAssetAdminControllerTest {
                         return List.of(visualAsset());
                     }
                     if ("getVisualAssetSourceContent".equals(method.getName())) {
-                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
-                        assertEquals(SancaiVisualAssetIdCodec.toDomain(5001L), args[1]);
+                        SancaiVisualAssetContentQuery query = (SancaiVisualAssetContentQuery) args[0];
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), query.entryId());
+                        assertEquals(SancaiVisualAssetIdCodec.toDomain(5001L), query.visualAssetId());
                         return storedContent();
                     }
                     if ("getVisualAssetGeneratedContent".equals(method.getName())) {
-                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
-                        assertEquals(SancaiVisualAssetIdCodec.toDomain(5001L), args[1]);
+                        SancaiVisualAssetContentQuery query = (SancaiVisualAssetContentQuery) args[0];
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), query.entryId());
+                        assertEquals(SancaiVisualAssetIdCodec.toDomain(5001L), query.visualAssetId());
                         return generatedContent();
                     }
                     throw new UnsupportedOperationException(method.getName());

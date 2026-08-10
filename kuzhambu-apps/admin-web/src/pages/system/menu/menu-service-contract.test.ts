@@ -89,7 +89,7 @@ describe("menu service request contracts", () => {
         expectLastRequest("/sys/menu/update", saveRequest);
 
         await menuService.changeMenuDisplay("menu-1", false);
-        expectLastRequest("/sys/menu/display", [{ id: "menu-1", display: false }]);
+        expectLastRequest("/sys/menu/visibility/update", [{ id: "menu-1", display: false }]);
 
         await menuService.moveMenu({
             fromNodeId: "menu-1",

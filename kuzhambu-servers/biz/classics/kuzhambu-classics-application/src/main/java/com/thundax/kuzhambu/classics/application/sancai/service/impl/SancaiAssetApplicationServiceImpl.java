@@ -8,12 +8,20 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationAssembler;
+import com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageUseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetFusionCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetUseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetVersionCommand;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiImageContentQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiShowcaseQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiVisualAssetContentQuery;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiShowcaseJobResult;
@@ -124,30 +132,30 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryDraftId updateDraft(SancaiDraftCommand command) {
-        requireWritable(SancaiEntryIdCodec.toDomain(command.getEntryId()));
+        requireWritable(SancaiEntryIdCodec.toDomain(command.entryId()));
         SancaiEntryDraft draft = new SancaiEntryDraft();
-        draft.setEntryId(SancaiEntryIdCodec.toDomain(command.getEntryId()));
-        draft.setAutosavedAt(command.getAutosavedAt() == null ? Instant.now() : command.getAutosavedAt());
-        draft.setDraftJson(command.getDraftJson());
+        draft.setEntryId(SancaiEntryIdCodec.toDomain(command.entryId()));
+        draft.setAutosavedAt(command.autosavedAt() == null ? Instant.now() : command.autosavedAt());
+        draft.setDraftJson(command.draftJson());
         return repository.insertDraft(draft);
     }
 
     @Override
     public SancaiEntryDraft getLatestDraft(SancaiEntryId entryId) {
-        return repository.getLatestDraftByEntryId(entryId);
+        return repository.getByEntryIdLatestDraft(entryId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryImageId updateImage(SancaiImageCommand command) {
-        requireWritable(SancaiEntryIdCodec.toDomain(command.getEntryId()));
+        requireWritable(SancaiEntryIdCodec.toDomain(command.entryId()));
         SancaiEntryImage image = new SancaiEntryImage();
-        image.setId(SancaiEntryImageIdCodec.toDomain(command.getId()));
-        image.setEntryId(SancaiEntryIdCodec.toDomain(command.getEntryId()));
-        image.setStorageObjectId(command.getStorageObjectId());
-        image.setImageType(command.getImageType());
-        image.setTitle(command.getTitle());
-        image.setCurrentUsed(command.isCurrentUsed());
+        image.setId(SancaiEntryImageIdCodec.toDomain(command.id()));
+        image.setEntryId(SancaiEntryIdCodec.toDomain(command.entryId()));
+        image.setStorageObjectId(command.storageObjectId());
+        image.setImageType(command.imageType());
+        image.setTitle(command.title());
+        image.setCurrentUsed(command.currentUsed());
         if (image.getId() == null) {
             image.setPriority(repository.maxPriority() + 1);
             return repository.insertImage(image);
@@ -158,21 +166,21 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     public SancaiEntryImage getImage(SancaiEntryImageId id) {
-        return id == null ? null : repository.getImageById(id);
+        return id == null ? null : repository.getByImageId(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryImageResource uploadImage(SancaiEntryImageUploadCommand command) {
-        SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command == null ? null : command.getEntryId());
+        SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command == null ? null : command.entryId());
         validateImageUpload(command);
         requireWritable(entryId);
 
         UploadStorageFacadeResponse uploadResponse = storageFacade.upload(UploadStorageFacadeRequest.builder()
-                .inputStream(command.getInputStream())
-                .originalFilename(command.getOriginalFilename())
-                .contentType(command.getContentType())
-                .sizeBytes(command.getSize())
+                .inputStream(command.inputStream())
+                .originalFilename(command.originalFilename())
+                .contentType(command.contentType())
+                .sizeBytes(command.size())
                 .allowedSuffixes(ALLOWED_IMAGE_SUFFIXES)
                 .ownerType(IMAGE_OWNER_TYPE)
                 .build());
@@ -182,9 +190,9 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 uploadResponse == null || uploadResponse.getStorageObjectId() == null
                         ? null
                         : StorageObjectIdCodec.toDomain(uploadResponse.getStorageObjectId()));
-        image.setImageType(command.getImageType());
-        image.setTitle(command.getTitle());
-        image.setCurrentUsed(command.isCurrentUsed());
+        image.setImageType(command.imageType());
+        image.setTitle(command.title());
+        image.setCurrentUsed(command.currentUsed());
         image.setPriority(repository.maxPriority() + 1);
         clearCurrentImagesIfNeeded(command, entryId);
         SancaiEntryImageId imageId = repository.insertImage(image);
@@ -195,7 +203,9 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     @Override
-    public SancaiEntryImageContent getImageContent(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+    public SancaiEntryImageContent getImageContent(SancaiImageContentQuery query) {
+        SancaiEntryId entryId = query == null ? null : query.entryId();
+        SancaiEntryImageId imageId = query == null ? null : query.imageId();
         SancaiEntryImage image = requireImage(entryId, imageId);
         OpenStorageFacadeRequest request = OpenStorageFacadeRequest.builder()
                 .storageObjectId(StorageObjectIdCodec.toValue(image.getStorageObjectId()))
@@ -215,21 +225,21 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     @Override
-    public ClassicsStoredContentResult getVisualAssetSourceContent(
-            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
-        return openVisualAssetContent(entryId, visualAssetId, true);
+    public ClassicsStoredContentResult getVisualAssetSourceContent(SancaiVisualAssetContentQuery query) {
+        return openVisualAssetContent(
+                query == null ? null : query.entryId(), query == null ? null : query.visualAssetId(), true);
     }
 
     @Override
-    public ClassicsStoredContentResult getVisualAssetGeneratedContent(
-            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
-        return openVisualAssetContent(entryId, visualAssetId, false);
+    public ClassicsStoredContentResult getVisualAssetGeneratedContent(SancaiVisualAssetContentQuery query) {
+        return openVisualAssetContent(
+                query == null ? null : query.entryId(), query == null ? null : query.visualAssetId(), false);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortImages(SancaiEntryImageSortCommand command) {
-        List<SancaiEntryImageId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<SancaiEntryImageId> orderedIdList = command == null ? null : command.orderedIds();
         List<SancaiEntryImage> images = repository.listImages(SortDirection.ASC);
         images.stream().map(SancaiEntryImage::getEntryId).distinct().forEach(this::requireWritable);
         SortablePrioritySwapSupport.sort(
@@ -244,11 +254,13 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void useImage(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+    public void useImage(SancaiImageUseCommand command) {
+        SancaiEntryId entryId = command == null ? null : command.entryId();
+        SancaiEntryImageId imageId = command == null ? null : command.imageId();
         requireWritable(entryId);
         requireImage(entryId, imageId);
-        repository.clearCurrentImagesByEntryId(entryId);
-        if (repository.markImageCurrent(entryId, imageId) != 1) {
+        repository.updateCurrentImagesClearedByEntryId(entryId);
+        if (repository.updateImageCurrent(entryId, imageId) != 1) {
             throw new BizException("三才当前使用图片切换失败");
         }
     }
@@ -261,7 +273,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             throw new BizException("三才图片不存在");
         }
         requireWritable(image.getEntryId());
-        repository.deleteImageById(id);
+        repository.deleteByImageId(id);
         unbindStorageOwner(image);
         if (storageFacade != null && image.getStorageObjectId() != null) {
             storageFacade.markUnused(MarkStorageUsageFacadeRequest.builder()
@@ -278,7 +290,8 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SancaiVisualAssetId updateVisualAsset(SancaiVisualAsset visualAsset) {
+    public SancaiVisualAssetId updateVisualAsset(SancaiVisualAssetCommand command) {
+        SancaiVisualAsset visualAsset = toVisualAsset(command);
         requireWritable(visualAsset == null ? null : visualAsset.getEntryId());
         validateVisualWeights(visualAsset);
         if (visualAsset.getId() == null) {
@@ -290,7 +303,9 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void useVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
+    public void useVisualAsset(SancaiVisualAssetUseCommand command) {
+        SancaiEntryId entryId = command == null ? null : command.entryId();
+        SancaiVisualAssetId visualAssetId = command == null ? null : command.visualAssetId();
         requireWritable(entryId);
         repository.updateCurrentVisualAsset(entryId, visualAssetId);
     }
@@ -302,8 +317,10 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void applyFusionDescription(
-            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, String fusionDescription) {
+    public void applyFusionDescription(SancaiVisualAssetFusionCommand command) {
+        SancaiEntryId entryId = command == null ? null : command.entryId();
+        SancaiVisualAssetId visualAssetId = command == null ? null : command.visualAssetId();
+        String fusionDescription = command == null ? null : command.fusionDescription();
         if (entryId == null || visualAssetId == null || StringUtils.isBlank(fusionDescription)) {
             throw new BizException("三才信息融合写回参数不完整");
         }
@@ -318,8 +335,11 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SancaiVisualAsset createGeneratedVisualAssetVersion(
-            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, StorageObjectId generatedImageStorageObjectId) {
+    public SancaiVisualAsset createGeneratedVisualAssetVersion(SancaiVisualAssetVersionCommand command) {
+        SancaiEntryId entryId = command == null ? null : command.entryId();
+        SancaiVisualAssetId visualAssetId = command == null ? null : command.visualAssetId();
+        StorageObjectId generatedImageStorageObjectId =
+                command == null ? null : command.generatedImageStorageObjectId();
         if (entryId == null || visualAssetId == null || generatedImageStorageObjectId == null) {
             throw new BizException("三才生图版本参数不完整");
         }
@@ -368,7 +388,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public SancaiShowcaseJobResult requestShowcaseJob(SancaiShowcaseCommand command) {
         validateShowcaseCommand(command);
-        SancaiShowcase showcase = SancaiApplicationAssembler.toShowcase(command);
+        SancaiShowcase showcase = SancaiApplicationFacadeAssembler.toShowcase(command);
         showcase.setStatus(SancaiShowcaseStatus.REQUESTED);
         showcase.setStorageObjectId(null);
         SancaiShowcaseId showcaseId = repository.insertShowcase(showcase);
@@ -380,7 +400,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             showcase.setStatus(SancaiShowcaseStatus.PROCESSING);
             repository.updateShowcase(showcase);
             if (workerRenderClient == null) {
-                markShowcaseFailed(showcaseId, SHOWCASE_FAILURE_WORKER_UNAVAILABLE, "三才静态展示 worker 不可用");
+                updateShowcaseFailed(showcaseId, SHOWCASE_FAILURE_WORKER_UNAVAILABLE, "三才静态展示 worker 不可用");
                 return failedShowcaseJob(showcaseId, SHOWCASE_FAILURE_WORKER_UNAVAILABLE, "三才静态展示 worker 不可用");
             }
             WorkerRenderDtos.WorkerRenderRequest renderRequest = renderRequest(showcaseId, showcase);
@@ -388,7 +408,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             if (!isSuccess(response)) {
                 String failureType = workerFailureType(response);
                 String failureMessage = workerFailureMessage(response);
-                markShowcaseFailed(showcaseId, failureType, failureMessage);
+                updateShowcaseFailed(showcaseId, failureType, failureMessage);
                 return failedShowcaseJob(showcaseId, failureType, failureMessage);
             }
             WorkerRenderDtos.Artifact artifact = response.getArtifact();
@@ -396,12 +416,12 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             validateShowcaseArtifact(artifact, content);
             UploadStorageFacadeResponse uploadResponse = saveShowcaseArtifact(showcaseId, artifact, content);
             if (uploadResponse == null) {
-                markShowcaseFailed(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
+                updateShowcaseFailed(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
                 return failedShowcaseJob(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
             }
             StorageObjectId storageObjectId = toStorageObjectId(uploadResponse);
             if (storageObjectId == null) {
-                markShowcaseFailed(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
+                updateShowcaseFailed(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
                 return failedShowcaseJob(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
             }
             bindShowcaseArtifactOwner(showcaseId, storageObjectId.value());
@@ -414,7 +434,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             String contentType = artifact.getContentType();
             Long sizeBytes = artifact.getSizeBytes() == null ? (long) content.length : artifact.getSizeBytes();
             String sha256 = normalizedSha256(artifact.getSha256());
-            repository.markShowcaseCompleted(
+            repository.updateShowcaseCompleted(
                     showcaseId, storageObjectId, entryCount, assetCount, filename, contentType, sizeBytes, sha256);
             return new SancaiShowcaseJobResult(
                     showcaseId,
@@ -426,7 +446,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                     null,
                     null);
         } catch (Exception ex) {
-            markShowcaseFailed(showcaseId, SHOWCASE_FAILURE_INTERNAL, "三才静态展示生成失败");
+            updateShowcaseFailed(showcaseId, SHOWCASE_FAILURE_INTERNAL, "三才静态展示生成失败");
             return failedShowcaseJob(showcaseId, SHOWCASE_FAILURE_INTERNAL, "三才静态展示生成失败");
         }
     }
@@ -447,7 +467,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     public ClassicsStoredContentResult getShowcaseContent(SancaiShowcaseId showcaseId) {
-        SancaiShowcase showcase = repository.getShowcaseById(showcaseId);
+        SancaiShowcase showcase = repository.getByShowcaseId(showcaseId);
         if (showcase == null || showcase.getStorageObjectId() == null) {
             throw new BizException("三才展示产物不存在");
         }
@@ -460,36 +480,46 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         if (showcaseId == null) {
             return;
         }
-        SancaiShowcase showcase = repository.getShowcaseById(showcaseId);
+        SancaiShowcase showcase = repository.getByShowcaseId(showcaseId);
         if (showcase == null) {
             return;
         }
         unbindShowcaseArtifactOwner(showcaseId);
-        repository.deleteShowcaseById(showcaseId);
+        repository.deleteByShowcaseId(showcaseId);
         removeStorageObjectIfUnreferenced(showcase.getStorageObjectId());
     }
 
     @Override
-    public PageResult<SancaiShowcase> pageShowcases(String status, PageQuery page) {
-        return repository.pageShowcases(status, page.getPageNo(), page.getPageSize());
-    }
-
-    @Override
-    public PageResult<SancaiShowcase> pageShowcases(
-            String keyword,
-            String status,
-            String visibilityRiskStatus,
-            Instant requestedAtStart,
-            Instant requestedAtEnd,
-            PageQuery page) {
-        return repository.pageShowcases(
-                keyword,
-                status,
-                visibilityRiskStatus,
-                requestedAtStart,
-                requestedAtEnd,
+    public PageResult<SancaiShowcase> page(SancaiShowcaseQuery query, PageQuery page) {
+        return repository.page(
+                query == null ? null : query.keyword(),
+                query == null ? null : query.status(),
+                query == null ? null : query.visibilityRiskStatus(),
+                query == null ? null : query.requestedAtStart(),
+                query == null ? null : query.requestedAtEnd(),
                 page.getPageNo(),
                 page.getPageSize());
+    }
+
+    private static SancaiVisualAsset toVisualAsset(SancaiVisualAssetCommand command) {
+        if (command == null) {
+            return null;
+        }
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(command.id());
+        visualAsset.setEntryId(command.entryId());
+        visualAsset.setVersionNo(command.versionNo());
+        visualAsset.setStatus(command.status());
+        visualAsset.setSourceImageStorageObjectId(command.sourceImageStorageObjectId());
+        visualAsset.setGeneratedImageStorageObjectId(command.generatedImageStorageObjectId());
+        visualAsset.setCurrentUsed(command.currentUsed());
+        visualAsset.setTextWeight(command.textWeight());
+        visualAsset.setImageWeight(command.imageWeight());
+        visualAsset.setImageAnalysisMarkdown(command.imageAnalysisMarkdown());
+        visualAsset.setFusionDescription(command.fusionDescription());
+        visualAsset.setVisualDescription(command.visualDescription());
+        visualAsset.setGenerationParamsJson(command.generationParamsJson());
+        return visualAsset;
     }
 
     private WorkerRenderDtos.WorkerRenderRequest renderRequest(SancaiShowcaseId showcaseId, SancaiShowcase showcase) {
@@ -679,8 +709,8 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         if (command == null) {
             return;
         }
-        if (command.getVisibilityRiskStatus() == SancaiVisibilityRiskStatus.CONTAINS_PRIVATE
-                && !command.isPrivateConfirmed()) {
+        if (command.visibilityRiskStatus() == SancaiVisibilityRiskStatus.CONTAINS_PRIVATE
+                && !command.privateConfirmed()) {
             throw new BizException(
                     SHOWCASE_FAILURE_PRIVATE_UNCONFIRMED,
                     "classics.sancai.showcase.private.unconfirmed",
@@ -813,8 +843,8 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         return response != null && "SUCCEEDED".equalsIgnoreCase(response.getStatus()) && response.getArtifact() != null;
     }
 
-    private void markShowcaseFailed(SancaiShowcaseId showcaseId, String failureType, String failureMessage) {
-        repository.markShowcaseFailed(showcaseId, failureType, abbreviateFailureMessage(failureMessage));
+    private void updateShowcaseFailed(SancaiShowcaseId showcaseId, String failureType, String failureMessage) {
+        repository.updateShowcaseFailed(showcaseId, failureType, abbreviateFailureMessage(failureMessage));
     }
 
     private SancaiShowcaseJobResult failedShowcaseJob(
@@ -885,10 +915,10 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     private void clearCurrentImagesIfNeeded(SancaiEntryImageUploadCommand command, SancaiEntryId entryId) {
-        if (command == null || !command.isCurrentUsed()) {
+        if (command == null || !command.currentUsed()) {
             return;
         }
-        repository.clearCurrentImagesByEntryId(entryId);
+        repository.updateCurrentImagesClearedByEntryId(entryId);
     }
 
     private SancaiEntryImage requireImage(SancaiEntryId entryId, SancaiEntryImageId imageId) {
@@ -909,7 +939,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         if (entryId == null || visualAssetId == null) {
             throw new BizException("三才视觉资产不存在");
         }
-        SancaiVisualAsset visualAsset = repository.getVisualAssetById(visualAssetId);
+        SancaiVisualAsset visualAsset = repository.getByVisualAssetId(visualAssetId);
         if (visualAsset == null || visualAsset.getEntryId() == null || !entryId.equals(visualAsset.getEntryId())) {
             throw new BizException("三才视觉资产不存在: " + visualAssetId.value());
         }
@@ -938,10 +968,10 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     private static void validateImageUpload(SancaiEntryImageUploadCommand command) {
-        if (command == null || command.getEntryId() == null) {
+        if (command == null || command.entryId() == null) {
             throw new BizException("三才条目不能为空");
         }
-        if (!StringUtils.startsWithIgnoreCase(command.getContentType(), "image/")) {
+        if (!StringUtils.startsWithIgnoreCase(command.contentType(), "image/")) {
             throw new BizException("三才图片内容类型无效");
         }
     }
@@ -995,7 +1025,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         }
         SancaiEntryImage nextImage = remainingImages.get(0);
         if (nextImage != null && nextImage.getId() != null) {
-            repository.markImageCurrent(deletedImage.getEntryId(), nextImage.getId());
+            repository.updateImageCurrent(deletedImage.getEntryId(), nextImage.getId());
         }
     }
 

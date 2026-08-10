@@ -27,6 +27,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocum
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.WangqiDocumentAdminController;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentVersionRequest;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
@@ -213,6 +214,27 @@ class WangqiDocumentAdminControllerTest {
     }
 
     @Test
+    void getShouldRejectMissingDocumentId() {
+        WangqiDocumentAdminController controller = controller();
+        WangqiDocumentRequest request = new WangqiDocumentRequest();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> controller.get(request));
+
+        assertTrue(exception.getMessage().contains("id"));
+    }
+
+    @Test
+    void getShouldThrowBusinessErrorWhenDocumentNotFound() {
+        WangqiDocumentAdminController controller =
+                new WangqiDocumentAdminController(missingDocumentService(), contentService());
+        WangqiDocumentRequest request = request();
+
+        BizException exception = assertThrows(BizException.class, () -> controller.get(request));
+
+        assertEquals("王圻文档不存在", exception.getMessage());
+    }
+
+    @Test
     void listVersionsShouldRejectMissingDocumentId() {
         WangqiDocumentAdminController controller = controller();
         WangqiDocumentVersionRequest request = new WangqiDocumentVersionRequest();
@@ -288,6 +310,19 @@ class WangqiDocumentAdminControllerTest {
                     if ("getSourceFileContent".equals(method.getName())) {
                         WangqiDocumentId documentId = (WangqiDocumentId) args[0];
                         return sourceFileContent(documentId.value());
+                    }
+                    throw new UnsupportedOperationException(method.getName());
+                });
+    }
+
+    private static WangqiDocumentApplicationService missingDocumentService() {
+        return (WangqiDocumentApplicationService) Proxy.newProxyInstance(
+                WangqiDocumentApplicationService.class.getClassLoader(),
+                new Class<?>[] {WangqiDocumentApplicationService.class},
+                (proxy, method, args) -> {
+                    if ("get".equals(method.getName())) {
+                        assertEquals(WangqiDocumentIdCodec.toDomain(400000000001L), args[0]);
+                        return null;
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });

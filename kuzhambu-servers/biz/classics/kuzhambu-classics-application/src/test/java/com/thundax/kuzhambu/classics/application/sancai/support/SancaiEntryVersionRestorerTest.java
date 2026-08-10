@@ -181,7 +181,7 @@ class SancaiEntryVersionRestorerTest {
         private SancaiEntry restoredEntry;
 
         @Override
-        public SancaiEntry getEntryById(SancaiEntryId id) {
+        public SancaiEntry getByEntryId(SancaiEntryId id) {
             return currentEntry;
         }
 

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
 import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationSnapshotBindApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationPayloadAssembler;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
@@ -84,7 +85,8 @@ class ClassicsPublicationSnapshotBindApplicationServiceTest {
                         null))
                 .thenReturn(1);
 
-        assertTrue(service.bind(job, TOKEN));
+        assertTrue(service.bind(
+                new ClassicsPublicationWorkflowCommand(job, null, TOKEN, null, null, null, null, null, false)));
 
         var ordered = inOrder(contentRepository, contentApplicationService, payloadAssembler, jobRepository);
         ordered.verify(contentRepository)
@@ -124,7 +126,10 @@ class ClassicsPublicationSnapshotBindApplicationServiceTest {
         when(contentRepository.updateWangqiDocumentVersionMarkers(document)).thenReturn(1);
         when(payloadAssembler.assemble(job, version)).thenThrow(new IllegalStateException("SNAPSHOT_INVALID"));
 
-        assertThrows(IllegalStateException.class, () -> service.bind(job, TOKEN));
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.bind(
+                        new ClassicsPublicationWorkflowCommand(job, null, TOKEN, null, null, null, null, null, false)));
 
         verify(jobRepository, never())
                 .advanceMilestone(any(), any(), any(), any(), any(), any(), any(), any(), any(), any());

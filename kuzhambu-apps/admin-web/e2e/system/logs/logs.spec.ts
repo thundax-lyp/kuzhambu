@@ -23,7 +23,7 @@ const mockShellApis = async (page: Page, permissions: string[]) => {
             JSON.stringify(grantedPermissions)
         );
     }, permissions);
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/get", async (route) => {
         await fulfillSuccess(route, {
             id: "user-1",
             loginName: "developer",
@@ -33,7 +33,7 @@ const mockShellApis = async (page: Page, permissions: string[]) => {
             superAdmin: true
         });
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menu/list", async (route) => {
         await fulfillSuccess(route, [
             {
                 id: "dashboard",
@@ -67,11 +67,14 @@ const mockShellApis = async (page: Page, permissions: string[]) => {
             }
         ]);
     });
-    await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
-        await fulfillSuccess(route, {
-            perms: permissions
-        });
-    });
+    await page.route(
+        "**/kuzhambu-admin-api/api/sys/current-user/permission/list",
+        async (route) => {
+            await fulfillSuccess(route, {
+                perms: permissions
+            });
+        }
+    );
 };
 
 const mockSystemLogPage = async (page: Page) => {
