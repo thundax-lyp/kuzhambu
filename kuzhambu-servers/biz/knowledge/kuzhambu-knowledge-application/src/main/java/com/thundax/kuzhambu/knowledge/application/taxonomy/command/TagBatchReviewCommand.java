@@ -3,18 +3,5 @@ package com.thundax.kuzhambu.knowledge.application.taxonomy.command;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class TagBatchReviewCommand {
-    private List<TagId> tagIds;
-    private String decision;
-    private TagCategoryId categoryId;
-    private String reviewNote;
-}
+public record TagBatchReviewCommand(List<TagId> tagIds, String decision, TagCategoryId categoryId, String reviewNote) {}

@@ -362,14 +362,14 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public TagId createTag(TagCreateCommand command) {
         TagCreateCommand effective = ensureCommand(command, "标签创建命令");
-        TagId tagId = ensureId(effective.getId(), "tagId");
-        String name = trimText(effective.getName(), "标签名称");
+        TagId tagId = ensureId(effective.id(), "tagId");
+        String name = trimText(effective.name(), "标签名称");
 
         if (tagRepository.countByName(name, null) > 0) {
             throw new BizException("标签名已存在: " + name);
         }
 
-        TagCategoryId categoryId = normalizeId(effective.getCategoryId());
+        TagCategoryId categoryId = normalizeId(effective.categoryId());
         if (categoryId != null) {
             TagCategory category = getExistingCategory(categoryId);
             if (category.getStatus() != TagCategoryStatus.ENABLED) {
@@ -381,13 +381,13 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         tag.setId(tagId);
         tag.setName(name);
         tag.setCategoryId(categoryId);
-        tag.setDescription(trimOptionalText(effective.getDescription()));
+        tag.setDescription(trimOptionalText(effective.description()));
         tag.setStatus(TagStatus.ENABLED);
         tag.setSource(TagSource.MANUAL);
         tag.setReviewStatus(TagReviewStatus.APPROVED);
-        tag.setReviewNote(trimOptionalText(effective.getReviewNote()));
+        tag.setReviewNote(trimOptionalText(effective.reviewNote()));
         tag.setCreatedAt(Instant.now());
-        tag.setReviewedAt(effective.getReviewedAt() == null ? Instant.now() : effective.getReviewedAt());
+        tag.setReviewedAt(effective.reviewedAt() == null ? Instant.now() : effective.reviewedAt());
 
         return tagRepository.insert(tag);
     }
@@ -396,15 +396,15 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void updateTag(TagUpdateCommand command) {
         TagUpdateCommand effective = ensureCommand(command, "标签更新命令");
-        TagId tagId = ensureId(effective.getId(), "tagId");
+        TagId tagId = ensureId(effective.id(), "tagId");
         Tag existing = ensureTagExists(tagId);
-        String name = trimText(effective.getName(), "标签名称");
+        String name = trimText(effective.name(), "标签名称");
 
         if (tagRepository.countByName(name, tagId) > 0) {
             throw new BizException("标签名已存在: " + name);
         }
 
-        TagCategoryId categoryId = normalizeId(effective.getCategoryId());
+        TagCategoryId categoryId = normalizeId(effective.categoryId());
         if (categoryId != null) {
             getExistingCategory(categoryId);
         }
@@ -413,7 +413,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         updated.setId(existing.getId());
         updated.setName(name);
         updated.setCategoryId(categoryId);
-        updated.setDescription(trimOptionalText(effective.getDescription()));
+        updated.setDescription(trimOptionalText(effective.description()));
         updated.setStatus(existing.getStatus());
         updated.setSource(existing.getSource());
         updated.setReviewStatus(existing.getReviewStatus());
@@ -430,9 +430,9 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void changeTagStatus(TagStatusCommand command) {
         TagStatusCommand effective = ensureCommand(command, "标签状态命令");
-        TagId tagId = ensureId(effective.getId(), "tagId");
+        TagId tagId = ensureId(effective.id(), "tagId");
         Tag tag = ensureTagExists(tagId);
-        TagStatus status = requireStatus(effective.getStatus(), "tagStatus");
+        TagStatus status = requireStatus(effective.status(), "tagStatus");
 
         Tag updated = new Tag();
         updated.setId(tag.getId());
@@ -455,7 +455,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void deprecateTag(TagDeprecateCommand command) {
         TagDeprecateCommand effective = ensureCommand(command, "标签废弃命令");
-        Tag tag = ensureTagExists(ensureId(effective.getId(), "tagId"));
+        Tag tag = ensureTagExists(ensureId(effective.id(), "tagId"));
         tag.deprecate(Instant.now(), null);
         if (tagRepository.update(tag) != 1) {
             throw new BizException("标签废弃状态更新失败");
@@ -466,7 +466,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void batchDeprecateTags(TagBatchDeprecateCommand command) {
         TagBatchDeprecateCommand effective = ensureCommand(command, "标签批量废弃命令");
-        List<Tag> tags = getExistingTags(normalizeTagIds(effective.getTagIds(), "tagIds"), "tagIds");
+        List<Tag> tags = getExistingTags(normalizeTagIds(effective.tagIds(), "tagIds"), "tagIds");
         for (Tag tag : tags) {
             if (tag.isDeprecated()) {
                 throw new BizException("标签已废弃: " + tag.getId().value());
@@ -529,9 +529,9 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void reviewTag(TagReviewCommand command) {
         TagReviewCommand effective = ensureCommand(command, "标签审核命令");
-        Tag tag = ensureTagExists(effective.getId());
-        String decision = normalizeDecision(effective.getDecision());
-        String reviewNote = trimOptionalText(effective.getReviewNote());
+        Tag tag = ensureTagExists(effective.id());
+        String decision = normalizeDecision(effective.decision());
+        String reviewNote = trimOptionalText(effective.reviewNote());
 
         Tag reviewed = new Tag();
         reviewed.setId(tag.getId());
@@ -570,12 +570,12 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void batchReviewTags(TagBatchReviewCommand command) {
         TagBatchReviewCommand effective = ensureCommand(command, "标签批量审核命令");
-        String decision = normalizeDecision(effective.getDecision());
-        String reviewNote = trimOptionalText(effective.getReviewNote());
-        List<Tag> tags = getExistingTags(normalizeTagIds(effective.getTagIds(), "tagIds"), "tagIds");
+        String decision = normalizeDecision(effective.decision());
+        String reviewNote = trimOptionalText(effective.reviewNote());
+        List<Tag> tags = getExistingTags(normalizeTagIds(effective.tagIds(), "tagIds"), "tagIds");
         TagCategoryId categoryId = null;
         if (APPROVE_DECISION.equals(decision)) {
-            categoryId = ensureId(effective.getCategoryId(), "categoryId");
+            categoryId = ensureId(effective.categoryId(), "categoryId");
             TagCategory category = getExistingCategory(categoryId);
             if (category.getStatus() != TagCategoryStatus.ENABLED) {
                 throw new BizException("审核通过标签必须关联启用中的分类");
