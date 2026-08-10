@@ -1,15 +1,32 @@
 package com.thundax.kuzhambu.system.interfaces.admin.auth.assembler;
 
+import com.thundax.kuzhambu.system.application.auth.command.AuthenticateIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.command.AuthenticatePasswordCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreateAdminAccessTokenCommand;
 import com.thundax.kuzhambu.system.application.auth.command.CreatePreAuthSessionCommand;
+import com.thundax.kuzhambu.system.application.auth.command.DeleteAdminAccessTokenCommand;
+import com.thundax.kuzhambu.system.application.auth.command.InvalidateAdminSessionCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalLoginFailureCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RefreshAdminAccessTokenCommand;
 import com.thundax.kuzhambu.system.application.auth.command.RefreshPreAuthSessionCommand;
 import com.thundax.kuzhambu.system.application.auth.command.ReleasePreAuthSessionCommand;
 import com.thundax.kuzhambu.system.application.auth.command.UpsertPreAuthSessionValueCommand;
+import com.thundax.kuzhambu.system.application.auth.query.AdminAccessTokenQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueValidateQuery;
+import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenCode;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.AuthAccessTokenResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.AuthLoginFormResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.TokenVerifyResponse;
@@ -22,6 +39,69 @@ public final class AuthInterfaceAssembler {
     private static final String PUBLIC_KEY_ITEM = "publicKey";
 
     private AuthInterfaceAssembler() {}
+
+    @NonNull
+    public static CreateAdminAccessTokenCommand toCreateAdminAccessTokenCommand(
+            UserId userId,
+            String loginName,
+            String ip,
+            String userAgent,
+            PrincipalAuthenticationMethod authenticationMethod,
+            PrincipalIdentityType identityType) {
+        return new CreateAdminAccessTokenCommand(userId, loginName, ip, userAgent, authenticationMethod, identityType);
+    }
+
+    @NonNull
+    public static DeleteAdminAccessTokenCommand toDeleteAdminAccessTokenCommand(
+            PrincipalAccessTokenCode token, UserId userId, String ip, String userAgent) {
+        return new DeleteAdminAccessTokenCommand(token, userId, ip, userAgent);
+    }
+
+    @NonNull
+    public static InvalidateAdminSessionCommand toInvalidateAdminSessionCommand(
+            PrincipalAccessTokenCode token, UserId userId, String reason) {
+        return new InvalidateAdminSessionCommand(token, userId, reason);
+    }
+
+    @NonNull
+    public static RecordPrincipalLoginFailureCommand toRecordPrincipalLoginFailureCommand(
+            PrincipalKey principalKey,
+            PrincipalAuthenticationMethod authenticationMethod,
+            PrincipalIdentityType identityType,
+            String ip,
+            String userAgent,
+            String reason) {
+        return new RecordPrincipalLoginFailureCommand(
+                principalKey, authenticationMethod, identityType, ip, userAgent, reason);
+    }
+
+    @NonNull
+    public static RefreshAdminAccessTokenCommand toRefreshAdminAccessTokenCommand(
+            PrincipalClientId clientId, PrincipalRefreshTokenCode refreshToken, String ip, String userAgent) {
+        return new RefreshAdminAccessTokenCommand(clientId, refreshToken, ip, userAgent);
+    }
+
+    @NonNull
+    public static AdminAccessTokenQuery toAdminAccessTokenQuery(PrincipalAccessTokenCode token) {
+        return new AdminAccessTokenQuery(token);
+    }
+
+    @NonNull
+    public static AuthenticatePasswordCommand toAuthenticatePasswordCommand(
+            PrincipalIdentityType identityType,
+            String identityValue,
+            PrincipalCredentialType credentialType,
+            String plainPassword,
+            PrincipalPasswordPolicyDTO passwordPolicy) {
+        return new AuthenticatePasswordCommand(
+                identityType, identityValue, credentialType, plainPassword, passwordPolicy);
+    }
+
+    @NonNull
+    public static AuthenticateIdentityCommand toAuthenticateIdentityCommand(
+            PrincipalIdentityType identityType, String identityValue) {
+        return new AuthenticateIdentityCommand(identityType, identityValue);
+    }
 
     @NonNull
     public static CreatePreAuthSessionCommand toCreatePreAuthSessionCommand(int expiredSeconds) {

@@ -73,41 +73,7 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.audit.controller.AuditController#PageQuery:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver#GetUserQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#AdminAccessTokenQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#AuthenticateIdentityCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#AuthenticatePasswordCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#CreateAdminAccessTokenCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#DeleteAdminAccessTokenCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#DeleteAdminAccessTokenCommand:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#GetUserQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#InvalidateAdminSessionCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#InvalidateAdminSessionCommand:2"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#PrincipalIdentityQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#RecordPrincipalLoginFailureCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#RecordPrincipalLoginFailureCommand:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#RecordPrincipalLoginFailureCommand:3"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#RecordPrincipalLoginFailureCommand:4"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#RecordPrincipalLoginFailureCommand:5"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#RecordPrincipalLoginFailureCommand:6"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#RefreshAdminAccessTokenCommand:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.PermissionServiceImpl#CreatePermissionsCommand:1"),
                 constructionViolation(

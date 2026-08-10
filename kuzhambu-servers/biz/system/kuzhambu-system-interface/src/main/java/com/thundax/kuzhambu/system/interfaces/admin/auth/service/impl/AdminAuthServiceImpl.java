@@ -2,13 +2,6 @@ package com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
-import com.thundax.kuzhambu.system.application.auth.command.AuthenticateIdentityCommand;
-import com.thundax.kuzhambu.system.application.auth.command.AuthenticatePasswordCommand;
-import com.thundax.kuzhambu.system.application.auth.command.CreateAdminAccessTokenCommand;
-import com.thundax.kuzhambu.system.application.auth.command.DeleteAdminAccessTokenCommand;
-import com.thundax.kuzhambu.system.application.auth.command.InvalidateAdminSessionCommand;
-import com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalLoginFailureCommand;
-import com.thundax.kuzhambu.system.application.auth.command.RefreshAdminAccessTokenCommand;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
 import com.thundax.kuzhambu.system.application.auth.query.AdminAccessTokenQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
@@ -19,7 +12,6 @@ import com.thundax.kuzhambu.system.application.auth.service.AdminSessionTokenApp
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthenticationApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
-import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
@@ -34,6 +26,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefres
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.assembler.AuthInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthAccessTokenDTO;
@@ -89,8 +82,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         if (identityType == null) {
             identityType = PrincipalIdentityType.USER_ACCOUNT;
         }
-        AuthAccessTokenDTO result =
-                toInterfaceResult(adminTokenService.createAccessToken(new CreateAdminAccessTokenCommand(
+        AuthAccessTokenDTO result = toInterfaceResult(
+                adminTokenService.createAccessToken(AuthInterfaceAssembler.toCreateAdminAccessTokenCommand(
                         operation.getUserId(),
                         operation.getLoginName(),
                         operation.getIp(),
@@ -111,7 +104,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     public int deleteAccessTokensByUserId(AdminAuthOperation operation) {
         return adminTokenService.deleteAccessTokensByUserId(
-                new DeleteAdminAccessTokenCommand(null, operation.getUserId(), null, null));
+                AuthInterfaceAssembler.toDeleteAdminAccessTokenCommand(null, operation.getUserId(), null, null));
     }
 
     @Override
@@ -126,7 +119,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public void deleteAccessToken(AdminAuthOperation operation) {
-        adminTokenService.deleteAccessToken(new DeleteAdminAccessTokenCommand(
+        adminTokenService.deleteAccessToken(AuthInterfaceAssembler.toDeleteAdminAccessTokenCommand(
                 accessTokenCode(tokenValue(operation.getAccessToken())),
                 null,
                 operation.getIp(),
@@ -141,8 +134,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     public AuthTokenRefreshDTO refreshAccessToken(AdminAuthOperation operation) {
         try {
-            AuthTokenRefreshDTO result =
-                    toInterfaceResult(adminTokenService.refreshAccessToken(new RefreshAdminAccessTokenCommand(
+            AuthTokenRefreshDTO result = toInterfaceResult(
+                    adminTokenService.refreshAccessToken(AuthInterfaceAssembler.toRefreshAdminAccessTokenCommand(
                             PrincipalClientIdCodec.toDomain(operation.getClientId()),
                             PrincipalRefreshTokenCode.ofNullable(blankToNull(operation.getRefreshToken())),
                             operation.getIp(),
@@ -160,14 +153,14 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public void invalidateSessionByToken(AdminAuthOperation operation) {
-        adminTokenService.invalidateSessionByToken(
-                new InvalidateAdminSessionCommand(accessTokenCode(operation.getToken()), null, operation.getReason()));
+        adminTokenService.invalidateSessionByToken(AuthInterfaceAssembler.toInvalidateAdminSessionCommand(
+                accessTokenCode(operation.getToken()), null, operation.getReason()));
     }
 
     @Override
     public int invalidateSessionsByUserId(AdminAuthOperation operation) {
-        return adminTokenService.invalidateSessionsByUserId(
-                new InvalidateAdminSessionCommand(null, operation.getUserId(), operation.getReason()));
+        return adminTokenService.invalidateSessionsByUserId(AuthInterfaceAssembler.toInvalidateAdminSessionCommand(
+                null, operation.getUserId(), operation.getReason()));
     }
 
     @Override
@@ -193,7 +186,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public void recordLoginFailed(AdminAuthOperation operation) {
-        adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+        adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
                 null,
                 operation.getAuthenticationMethod(),
                 operation.getIdentityType(),
@@ -214,14 +207,14 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     private User authenticatePassword(String loginName, String plainPassword, String ip, String userAgent) {
         PrincipalIdentity identity;
         try {
-            identity = principalAuthService.authenticatePassword(new AuthenticatePasswordCommand(
+            identity = principalAuthService.authenticatePassword(AuthInterfaceAssembler.toAuthenticatePasswordCommand(
                     PrincipalIdentityType.USER_ACCOUNT,
                     loginName,
                     PrincipalCredentialType.USER_PASSWORD,
                     plainPassword,
                     passwordPolicy()));
         } catch (InvalidPasswordException e) {
-            adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+            adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
                     null,
                     PrincipalAuthenticationMethod.PASSWORD,
                     PrincipalIdentityType.USER_ACCOUNT,
@@ -233,7 +226,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
         User user = getUser(UserIdCodec.toDomain(identity.getPrincipalKey().getPrincipalId()));
         if (user == null) {
-            adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+            adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
                     null,
                     PrincipalAuthenticationMethod.PASSWORD,
                     PrincipalIdentityType.USER_ACCOUNT,
@@ -316,9 +309,9 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         PrincipalIdentity identity;
         try {
             identity = principalAuthService.authenticateIdentity(
-                    new AuthenticateIdentityCommand(identityType, identityValue));
+                    AuthInterfaceAssembler.toAuthenticateIdentityCommand(identityType, identityValue));
         } catch (InvalidPasswordException e) {
-            adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+            adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
                     null,
                     authenticationMethod,
                     identityType,
@@ -329,7 +322,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         }
         User user = getUser(UserIdCodec.toDomain(identity.getPrincipalKey().getPrincipalId()));
         if (user == null) {
-            adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+            adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
                     null,
                     authenticationMethod,
                     identityType,
@@ -358,12 +351,12 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             String ip,
             String userAgent,
             String reason) {
-        adminTokenService.recordLoginFailed(new RecordPrincipalLoginFailureCommand(
+        adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
                 principalKey, authenticationMethod, identityType, ip, userAgent, reason));
     }
 
     private User getUser(UserId userId) {
-        return userService.get(new GetUserQuery(userId));
+        return userService.get(userId);
     }
 
     private String getAccountLoginName(UserId userId) {
@@ -407,7 +400,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private AdminAccessTokenQuery accessTokenQuery(String token) {
-        return new AdminAccessTokenQuery(accessTokenCode(token));
+        return AuthInterfaceAssembler.toAdminAccessTokenQuery(accessTokenCode(token));
     }
 
     private PrincipalAccessTokenCode accessTokenCode(String token) {
