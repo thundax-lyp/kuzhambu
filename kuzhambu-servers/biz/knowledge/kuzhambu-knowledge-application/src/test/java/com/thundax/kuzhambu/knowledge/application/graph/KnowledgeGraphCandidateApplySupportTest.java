@@ -498,7 +498,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(
+        public void batchSaveOrUpdate(
                 List<com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode> nodes) {}
 
         @Override
@@ -540,7 +540,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(
+        public void batchSaveOrUpdate(
                 List<com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation> relations) {}
 
         @Override

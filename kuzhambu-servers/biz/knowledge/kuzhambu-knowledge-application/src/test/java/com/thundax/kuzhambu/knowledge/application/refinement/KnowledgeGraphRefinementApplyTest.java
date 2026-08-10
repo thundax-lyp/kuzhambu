@@ -552,7 +552,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageNode> nodes) {
+        public void batchSaveOrUpdate(List<KnowledgeLineageNode> nodes) {
             saved.clear();
             saved.addAll(nodes);
         }
@@ -598,7 +598,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {
+        public void batchSaveOrUpdate(List<KnowledgeLineageRelation> relations) {
             saved.clear();
             saved.addAll(relations);
         }

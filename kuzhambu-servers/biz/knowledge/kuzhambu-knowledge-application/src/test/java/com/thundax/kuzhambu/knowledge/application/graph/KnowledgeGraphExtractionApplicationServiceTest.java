@@ -2022,7 +2022,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageNode> nodes) {
+        public void batchSaveOrUpdate(List<KnowledgeLineageNode> nodes) {
             this.nodes.clear();
             this.nodes.addAll(nodes);
         }
@@ -2080,7 +2080,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {
+        public void batchSaveOrUpdate(List<KnowledgeLineageRelation> relations) {
             this.relations.clear();
             this.relations.addAll(relations);
         }

@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `08-12 graph lineage repository 命名`：重命名图谱世系 repository 方法
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-08-KNOWLEDGE-GRAPH-REFINEMENT.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeLineageNodeRepository.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeLineageNodeRepositoryImpl.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeLineageNodeRepositoryTest.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeLineageRelationRepository.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeLineageRelationRepositoryImpl.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeLineageRelationRepositoryTest.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/test/java/com/thundax/kuzhambu/knowledge/domain/KnowledgeDomainArchitectureTest.java`
-    - 处理动作：将世系节点和世系关系 `saveOrUpdateBatch` 改为仓储动词白名单允许的名称，并删除对应 domain allowance。
-    - 验收点：接口、实现、测试和调用方名称一致，domain allowlist 中对应 repository method key 清零。
-    - 重要度：9/10
-
 - [ ] `08-13 refinement core repository 命名`：重命名质量与精修任务 repository 方法
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-08-KNOWLEDGE-GRAPH-REFINEMENT.md`

@@ -32,8 +32,6 @@ class KnowledgeDomainArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertRepositoryInterfaceMethodNames(
                 classes,
                 NamingArchitectureRuleSupport.legacyRepositoryInterfaceMethodNameAllowances(
-                        "com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository.saveOrUpdateBatch",
-                        "com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository.saveOrUpdateBatch",
                         "com.thundax.kuzhambu.knowledge.domain.refinement.repository.QualityAnnotationRepository.saveOrUpdate",
                         "com.thundax.kuzhambu.knowledge.domain.refinement.repository.QualityReportRepository.getLatestPublished",
                         "com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementEntityDraftRepository.saveOrUpdateBatch",

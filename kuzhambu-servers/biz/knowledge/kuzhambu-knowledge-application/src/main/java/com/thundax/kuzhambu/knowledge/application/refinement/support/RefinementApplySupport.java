@@ -56,7 +56,7 @@ public class RefinementApplySupport {
 
     public void applyLineageNodes(Long versionId, List<RefinementLineageNodeDraft> drafts) {
         lineageNodeRepository.deleteByNodeKeys(lineageNodeKeys(drafts));
-        lineageNodeRepository.saveOrUpdateBatch(drafts.stream()
+        lineageNodeRepository.batchSaveOrUpdate(drafts.stream()
                 .filter(draft -> !"DELETED".equals(draft.getOperationType()))
                 .map(draft -> toLineageNode(versionId, draft))
                 .toList());
@@ -64,7 +64,7 @@ public class RefinementApplySupport {
 
     public void applyLineageRelations(Long versionId, List<RefinementLineageRelationDraft> drafts) {
         lineageRelationRepository.deleteByRelationKeys(lineageRelationKeys(drafts));
-        lineageRelationRepository.saveOrUpdateBatch(drafts.stream()
+        lineageRelationRepository.batchSaveOrUpdate(drafts.stream()
                 .filter(draft -> !"DELETED".equals(draft.getOperationType()))
                 .map(draft -> toLineageRelation(versionId, draft))
                 .toList());

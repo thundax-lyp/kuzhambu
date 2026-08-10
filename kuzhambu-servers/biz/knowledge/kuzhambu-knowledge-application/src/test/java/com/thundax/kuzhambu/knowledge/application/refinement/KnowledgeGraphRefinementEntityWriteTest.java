@@ -396,7 +396,7 @@ class KnowledgeGraphRefinementEntityWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageNode> nodes) {}
+        public void batchSaveOrUpdate(List<KnowledgeLineageNode> nodes) {}
 
         @Override
         public int deleteByNodeKeys(Collection<String> nodeKeys) {
@@ -432,7 +432,7 @@ class KnowledgeGraphRefinementEntityWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {}
+        public void batchSaveOrUpdate(List<KnowledgeLineageRelation> relations) {}
 
         @Override
         public int deleteByRelationKeys(Collection<String> relationKeys) {
