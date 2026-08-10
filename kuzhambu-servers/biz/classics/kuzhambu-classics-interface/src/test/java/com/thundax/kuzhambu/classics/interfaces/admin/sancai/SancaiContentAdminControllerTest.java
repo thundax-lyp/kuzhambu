@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
@@ -102,18 +103,19 @@ class SancaiContentAdminControllerTest {
                 new Class<?>[] {ClassicsContentApplicationService.class},
                 (proxy, method, args) -> {
                     if ("listQaPairs".equals(method.getName())) {
-                        assertEquals("SANCAI_ENTRY", args[0]);
-                        assertEquals(ClassicsContentIdCodec.toDomain(3001L), args[1]);
+                        assertEquals(
+                                new ContentObjectQuery("SANCAI_ENTRY", ClassicsContentIdCodec.toDomain(3001L)),
+                                args[0]);
                         return List.of(content());
                     }
                     if ("addQaPair".equals(method.getName()) || "updateQaPair".equals(method.getName())) {
                         ContentQaPairCommand command = (ContentQaPairCommand) args[0];
-                        assertEquals(9001L, command.getId());
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(3001L, command.getContentId());
-                        assertEquals("问", command.getQuestion());
-                        assertEquals("答", command.getAnswer());
-                        assertEquals(ClassicsContentSource.MANUAL, command.getSource());
+                        assertEquals(9001L, command.id());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(3001L, command.contentId());
+                        assertEquals("问", command.question());
+                        assertEquals("答", command.answer());
+                        assertEquals(ClassicsContentSource.MANUAL, command.source());
                         return ClassicsContentQaPairIdCodec.toDomain(9001L);
                     }
                     if ("deleteQaPair".equals(method.getName())) {
@@ -126,7 +128,7 @@ class SancaiContentAdminControllerTest {
                                 List.of(
                                         ClassicsContentQaPairIdCodec.toDomain(9001L),
                                         ClassicsContentQaPairIdCodec.toDomain(9002L)),
-                                command.getOrderedIds());
+                                command.orderedIds());
                         return null;
                     }
                     throw new UnsupportedOperationException(method.getName());

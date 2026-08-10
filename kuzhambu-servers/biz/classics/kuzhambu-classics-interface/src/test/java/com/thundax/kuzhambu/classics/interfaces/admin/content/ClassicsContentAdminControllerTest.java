@@ -11,6 +11,8 @@ import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatc
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.query.ContentExportJobQuery;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
@@ -468,21 +470,22 @@ class ClassicsContentAdminControllerTest {
                 (proxy, method, args) -> {
                     if ("createExportJob".equals(method.getName())) {
                         ContentExportCommand command = (ContentExportCommand) args[0];
-                        assertEquals("SANCAI_ENTRY", command.getContentType().value());
-                        assertEquals(ClassicsExportKind.CONTENT_DATASET, command.getExportKind());
-                        assertEquals(ClassicsExportFormat.HTML, command.getExportFormat());
-                        assertEquals(ClassicsExportScopeType.CATEGORY, command.getScopeType());
-                        assertTrue(command.getOperatorPermissions() != null);
+                        assertEquals("SANCAI_ENTRY", command.contentType().value());
+                        assertEquals(ClassicsExportKind.CONTENT_DATASET, command.exportKind());
+                        assertEquals(ClassicsExportFormat.HTML, command.exportFormat());
+                        assertEquals(ClassicsExportScopeType.CATEGORY, command.scopeType());
+                        assertTrue(command.operatorPermissions() != null);
                         return new ClassicsExportJobResult(
                                 ClassicsContentExportJobIdCodec.toDomain(9001L),
                                 ClassicsExportStatus.COMPLETED,
                                 StorageObjectIdCodec.toDomain(7001L));
                     }
                     if ("pageExportJobs".equals(method.getName())) {
-                        assertEquals("SANCAI_ENTRY", args[0]);
-                        assertEquals("CONTENT_DATASET", args[1]);
-                        assertTrue(args[2] == null || "COMPLETED".equals(args[2]));
-                        PageQuery page = (PageQuery) args[3];
+                        ContentExportJobQuery query = (ContentExportJobQuery) args[0];
+                        assertEquals("SANCAI_ENTRY", query.contentType());
+                        assertEquals("CONTENT_DATASET", query.exportKind());
+                        assertTrue(query.status() == null || "COMPLETED".equals(query.status()));
+                        PageQuery page = (PageQuery) args[1];
                         assertEquals(1, page.getPageNo());
                         assertEquals(10, page.getPageSize());
                         return PageResult.of(
@@ -519,35 +522,34 @@ class ClassicsContentAdminControllerTest {
                     }
                     if ("applyAiCandidate".equals(method.getName())) {
                         AiCandidateApplyContentCommand command = (AiCandidateApplyContentCommand) args[0];
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(456L, command.getContentId());
-                        assertEquals("TEXT", command.getResultFormat());
-                        if ("summary".equals(command.getCapability())) {
-                            assertEquals(123L, command.getCandidateId());
-                            assertEquals("new summary", command.getResultPayload());
-                            assertEquals("AI 应用：摘要", command.getChangeSummary());
-                            assertEquals(901L, command.getObjectId());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(456L, command.contentId());
+                        assertEquals("TEXT", command.resultFormat());
+                        if ("summary".equals(command.capability())) {
+                            assertEquals(123L, command.candidateId());
+                            assertEquals("new summary", command.resultPayload());
+                            assertEquals("AI 应用：摘要", command.changeSummary());
+                            assertEquals(901L, command.objectId());
                             return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 789L, 3);
                         }
-                        if ("translate".equals(command.getCapability())) {
-                            assertEquals(124L, command.getCandidateId());
-                            assertEquals("new translation", command.getResultPayload());
-                            assertEquals("AI 应用：译文", command.getChangeSummary());
-                            assertEquals(902L, command.getObjectId());
+                        if ("translate".equals(command.capability())) {
+                            assertEquals(124L, command.candidateId());
+                            assertEquals("new translation", command.resultPayload());
+                            assertEquals("AI 应用：译文", command.changeSummary());
+                            assertEquals(902L, command.objectId());
                             return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 790L, 4);
                         }
-                        throw new UnsupportedOperationException(
-                                "unexpected apply capability: " + command.getCapability());
+                        throw new UnsupportedOperationException("unexpected apply capability: " + command.capability());
                     }
                     if ("applyAiCandidates".equals(method.getName())) {
                         AiCandidateBatchApplyContentCommand command = (AiCandidateBatchApplyContentCommand) args[0];
-                        assertEquals(2, command.getItems().size());
-                        assertEquals(111L, command.getItems().get(0).getCandidateId());
-                        assertEquals(4001L, command.getItems().get(0).getContentId());
-                        assertEquals("summary", command.getItems().get(0).getCapability());
-                        assertEquals(112L, command.getItems().get(1).getCandidateId());
-                        assertEquals(5001L, command.getItems().get(1).getContentId());
-                        assertEquals("tags", command.getItems().get(1).getCapability());
+                        assertEquals(2, command.items().size());
+                        assertEquals(111L, command.items().get(0).candidateId());
+                        assertEquals(4001L, command.items().get(0).contentId());
+                        assertEquals("summary", command.items().get(0).capability());
+                        assertEquals(112L, command.items().get(1).candidateId());
+                        assertEquals(5001L, command.items().get(1).contentId());
+                        assertEquals("tags", command.items().get(1).capability());
                         return ClassicsBatchOperationResult.of(
                                 List.of(
                                         ClassicsBatchOperationItemResult.successForCandidate(
@@ -558,18 +560,18 @@ class ClassicsContentAdminControllerTest {
                     }
                     if ("rejectAiCandidates".equals(method.getName())) {
                         AiCandidateBatchRejectContentCommand command = (AiCandidateBatchRejectContentCommand) args[0];
-                        assertEquals(null, command.getErrorType());
-                        assertEquals(null, command.getErrorMessage());
-                        assertEquals(2, command.getItems().size());
-                        assertEquals(113L, command.getItems().get(0).getCandidateId());
+                        assertEquals(null, command.errorType());
+                        assertEquals(null, command.errorMessage());
+                        assertEquals(2, command.items().size());
+                        assertEquals(113L, command.items().get(0).candidateId());
                         assertEquals(
                                 "SANCAI_ENTRY",
-                                command.getItems().get(0).getContentType().value());
-                        assertEquals("summary", command.getItems().get(0).getCapability());
-                        assertEquals(114L, command.getItems().get(1).getCandidateId());
+                                command.items().get(0).contentType().value());
+                        assertEquals("summary", command.items().get(0).capability());
+                        assertEquals(114L, command.items().get(1).candidateId());
                         assertEquals(
                                 "WANGQI_DOCUMENT",
-                                command.getItems().get(1).getContentType().value());
+                                command.items().get(1).contentType().value());
                         return ClassicsBatchOperationResult.of(
                                 List.of(
                                         ClassicsBatchOperationItemResult.successForCandidate(
@@ -581,25 +583,25 @@ class ClassicsContentAdminControllerTest {
                     if ("addTag".equals(method.getName())) {
                         var command =
                                 (com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand) args[0];
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(456L, command.getContentId());
-                        assertEquals(2001L, command.getTagId());
-                        assertEquals("礼制", command.getTagNameSnapshot());
-                        assertEquals("MANUAL", command.getSource().value());
-                        assertEquals("ACTIVE", command.getStatus().value());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(456L, command.contentId());
+                        assertEquals(2001L, command.tagId());
+                        assertEquals("礼制", command.tagNameSnapshot());
+                        assertEquals("MANUAL", command.source().value());
+                        assertEquals("ACTIVE", command.status().value());
                         return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec.toDomain(
                                 3001L);
                     }
                     if ("updateTag".equals(method.getName())) {
                         var command =
                                 (com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand) args[0];
-                        assertEquals(3001L, command.getId());
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(456L, command.getContentId());
-                        assertEquals(2002L, command.getTagId());
-                        assertEquals("祭祀", command.getTagNameSnapshot());
-                        assertEquals("MANUAL", command.getSource().value());
-                        assertEquals("ACTIVE", command.getStatus().value());
+                        assertEquals(3001L, command.id());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(456L, command.contentId());
+                        assertEquals(2002L, command.tagId());
+                        assertEquals("祭祀", command.tagNameSnapshot());
+                        assertEquals("MANUAL", command.source().value());
+                        assertEquals("ACTIVE", command.status().value());
                         return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec.toDomain(
                                 3001L);
                     }
@@ -614,22 +616,22 @@ class ClassicsContentAdminControllerTest {
                     if ("addQaPair".equals(method.getName())) {
                         var command = (com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand)
                                 args[0];
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(457L, command.getContentId());
-                        assertEquals("是什么", command.getQuestion());
-                        assertEquals("这是一个测试", command.getAnswer());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(457L, command.contentId());
+                        assertEquals("是什么", command.question());
+                        assertEquals("这是一个测试", command.answer());
                         return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec.toDomain(
                                 4001L);
                     }
                     if ("updateQaPair".equals(method.getName())) {
                         var command = (com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand)
                                 args[0];
-                        assertEquals(4001L, command.getId());
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(457L, command.getContentId());
-                        assertEquals("为何", command.getQuestion());
-                        assertEquals("为了测试", command.getAnswer());
-                        assertEquals("MANUAL", command.getSource().value());
+                        assertEquals(4001L, command.id());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(457L, command.contentId());
+                        assertEquals("为何", command.question());
+                        assertEquals("为了测试", command.answer());
+                        assertEquals("MANUAL", command.source().value());
                         return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec.toDomain(
                                 4001L);
                     }
@@ -643,12 +645,9 @@ class ClassicsContentAdminControllerTest {
                         return null;
                     }
                     if ("listTags".equals(method.getName())) {
-                        assertEquals("SANCAI_ENTRY", args[0]);
-                        assertEquals(
-                                456L,
-                                ((com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId)
-                                                args[1])
-                                        .value());
+                        ContentObjectQuery query = (ContentObjectQuery) args[0];
+                        assertEquals("SANCAI_ENTRY", query.contentType());
+                        assertEquals(456L, query.contentId().value());
                         var tag = new com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag();
                         tag.setId(com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec.toDomain(
                                 3001L));
@@ -671,7 +670,7 @@ class ClassicsContentAdminControllerTest {
                         ContentTagSortCommand command = (ContentTagSortCommand) args[0];
                         assertEquals(
                                 List.of(2L, 1L),
-                                command.getOrderedIds().stream()
+                                command.orderedIds().stream()
                                         .map(id -> id.value())
                                         .toList());
                         return null;

@@ -71,7 +71,7 @@ class ClassicsPublicationWriteGuardTest {
     void shouldWriteTombstoneAndScheduleCleanupBeforeDeletingExternalContent() {
         ClassicsContentRepository contentRepository = mock(ClassicsContentRepository.class);
         ClassicsPublicationJobRepository jobRepository = mock(ClassicsPublicationJobRepository.class);
-        when(contentRepository.lockPublicationContent(CONTENT_TYPE, CONTENT_ID))
+        when(contentRepository.getByPublicationContentForLock(CONTENT_TYPE, CONTENT_ID))
                 .thenReturn(
                         content(ClassicsPublicationLifecycleStatus.ERROR, ClassicsPublicationTransitionStatus.NONE));
         ClassicsPublicationJob job = new ClassicsPublicationJob();
@@ -97,7 +97,7 @@ class ClassicsPublicationWriteGuardTest {
     void shouldNotWriteTombstoneWithoutExternalReference() {
         ClassicsContentRepository contentRepository = mock(ClassicsContentRepository.class);
         ClassicsPublicationJobRepository jobRepository = mock(ClassicsPublicationJobRepository.class);
-        when(contentRepository.lockPublicationContent(CONTENT_TYPE, CONTENT_ID))
+        when(contentRepository.getByPublicationContentForLock(CONTENT_TYPE, CONTENT_ID))
                 .thenReturn(
                         content(ClassicsPublicationLifecycleStatus.OFFLINE, ClassicsPublicationTransitionStatus.NONE));
         ClassicsPublicationJob job = new ClassicsPublicationJob();
@@ -138,7 +138,8 @@ class ClassicsPublicationWriteGuardTest {
 
     private static ClassicsPublicationWriteGuard guard(ClassicsPublicationContent content) {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
-        when(repository.lockPublicationContent(CONTENT_TYPE, CONTENT_ID)).thenReturn(content);
+        when(repository.getByPublicationContentForLock(CONTENT_TYPE, CONTENT_ID))
+                .thenReturn(content);
         return new ClassicsPublicationWriteGuard(repository, mock(ClassicsPublicationJobRepository.class));
     }
 

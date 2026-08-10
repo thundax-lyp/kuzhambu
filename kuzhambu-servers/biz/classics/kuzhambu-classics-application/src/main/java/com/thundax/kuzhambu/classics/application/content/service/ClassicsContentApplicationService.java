@@ -8,18 +8,18 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCo
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
+import com.thundax.kuzhambu.classics.application.content.query.ContentExportJobQuery;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
-import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
@@ -29,7 +29,7 @@ import java.util.List;
 
 public interface ClassicsContentApplicationService {
 
-    List<ClassicsContentTag> listTags(String contentType, ClassicsContentId contentId);
+    List<ClassicsContentTag> listTags(ContentObjectQuery query);
 
     ClassicsContentTagId addTag(ContentTagCommand command);
 
@@ -39,7 +39,7 @@ public interface ClassicsContentApplicationService {
 
     void deleteTag(ClassicsContentTagId id);
 
-    List<ClassicsContentQaPair> listQaPairs(String contentType, ClassicsContentId contentId);
+    List<ClassicsContentQaPair> listQaPairs(ContentObjectQuery query);
 
     ClassicsContentQaPairId addQaPair(ContentQaPairCommand command);
 
@@ -47,20 +47,15 @@ public interface ClassicsContentApplicationService {
 
     void sortQaPairs(ContentQaPairSortCommand command);
 
-    void sortQaPairs(String contentType, ClassicsContentId contentId, ContentQaPairSortCommand command);
-
     void deleteQaPair(ClassicsContentQaPairId id);
 
-    List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId);
+    List<ClassicsContentVersion> listVersions(ContentObjectQuery query);
 
     ClassicsContentVersion getVersion(ClassicsContentVersionId id);
 
-    int deleteVersions(String contentType, ClassicsContentId contentId);
+    int deleteVersions(ContentObjectQuery query);
 
-    ClassicsContentVersion ensureVersioned(
-            Versionable content, ClassicsContentChangeType changeType, String changeSummary);
-
-    ClassicsContentVersion applyAiResult(Versionable content, String changeSummary);
+    ClassicsContentVersion ensureVersioned(ContentVersionCommand command);
 
     AiCandidateApplyContentResult applyAiCandidate(AiCandidateApplyContentCommand command);
 
@@ -78,6 +73,5 @@ public interface ClassicsContentApplicationService {
 
     void deleteExportJob(ClassicsContentExportJobId id);
 
-    PageResult<ClassicsContentExportJob> pageExportJobs(
-            String contentType, String exportKind, String status, PageQuery page);
+    PageResult<ClassicsContentExportJob> pageExportJobs(ContentExportJobQuery query, PageQuery page);
 }

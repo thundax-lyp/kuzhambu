@@ -3,9 +3,9 @@ package com.thundax.kuzhambu.classics.application.wangqi.service;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentStorageObjectCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -30,7 +30,7 @@ public interface WangqiDocumentApplicationService {
 
     ClassicsStoredContentResult getSourceFileContent(WangqiDocumentId id);
 
-    void changeStorageObject(WangqiDocumentId id, StorageObjectId storageObjectId);
+    void changeStorageObject(WangqiDocumentStorageObjectCommand command);
 
     void delete(WangqiDocumentId id);
 }

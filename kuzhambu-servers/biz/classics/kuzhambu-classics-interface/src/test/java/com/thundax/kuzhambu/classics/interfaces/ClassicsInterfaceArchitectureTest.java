@@ -53,25 +53,15 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler",
-                        "com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler.MingCustomsInterfaceAssembler",
                         "com.thundax.kuzhambu.classics.interfaces.admin.publication.assembler.ClassicsPublicationInterfaceAssembler",
                         "com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiAssetInterfaceAssembler",
                         "com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiInterfaceAssembler",
-                        "com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler.WangqiDocumentInterfaceAssembler",
                         "com.thundax.kuzhambu.classics.interfaces.portal.sancai.assembler.SancaiPortalInterfaceAssembler"));
     }
 
     private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS,
-                "admin.content.controller.request.ClassicsContentRequest",
-                "admin.content.controller.request.ClassicsContentRequest$AiCandidateApplyRequest",
-                "admin.content.controller.request.ClassicsContentRequest$AiCandidateBatchApplyRequest",
-                "admin.content.controller.request.ClassicsContentRequest$AiCandidateBatchRejectRequest",
-                "admin.content.controller.request.ClassicsContentRequest$AiCandidateRejectItemRequest",
-                "admin.mingcustoms.controller.request.MingCustomsRequest",
-                "admin.mingcustoms.controller.request.MingCustomsVersionRequest",
                 "admin.publication.controller.request.ClassicsPublicationActionRequest",
                 "admin.publication.controller.request.ClassicsPublicationBatchActionRequest",
                 "admin.publication.controller.request.ClassicsPublicationJobGetRequest",
@@ -83,8 +73,6 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
                 "admin.sancai.controller.request.SancaiEntryRequest",
                 "admin.sancai.controller.request.SancaiEntryVersionRequest",
                 "admin.sancai.controller.request.SancaiVolumeRequest",
-                "admin.wangqi.controller.request.WangqiDocumentRequest",
-                "admin.wangqi.controller.request.WangqiDocumentVersionRequest",
                 "portal.sancai.controller.request.SancaiPortalEntrySearchRequest");
     }
 
@@ -92,13 +80,6 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
                 "admin.common.response.ClassicsBatchOperationResponse",
-                "admin.content.controller.response.ClassicsContentResponse",
-                "admin.content.controller.response.ClassicsContentResponse$AiCandidateApplyResponse",
-                "admin.mingcustoms.controller.response.MingCustomsCategoriesResponse",
-                "admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse",
-                "admin.mingcustoms.controller.response.MingCustomsResponse",
-                "admin.mingcustoms.controller.response.MingCustomsTagCloudItemResponse",
-                "admin.mingcustoms.controller.response.MingCustomsVersionResponse",
                 "admin.publication.controller.response.ClassicsPublicationBatchItemResponse",
                 "admin.publication.controller.response.ClassicsPublicationBatchResponse",
                 "admin.publication.controller.response.ClassicsPublicationCreateResponse",
@@ -109,9 +90,6 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
                 "admin.sancai.controller.response.SancaiEntryResponse",
                 "admin.sancai.controller.response.SancaiEntryVersionResponse",
                 "admin.sancai.controller.response.SancaiVolumeResponse",
-                "admin.wangqi.controller.response.WangqiDocumentResponse",
-                "admin.wangqi.controller.response.WangqiDocumentSourceFileResponse",
-                "admin.wangqi.controller.response.WangqiDocumentVersionResponse",
                 "portal.sancai.controller.response.SancaiPortalCategoryResponse",
                 "portal.sancai.controller.response.SancaiPortalVolumeResponse");
     }

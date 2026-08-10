@@ -3,12 +3,14 @@ package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
@@ -91,9 +93,9 @@ class MingCustomsAdminControllerTest {
 
         ArgumentCaptor<MingCustomsQuery> queryCaptor = ArgumentCaptor.forClass(MingCustomsQuery.class);
         verify(service).page(queryCaptor.capture(), any(PageQuery.class));
-        assertNotNull(queryCaptor.getValue().getOperatorPermissions());
-        assertEquals(7001L, queryCaptor.getValue().getTagId());
-        assertEquals("祭祀", queryCaptor.getValue().getTagNameSnapshot());
+        assertNotNull(queryCaptor.getValue().operatorPermissions());
+        assertEquals(7001L, queryCaptor.getValue().tagId());
+        assertEquals("祭祀", queryCaptor.getValue().tagNameSnapshot());
     }
 
     @Test
@@ -113,9 +115,9 @@ class MingCustomsAdminControllerTest {
         assertEquals(3L, responses.get(0).getCount());
         ArgumentCaptor<MingCustomsQuery> queryCaptor = ArgumentCaptor.forClass(MingCustomsQuery.class);
         verify(service).listTagCloud(queryCaptor.capture());
-        assertEquals("礼俗", queryCaptor.getValue().getCategory());
-        assertEquals("祭祀", queryCaptor.getValue().getKeyword());
-        assertNotNull(queryCaptor.getValue().getOperatorPermissions());
+        assertEquals("礼俗", queryCaptor.getValue().category());
+        assertEquals("祭祀", queryCaptor.getValue().keyword());
+        assertNotNull(queryCaptor.getValue().operatorPermissions());
     }
 
     @Test
@@ -190,7 +192,8 @@ class MingCustomsAdminControllerTest {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
         ClassicsContentId entryId = ClassicsContentIdCodec.toDomain(500000000001L);
-        when(contentService.listVersions("MING_CUSTOMS", entryId))
+        ContentObjectQuery query = new ContentObjectQuery("MING_CUSTOMS", entryId);
+        when(contentService.listVersions(query))
                 .thenReturn(List.of(version(9001L, ClassicsContentType.MING_CUSTOMS, entryId)));
         MingCustomsAdminController controller = controller(service, contentService);
 
@@ -199,7 +202,18 @@ class MingCustomsAdminControllerTest {
         assertEquals(1, versions.size());
         assertEquals("MING_CUSTOMS", versions.get(0).getContentType());
         assertEquals(1, versions.get(0).getVersionNo());
-        verify(contentService).listVersions("MING_CUSTOMS", entryId);
+        verify(contentService).listVersions(query);
+    }
+
+    @Test
+    void listVersionsShouldRejectMissingEntryId() {
+        MingCustomsAdminController controller =
+                controller(mock(MingCustomsApplicationService.class), mock(ClassicsContentApplicationService.class));
+        MingCustomsVersionRequest request = new MingCustomsVersionRequest();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> controller.listVersions(request));
+
+        assertTrue(exception.getMessage().contains("id"));
     }
 
     @Test

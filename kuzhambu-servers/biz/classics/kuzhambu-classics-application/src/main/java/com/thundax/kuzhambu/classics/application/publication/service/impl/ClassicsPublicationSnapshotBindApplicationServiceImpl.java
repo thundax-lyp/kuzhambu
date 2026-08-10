@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.service.impl;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationSnapshotBindApplicationService;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationPayloadAssembler;
@@ -44,7 +45,8 @@ public class ClassicsPublicationSnapshotBindApplicationServiceImpl
     @Transactional(rollbackFor = Exception.class)
     public boolean bind(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
         ClassicsContentId contentId = new ClassicsContentId(job.getContentId());
-        ClassicsPublicationContent state = contentRepository.lockPublicationContent(job.getContentType(), contentId);
+        ClassicsPublicationContent state =
+                contentRepository.getByPublicationContentForLock(job.getContentType(), contentId);
         if (state == null
                 || !job.getId().equals(state.getCurrentJobId())
                 || state.getTransitionStatus() != ClassicsPublicationTransitionStatus.PUBLISHING) {
@@ -52,8 +54,8 @@ public class ClassicsPublicationSnapshotBindApplicationServiceImpl
         }
 
         Versionable content = currentContent(job.getContentType(), contentId);
-        ClassicsContentVersion version =
-                contentApplicationService.ensureVersioned(content, ClassicsContentChangeType.MANUAL_SAVE, "发布正式版本");
+        ClassicsContentVersion version = contentApplicationService.ensureVersioned(
+                new ContentVersionCommand(content, ClassicsContentChangeType.MANUAL_SAVE, "发布正式版本"));
         if (version == null || version.getId() == null) {
             throw new IllegalStateException("FORMAL_VERSION_MISSING");
         }
@@ -81,9 +83,9 @@ public class ClassicsPublicationSnapshotBindApplicationServiceImpl
 
     private Versionable currentContent(ClassicsContentType contentType, ClassicsContentId contentId) {
         return switch (contentType) {
-            case SANCAI_ENTRY -> contentRepository.getSancaiEntryForAiApply(contentId);
-            case WANGQI_DOCUMENT -> contentRepository.getWangqiDocumentForAiApply(contentId);
-            case MING_CUSTOMS -> contentRepository.getMingCustomsEntryForAiApply(contentId);
+            case SANCAI_ENTRY -> contentRepository.getBySancaiEntryForAiApply(contentId);
+            case WANGQI_DOCUMENT -> contentRepository.getByWangqiDocumentForAiApply(contentId);
+            case MING_CUSTOMS -> contentRepository.getByMingCustomsEntryForAiApply(contentId);
         };
     }
 

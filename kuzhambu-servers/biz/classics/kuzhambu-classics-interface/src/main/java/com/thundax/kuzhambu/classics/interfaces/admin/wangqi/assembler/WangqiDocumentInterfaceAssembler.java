@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler;
 
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
@@ -17,21 +19,46 @@ import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentSourceFileResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentVersionResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.io.IOException;
+import java.util.Objects;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
+import org.springframework.web.multipart.MultipartFile;
 
 public final class WangqiDocumentInterfaceAssembler {
     private WangqiDocumentInterfaceAssembler() {}
 
-    public static WangqiDocumentQuery toQuery(WangqiDocumentRequest request) {
+    @NonNull
+    public static ContentObjectQuery toContentObjectQuery(@NonNull String contentType, @NonNull Long contentId) {
+        Objects.requireNonNull(contentType, "contentType");
+        Objects.requireNonNull(contentId, "contentId");
+        return new ContentObjectQuery(contentType, ClassicsContentIdCodec.toDomain(contentId));
+    }
+
+    @NonNull
+    public static WangqiDocumentQuery toQuery(@NonNull WangqiDocumentRequest request) {
+        Objects.requireNonNull(request, "request");
+        return toQuery(request, Set.of());
+    }
+
+    @NonNull
+    public static WangqiDocumentQuery toQuery(
+            @NonNull WangqiDocumentRequest request, @NonNull Set<String> operatorPermissions) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(operatorPermissions, "operatorPermissions");
         return new WangqiDocumentQuery(
                 request.getKeyword(),
                 StringUtils.isBlank(request.getSortDirection())
                         ? SortDirection.ASC
                         : SortDirection.valueOf(
-                                request.getSortDirection().trim().toUpperCase()));
+                                request.getSortDirection().trim().toUpperCase()),
+                operatorPermissions);
     }
 
-    public static WangqiDocumentCommand toCommand(WangqiDocumentRequest request) {
+    @NonNull
+    public static WangqiDocumentCommand toCommand(@NonNull WangqiDocumentRequest request) {
+        Objects.requireNonNull(request, "request");
         return new WangqiDocumentCommand(
                 request.getId(),
                 request.getTitle(),
@@ -44,68 +71,77 @@ public final class WangqiDocumentInterfaceAssembler {
                 request.getStorageObjectId());
     }
 
-    public static WangqiDocumentResponse toResponse(WangqiDocument entity) {
-        return entity == null
-                ? WangqiDocumentResponse.builder().build()
-                : WangqiDocumentResponse.builder()
-                        .id(entity.getId() == null ? null : entity.getId().value())
-                        .title(entity.getTitle())
-                        .summary(entity.getSummary())
-                        .contentFormat(
-                                entity.getContentFormat() == null
-                                        ? null
-                                        : entity.getContentFormat().value())
-                        .content(entity.getContent())
-                        .documentTime(entity.getDocumentTime())
-                        .storageObjectId(StorageObjectIdCodec.toValue(entity.getStorageObjectId()))
-                        .lifecycleStatus(
-                                entity.getLifecycleStatus() == null
-                                        ? null
-                                        : entity.getLifecycleStatus().name())
-                        .transitionStatus(
-                                entity.getTransitionStatus() == null
-                                        ? null
-                                        : entity.getTransitionStatus().name())
-                        .currentPublicationJobId(
-                                entity.getCurrentPublicationJobId() == null
-                                        ? null
-                                        : entity.getCurrentPublicationJobId().value())
-                        .events(toEventResponses(entity.getEvents()))
-                        .build();
+    @NonNull
+    public static WangqiDocumentSourceFileCommand toSourceFileCommand(@NonNull Long id, @NonNull MultipartFile file)
+            throws IOException {
+        Objects.requireNonNull(id, "id");
+        Objects.requireNonNull(file, "file");
+        return new WangqiDocumentSourceFileCommand(
+                id, file.getInputStream(), file.getOriginalFilename(), file.getContentType(), file.getSize());
     }
 
-    public static WangqiDocumentSourceFileResponse toSourceFileResponse(WangqiDocumentSourceFile file) {
-        return file == null
-                ? WangqiDocumentSourceFileResponse.builder().build()
-                : WangqiDocumentSourceFileResponse.builder()
-                        .documentId(file.getDocumentId())
-                        .storageObjectId(file.getStorageObjectId())
-                        .originalFilename(file.getOriginalFilename())
-                        .contentType(file.getContentType())
-                        .size(file.getSize())
-                        .contentUrl(sourceFileContentUrl(file.getDocumentId()))
-                        .build();
+    @NonNull
+    public static WangqiDocumentResponse toResponse(@NonNull WangqiDocument entity) {
+        Objects.requireNonNull(entity, "entity");
+        return WangqiDocumentResponse.builder()
+                .id(entity.getId() == null ? null : entity.getId().value())
+                .title(entity.getTitle())
+                .summary(entity.getSummary())
+                .contentFormat(
+                        entity.getContentFormat() == null
+                                ? null
+                                : entity.getContentFormat().value())
+                .content(entity.getContent())
+                .documentTime(entity.getDocumentTime())
+                .storageObjectId(StorageObjectIdCodec.toValue(entity.getStorageObjectId()))
+                .lifecycleStatus(
+                        entity.getLifecycleStatus() == null
+                                ? null
+                                : entity.getLifecycleStatus().name())
+                .transitionStatus(
+                        entity.getTransitionStatus() == null
+                                ? null
+                                : entity.getTransitionStatus().name())
+                .currentPublicationJobId(
+                        entity.getCurrentPublicationJobId() == null
+                                ? null
+                                : entity.getCurrentPublicationJobId().value())
+                .events(toEventResponses(entity.getEvents()))
+                .build();
     }
 
-    public static WangqiDocumentVersionResponse toVersionResponse(ClassicsContentVersion version) {
-        return version == null
-                ? WangqiDocumentVersionResponse.builder().build()
-                : WangqiDocumentVersionResponse.builder()
-                        .id(ClassicsContentVersionIdCodec.toValue(version.getId()))
-                        .contentType(
-                                version.getContentType() == null
-                                        ? null
-                                        : version.getContentType().value())
-                        .contentId(ClassicsContentIdCodec.toValue(version.getContentId()))
-                        .versionNo(version.getVersionNo())
-                        .versionedAt(version.getVersionedAt())
-                        .snapshotJson(version.getSnapshotJson())
-                        .changeType(
-                                version.getChangeType() == null
-                                        ? null
-                                        : version.getChangeType().value())
-                        .changeSummary(version.getChangeSummary())
-                        .build();
+    @NonNull
+    public static WangqiDocumentSourceFileResponse toSourceFileResponse(@NonNull WangqiDocumentSourceFile file) {
+        Objects.requireNonNull(file, "file");
+        return WangqiDocumentSourceFileResponse.builder()
+                .documentId(file.getDocumentId())
+                .storageObjectId(file.getStorageObjectId())
+                .originalFilename(file.getOriginalFilename())
+                .contentType(file.getContentType())
+                .size(file.getSize())
+                .contentUrl(sourceFileContentUrl(file.getDocumentId()))
+                .build();
+    }
+
+    @NonNull
+    public static WangqiDocumentVersionResponse toVersionResponse(@NonNull ClassicsContentVersion version) {
+        Objects.requireNonNull(version, "version");
+        return WangqiDocumentVersionResponse.builder()
+                .id(ClassicsContentVersionIdCodec.toValue(version.getId()))
+                .contentType(
+                        version.getContentType() == null
+                                ? null
+                                : version.getContentType().value())
+                .contentId(ClassicsContentIdCodec.toValue(version.getContentId()))
+                .versionNo(version.getVersionNo())
+                .versionedAt(version.getVersionedAt())
+                .snapshotJson(version.getSnapshotJson())
+                .changeType(
+                        version.getChangeType() == null
+                                ? null
+                                : version.getChangeType().value())
+                .changeSummary(version.getChangeSummary())
+                .build();
     }
 
     private static java.util.List<WangqiDocumentEventResponse> toEventResponses(

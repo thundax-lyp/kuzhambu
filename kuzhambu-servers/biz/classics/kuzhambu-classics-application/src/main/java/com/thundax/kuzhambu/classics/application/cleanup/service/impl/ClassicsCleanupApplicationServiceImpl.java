@@ -74,7 +74,8 @@ public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApp
                         case CLEANUP_TYPE_EXPIRED_DRAFT ->
                             sancaiAssetRepository.deleteDraftById(SancaiEntryDraftIdCodec.toDomain(targetId));
                         case CLEANUP_TYPE_EXPIRED_EXPORT ->
-                            contentRepository.markExportJobExpired(ClassicsContentExportJobIdCodec.toDomain(targetId));
+                            contentRepository.updateExportJobExpired(
+                                    ClassicsContentExportJobIdCodec.toDomain(targetId));
                         default -> 0;
                     };
             return affectedRows > 0

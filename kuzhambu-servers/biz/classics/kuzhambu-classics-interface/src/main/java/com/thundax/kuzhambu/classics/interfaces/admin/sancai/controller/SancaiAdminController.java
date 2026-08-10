@@ -312,8 +312,8 @@ public class SancaiAdminController {
         Long entryId = requireParameter(request == null ? null : request.getId(), "id");
         return SancaiInterfaceAssembler.toResponse(
                 service.getEntry(SancaiEntryIdCodec.toDomain(entryId)),
-                contentService.listTags(
-                        ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentIdCodec.toDomain(entryId)));
+                contentService.listTags(SancaiInterfaceAssembler.toContentObjectQuery(
+                        ClassicsContentType.SANCAI_ENTRY.value(), entryId)));
     }
 
     @Operation(summary = "新增三才图会条目", description = "classics:sancai:edit")
@@ -379,7 +379,8 @@ public class SancaiAdminController {
     public List<SancaiEntryVersionResponse> listEntryVersions(@Valid @RequestBody SancaiEntryVersionRequest request) {
         Long entryId = requireParameter(request == null ? null : request.getId(), "id");
         return contentService
-                .listVersions(ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentIdCodec.toDomain(entryId))
+                .listVersions(SancaiInterfaceAssembler.toContentObjectQuery(
+                        ClassicsContentType.SANCAI_ENTRY.value(), entryId))
                 .stream()
                 .map(SancaiInterfaceAssembler::toVersionResponse)
                 .toList();

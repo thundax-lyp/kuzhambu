@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
@@ -99,8 +100,9 @@ class ClassicsSearchContentApplicationServiceImplTest {
         when(mingCustomsApplicationService.listKeywords(MingCustomsEntryIdCodec.toDomain(3001L)))
                 .thenReturn(List.of(new MingCustomsKeyword(
                         MingCustomsKeywordIdCodec.toDomain(9001L), MingCustomsEntryIdCodec.toDomain(3001L), "元日", 1)));
-        when(classicsContentApplicationService.listTags(
-                        ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentIdCodec.toDomain(1001L)))
+        ContentObjectQuery contentQuery = new ContentObjectQuery(
+                ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentIdCodec.toDomain(1001L));
+        when(classicsContentApplicationService.listTags(contentQuery))
                 .thenReturn(List.of(new ClassicsContentTag(
                         null,
                         ClassicsContentType.SANCAI_ENTRY,
@@ -110,8 +112,7 @@ class ClassicsSearchContentApplicationServiceImplTest {
                         ClassicsContentSource.MANUAL,
                         ClassicsContentTagStatus.ACTIVE,
                         1)));
-        when(classicsContentApplicationService.listQaPairs(
-                        ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentIdCodec.toDomain(1001L)))
+        when(classicsContentApplicationService.listQaPairs(contentQuery))
                 .thenReturn(List.of(new ClassicsContentQaPair(
                         null,
                         ClassicsContentType.SANCAI_ENTRY,

@@ -5,7 +5,6 @@ import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentRes
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
-import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
@@ -114,7 +113,8 @@ public class SancaiPortalController {
         SancaiEntry entry = requirePublicEntry(entryId);
         return SancaiPortalInterfaceAssembler.toResponse(
                 entry,
-                contentService.listTags("SANCAI_ENTRY", ClassicsContentIdCodec.toDomain(entryIdValue)),
+                contentService.listTags(
+                        SancaiPortalInterfaceAssembler.toContentObjectQuery("SANCAI_ENTRY", entryIdValue)),
                 assetService.listImages(entryId),
                 assetService.listVisualAssets(entryId));
     }

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
@@ -58,7 +59,7 @@ class MingCustomsApplicationServiceImplTest {
 
         service.add(publicCommand(null));
 
-        verify(contentApplicationService).ensureVersioned(any(MingCustomsEntry.class), any(), any());
+        verify(contentApplicationService).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     @Test
@@ -73,7 +74,7 @@ class MingCustomsApplicationServiceImplTest {
 
         service.update(publicCommand(MingCustomsEntryIdCodec.toDomain(3009L)));
 
-        verify(contentApplicationService).ensureVersioned(any(MingCustomsEntry.class), any(), any());
+        verify(contentApplicationService).ensureVersioned(any(ContentVersionCommand.class));
     }
 
     @Test
@@ -81,8 +82,8 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, null, mock(ClassicsPublicationWriteGuard.class));
-        MingCustomsQuery query = new MingCustomsQuery();
-        query.setOperatorPermissions(Set.of("classics:content:view"));
+        MingCustomsQuery query =
+                new MingCustomsQuery(null, null, null, null, null, null, Set.of("classics:content:view"));
 
         PageResult<MingCustomsEntry> result = service.page(query, new PageQuery(1, 20));
 
@@ -96,8 +97,8 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, null, mock(ClassicsPublicationWriteGuard.class));
-        MingCustomsQuery query = new MingCustomsQuery();
-        query.setOperatorPermissions(Set.of("classics:content:view"));
+        MingCustomsQuery query =
+                new MingCustomsQuery(null, null, null, null, null, null, Set.of("classics:content:view"));
 
         List<MingCustomsTagCloudItem> result = service.listTagCloud(query);
 
@@ -110,10 +111,8 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, null, mock(ClassicsPublicationWriteGuard.class));
-        MingCustomsQuery query = new MingCustomsQuery();
-        query.setCategory("礼俗");
-        query.setKeyword("祭祀");
-        query.setOperatorPermissions(Set.of("classics:mingcustoms:view"));
+        MingCustomsQuery query =
+                new MingCustomsQuery("礼俗", "祭祀", null, null, null, null, Set.of("classics:mingcustoms:view"));
         when(repository.listTagCloud("礼俗", "祭祀")).thenReturn(List.of(new MingCustomsTagCloudItem(7001L, "祭祀", 2L)));
 
         List<MingCustomsTagCloudItem> result = service.listTagCloud(query);
@@ -138,7 +137,8 @@ class MingCustomsApplicationServiceImplTest {
 
         service.delete(MingCustomsEntryIdCodec.toDomain(3003L));
 
-        verify(contentApplicationService).ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+        verify(contentApplicationService)
+                .ensureVersioned(new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除"));
         verify(repository).deleteById(MingCustomsEntryIdCodec.toDomain(3003L));
     }
 
@@ -165,18 +165,19 @@ class MingCustomsApplicationServiceImplTest {
 
         service.deleteKeyword(MingCustomsKeywordIdCodec.toDomain(7002L));
 
-        verify(repository).deleteKeywordById(MingCustomsKeywordIdCodec.toDomain(7002L));
+        verify(repository).deleteByKeywordId(MingCustomsKeywordIdCodec.toDomain(7002L));
     }
 
     private static void versionEntryOnEnsure(
             ClassicsContentApplicationService contentApplicationService, int versionNo) {
         doAnswer(invocation -> {
-                    MingCustomsEntry entry = invocation.getArgument(0);
+                    ContentVersionCommand command = invocation.getArgument(0);
+                    MingCustomsEntry entry = (MingCustomsEntry) command.content();
                     entry.setCurrentVersionNo(versionNo);
                     return null;
                 })
                 .when(contentApplicationService)
-                .ensureVersioned(any(), any(), any());
+                .ensureVersioned(any(ContentVersionCommand.class));
     }
 
     private static MingCustomsCommand publicCommand(MingCustomsEntryId id) {

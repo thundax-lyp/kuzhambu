@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.search.service.impl;
 
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
@@ -473,7 +474,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
             return Collections.emptyList();
         }
         List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(
-                contentType, ClassicsContentIdCodec.toDomain(Long.valueOf(contentId)));
+                new ContentObjectQuery(contentType, ClassicsContentIdCodec.toDomain(Long.valueOf(contentId))));
         if (tags == null || tags.isEmpty()) {
             return Collections.emptyList();
         }
@@ -492,7 +493,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
             return Collections.emptyList();
         }
         List<ClassicsContentQaPair> qaPairs = classicsContentApplicationService.listQaPairs(
-                contentType, ClassicsContentIdCodec.toDomain(Long.valueOf(contentId)));
+                new ContentObjectQuery(contentType, ClassicsContentIdCodec.toDomain(Long.valueOf(contentId))));
         if (qaPairs == null || qaPairs.isEmpty()) {
             return Collections.emptyList();
         }

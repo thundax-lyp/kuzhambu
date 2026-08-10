@@ -10,58 +10,57 @@ import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCo
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class ClassicsContentApplicationAssembler {
 
     private ClassicsContentApplicationAssembler() {}
 
-    public static ClassicsContentTag toTag(ContentTagCommand command) {
-        if (command == null) {
-            return null;
-        }
+    @NonNull
+    public static ClassicsContentTag toTag(@NonNull ContentTagCommand command) {
+        Objects.requireNonNull(command, "command");
         ClassicsContentTag tag = new ClassicsContentTag();
-        tag.setId(ClassicsContentTagIdCodec.toDomain(command.getId()));
-        tag.setContentType(command.getContentType());
-        tag.setContentId(ClassicsContentIdCodec.toDomain(command.getContentId()));
-        tag.setTagId(KnowledgeTagIdCodec.toDomain(command.getTagId()));
-        tag.setTagNameSnapshot(command.getTagNameSnapshot());
-        tag.setSource(command.getSource());
-        tag.setStatus(command.getStatus());
+        tag.setId(ClassicsContentTagIdCodec.toDomain(command.id()));
+        tag.setContentType(command.contentType());
+        tag.setContentId(ClassicsContentIdCodec.toDomain(command.contentId()));
+        tag.setTagId(KnowledgeTagIdCodec.toDomain(command.tagId()));
+        tag.setTagNameSnapshot(command.tagNameSnapshot());
+        tag.setSource(command.source());
+        tag.setStatus(command.status());
         return tag;
     }
 
-    public static ClassicsContentQaPair toQaPair(ContentQaPairCommand command) {
-        if (command == null) {
-            return null;
-        }
+    @NonNull
+    public static ClassicsContentQaPair toQaPair(@NonNull ContentQaPairCommand command) {
+        Objects.requireNonNull(command, "command");
         ClassicsContentQaPair qaPair = new ClassicsContentQaPair();
-        qaPair.setId(ClassicsContentQaPairIdCodec.toDomain(command.getId()));
-        qaPair.setContentType(command.getContentType());
-        qaPair.setContentId(ClassicsContentIdCodec.toDomain(command.getContentId()));
-        qaPair.setQuestion(command.getQuestion());
-        qaPair.setAnswer(command.getAnswer());
-        qaPair.setSource(command.getSource());
+        qaPair.setId(ClassicsContentQaPairIdCodec.toDomain(command.id()));
+        qaPair.setContentType(command.contentType());
+        qaPair.setContentId(ClassicsContentIdCodec.toDomain(command.contentId()));
+        qaPair.setQuestion(command.question());
+        qaPair.setAnswer(command.answer());
+        qaPair.setSource(command.source());
         return qaPair;
     }
 
-    public static ClassicsContentExportJob toExportJob(ContentExportCommand command) {
-        if (command == null) {
-            return null;
-        }
+    @NonNull
+    public static ClassicsContentExportJob toExportJob(@NonNull ContentExportCommand command) {
+        Objects.requireNonNull(command, "command");
         return new ClassicsContentExportJob(
                 null,
-                command.getExportKind(),
-                command.getContentType(),
-                command.getExportFormat(),
-                command.getScopeType(),
-                command.getScopeJson(),
-                command.getRequestedAt(),
-                command.getExpiresAt(),
-                command.getStatus(),
-                command.getStorageObjectId(),
-                command.getItemCount(),
-                command.getAssetCount(),
-                command.getVisibilityRiskStatus(),
-                command.isContentChanged());
+                command.exportKind(),
+                command.contentType(),
+                command.exportFormat(),
+                command.scopeType(),
+                command.scopeJson(),
+                command.requestedAt(),
+                command.expiresAt(),
+                command.status(),
+                command.storageObjectId(),
+                command.itemCount(),
+                command.assetCount(),
+                command.visibilityRiskStatus(),
+                command.contentChanged());
     }
 }

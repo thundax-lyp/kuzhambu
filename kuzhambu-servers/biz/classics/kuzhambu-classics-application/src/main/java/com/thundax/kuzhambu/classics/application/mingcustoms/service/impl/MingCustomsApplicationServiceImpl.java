@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.mingcustoms.service.impl;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentVersionCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
@@ -59,16 +60,16 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     @Override
     public PageResult<MingCustomsEntry> page(MingCustomsQuery query, PageQuery page) {
-        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+        if (hasPermissionContext(query) && !canView(query.operatorPermissions())) {
             return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
         }
         return repository.page(
-                query == null ? null : query.getCategory(),
-                query == null ? null : query.getKeyword(),
-                query == null ? null : query.getTagName(),
-                query == null ? null : query.getTagId(),
-                query == null ? null : query.getTagNameSnapshot(),
-                query == null ? SortDirection.ASC : query.getSortDirection(),
+                query == null ? null : query.category(),
+                query == null ? null : query.keyword(),
+                query == null ? null : query.tagName(),
+                query == null ? null : query.tagId(),
+                query == null ? null : query.tagNameSnapshot(),
+                query == null ? SortDirection.ASC : query.sortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
     }
@@ -119,7 +120,8 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
             return;
         }
         entry.setContentUpdatedAt(Instant.now());
-        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+        contentApplicationService.ensureVersioned(
+                new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除"));
         repository.deleteById(id);
     }
 
@@ -134,10 +136,10 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (command == null) {
             return null;
         }
-        requireWritable(command.getCustomId(), ClassicsPublicationWriteOperation.EDIT);
+        requireWritable(command.customId(), ClassicsPublicationWriteOperation.EDIT);
         MingCustomsKeyword keyword = new MingCustomsKeyword();
-        keyword.setCustomId(command.getCustomId());
-        keyword.setKeyword(command.getKeyword());
+        keyword.setCustomId(command.customId());
+        keyword.setKeyword(command.keyword());
         keyword.setPriority(repository.maxPriority() + 1);
         MingCustomsKeywordId keywordId = repository.insertKeyword(keyword);
         return keywordId;
@@ -146,7 +148,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortKeywords(MingCustomsKeywordSortCommand command) {
-        List<MingCustomsKeywordId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<MingCustomsKeywordId> orderedIdList = command == null ? null : command.orderedIds();
         List<MingCustomsKeyword> keywords = repository.listKeywords(SortDirection.ASC);
         keywords.stream()
                 .map(MingCustomsKeyword::getCustomId)
@@ -169,7 +171,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (keyword != null) {
             requireWritable(keyword.getCustomId(), ClassicsPublicationWriteOperation.EDIT);
         }
-        repository.deleteKeywordById(id);
+        repository.deleteByKeywordId(id);
     }
 
     @Override
@@ -179,11 +181,10 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     @Override
     public List<MingCustomsTagCloudItem> listTagCloud(MingCustomsQuery query) {
-        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+        if (hasPermissionContext(query) && !canView(query.operatorPermissions())) {
             return List.of();
         }
-        return repository.listTagCloud(
-                query == null ? null : query.getCategory(), query == null ? null : query.getKeyword());
+        return repository.listTagCloud(query == null ? null : query.category(), query == null ? null : query.keyword());
     }
 
     private void updatePriorityOrThrow(MingCustomsKeywordId id, int priority) {
@@ -226,15 +227,15 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
             return null;
         }
         MingCustomsEntry entry = new MingCustomsEntry();
-        entry.setId(command.getId());
-        entry.setTitle(command.getTitle());
-        entry.setCategory(command.getCategory());
-        entry.setChapter(command.getChapter());
-        entry.setSection(command.getSection());
-        entry.setSummary(command.getSummary());
-        entry.setContentFormat(command.getContentFormat());
-        entry.setContent(command.getContent());
-        entry.setOriginalExcerpts(command.getOriginalExcerpts());
+        entry.setId(command.id());
+        entry.setTitle(command.title());
+        entry.setCategory(command.category());
+        entry.setChapter(command.chapter());
+        entry.setSection(command.section());
+        entry.setSummary(command.summary());
+        entry.setContentFormat(command.contentFormat());
+        entry.setContent(command.content());
+        entry.setOriginalExcerpts(command.originalExcerpts());
         return entry;
     }
 
@@ -248,7 +249,8 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     }
 
     private void markManualSaveVersion(MingCustomsEntry entry) {
-        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
+        contentApplicationService.ensureVersioned(
+                new ContentVersionCommand(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存"));
         repository.update(entry);
     }
 
@@ -261,7 +263,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     }
 
     private static boolean hasPermissionContext(MingCustomsQuery query) {
-        return query != null && hasPermissionContext(query.getOperatorPermissions());
+        return query != null && hasPermissionContext(query.operatorPermissions());
     }
 
     private static boolean hasPermissionContext(Set<String> operatorPermissions) {
