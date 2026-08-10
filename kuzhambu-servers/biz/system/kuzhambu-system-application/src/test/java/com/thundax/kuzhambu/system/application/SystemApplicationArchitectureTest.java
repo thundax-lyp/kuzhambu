@@ -82,18 +82,6 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
     private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {
         return List.of(
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.application.audit.runtime.AuditLogAspect#CreateAuditLogCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.application.audit.runtime.sys.DepartmentAuditObjectLoader#GetDepartmentQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.application.audit.runtime.sys.DictAuditObjectLoader#GetDictQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.application.audit.runtime.sys.MenuAuditObjectLoader#GetMenuQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.application.audit.runtime.sys.RoleAuditObjectLoader#GetRoleQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.application.audit.runtime.sys.UserAuditObjectLoader#GetUserQuery:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.audit.controller.AuditController#PageQuery:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#CreatePreAuthSessionCommand:1"),

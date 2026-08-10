@@ -16,6 +16,10 @@ public interface DepartmentManagementApplicationService {
 
     Department get(GetDepartmentQuery query);
 
+    default Department get(DepartmentId id) {
+        return get(new GetDepartmentQuery(id));
+    }
+
     List<Department> list(DepartmentQuery query);
 
     PageResult<Department> page(DepartmentQuery query, PageQuery page);

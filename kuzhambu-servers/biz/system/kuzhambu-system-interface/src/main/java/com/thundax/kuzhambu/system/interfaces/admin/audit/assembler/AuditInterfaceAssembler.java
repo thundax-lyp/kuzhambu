@@ -41,23 +41,20 @@ public final class AuditInterfaceAssembler {
     private AuditInterfaceAssembler() {}
 
     public static AuditMetaQuery toMetaQuery(AuditMetaRequest request) {
-        AuditMetaQuery query = new AuditMetaQuery();
-        query.setObjectRef(AuditObjectRef.of(request.getObjectType(), request.getObjectId()));
-        return query;
+        return new AuditMetaQuery(AuditObjectRef.of(request.getObjectType(), request.getObjectId()));
     }
 
     public static AuditLogQuery toLogQuery(AuditLogPageRequest request) {
-        AuditLogQuery query = new AuditLogQuery();
-        query.setObjectRef(AuditObjectRef.of(request.getObjectType(), request.getObjectId()));
-        query.setAction(request.getAction() == null ? null : AuditAction.from(request.getAction()));
-        query.setOperatorRef(AuditOperatorRef.of(
-                request.getOperatorType() == null ? null : AuditOperatorType.from(request.getOperatorType()),
-                request.getOperatorId()));
-        query.setSource(request.getSource());
-        query.setRequestId(request.getRequestId());
-        query.setBeginDate(request.getBeginDate());
-        query.setEndDate(request.getEndDate());
-        return query;
+        return new AuditLogQuery(
+                AuditObjectRef.of(request.getObjectType(), request.getObjectId()),
+                request.getAction() == null ? null : AuditAction.from(request.getAction()),
+                AuditOperatorRef.of(
+                        request.getOperatorType() == null ? null : AuditOperatorType.from(request.getOperatorType()),
+                        request.getOperatorId()),
+                request.getSource(),
+                request.getRequestId(),
+                request.getBeginDate(),
+                request.getEndDate());
     }
 
     public static GetAuditLogQuery toGetLogQuery(AuditLogDetailRequest request) {
@@ -65,15 +62,13 @@ public final class AuditInterfaceAssembler {
     }
 
     public static AuditLogQuery toLogQuery(AuditObjectPageRequest request) {
-        AuditLogQuery query = new AuditLogQuery();
-        query.setObjectRef(AuditObjectRef.of(request.getObjectType(), request.getObjectId()));
-        return query;
+        return new AuditLogQuery(
+                AuditObjectRef.of(request.getObjectType(), request.getObjectId()), null, null, null, null, null, null);
     }
 
     public static AuditLogQuery toObjectLogQuery(AuditMetaRequest request) {
-        AuditLogQuery query = new AuditLogQuery();
-        query.setObjectRef(AuditObjectRef.of(request.getObjectType(), request.getObjectId()));
-        return query;
+        return new AuditLogQuery(
+                AuditObjectRef.of(request.getObjectType(), request.getObjectId()), null, null, null, null, null, null);
     }
 
     public static AuditMetaResponse toMetaResponse(AuditMeta entity) {

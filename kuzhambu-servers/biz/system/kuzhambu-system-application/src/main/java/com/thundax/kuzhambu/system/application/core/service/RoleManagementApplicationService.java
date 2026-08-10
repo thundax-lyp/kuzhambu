@@ -20,6 +20,10 @@ public interface RoleManagementApplicationService {
 
     Role get(GetRoleQuery query);
 
+    default Role get(RoleId id) {
+        return get(new GetRoleQuery(id));
+    }
+
     List<Role> list(RoleQuery query);
 
     PageResult<Role> page(RoleQuery query, PageQuery page);

@@ -15,11 +15,6 @@ final class SystemApplicationCommandQueryRecordAllowances {
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.audit.query.AuditLogQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.audit.query.AuditMetaQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.audit.query.GetAuditLogQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.AuthenticateIdentityCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.AuthenticatePasswordCommand"),

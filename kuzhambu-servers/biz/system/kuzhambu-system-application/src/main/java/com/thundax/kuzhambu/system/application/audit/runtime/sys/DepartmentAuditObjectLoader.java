@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.system.application.audit.runtime.sys;
 
 import com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoader;
-import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import org.springframework.stereotype.Component;
@@ -22,6 +21,6 @@ public class DepartmentAuditObjectLoader implements AuditObjectLoader {
 
     @Override
     public Object load(String objectId) {
-        return departmentService.get(new GetDepartmentQuery(DepartmentIdCodec.toDomain(Long.valueOf(objectId))));
+        return departmentService.get(DepartmentIdCodec.toDomain(Long.valueOf(objectId)));
     }
 }

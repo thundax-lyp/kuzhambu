@@ -27,6 +27,8 @@ public class AuditLogAspect {
 
     static final String SERVICE_METHOD_POINTCUT = "execution(public * com.thundax.kuzhambu..service..*.*(..))";
 
+    private static final AuditLogCommandFactory COMMAND_FACTORY = CreateAuditLogCommand::new;
+
     private final AuditTrailApplicationService auditService;
     private final com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoaderRegistry loaderRegistry;
     private final com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssemblerRegistry assemblerRegistry;
@@ -90,16 +92,20 @@ public class AuditLogAspect {
         AuditSnapshot beforeSnapshot = beforeSnapshotCaptured ? before : null;
         AuditSnapshot afterSnapshot = afterSnapshotCaptured ? after : snapshot(auditLog.type(), objectId);
 
-        CreateAuditLogCommand command = new CreateAuditLogCommand();
-        command.setObjectRef(AuditObjectRef.of(auditLog.type(), objectId));
-        command.setAction(auditLog.action());
-        command.setSummary(auditLog.summary());
-        command.setBeforeSnapshot(beforeSnapshot);
-        command.setAfterSnapshot(afterSnapshot);
-        command.setRecordWhenUnchanged(auditLog.recordWhenUnchanged());
-        command.setOperatorRef(
-                AuditOperatorRef.of(AuditOperatorResolver.operatorType(), AuditOperatorResolver.operatorId()));
-        command.setOperatorName(AuditOperatorResolver.operatorName());
+        CreateAuditLogCommand command = COMMAND_FACTORY.create(
+                AuditObjectRef.of(auditLog.type(), objectId),
+                auditLog.action(),
+                null,
+                AuditOperatorRef.of(AuditOperatorResolver.operatorType(), AuditOperatorResolver.operatorId()),
+                AuditOperatorResolver.operatorName(),
+                null,
+                null,
+                null,
+                null,
+                auditLog.summary(),
+                beforeSnapshot,
+                afterSnapshot,
+                auditLog.recordWhenUnchanged());
         auditService.record(command);
     }
 
@@ -198,5 +204,24 @@ public class AuditLogAspect {
         }
         com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssembler assembler = assemblerRegistry.get(objectType);
         return assembler == null ? null : assembler.assemble(value);
+    }
+
+    @FunctionalInterface
+    private interface AuditLogCommandFactory {
+
+        CreateAuditLogCommand create(
+                AuditObjectRef objectRef,
+                com.thundax.kuzhambu.common.audit.model.enums.AuditAction action,
+                String idempotencyKey,
+                AuditOperatorRef operatorRef,
+                String operatorName,
+                String source,
+                String requestId,
+                String traceId,
+                String remoteAddr,
+                String summary,
+                AuditSnapshot beforeSnapshot,
+                AuditSnapshot afterSnapshot,
+                boolean recordWhenUnchanged);
     }
 }

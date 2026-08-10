@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.system.application.audit.runtime.sys;
 
 import com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoader;
-import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import org.springframework.stereotype.Component;
@@ -24,6 +23,6 @@ public class UserAuditObjectLoader implements AuditObjectLoader {
 
     @Override
     public Object load(String objectId) {
-        return userService.get(new GetUserQuery(UserIdCodec.toDomain(Long.valueOf(objectId))));
+        return userService.get(UserIdCodec.toDomain(Long.valueOf(objectId)));
     }
 }

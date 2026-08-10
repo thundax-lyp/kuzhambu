@@ -16,6 +16,10 @@ public interface DictionaryManagementApplicationService {
 
     Dict get(GetDictQuery query);
 
+    default Dict get(DictId id) {
+        return get(new GetDictQuery(id));
+    }
+
     List<Dict> list(DictQuery query);
 
     PageResult<Dict> page(DictQuery query, PageQuery page);
