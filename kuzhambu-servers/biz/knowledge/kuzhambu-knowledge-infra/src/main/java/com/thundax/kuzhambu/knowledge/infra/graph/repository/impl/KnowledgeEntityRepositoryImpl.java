@@ -84,7 +84,7 @@ public class KnowledgeEntityRepositoryImpl implements KnowledgeEntityRepository 
     }
 
     @Override
-    public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {
+    public void batchSaveOrUpdate(List<KnowledgeEntity> entities) {
         for (KnowledgeEntity entity : entities == null ? List.<KnowledgeEntity>of() : entities) {
             KnowledgeEntityDO dataObject = KnowledgeEntityPersistenceAssembler.toObject(entity);
             int updated = mapper.update(

@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.respons
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +16,7 @@ public final class GraphExtractionResponses {
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class TaskResponse implements Serializable {
         @JsonProperty("taskId")
         private String taskId;
@@ -81,6 +83,7 @@ public final class GraphExtractionResponses {
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class BatchCancelResponse implements Serializable {
         @JsonProperty("batchJobId")
         private Long batchJobId;
@@ -102,6 +105,7 @@ public final class GraphExtractionResponses {
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class VersionResponse implements Serializable {
         @JsonProperty("versionId")
         private Long versionId;
@@ -144,6 +148,7 @@ public final class GraphExtractionResponses {
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class EntityResponse implements Serializable {
         @JsonProperty("entityId")
         private Long entityId;
@@ -183,6 +188,7 @@ public final class GraphExtractionResponses {
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class RelationResponse implements Serializable {
         @JsonProperty("relationId")
         private Long relationId;
@@ -231,6 +237,7 @@ public final class GraphExtractionResponses {
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageNodeResponse implements Serializable {
         @JsonProperty("nodeId")
         private Long nodeId;
@@ -273,6 +280,7 @@ public final class GraphExtractionResponses {
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageRelationResponse implements Serializable {
         @JsonProperty("relationId")
         private Long relationId;

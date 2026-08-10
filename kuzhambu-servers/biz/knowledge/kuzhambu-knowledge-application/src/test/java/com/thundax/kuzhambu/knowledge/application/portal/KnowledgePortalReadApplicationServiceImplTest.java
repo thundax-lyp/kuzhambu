@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAt
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalAtlasResult;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalHomeResult;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalQualityResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.IssueRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
@@ -281,7 +282,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
         GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
         KnowledgeEntityRepository knowledgeEntityRepository = mock(KnowledgeEntityRepository.class);
         KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
-        when(graphVersionRepository.findLatestAppliedByCategoryCode("ANIMALS"))
+        when(graphVersionRepository.getByLatestAppliedCategoryCode("ANIMALS"))
                 .thenReturn(version(71L, 901L, "GRAPH", "SANCAI_ENTRY", 1001L, "ANIMALS", "鸟兽", 3, 1_700_000_000_000L));
         when(knowledgeEntityRepository.listByVersionId(GraphVersionIdCodec.toDomain(71L)))
                 .thenReturn(List.of(entity(3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L)));
@@ -334,8 +335,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
     @Test
     void getAtlasShouldKeepValidEmptyCategoryAtCategoryLevel() {
         GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
-        when(graphVersionRepository.findLatestAppliedByCategoryCode("ASTRONOMY"))
-                .thenReturn(null);
+        when(graphVersionRepository.getByLatestAppliedCategoryCode("ASTRONOMY")).thenReturn(null);
         KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
                 mock(TagRepository.class),
                 graphVersionRepository,
@@ -367,7 +367,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
     void getQualityShouldReadLatestPublishedReportSnapshot() {
         KnowledgeQualityReportApplicationService qualityReportService =
                 mock(KnowledgeQualityReportApplicationService.class);
-        when(qualityReportService.latest(null))
+        when(qualityReportService.latest(new LatestQualityReportQuery(null)))
                 .thenReturn(new QualityReportDetailResult(
                         new ReportRecord(
                                 9001L,
@@ -444,7 +444,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
     void getQualityShouldReturnEmptyStateWhenNoQualityReportExists() {
         KnowledgeQualityReportApplicationService qualityReportService =
                 mock(KnowledgeQualityReportApplicationService.class);
-        when(qualityReportService.latest(null))
+        when(qualityReportService.latest(new LatestQualityReportQuery(null)))
                 .thenReturn(new QualityReportDetailResult(null, List.of(), List.of(), List.of()));
         KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
                 mock(TagRepository.class),

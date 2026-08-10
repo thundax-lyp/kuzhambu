@@ -15,51 +15,7 @@ final class KnowledgeApplicationCommandQueryRecordAllowances {
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.lineage.query.LineageCanvasQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementEntityCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageNodeCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageRelationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementRelationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteQualityAnnotationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementEntityCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageNodeCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageRelationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementRelationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertQualityAnnotationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementEntityCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageNodeCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageRelationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasCreateCommand"),
                 legacy(

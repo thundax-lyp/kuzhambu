@@ -14,13 +14,17 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacad
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.ApplyGraphExtractionTaskCandidateCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphEntityTypes;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateApplyResult;
@@ -178,7 +182,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
                 graphExtractionApplicationService.getTaskDetail(GraphExtractionTaskIdCodec.toDomain(taskId));
         ensureSancaiSource(detail == null ? null : detail.getSourceContentType());
         GraphExtractionTaskResult task = graphExtractionApplicationService.applyTaskCandidate(
-                GraphExtractionTaskIdCodec.toDomain(taskId), applyMode);
+                new ApplyGraphExtractionTaskCandidateCommand(GraphExtractionTaskIdCodec.toDomain(taskId), applyMode));
         GraphVersionResult version =
                 latestVersion(task.getTaskType(), task.getSourceContentType(), task.getSourceContentId());
         return CandidateApplyResult.builder()
@@ -412,12 +416,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
         int pageNo = 1;
         while (tasks.size() < contentIds.size()) {
             PageResult<GraphExtractionTaskResult> page = graphExtractionApplicationService.pageTasks(
-                    TASK_TYPE_GRAPH,
-                    null,
-                    null,
-                    null,
-                    sourceContentType,
-                    null,
+                    new GraphExtractionTaskQuery(TASK_TYPE_GRAPH, null, null, null, sourceContentType, null),
                     new PageQuery(pageNo, SNAPSHOT_PAGE_SIZE));
             List<GraphExtractionTaskResult> records = page == null ? List.of() : page.getRecords();
             if (records == null || records.isEmpty()) {
@@ -445,7 +444,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
         int pageNo = 1;
         while (versions.size() < contentIds.size()) {
             PageResult<GraphVersionResult> page = graphExtractionApplicationService.pageVersions(
-                    TASK_TYPE_GRAPH, null, sourceContentType, null, new PageQuery(pageNo, SNAPSHOT_PAGE_SIZE));
+                    new GraphVersionQuery(TASK_TYPE_GRAPH, null, sourceContentType, null),
+                    new PageQuery(pageNo, SNAPSHOT_PAGE_SIZE));
             List<GraphVersionResult> records = page == null ? List.of() : page.getRecords();
             if (records == null || records.isEmpty()) {
                 break;
@@ -469,7 +469,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
             return null;
         }
         PageResult<GraphExtractionTaskResult> page = graphExtractionApplicationService.pageTasks(
-                normalize(taskType), null, null, null, sourceContentType, sourceContentId, new PageQuery(1, 1));
+                new GraphExtractionTaskQuery(normalize(taskType), null, null, null, sourceContentType, sourceContentId),
+                new PageQuery(1, 1));
         return page.getRecords().isEmpty() ? null : page.getRecords().get(0);
     }
 
@@ -478,7 +479,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
             return null;
         }
         PageResult<GraphVersionResult> page = graphExtractionApplicationService.pageVersions(
-                normalize(taskType), null, sourceContentType, sourceContentId, new PageQuery(1, 1));
+                new GraphVersionQuery(normalize(taskType), null, sourceContentType, sourceContentId),
+                new PageQuery(1, 1));
         return page.getRecords().isEmpty() ? null : page.getRecords().get(0);
     }
 
@@ -486,7 +488,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
         if (version == null || version.getVersionId() == null) {
             return null;
         }
-        QualityReportDetailResult detail = qualityReportApplicationService.latest(version.getVersionId());
+        QualityReportDetailResult detail =
+                qualityReportApplicationService.latest(new LatestQualityReportQuery(version.getVersionId()));
         QualityReportDetailResult.ReportRecord report = detail == null ? null : detail.getReport();
         if (report == null) {
             return null;

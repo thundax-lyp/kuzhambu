@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.refinement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ApplyRefinementTaskCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementApplyResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.impl.KnowledgeGraphRefinementApplicationServiceImpl;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.KnowledgeRefinementManualKeySupport;
@@ -113,7 +114,7 @@ class KnowledgeGraphRefinementApplyTest {
                 new QualitySummaryAggregationSupport(),
                 new KnowledgeRefinementManualKeySupport());
 
-        RefinementApplyResult result = service.applyTask(31L, 19L);
+        RefinementApplyResult result = service.applyTask(new ApplyRefinementTaskCommand(31L, 19L));
 
         assertEquals("APPLIED", result.getStatus());
         assertEquals(31L, result.getRefinementTaskId());
@@ -207,7 +208,7 @@ class KnowledgeGraphRefinementApplyTest {
 
     private static final class FakeGraphVersionRepository implements GraphVersionRepository {
         @Override
-        public GraphVersion findLatest(
+        public GraphVersion getByLatestSource(
                 GraphExtractionTaskType taskType,
                 String sourceContentType,
                 GraphExtractionSourceContentId sourceContentId) {
@@ -301,7 +302,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public RefinementTask findLatestDraft(
+        public RefinementTask getByLatestDraft(
                 String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId) {
             return task;
         }
@@ -344,7 +345,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementEntityDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementEntityDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -365,7 +366,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementRelationDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementRelationDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -387,7 +388,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementLineageNodeDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementLineageNodeDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -409,7 +410,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementLineageRelationDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementLineageRelationDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -425,7 +426,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdate(QualityAnnotation annotation) {}
+        public void save(QualityAnnotation annotation) {}
 
         @Override
         public int deleteByAnnotationId(Long annotationId) {
@@ -464,7 +465,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {
+        public void batchSaveOrUpdate(List<KnowledgeEntity> entities) {
             saved.clear();
             saved.addAll(entities);
         }
@@ -510,7 +511,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {
+        public void batchSaveOrUpdate(List<KnowledgeRelation> relations) {
             saved.clear();
             saved.addAll(relations);
         }
@@ -551,7 +552,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageNode> nodes) {
+        public void batchSaveOrUpdate(List<KnowledgeLineageNode> nodes) {
             saved.clear();
             saved.addAll(nodes);
         }
@@ -597,7 +598,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {
+        public void batchSaveOrUpdate(List<KnowledgeLineageRelation> relations) {
             saved.clear();
             saved.addAll(relations);
         }

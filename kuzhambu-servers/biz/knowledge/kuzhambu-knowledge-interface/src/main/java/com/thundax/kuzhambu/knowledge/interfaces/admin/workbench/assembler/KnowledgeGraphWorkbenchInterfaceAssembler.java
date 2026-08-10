@@ -51,13 +51,18 @@ public final class KnowledgeGraphWorkbenchInterfaceAssembler {
                 .currentVersionNo(result == null ? null : result.getCurrentVersionNo())
                 .graphStatus(result == null ? null : result.getGraphStatus())
                 .latestExtractionTask(toTaskResponse(result == null ? null : result.getLatestExtractionTask()))
-                .latestGraphVersion(KnowledgeGraphExtractionInterfaceAssembler.toResponse(
-                        result == null ? null : result.getLatestGraphVersion()))
+                .latestGraphVersion(
+                        result == null || result.getLatestGraphVersion() == null
+                                ? null
+                                : KnowledgeGraphExtractionInterfaceAssembler.toResponse(result.getLatestGraphVersion()))
                 .qualitySummary(toResponse(result == null ? null : result.getQualitySummary()))
                 .build();
     }
 
     public static GraphExtractionResponses.TaskResponse toTaskResponse(GraphExtractionTaskResult result) {
+        if (result == null) {
+            return null;
+        }
         return KnowledgeGraphExtractionInterfaceAssembler.toResponse(result);
     }
 

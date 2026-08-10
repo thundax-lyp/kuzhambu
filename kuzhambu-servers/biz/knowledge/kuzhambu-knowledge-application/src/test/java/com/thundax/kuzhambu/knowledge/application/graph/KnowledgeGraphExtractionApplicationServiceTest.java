@@ -26,9 +26,16 @@ import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeRespon
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.CancelGraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageNodeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageRelationQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -221,10 +228,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 aiService,
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
-        RequestRelationExtractionCommand command = relationCommand();
-        command.setSelectionScopeJson("{\"sourceContentIds\":[11,12]}");
-        command.setTriggerSource("QUALITY_REPORT");
-        command.setReplaceUnconfirmedOnly(Boolean.TRUE);
+        RequestRelationExtractionCommand command =
+                relationCommand("QUALITY_REPORT", "{\"sourceContentIds\":[11,12]}", Boolean.TRUE);
 
         GraphExtractionTaskResult result = service.requestRelationExtraction(command);
 
@@ -264,8 +269,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
-        RequestRelationExtractionCommand command = relationCommand();
-        command.setSelectionScopeJson("{bad-json");
+        RequestRelationExtractionCommand command = relationCommand(null, "{bad-json", null);
 
         BizException exception = assertThrows(BizException.class, () -> service.requestRelationExtraction(command));
 
@@ -288,9 +292,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 aiService,
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
-        RequestGraphExtractionCommand command = graphCommand();
-        command.setModelId(null);
-        command.setModelName(null);
+        RequestGraphExtractionCommand command = graphCommand(null, null);
 
         GraphExtractionTaskResult result = service.requestGraphExtraction(command);
 
@@ -343,7 +345,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        GraphExtractionBatchCancelResult result = service.cancelBatch(1001L, 99L);
+        GraphExtractionBatchCancelResult result =
+                service.cancelBatch(new CancelGraphExtractionBatchCommand(1001L, 99L));
 
         assertEquals(Long.valueOf(1001L), result.getBatchJobId());
         assertEquals("CANCELLED", result.getStatus());
@@ -396,8 +399,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        GraphExtractionTaskResult result =
-                service.regenerateTask("RELATION", GraphExtractionTaskIdCodec.toDomain(88L), null, Boolean.FALSE, 99L);
+        GraphExtractionTaskResult result = service.regenerateTask(new RegenerateGraphExtractionCommand(
+                "RELATION", GraphExtractionTaskIdCodec.toDomain(88L), null, null, Boolean.FALSE, 99L));
 
         assertNotNull(result);
         assertEquals("REGENERATE", result.getTriggerSource());
@@ -488,8 +491,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<GraphExtractionTaskResult> page =
-                service.pageTasks("GRAPH", 1001L, "QUALITY_REPORT", null, null, null, new PageQuery(1, 10));
+        PageResult<GraphExtractionTaskResult> page = service.pageTasks(
+                new GraphExtractionTaskQuery("GRAPH", 1001L, "QUALITY_REPORT", null, null, null), new PageQuery(1, 10));
 
         assertEquals(1, page.getRecords().size());
         assertEquals("11", page.getRecords().get(0).getTaskId());
@@ -561,7 +564,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<GraphVersionResult> page = service.pageVersions("GRAPH", "APPLIED", "SANCAI_ENTRY", 1001L, null);
+        PageResult<GraphVersionResult> page =
+                service.pageVersions(new GraphVersionQuery("GRAPH", "APPLIED", "SANCAI_ENTRY", 1001L), null);
 
         assertEquals(1, page.getRecords().size());
         assertEquals(61L, page.getRecords().get(0).getVersionId());
@@ -596,7 +600,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        GraphVersionResult detail = service.getVersionDetail(71L);
+        GraphVersionResult detail = service.getVersionDetail(GraphVersionIdCodec.toDomain(71L));
 
         assertEquals(71L, detail.getVersionId());
         assertEquals("41", detail.getTaskId());
@@ -651,7 +655,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<GraphVersionResult> page = service.pageVersions("GRAPH", "APPLIED", "SANCAI_ENTRY", 1002L, null);
+        PageResult<GraphVersionResult> page =
+                service.pageVersions(new GraphVersionQuery("GRAPH", "APPLIED", "SANCAI_ENTRY", 1002L), null);
 
         GraphVersionResult result = page.getRecords().get(0);
         assertEquals(true, result.getRefinementApplied());
@@ -687,7 +692,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<KnowledgeEntityResult> page = service.pageEntities(71L, "黄帝", "PERSON", "CONFIRMED", null);
+        PageResult<KnowledgeEntityResult> page =
+                service.pageEntities(new KnowledgeEntityQuery(71L, "黄帝", "PERSON", "CONFIRMED"), null);
 
         assertEquals(1, page.getRecords().size());
         assertEquals(1001L, page.getRecords().get(0).getEntityId());
@@ -721,7 +727,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        KnowledgeEntityResult detail = service.getEntityDetail(1002L);
+        KnowledgeEntityResult detail = service.getEntityDetail(KnowledgeEntityIdCodec.toDomain(1002L));
 
         assertEquals(1002L, detail.getEntityId());
         assertEquals("person:fuxi", detail.getEntityKey());
@@ -755,7 +761,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<KnowledgeRelationResult> page = service.pageRelations(71L, "黄帝", "ANCESTOR", "CONFIRMED", null);
+        PageResult<KnowledgeRelationResult> page =
+                service.pageRelations(new KnowledgeRelationQuery(71L, "黄帝", "ANCESTOR", "CONFIRMED", null), null);
 
         assertEquals(1, page.getRecords().size());
         assertEquals(2001L, page.getRecords().get(0).getRelationId());
@@ -789,7 +796,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        KnowledgeRelationResult detail = service.getRelationDetail(2002L);
+        KnowledgeRelationResult detail =
+                service.getRelationDetail(new KnowledgeRelationQuery(null, null, null, null, 2002L));
 
         assertEquals(2002L, detail.getRelationId());
         assertEquals("伏羲", detail.getSourceName());
@@ -823,7 +831,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<KnowledgeLineageNodeResult> page = service.pageLineageNodes(71L, "黄帝", "PERSON", "CONFIRMED", null);
+        PageResult<KnowledgeLineageNodeResult> page =
+                service.pageLineageNodes(new KnowledgeLineageNodeQuery(71L, "黄帝", "PERSON", "CONFIRMED", null), null);
 
         assertEquals(1, page.getRecords().size());
         assertEquals(3001L, page.getRecords().get(0).getNodeId());
@@ -857,7 +866,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        KnowledgeLineageNodeResult detail = service.getLineageNodeDetail(3002L);
+        KnowledgeLineageNodeResult detail =
+                service.getLineageNodeDetail(new KnowledgeLineageNodeQuery(null, null, null, null, 3002L));
 
         assertEquals(3002L, detail.getNodeId());
         assertEquals("person:fuxi", detail.getNodeKey());
@@ -892,8 +902,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<KnowledgeLineageRelationResult> page =
-                service.pageLineageRelations(71L, "黄帝", "ANCESTOR", "CONFIRMED", null);
+        PageResult<KnowledgeLineageRelationResult> page = service.pageLineageRelations(
+                new KnowledgeLineageRelationQuery(71L, "黄帝", "ANCESTOR", "CONFIRMED", null), null);
 
         assertEquals(1, page.getRecords().size());
         assertEquals(4001L, page.getRecords().get(0).getRelationId());
@@ -928,7 +938,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        KnowledgeLineageRelationResult detail = service.getLineageRelationDetail(4002L);
+        KnowledgeLineageRelationResult detail =
+                service.getLineageRelationDetail(new KnowledgeLineageRelationQuery(null, null, null, null, 4002L));
 
         assertEquals(4002L, detail.getRelationId());
         assertEquals("伏羲", detail.getSourceName());
@@ -974,9 +985,18 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     private RequestRelationExtractionCommand relationCommand() {
+        return relationCommand(null, null, null);
+    }
+
+    private RequestRelationExtractionCommand relationCommand(
+            String triggerSource, String selectionScopeJson, Boolean replaceUnconfirmedOnly) {
         return new RequestRelationExtractionCommand(
                 "ENTRY",
                 "{\"entryIds\":[1]}",
+                triggerSource,
+                selectionScopeJson,
+                replaceUnconfirmedOnly,
+                null,
                 "SANCAI_ENTRY",
                 1L,
                 2L,
@@ -997,16 +1017,24 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     private RequestGraphExtractionCommand graphCommand() {
+        return graphCommand(10L, "model-a");
+    }
+
+    private RequestGraphExtractionCommand graphCommand(Long modelId, String modelName) {
         return new RequestGraphExtractionCommand(
                 "ENTRY",
                 "{\"entryIds\":[1]}",
+                null,
+                null,
+                null,
+                null,
                 "SANCAI_ENTRY",
                 1L,
                 2L,
                 3L,
                 "knowledge-admin",
-                10L,
-                "model-a",
+                modelId,
+                modelName,
                 20L,
                 "req-1",
                 "trace-1",
@@ -1736,7 +1764,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         private final List<GraphVersion> versions = new ArrayList<>();
 
         @Override
-        public GraphVersion findLatest(
+        public GraphVersion getByLatestSource(
                 GraphExtractionTaskType taskType,
                 String sourceContentType,
                 GraphExtractionSourceContentId sourceContentId) {
@@ -1804,13 +1832,13 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public RefinementTask findLatestDraft(
+        public RefinementTask getByLatestDraft(
                 String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId) {
             return null;
         }
 
         @Override
-        public RefinementTask findLatestAppliedByGraphVersionId(Long graphVersionId) {
+        public RefinementTask getByLatestAppliedGraphVersionId(Long graphVersionId) {
             return latestApplied != null && graphVersionId.equals(latestApplied.getGraphVersionId())
                     ? latestApplied
                     : null;
@@ -1885,7 +1913,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {
+        public void batchSaveOrUpdate(List<KnowledgeEntity> entities) {
             this.entities.clear();
             this.entities.addAll(entities);
         }
@@ -1943,7 +1971,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {
+        public void batchSaveOrUpdate(List<KnowledgeRelation> relations) {
             this.relations.clear();
             this.relations.addAll(relations);
         }
@@ -1994,7 +2022,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageNode> nodes) {
+        public void batchSaveOrUpdate(List<KnowledgeLineageNode> nodes) {
             this.nodes.clear();
             this.nodes.addAll(nodes);
         }
@@ -2052,7 +2080,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {
+        public void batchSaveOrUpdate(List<KnowledgeLineageRelation> relations) {
             this.relations.clear();
             this.relations.addAll(relations);
         }

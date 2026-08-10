@@ -7,7 +7,7 @@ public interface RefinementEntityDraftRepository {
 
     List<RefinementEntityDraft> listByTaskId(Long refinementTaskId);
 
-    void saveOrUpdateBatch(List<RefinementEntityDraft> drafts);
+    void batchSaveOrUpdate(List<RefinementEntityDraft> drafts);
 
     int deleteByTaskId(Long refinementTaskId);
 }

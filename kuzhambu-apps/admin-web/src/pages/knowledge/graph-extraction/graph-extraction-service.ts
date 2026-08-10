@@ -112,7 +112,7 @@ export const regenerateTask = (request: GraphExtractionRegenerateCommand) => {
 
 export const cancelBatchTask = (request: GraphExtractionBatchCancelCommand) => {
     return postJson<GraphExtractionBatchCancelRecord, GraphExtractionBatchCancelCommand>(
-        `${API_PREFIX}/task/cancel-batch`,
+        `${API_PREFIX}/task/cancel`,
         {
             body: request
         }

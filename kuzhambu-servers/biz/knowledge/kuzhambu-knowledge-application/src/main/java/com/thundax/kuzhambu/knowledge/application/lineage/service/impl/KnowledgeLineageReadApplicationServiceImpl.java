@@ -69,11 +69,11 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
     public LineageCanvasResult getCanvas(LineageCanvasQuery query) {
         LineageCanvasQuery effectiveQuery = normalizeQuery(query);
         AvailableFiltersView filters = buildAvailableFilters();
-        if (effectiveQuery.getVersionId() == null) {
+        if (effectiveQuery.versionId() == null) {
             return emptyResult(filters, "NO_VERSION", "请选择世系版本", "选择一个已应用版本后浏览正式世系节点和关系。", null, null);
         }
         GraphVersion version =
-                graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(effectiveQuery.getVersionId()));
+                graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(effectiveQuery.versionId()));
         if (version == null || !GraphExtractionTaskType.LINEAGE.equals(version.getTaskType())) {
             return emptyResult(filters, "NO_VERSION", "未找到世系版本", "当前版本不存在或不是世系图版本。", null, null);
         }
@@ -83,13 +83,21 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
     @Override
     public LineageCanvasResult getLatestAppliedCanvas(LineageCanvasQuery query) {
         LineageCanvasQuery effectiveQuery = normalizeQuery(query);
-        if (effectiveQuery.getVersionId() == null) {
+        if (effectiveQuery.versionId() == null) {
             PageResult<GraphVersion> latestPage = graphVersionRepository.page(
                     GraphExtractionTaskType.LINEAGE, GraphVersionStatus.APPLIED, null, null, 1, 1);
             GraphVersion latest = latestPage.getRecords().isEmpty()
                     ? null
                     : latestPage.getRecords().get(0);
-            effectiveQuery.setVersionId(latest == null ? null : GraphVersionIdCodec.toValue(latest.getId()));
+            effectiveQuery = new LineageCanvasQuery(
+                    latest == null ? null : GraphVersionIdCodec.toValue(latest.getId()),
+                    effectiveQuery.focusNodeId(),
+                    effectiveQuery.focusRelationId(),
+                    effectiveQuery.keyword(),
+                    effectiveQuery.nodeType(),
+                    effectiveQuery.relationType(),
+                    effectiveQuery.confirmationStatus(),
+                    effectiveQuery.depth());
         }
         return getCanvas(effectiveQuery);
     }
@@ -138,11 +146,11 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
                 .map(relation -> toRelationView(relation, visibleNodesByKey, nodesByKey))
                 .toList();
         NodeView selectedNode = nodeViews.stream()
-                .filter(node -> Objects.equals(node.getNodeId(), query.getFocusNodeId()))
+                .filter(node -> Objects.equals(node.getNodeId(), query.focusNodeId()))
                 .findFirst()
                 .orElse(null);
         RelationView selectedRelation = relationViews.stream()
-                .filter(relation -> Objects.equals(relation.getRelationId(), query.getFocusRelationId()))
+                .filter(relation -> Objects.equals(relation.getRelationId(), query.focusRelationId()))
                 .findFirst()
                 .orElse(null);
         SummaryView summary = new SummaryView(
@@ -154,8 +162,8 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
                 relationViews.stream()
                         .filter(relation -> STATUS_CONFIRMED.equals(relation.getConfirmationStatus()))
                         .count(),
-                query.getFocusNodeId(),
-                query.getFocusRelationId());
+                query.focusNodeId(),
+                query.focusRelationId());
         return new LineageCanvasResult(
                 toVersionView(version),
                 summary,
@@ -170,14 +178,14 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
     private Set<String> resolveFocusedNodeKeys(
             List<KnowledgeLineageNode> nodes, List<KnowledgeLineageRelation> relations, LineageCanvasQuery query) {
         String focusNodeKey = nodes.stream()
-                .filter(node -> Objects.equals(node.getId(), query.getFocusNodeId()))
+                .filter(node -> Objects.equals(node.getId(), query.focusNodeId()))
                 .map(KnowledgeLineageNode::getNodeKey)
                 .filter(StringUtils::isNotBlank)
                 .findFirst()
                 .orElse(null);
-        if (focusNodeKey == null && query.getFocusRelationId() != null) {
+        if (focusNodeKey == null && query.focusRelationId() != null) {
             KnowledgeLineageRelation relation = relations.stream()
-                    .filter(item -> Objects.equals(item.getId(), query.getFocusRelationId()))
+                    .filter(item -> Objects.equals(item.getId(), query.focusRelationId()))
                     .findFirst()
                     .orElse(null);
             focusNodeKey = relation == null ? null : relation.getSourceNodeKey();
@@ -197,7 +205,7 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
                     .computeIfAbsent(relation.getTargetNodeKey(), ignored -> new LinkedHashSet<>())
                     .add(relation.getSourceNodeKey());
         }
-        int maxDepth = normalizeDepth(query.getDepth());
+        int maxDepth = normalizeDepth(query.depth());
         Set<String> visited = new LinkedHashSet<>();
         ArrayDeque<NodeDepth> queue = new ArrayDeque<>();
         queue.add(new NodeDepth(focusNodeKey, 0));
@@ -243,15 +251,15 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
     }
 
     private boolean matchesNode(KnowledgeLineageNode node, LineageCanvasQuery query) {
-        return matchesKeyword(node, query.getKeyword())
-                && matchesValue(node.getNodeType(), query.getNodeType())
-                && matchesValue(node.getConfirmationStatus(), query.getConfirmationStatus());
+        return matchesKeyword(node, query.keyword())
+                && matchesValue(node.getNodeType(), query.nodeType())
+                && matchesValue(node.getConfirmationStatus(), query.confirmationStatus());
     }
 
     private boolean matchesRelation(KnowledgeLineageRelation relation, LineageCanvasQuery query) {
-        return matchesKeyword(relation, query.getKeyword())
-                && matchesValue(relation.getRelationType(), query.getRelationType())
-                && matchesValue(relation.getConfirmationStatus(), query.getConfirmationStatus());
+        return matchesKeyword(relation, query.keyword())
+                && matchesValue(relation.getRelationType(), query.relationType())
+                && matchesValue(relation.getConfirmationStatus(), query.confirmationStatus());
     }
 
     private boolean matchesKeyword(KnowledgeLineageNode node, String keyword) {
@@ -351,13 +359,17 @@ public class KnowledgeLineageReadApplicationServiceImpl implements KnowledgeLine
     }
 
     private LineageCanvasQuery normalizeQuery(LineageCanvasQuery query) {
-        LineageCanvasQuery effective = query == null ? new LineageCanvasQuery() : query;
-        effective.setKeyword(StringUtils.trimToNull(effective.getKeyword()));
-        effective.setNodeType(StringUtils.trimToNull(effective.getNodeType()));
-        effective.setRelationType(StringUtils.trimToNull(effective.getRelationType()));
-        effective.setConfirmationStatus(StringUtils.trimToNull(effective.getConfirmationStatus()));
-        effective.setDepth(normalizeDepth(effective.getDepth()));
-        return effective;
+        return query == null
+                ? new LineageCanvasQuery(null, null, null, null, null, null, null, normalizeDepth(null))
+                : new LineageCanvasQuery(
+                        query.versionId(),
+                        query.focusNodeId(),
+                        query.focusRelationId(),
+                        StringUtils.trimToNull(query.keyword()),
+                        StringUtils.trimToNull(query.nodeType()),
+                        StringUtils.trimToNull(query.relationType()),
+                        StringUtils.trimToNull(query.confirmationStatus()),
+                        normalizeDepth(query.depth()));
     }
 
     private int normalizeDepth(Integer depth) {

@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class RefinementLineageNodeDraftRepositoryTest {
 
     @Test
-    void saveOrUpdateBatchShouldInsertWhenDraftDoesNotExist() {
+    void batchSaveOrUpdateShouldInsertWhenDraftDoesNotExist() {
         RefinementLineageNodeDraftMapper mapper = mock(RefinementLineageNodeDraftMapper.class);
         when(mapper.update(any(), any())).thenReturn(0);
         when(mapper.insert(any(RefinementLineageNodeDraftDO.class))).thenReturn(1);
@@ -40,7 +40,7 @@ class RefinementLineageNodeDraftRepositoryTest {
                 1L,
                 Instant.now());
 
-        repository.saveOrUpdateBatch(List.of(draft));
+        repository.batchSaveOrUpdate(List.of(draft));
 
         verify(mapper).insert(any(RefinementLineageNodeDraftDO.class));
     }

@@ -206,28 +206,6 @@ class RepositoryApiHardRulesArchitectureTest {
                 "method=avatarImage");
         addLegacyActionVerbAllowances(
                 allowances,
-                "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/graph/controller/KnowledgeGraphExtractionController.java",
-                "method=cancelBatchTask path=task/cancel-batch");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeGraphRefinementController.java",
-                "method=openTask",
-                "method=openTask path=task/open",
-                "method=getTaskDetail path=task/detail",
-                "method=qualitySummary",
-                "method=qualitySummary path=quality/summary",
-                "method=upsertAnnotation");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeQualityReportController.java",
-                "method=generate",
-                "method=generate path=generate",
-                "method=detail",
-                "method=detail path=detail",
-                "method=reextractLowQualityCategory",
-                "method=reextractLowQualityCategory path=reextract-low-quality-category");
-        addLegacyActionVerbAllowances(
-                allowances,
                 "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/workbench/controller/KnowledgeGraphWorkbenchController.java",
                 "method=listManuscriptTree path=manuscript-tree");
         addLegacyActionVerbAllowances(
@@ -243,10 +221,6 @@ class RepositoryApiHardRulesArchitectureTest {
                 "method=batchDeprecateTags",
                 "method=batchDeprecateTags path=tag/deprecate/batch",
                 "method=getTagGovernanceMetrics path=tag/metrics");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/lineage/controller/KnowledgeLineageController.java",
-                "method=getCanvas path=canvas");
         addLegacyActionVerbAllowances(
                 allowances,
                 "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java",

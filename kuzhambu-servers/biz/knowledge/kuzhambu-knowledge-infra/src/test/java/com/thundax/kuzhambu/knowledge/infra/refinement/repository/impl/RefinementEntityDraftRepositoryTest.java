@@ -32,7 +32,7 @@ class RefinementEntityDraftRepositoryTest {
     }
 
     @Test
-    void saveOrUpdateBatchShouldInsertWhenDraftDoesNotExist() {
+    void batchSaveOrUpdateShouldInsertWhenDraftDoesNotExist() {
         RefinementEntityDraftMapper mapper = mock(RefinementEntityDraftMapper.class);
         when(mapper.update(any(), any())).thenReturn(0);
         when(mapper.insert(any(RefinementEntityDraftDO.class))).thenReturn(1);
@@ -56,7 +56,7 @@ class RefinementEntityDraftRepositoryTest {
                 1L,
                 Instant.now());
 
-        repository.saveOrUpdateBatch(List.of(draft));
+        repository.batchSaveOrUpdate(List.of(draft));
 
         verify(mapper).insert(any(RefinementEntityDraftDO.class));
     }

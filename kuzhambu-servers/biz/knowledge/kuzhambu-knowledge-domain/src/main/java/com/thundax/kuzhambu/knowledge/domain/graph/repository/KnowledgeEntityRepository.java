@@ -28,7 +28,7 @@ public interface KnowledgeEntityRepository {
             int pageNo,
             int pageSize);
 
-    void saveOrUpdateBatch(List<KnowledgeEntity> entities);
+    void batchSaveOrUpdate(List<KnowledgeEntity> entities);
 
     int deleteByEntityKeys(Collection<String> entityKeys);
 }

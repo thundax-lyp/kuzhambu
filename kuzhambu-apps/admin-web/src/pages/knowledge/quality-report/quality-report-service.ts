@@ -45,7 +45,7 @@ export interface QualityReportLatestQuery {
 
 export const generateReport = (request: GenerateQualityReportCommand) => {
     return postJson<QualityReportDetailRecord, GenerateQualityReportCommand>(
-        `${API_PREFIX}/generate`,
+        `${API_PREFIX}/create`,
         { body: request }
     );
 };
@@ -57,7 +57,7 @@ export const pageReports = (request: QualityReportPageQuery = {}) => {
 };
 
 export const getReportDetail = (request: QualityReportDetailQuery) => {
-    return postJson<QualityReportDetailRecord, QualityReportDetailQuery>(`${API_PREFIX}/detail`, {
+    return postJson<QualityReportDetailRecord, QualityReportDetailQuery>(`${API_PREFIX}/get`, {
         body: request
     });
 };
@@ -70,7 +70,7 @@ export const getLatestReport = (request: QualityReportLatestQuery = {}) => {
 
 export const reextractLowQualityCategory = (request: ReextractLowQualityCategoryCommand) => {
     return postJson<ReextractLowQualityCategoryRecord, ReextractLowQualityCategoryCommand>(
-        `${API_PREFIX}/reextract-low-quality-category`,
+        `${API_PREFIX}/extract`,
         { body: request }
     );
 };

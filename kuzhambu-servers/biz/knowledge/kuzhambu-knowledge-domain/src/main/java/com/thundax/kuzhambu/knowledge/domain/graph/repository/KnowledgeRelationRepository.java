@@ -20,7 +20,7 @@ public interface KnowledgeRelationRepository {
     PageResult<KnowledgeRelation> page(
             Long versionId, String keyword, String relationType, String confirmationStatus, int pageNo, int pageSize);
 
-    void saveOrUpdateBatch(List<KnowledgeRelation> relations);
+    void batchSaveOrUpdate(List<KnowledgeRelation> relations);
 
     int deleteByRelationKeys(Collection<String> relationKeys);
 }

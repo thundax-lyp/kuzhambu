@@ -29,7 +29,7 @@ public class RefinementLineageRelationDraftRepositoryImpl implements RefinementL
     }
 
     @Override
-    public void saveOrUpdateBatch(List<RefinementLineageRelationDraft> drafts) {
+    public void batchSaveOrUpdate(List<RefinementLineageRelationDraft> drafts) {
         for (RefinementLineageRelationDraft draft :
                 drafts == null ? List.<RefinementLineageRelationDraft>of() : drafts) {
             RefinementLineageRelationDraftDO dataObject =

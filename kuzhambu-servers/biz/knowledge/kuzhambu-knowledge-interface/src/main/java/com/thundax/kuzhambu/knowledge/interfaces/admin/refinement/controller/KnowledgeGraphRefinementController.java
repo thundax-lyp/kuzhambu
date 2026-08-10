@@ -62,10 +62,11 @@ public class KnowledgeGraphRefinementController {
     })
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("打开精修任务")
-    @PostMapping("task/open")
-    public RefinementResponses.DetailResponse openTask(@Valid @RequestBody RefinementRequests.TaskOpenRequest request) {
-        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.openTask(
-                request == null ? null : request.getGraphVersionId(), request == null ? null : request.getOpenedBy()));
+    @PostMapping("task/create")
+    public RefinementResponses.DetailResponse createTask(
+            @Valid @RequestBody RefinementRequests.TaskOpenRequest request) {
+        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
+                refinementService.openTask(KnowledgeGraphRefinementInterfaceAssembler.toOpenTaskCommand(request)));
     }
 
     @Operation(summary = "获取精修任务详情", description = "knowledge:refinement:view")
@@ -78,7 +79,7 @@ public class KnowledgeGraphRefinementController {
     })
     @HasPermission("knowledge:refinement:view")
     @SysLogger("精修任务详情")
-    @PostMapping("task/detail")
+    @PostMapping("task/get")
     public RefinementResponses.DetailResponse getTaskDetail(
             @Valid @RequestBody RefinementRequests.TaskDetailRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
@@ -230,15 +231,14 @@ public class KnowledgeGraphRefinementController {
     })
     public RefinementResponses.ApplyResponse applyTask(
             @Valid @RequestBody RefinementRequests.TaskApplyRequest request) {
-        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.applyTask(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getAppliedBy()));
+        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
+                refinementService.applyTask(KnowledgeGraphRefinementInterfaceAssembler.toApplyTaskCommand(request)));
     }
 
     @Operation(summary = "获取质量汇总", description = "knowledge:refinement:view")
     @HasPermission("knowledge:refinement:view")
     @SysLogger("质量汇总")
-    @PostMapping("quality/summary")
+    @PostMapping("quality/get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -246,10 +246,10 @@ public class KnowledgeGraphRefinementController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public RefinementResponses.QualitySummaryResponse qualitySummary(
+    public RefinementResponses.QualitySummaryResponse getQualitySummary(
             @Valid @RequestBody RefinementRequests.QualitySummaryRequest request) {
-        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
-                refinementService.qualitySummary(request == null ? null : request.getRefinementTaskId()));
+        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.qualitySummary(
+                KnowledgeGraphRefinementInterfaceAssembler.toQualitySummaryQuery(request)));
     }
 
     @Operation(summary = "新增世系节点草稿", description = "knowledge:refinement:edit")
@@ -397,7 +397,7 @@ public class KnowledgeGraphRefinementController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public RefinementResponses.AnnotationResponse upsertAnnotation(
+    public RefinementResponses.AnnotationResponse updateAnnotation(
             @Valid @RequestBody RefinementRequests.AnnotationUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.upsertAnnotation(
                 KnowledgeGraphRefinementInterfaceAssembler.toAnnotationCommand(request)));

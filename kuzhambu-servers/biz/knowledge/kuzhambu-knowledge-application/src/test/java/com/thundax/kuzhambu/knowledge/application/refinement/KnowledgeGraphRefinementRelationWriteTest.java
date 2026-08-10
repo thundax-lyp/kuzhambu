@@ -82,7 +82,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
     @Test
     void confirmRelationShouldUpdateDraftStatusOnly() {
         FakeRefinementRelationDraftRepository relationDraftRepository = new FakeRefinementRelationDraftRepository();
-        relationDraftRepository.saveOrUpdateBatch(
+        relationDraftRepository.batchSaveOrUpdate(
                 List.of(relationDraft(31L, 201L, "person:huangdi->person:fuxi:ancestor", "PENDING", "UPDATED")));
         KnowledgeGraphRefinementApplicationServiceImpl service = service(relationDraftRepository);
 
@@ -99,7 +99,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
     @Test
     void deleteRelationShouldMarkDraftAsDeleted() {
         FakeRefinementRelationDraftRepository relationDraftRepository = new FakeRefinementRelationDraftRepository();
-        relationDraftRepository.saveOrUpdateBatch(
+        relationDraftRepository.batchSaveOrUpdate(
                 List.of(relationDraft(31L, 201L, "person:huangdi->person:fuxi:ancestor", "PENDING", "UPDATED")));
         KnowledgeGraphRefinementApplicationServiceImpl service = service(relationDraftRepository);
 
@@ -157,7 +157,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public RefinementTask findLatestDraft(
+        public RefinementTask getByLatestDraft(
                 String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId) {
             return null;
         }
@@ -192,7 +192,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementEntityDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementEntityDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -210,7 +210,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementRelationDraft> drafts) {
+        public void batchSaveOrUpdate(List<RefinementRelationDraft> drafts) {
             if (drafts == null || drafts.isEmpty()) {
                 return;
             }
@@ -239,7 +239,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementLineageNodeDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementLineageNodeDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -255,7 +255,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementLineageRelationDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementLineageRelationDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -271,7 +271,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdate(QualityAnnotation annotation) {}
+        public void save(QualityAnnotation annotation) {}
 
         @Override
         public int deleteByAnnotationId(Long annotationId) {
@@ -281,7 +281,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
 
     private static final class NoopGraphVersionRepository implements GraphVersionRepository {
         @Override
-        public GraphVersion findLatest(
+        public GraphVersion getByLatestSource(
                 GraphExtractionTaskType taskType,
                 String sourceContentType,
                 GraphExtractionSourceContentId sourceContentId) {
@@ -343,7 +343,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {}
+        public void batchSaveOrUpdate(List<KnowledgeEntity> entities) {}
 
         @Override
         public int deleteByEntityKeys(Collection<String> entityKeys) {
@@ -379,7 +379,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {}
+        public void batchSaveOrUpdate(List<KnowledgeRelation> relations) {}
 
         @Override
         public int deleteByRelationKeys(Collection<String> relationKeys) {
@@ -410,7 +410,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageNode> nodes) {}
+        public void batchSaveOrUpdate(List<KnowledgeLineageNode> nodes) {}
 
         @Override
         public int deleteByNodeKeys(Collection<String> nodeKeys) {
@@ -446,7 +446,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {}
+        public void batchSaveOrUpdate(List<KnowledgeLineageRelation> relations) {}
 
         @Override
         public int deleteByRelationKeys(Collection<String> relationKeys) {

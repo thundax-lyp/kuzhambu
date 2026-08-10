@@ -38,7 +38,8 @@ class KnowledgeLineageReadApplicationServiceImplTest {
         when(versionRepository.page(GraphExtractionTaskType.LINEAGE, GraphVersionStatus.APPLIED, null, null, 1, 200))
                 .thenReturn(PageResult.of(1, 200, 0, List.of()));
 
-        LineageCanvasResult result = service.getCanvas(new LineageCanvasQuery());
+        LineageCanvasResult result =
+                service.getCanvas(new LineageCanvasQuery(null, null, null, null, null, null, null, null));
 
         assertEquals("NO_VERSION", result.getEmpty().getReason());
         assertEquals(0L, result.getSummary().getNodeCount());
@@ -65,9 +66,7 @@ class KnowledgeLineageReadApplicationServiceImplTest {
                 .thenReturn(version);
         when(nodeRepository.listByVersionId(71L)).thenReturn(List.of(father, son));
         when(relationRepository.listByVersionId(71L)).thenReturn(List.of(relation));
-        LineageCanvasQuery query = new LineageCanvasQuery();
-        query.setFocusNodeId(302L);
-        query.setDepth(1);
+        LineageCanvasQuery query = new LineageCanvasQuery(null, 302L, null, null, null, null, null, 1);
 
         LineageCanvasResult result = service.getLatestAppliedCanvas(query);
 
@@ -107,9 +106,7 @@ class KnowledgeLineageReadApplicationServiceImplTest {
         when(nodeRepository.listByVersionId(71L))
                 .thenReturn(List.of(node(301L, "person:father", "贾代善", "MALE", "CONFIRMED")));
         when(relationRepository.listByVersionId(71L)).thenReturn(List.of());
-        LineageCanvasQuery query = new LineageCanvasQuery();
-        query.setVersionId(71L);
-        query.setKeyword("不存在");
+        LineageCanvasQuery query = new LineageCanvasQuery(71L, null, null, "不存在", null, null, null, null);
 
         LineageCanvasResult result = service.getCanvas(query);
 

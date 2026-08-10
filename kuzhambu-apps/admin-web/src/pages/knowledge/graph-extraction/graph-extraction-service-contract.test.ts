@@ -180,7 +180,7 @@ describe("knowledge graph extraction service request contracts", () => {
             batchJobId: "1001",
             requestedBy: "2001"
         });
-        expectLastCall("POST", "/knowledge/graph-extraction/task/cancel-batch", {
+        expectLastCall("POST", "/knowledge/graph-extraction/task/cancel", {
             batchJobId: "1001",
             requestedBy: "2001"
         });

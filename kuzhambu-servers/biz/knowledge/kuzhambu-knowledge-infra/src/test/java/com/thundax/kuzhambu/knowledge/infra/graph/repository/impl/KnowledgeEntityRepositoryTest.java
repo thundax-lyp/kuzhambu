@@ -89,7 +89,7 @@ class KnowledgeEntityRepositoryTest {
     }
 
     @Test
-    void saveOrUpdateBatchShouldInsertWhenEntityDoesNotExist() {
+    void batchSaveOrUpdateShouldInsertWhenEntityDoesNotExist() {
         KnowledgeEntityMapper mapper = mock(KnowledgeEntityMapper.class);
         when(mapper.update(any(), any())).thenReturn(0);
         when(mapper.insert(any(KnowledgeEntityDO.class))).thenReturn(1);
@@ -105,7 +105,7 @@ class KnowledgeEntityRepositoryTest {
         entity.setFirstExtractedAt(Instant.now());
         entity.setLastExtractedAt(Instant.now());
 
-        repository.saveOrUpdateBatch(List.of(entity));
+        repository.batchSaveOrUpdate(List.of(entity));
 
         ArgumentCaptor<KnowledgeEntityDO> captor = ArgumentCaptor.forClass(KnowledgeEntityDO.class);
         verify(mapper).insert(captor.capture());

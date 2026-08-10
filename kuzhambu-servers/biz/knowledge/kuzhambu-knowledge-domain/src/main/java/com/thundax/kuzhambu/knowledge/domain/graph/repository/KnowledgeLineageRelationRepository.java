@@ -16,7 +16,7 @@ public interface KnowledgeLineageRelationRepository {
     PageResult<KnowledgeLineageRelation> page(
             Long versionId, String keyword, String relationType, String confirmationStatus, int pageNo, int pageSize);
 
-    void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations);
+    void batchSaveOrUpdate(List<KnowledgeLineageRelation> relations);
 
     int deleteByRelationKeys(Collection<String> relationKeys);
 }

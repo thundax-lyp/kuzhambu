@@ -35,7 +35,7 @@ class QualityAnnotationRepositoryTest {
     }
 
     @Test
-    void saveOrUpdateShouldInsertWhenAnnotationDoesNotExist() {
+    void saveShouldInsertWhenAnnotationDoesNotExist() {
         QualityAnnotationMapper mapper = mock(QualityAnnotationMapper.class);
         when(mapper.update(any(), any())).thenReturn(0);
         when(mapper.insert(any(QualityAnnotationDO.class))).thenReturn(1);
@@ -56,7 +56,7 @@ class QualityAnnotationRepositoryTest {
                 1L,
                 Instant.now());
 
-        repository.saveOrUpdate(annotation);
+        repository.save(annotation);
 
         verify(mapper).insert(any(QualityAnnotationDO.class));
     }

@@ -12,7 +12,7 @@ public interface QualityAnnotationRepository {
         return List.of();
     }
 
-    void saveOrUpdate(QualityAnnotation annotation);
+    void save(QualityAnnotation annotation);
 
     int deleteByAnnotationId(Long annotationId);
 }

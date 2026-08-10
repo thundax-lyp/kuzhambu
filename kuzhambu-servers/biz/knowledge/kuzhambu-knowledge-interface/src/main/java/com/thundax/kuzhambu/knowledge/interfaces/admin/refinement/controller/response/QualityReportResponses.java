@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -12,6 +15,9 @@ public final class QualityReportResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class DetailResponse {
         private ReportResponse report;
         private List<IssueResponse> issues;
@@ -24,6 +30,9 @@ public final class QualityReportResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ReportResponse {
         private Long reportId;
         private String reportNo;
@@ -52,6 +61,9 @@ public final class QualityReportResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class IssueResponse {
         private Long issueId;
         private String issueType;
@@ -66,6 +78,9 @@ public final class QualityReportResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SourceDetailResponse {
         private Long detailId;
         private String sourceContentType;
@@ -82,6 +97,9 @@ public final class QualityReportResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AnnotationResponse {
         private Long annotationId;
         private String objectType;
@@ -94,6 +112,9 @@ public final class QualityReportResponses {
 
     @Getter
     @Builder
+    @Schema
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ReextractResponse {
         private Long reportId;
         private String sourceCategoryCode;

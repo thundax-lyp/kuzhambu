@@ -77,7 +77,7 @@ class QualityAnnotationWriteTest {
     @Test
     void deleteAnnotationShouldRemoveStoredRecord() {
         FakeQualityAnnotationRepository annotationRepository = new FakeQualityAnnotationRepository();
-        annotationRepository.saveOrUpdate(new QualityAnnotation(
+        annotationRepository.save(new QualityAnnotation(
                 1L,
                 501L,
                 "RELATION",
@@ -130,7 +130,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public RefinementTask findLatestDraft(
+        public RefinementTask getByLatestDraft(
                 String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId) {
             return null;
         }
@@ -165,7 +165,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementEntityDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementEntityDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -180,7 +180,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementRelationDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementRelationDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -196,7 +196,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementLineageNodeDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementLineageNodeDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -212,7 +212,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<RefinementLineageRelationDraft> drafts) {}
+        public void batchSaveOrUpdate(List<RefinementLineageRelationDraft> drafts) {}
 
         @Override
         public int deleteByTaskId(Long refinementTaskId) {
@@ -235,7 +235,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdate(QualityAnnotation annotation) {
+        public void save(QualityAnnotation annotation) {
             annotations.put(annotation.getAnnotationId(), annotation);
         }
 
@@ -251,7 +251,7 @@ class QualityAnnotationWriteTest {
 
     private static final class NoopGraphVersionRepository implements GraphVersionRepository {
         @Override
-        public GraphVersion findLatest(
+        public GraphVersion getByLatestSource(
                 GraphExtractionTaskType taskType,
                 String sourceContentType,
                 GraphExtractionSourceContentId sourceContentId) {
@@ -313,7 +313,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {}
+        public void batchSaveOrUpdate(List<KnowledgeEntity> entities) {}
 
         @Override
         public int deleteByEntityKeys(Collection<String> entityKeys) {
@@ -349,7 +349,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {}
+        public void batchSaveOrUpdate(List<KnowledgeRelation> relations) {}
 
         @Override
         public int deleteByRelationKeys(Collection<String> relationKeys) {
@@ -380,7 +380,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageNode> nodes) {}
+        public void batchSaveOrUpdate(List<KnowledgeLineageNode> nodes) {}
 
         @Override
         public int deleteByNodeKeys(Collection<String> nodeKeys) {
@@ -416,7 +416,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {}
+        public void batchSaveOrUpdate(List<KnowledgeLineageRelation> relations) {}
 
         @Override
         public int deleteByRelationKeys(Collection<String> relationKeys) {

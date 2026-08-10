@@ -1,25 +1,15 @@
 package com.thundax.kuzhambu.knowledge.application.refinement.command;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class UpsertRefinementRelationCommand {
-    private Long refinementTaskId;
-    private Long relationId;
-    private String relationKey;
-    private String sourceEntityKey;
-    private String targetEntityKey;
-    private String sourceName;
-    private String targetName;
-    private String relationType;
-    private String evidence;
-    private String sourceRefsJson;
-    private Integer sortOrder;
-    private Long operatorId;
-}
+public record UpsertRefinementRelationCommand(
+        Long refinementTaskId,
+        Long relationId,
+        String relationKey,
+        String sourceEntityKey,
+        String targetEntityKey,
+        String sourceName,
+        String targetName,
+        String relationType,
+        String evidence,
+        String sourceRefsJson,
+        Integer sortOrder,
+        Long operatorId) {}

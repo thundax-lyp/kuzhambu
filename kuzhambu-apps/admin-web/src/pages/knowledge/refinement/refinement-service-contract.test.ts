@@ -85,13 +85,13 @@ describe("knowledge refinement service request contracts", () => {
         });
 
         await service.getTaskDraft({ graphVersionId: "71", openedBy: "1" });
-        expectLastCall("POST", "/knowledge/refinement/task/open", {
+        expectLastCall("POST", "/knowledge/refinement/task/create", {
             graphVersionId: "71",
             openedBy: "1"
         });
 
         await service.getTaskDetail({ refinementTaskId: "31" });
-        expectLastCall("POST", "/knowledge/refinement/task/detail", {
+        expectLastCall("POST", "/knowledge/refinement/task/get", {
             refinementTaskId: "31"
         });
 
@@ -130,7 +130,7 @@ describe("knowledge refinement service request contracts", () => {
         });
 
         await service.getQualitySummary({ refinementTaskId: "31" });
-        expectLastCall("POST", "/knowledge/refinement/quality/summary", {
+        expectLastCall("POST", "/knowledge/refinement/quality/get", {
             refinementTaskId: "31"
         });
 

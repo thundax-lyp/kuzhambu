@@ -32,7 +32,7 @@ class KnowledgeLineageControllerTest {
         RequestMapping root = KnowledgeLineageController.class.getAnnotation(RequestMapping.class);
         assertEquals("/api/knowledge/lineage", root.value()[0]);
         Method method = KnowledgeLineageController.class.getDeclaredMethod("getCanvas", LineageCanvasRequest.class);
-        assertEquals("canvas", method.getAnnotation(PostMapping.class).value()[0]);
+        assertEquals("get", method.getAnnotation(PostMapping.class).value()[0]);
         assertEquals(
                 "knowledge:graph:view",
                 method.getAnnotation(HasPermission.class).value()[0]);
@@ -57,14 +57,14 @@ class KnowledgeLineageControllerTest {
 
         ArgumentCaptor<LineageCanvasQuery> captor = ArgumentCaptor.forClass(LineageCanvasQuery.class);
         verify(service).getCanvas(captor.capture());
-        assertEquals(71L, captor.getValue().getVersionId());
-        assertEquals(301L, captor.getValue().getFocusNodeId());
-        assertEquals(401L, captor.getValue().getFocusRelationId());
-        assertEquals("贾", captor.getValue().getKeyword());
-        assertEquals("PERSON", captor.getValue().getNodeType());
-        assertEquals("PARENT_CHILD", captor.getValue().getRelationType());
-        assertEquals("CONFIRMED", captor.getValue().getConfirmationStatus());
-        assertEquals(3, captor.getValue().getDepth());
+        assertEquals(71L, captor.getValue().versionId());
+        assertEquals(301L, captor.getValue().focusNodeId());
+        assertEquals(401L, captor.getValue().focusRelationId());
+        assertEquals("贾", captor.getValue().keyword());
+        assertEquals("PERSON", captor.getValue().nodeType());
+        assertEquals("PARENT_CHILD", captor.getValue().relationType());
+        assertEquals("CONFIRMED", captor.getValue().confirmationStatus());
+        assertEquals(3, captor.getValue().depth());
         assertEquals(71L, response.getVersion().getVersionId());
         assertEquals(1L, response.getSummary().getNodeCount());
         assertEquals(301L, response.getNodes().get(0).getNodeId());

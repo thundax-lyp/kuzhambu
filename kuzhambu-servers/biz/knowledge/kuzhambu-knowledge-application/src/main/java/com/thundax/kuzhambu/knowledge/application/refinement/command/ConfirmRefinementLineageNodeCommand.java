@@ -1,16 +1,3 @@
 package com.thundax.kuzhambu.knowledge.application.refinement.command;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class ConfirmRefinementLineageNodeCommand {
-    private Long refinementTaskId;
-    private String nodeKey;
-    private Long operatorId;
-}
+public record ConfirmRefinementLineageNodeCommand(Long refinementTaskId, String nodeKey, Long operatorId) {}

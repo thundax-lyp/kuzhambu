@@ -19,11 +19,19 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.ApplyGraphExtractionTaskCandidateCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.CancelGraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.configure.KnowledgeGraphExtractionExecutorConfiguration;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageNodeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeLineageRelationQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -57,6 +65,8 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTa
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.KnowledgeEntityId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
@@ -140,38 +150,38 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult requestRelationExtraction(RequestRelationExtractionCommand command) {
         validateCommandBase(
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getInputPayloadJson());
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.inputPayloadJson());
         return requestTasks(
                 TASK_TYPE_RELATION,
-                command == null ? null : command.getScopeType(),
-                command == null ? null : command.getScopeJson(),
-                command == null ? null : command.getTriggerSource(),
-                command == null ? null : command.getSelectionScopeJson(),
-                command == null ? null : command.getReplaceUnconfirmedOnly(),
-                command == null ? null : command.getParentTaskId(),
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getSourceContentId(),
-                command == null ? null : command.getRequestedBy(),
-                command == null ? null : command.getServiceId(),
-                command == null ? null : command.getServiceRole(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getPromptVersionId(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getPromptVariablesJson(),
-                command == null ? null : command.getPromptHash(),
-                command == null ? null : command.getInputPayloadJson(),
-                command == null ? null : command.getOutputSchemaJson(),
-                command != null && command.isForceJson(),
-                command == null ? null : command.getLocale(),
+                command == null ? null : command.scopeType(),
+                command == null ? null : command.scopeJson(),
+                command == null ? null : command.triggerSource(),
+                command == null ? null : command.selectionScopeJson(),
+                command == null ? null : command.replaceUnconfirmedOnly(),
+                command == null ? null : command.parentTaskId(),
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.sourceContentId(),
+                command == null ? null : command.requestedBy(),
+                command == null ? null : command.serviceId(),
+                command == null ? null : command.serviceRole(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.promptVersionId(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.promptVariablesJson(),
+                command == null ? null : command.promptHash(),
+                command == null ? null : command.inputPayloadJson(),
+                command == null ? null : command.outputSchemaJson(),
+                command != null && command.forceJson(),
+                command == null ? null : command.locale(),
                 resolveOperation(TASK_TYPE_RELATION));
     }
 
@@ -179,38 +189,38 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult requestGraphExtraction(RequestGraphExtractionCommand command) {
         validateCommandBase(
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getInputPayloadJson());
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.inputPayloadJson());
         return requestTasks(
                 TASK_TYPE_GRAPH,
-                command == null ? null : command.getScopeType(),
-                command == null ? null : command.getScopeJson(),
-                command == null ? null : command.getTriggerSource(),
-                command == null ? null : command.getSelectionScopeJson(),
-                command == null ? null : command.getReplaceUnconfirmedOnly(),
-                command == null ? null : command.getParentTaskId(),
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getSourceContentId(),
-                command == null ? null : command.getRequestedBy(),
-                command == null ? null : command.getServiceId(),
-                command == null ? null : command.getServiceRole(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getPromptVersionId(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getPromptVariablesJson(),
-                command == null ? null : command.getPromptHash(),
-                command == null ? null : command.getInputPayloadJson(),
-                command == null ? null : command.getOutputSchemaJson(),
-                command != null && command.isForceJson(),
-                command == null ? null : command.getLocale(),
+                command == null ? null : command.scopeType(),
+                command == null ? null : command.scopeJson(),
+                command == null ? null : command.triggerSource(),
+                command == null ? null : command.selectionScopeJson(),
+                command == null ? null : command.replaceUnconfirmedOnly(),
+                command == null ? null : command.parentTaskId(),
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.sourceContentId(),
+                command == null ? null : command.requestedBy(),
+                command == null ? null : command.serviceId(),
+                command == null ? null : command.serviceRole(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.promptVersionId(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.promptVariablesJson(),
+                command == null ? null : command.promptHash(),
+                command == null ? null : command.inputPayloadJson(),
+                command == null ? null : command.outputSchemaJson(),
+                command != null && command.forceJson(),
+                command == null ? null : command.locale(),
                 resolveOperation(TASK_TYPE_GRAPH));
     }
 
@@ -218,59 +228,52 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult requestLineageExtraction(RequestLineageExtractionCommand command) {
         validateCommandBase(
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getInputPayloadJson());
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.inputPayloadJson());
         return requestTasks(
                 TASK_TYPE_LINEAGE,
-                command == null ? null : command.getScopeType(),
-                command == null ? null : command.getScopeJson(),
-                command == null ? null : command.getTriggerSource(),
-                command == null ? null : command.getSelectionScopeJson(),
-                command == null ? null : command.getReplaceUnconfirmedOnly(),
-                command == null ? null : command.getParentTaskId(),
-                command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getSourceContentId(),
-                command == null ? null : command.getRequestedBy(),
-                command == null ? null : command.getServiceId(),
-                command == null ? null : command.getServiceRole(),
-                command == null ? null : command.getModelId(),
-                command == null ? null : command.getModelName(),
-                command == null ? null : command.getPromptVersionId(),
-                command == null ? null : command.getRequestId(),
-                command == null ? null : command.getTraceId(),
-                command == null ? null : command.getPromptMessagesJson(),
-                command == null ? null : command.getPromptVariablesJson(),
-                command == null ? null : command.getPromptHash(),
-                command == null ? null : command.getInputPayloadJson(),
-                command == null ? null : command.getOutputSchemaJson(),
-                command != null && command.isForceJson(),
-                command == null ? null : command.getLocale(),
+                command == null ? null : command.scopeType(),
+                command == null ? null : command.scopeJson(),
+                command == null ? null : command.triggerSource(),
+                command == null ? null : command.selectionScopeJson(),
+                command == null ? null : command.replaceUnconfirmedOnly(),
+                command == null ? null : command.parentTaskId(),
+                command == null ? null : command.sourceContentType(),
+                command == null ? null : command.sourceContentId(),
+                command == null ? null : command.requestedBy(),
+                command == null ? null : command.serviceId(),
+                command == null ? null : command.serviceRole(),
+                command == null ? null : command.modelId(),
+                command == null ? null : command.modelName(),
+                command == null ? null : command.promptVersionId(),
+                command == null ? null : command.requestId(),
+                command == null ? null : command.traceId(),
+                command == null ? null : command.promptMessagesJson(),
+                command == null ? null : command.promptVariablesJson(),
+                command == null ? null : command.promptHash(),
+                command == null ? null : command.inputPayloadJson(),
+                command == null ? null : command.outputSchemaJson(),
+                command != null && command.forceJson(),
+                command == null ? null : command.locale(),
                 resolveOperation(TASK_TYPE_LINEAGE));
     }
 
     @Override
-    public PageResult<GraphExtractionTaskResult> pageTasks(
-            String taskType,
-            Long batchJobId,
-            String triggerSource,
-            String status,
-            String sourceContentType,
-            Long sourceContentId,
-            PageQuery pageQuery) {
+    public PageResult<GraphExtractionTaskResult> pageTasks(GraphExtractionTaskQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<GraphExtractionTask> taskPage = repository.page(
-                taskType,
-                GraphExtractionBatchJobIdCodec.toDomain(batchJobId),
-                triggerSource,
-                status,
-                sourceContentType,
-                GraphExtractionSourceContentIdCodec.toDomain(sourceContentId),
+                query == null ? null : query.taskType(),
+                GraphExtractionBatchJobIdCodec.toDomain(query == null ? null : query.batchJobId()),
+                query == null ? null : query.triggerSource(),
+                query == null ? null : query.status(),
+                query == null ? null : query.sourceContentType(),
+                GraphExtractionSourceContentIdCodec.toDomain(query == null ? null : query.sourceContentId()),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<GraphExtractionTaskResult> records =
@@ -285,36 +288,19 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public GraphExtractionTaskResult regenerateTask(
-            String taskType,
-            GraphExtractionTaskId sourceTaskId,
-            String selectionScopeJson,
-            Boolean replaceUnconfirmedOnly,
-            Long requestedBy) {
-        return regenerateTask(new RegenerateGraphExtractionCommand(
-                taskType,
-                sourceTaskId,
-                TRIGGER_SOURCE_REGENERATE,
-                selectionScopeJson,
-                replaceUnconfirmedOnly,
-                requestedBy));
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult regenerateTask(RegenerateGraphExtractionCommand command) {
-        GraphExtractionTaskId sourceTaskId = command == null ? null : command.getSourceTaskId();
+        GraphExtractionTaskId sourceTaskId = command == null ? null : command.sourceTaskId();
         GraphExtractionTask sourceTask = repository.getByTaskId(sourceTaskId);
         if (sourceTask == null) {
             throw new BizException(
                     "Knowledge graph source task not found: " + (sourceTaskId == null ? null : sourceTaskId.value()));
         }
         validateRegenerateSourceTask(sourceTask);
-        String commandTaskType = command == null ? null : command.getTaskType();
-        String commandTriggerSource = command == null ? null : command.getTriggerSource();
-        String commandSelectionScopeJson = command == null ? null : command.getSelectionScopeJson();
-        Boolean commandReplaceUnconfirmedOnly = command == null ? null : command.getReplaceUnconfirmedOnly();
-        Long commandRequestedBy = command == null ? null : command.getRequestedBy();
+        String commandTaskType = command == null ? null : command.taskType();
+        String commandTriggerSource = command == null ? null : command.triggerSource();
+        String commandSelectionScopeJson = command == null ? null : command.selectionScopeJson();
+        Boolean commandReplaceUnconfirmedOnly = command == null ? null : command.replaceUnconfirmedOnly();
+        Long commandRequestedBy = command == null ? null : command.requestedBy();
         String sourceTaskType = taskTypeValue(sourceTask);
         String resolvedTaskType = StringUtils.defaultIfBlank(commandTaskType, sourceTaskType);
         if (!StringUtils.equals(resolvedTaskType, sourceTaskType)) {
@@ -356,7 +342,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public GraphExtractionBatchCancelResult cancelBatch(Long batchJobId, Long requestedBy) {
+    public GraphExtractionBatchCancelResult cancelBatch(CancelGraphExtractionBatchCommand command) {
+        Long batchJobId = command == null ? null : command.batchJobId();
+        Long requestedBy = command == null ? null : command.requestedBy();
         if (batchJobId == null) {
             throw new BizException("Knowledge graph batchJobId is required");
         }
@@ -396,15 +384,14 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public PageResult<GraphVersionResult> pageVersions(
-            String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery) {
+    public PageResult<GraphVersionResult> pageVersions(GraphVersionQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<GraphVersion> versionPage = graphVersionRepository.page(
-                GraphExtractionTaskType.from(taskType),
-                GraphVersionStatus.from(status),
-                sourceContentType,
-                GraphExtractionSourceContentIdCodec.toDomain(sourceContentId),
+                GraphExtractionTaskType.from(query == null ? null : query.taskType()),
+                GraphVersionStatus.from(query == null ? null : query.status()),
+                query == null ? null : query.sourceContentType(),
+                GraphExtractionSourceContentIdCodec.toDomain(query == null ? null : query.sourceContentId()),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -417,8 +404,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public GraphVersionResult getVersionDetail(Long versionId) {
-        GraphVersion version = graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(versionId));
+    public GraphVersionResult getVersionDetail(GraphVersionId versionId) {
+        GraphVersion version = graphVersionRepository.getByVersionId(versionId);
         if (version == null) {
             throw new BizException("Graph version not found: " + versionId);
         }
@@ -426,15 +413,14 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public PageResult<KnowledgeEntityResult> pageEntities(
-            Long versionId, String keyword, String entityType, String confirmationStatus, PageQuery pageQuery) {
+    public PageResult<KnowledgeEntityResult> pageEntities(KnowledgeEntityQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<KnowledgeEntity> entityPage = knowledgeEntityRepository.page(
-                GraphVersionIdCodec.toDomain(versionId),
-                keyword,
-                entityType,
-                KnowledgeConfirmationStatus.from(confirmationStatus),
+                GraphVersionIdCodec.toDomain(query == null ? null : query.versionId()),
+                query == null ? null : query.keyword(),
+                query == null ? null : query.entityType(),
+                KnowledgeConfirmationStatus.from(query == null ? null : query.confirmationStatus()),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -447,24 +433,23 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public KnowledgeEntityResult getEntityDetail(Long entityId) {
-        KnowledgeEntity entity = knowledgeEntityRepository.getByEntityId(KnowledgeEntityIdCodec.toDomain(entityId));
+    public KnowledgeEntityResult getEntityDetail(KnowledgeEntityId entityId) {
+        KnowledgeEntity entity = knowledgeEntityRepository.getByEntityId(entityId);
         if (entity == null) {
-            throw new BizException("Knowledge entity not found: " + entityId);
+            throw new BizException("Knowledge entity not found: " + KnowledgeEntityIdCodec.toValue(entityId));
         }
         return toKnowledgeEntityResult(entity);
     }
 
     @Override
-    public PageResult<KnowledgeRelationResult> pageRelations(
-            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery) {
+    public PageResult<KnowledgeRelationResult> pageRelations(KnowledgeRelationQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<KnowledgeRelation> relationPage = knowledgeRelationRepository.page(
-                versionId,
-                keyword,
-                relationType,
-                confirmationStatus,
+                query == null ? null : query.versionId(),
+                query == null ? null : query.keyword(),
+                query == null ? null : query.relationType(),
+                query == null ? null : query.confirmationStatus(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -477,7 +462,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public KnowledgeRelationResult getRelationDetail(Long relationId) {
+    public KnowledgeRelationResult getRelationDetail(KnowledgeRelationQuery query) {
+        Long relationId = query == null ? null : query.relationId();
         KnowledgeRelation relation = knowledgeRelationRepository.getByRelationId(relationId);
         if (relation == null) {
             throw new BizException("Knowledge relation not found: " + relationId);
@@ -487,14 +473,14 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     public PageResult<KnowledgeLineageNodeResult> pageLineageNodes(
-            Long versionId, String keyword, String nodeType, String confirmationStatus, PageQuery pageQuery) {
+            KnowledgeLineageNodeQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<KnowledgeLineageNode> nodePage = knowledgeLineageNodeRepository.page(
-                versionId,
-                keyword,
-                nodeType,
-                confirmationStatus,
+                query == null ? null : query.versionId(),
+                query == null ? null : query.keyword(),
+                query == null ? null : query.nodeType(),
+                query == null ? null : query.confirmationStatus(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -507,7 +493,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public KnowledgeLineageNodeResult getLineageNodeDetail(Long nodeId) {
+    public KnowledgeLineageNodeResult getLineageNodeDetail(KnowledgeLineageNodeQuery query) {
+        Long nodeId = query == null ? null : query.nodeId();
         KnowledgeLineageNode node = knowledgeLineageNodeRepository.getByNodeId(nodeId);
         if (node == null) {
             throw new BizException("Knowledge lineage node not found: " + nodeId);
@@ -517,14 +504,14 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     public PageResult<KnowledgeLineageRelationResult> pageLineageRelations(
-            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery) {
+            KnowledgeLineageRelationQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<KnowledgeLineageRelation> relationPage = knowledgeLineageRelationRepository.page(
-                versionId,
-                keyword,
-                relationType,
-                confirmationStatus,
+                query == null ? null : query.versionId(),
+                query == null ? null : query.keyword(),
+                query == null ? null : query.relationType(),
+                query == null ? null : query.confirmationStatus(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -537,7 +524,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public KnowledgeLineageRelationResult getLineageRelationDetail(Long relationId) {
+    public KnowledgeLineageRelationResult getLineageRelationDetail(KnowledgeLineageRelationQuery query) {
+        Long relationId = query == null ? null : query.relationId();
         KnowledgeLineageRelation relation = knowledgeLineageRelationRepository.getByRelationId(relationId);
         if (relation == null) {
             throw new BizException("Knowledge lineage relation not found: " + relationId);
@@ -547,7 +535,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId, String applyMode) {
+    public GraphExtractionTaskResult applyTaskCandidate(ApplyGraphExtractionTaskCandidateCommand command) {
+        GraphExtractionTaskId taskId = command == null ? null : command.taskId();
+        String applyMode = command == null ? null : command.applyMode();
         GraphExtractionTask task = repository.getByTaskId(taskId);
         if (task == null) {
             throw new BizException("Graph extraction task not found: " + (taskId == null ? null : taskId.value()));
@@ -1198,7 +1188,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         }
         RefinementTask lastAppliedRefinement = refinementTaskRepository == null
                 ? null
-                : refinementTaskRepository.findLatestAppliedByGraphVersionId(
+                : refinementTaskRepository.getByLatestAppliedGraphVersionId(
                         GraphVersionIdCodec.toValue(version.getId()));
         return new GraphVersionResult(
                 GraphVersionIdCodec.toValue(version.getId()),
