@@ -37,7 +37,9 @@ import org.springframework.lang.NonNull;
 public final class ClassicsContentInterfaceAssembler {
     private ClassicsContentInterfaceAssembler() {}
 
-    public static ContentTagCommand toTagCommand(ClassicsContentRequest request) {
+    @NonNull
+    public static ContentTagCommand toTagCommand(@NonNull ClassicsContentRequest request) {
+        Objects.requireNonNull(request, "request");
         return new ContentTagCommand(
                 request.getId(),
                 type(request.getContentType()),
@@ -50,7 +52,9 @@ public final class ClassicsContentInterfaceAssembler {
                         : ClassicsContentTagStatus.from(request.getStatus()));
     }
 
-    public static ContentQaPairCommand toQaCommand(ClassicsContentRequest request) {
+    @NonNull
+    public static ContentQaPairCommand toQaCommand(@NonNull ClassicsContentRequest request) {
+        Objects.requireNonNull(request, "request");
         return new ContentQaPairCommand(
                 request.getId(),
                 type(request.getContentType()),
@@ -78,7 +82,9 @@ public final class ClassicsContentInterfaceAssembler {
                 ClassicsContentQaPairIdCodec::toDomain));
     }
 
-    public static ContentExportCommand toExportCommand(ClassicsContentRequest request) {
+    @NonNull
+    public static ContentExportCommand toExportCommand(@NonNull ClassicsContentRequest request) {
+        Objects.requireNonNull(request, "request");
         return toExportCommand(request, Set.of());
     }
 
@@ -105,90 +111,78 @@ public final class ClassicsContentInterfaceAssembler {
                 operatorPermissions);
     }
 
-    public static ClassicsContentResponse toTagResponse(ClassicsContentTag tag) {
-        return tag == null
-                ? ClassicsContentResponse.builder().build()
-                : ClassicsContentResponse.builder()
-                        .id(tag.getId() == null ? null : tag.getId().value())
-                        .contentType(
-                                tag.getContentType() == null
-                                        ? null
-                                        : tag.getContentType().value())
-                        .contentId(
-                                tag.getContentId() == null
-                                        ? null
-                                        : tag.getContentId().value())
-                        .tagId(tag.getTagId() == null ? null : tag.getTagId().value())
-                        .tagNameSnapshot(tag.getTagNameSnapshot())
-                        .source(tag.getSource() == null ? null : tag.getSource().value())
-                        .status(tag.getStatus() == null ? null : tag.getStatus().value())
-                        .build();
+    @NonNull
+    public static ClassicsContentResponse toTagResponse(@NonNull ClassicsContentTag tag) {
+        Objects.requireNonNull(tag, "tag");
+        return ClassicsContentResponse.builder()
+                .id(tag.getId() == null ? null : tag.getId().value())
+                .contentType(
+                        tag.getContentType() == null
+                                ? null
+                                : tag.getContentType().value())
+                .contentId(
+                        tag.getContentId() == null ? null : tag.getContentId().value())
+                .tagId(tag.getTagId() == null ? null : tag.getTagId().value())
+                .tagNameSnapshot(tag.getTagNameSnapshot())
+                .source(tag.getSource() == null ? null : tag.getSource().value())
+                .status(tag.getStatus() == null ? null : tag.getStatus().value())
+                .build();
     }
 
-    public static ClassicsContentResponse toQaResponse(ClassicsContentQaPair qa) {
-        return qa == null
-                ? ClassicsContentResponse.builder().build()
-                : ClassicsContentResponse.builder()
-                        .id(qa.getId() == null ? null : qa.getId().value())
-                        .contentType(
-                                qa.getContentType() == null
-                                        ? null
-                                        : qa.getContentType().value())
-                        .contentId(
-                                qa.getContentId() == null
-                                        ? null
-                                        : qa.getContentId().value())
-                        .question(qa.getQuestion())
-                        .answer(qa.getAnswer())
-                        .build();
+    @NonNull
+    public static ClassicsContentResponse toQaResponse(@NonNull ClassicsContentQaPair qa) {
+        Objects.requireNonNull(qa, "qa");
+        return ClassicsContentResponse.builder()
+                .id(qa.getId() == null ? null : qa.getId().value())
+                .contentType(
+                        qa.getContentType() == null ? null : qa.getContentType().value())
+                .contentId(qa.getContentId() == null ? null : qa.getContentId().value())
+                .question(qa.getQuestion())
+                .answer(qa.getAnswer())
+                .build();
     }
 
-    public static ClassicsContentResponse toExportResponse(ClassicsContentExportJob job) {
-        return job == null
-                ? ClassicsContentResponse.builder().build()
-                : ClassicsContentResponse.builder()
-                        .id(job.getId() == null ? null : job.getId().value())
-                        .contentType(
-                                job.getContentType() == null
-                                        ? null
-                                        : job.getContentType().value())
-                        .exportKind(
-                                job.getExportKind() == null
-                                        ? null
-                                        : job.getExportKind().value())
-                        .exportFormat(
-                                job.getExportFormat() == null
-                                        ? null
-                                        : job.getExportFormat().value())
-                        .scopeType(
-                                job.getScopeType() == null
-                                        ? null
-                                        : job.getScopeType().value())
-                        .scopeJson(job.getScopeJson())
-                        .requestedAt(job.getRequestedAt())
-                        .expiresAt(job.getExpiresAt())
-                        .status(job.getStatus() == null ? null : job.getStatus().name())
-                        .storageObjectId(
-                                job.getStorageObjectId() == null
-                                        ? null
-                                        : job.getStorageObjectId().value())
-                        .itemCount(job.getItemCount())
-                        .assetCount(job.getAssetCount())
-                        .visibilityRiskStatus(
-                                job.getVisibilityRiskStatus() == null
-                                        ? null
-                                        : job.getVisibilityRiskStatus().value())
-                        .contentChanged(job.isContentChanged())
-                        .contentUrl(exportContentUrl(job.getId()))
-                        .downloadUrl(exportDownloadUrl(job.getId()))
-                        .build();
+    @NonNull
+    public static ClassicsContentResponse toExportResponse(@NonNull ClassicsContentExportJob job) {
+        Objects.requireNonNull(job, "job");
+        return ClassicsContentResponse.builder()
+                .id(job.getId() == null ? null : job.getId().value())
+                .contentType(
+                        job.getContentType() == null
+                                ? null
+                                : job.getContentType().value())
+                .exportKind(
+                        job.getExportKind() == null ? null : job.getExportKind().value())
+                .exportFormat(
+                        job.getExportFormat() == null
+                                ? null
+                                : job.getExportFormat().value())
+                .scopeType(
+                        job.getScopeType() == null ? null : job.getScopeType().value())
+                .scopeJson(job.getScopeJson())
+                .requestedAt(job.getRequestedAt())
+                .expiresAt(job.getExpiresAt())
+                .status(job.getStatus() == null ? null : job.getStatus().name())
+                .storageObjectId(
+                        job.getStorageObjectId() == null
+                                ? null
+                                : job.getStorageObjectId().value())
+                .itemCount(job.getItemCount())
+                .assetCount(job.getAssetCount())
+                .visibilityRiskStatus(
+                        job.getVisibilityRiskStatus() == null
+                                ? null
+                                : job.getVisibilityRiskStatus().value())
+                .contentChanged(job.isContentChanged())
+                .contentUrl(exportContentUrl(job.getId()))
+                .downloadUrl(exportDownloadUrl(job.getId()))
+                .build();
     }
 
+    @NonNull
     public static AiCandidateApplyContentCommand toAiCandidateApplyCommand(
-            ClassicsContentRequest.AiCandidateApplyRequest request) {
-        if (request == null) {
-            return null;
-        }
+            @NonNull ClassicsContentRequest.AiCandidateApplyRequest request) {
+        Objects.requireNonNull(request, "request");
         return new AiCandidateApplyContentCommand(
                 request.getCandidateId(),
                 type(request.getContentType()),
@@ -201,11 +195,10 @@ public final class ClassicsContentInterfaceAssembler {
                 request.getTagApplyMode());
     }
 
+    @NonNull
     public static ClassicsContentResponse.AiCandidateApplyResponse toAiCandidateApplyResponse(
-            AiCandidateApplyContentResult result) {
-        if (result == null) {
-            return ClassicsContentResponse.AiCandidateApplyResponse.builder().build();
-        }
+            @NonNull AiCandidateApplyContentResult result) {
+        Objects.requireNonNull(result, "result");
         return ClassicsContentResponse.AiCandidateApplyResponse.builder()
                 .contentType(
                         result.getContentType() == null
@@ -217,20 +210,19 @@ public final class ClassicsContentInterfaceAssembler {
                 .build();
     }
 
+    @NonNull
     public static AiCandidateBatchApplyContentCommand toAiCandidateBatchApplyCommand(
-            ClassicsContentRequest.AiCandidateBatchApplyRequest request) {
-        return request == null
-                ? null
-                : new AiCandidateBatchApplyContentCommand(request.getItems().stream()
-                        .map(ClassicsContentInterfaceAssembler::toAiCandidateApplyCommand)
-                        .toList());
+            @NonNull ClassicsContentRequest.AiCandidateBatchApplyRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new AiCandidateBatchApplyContentCommand(request.getItems().stream()
+                .map(ClassicsContentInterfaceAssembler::toAiCandidateApplyCommand)
+                .toList());
     }
 
+    @NonNull
     public static AiCandidateBatchRejectContentCommand toAiCandidateBatchRejectCommand(
-            ClassicsContentRequest.AiCandidateBatchRejectRequest request) {
-        if (request == null) {
-            return null;
-        }
+            @NonNull ClassicsContentRequest.AiCandidateBatchRejectRequest request) {
+        Objects.requireNonNull(request, "request");
         return new AiCandidateBatchRejectContentCommand(
                 request.getItems().stream()
                         .map(ClassicsContentInterfaceAssembler::toAiCandidateBatchRejectItem)

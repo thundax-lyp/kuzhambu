@@ -10,15 +10,16 @@ import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCo
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class ClassicsContentApplicationAssembler {
 
     private ClassicsContentApplicationAssembler() {}
 
-    public static ClassicsContentTag toTag(ContentTagCommand command) {
-        if (command == null) {
-            return null;
-        }
+    @NonNull
+    public static ClassicsContentTag toTag(@NonNull ContentTagCommand command) {
+        Objects.requireNonNull(command, "command");
         ClassicsContentTag tag = new ClassicsContentTag();
         tag.setId(ClassicsContentTagIdCodec.toDomain(command.id()));
         tag.setContentType(command.contentType());
@@ -30,10 +31,9 @@ public final class ClassicsContentApplicationAssembler {
         return tag;
     }
 
-    public static ClassicsContentQaPair toQaPair(ContentQaPairCommand command) {
-        if (command == null) {
-            return null;
-        }
+    @NonNull
+    public static ClassicsContentQaPair toQaPair(@NonNull ContentQaPairCommand command) {
+        Objects.requireNonNull(command, "command");
         ClassicsContentQaPair qaPair = new ClassicsContentQaPair();
         qaPair.setId(ClassicsContentQaPairIdCodec.toDomain(command.id()));
         qaPair.setContentType(command.contentType());
@@ -44,10 +44,9 @@ public final class ClassicsContentApplicationAssembler {
         return qaPair;
     }
 
-    public static ClassicsContentExportJob toExportJob(ContentExportCommand command) {
-        if (command == null) {
-            return null;
-        }
+    @NonNull
+    public static ClassicsContentExportJob toExportJob(@NonNull ContentExportCommand command) {
+        Objects.requireNonNull(command, "command");
         return new ClassicsContentExportJob(
                 null,
                 command.exportKind(),

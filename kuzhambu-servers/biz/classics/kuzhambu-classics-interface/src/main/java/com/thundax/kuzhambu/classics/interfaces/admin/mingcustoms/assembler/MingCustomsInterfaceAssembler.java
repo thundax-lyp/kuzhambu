@@ -30,7 +30,9 @@ import org.springframework.lang.NonNull;
 public final class MingCustomsInterfaceAssembler {
     private MingCustomsInterfaceAssembler() {}
 
-    public static MingCustomsQuery toQuery(MingCustomsRequest request) {
+    @NonNull
+    public static MingCustomsQuery toQuery(@NonNull MingCustomsRequest request) {
+        Objects.requireNonNull(request, "request");
         return toQuery(request, Set.of());
     }
 
@@ -49,7 +51,10 @@ public final class MingCustomsInterfaceAssembler {
                 operatorPermissions);
     }
 
-    public static MingCustomsQuery toTagCloudQuery(String category, String keyword) {
+    @NonNull
+    public static MingCustomsQuery toTagCloudQuery(@NonNull String category, @NonNull String keyword) {
+        Objects.requireNonNull(category, "category");
+        Objects.requireNonNull(keyword, "keyword");
         return new MingCustomsQuery(category, keyword, null, null, null, null, null);
     }
 
@@ -62,7 +67,9 @@ public final class MingCustomsInterfaceAssembler {
                 request.getCategory(), request.getKeyword(), null, null, null, null, operatorPermissions);
     }
 
-    public static MingCustomsCommand toCommand(MingCustomsRequest request) {
+    @NonNull
+    public static MingCustomsCommand toCommand(@NonNull MingCustomsRequest request) {
+        Objects.requireNonNull(request, "request");
         return new MingCustomsCommand(
                 MingCustomsEntryIdCodec.toDomain(request.getId()),
                 request.getTitle(),
@@ -77,7 +84,11 @@ public final class MingCustomsInterfaceAssembler {
                 request.getOriginalExcerpts());
     }
 
-    public static MingCustomsKeywordCommand toKeywordCommand(Long customId, MingCustomsRequest request) {
+    @NonNull
+    public static MingCustomsKeywordCommand toKeywordCommand(
+            @NonNull Long customId, @NonNull MingCustomsRequest request) {
+        Objects.requireNonNull(customId, "customId");
+        Objects.requireNonNull(request, "request");
         return new MingCustomsKeywordCommand(MingCustomsEntryIdCodec.toDomain(customId), request.getKeyword());
     }
 
@@ -90,75 +101,76 @@ public final class MingCustomsInterfaceAssembler {
                 MingCustomsKeywordIdCodec::toDomain));
     }
 
-    public static MingCustomsResponse toResponse(MingCustomsEntry entity) {
-        return entity == null
-                ? MingCustomsResponse.builder().build()
-                : MingCustomsResponse.builder()
-                        .id(entity.getId() == null ? null : entity.getId().value())
-                        .title(entity.getTitle())
-                        .category(entity.getCategory())
-                        .chapter(entity.getChapter())
-                        .section(entity.getSection())
-                        .summary(entity.getSummary())
-                        .contentFormat(
-                                entity.getContentFormat() == null
-                                        ? null
-                                        : entity.getContentFormat().value())
-                        .content(entity.getContent())
-                        .originalExcerpts(entity.getOriginalExcerpts())
-                        .lifecycleStatus(
-                                entity.getLifecycleStatus() == null
-                                        ? null
-                                        : entity.getLifecycleStatus().name())
-                        .transitionStatus(
-                                entity.getTransitionStatus() == null
-                                        ? null
-                                        : entity.getTransitionStatus().name())
-                        .currentPublicationJobId(
-                                entity.getCurrentPublicationJobId() == null
-                                        ? null
-                                        : entity.getCurrentPublicationJobId().value())
-                        .build();
+    @NonNull
+    public static MingCustomsResponse toResponse(@NonNull MingCustomsEntry entity) {
+        Objects.requireNonNull(entity, "entity");
+        return MingCustomsResponse.builder()
+                .id(entity.getId() == null ? null : entity.getId().value())
+                .title(entity.getTitle())
+                .category(entity.getCategory())
+                .chapter(entity.getChapter())
+                .section(entity.getSection())
+                .summary(entity.getSummary())
+                .contentFormat(
+                        entity.getContentFormat() == null
+                                ? null
+                                : entity.getContentFormat().value())
+                .content(entity.getContent())
+                .originalExcerpts(entity.getOriginalExcerpts())
+                .lifecycleStatus(
+                        entity.getLifecycleStatus() == null
+                                ? null
+                                : entity.getLifecycleStatus().name())
+                .transitionStatus(
+                        entity.getTransitionStatus() == null
+                                ? null
+                                : entity.getTransitionStatus().name())
+                .currentPublicationJobId(
+                        entity.getCurrentPublicationJobId() == null
+                                ? null
+                                : entity.getCurrentPublicationJobId().value())
+                .build();
     }
 
-    public static MingCustomsKeywordCloudItemResponse toKeywordCloudResponse(MingCustomsKeywordCloudItem item) {
-        return item == null
-                ? MingCustomsKeywordCloudItemResponse.builder().build()
-                : MingCustomsKeywordCloudItemResponse.builder()
-                        .keyword(item.getKeyword())
-                        .count(item.getCount())
-                        .build();
+    @NonNull
+    public static MingCustomsKeywordCloudItemResponse toKeywordCloudResponse(
+            @NonNull MingCustomsKeywordCloudItem item) {
+        Objects.requireNonNull(item, "item");
+        return MingCustomsKeywordCloudItemResponse.builder()
+                .keyword(item.getKeyword())
+                .count(item.getCount())
+                .build();
     }
 
-    public static MingCustomsTagCloudItemResponse toTagCloudResponse(MingCustomsTagCloudItem item) {
-        return item == null
-                ? MingCustomsTagCloudItemResponse.builder().build()
-                : MingCustomsTagCloudItemResponse.builder()
-                        .tagId(item.getTagId())
-                        .tagNameSnapshot(item.getTagNameSnapshot())
-                        .count(item.getCount())
-                        .build();
+    @NonNull
+    public static MingCustomsTagCloudItemResponse toTagCloudResponse(@NonNull MingCustomsTagCloudItem item) {
+        Objects.requireNonNull(item, "item");
+        return MingCustomsTagCloudItemResponse.builder()
+                .tagId(item.getTagId())
+                .tagNameSnapshot(item.getTagNameSnapshot())
+                .count(item.getCount())
+                .build();
     }
 
-    public static MingCustomsVersionResponse toVersionResponse(ClassicsContentVersion version) {
-        return version == null
-                ? MingCustomsVersionResponse.builder().build()
-                : MingCustomsVersionResponse.builder()
-                        .id(ClassicsContentVersionIdCodec.toValue(version.getId()))
-                        .contentType(
-                                version.getContentType() == null
-                                        ? null
-                                        : version.getContentType().value())
-                        .contentId(ClassicsContentIdCodec.toValue(version.getContentId()))
-                        .versionNo(version.getVersionNo())
-                        .versionedAt(version.getVersionedAt())
-                        .snapshotJson(version.getSnapshotJson())
-                        .changeType(
-                                version.getChangeType() == null
-                                        ? null
-                                        : version.getChangeType().value())
-                        .changeSummary(version.getChangeSummary())
-                        .build();
+    @NonNull
+    public static MingCustomsVersionResponse toVersionResponse(@NonNull ClassicsContentVersion version) {
+        Objects.requireNonNull(version, "version");
+        return MingCustomsVersionResponse.builder()
+                .id(ClassicsContentVersionIdCodec.toValue(version.getId()))
+                .contentType(
+                        version.getContentType() == null
+                                ? null
+                                : version.getContentType().value())
+                .contentId(ClassicsContentIdCodec.toValue(version.getContentId()))
+                .versionNo(version.getVersionNo())
+                .versionedAt(version.getVersionedAt())
+                .snapshotJson(version.getSnapshotJson())
+                .changeType(
+                        version.getChangeType() == null
+                                ? null
+                                : version.getChangeType().value())
+                .changeSummary(version.getChangeSummary())
+                .build();
     }
 
     private static SortDirection sortDirection(String value) {

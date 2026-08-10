@@ -57,7 +57,6 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.classics.application.content.assembler.ClassicsContentApplicationAssembler",
                         "com.thundax.kuzhambu.classics.application.facade.assembler.ClassicsFacadeAssembler",
                         "com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationAssembler"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
@@ -231,20 +230,7 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyAssemblerNullReturnAllowances() {
-        return List.of(
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler#toAiCandidateApplyCommand:AiCandidateApplyContentCommand:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler#toAiCandidateBatchApplyCommand:AiCandidateBatchApplyContentCommand:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler#toAiCandidateBatchRejectCommand:AiCandidateBatchRejectContentCommand:1"));
-    }
-
-    private static ArchitectureRuleAllowance nullReturnViolation(String ownerMethodAndType) {
-        return ArchitectureRuleAllowance.of(
-                "COMMAND_QUERY_ASSEMBLER_NULL_RETURN:" + ownerMethodAndType,
-                "Classics interface assembler returns null for an application Command on null input.",
-                "Validate inputs in the caller or model the absence explicitly, then return a concrete application contract.");
+        return List.of();
     }
 
     private static ArchitectureRuleAllowance rawParameters(String key) {
