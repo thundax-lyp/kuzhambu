@@ -80,8 +80,10 @@ public class SancaiAssetAdminController {
     @PostMapping("drafts/latest")
     public SancaiAssetResponse latestDraft(@Valid @RequestBody SancaiAssetRequest request) {
         Long entryId = requireLong(request == null ? null : request.getEntryId(), "entryId");
-        return SancaiAssetInterfaceAssembler.toDraftResponse(
-                service.getLatestDraft(SancaiEntryIdCodec.toDomain(entryId)));
+        var draft = service.getLatestDraft(SancaiEntryIdCodec.toDomain(entryId));
+        return draft == null
+                ? SancaiAssetResponse.builder().build()
+                : SancaiAssetInterfaceAssembler.toDraftResponse(draft);
     }
 
     @Operation(summary = "更新三才图会图片", description = "classics:sancai:edit")
