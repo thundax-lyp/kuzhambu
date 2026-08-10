@@ -1,15 +1,12 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller;
 
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiAssetInterfaceAssembler;
@@ -23,7 +20,6 @@ import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
-import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -126,16 +122,8 @@ public class SancaiAssetAdminController {
             @RequestParam(value = "replaceImageId", required = false) Long replaceImageId) {
         try {
             return SancaiAssetInterfaceAssembler.toImageResourceResponse(
-                    service.uploadImage(new SancaiEntryImageUploadCommand(
-                            entryId,
-                            file == null ? null : file.getInputStream(),
-                            file == null ? null : file.getOriginalFilename(),
-                            file == null ? null : file.getContentType(),
-                            file == null ? 0L : file.getSize(),
-                            title,
-                            StringUtils.isBlank(imageType) ? null : SancaiEntryImageType.from(imageType),
-                            Boolean.TRUE.equals(currentUsed),
-                            replaceImageId)));
+                    service.uploadImage(SancaiAssetInterfaceAssembler.toImageUploadCommand(
+                            entryId, file, title, imageType, currentUsed, replaceImageId)));
         } catch (IOException exception) {
             throw new BizException("三才图片上传失败：" + exception.getMessage());
         }
@@ -213,12 +201,7 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "图片排序")
     @PostMapping("images/sort")
     public Boolean sortImages(@Valid @RequestBody SancaiEntryImageSortRequest request) {
-        service.sortImages(new SancaiEntryImageSortCommand(RequestListHelper.map(
-                RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
-                SancaiEntryImageIdCodec::toDomain)));
+        service.sortImages(SancaiAssetInterfaceAssembler.toImageSortCommand(request));
         return true;
     }
 

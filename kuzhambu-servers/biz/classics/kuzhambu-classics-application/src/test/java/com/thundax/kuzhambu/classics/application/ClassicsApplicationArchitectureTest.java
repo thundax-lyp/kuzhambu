@@ -182,11 +182,7 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController#SancaiVolumeSortCommand:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController#SancaiEntrySortCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAssetAdminController#SancaiEntryImageUploadCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAssetAdminController#SancaiEntryImageSortCommand:1"));
+                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController#SancaiEntrySortCommand:1"));
     }
 
     private static ArchitectureRuleAllowance constructionViolation(String ownerAndType) {

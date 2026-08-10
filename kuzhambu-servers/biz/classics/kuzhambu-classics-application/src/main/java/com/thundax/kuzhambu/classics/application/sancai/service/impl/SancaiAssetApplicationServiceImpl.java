@@ -124,11 +124,11 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryDraftId updateDraft(SancaiDraftCommand command) {
-        requireWritable(SancaiEntryIdCodec.toDomain(command.getEntryId()));
+        requireWritable(SancaiEntryIdCodec.toDomain(command.entryId()));
         SancaiEntryDraft draft = new SancaiEntryDraft();
-        draft.setEntryId(SancaiEntryIdCodec.toDomain(command.getEntryId()));
-        draft.setAutosavedAt(command.getAutosavedAt() == null ? Instant.now() : command.getAutosavedAt());
-        draft.setDraftJson(command.getDraftJson());
+        draft.setEntryId(SancaiEntryIdCodec.toDomain(command.entryId()));
+        draft.setAutosavedAt(command.autosavedAt() == null ? Instant.now() : command.autosavedAt());
+        draft.setDraftJson(command.draftJson());
         return repository.insertDraft(draft);
     }
 
@@ -140,14 +140,14 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryImageId updateImage(SancaiImageCommand command) {
-        requireWritable(SancaiEntryIdCodec.toDomain(command.getEntryId()));
+        requireWritable(SancaiEntryIdCodec.toDomain(command.entryId()));
         SancaiEntryImage image = new SancaiEntryImage();
-        image.setId(SancaiEntryImageIdCodec.toDomain(command.getId()));
-        image.setEntryId(SancaiEntryIdCodec.toDomain(command.getEntryId()));
-        image.setStorageObjectId(command.getStorageObjectId());
-        image.setImageType(command.getImageType());
-        image.setTitle(command.getTitle());
-        image.setCurrentUsed(command.isCurrentUsed());
+        image.setId(SancaiEntryImageIdCodec.toDomain(command.id()));
+        image.setEntryId(SancaiEntryIdCodec.toDomain(command.entryId()));
+        image.setStorageObjectId(command.storageObjectId());
+        image.setImageType(command.imageType());
+        image.setTitle(command.title());
+        image.setCurrentUsed(command.currentUsed());
         if (image.getId() == null) {
             image.setPriority(repository.maxPriority() + 1);
             return repository.insertImage(image);
@@ -164,15 +164,15 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryImageResource uploadImage(SancaiEntryImageUploadCommand command) {
-        SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command == null ? null : command.getEntryId());
+        SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command == null ? null : command.entryId());
         validateImageUpload(command);
         requireWritable(entryId);
 
         UploadStorageFacadeResponse uploadResponse = storageFacade.upload(UploadStorageFacadeRequest.builder()
-                .inputStream(command.getInputStream())
-                .originalFilename(command.getOriginalFilename())
-                .contentType(command.getContentType())
-                .sizeBytes(command.getSize())
+                .inputStream(command.inputStream())
+                .originalFilename(command.originalFilename())
+                .contentType(command.contentType())
+                .sizeBytes(command.size())
                 .allowedSuffixes(ALLOWED_IMAGE_SUFFIXES)
                 .ownerType(IMAGE_OWNER_TYPE)
                 .build());
@@ -182,9 +182,9 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 uploadResponse == null || uploadResponse.getStorageObjectId() == null
                         ? null
                         : StorageObjectIdCodec.toDomain(uploadResponse.getStorageObjectId()));
-        image.setImageType(command.getImageType());
-        image.setTitle(command.getTitle());
-        image.setCurrentUsed(command.isCurrentUsed());
+        image.setImageType(command.imageType());
+        image.setTitle(command.title());
+        image.setCurrentUsed(command.currentUsed());
         image.setPriority(repository.maxPriority() + 1);
         clearCurrentImagesIfNeeded(command, entryId);
         SancaiEntryImageId imageId = repository.insertImage(image);
@@ -229,7 +229,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortImages(SancaiEntryImageSortCommand command) {
-        List<SancaiEntryImageId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<SancaiEntryImageId> orderedIdList = command == null ? null : command.orderedIds();
         List<SancaiEntryImage> images = repository.listImages(SortDirection.ASC);
         images.stream().map(SancaiEntryImage::getEntryId).distinct().forEach(this::requireWritable);
         SortablePrioritySwapSupport.sort(
@@ -679,8 +679,8 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         if (command == null) {
             return;
         }
-        if (command.getVisibilityRiskStatus() == SancaiVisibilityRiskStatus.CONTAINS_PRIVATE
-                && !command.isPrivateConfirmed()) {
+        if (command.visibilityRiskStatus() == SancaiVisibilityRiskStatus.CONTAINS_PRIVATE
+                && !command.privateConfirmed()) {
             throw new BizException(
                     SHOWCASE_FAILURE_PRIVATE_UNCONFIRMED,
                     "classics.sancai.showcase.private.unconfirmed",
@@ -885,7 +885,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     private void clearCurrentImagesIfNeeded(SancaiEntryImageUploadCommand command, SancaiEntryId entryId) {
-        if (command == null || !command.isCurrentUsed()) {
+        if (command == null || !command.currentUsed()) {
             return;
         }
         repository.clearCurrentImagesByEntryId(entryId);
@@ -938,10 +938,10 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     private static void validateImageUpload(SancaiEntryImageUploadCommand command) {
-        if (command == null || command.getEntryId() == null) {
+        if (command == null || command.entryId() == null) {
             throw new BizException("三才条目不能为空");
         }
-        if (!StringUtils.startsWithIgnoreCase(command.getContentType(), "image/")) {
+        if (!StringUtils.startsWithIgnoreCase(command.contentType(), "image/")) {
             throw new BizException("三才图片内容类型无效");
         }
     }

@@ -13,17 +13,7 @@ final class ClassicsApplicationCommandQueryRecordAllowances {
     private ClassicsApplicationCommandQueryRecordAllowances() {}
 
     static List<ArchitectureRuleAllowance> legacyAllowances() {
-        return List.of(
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand"));
+        return List.of();
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {

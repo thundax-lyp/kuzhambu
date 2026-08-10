@@ -308,13 +308,13 @@ class SancaiAssetAdminControllerTest {
                     }
                     if ("uploadImage".equals(method.getName())) {
                         SancaiEntryImageUploadCommand command = (SancaiEntryImageUploadCommand) args[0];
-                        assertEquals(3001L, command.getEntryId());
-                        assertEquals("三才图.png", command.getOriginalFilename());
-                        assertEquals("image/png", command.getContentType());
-                        assertEquals(9L, command.getSize());
-                        assertEquals("山川图", command.getTitle());
-                        assertEquals(SancaiEntryImageType.ORIGINAL, command.getImageType());
-                        assertEquals(8001L, command.getReplaceImageId());
+                        assertEquals(3001L, command.entryId());
+                        assertEquals("三才图.png", command.originalFilename());
+                        assertEquals("image/png", command.contentType());
+                        assertEquals(9L, command.size());
+                        assertEquals("山川图", command.title());
+                        assertEquals(SancaiEntryImageType.ORIGINAL, command.imageType());
+                        assertEquals(8001L, command.replaceImageId());
                         return imageResource();
                     }
                     if ("getImageContent".equals(method.getName())) {
@@ -324,7 +324,7 @@ class SancaiAssetAdminControllerTest {
                     }
                     if ("sortImages".equals(method.getName())) {
                         SancaiEntryImageSortCommand command = (SancaiEntryImageSortCommand) args[0];
-                        assertEquals(List.of(SancaiEntryImageIdCodec.toDomain(8002L)), command.getOrderedIds());
+                        assertEquals(List.of(SancaiEntryImageIdCodec.toDomain(8002L)), command.orderedIds());
                         return null;
                     }
                     if ("deleteImage".equals(method.getName())) {

@@ -1,12 +1,15 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler;
 
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiShowcaseJobResult;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
@@ -17,8 +20,13 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseSta
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiAssetRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryImageSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.request.RequestListHelper;
+import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 public final class SancaiAssetInterfaceAssembler {
     private SancaiAssetInterfaceAssembler() {}
@@ -38,20 +46,43 @@ public final class SancaiAssetInterfaceAssembler {
     }
 
     public static SancaiShowcaseCommand toShowcaseCommand(SancaiAssetRequest request) {
-        SancaiShowcaseCommand command = new SancaiShowcaseCommand();
-        command.setStatus(
+        return new SancaiShowcaseCommand(
+                null,
                 StringUtils.isBlank(request.getStatus())
                         ? SancaiShowcaseStatus.REQUESTED
-                        : SancaiShowcaseStatus.from(request.getStatus()));
-        command.setScopeJson(request.getScopeJson());
-        command.setScopeTitle(request.getScopeTitle());
-        command.setEntryCount(request.getEntryCount() == null ? 0 : request.getEntryCount());
-        command.setVisibilityRiskStatus(
+                        : SancaiShowcaseStatus.from(request.getStatus()),
+                request.getScopeJson(),
+                request.getScopeTitle(),
+                null,
+                request.getEntryCount() == null ? 0 : request.getEntryCount(),
                 StringUtils.isBlank(request.getVisibilityRiskStatus())
                         ? null
-                        : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()));
-        command.setPrivateConfirmed(Boolean.TRUE.equals(request.getPrivateConfirmed()));
-        return command;
+                        : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()),
+                Boolean.TRUE.equals(request.getPrivateConfirmed()));
+    }
+
+    public static SancaiEntryImageUploadCommand toImageUploadCommand(
+            Long entryId, MultipartFile file, String title, String imageType, Boolean currentUsed, Long replaceImageId)
+            throws IOException {
+        return new SancaiEntryImageUploadCommand(
+                entryId,
+                file == null ? null : file.getInputStream(),
+                file == null ? null : file.getOriginalFilename(),
+                file == null ? null : file.getContentType(),
+                file == null ? 0L : file.getSize(),
+                title,
+                StringUtils.isBlank(imageType) ? null : SancaiEntryImageType.from(imageType),
+                Boolean.TRUE.equals(currentUsed),
+                replaceImageId);
+    }
+
+    public static SancaiEntryImageSortCommand toImageSortCommand(SancaiEntryImageSortRequest request) {
+        return new SancaiEntryImageSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request == null ? null : request.getOrderedIds(),
+                        "orderedIds",
+                        AdminResponseExceptions::invalidParameter),
+                SancaiEntryImageIdCodec::toDomain));
     }
 
     public static SancaiVisualAsset toVisualAsset(SancaiAssetRequest request) {

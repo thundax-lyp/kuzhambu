@@ -14,12 +14,12 @@ public final class SancaiApplicationAssembler {
         if (command == null) {
             return showcase;
         }
-        showcase.setRequestedAt(command.getRequestedAt() == null ? Instant.now() : command.getRequestedAt());
-        showcase.setStatus(command.getStatus() == null ? SancaiShowcaseStatus.REQUESTED : command.getStatus());
-        showcase.setScopeJson(command.getScopeJson());
-        showcase.setScopeTitle(command.getScopeTitle());
-        showcase.setEntryCount(command.getEntryCount());
-        showcase.setVisibilityRiskStatus(command.getVisibilityRiskStatus());
+        showcase.setRequestedAt(command.requestedAt() == null ? Instant.now() : command.requestedAt());
+        showcase.setStatus(command.status() == null ? SancaiShowcaseStatus.REQUESTED : command.status());
+        showcase.setScopeJson(command.scopeJson());
+        showcase.setScopeTitle(command.scopeTitle());
+        showcase.setEntryCount(command.entryCount());
+        showcase.setVisibilityRiskStatus(command.visibilityRiskStatus());
         return showcase;
     }
 }
