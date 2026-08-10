@@ -18,9 +18,14 @@
 
 ## Plan
 
-1. 仅移除 `application.core` 与对应 Controller/Assembler 的 key。
-2. 随生产代码整改同步删除例外。
-3. 对 HTTP 路径或 service 方法改名同步更新调用方。
+1. 先处理 04 批次评审遗留的登录 smoke 文档路由同步：
+   - 目标文件：`docs/00-governance/HOW-TO-ADMIN-LOGIN-SMOKE.md`
+   - 旧路由：`/api/auth/session/pre-auth-session`
+   - 新路由：`/api/auth/session/pre-auth-session/request`
+   - 触发原因：04 批次将 pre-auth creation 映射迁移到 `pre-auth-session/request` 后，登录 smoke guide 的说明和 curl 命令仍指向旧路由，会导致按文档执行登录冒烟时在预认证步骤返回 404。
+2. 仅移除 `application.core` 与对应 Controller/Assembler 的 key。
+3. 随生产代码整改同步删除例外。
+4. 对 HTTP 路径或 service 方法改名同步更新调用方。
 
 ## Verification
 
