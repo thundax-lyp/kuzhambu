@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.cleanup.query.ClassicsCleanupTargetsQuery;
 import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanupApplicationService.CleanupTarget;
 import com.thundax.kuzhambu.classics.application.cleanup.service.impl.ClassicsCleanupApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
@@ -25,7 +26,8 @@ class ClassicsCleanupApplicationServiceImplTest {
         ClassicsCleanupApplicationServiceImpl service =
                 new ClassicsCleanupApplicationServiceImpl(sancaiAssetRepository, mock(ClassicsContentRepository.class));
 
-        List<CleanupTarget> targets = service.listTargets("expired_draft", now, 14, 10);
+        List<CleanupTarget> targets =
+                service.listTargets(new ClassicsCleanupTargetsQuery("expired_draft", now, 14, 10));
 
         assertEquals(1, targets.size());
         assertEquals("draft", targets.get(0).getTargetType());
@@ -37,7 +39,8 @@ class ClassicsCleanupApplicationServiceImplTest {
         ClassicsCleanupApplicationServiceImpl service = new ClassicsCleanupApplicationServiceImpl(
                 mock(SancaiAssetRepository.class), mock(ClassicsContentRepository.class));
 
-        List<CleanupTarget> targets = service.listTargets("EXPIRED_BACKUP", Instant.now(), null, null);
+        List<CleanupTarget> targets =
+                service.listTargets(new ClassicsCleanupTargetsQuery("EXPIRED_BACKUP", Instant.now(), null, null));
 
         assertEquals(0, targets.size());
     }

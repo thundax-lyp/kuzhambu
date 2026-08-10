@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.report.service.impl;
 
+import com.thundax.kuzhambu.classics.application.report.query.ClassicsReportSummaryQuery;
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult;
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult.ContentGrowthPointResult;
 import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
@@ -45,7 +46,10 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
     }
 
     @Override
-    public ClassicsReportSummaryResult summary(Instant periodStart, Instant periodEnd, String bucketType) {
+    public ClassicsReportSummaryResult summary(ClassicsReportSummaryQuery query) {
+        Instant periodStart = query == null ? null : query.periodStart();
+        Instant periodEnd = query == null ? null : query.periodEnd();
+        String bucketType = query == null ? null : query.bucketType();
         List<SancaiEntry> publicSancaiEntries = sancaiRepository.listEntries(
                 null,
                 null,

@@ -1,7 +1,8 @@
 package com.thundax.kuzhambu.classics.application.cleanup.service;
 
+import com.thundax.kuzhambu.classics.application.cleanup.command.ClassicsCleanupExecuteCommand;
+import com.thundax.kuzhambu.classics.application.cleanup.query.ClassicsCleanupTargetsQuery;
 import com.thundax.kuzhambu.classics.application.cleanup.result.CleanupExecutionResult;
-import java.time.Instant;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,9 +11,9 @@ import lombok.Getter;
 
 public interface ClassicsCleanupApplicationService {
 
-    List<CleanupTarget> listTargets(String cleanupType, Instant requestedAt, Integer retentionDays, Integer limit);
+    List<CleanupTarget> listTargets(ClassicsCleanupTargetsQuery query);
 
-    CleanupExecutionResult executeTarget(String cleanupType, Long targetId);
+    CleanupExecutionResult executeTarget(ClassicsCleanupExecuteCommand command);
 
     @Getter
     @Builder

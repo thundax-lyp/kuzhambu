@@ -64,24 +64,7 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyApplicationServiceBoundaryAllowances() {
-        return List.of(
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.cleanup.service."
-                                + "ClassicsCleanupApplicationService.listTargets(java.lang.String, java.time.Instant, java.lang.Integer, java.lang.Integer)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.classics.application.cleanup.service."
-                        + "ClassicsCleanupApplicationService.executeTarget(java.lang.String, java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.report.service."
-                                + "ClassicsReportApplicationService.summary(java.time.Instant, java.time.Instant, java.lang.String)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.search.service."
-                                + "ClassicsSearchContentApplicationService.getPublicContent(java.lang.String, java.lang.String)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.search.service."
-                                + "ClassicsSearchContentApplicationService.getWorkbenchContent(java.lang.String, java.lang.String)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.search.service."
-                                + "ClassicsSearchContentApplicationService.listWorkbenchContents(java.lang.String, java.lang.String)"));
+        return List.of();
     }
 
     private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {
@@ -97,12 +80,5 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
 
     private static List<ArchitectureRuleAllowance> legacyAssemblerNullReturnAllowances() {
         return List.of();
-    }
-
-    private static ArchitectureRuleAllowance rawParameters(String key) {
-        return ArchitectureRuleAllowance.of(
-                key,
-                "Classics ApplicationService method uses naked values, domain entities, collections, or scattered query parameters.",
-                "Introduce a dedicated Query/Command or strong domain value object for the method input, then remove this allowance.");
     }
 }

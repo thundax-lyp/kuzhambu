@@ -1,11 +1,16 @@
 package com.thundax.kuzhambu.classics.application.facade.impl;
 
+import com.thundax.kuzhambu.classics.application.cleanup.command.ClassicsCleanupExecuteCommand;
+import com.thundax.kuzhambu.classics.application.cleanup.query.ClassicsCleanupTargetsQuery;
 import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanupApplicationService;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.facade.assembler.ClassicsFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
+import com.thundax.kuzhambu.classics.application.report.query.ClassicsReportSummaryQuery;
 import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.application.search.query.ClassicsSearchContentQuery;
+import com.thundax.kuzhambu.classics.application.search.query.ClassicsWorkbenchContentQuery;
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
@@ -80,8 +85,9 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         if (request == null) {
             return null;
         }
-        return classicsFacadeAssembler.toFacadeResponse(classicsReportApplicationService.summary(
-                request.getPeriodStart(), request.getPeriodEnd(), request.getBucketType()));
+        return classicsFacadeAssembler.toFacadeResponse(
+                classicsReportApplicationService.summary(new ClassicsReportSummaryQuery(
+                        request.getPeriodStart(), request.getPeriodEnd(), request.getBucketType())));
     }
 
     @Override
@@ -99,7 +105,7 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         }
         return classicsFacadeAssembler.toPublicContentFacadeResponse(
                 classicsSearchContentApplicationService.getPublicContent(
-                        request.getContentType(), request.getContentId()));
+                        new ClassicsSearchContentQuery(request.getContentType(), request.getContentId())));
     }
 
     @Override
@@ -127,7 +133,8 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
     @Transactional(readOnly = true)
     public ClassicsPublicContentsFacadeResponse listWorkbenchContents(String categoryCode, String volumeCode) {
         return classicsFacadeAssembler.toPublicContentsFacadeResponse(
-                classicsSearchContentApplicationService.listWorkbenchContents(categoryCode, volumeCode));
+                classicsSearchContentApplicationService.listWorkbenchContents(
+                        new ClassicsWorkbenchContentQuery(categoryCode, volumeCode)));
     }
 
     @Override
@@ -138,7 +145,7 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         }
         return classicsFacadeAssembler.toPublicContentFacadeResponse(
                 classicsSearchContentApplicationService.getWorkbenchContent(
-                        request.getContentType(), request.getContentId()));
+                        new ClassicsSearchContentQuery(request.getContentType(), request.getContentId())));
     }
 
     @Override
@@ -208,11 +215,11 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
                     .build();
         }
         List<ClassicsCleanupTargetsFacadeResponse.Target> targets = classicsCleanupApplicationService
-                .listTargets(
+                .listTargets(new ClassicsCleanupTargetsQuery(
                         cleanupType,
                         request == null ? null : request.getRequestedAt(),
                         request == null ? null : request.getRetentionDays(),
-                        request == null ? null : request.getLimit())
+                        request == null ? null : request.getLimit()))
                 .stream()
                 .map(target -> ClassicsCleanupTargetsFacadeResponse.Target.builder()
                         .targetType(target.getTargetType())
@@ -240,7 +247,8 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
                     .build();
         }
         List<ClassicsCleanupExecutionFacadeResponse.ItemResult> itemResults = safeTargetIds(request).stream()
-                .map(targetId -> classicsCleanupApplicationService.executeTarget(cleanupType, targetId))
+                .map(targetId -> classicsCleanupApplicationService.executeTarget(
+                        new ClassicsCleanupExecuteCommand(cleanupType, targetId)))
                 .map(result -> ClassicsCleanupExecutionFacadeResponse.ItemResult.builder()
                         .targetType(result.getTargetType())
                         .targetId(result.getTargetId())
@@ -257,7 +265,8 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
 
     private ClassicsQaKnowledgeFacadeDto getSancaiQaKnowledge(
             String contentType, String contentId, ClassicsContentId domainContentId) {
-        var sourceContent = classicsSearchContentApplicationService.getPublicContent(contentType, contentId);
+        var sourceContent = classicsSearchContentApplicationService.getPublicContent(
+                new ClassicsSearchContentQuery(contentType, contentId));
         if (sourceContent == null) {
             return null;
         }
@@ -274,7 +283,8 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
 
     private ClassicsQaKnowledgeFacadeDto getSancaiWorkbenchQaKnowledge(
             String contentType, String contentId, ClassicsContentId domainContentId) {
-        var sourceContent = classicsSearchContentApplicationService.getWorkbenchContent(contentType, contentId);
+        var sourceContent = classicsSearchContentApplicationService.getWorkbenchContent(
+                new ClassicsSearchContentQuery(contentType, contentId));
         if (sourceContent == null) {
             return null;
         }
@@ -291,7 +301,8 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
 
     private ClassicsQaKnowledgeFacadeDto getWangqiQaKnowledge(
             String contentType, String contentId, ClassicsContentId domainContentId) {
-        var sourceContent = classicsSearchContentApplicationService.getPublicContent(contentType, contentId);
+        var sourceContent = classicsSearchContentApplicationService.getPublicContent(
+                new ClassicsSearchContentQuery(contentType, contentId));
         if (sourceContent == null) {
             return null;
         }
@@ -309,7 +320,8 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
 
     private ClassicsQaKnowledgeFacadeDto getMingCustomsQaKnowledge(
             String contentType, String contentId, ClassicsContentId domainContentId) {
-        var sourceContent = classicsSearchContentApplicationService.getPublicContent(contentType, contentId);
+        var sourceContent = classicsSearchContentApplicationService.getPublicContent(
+                new ClassicsSearchContentQuery(contentType, contentId));
         if (sourceContent == null) {
             return null;
         }

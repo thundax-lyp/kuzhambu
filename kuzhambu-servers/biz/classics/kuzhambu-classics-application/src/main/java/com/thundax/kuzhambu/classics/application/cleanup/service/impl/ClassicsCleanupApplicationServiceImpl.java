@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.classics.application.cleanup.service.impl;
 
+import com.thundax.kuzhambu.classics.application.cleanup.command.ClassicsCleanupExecuteCommand;
+import com.thundax.kuzhambu.classics.application.cleanup.query.ClassicsCleanupTargetsQuery;
 import com.thundax.kuzhambu.classics.application.cleanup.result.CleanupExecutionResult;
 import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanupApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
@@ -37,11 +39,11 @@ public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApp
 
     @Override
     @Transactional(readOnly = true)
-    public List<CleanupTarget> listTargets(
-            String cleanupType, Instant requestedAt, Integer retentionDays, Integer limit) {
-        String normalizedType = normalizeCleanupType(cleanupType);
-        Instant effectiveNow = requestedAt == null ? Instant.now() : requestedAt;
-        int effectiveLimit = normalizeLimit(limit);
+    public List<CleanupTarget> listTargets(ClassicsCleanupTargetsQuery query) {
+        String normalizedType = normalizeCleanupType(query == null ? null : query.cleanupType());
+        Instant effectiveNow = query == null || query.requestedAt() == null ? Instant.now() : query.requestedAt();
+        Integer retentionDays = query == null ? null : query.retentionDays();
+        int effectiveLimit = normalizeLimit(query == null ? null : query.limit());
         if (targetType(normalizedType) == null) {
             return List.of();
         }
@@ -62,8 +64,9 @@ public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CleanupExecutionResult executeTarget(String cleanupType, Long targetId) {
-        String normalizedType = normalizeCleanupType(cleanupType);
+    public CleanupExecutionResult executeTarget(ClassicsCleanupExecuteCommand command) {
+        String normalizedType = normalizeCleanupType(command == null ? null : command.cleanupType());
+        Long targetId = command == null ? null : command.targetId();
         String targetType = targetType(normalizedType);
         if (targetType == null) {
             return result("unknown", targetId, false, UNSUPPORTED_CLEANUP_TYPE);
