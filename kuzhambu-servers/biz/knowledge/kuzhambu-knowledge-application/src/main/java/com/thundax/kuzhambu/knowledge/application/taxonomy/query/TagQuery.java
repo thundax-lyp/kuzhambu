@@ -5,20 +5,16 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatu
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class TagQuery {
-    private String name;
-    private TagCategoryId categoryId;
-    private TagStatus status;
-    private TagSource source;
-    private TagReviewStatus reviewStatus;
-    private SortDirection sortDirection = SortDirection.ASC;
+public record TagQuery(
+        String name,
+        TagCategoryId categoryId,
+        TagStatus status,
+        TagSource source,
+        TagReviewStatus reviewStatus,
+        SortDirection sortDirection) {
+
+    public TagQuery {
+        sortDirection = sortDirection == null ? SortDirection.ASC : sortDirection;
+    }
 }

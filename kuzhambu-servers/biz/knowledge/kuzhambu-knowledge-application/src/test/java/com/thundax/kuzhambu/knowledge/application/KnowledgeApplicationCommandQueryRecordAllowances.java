@@ -15,18 +15,7 @@ final class KnowledgeApplicationCommandQueryRecordAllowances {
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewQuery"));
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery"));
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {

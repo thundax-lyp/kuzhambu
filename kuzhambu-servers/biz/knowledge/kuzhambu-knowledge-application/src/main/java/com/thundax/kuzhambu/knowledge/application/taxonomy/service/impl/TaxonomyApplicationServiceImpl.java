@@ -120,12 +120,12 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     @Override
     public PageResult<TagCategoryResult> pageCategories(TagCategoryQuery query, PageQuery page) {
-        TagCategoryQuery effectiveQuery = query == null ? new TagCategoryQuery() : query;
+        TagCategoryQuery effectiveQuery = query == null ? new TagCategoryQuery(null, null, null) : query;
         PageQuery effectivePage = normalize(page);
 
         PageResult<TagCategory> pageResult = tagCategoryRepository.page(
-                normalizeQueryText(effectiveQuery.getName()),
-                effectiveQuery.getStatus(),
+                normalizeQueryText(effectiveQuery.name()),
+                effectiveQuery.status(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
 
@@ -210,15 +210,15 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     @Override
     public PageResult<TagResult> pageTags(TagQuery query, PageQuery page) {
-        TagQuery effectiveQuery = query == null ? new TagQuery() : query;
+        TagQuery effectiveQuery = query == null ? new TagQuery(null, null, null, null, null, null) : query;
         PageQuery effectivePage = normalize(page);
 
         PageResult<Tag> pageResult = tagRepository.page(
-                normalizeQueryText(effectiveQuery.getName()),
-                effectiveQuery.getCategoryId(),
-                effectiveQuery.getStatus(),
-                effectiveQuery.getSource(),
-                effectiveQuery.getReviewStatus(),
+                normalizeQueryText(effectiveQuery.name()),
+                effectiveQuery.categoryId(),
+                effectiveQuery.status(),
+                effectiveQuery.source(),
+                effectiveQuery.reviewStatus(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
 
@@ -249,8 +249,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Override
     public TagMergePreviewResult previewTagMergeImpact(TagMergePreviewQuery query) {
         ensureCommand(query, "标签合并影响预览查询");
-        Tag sourceTag = ensureTagExists(query.getSourceTagId());
-        Tag targetTag = ensureTagExists(query.getTargetTagId());
+        Tag sourceTag = ensureTagExists(query.sourceTagId());
+        Tag targetTag = ensureTagExists(query.targetTagId());
         List<TagAlias> aliasesToMerge = tagAliasRepository.listByTagId(sourceTag.getId());
         List<TagContentRef> impactedContentRefs = tagContentRefRepository.listByTagId(sourceTag.getId());
         int pendingReviewCount = sourceTag.getReviewStatus() == TagReviewStatus.PENDING ? 1 : 0;
@@ -272,8 +272,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Override
     public TagBatchMergePreviewResult previewTagBatchMergeImpact(TagBatchMergePreviewQuery query) {
         TagBatchMergePreviewQuery effective = ensureCommand(query, "标签批量合并影响预览查询");
-        List<TagId> sourceTagIds = normalizeTagIds(effective.getSourceTagIds(), "sourceTagIds");
-        Tag targetTag = ensureTagUsableForBatchMergeTarget(ensureTagExists(effective.getTargetTagId()));
+        List<TagId> sourceTagIds = normalizeTagIds(effective.sourceTagIds(), "sourceTagIds");
+        Tag targetTag = ensureTagUsableForBatchMergeTarget(ensureTagExists(effective.targetTagId()));
         List<Tag> sourceTags = getExistingTags(sourceTagIds, "sourceTagIds");
         ensureBatchMergeSourceTags(sourceTags, targetTag);
 
@@ -484,7 +484,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     public TagGovernanceMetricsResult getTagGovernanceMetrics(TagGovernanceMetricsQuery query) {
         TagGovernanceMetricsQuery effective = ensureCommand(query, "标签治理统计查询");
         TagGovernanceMetrics metrics =
-                tagGovernanceMetricsRepository.getMetrics(effective.getTopLimit(), effective.getRecentMonths());
+                tagGovernanceMetricsRepository.getMetrics(effective.topLimit(), effective.recentMonths());
         return new TagGovernanceMetricsResult(
                 metrics.getTopTags().stream()
                         .map(item -> new TagGovernanceMetricsResult.TagUsageMetric(
@@ -506,7 +506,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     @Override
     public PageResult<TagResult> pagePendingTags(TagReviewQuery query, PageQuery page) {
-        TagReviewQuery effectiveQuery = query == null ? new TagReviewQuery() : query;
+        TagReviewQuery effectiveQuery = query == null ? new TagReviewQuery(null, null, null) : query;
         PageQuery effectivePage = normalize(page);
 
         PageResult<Tag> pageResult = tagRepository.pagePending(effectivePage.getPageNo(), effectivePage.getPageSize());
@@ -1067,10 +1067,10 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         if (tag.getReviewStatus() != TagReviewStatus.PENDING || !isAiGeneratedSource(tag.getSource())) {
             return false;
         }
-        if (query != null && query.getSource() != null && !isAiGeneratedSource(query.getSource())) {
+        if (query != null && query.source() != null && !isAiGeneratedSource(query.source())) {
             return false;
         }
-        String name = StringUtils.trimToNull(query == null ? null : query.getName());
+        String name = StringUtils.trimToNull(query == null ? null : query.name());
         if (name != null && !StringUtils.containsIgnoreCase(tag.getName(), name)) {
             return false;
         }

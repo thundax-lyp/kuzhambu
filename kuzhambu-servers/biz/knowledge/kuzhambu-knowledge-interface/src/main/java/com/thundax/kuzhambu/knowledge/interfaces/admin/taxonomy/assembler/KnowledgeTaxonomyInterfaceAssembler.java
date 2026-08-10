@@ -79,14 +79,12 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
     private KnowledgeTaxonomyInterfaceAssembler() {}
 
     public static TagCategoryQuery toQuery(TagCategoryPageRequest request) {
-        TagCategoryQuery query = new TagCategoryQuery();
-        query.setName(request == null ? null : request.getName());
-        query.setStatus(
+        return new TagCategoryQuery(
+                request == null ? null : request.getName(),
                 request == null || StringUtils.isBlank(request.getStatus())
                         ? null
-                        : TagCategoryStatus.from(request.getStatus()));
-        query.setSortDirection(resolveSortDirection(request == null ? null : request.getSortDirection()));
-        return query;
+                        : TagCategoryStatus.from(request.getStatus()),
+                resolveSortDirection(request == null ? null : request.getSortDirection()));
     }
 
     public static TagCategoryCreateCommand toCategoryCreateCommand(TagCategoryCreateRequest request) {
@@ -108,23 +106,19 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
     }
 
     public static TagQuery toQuery(TagPageRequest request) {
-        TagQuery query = new TagQuery();
-        query.setName(request == null ? null : request.getName());
-        query.setCategoryId(TagCategoryIdCodec.toDomain(request == null ? null : request.getCategoryId()));
-        query.setStatus(
+        return new TagQuery(
+                request == null ? null : request.getName(),
+                TagCategoryIdCodec.toDomain(request == null ? null : request.getCategoryId()),
                 request == null || StringUtils.isBlank(request.getStatus())
                         ? null
-                        : TagStatus.from(request.getStatus()));
-        query.setSource(
+                        : TagStatus.from(request.getStatus()),
                 request == null || StringUtils.isBlank(request.getSource())
                         ? null
-                        : TagSource.from(request.getSource()));
-        query.setReviewStatus(
+                        : TagSource.from(request.getSource()),
                 request == null || StringUtils.isBlank(request.getReviewStatus())
                         ? null
-                        : TagReviewStatus.from(request.getReviewStatus()));
-        query.setSortDirection(resolveSortDirection(request == null ? null : request.getSortDirection()));
-        return query;
+                        : TagReviewStatus.from(request.getReviewStatus()),
+                resolveSortDirection(request == null ? null : request.getSortDirection()));
     }
 
     public static TagCreateCommand toCreateCommand(TagCreateRequest request) {
@@ -190,14 +184,12 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
     }
 
     public static TagReviewQuery toQuery(TagReviewPageRequest request) {
-        TagReviewQuery query = new TagReviewQuery();
-        query.setName(request == null ? null : request.getName());
-        query.setSource(
+        return new TagReviewQuery(
+                request == null ? null : request.getName(),
                 request == null || StringUtils.isBlank(request.getSource())
                         ? null
-                        : TagSource.from(request.getSource()));
-        query.setSortDirection(resolveSortDirection(request == null ? null : request.getSortDirection()));
-        return query;
+                        : TagSource.from(request.getSource()),
+                resolveSortDirection(request == null ? null : request.getSortDirection()));
     }
 
     public static TagReviewCommand toReviewCommand(TagReviewRequest request) {
