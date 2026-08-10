@@ -13,7 +13,6 @@ import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthenticat
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
-import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalLoginEvent;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
@@ -125,11 +124,12 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     public AuthTokenRefreshDTO refreshAccessToken(AdminAuthOperation operation) {
         try {
-            AuthTokenRefreshDTO result = toInterfaceResult(
-                    adminTokenService.refreshAccessToken(AuthInterfaceAssembler.toRefreshAdminAccessTokenCommand(
-                            operation,
-                            PrincipalClientIdCodec.toDomain(operation.getClientId()),
-                            PrincipalRefreshTokenCode.ofNullable(blankToNull(operation.getRefreshToken())))));
+            PrincipalRefreshTokenCode refreshToken =
+                    PrincipalRefreshTokenCode.ofNullable(blankToNull(operation.getRefreshToken()));
+            AuthTokenRefreshDTO result = toInterfaceResult(adminTokenService.refreshAccessToken(
+                    refreshToken == null
+                            ? AuthInterfaceAssembler.emptyRefreshAdminAccessTokenCommand(operation)
+                            : AuthInterfaceAssembler.toRefreshAdminAccessTokenCommand(operation, refreshToken)));
             if (result != null && result.getAccessToken() != null) {
                 permissionService.createPermissions(
                         result.getAccessToken().getToken(),
@@ -389,7 +389,10 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private AdminAccessTokenQuery accessTokenQuery(String token) {
-        return AuthInterfaceAssembler.toAdminAccessTokenQuery(accessTokenCode(token));
+        PrincipalAccessTokenCode tokenCode = accessTokenCode(token);
+        return tokenCode == null
+                ? AuthInterfaceAssembler.emptyAdminAccessTokenQuery()
+                : AuthInterfaceAssembler.toAdminAccessTokenQuery(tokenCode);
     }
 
     private PrincipalAccessTokenCode accessTokenCode(String token) {

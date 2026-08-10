@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueValidateQuery;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
@@ -203,13 +204,30 @@ public final class AuthInterfaceAssembler {
 
     @NonNull
     public static RefreshAdminAccessTokenCommand toRefreshAdminAccessTokenCommand(
-            @NonNull AdminAuthOperation operation,
-            @NonNull PrincipalClientId clientId,
-            @NonNull PrincipalRefreshTokenCode refreshToken) {
+            @NonNull AdminAuthOperation operation, @NonNull PrincipalRefreshTokenCode refreshToken) {
         Objects.requireNonNull(operation, "operation must not be null");
-        Objects.requireNonNull(clientId, "clientId must not be null");
         Objects.requireNonNull(refreshToken, "refreshToken must not be null");
-        return new RefreshAdminAccessTokenCommand(clientId, refreshToken, operation.getIp(), operation.getUserAgent());
+        return new RefreshAdminAccessTokenCommand(
+                PrincipalClientIdCodec.toDomain(operation.getClientId()),
+                refreshToken,
+                operation.getIp(),
+                operation.getUserAgent());
+    }
+
+    @NonNull
+    public static RefreshAdminAccessTokenCommand emptyRefreshAdminAccessTokenCommand(
+            @NonNull AdminAuthOperation operation) {
+        Objects.requireNonNull(operation, "operation must not be null");
+        return new RefreshAdminAccessTokenCommand(
+                PrincipalClientIdCodec.toDomain(operation.getClientId()),
+                null,
+                operation.getIp(),
+                operation.getUserAgent());
+    }
+
+    @NonNull
+    public static AdminAccessTokenQuery emptyAdminAccessTokenQuery() {
+        return new AdminAccessTokenQuery(null);
     }
 
     @NonNull

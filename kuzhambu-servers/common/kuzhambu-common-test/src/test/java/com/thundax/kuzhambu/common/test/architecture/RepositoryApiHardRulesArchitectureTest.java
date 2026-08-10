@@ -206,22 +206,6 @@ class RepositoryApiHardRulesArchitectureTest {
                 "method=avatarImage");
         addLegacyActionVerbAllowances(
                 allowances,
-                "kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/audit/controller/AuditController.java",
-                "method=meta",
-                "method=meta path=meta",
-                "method=history",
-                "method=history path=history",
-                "method=detail",
-                "method=detail path=detail",
-                "method=objectOverview",
-                "method=objectOverview path=object/overview",
-                "method=objectPage",
-                "method=options",
-                "method=options path=options",
-                "method=fields",
-                "method=fields path=fields");
-        addLegacyActionVerbAllowances(
-                allowances,
                 "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/graph/controller/KnowledgeGraphExtractionController.java",
                 "method=cancelBatchTask path=task/cancel-batch");
         addLegacyActionVerbAllowances(
