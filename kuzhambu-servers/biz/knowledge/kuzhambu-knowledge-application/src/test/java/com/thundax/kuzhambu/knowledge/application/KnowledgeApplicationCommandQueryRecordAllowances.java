@@ -17,14 +17,6 @@ final class KnowledgeApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchMergeCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagExtractionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryQuery"),

@@ -310,8 +310,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void applyTagMerge(TagMergeCommand command) {
         TagMergeCommand effective = ensureCommand(command, "标签合并命令");
-        Tag sourceTag = ensureTagExists(effective.getSourceTagId());
-        Tag targetTag = ensureTagExists(effective.getTargetTagId());
+        Tag sourceTag = ensureTagExists(effective.sourceTagId());
+        Tag targetTag = ensureTagExists(effective.targetTagId());
         List<TagContentRef> sourceContentRefs = tagContentRefRepository.listByTagId(sourceTag.getId());
         sourceTag.mergeInto(targetTag);
         if (tagRepository.update(sourceTag) != 1) {
@@ -331,8 +331,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void applyTagBatchMerge(TagBatchMergeCommand command) {
         TagBatchMergeCommand effective = ensureCommand(command, "标签批量合并命令");
-        List<TagId> sourceTagIds = normalizeTagIds(effective.getSourceTagIds(), "sourceTagIds");
-        Tag targetTag = ensureTagUsableForBatchMergeTarget(ensureTagExists(effective.getTargetTagId()));
+        List<TagId> sourceTagIds = normalizeTagIds(effective.sourceTagIds(), "sourceTagIds");
+        Tag targetTag = ensureTagUsableForBatchMergeTarget(ensureTagExists(effective.targetTagId()));
         List<Tag> sourceTags = getExistingTags(sourceTagIds, "sourceTagIds");
         ensureBatchMergeSourceTags(sourceTags, targetTag);
 
@@ -602,17 +602,17 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Override
     public TagExtractionResult extractTags(TagExtractionCommand command) {
         TagExtractionCommand effective = ensureCommand(command, "标签抽取命令");
-        String sourceContentType = trimText(effective.getSourceContentType(), "sourceContentType");
-        Long sourceContentId = ensureId(effective.getSourceContentId(), "sourceContentId");
-        String contentText = trimText(effective.getContentText(), "contentText");
-        Long modelId = ensureId(effective.getModelId(), "modelId");
-        String modelName = trimText(effective.getModelName(), "modelName");
-        Long requestedBy = ensureId(effective.getRequestedBy(), "requestedBy");
-        int maxTags = effective.getMaxTags() == null ? 10 : effective.getMaxTags();
+        String sourceContentType = trimText(effective.sourceContentType(), "sourceContentType");
+        Long sourceContentId = ensureId(effective.sourceContentId(), "sourceContentId");
+        String contentText = trimText(effective.contentText(), "contentText");
+        Long modelId = ensureId(effective.modelId(), "modelId");
+        String modelName = trimText(effective.modelName(), "modelName");
+        Long requestedBy = ensureId(effective.requestedBy(), "requestedBy");
+        int maxTags = effective.maxTags() == null ? 10 : effective.maxTags();
         if (maxTags < 1) {
             throw new BizException("maxTags must be greater than 0");
         }
-        boolean allowNewTags = effective.getAllowNewTags() == null || Boolean.TRUE.equals(effective.getAllowNewTags());
+        boolean allowNewTags = effective.allowNewTags() == null || Boolean.TRUE.equals(effective.allowNewTags());
 
         String requestId = "knowledge-tag-" + UUID.randomUUID();
         KnowledgeAiExtractionFacadeResponse response =
@@ -626,7 +626,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .serviceRole("KNOWLEDGE")
                         .modelId(modelId)
                         .modelName(modelName)
-                        .promptVersionId(effective.getPromptVersionId())
+                        .promptVersionId(effective.promptVersionId())
                         .requestId(requestId)
                         .traceId(requestId)
                         .promptMessagesJson(promptMessagesJson())
@@ -652,9 +652,9 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void applyExtractedTags(TagCandidateApplyCommand command) {
         TagCandidateApplyCommand effective = ensureCommand(command, "标签候选应用命令");
-        Long candidateId = ensureId(effective.getAiCandidateId(), "aiCandidateId");
-        Long reviewedBy = ensureId(effective.getReviewedBy(), "reviewedBy");
-        List<TagCandidateApplyItemCommand> selectedTags = effective.getSelectedTags();
+        Long candidateId = ensureId(effective.aiCandidateId(), "aiCandidateId");
+        Long reviewedBy = ensureId(effective.reviewedBy(), "reviewedBy");
+        List<TagCandidateApplyItemCommand> selectedTags = effective.selectedTags();
         if (selectedTags == null || selectedTags.isEmpty()) {
             throw new BizException("selectedTags must not be empty");
         }
@@ -676,7 +676,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .build());
 
         for (TagCandidateApplyItemCommand item : selectedTags) {
-            applySelectedTag(item, effective.getReviewNote());
+            applySelectedTag(item, effective.reviewNote());
         }
         aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
                 .candidateId(pendingCandidate.getCandidateId())
@@ -724,8 +724,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     private void applySelectedTag(TagCandidateApplyItemCommand item, String reviewNote) {
         TagCandidateApplyItemCommand effective = ensureCommand(item, "标签候选项");
-        String name = trimText(effective.getName(), "name");
-        TagId matchedTagId = parseTagId(effective.getMatchedExistingTagId());
+        String name = trimText(effective.name(), "name");
+        TagId matchedTagId = parseTagId(effective.matchedExistingTagId());
         if (matchedTagId != null) {
             ensureTagExists(matchedTagId);
             return;
@@ -737,8 +737,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         Tag tag = new Tag();
         tag.setId(TagIdCodec.toDomain(idGenerator.nextId().value()));
         tag.setName(name);
-        tag.setCategoryId(parseCategoryId(effective.getCategoryId()));
-        tag.setDescription(trimOptionalText(effective.getReason()));
+        tag.setCategoryId(parseCategoryId(effective.categoryId()));
+        tag.setDescription(trimOptionalText(effective.reason()));
         tag.setStatus(TagStatus.ENABLED);
         tag.setSource(TagSource.AI_EXTRACTED);
         tag.setReviewStatus(TagReviewStatus.PENDING);
@@ -759,12 +759,12 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     private Map<String, Object> candidateApplyPayload(TagCandidateApplyCommand command, Long reviewedBy) {
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("aiCandidateId", command.getAiCandidateId());
+        payload.put("aiCandidateId", command.aiCandidateId());
         payload.put("reviewedBy", reviewedBy);
-        payload.put("reviewNote", trimOptionalText(command.getReviewNote()));
+        payload.put("reviewNote", trimOptionalText(command.reviewNote()));
         payload.put(
                 "selectedTags",
-                command.getSelectedTags().stream()
+                command.selectedTags().stream()
                         .filter(Objects::nonNull)
                         .map(this::candidateApplyItemPayload)
                         .collect(Collectors.toList()));
@@ -773,12 +773,12 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     private Map<String, Object> candidateApplyItemPayload(TagCandidateApplyItemCommand item) {
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("name", item.getName());
-        payload.put("categoryId", item.getCategoryId());
-        payload.put("categoryName", item.getCategoryName());
-        payload.put("confidence", item.getConfidence());
-        payload.put("reason", item.getReason());
-        payload.put("matchedExistingTagId", item.getMatchedExistingTagId());
+        payload.put("name", item.name());
+        payload.put("categoryId", item.categoryId());
+        payload.put("categoryName", item.categoryName());
+        payload.put("confidence", item.confidence());
+        payload.put("reason", item.reason());
+        payload.put("matchedExistingTagId", item.matchedExistingTagId());
         return payload;
     }
 
@@ -808,7 +808,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("contentType", sourceContentType);
         payload.put("contentId", sourceContentId);
-        payload.put("sourceTitle", trimOptionalText(command.getContentTitle()));
+        payload.put("sourceTitle", trimOptionalText(command.contentTitle()));
         payload.put("sourceText", contentText);
         payload.put("existingTags", existingTagPayloads());
         payload.put("categories", categoryPayloads());
