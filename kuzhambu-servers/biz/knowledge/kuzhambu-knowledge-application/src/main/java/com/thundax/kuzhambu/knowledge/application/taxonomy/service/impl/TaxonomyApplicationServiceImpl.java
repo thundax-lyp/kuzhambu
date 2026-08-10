@@ -143,15 +143,15 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public TagCategoryId createCategory(TagCategoryCreateCommand command) {
         TagCategoryCreateCommand effective = ensureCommand(command, "标签分类创建命令");
-        TagCategoryId categoryId = ensureId(effective.getId(), "categoryId");
-        String name = trimText(effective.getName(), "分类名称");
+        TagCategoryId categoryId = ensureId(effective.id(), "categoryId");
+        String name = trimText(effective.name(), "分类名称");
 
         TagCategory category = new TagCategory();
         category.setId(categoryId);
         category.setName(name);
-        category.setDescription(trimOptionalText(effective.getDescription()));
+        category.setDescription(trimOptionalText(effective.description()));
         category.setPriority(tagCategoryRepository.maxPriority() + 1);
-        category.setStatus(effective.getStatus() == null ? TagCategoryStatus.ENABLED : effective.getStatus());
+        category.setStatus(effective.status() == null ? TagCategoryStatus.ENABLED : effective.status());
 
         if (tagCategoryRepository.countByName(name, categoryId) > 0) {
             throw new BizException("标签分类名已存在: " + name);
@@ -164,14 +164,14 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void updateCategory(TagCategoryUpdateCommand command) {
         TagCategoryUpdateCommand effective = ensureCommand(command, "标签分类更新命令");
-        TagCategoryId categoryId = ensureId(effective.getId(), "categoryId");
-        String name = trimText(effective.getName(), "分类名称");
+        TagCategoryId categoryId = ensureId(effective.id(), "categoryId");
+        String name = trimText(effective.name(), "分类名称");
 
         TagCategory category = getExistingCategory(categoryId);
         TagCategory updated = new TagCategory();
         updated.setId(category.getId());
         updated.setName(name);
-        updated.setDescription(trimOptionalText(effective.getDescription()));
+        updated.setDescription(trimOptionalText(effective.description()));
         updated.setPriority(category.getPriority());
         updated.setStatus(category.getStatus());
 
@@ -188,10 +188,10 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void changeCategoryStatus(TagCategoryStatusCommand command) {
         TagCategoryStatusCommand effective = ensureCommand(command, "标签分类状态命令");
-        TagCategoryId categoryId = ensureId(effective.getId(), "categoryId");
+        TagCategoryId categoryId = ensureId(effective.id(), "categoryId");
 
         TagCategory category = getExistingCategory(categoryId);
-        TagCategoryStatus status = requireStatus(effective.getStatus(), "categoryStatus");
+        TagCategoryStatus status = requireStatus(effective.status(), "categoryStatus");
 
         if (TagCategoryStatus.DISABLED == status
                 && category != null
@@ -696,9 +696,9 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public TagAliasId createTagAlias(TagAliasCreateCommand command) {
         TagAliasCreateCommand effective = ensureCommand(command, "标签别名创建命令");
-        TagAliasId aliasId = ensureId(effective.getId(), "aliasId");
-        String name = trimText(effective.getName(), "别名");
-        TagId tagId = ensureId(effective.getTagId(), "tagId");
+        TagAliasId aliasId = ensureId(effective.id(), "aliasId");
+        String name = trimText(effective.name(), "别名");
+        TagId tagId = ensureId(effective.tagId(), "tagId");
         ensureTagExists(tagId);
 
         if (tagAliasRepository.countByName(name, aliasId) > 0) {
@@ -709,7 +709,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         alias.setId(aliasId);
         alias.setTagId(tagId);
         alias.setName(name);
-        alias.setSource(effective.getSource() == null ? TagSource.MANUAL : effective.getSource());
+        alias.setSource(effective.source() == null ? TagSource.MANUAL : effective.source());
 
         return tagAliasRepository.insert(alias);
     }
@@ -718,7 +718,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void removeTagAlias(TagAliasRemoveCommand command) {
         TagAliasRemoveCommand effective = ensureCommand(command, "标签别名删除命令");
-        TagAliasId id = ensureId(effective.getId(), "aliasId");
+        TagAliasId id = ensureId(effective.id(), "aliasId");
         tagAliasRepository.deleteById(id);
     }
 
