@@ -149,7 +149,7 @@ const createLineageMockHandlers = async (page: Page) => {
         }
     ];
 
-    await page.route("**/kuzhambu-admin-api/api/knowledge/lineage/canvas", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/knowledge/lineage/get", async (route) => {
         const payload = readRequestBody(route.request().postData());
         canvasRequests.push(payload);
         await fulfillSuccess(route, {

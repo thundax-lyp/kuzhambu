@@ -169,22 +169,19 @@ const createQualityReportMockHandlers = async (page: Page) => {
             records: [report]
         });
     });
-    await page.route("**/kuzhambu-admin-api/api/knowledge/quality/report/detail", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/knowledge/quality/report/get", async (route) => {
         detailPayload = readRequestBody(route.request().postData());
         await fulfillSuccess(route, detail);
     });
+    await page.route("**/kuzhambu-admin-api/api/knowledge/quality/report/create", async (route) => {
+        generatePayload = readRequestBody(route.request().postData());
+        await fulfillSuccess(route, {
+            ...detail,
+            stale: false
+        });
+    });
     await page.route(
-        "**/kuzhambu-admin-api/api/knowledge/quality/report/generate",
-        async (route) => {
-            generatePayload = readRequestBody(route.request().postData());
-            await fulfillSuccess(route, {
-                ...detail,
-                stale: false
-            });
-        }
-    );
-    await page.route(
-        "**/kuzhambu-admin-api/api/knowledge/quality/report/reextract-low-quality-category",
+        "**/kuzhambu-admin-api/api/knowledge/quality/report/extract",
         async (route) => {
             reextractPayload = readRequestBody(route.request().postData());
             await fulfillSuccess(route, {

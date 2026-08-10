@@ -148,13 +148,16 @@ export const pageTasks = (request: RefinementTaskPageQuery = {}) => {
 };
 
 export const getTaskDraft = (request: RefinementTaskOpenCommand) => {
-    return postJson<RefinementDetailRecord, RefinementTaskOpenCommand>(`${API_PREFIX}/task/open`, {
-        body: request
-    });
+    return postJson<RefinementDetailRecord, RefinementTaskOpenCommand>(
+        `${API_PREFIX}/task/create`,
+        {
+            body: request
+        }
+    );
 };
 
 export const getTaskDetail = (request: RefinementTaskIdCommand) => {
-    return postJson<RefinementDetailRecord, RefinementTaskIdCommand>(`${API_PREFIX}/task/detail`, {
+    return postJson<RefinementDetailRecord, RefinementTaskIdCommand>(`${API_PREFIX}/task/get`, {
         body: request
     });
 };
@@ -220,10 +223,9 @@ export const applyTask = (request: RefinementTaskApplyCommand) => {
 };
 
 export const getQualitySummary = (request: RefinementTaskIdCommand) => {
-    return postJson<QualitySummaryRecord, RefinementTaskIdCommand>(
-        `${API_PREFIX}/quality/summary`,
-        { body: request }
-    );
+    return postJson<QualitySummaryRecord, RefinementTaskIdCommand>(`${API_PREFIX}/quality/get`, {
+        body: request
+    });
 };
 
 export const addLineageNode = (request: UpsertRefinementLineageNodeCommand) => {

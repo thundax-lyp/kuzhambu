@@ -15,7 +15,7 @@ export interface LineageCanvasQuery {
 }
 
 export const getLineageCanvas = (request: LineageCanvasQuery = {}) => {
-    return postJson<LineageCanvasRecord, LineageCanvasQuery>(`${API_PREFIX}/canvas`, {
+    return postJson<LineageCanvasRecord, LineageCanvasQuery>(`${API_PREFIX}/get`, {
         body: request
     });
 };
