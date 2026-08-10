@@ -60,7 +60,7 @@ class KnowledgeGraphRefinementControllerTest {
     }
 
     @Test
-    void openTaskShouldMapDetailResponse() {
+    void createTaskShouldMapDetailResponse() {
         KnowledgeGraphRefinementApplicationService service = mock(KnowledgeGraphRefinementApplicationService.class);
         KnowledgeGraphRefinementController controller = new KnowledgeGraphRefinementController(service);
         RefinementRequests.TaskOpenRequest request = new RefinementRequests.TaskOpenRequest();
@@ -83,7 +83,7 @@ class KnowledgeGraphRefinementControllerTest {
                         List.of(),
                         List.of()));
 
-        var response = controller.openTask(request);
+        var response = controller.createTask(request);
 
         verify(service)
                 .openTask(argThat(
@@ -158,7 +158,7 @@ class KnowledgeGraphRefinementControllerTest {
         when(service.qualitySummary(any(QualitySummaryQuery.class)))
                 .thenReturn(new QualitySummaryResult(0.9D, 0.8D, 0.7D));
 
-        var response = controller.qualitySummary(request);
+        var response = controller.getQualitySummary(request);
 
         verify(service).qualitySummary(argThat((QualitySummaryQuery query) -> Long.valueOf(31L)
                 .equals(query.refinementTaskId())));

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +16,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class TaskPageRequest extends PageRequest {
         @JsonProperty("taskType")
         private String taskType;
@@ -36,6 +38,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class TaskOpenRequest {
         @JsonProperty("graphVersionId")
         private Long graphVersionId;
@@ -48,6 +51,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class TaskDetailRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -57,6 +61,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class TaskApplyRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -69,6 +74,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class EntityUpsertRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -102,6 +108,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class EntityConfirmRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -117,6 +124,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class EntityDeleteRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -132,6 +140,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class RelationUpsertRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -174,6 +183,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class RelationConfirmRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -189,6 +199,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class RelationDeleteRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -204,6 +215,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageNodeUpsertRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -240,6 +252,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageNodeConfirmRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -255,6 +268,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageNodeDeleteRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -270,6 +284,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageRelationUpsertRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -312,6 +327,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageRelationConfirmRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -327,6 +343,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageRelationDeleteRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -342,6 +359,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class AnnotationUpsertRequest {
         @JsonProperty("annotationId")
         private Long annotationId;
@@ -378,6 +396,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class AnnotationDeleteRequest {
         @JsonProperty("annotationId")
         private Long annotationId;
@@ -387,6 +406,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class AnnotationPageRequest extends PageRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;
@@ -399,6 +419,7 @@ public final class RefinementRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class QualitySummaryRequest {
         @JsonProperty("refinementTaskId")
         private Long refinementTaskId;

@@ -33,11 +33,11 @@ class KnowledgeQualityReportControllerTest {
     void routesAndPermissionsShouldRemainStable() throws Exception {
         RequestMapping root = KnowledgeQualityReportController.class.getAnnotation(RequestMapping.class);
         assertEquals("/api/knowledge/quality/report", root.value()[0]);
-        assertPostMapping("generate", "generate", "knowledge:quality-report:generate");
+        assertPostMapping("create", "create", "knowledge:quality-report:generate");
         assertPostMapping("page", "page", "knowledge:quality-report:view");
-        assertPostMapping("detail", "detail", "knowledge:quality-report:view");
+        assertPostMapping("get", "get", "knowledge:quality-report:view");
         assertPostMapping("latest", "latest", "knowledge:quality-report:view");
-        assertPostMapping("reextractLowQualityCategory", "reextract-low-quality-category", "knowledge:graph:edit");
+        assertPostMapping("extractLowQualityCategory", "extract", "knowledge:graph:edit");
     }
 
     @Test
@@ -50,7 +50,7 @@ class KnowledgeQualityReportControllerTest {
         when(service.generateReport(any()))
                 .thenReturn(new QualityReportDetailResult(reportRecord(), List.of(), List.of(), List.of()));
 
-        var response = controller.generate(request);
+        var response = controller.create(request);
 
         ArgumentCaptor<GenerateQualityReportCommand> captor =
                 ArgumentCaptor.forClass(GenerateQualityReportCommand.class);
@@ -92,7 +92,7 @@ class KnowledgeQualityReportControllerTest {
         when(service.detail(any()))
                 .thenReturn(new QualityReportDetailResult(reportRecord(), List.of(), List.of(), List.of()));
 
-        var response = controller.detail(request);
+        var response = controller.get(request);
 
         ArgumentCaptor<QualityReportDetailQuery> captor = ArgumentCaptor.forClass(QualityReportDetailQuery.class);
         verify(service).detail(captor.capture());
@@ -145,7 +145,7 @@ class KnowledgeQualityReportControllerTest {
                         "{\"sourceContentIds\":[2001]}",
                         true));
 
-        var response = controller.reextractLowQualityCategory(request);
+        var response = controller.extractLowQualityCategory(request);
 
         ArgumentCaptor<ReextractLowQualityCategoryCommand> captor =
                 ArgumentCaptor.forClass(ReextractLowQualityCategoryCommand.class);
@@ -167,11 +167,11 @@ class KnowledgeQualityReportControllerTest {
 
     private static Class<?> requestType(String methodName) {
         return switch (methodName) {
-            case "generate" -> QualityReportRequests.GenerateRequest.class;
+            case "create" -> QualityReportRequests.GenerateRequest.class;
             case "page" -> QualityReportRequests.PageRequestBody.class;
-            case "detail" -> QualityReportRequests.DetailRequest.class;
+            case "get" -> QualityReportRequests.DetailRequest.class;
             case "latest" -> QualityReportRequests.LatestRequest.class;
-            case "reextractLowQualityCategory" -> QualityReportRequests.ReextractRequest.class;
+            case "extractLowQualityCategory" -> QualityReportRequests.ReextractRequest.class;
             default -> throw new IllegalArgumentException(methodName);
         };
     }

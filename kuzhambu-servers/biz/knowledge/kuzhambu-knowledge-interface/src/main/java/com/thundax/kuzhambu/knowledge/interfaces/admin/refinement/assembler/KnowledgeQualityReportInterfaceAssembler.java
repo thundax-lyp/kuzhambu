@@ -14,104 +14,118 @@ import com.thundax.kuzhambu.knowledge.application.refinement.result.ReextractLow
 import com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller.request.QualityReportRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller.response.QualityReportResponses;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class KnowledgeQualityReportInterfaceAssembler {
 
     private KnowledgeQualityReportInterfaceAssembler() {}
 
-    public static GenerateQualityReportCommand toCommand(QualityReportRequests.GenerateRequest request) {
-        return new GenerateQualityReportCommand(
-                request == null ? null : request.getGraphVersionId(),
-                request == null ? null : request.getGeneratedBy());
+    @NonNull
+    public static GenerateQualityReportCommand toCommand(@NonNull QualityReportRequests.GenerateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new GenerateQualityReportCommand(request.getGraphVersionId(), request.getGeneratedBy());
     }
 
-    public static ReextractLowQualityCategoryCommand toCommand(QualityReportRequests.ReextractRequest request) {
+    @NonNull
+    public static ReextractLowQualityCategoryCommand toCommand(
+            @NonNull QualityReportRequests.ReextractRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new ReextractLowQualityCategoryCommand(
-                request == null ? null : request.getReportId(),
-                request == null ? null : request.getSourceCategoryCode(),
-                request == null ? null : request.getTaskType(),
-                request == null ? null : request.getReplaceUnconfirmedOnly(),
-                request == null ? null : request.getModelId(),
-                request == null ? null : request.getModelName(),
-                request == null ? null : request.getPromptMessagesJson(),
-                request == null ? null : request.getInputPayloadJson(),
-                request == null ? null : request.getRequestedBy());
+                request.getReportId(),
+                request.getSourceCategoryCode(),
+                request.getTaskType(),
+                request.getReplaceUnconfirmedOnly(),
+                request.getModelId(),
+                request.getModelName(),
+                request.getPromptMessagesJson(),
+                request.getInputPayloadJson(),
+                request.getRequestedBy());
     }
 
-    public static QualityReportQuery toQuery(QualityReportRequests.PageRequestBody request) {
+    @NonNull
+    public static QualityReportQuery toQuery(@NonNull QualityReportRequests.PageRequestBody request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new QualityReportQuery(
-                request == null ? null : request.getGraphVersionId(),
-                request == null ? null : request.getSourceContentType(),
-                request == null ? null : request.getSourceContentId(),
-                request == null ? null : request.getReportStatus());
+                request.getGraphVersionId(),
+                request.getSourceContentType(),
+                request.getSourceContentId(),
+                request.getReportStatus());
     }
 
-    public static QualityReportDetailQuery toDetailQuery(QualityReportRequests.DetailRequest request) {
-        return new QualityReportDetailQuery(request == null ? null : request.getReportId());
+    @NonNull
+    public static QualityReportDetailQuery toDetailQuery(@NonNull QualityReportRequests.DetailRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new QualityReportDetailQuery(request.getReportId());
     }
 
-    public static LatestQualityReportQuery toLatestQuery(QualityReportRequests.LatestRequest request) {
-        return new LatestQualityReportQuery(request == null ? null : request.getGraphVersionId());
+    @NonNull
+    public static LatestQualityReportQuery toLatestQuery(@NonNull QualityReportRequests.LatestRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new LatestQualityReportQuery(request.getGraphVersionId());
     }
 
-    public static QualityReportResponses.DetailResponse toResponse(QualityReportDetailResult result) {
+    @NonNull
+    public static QualityReportResponses.DetailResponse toResponse(@NonNull QualityReportDetailResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return QualityReportResponses.DetailResponse.builder()
-                .report(toResponse(result == null ? null : result.getReport()))
-                .issues(mapIssues(result == null ? null : result.getIssues()))
-                .sourceDetails(mapSourceDetails(result == null ? null : result.getSourceDetails()))
-                .annotations(mapAnnotations(result == null ? null : result.getAnnotations()))
-                .stale(result == null ? null : result.getStale())
-                .staleReason(result == null ? null : result.getStaleReason())
-                .lastRefinementAppliedAt(result == null ? null : result.getLastRefinementAppliedAt())
+                .report(toResponse(result.getReport()))
+                .issues(mapIssues(result.getIssues()))
+                .sourceDetails(mapSourceDetails(result.getSourceDetails()))
+                .annotations(mapAnnotations(result.getAnnotations()))
+                .stale(result.getStale())
+                .staleReason(result.getStaleReason())
+                .lastRefinementAppliedAt(result.getLastRefinementAppliedAt())
                 .build();
     }
 
-    public static QualityReportResponses.ReportResponse toResponse(ReportRecord result) {
-        return result == null
-                ? null
-                : QualityReportResponses.ReportResponse.builder()
-                        .reportId(result.getReportId())
-                        .reportNo(result.getReportNo())
-                        .graphVersionId(result.getGraphVersionId())
-                        .sourceContentType(result.getSourceContentType())
-                        .sourceContentId(result.getSourceContentId())
-                        .sourceCategoryCode(result.getSourceCategoryCode())
-                        .sourceCategoryName(result.getSourceCategoryName())
-                        .reportStatus(result.getReportStatus())
-                        .entityTotalCount(result.getEntityTotalCount())
-                        .entityConfirmedCount(result.getEntityConfirmedCount())
-                        .relationTotalCount(result.getRelationTotalCount())
-                        .relationConfirmedCount(result.getRelationConfirmedCount())
-                        .lineageTotalCount(result.getLineageTotalCount())
-                        .lineageConfirmedCount(result.getLineageConfirmedCount())
-                        .entityCoverageRate(result.getEntityCoverageRate())
-                        .relationAccuracyRate(result.getRelationAccuracyRate())
-                        .lineageCoverageRate(result.getLineageCoverageRate())
-                        .completenessRate(result.getCompletenessRate())
-                        .annotationCount(result.getAnnotationCount())
-                        .issueCount(result.getIssueCount())
-                        .generatedBy(result.getGeneratedBy())
-                        .generatedAt(result.getGeneratedAt())
-                        .publishedAt(result.getPublishedAt())
-                        .build();
+    @NonNull
+    public static QualityReportResponses.ReportResponse toResponse(@NonNull ReportRecord result) {
+        Objects.requireNonNull(result, "result must not be null");
+        return QualityReportResponses.ReportResponse.builder()
+                .reportId(result.getReportId())
+                .reportNo(result.getReportNo())
+                .graphVersionId(result.getGraphVersionId())
+                .sourceContentType(result.getSourceContentType())
+                .sourceContentId(result.getSourceContentId())
+                .sourceCategoryCode(result.getSourceCategoryCode())
+                .sourceCategoryName(result.getSourceCategoryName())
+                .reportStatus(result.getReportStatus())
+                .entityTotalCount(result.getEntityTotalCount())
+                .entityConfirmedCount(result.getEntityConfirmedCount())
+                .relationTotalCount(result.getRelationTotalCount())
+                .relationConfirmedCount(result.getRelationConfirmedCount())
+                .lineageTotalCount(result.getLineageTotalCount())
+                .lineageConfirmedCount(result.getLineageConfirmedCount())
+                .entityCoverageRate(result.getEntityCoverageRate())
+                .relationAccuracyRate(result.getRelationAccuracyRate())
+                .lineageCoverageRate(result.getLineageCoverageRate())
+                .completenessRate(result.getCompletenessRate())
+                .annotationCount(result.getAnnotationCount())
+                .issueCount(result.getIssueCount())
+                .generatedBy(result.getGeneratedBy())
+                .generatedAt(result.getGeneratedAt())
+                .publishedAt(result.getPublishedAt())
+                .build();
     }
 
-    public static QualityReportResponses.ReextractResponse toResponse(ReextractLowQualityCategoryResult result) {
-        return result == null
-                ? null
-                : QualityReportResponses.ReextractResponse.builder()
-                        .reportId(result.getReportId())
-                        .sourceCategoryCode(result.getSourceCategoryCode())
-                        .sourceCategoryName(result.getSourceCategoryName())
-                        .sourceContentType(result.getSourceContentType())
-                        .sourceContentId(result.getSourceContentId())
-                        .taskId(result.getTaskId())
-                        .batchJobId(result.getBatchJobId())
-                        .taskType(result.getTaskType())
-                        .triggerSource(result.getTriggerSource())
-                        .selectionScopeJson(result.getSelectionScopeJson())
-                        .replaceUnconfirmedOnly(result.getReplaceUnconfirmedOnly())
-                        .build();
+    @NonNull
+    public static QualityReportResponses.ReextractResponse toResponse(
+            @NonNull ReextractLowQualityCategoryResult result) {
+        Objects.requireNonNull(result, "result must not be null");
+        return QualityReportResponses.ReextractResponse.builder()
+                .reportId(result.getReportId())
+                .sourceCategoryCode(result.getSourceCategoryCode())
+                .sourceCategoryName(result.getSourceCategoryName())
+                .sourceContentType(result.getSourceContentType())
+                .sourceContentId(result.getSourceContentId())
+                .taskId(result.getTaskId())
+                .batchJobId(result.getBatchJobId())
+                .taskType(result.getTaskType())
+                .triggerSource(result.getTriggerSource())
+                .selectionScopeJson(result.getSelectionScopeJson())
+                .replaceUnconfirmedOnly(result.getReplaceUnconfirmedOnly())
+                .build();
     }
 
     private static List<QualityReportResponses.IssueResponse> mapIssues(List<IssueRecord> issues) {
@@ -124,15 +138,15 @@ public final class KnowledgeQualityReportInterfaceAssembler {
 
     private static QualityReportResponses.IssueResponse toResponse(IssueRecord result) {
         return QualityReportResponses.IssueResponse.builder()
-                .issueId(result == null ? null : result.getIssueId())
-                .issueType(result == null ? null : result.getIssueType())
-                .severity(result == null ? null : result.getSeverity())
-                .objectType(result == null ? null : result.getObjectType())
-                .objectKey(result == null ? null : result.getObjectKey())
-                .title(result == null ? null : result.getTitle())
-                .description(result == null ? null : result.getDescription())
-                .suggestion(result == null ? null : result.getSuggestion())
-                .href(result == null ? null : result.getHref())
+                .issueId(result.getIssueId())
+                .issueType(result.getIssueType())
+                .severity(result.getSeverity())
+                .objectType(result.getObjectType())
+                .objectKey(result.getObjectKey())
+                .title(result.getTitle())
+                .description(result.getDescription())
+                .suggestion(result.getSuggestion())
+                .href(result.getHref())
                 .build();
     }
 
@@ -147,17 +161,17 @@ public final class KnowledgeQualityReportInterfaceAssembler {
 
     private static QualityReportResponses.SourceDetailResponse toResponse(SourceDetailRecord result) {
         return QualityReportResponses.SourceDetailResponse.builder()
-                .detailId(result == null ? null : result.getDetailId())
-                .sourceContentType(result == null ? null : result.getSourceContentType())
-                .sourceContentId(result == null ? null : result.getSourceContentId())
-                .sourceCategoryCode(result == null ? null : result.getSourceCategoryCode())
-                .sourceCategoryName(result == null ? null : result.getSourceCategoryName())
-                .graphVersionId(result == null ? null : result.getGraphVersionId())
-                .appliedAt(result == null ? null : result.getAppliedAt())
-                .annotationCount(result == null ? null : result.getAnnotationCount())
-                .issueCount(result == null ? null : result.getIssueCount())
-                .status(result == null ? null : result.getStatus())
-                .href(result == null ? null : result.getHref())
+                .detailId(result.getDetailId())
+                .sourceContentType(result.getSourceContentType())
+                .sourceContentId(result.getSourceContentId())
+                .sourceCategoryCode(result.getSourceCategoryCode())
+                .sourceCategoryName(result.getSourceCategoryName())
+                .graphVersionId(result.getGraphVersionId())
+                .appliedAt(result.getAppliedAt())
+                .annotationCount(result.getAnnotationCount())
+                .issueCount(result.getIssueCount())
+                .status(result.getStatus())
+                .href(result.getHref())
                 .build();
     }
 
@@ -172,13 +186,13 @@ public final class KnowledgeQualityReportInterfaceAssembler {
 
     private static QualityReportResponses.AnnotationResponse toResponse(QualityAnnotationResult result) {
         return QualityReportResponses.AnnotationResponse.builder()
-                .annotationId(result == null ? null : result.getAnnotationId())
-                .objectType(result == null ? null : result.getObjectType())
-                .objectKey(result == null ? null : result.getObjectKey())
-                .graphVersionId(result == null ? null : result.getGraphVersionId())
-                .annotationStatus(result == null ? null : result.getAnnotationStatus())
-                .annotationLabel(result == null ? null : result.getAnnotationLabel())
-                .comment(result == null ? null : result.getComment())
+                .annotationId(result.getAnnotationId())
+                .objectType(result.getObjectType())
+                .objectKey(result.getObjectKey())
+                .graphVersionId(result.getGraphVersionId())
+                .annotationStatus(result.getAnnotationStatus())
+                .annotationLabel(result.getAnnotationLabel())
+                .comment(result.getComment())
                 .build();
     }
 }

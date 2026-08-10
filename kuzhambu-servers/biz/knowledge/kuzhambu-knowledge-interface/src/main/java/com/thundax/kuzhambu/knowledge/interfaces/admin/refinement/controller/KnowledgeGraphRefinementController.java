@@ -62,8 +62,9 @@ public class KnowledgeGraphRefinementController {
     })
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("打开精修任务")
-    @PostMapping("task/open")
-    public RefinementResponses.DetailResponse openTask(@Valid @RequestBody RefinementRequests.TaskOpenRequest request) {
+    @PostMapping("task/create")
+    public RefinementResponses.DetailResponse createTask(
+            @Valid @RequestBody RefinementRequests.TaskOpenRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
                 refinementService.openTask(KnowledgeGraphRefinementInterfaceAssembler.toOpenTaskCommand(request)));
     }
@@ -78,7 +79,7 @@ public class KnowledgeGraphRefinementController {
     })
     @HasPermission("knowledge:refinement:view")
     @SysLogger("精修任务详情")
-    @PostMapping("task/detail")
+    @PostMapping("task/get")
     public RefinementResponses.DetailResponse getTaskDetail(
             @Valid @RequestBody RefinementRequests.TaskDetailRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
@@ -237,7 +238,7 @@ public class KnowledgeGraphRefinementController {
     @Operation(summary = "获取质量汇总", description = "knowledge:refinement:view")
     @HasPermission("knowledge:refinement:view")
     @SysLogger("质量汇总")
-    @PostMapping("quality/summary")
+    @PostMapping("quality/get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -245,7 +246,7 @@ public class KnowledgeGraphRefinementController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public RefinementResponses.QualitySummaryResponse qualitySummary(
+    public RefinementResponses.QualitySummaryResponse getQualitySummary(
             @Valid @RequestBody RefinementRequests.QualitySummaryRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.qualitySummary(
                 KnowledgeGraphRefinementInterfaceAssembler.toQualitySummaryQuery(request)));
@@ -396,7 +397,7 @@ public class KnowledgeGraphRefinementController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public RefinementResponses.AnnotationResponse upsertAnnotation(
+    public RefinementResponses.AnnotationResponse updateAnnotation(
             @Valid @RequestBody RefinementRequests.AnnotationUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.upsertAnnotation(
                 KnowledgeGraphRefinementInterfaceAssembler.toAnnotationCommand(request)));

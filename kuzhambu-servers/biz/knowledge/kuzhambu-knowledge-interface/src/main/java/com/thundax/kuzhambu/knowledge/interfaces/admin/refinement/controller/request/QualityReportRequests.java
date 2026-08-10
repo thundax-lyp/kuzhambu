@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +16,7 @@ public final class QualityReportRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class GenerateRequest {
         @JsonProperty("graphVersionId")
         private Long graphVersionId;
@@ -27,6 +29,7 @@ public final class QualityReportRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class PageRequestBody extends PageRequest {
         @JsonProperty("graphVersionId")
         private Long graphVersionId;
@@ -45,6 +48,7 @@ public final class QualityReportRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class DetailRequest {
         @JsonProperty("reportId")
         private Long reportId;
@@ -54,6 +58,7 @@ public final class QualityReportRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LatestRequest {
         @JsonProperty("graphVersionId")
         private Long graphVersionId;
@@ -63,6 +68,7 @@ public final class QualityReportRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class ReextractRequest {
         @JsonProperty("reportId")
         private Long reportId;
