@@ -10,25 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `02-current-user-personal`：清理 CurrentUser / Personal record 与构造边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-05-SYSTEM-CORE.md`
-    - 范围对象：
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/ChangeCurrentUserAvatarCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/ChangeCurrentUserInfoCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/ChangeCurrentUserPasswordCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/RemoveCurrentUserAvatarCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/CurrentUserAvatarQuery.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/CurrentUserQuery.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/CurrentUserController.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/assembler/PersonalInterfaceAssembler.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-interface/src/test/java/com/thundax/kuzhambu/system/interfaces/admin/SystemAuthCurrentUserContractTest.java`
-        - `kuzhambu-apps/admin-web/src/service/current-user-service.ts`
-        - `kuzhambu-apps/admin-web/src/service/current-user-types.ts`
-    - 处理动作：转换 CurrentUser / Personal Command/Query 为 record，并将 controller 构造迁移到 assembler 后同步前后端契约。
-    - 验收点：相关 record allowlist 与 construction allowlist 可删除，CurrentUser 后端契约和 admin-web current-user 调用一致。
-    - 重要度：9/10
-
 - [ ] `03-department`：清理 Department record 与构造边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-05-SYSTEM-CORE.md`

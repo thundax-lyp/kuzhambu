@@ -3,6 +3,12 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserInfoCommand;
+import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserPasswordCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
@@ -15,6 +21,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.Per
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalInfoResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalMenuResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalPermsResponse;
+import java.io.InputStream;
 import java.util.Objects;
 import java.util.Set;
 import org.springframework.lang.NonNull;
@@ -30,6 +37,58 @@ public final class PersonalInterfaceAssembler {
         Objects.requireNonNull(principalKey, "principalKey must not be null");
         Objects.requireNonNull(identityType, "identityType must not be null");
         return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
+    }
+
+    @NonNull
+    public static ChangeCurrentUserInfoCommand toChangeCurrentUserInfoCommand(
+            @NonNull User currentUser, @NonNull PersonalInfoUpdateRequest request) {
+        Objects.requireNonNull(currentUser, "currentUser must not be null");
+        Objects.requireNonNull(request, "request must not be null");
+        return new ChangeCurrentUserInfoCommand(
+                currentUser.getId(),
+                currentUser.getDepartmentId(),
+                request.getEmail(),
+                request.getMobile(),
+                currentUser.getTel(),
+                request.getName(),
+                currentUser.getRank(),
+                currentUser.getPrivilege(),
+                currentUser.getStatus(),
+                currentUser.getRemarks());
+    }
+
+    @NonNull
+    public static ChangeCurrentUserPasswordCommand toChangeCurrentUserPasswordCommand(
+            @NonNull User currentUser, String oldPassword, String password) {
+        Objects.requireNonNull(currentUser, "currentUser must not be null");
+        return new ChangeCurrentUserPasswordCommand(currentUser.getId(), oldPassword, password);
+    }
+
+    @NonNull
+    public static ChangeCurrentUserAvatarCommand toChangeCurrentUserAvatarCommand(
+            @NonNull User currentUser, @NonNull InputStream inputStream, String originalFilename) {
+        Objects.requireNonNull(currentUser, "currentUser must not be null");
+        Objects.requireNonNull(inputStream, "inputStream must not be null");
+        return new ChangeCurrentUserAvatarCommand(currentUser.getId(), inputStream, originalFilename);
+    }
+
+    @NonNull
+    public static RemoveCurrentUserAvatarCommand toRemoveCurrentUserAvatarCommand(@NonNull User currentUser) {
+        Objects.requireNonNull(currentUser, "currentUser must not be null");
+        return new RemoveCurrentUserAvatarCommand(currentUser.getId());
+    }
+
+    @NonNull
+    public static CurrentUserAvatarQuery toCurrentUserAvatarQuery(@NonNull User currentUser) {
+        Objects.requireNonNull(currentUser, "currentUser must not be null");
+        return new CurrentUserAvatarQuery(currentUser.getId());
+    }
+
+    @NonNull
+    public static CurrentUserQuery toCurrentUserQuery(@NonNull User currentUser) {
+        Objects.requireNonNull(currentUser, "currentUser must not be null");
+        return new CurrentUserQuery(
+                currentUser.getId(), currentUser.getPrivilege(), currentUser.getStatus(), currentUser.getRank());
     }
 
     @NonNull

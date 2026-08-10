@@ -13,12 +13,6 @@ import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQue
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
-import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
-import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserInfoCommand;
-import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserPasswordCommand;
-import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
-import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
-import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserProfileApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
@@ -112,17 +106,8 @@ public class CurrentUserController {
     public PersonalInfoResponse updateInfo(@Valid @RequestBody PersonalInfoUpdateRequest request) {
         User currentUser = currentUserResolver.currentUser();
 
-        currentUser = currentUserService.changeInfo(new ChangeCurrentUserInfoCommand(
-                currentUser.getId(),
-                currentUser.getDepartmentId(),
-                request.getEmail(),
-                request.getMobile(),
-                currentUser.getTel(),
-                request.getName(),
-                currentUser.getRank(),
-                currentUser.getPrivilege(),
-                currentUser.getStatus(),
-                currentUser.getRemarks()));
+        currentUser = currentUserService.changeInfo(
+                PersonalInterfaceAssembler.toChangeCurrentUserInfoCommand(currentUser, request));
 
         return PersonalInterfaceAssembler.toInfoResponse(
                 currentUser, getAccountLoginName(currentUser), readAvatarUrl(currentUser));
@@ -151,7 +136,7 @@ public class CurrentUserController {
         User currentUser = currentUserResolver.currentUser();
 
         currentUserService.changePassword(
-                new ChangeCurrentUserPasswordCommand(currentUser.getId(), oldPassword, password));
+                PersonalInterfaceAssembler.toChangeCurrentUserPasswordCommand(currentUser, oldPassword, password));
 
         return true;
     }
@@ -172,8 +157,8 @@ public class CurrentUserController {
         User currentUser = currentUserResolver.currentUser();
 
         try {
-            currentUserService.changeAvatar(new ChangeCurrentUserAvatarCommand(
-                    currentUser.getId(),
+            currentUserService.changeAvatar(PersonalInterfaceAssembler.toChangeCurrentUserAvatarCommand(
+                    currentUser,
                     request.getAvatar().getInputStream(),
                     request.getAvatar().getOriginalFilename()));
         } catch (IOException e) {
@@ -197,7 +182,7 @@ public class CurrentUserController {
     public PersonalAvatarResponse deleteAvatar() {
         User currentUser = currentUserResolver.currentUser();
 
-        currentUserService.removeAvatar(new RemoveCurrentUserAvatarCommand(currentUser.getId()));
+        currentUserService.removeAvatar(PersonalInterfaceAssembler.toRemoveCurrentUserAvatarCommand(currentUser));
 
         return PersonalInterfaceAssembler.toAvatarResponse(null);
     }
@@ -214,7 +199,9 @@ public class CurrentUserController {
     })
     @PostMapping(value = "menus")
     public List<PersonalMenuResponse> menus() {
-        return currentUserService.listVisibleMenus(toQuery(currentUserResolver.currentUser())).stream()
+        return currentUserService
+                .listVisibleMenus(PersonalInterfaceAssembler.toCurrentUserQuery(currentUserResolver.currentUser()))
+                .stream()
                 .map(PersonalInterfaceAssembler::toMenuResponse)
                 .collect(Collectors.toList());
     }
@@ -245,7 +232,8 @@ public class CurrentUserController {
     }
 
     private String readAvatarUrl(User user) {
-        if (user == null || !currentUserService.existsAvatar(new CurrentUserAvatarQuery(user.getId()))) {
+        if (user == null
+                || !currentUserService.existsAvatar(PersonalInterfaceAssembler.toCurrentUserAvatarQuery(user))) {
             return null;
         }
         return avatarUrlBuilder.build(UserIdCodec.toStringValue(user.getId()));
@@ -253,11 +241,6 @@ public class CurrentUserController {
 
     private PrincipalIdentityQuery identityQuery(PrincipalKey principalKey, PrincipalIdentityType identityType) {
         return PersonalInterfaceAssembler.toPrincipalIdentityQuery(principalKey, identityType);
-    }
-
-    private CurrentUserQuery toQuery(User currentUser) {
-        return new CurrentUserQuery(
-                currentUser.getId(), currentUser.getPrivilege(), currentUser.getStatus(), currentUser.getRank());
     }
 
     private String getPrivateKey(String token) {
