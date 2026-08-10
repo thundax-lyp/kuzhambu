@@ -38,11 +38,15 @@ import org.springframework.web.multipart.MultipartFile;
 public final class SancaiAssetInterfaceAssembler {
     private SancaiAssetInterfaceAssembler() {}
 
-    public static SancaiDraftCommand toDraftCommand(SancaiAssetRequest request) {
+    @NonNull
+    public static SancaiDraftCommand toDraftCommand(@NonNull SancaiAssetRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiDraftCommand(request.getEntryId(), null, request.getDraftJson());
     }
 
-    public static SancaiImageCommand toImageCommand(SancaiAssetRequest request) {
+    @NonNull
+    public static SancaiImageCommand toImageCommand(@NonNull SancaiAssetRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiImageCommand(
                 request.getId(),
                 request.getEntryId(),
@@ -52,7 +56,9 @@ public final class SancaiAssetInterfaceAssembler {
                 Boolean.TRUE.equals(request.getCurrentUsed()));
     }
 
-    public static SancaiShowcaseCommand toShowcaseCommand(SancaiAssetRequest request) {
+    @NonNull
+    public static SancaiShowcaseCommand toShowcaseCommand(@NonNull SancaiAssetRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiShowcaseCommand(
                 null,
                 StringUtils.isBlank(request.getStatus())
@@ -72,13 +78,18 @@ public final class SancaiAssetInterfaceAssembler {
     public static SancaiEntryImageUploadCommand toImageUploadCommand(
             @NonNull Long entryId,
             @NonNull MultipartFile file,
-            String title,
-            String imageType,
-            Boolean currentUsed,
-            Long replaceImageId)
+            @NonNull String title,
+            @NonNull String imageType,
+            @NonNull Boolean currentUsed,
+            @NonNull Long replaceImageId)
             throws IOException {
         Objects.requireNonNull(entryId, "entryId");
         Objects.requireNonNull(file, "file");
+        Objects.requireNonNull(title, "title");
+        Objects.requireNonNull(imageType, "imageType");
+        Objects.requireNonNull(currentUsed, "currentUsed");
+        Objects.requireNonNull(replaceImageId, "replaceImageId");
+        Long normalizedReplaceImageId = Long.valueOf(-1L).equals(replaceImageId) ? null : replaceImageId;
         return new SancaiEntryImageUploadCommand(
                 entryId,
                 file.getInputStream(),
@@ -88,7 +99,7 @@ public final class SancaiAssetInterfaceAssembler {
                 title,
                 StringUtils.isBlank(imageType) ? null : SancaiEntryImageType.from(imageType),
                 Boolean.TRUE.equals(currentUsed),
-                replaceImageId);
+                normalizedReplaceImageId);
     }
 
     @NonNull
@@ -151,7 +162,9 @@ public final class SancaiAssetInterfaceAssembler {
                 SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId));
     }
 
-    public static SancaiAssetResponse toImageResponse(SancaiEntryImage image) {
+    @NonNull
+    public static SancaiAssetResponse toImageResponse(@NonNull SancaiEntryImage image) {
+        Objects.requireNonNull(image, "image");
         return image == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
@@ -173,7 +186,9 @@ public final class SancaiAssetInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiAssetResponse toImageResourceResponse(SancaiEntryImageResource resource) {
+    @NonNull
+    public static SancaiAssetResponse toImageResourceResponse(@NonNull SancaiEntryImageResource resource) {
+        Objects.requireNonNull(resource, "resource");
         return resource == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
@@ -188,7 +203,9 @@ public final class SancaiAssetInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiAssetResponse toDraftResponse(SancaiEntryDraft draft) {
+    @NonNull
+    public static SancaiAssetResponse toDraftResponse(@NonNull SancaiEntryDraft draft) {
+        Objects.requireNonNull(draft, "draft");
         return draft == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
@@ -201,7 +218,9 @@ public final class SancaiAssetInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiAssetResponse toVisualAssetResponse(SancaiVisualAsset visualAsset) {
+    @NonNull
+    public static SancaiAssetResponse toVisualAssetResponse(@NonNull SancaiVisualAsset visualAsset) {
+        Objects.requireNonNull(visualAsset, "visualAsset");
         Long sourceStorageObjectId = visualAsset == null || visualAsset.getSourceImageStorageObjectId() == null
                 ? null
                 : visualAsset.getSourceImageStorageObjectId().value();
@@ -245,7 +264,9 @@ public final class SancaiAssetInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiAssetResponse toShowcaseResponse(SancaiShowcase showcase) {
+    @NonNull
+    public static SancaiAssetResponse toShowcaseResponse(@NonNull SancaiShowcase showcase) {
+        Objects.requireNonNull(showcase, "showcase");
         Long showcaseId = showcase == null || showcase.getId() == null
                 ? null
                 : showcase.getId().value();
@@ -284,7 +305,9 @@ public final class SancaiAssetInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiAssetResponse toShowcaseJobResponse(SancaiShowcaseJobResult result) {
+    @NonNull
+    public static SancaiAssetResponse toShowcaseJobResponse(@NonNull SancaiShowcaseJobResult result) {
+        Objects.requireNonNull(result, "result");
         Long showcaseId = result == null || result.getShowcaseId() == null
                 ? null
                 : result.getShowcaseId().value();

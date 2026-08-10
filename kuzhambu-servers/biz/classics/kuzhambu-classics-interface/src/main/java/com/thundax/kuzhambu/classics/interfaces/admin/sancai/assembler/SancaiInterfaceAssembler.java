@@ -87,7 +87,9 @@ public final class SancaiInterfaceAssembler {
                 operatorPermissions);
     }
 
-    public static SancaiEntryCommand toCommand(SancaiEntryRequest request) {
+    @NonNull
+    public static SancaiEntryCommand toCommand(@NonNull SancaiEntryRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiEntryCommand(
                 request.getId(),
                 request.getVolumeId(),
@@ -102,12 +104,13 @@ public final class SancaiInterfaceAssembler {
                 fromRefinement(request.getRefinementStatus()));
     }
 
+    @NonNull
     public static SancaiEntryStatusCommand toStatusCommand(
-            SancaiEntryRequest request, Set<String> operatorPermissions) {
+            @NonNull SancaiEntryRequest request, @NonNull Set<String> operatorPermissions) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(operatorPermissions, "operatorPermissions");
         return new SancaiEntryStatusCommand(
-                request == null ? null : request.getId(),
-                fromLifecycle(request == null ? null : request.getLifecycleStatus()),
-                operatorPermissions);
+                request.getId(), fromLifecycle(request.getLifecycleStatus()), operatorPermissions);
     }
 
     @NonNull
@@ -133,12 +136,16 @@ public final class SancaiInterfaceAssembler {
                 ClassicsContentQaPairIdCodec::toDomain));
     }
 
-    public static SancaiCategoryCommand toCommand(SancaiCategoryRequest request) {
+    @NonNull
+    public static SancaiCategoryCommand toCommand(@NonNull SancaiCategoryRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiCategoryCommand(
                 request.getId(), request.getTitle(), fromCategoryType(request.getCategoryType()), null);
     }
 
-    public static SancaiVolumeCommand toCommand(SancaiVolumeRequest request) {
+    @NonNull
+    public static SancaiVolumeCommand toCommand(@NonNull SancaiVolumeRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiVolumeCommand(
                 request.getId(),
                 request.getCategoryId(),
@@ -174,31 +181,36 @@ public final class SancaiInterfaceAssembler {
                 SancaiEntryIdCodec::toDomain));
     }
 
+    @NonNull
     public static List<DictResponse> toCategoryTypes() {
         return List.of(
                 dict("SANCAI_CATEGORY_TYPE", SancaiCategoryType.FORMAL.value(), "正式门类"),
                 dict("SANCAI_CATEGORY_TYPE", SancaiCategoryType.AUXILIARY.value(), "辅助内容"));
     }
 
+    @NonNull
     public static List<DictResponse> toVolumeTypes() {
         return List.of(
                 dict("SANCAI_VOLUME_TYPE", SancaiVolumeType.MAIN.value(), "正式卷目"),
                 dict("SANCAI_VOLUME_TYPE", SancaiVolumeType.AUXILIARY.value(), "辅助卷目"));
     }
 
-    public static SancaiEntryResponse toResponse(SancaiEntry entity) {
+    @NonNull
+    public static SancaiEntryResponse toResponse(@NonNull SancaiEntry entity) {
+        Objects.requireNonNull(entity, "entity");
         return toResponse(entity, List.of());
     }
 
-    public static SancaiEntryResponse toResponse(SancaiEntry entity, List<ClassicsContentTag> tags) {
+    @NonNull
+    public static SancaiEntryResponse toResponse(@NonNull SancaiEntry entity, @NonNull List<ClassicsContentTag> tags) {
+        Objects.requireNonNull(entity, "entity");
+        Objects.requireNonNull(tags, "tags");
         if (entity == null) {
             return SancaiEntryResponse.builder().build();
         }
-        List<ClassicsContentResponse> tagResponses = tags == null
-                ? List.of()
-                : tags.stream()
-                        .map(ClassicsContentInterfaceAssembler::toTagResponse)
-                        .toList();
+        List<ClassicsContentResponse> tagResponses = tags.stream()
+                .map(ClassicsContentInterfaceAssembler::toTagResponse)
+                .toList();
         return SancaiEntryResponse.builder()
                 .id(entity.getId() == null ? null : entity.getId().value())
                 .volumeId(
@@ -228,7 +240,9 @@ public final class SancaiInterfaceAssembler {
                 .build();
     }
 
-    public static SancaiEntryVersionResponse toVersionResponse(ClassicsContentVersion version) {
+    @NonNull
+    public static SancaiEntryVersionResponse toVersionResponse(@NonNull ClassicsContentVersion version) {
+        Objects.requireNonNull(version, "version");
         return version == null
                 ? SancaiEntryVersionResponse.builder().build()
                 : SancaiEntryVersionResponse.builder()
@@ -249,7 +263,9 @@ public final class SancaiInterfaceAssembler {
                         .build();
     }
 
-    public static SancaiCategoryResponse toResponse(SancaiCategory entity) {
+    @NonNull
+    public static SancaiCategoryResponse toResponse(@NonNull SancaiCategory entity) {
+        Objects.requireNonNull(entity, "entity");
         if (entity == null) {
             return SancaiCategoryResponse.builder().build();
         }
@@ -260,7 +276,9 @@ public final class SancaiInterfaceAssembler {
                 .build();
     }
 
-    public static SancaiVolumeResponse toResponse(SancaiVolume entity) {
+    @NonNull
+    public static SancaiVolumeResponse toResponse(@NonNull SancaiVolume entity) {
+        Objects.requireNonNull(entity, "entity");
         if (entity == null) {
             return SancaiVolumeResponse.builder().build();
         }

@@ -54,21 +54,12 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
                         "com.thundax.kuzhambu.classics.interfaces.admin.publication.assembler.ClassicsPublicationInterfaceAssembler",
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiAssetInterfaceAssembler",
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiInterfaceAssembler",
                         "com.thundax.kuzhambu.classics.interfaces.portal.sancai.assembler.SancaiPortalInterfaceAssembler"));
     }
 
     private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS,
-                "admin.sancai.controller.request.SancaiAssetRequest",
-                "admin.sancai.controller.request.SancaiCategoryRequest",
-                "admin.sancai.controller.request.SancaiContentRequest",
-                "admin.sancai.controller.request.SancaiEntryPageRequest",
-                "admin.sancai.controller.request.SancaiEntryRequest",
-                "admin.sancai.controller.request.SancaiEntryVersionRequest",
-                "admin.sancai.controller.request.SancaiVolumeRequest",
                 "portal.sancai.controller.request.SancaiPortalEntrySearchRequest");
     }
 
