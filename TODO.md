@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `09-09 interface taxonomy controller action verb`：taxonomy Controller action verb 收口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-09-KNOWLEDGE-TAXONOMY-PORTAL.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/KnowledgeTaxonomyController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/KnowledgeInterfaceArchitectureTest.java`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-service-contract.test.ts`
-    - 处理动作：调整 taxonomy Controller action path 或方法名并同步 admin-web 调用契约。
-    - 验收点：`KnowledgeInterfaceArchitectureTest` 不再包含 `KnowledgeTaxonomyController` action verb allowlist，admin-web contract test 期望已同步。
-    - 重要度：9/10
-
 - [ ] `09-10 interface taxonomy assembler`：taxonomy interface assembler nullness 收口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-09-KNOWLEDGE-TAXONOMY-PORTAL.md`

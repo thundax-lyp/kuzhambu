@@ -237,7 +237,7 @@ class KnowledgeTaxonomyControllerTest {
         TagBatchDeprecateRequest request = new TagBatchDeprecateRequest();
         request.setTagIds(List.of("1001", "1003"));
 
-        assertTrue(controller.batchDeprecateTags(request));
+        assertTrue(controller.deprecateTags(request));
 
         ArgumentCaptor<TagBatchDeprecateCommand> captor = ArgumentCaptor.forClass(TagBatchDeprecateCommand.class);
         verify(taxonomyService).batchDeprecateTags(captor.capture());
@@ -255,7 +255,7 @@ class KnowledgeTaxonomyControllerTest {
         request.setCategoryId("11");
         request.setReviewNote("批量通过");
 
-        assertTrue(controller.batchReviewTags(request));
+        assertTrue(controller.reviewTagBatch(request));
 
         ArgumentCaptor<TagBatchReviewCommand> captor = ArgumentCaptor.forClass(TagBatchReviewCommand.class);
         verify(taxonomyService).batchReviewTags(captor.capture());
@@ -269,25 +269,25 @@ class KnowledgeTaxonomyControllerTest {
     void batchEndpointsShouldKeepExpectedRoutesPermissionsAndAuditText() throws Exception {
         assertEndpoint(
                 "previewTagBatchMergeImpact",
-                "tag/merge/batch-preview",
+                "tag/merge/list/preview",
                 "knowledge:taxonomy:view",
                 "批量预览标签合并",
                 TagBatchMergeRequest.class);
         assertEndpoint(
                 "applyTagBatchMerge",
-                "tag/merge/batch-apply",
+                "tag/merge/list/apply",
                 "knowledge:taxonomy:edit",
                 "批量执行标签合并",
                 TagBatchMergeRequest.class);
         assertEndpoint(
-                "batchDeprecateTags",
-                "tag/deprecate/batch",
+                "deprecateTags",
+                "tag/deprecate/list",
                 "knowledge:taxonomy:edit",
                 "批量废弃标签",
                 TagBatchDeprecateRequest.class);
         assertEndpoint(
-                "batchReviewTags",
-                "tag/review/batch",
+                "reviewTagBatch",
+                "tag/review/list",
                 "knowledge:taxonomy:review",
                 "批量审核标签",
                 TagBatchReviewRequest.class);

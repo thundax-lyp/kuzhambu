@@ -180,7 +180,7 @@ export const updateCategory = (request: TagCategoryUpdateCommand) => {
 };
 
 export const changeCategoryStatus = (request: TagCategoryStatusCommand) => {
-    return postJson<boolean, TagCategoryStatusCommand>(`${API_PREFIX}/category/status`, {
+    return postJson<boolean, TagCategoryStatusCommand>(`${API_PREFIX}/category/status/change`, {
         body: request
     });
 };
@@ -192,7 +192,7 @@ export const pageTags = (request: TagPageQuery = {}) => {
 };
 
 export const getTagDetail = (request: TagIdCommand) => {
-    return postJson<TagDetailRecord, TagIdCommand>(`${API_PREFIX}/tag/detail`, {
+    return postJson<TagDetailRecord, TagIdCommand>(`${API_PREFIX}/tag/detail/get`, {
         body: request
     });
 };
@@ -210,7 +210,7 @@ export const updateTag = (request: TagUpdateCommand) => {
 };
 
 export const changeTagStatus = (request: TagStatusCommand) => {
-    return postJson<boolean, TagStatusCommand>(`${API_PREFIX}/tag/status`, {
+    return postJson<boolean, TagStatusCommand>(`${API_PREFIX}/tag/status/change`, {
         body: request
     });
 };
@@ -228,16 +228,13 @@ export const applyTagMerge = (request: TagMergeCommand) => {
 };
 
 export const previewTagBatchMergeImpact = (request: TagBatchMergeCommand) => {
-    return postJson<TagBatchMergePreviewRecord, TagBatchMergeCommand>(
-        `${API_PREFIX}/tag/merge/batch-preview`,
-        {
-            body: request
-        }
-    );
+    return postJson<TagBatchMergePreviewRecord, TagBatchMergeCommand>(`${API_PREFIX}/tag/merge/list/preview`, {
+        body: request
+    });
 };
 
 export const applyTagBatchMerge = (request: TagBatchMergeCommand) => {
-    return postJson<boolean, TagBatchMergeCommand>(`${API_PREFIX}/tag/merge/batch-apply`, {
+    return postJson<boolean, TagBatchMergeCommand>(`${API_PREFIX}/tag/merge/list/apply`, {
         body: request
     });
 };
@@ -249,7 +246,7 @@ export const deprecateTag = (request: TagDeprecateCommand) => {
 };
 
 export const deprecateBatchTags = (request: TagBatchDeprecateCommand) => {
-    return postJson<boolean, TagBatchDeprecateCommand>(`${API_PREFIX}/tag/deprecate/batch`, {
+    return postJson<boolean, TagBatchDeprecateCommand>(`${API_PREFIX}/tag/deprecate/list`, {
         body: request
     });
 };
@@ -267,7 +264,7 @@ export const reviewTag = (request: TagReviewCommand) => {
 };
 
 export const reviewBatchTags = (request: TagBatchReviewCommand) => {
-    return postJson<boolean, TagBatchReviewCommand>(`${API_PREFIX}/tag/review/batch`, {
+    return postJson<boolean, TagBatchReviewCommand>(`${API_PREFIX}/tag/review/list`, {
         body: request
     });
 };
@@ -335,7 +332,7 @@ export const listTagExtractionPromptVersions = async () => {
 
 export const getTagGovernanceMetrics = (request: TagGovernanceMetricsQuery = {}) => {
     return postJson<TagGovernanceMetricsRecord, TagGovernanceMetricsQuery>(
-        `${API_PREFIX}/tag/metrics`,
+        `${API_PREFIX}/tag/metrics/list`,
         {
             body: request
         }

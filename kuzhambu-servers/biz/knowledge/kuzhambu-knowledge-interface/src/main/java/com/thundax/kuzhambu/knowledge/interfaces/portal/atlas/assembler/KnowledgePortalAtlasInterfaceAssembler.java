@@ -6,6 +6,8 @@ import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request
 import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.response.KnowledgePortalAtlasResponse;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class KnowledgePortalAtlasInterfaceAssembler {
 
@@ -26,15 +28,17 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
         return response;
     }
 
-    public static KnowledgePortalAtlasQuery toAtlasQuery(KnowledgePortalAtlasRequest request) {
+    @NonNull
+    public static KnowledgePortalAtlasQuery toAtlasQuery(@NonNull KnowledgePortalAtlasRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new KnowledgePortalAtlasQuery(
-                request == null ? null : request.getLevel(),
-                request == null ? null : request.getCategoryCode(),
-                request == null ? null : request.getEntityId(),
-                request == null ? null : request.getKnowledgeBase(),
-                request == null ? null : request.getKeyword(),
-                request == null ? null : request.getTag(),
-                request == null ? null : request.getTimeRange());
+                request.getLevel(),
+                request.getCategoryCode(),
+                request.getEntityId(),
+                request.getKnowledgeBase(),
+                request.getKeyword(),
+                request.getTag(),
+                request.getTimeRange());
     }
 
     private static List<KnowledgePortalAtlasResponse.BreadcrumbItemResponse> toBreadcrumbItems(

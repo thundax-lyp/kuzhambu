@@ -57,9 +57,7 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
-        return List.of(
-                actionVerbAllowance("KnowledgeGraphWorkbenchController"),
-                actionVerbAllowance("KnowledgeTaxonomyController"));
+        return List.of(actionVerbAllowance("KnowledgeGraphWorkbenchController"));
     }
 
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
