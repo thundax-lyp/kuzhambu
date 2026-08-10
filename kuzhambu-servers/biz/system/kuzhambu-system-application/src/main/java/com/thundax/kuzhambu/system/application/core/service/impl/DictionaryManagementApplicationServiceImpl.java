@@ -40,7 +40,7 @@ public class DictionaryManagementApplicationServiceImpl implements DictionaryMan
     }
 
     public Dict get(GetDictQuery query) {
-        DictId id = query == null ? null : query.getId();
+        DictId id = query == null ? null : query.id();
         if (id == null) {
             return null;
         }
@@ -67,16 +67,16 @@ public class DictionaryManagementApplicationServiceImpl implements DictionaryMan
 
     public List<Dict> list(DictQuery query) {
         return dao.list(
-                query == null ? null : query.getType(),
-                query == null ? null : query.getLabel(),
-                query == null ? null : query.getRemarks());
+                query == null ? null : query.type(),
+                query == null ? null : query.label(),
+                query == null ? null : query.remarks());
     }
 
     public PageResult<Dict> page(DictQuery query, PageQuery page) {
         return dao.page(
-                query == null ? null : query.getType(),
-                query == null ? null : query.getLabel(),
-                query == null ? null : query.getRemarks(),
+                query == null ? null : query.type(),
+                query == null ? null : query.label(),
+                query == null ? null : query.remarks(),
                 page.getPageNo(),
                 page.getPageSize());
     }
@@ -95,7 +95,7 @@ public class DictionaryManagementApplicationServiceImpl implements DictionaryMan
     @Transactional(rollbackFor = Exception.class)
     public void sort(DictSortCommand command) {
         List<DictId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
+                command == null || command.orderedIds() == null ? Collections.emptyList() : command.orderedIds();
         if (orderedIdList.isEmpty()) {
             throw new BizException(
                     ErrorCode.SORT_EMPTY_INPUT.getCode(),
@@ -116,7 +116,7 @@ public class DictionaryManagementApplicationServiceImpl implements DictionaryMan
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "Dict", id = "#command.id.value()", action = AuditAction.UPDATE, summary = "更新字典")
+    @AuditLog(type = "Dict", id = "#command.id().value()", action = AuditAction.UPDATE, summary = "更新字典")
     public void changeInfo(ChangeDictInfoCommand command) {
         dao.update(toDomain(command));
     }
@@ -125,11 +125,11 @@ public class DictionaryManagementApplicationServiceImpl implements DictionaryMan
     @Transactional(rollbackFor = Exception.class)
     @AuditLog(
             type = "Dict",
-            id = "#command.id == null ? null : #command.id.value()",
+            id = "#command.id() == null ? null : #command.id().value()",
             action = AuditAction.DELETE,
             summary = "删除字典")
     public void remove(RemoveDictCommand command) {
-        DictId id = command == null ? null : command.getId();
+        DictId id = command == null ? null : command.id();
         if (id != null) {
             dao.deleteById(id);
         }
@@ -140,10 +140,10 @@ public class DictionaryManagementApplicationServiceImpl implements DictionaryMan
         if (command == null) {
             return dict;
         }
-        dict.setType(command.getType());
-        dict.setLabel(command.getLabel());
-        dict.setValue(command.getValue());
-        dict.setRemarks(command.getRemarks());
+        dict.setType(command.type());
+        dict.setLabel(command.label());
+        dict.setValue(command.value());
+        dict.setRemarks(command.remarks());
         return dict;
     }
 
@@ -164,11 +164,11 @@ public class DictionaryManagementApplicationServiceImpl implements DictionaryMan
         if (command == null) {
             return dict;
         }
-        dict.setId(command.getId());
-        dict.setType(command.getType());
-        dict.setLabel(command.getLabel());
-        dict.setValue(command.getValue());
-        dict.setRemarks(command.getRemarks());
+        dict.setId(command.id());
+        dict.setType(command.type());
+        dict.setLabel(command.label());
+        dict.setValue(command.value());
+        dict.setRemarks(command.remarks());
         return dict;
     }
 }

@@ -27,7 +27,6 @@ import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusComm
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
-import com.thundax.kuzhambu.system.application.core.query.DictQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
@@ -65,6 +64,7 @@ import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.UserInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserAvatarRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserCheckRequest;
@@ -222,15 +222,15 @@ public class UserController {
     @PostMapping(value = "options")
     @WrappedApiResponse
     public UserOptionsResponse options() {
-        DictQuery statusQuery = new DictQuery();
-        statusQuery.setType(USER_STATUS_DICT_TYPE);
-        DictQuery rankQuery = new DictQuery();
-        rankQuery.setType(USER_RANK_DICT_TYPE);
         return UserOptionsResponse.builder()
                 .statusOptions(OptionInterfaceAssembler.toOptionResponseList(
-                        dictService.list(statusQuery), Dict::getValue, Dict::getLabel))
+                        dictService.list(DictInterfaceAssembler.toTypeQuery(USER_STATUS_DICT_TYPE)),
+                        Dict::getValue,
+                        Dict::getLabel))
                 .rankOptions(OptionInterfaceAssembler.toOptionResponseList(
-                        dictService.list(rankQuery), Dict::getValue, Dict::getLabel))
+                        dictService.list(DictInterfaceAssembler.toTypeQuery(USER_RANK_DICT_TYPE)),
+                        Dict::getValue,
+                        Dict::getLabel))
                 .build();
     }
 

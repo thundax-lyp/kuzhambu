@@ -14,7 +14,6 @@ import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersComma
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
-import com.thundax.kuzhambu.system.application.core.query.DictQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
@@ -44,6 +43,7 @@ import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleAssignUserRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleIdRequest;
@@ -155,15 +155,15 @@ public class RoleController {
     @IgnoreSysLogger
     @PostMapping(value = "options")
     public RoleOptionsResponse options() {
-        DictQuery statusQuery = new DictQuery();
-        statusQuery.setType(ROLE_STATUS_DICT_TYPE);
-        DictQuery privilegeQuery = new DictQuery();
-        privilegeQuery.setType(ROLE_PRIVILEGE_DICT_TYPE);
         return RoleOptionsResponse.builder()
                 .statusOptions(OptionInterfaceAssembler.toOptionResponseList(
-                        dictService.list(statusQuery), Dict::getValue, Dict::getLabel))
+                        dictService.list(DictInterfaceAssembler.toTypeQuery(ROLE_STATUS_DICT_TYPE)),
+                        Dict::getValue,
+                        Dict::getLabel))
                 .privilegeOptions(OptionInterfaceAssembler.toOptionResponseList(
-                        dictService.list(privilegeQuery), Dict::getValue, Dict::getLabel))
+                        dictService.list(DictInterfaceAssembler.toTypeQuery(ROLE_PRIVILEGE_DICT_TYPE)),
+                        Dict::getValue,
+                        Dict::getLabel))
                 .build();
     }
 

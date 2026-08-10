@@ -2,7 +2,10 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
 import com.thundax.kuzhambu.system.application.core.command.ChangeDictInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateDictCommand;
+import com.thundax.kuzhambu.system.application.core.command.DictSortCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveDictCommand;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetDictQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
@@ -11,6 +14,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.Dict
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictQueryRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictSaveRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.DictResponse;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 
@@ -38,41 +42,54 @@ public final class DictInterfaceAssembler {
 
     @NonNull
     public static DictQuery toQuery(@NonNull DictQueryRequest request) {
-        DictQuery query = new DictQuery();
-        query.setLabel(emptyToNull(request.getLabel()));
-        query.setType(emptyToNull(request.getType()));
-        query.setRemarks(emptyToNull(request.getRemarks()));
-        return query;
+        return new DictQuery(
+                emptyToNull(request.getType()), emptyToNull(request.getRemarks()), emptyToNull(request.getLabel()));
     }
 
     @NonNull
     public static DictQuery toQuery(@NonNull DictPageRequest request) {
-        DictQuery query = new DictQuery();
-        query.setLabel(emptyToNull(request.getLabel()));
-        query.setType(emptyToNull(request.getType()));
-        query.setRemarks(emptyToNull(request.getRemarks()));
-        return query;
+        return new DictQuery(
+                emptyToNull(request.getType()), emptyToNull(request.getRemarks()), emptyToNull(request.getLabel()));
+    }
+
+    @NonNull
+    public static DictQuery toTypeQuery(String type) {
+        return new DictQuery(type, null, null);
+    }
+
+    @NonNull
+    public static GetDictQuery toGetQuery(DictId id) {
+        return new GetDictQuery(id);
     }
 
     @NonNull
     public static CreateDictCommand toCreateCommand(@NonNull DictSaveRequest request) {
-        CreateDictCommand command = new CreateDictCommand();
-        command.setRemarks(request.getRemarks());
-        command.setLabel(request.getLabel());
-        command.setType(request.getType());
-        command.setValue(request.getValue());
-        return command;
+        return new CreateDictCommand(request.getType(), request.getLabel(), request.getValue(), request.getRemarks());
     }
 
     @NonNull
     public static ChangeDictInfoCommand toChangeInfoCommand(@NonNull DictSaveRequest request) {
-        ChangeDictInfoCommand command = new ChangeDictInfoCommand();
-        command.setId(DictIdCodec.toDomain(request.getId()));
-        command.setRemarks(request.getRemarks());
-        command.setLabel(request.getLabel());
-        command.setType(request.getType());
-        command.setValue(request.getValue());
-        return command;
+        return new ChangeDictInfoCommand(
+                DictIdCodec.toDomain(request.getId()),
+                request.getType(),
+                request.getLabel(),
+                request.getValue(),
+                request.getRemarks());
+    }
+
+    @NonNull
+    public static RemoveDictCommand toRemoveCommand(DictId id) {
+        return new RemoveDictCommand(id);
+    }
+
+    @NonNull
+    public static DictSortCommand toSortCommand(@NonNull List<Long> orderedIds) {
+        return new DictSortCommand(toIds(orderedIds));
+    }
+
+    @NonNull
+    public static List<DictId> toIds(@NonNull List<Long> ids) {
+        return ids.stream().map(DictIdCodec::toDomain).toList();
     }
 
     private static String emptyToNull(String value) {

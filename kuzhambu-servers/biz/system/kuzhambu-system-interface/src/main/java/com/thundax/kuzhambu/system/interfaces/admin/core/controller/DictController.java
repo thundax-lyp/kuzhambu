@@ -10,10 +10,7 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.system.application.core.command.DictSortCommand;
-import com.thundax.kuzhambu.system.application.core.command.RemoveDictCommand;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetDictQuery;
 import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
@@ -162,7 +159,7 @@ public class DictController {
         if (idList.isEmpty()) {
             throw AdminResponseExceptions.invalidParameter("list");
         }
-        idList.forEach(id -> dictService.remove(new RemoveDictCommand(id)));
+        idList.forEach(id -> dictService.remove(DictInterfaceAssembler.toRemoveCommand(id)));
         return true;
     }
 
@@ -178,8 +175,8 @@ public class DictController {
     })
     @PostMapping(value = "sort")
     public Boolean sort(@Valid @RequestBody DictSortRequest request) {
-        dictService.sort(new DictSortCommand(RequestListHelper.map(
-                readOrderedIds(request == null ? null : request.getOrderedIds()), DictIdCodec::toDomain)));
+        dictService.sort(
+                DictInterfaceAssembler.toSortCommand(readOrderedIds(request == null ? null : request.getOrderedIds())));
         return true;
     }
 
@@ -197,6 +194,6 @@ public class DictController {
     }
 
     private Dict getDict(DictId dictId) {
-        return dictService.get(new GetDictQuery(dictId));
+        return dictService.get(DictInterfaceAssembler.toGetQuery(dictId));
     }
 }
