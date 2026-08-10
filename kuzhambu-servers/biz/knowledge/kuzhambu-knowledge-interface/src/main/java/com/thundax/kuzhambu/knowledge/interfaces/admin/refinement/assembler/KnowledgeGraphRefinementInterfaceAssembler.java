@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.assembler;
 
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ApplyRefinementTaskCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementEntityCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageRelationCommand;
@@ -9,12 +10,14 @@ import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefin
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementRelationCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.OpenRefinementTaskCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertQualityAnnotationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementEntityCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualitySummaryQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
@@ -44,8 +47,23 @@ public final class KnowledgeGraphRefinementInterfaceAssembler {
                 request == null ? null : request.getStatus());
     }
 
+    public static OpenRefinementTaskCommand toOpenTaskCommand(RefinementRequests.TaskOpenRequest request) {
+        return new OpenRefinementTaskCommand(
+                request == null ? null : request.getGraphVersionId(), request == null ? null : request.getOpenedBy());
+    }
+
     public static RefinementDetailQuery toDetailQuery(RefinementRequests.TaskDetailRequest request) {
         return new RefinementDetailQuery(request == null ? null : request.getRefinementTaskId());
+    }
+
+    public static ApplyRefinementTaskCommand toApplyTaskCommand(RefinementRequests.TaskApplyRequest request) {
+        return new ApplyRefinementTaskCommand(
+                request == null ? null : request.getRefinementTaskId(),
+                request == null ? null : request.getAppliedBy());
+    }
+
+    public static QualitySummaryQuery toQualitySummaryQuery(RefinementRequests.QualitySummaryRequest request) {
+        return new QualitySummaryQuery(request == null ? null : request.getRefinementTaskId());
     }
 
     public static UpsertRefinementEntityCommand toEntityCommand(RefinementRequests.EntityUpsertRequest request) {

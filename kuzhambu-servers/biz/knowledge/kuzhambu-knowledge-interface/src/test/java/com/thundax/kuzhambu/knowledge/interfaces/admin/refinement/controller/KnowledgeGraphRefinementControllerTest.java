@@ -2,11 +2,15 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ApplyRefinementTaskCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.OpenRefinementTaskCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualitySummaryQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualitySummaryResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementApplyResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementDetailResult;
@@ -62,7 +66,7 @@ class KnowledgeGraphRefinementControllerTest {
         RefinementRequests.TaskOpenRequest request = new RefinementRequests.TaskOpenRequest();
         request.setGraphVersionId(71L);
         request.setOpenedBy(1L);
-        when(service.openTask(71L, 1L))
+        when(service.openTask(any(OpenRefinementTaskCommand.class)))
                 .thenReturn(new RefinementDetailResult(
                         31L,
                         71L,
@@ -81,7 +85,10 @@ class KnowledgeGraphRefinementControllerTest {
 
         var response = controller.openTask(request);
 
-        verify(service).openTask(71L, 1L);
+        verify(service)
+                .openTask(argThat(
+                        (OpenRefinementTaskCommand command) -> Long.valueOf(71L).equals(command.graphVersionId())
+                                && Long.valueOf(1L).equals(command.openedBy())));
         assertEquals(31L, response.getRefinementTaskId());
         assertEquals(1, response.getProgressSummary().getEntityPendingCount());
     }
@@ -148,11 +155,13 @@ class KnowledgeGraphRefinementControllerTest {
         KnowledgeGraphRefinementController controller = new KnowledgeGraphRefinementController(service);
         RefinementRequests.QualitySummaryRequest request = new RefinementRequests.QualitySummaryRequest();
         request.setRefinementTaskId(31L);
-        when(service.qualitySummary(31L)).thenReturn(new QualitySummaryResult(0.9D, 0.8D, 0.7D));
+        when(service.qualitySummary(any(QualitySummaryQuery.class)))
+                .thenReturn(new QualitySummaryResult(0.9D, 0.8D, 0.7D));
 
         var response = controller.qualitySummary(request);
 
-        verify(service).qualitySummary(31L);
+        verify(service).qualitySummary(argThat((QualitySummaryQuery query) -> Long.valueOf(31L)
+                .equals(query.refinementTaskId())));
         assertEquals(0.9D, response.getEntityCoverageRate());
     }
 
@@ -163,7 +172,7 @@ class KnowledgeGraphRefinementControllerTest {
         RefinementRequests.TaskApplyRequest request = new RefinementRequests.TaskApplyRequest();
         request.setRefinementTaskId(31L);
         request.setAppliedBy(9L);
-        when(service.applyTask(31L, 9L))
+        when(service.applyTask(any(ApplyRefinementTaskCommand.class)))
                 .thenReturn(new RefinementApplyResult(
                         31L,
                         71L,
@@ -185,7 +194,10 @@ class KnowledgeGraphRefinementControllerTest {
 
         var response = controller.applyTask(request);
 
-        verify(service).applyTask(31L, 9L);
+        verify(service)
+                .applyTask(argThat((ApplyRefinementTaskCommand command) ->
+                        Long.valueOf(31L).equals(command.refinementTaskId())
+                                && Long.valueOf(9L).equals(command.appliedBy())));
         assertEquals(71L, response.getGraphVersionId());
         assertEquals("REFINEMENT_APPLIED", response.getTriggerSource());
         assertEquals(true, response.getReplaceUnconfirmedOnly());

@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.refinement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ApplyRefinementTaskCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementApplyResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.impl.KnowledgeGraphRefinementApplicationServiceImpl;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.KnowledgeRefinementManualKeySupport;
@@ -113,7 +114,7 @@ class KnowledgeGraphRefinementApplyTest {
                 new QualitySummaryAggregationSupport(),
                 new KnowledgeRefinementManualKeySupport());
 
-        RefinementApplyResult result = service.applyTask(31L, 19L);
+        RefinementApplyResult result = service.applyTask(new ApplyRefinementTaskCommand(31L, 19L));
 
         assertEquals("APPLIED", result.getStatus());
         assertEquals(31L, result.getRefinementTaskId());

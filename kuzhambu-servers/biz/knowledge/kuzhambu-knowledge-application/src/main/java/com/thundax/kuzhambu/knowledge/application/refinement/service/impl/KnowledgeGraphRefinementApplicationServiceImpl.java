@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ApplyRefinementTaskCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementEntityCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageRelationCommand;
@@ -14,12 +15,14 @@ import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefin
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementRelationCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.OpenRefinementTaskCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertQualityAnnotationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementEntityCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementRelationCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityAnnotationQuery;
+import com.thundax.kuzhambu.knowledge.application.refinement.query.QualitySummaryQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
@@ -137,7 +140,9 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public RefinementDetailResult openTask(Long graphVersionId, Long openedBy) {
+    public RefinementDetailResult openTask(OpenRefinementTaskCommand command) {
+        Long graphVersionId = command == null ? null : command.graphVersionId();
+        Long openedBy = command == null ? null : command.openedBy();
         GraphVersion version = graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(graphVersionId));
         RefinementTask existing = refinementTaskRepository.findLatestDraft(
                 graphVersionTaskTypeValue(version),
@@ -425,7 +430,9 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public RefinementApplyResult applyTask(Long refinementTaskId, Long appliedBy) {
+    public RefinementApplyResult applyTask(ApplyRefinementTaskCommand command) {
+        Long refinementTaskId = command == null ? null : command.refinementTaskId();
+        Long appliedBy = command == null ? null : command.appliedBy();
         RefinementTask task = refinementTaskRepository.getByTaskId(RefinementTaskIdCodec.toDomain(refinementTaskId));
         applySupport.applyEntities(task.getGraphVersionId(), entityDraftRepository.listByTaskId(refinementTaskId));
         applySupport.applyRelations(task.getGraphVersionId(), relationDraftRepository.listByTaskId(refinementTaskId));
@@ -442,7 +449,8 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     @Transactional(readOnly = true)
-    public QualitySummaryResult qualitySummary(Long refinementTaskId) {
+    public QualitySummaryResult qualitySummary(QualitySummaryQuery query) {
+        Long refinementTaskId = query == null ? null : query.refinementTaskId();
         return qualitySummaryAggregationSupport.aggregate(
                 entityDraftRepository.listByTaskId(refinementTaskId),
                 relationDraftRepository.listByTaskId(refinementTaskId));

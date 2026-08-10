@@ -64,8 +64,8 @@ public class KnowledgeGraphRefinementController {
     @SysLogger("打开精修任务")
     @PostMapping("task/open")
     public RefinementResponses.DetailResponse openTask(@Valid @RequestBody RefinementRequests.TaskOpenRequest request) {
-        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.openTask(
-                request == null ? null : request.getGraphVersionId(), request == null ? null : request.getOpenedBy()));
+        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
+                refinementService.openTask(KnowledgeGraphRefinementInterfaceAssembler.toOpenTaskCommand(request)));
     }
 
     @Operation(summary = "获取精修任务详情", description = "knowledge:refinement:view")
@@ -230,9 +230,8 @@ public class KnowledgeGraphRefinementController {
     })
     public RefinementResponses.ApplyResponse applyTask(
             @Valid @RequestBody RefinementRequests.TaskApplyRequest request) {
-        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.applyTask(
-                request == null ? null : request.getRefinementTaskId(),
-                request == null ? null : request.getAppliedBy()));
+        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
+                refinementService.applyTask(KnowledgeGraphRefinementInterfaceAssembler.toApplyTaskCommand(request)));
     }
 
     @Operation(summary = "获取质量汇总", description = "knowledge:refinement:view")
@@ -248,8 +247,8 @@ public class KnowledgeGraphRefinementController {
     })
     public RefinementResponses.QualitySummaryResponse qualitySummary(
             @Valid @RequestBody RefinementRequests.QualitySummaryRequest request) {
-        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
-                refinementService.qualitySummary(request == null ? null : request.getRefinementTaskId()));
+        return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.qualitySummary(
+                KnowledgeGraphRefinementInterfaceAssembler.toQualitySummaryQuery(request)));
     }
 
     @Operation(summary = "新增世系节点草稿", description = "knowledge:refinement:edit")
