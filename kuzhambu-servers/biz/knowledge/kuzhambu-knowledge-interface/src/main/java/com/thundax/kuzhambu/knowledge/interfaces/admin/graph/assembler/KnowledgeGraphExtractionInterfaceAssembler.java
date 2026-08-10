@@ -34,104 +34,118 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
 
     private KnowledgeGraphExtractionInterfaceAssembler() {}
 
-    public static RequestRelationExtractionCommand toRelationCommand(GraphExtractionRequests.CreateRequest request) {
+    @NonNull
+    public static RequestRelationExtractionCommand toRelationCommand(
+            @NonNull GraphExtractionRequests.CreateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RequestRelationExtractionCommand(
-                request == null ? null : request.getScopeType(),
-                request == null ? null : request.getScopeJson(),
-                request == null ? null : request.getTriggerSource(),
-                request == null ? null : request.getSelectionScopeJson(),
-                request == null ? null : request.getReplaceUnconfirmedOnly(),
+                request.getScopeType(),
+                request.getScopeJson(),
+                request.getTriggerSource(),
+                request.getSelectionScopeJson(),
+                request.getReplaceUnconfirmedOnly(),
                 null,
-                request == null ? null : request.getSourceContentType(),
-                request == null ? null : request.getSourceContentId(),
-                request == null ? null : request.getRequestedBy(),
-                request == null ? null : request.getServiceId(),
-                request == null ? null : request.getServiceRole(),
-                request == null ? null : request.getModelId(),
-                request == null ? null : request.getModelName(),
-                request == null ? null : request.getPromptVersionId(),
-                request == null ? null : request.getRequestId(),
-                request == null ? null : request.getTraceId(),
-                request == null ? null : request.getPromptMessagesJson(),
-                request == null ? null : request.getPromptVariablesJson(),
-                request == null ? null : request.getPromptHash(),
-                request == null ? null : request.getInputPayloadJson(),
-                request == null ? null : request.getOutputSchemaJson(),
-                request != null && Boolean.TRUE.equals(request.getForceJson()),
-                request == null ? null : request.getLocale());
+                request.getSourceContentType(),
+                request.getSourceContentId(),
+                request.getRequestedBy(),
+                request.getServiceId(),
+                request.getServiceRole(),
+                request.getModelId(),
+                request.getModelName(),
+                request.getPromptVersionId(),
+                request.getRequestId(),
+                request.getTraceId(),
+                request.getPromptMessagesJson(),
+                request.getPromptVariablesJson(),
+                request.getPromptHash(),
+                request.getInputPayloadJson(),
+                request.getOutputSchemaJson(),
+                Boolean.TRUE.equals(request.getForceJson()),
+                request.getLocale());
     }
 
-    public static RequestGraphExtractionCommand toGraphCommand(GraphExtractionRequests.CreateRequest request) {
+    @NonNull
+    public static RequestGraphExtractionCommand toGraphCommand(@NonNull GraphExtractionRequests.CreateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RequestGraphExtractionCommand(
-                request == null ? null : request.getScopeType(),
-                request == null ? null : request.getScopeJson(),
-                request == null ? null : request.getTriggerSource(),
-                request == null ? null : request.getSelectionScopeJson(),
-                request == null ? null : request.getReplaceUnconfirmedOnly(),
+                request.getScopeType(),
+                request.getScopeJson(),
+                request.getTriggerSource(),
+                request.getSelectionScopeJson(),
+                request.getReplaceUnconfirmedOnly(),
                 null,
-                request == null ? null : request.getSourceContentType(),
-                request == null ? null : request.getSourceContentId(),
-                request == null ? null : request.getRequestedBy(),
-                request == null ? null : request.getServiceId(),
-                request == null ? null : request.getServiceRole(),
-                request == null ? null : request.getModelId(),
-                request == null ? null : request.getModelName(),
-                request == null ? null : request.getPromptVersionId(),
-                request == null ? null : request.getRequestId(),
-                request == null ? null : request.getTraceId(),
-                request == null ? null : request.getPromptMessagesJson(),
-                request == null ? null : request.getPromptVariablesJson(),
-                request == null ? null : request.getPromptHash(),
-                request == null ? null : request.getInputPayloadJson(),
-                request == null ? null : request.getOutputSchemaJson(),
-                request != null && Boolean.TRUE.equals(request.getForceJson()),
-                request == null ? null : request.getLocale());
+                request.getSourceContentType(),
+                request.getSourceContentId(),
+                request.getRequestedBy(),
+                request.getServiceId(),
+                request.getServiceRole(),
+                request.getModelId(),
+                request.getModelName(),
+                request.getPromptVersionId(),
+                request.getRequestId(),
+                request.getTraceId(),
+                request.getPromptMessagesJson(),
+                request.getPromptVariablesJson(),
+                request.getPromptHash(),
+                request.getInputPayloadJson(),
+                request.getOutputSchemaJson(),
+                Boolean.TRUE.equals(request.getForceJson()),
+                request.getLocale());
     }
 
-    public static RequestLineageExtractionCommand toLineageCommand(GraphExtractionRequests.CreateRequest request) {
+    @NonNull
+    public static RequestLineageExtractionCommand toLineageCommand(
+            @NonNull GraphExtractionRequests.CreateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RequestLineageExtractionCommand(
-                request == null ? null : request.getScopeType(),
-                request == null ? null : request.getScopeJson(),
-                request == null ? null : request.getTriggerSource(),
-                request == null ? null : request.getSelectionScopeJson(),
-                request == null ? null : request.getReplaceUnconfirmedOnly(),
+                request.getScopeType(),
+                request.getScopeJson(),
+                request.getTriggerSource(),
+                request.getSelectionScopeJson(),
+                request.getReplaceUnconfirmedOnly(),
                 null,
-                request == null ? null : request.getSourceContentType(),
-                request == null ? null : request.getSourceContentId(),
-                request == null ? null : request.getRequestedBy(),
-                request == null ? null : request.getServiceId(),
-                request == null ? null : request.getServiceRole(),
-                request == null ? null : request.getModelId(),
-                request == null ? null : request.getModelName(),
-                request == null ? null : request.getPromptVersionId(),
-                request == null ? null : request.getRequestId(),
-                request == null ? null : request.getTraceId(),
-                request == null ? null : request.getPromptMessagesJson(),
-                request == null ? null : request.getPromptVariablesJson(),
-                request == null ? null : request.getPromptHash(),
-                request == null ? null : request.getInputPayloadJson(),
-                request == null ? null : request.getOutputSchemaJson(),
-                request != null && Boolean.TRUE.equals(request.getForceJson()),
-                request == null ? null : request.getLocale());
+                request.getSourceContentType(),
+                request.getSourceContentId(),
+                request.getRequestedBy(),
+                request.getServiceId(),
+                request.getServiceRole(),
+                request.getModelId(),
+                request.getModelName(),
+                request.getPromptVersionId(),
+                request.getRequestId(),
+                request.getTraceId(),
+                request.getPromptMessagesJson(),
+                request.getPromptVariablesJson(),
+                request.getPromptHash(),
+                request.getInputPayloadJson(),
+                request.getOutputSchemaJson(),
+                Boolean.TRUE.equals(request.getForceJson()),
+                request.getLocale());
     }
 
-    public static GraphExtractionTaskId toTaskId(GraphExtractionRequests.TaskIdRequest request) {
-        return request == null ? null : GraphExtractionTaskIdCodec.toDomain(request.getTaskId());
+    @NonNull
+    public static GraphExtractionTaskId toTaskId(@NonNull GraphExtractionRequests.TaskIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return GraphExtractionTaskIdCodec.toDomain(request.getTaskId());
     }
 
-    public static GraphExtractionTaskId toSourceTaskId(GraphExtractionRequests.RegenerateRequest request) {
-        return request == null ? null : GraphExtractionTaskIdCodec.toDomain(request.getSourceTaskId());
+    @NonNull
+    public static GraphExtractionTaskId toSourceTaskId(@NonNull GraphExtractionRequests.RegenerateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return GraphExtractionTaskIdCodec.toDomain(request.getSourceTaskId());
     }
 
+    @NonNull
     public static RegenerateGraphExtractionCommand toRegenerateCommand(
-            GraphExtractionRequests.RegenerateRequest request) {
+            @NonNull GraphExtractionRequests.RegenerateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new RegenerateGraphExtractionCommand(
-                request == null ? null : request.getTaskType(),
+                request.getTaskType(),
                 toSourceTaskId(request),
-                request == null ? null : request.getTriggerSource(),
-                request == null ? null : request.getSelectionScopeJson(),
-                request == null ? null : request.getReplaceUnconfirmedOnly(),
-                request == null ? null : request.getRequestedBy());
+                request.getTriggerSource(),
+                request.getSelectionScopeJson(),
+                request.getReplaceUnconfirmedOnly(),
+                request.getRequestedBy());
     }
 
     @NonNull
@@ -230,6 +244,7 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
         return new KnowledgeLineageRelationQuery(null, null, null, null, request.getRelationId());
     }
 
+    @NonNull
     public static CancelGraphExtractionBatchCommand toCancelBatchCommand(
             @NonNull GraphExtractionRequests.BatchCancelRequest request) {
         Objects.requireNonNull(request, "request must not be null");
@@ -243,124 +258,140 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
         return new ApplyGraphExtractionTaskCandidateCommand(toTaskId(request), null);
     }
 
-    public static GraphExtractionResponses.TaskResponse toResponse(GraphExtractionTaskResult result) {
+    @NonNull
+    public static GraphExtractionResponses.TaskResponse toResponse(@NonNull GraphExtractionTaskResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return GraphExtractionResponses.TaskResponse.builder()
-                .taskId(result == null ? null : result.getTaskId())
-                .batchJobId(result == null ? null : result.getBatchJobId())
-                .taskType(result == null ? null : result.getTaskType())
-                .scopeType(result == null ? null : result.getScopeType())
-                .scopeJson(result == null ? null : result.getScopeJson())
-                .triggerSource(result == null ? null : result.getTriggerSource())
-                .selectionScopeJson(result == null ? null : result.getSelectionScopeJson())
-                .replaceUnconfirmedOnly(result == null ? null : result.getReplaceUnconfirmedOnly())
-                .parentTaskId(result == null ? null : result.getParentTaskId())
-                .sourceContentType(result == null ? null : result.getSourceContentType())
-                .sourceContentId(result == null ? null : result.getSourceContentId())
-                .aiCallId(result == null ? null : result.getAiCallId())
-                .aiCandidateId(result == null ? null : result.getAiCandidateId())
-                .status(result == null ? null : result.getStatus())
-                .errorType(result == null ? null : result.getErrorType())
-                .errorMessage(result == null ? null : result.getErrorMessage())
-                .requestedBy(result == null ? null : result.getRequestedBy())
-                .requestedAt(result == null ? null : result.getRequestedAt())
-                .completedAt(result == null ? null : result.getCompletedAt())
-                .appliedAt(result == null ? null : result.getAppliedAt())
+                .taskId(result.getTaskId())
+                .batchJobId(result.getBatchJobId())
+                .taskType(result.getTaskType())
+                .scopeType(result.getScopeType())
+                .scopeJson(result.getScopeJson())
+                .triggerSource(result.getTriggerSource())
+                .selectionScopeJson(result.getSelectionScopeJson())
+                .replaceUnconfirmedOnly(result.getReplaceUnconfirmedOnly())
+                .parentTaskId(result.getParentTaskId())
+                .sourceContentType(result.getSourceContentType())
+                .sourceContentId(result.getSourceContentId())
+                .aiCallId(result.getAiCallId())
+                .aiCandidateId(result.getAiCandidateId())
+                .status(result.getStatus())
+                .errorType(result.getErrorType())
+                .errorMessage(result.getErrorMessage())
+                .requestedBy(result.getRequestedBy())
+                .requestedAt(result.getRequestedAt())
+                .completedAt(result.getCompletedAt())
+                .appliedAt(result.getAppliedAt())
                 .build();
     }
 
-    public static GraphExtractionResponses.BatchCancelResponse toResponse(GraphExtractionBatchCancelResult result) {
+    @NonNull
+    public static GraphExtractionResponses.BatchCancelResponse toResponse(
+            @NonNull GraphExtractionBatchCancelResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return GraphExtractionResponses.BatchCancelResponse.builder()
-                .batchJobId(result == null ? null : result.getBatchJobId())
-                .status(result == null ? null : result.getStatus())
-                .cancelledCount(result == null ? null : result.getCancelledCount())
-                .completedCount(result == null ? null : result.getCompletedCount())
-                .failedCount(result == null ? null : result.getFailedCount())
+                .batchJobId(result.getBatchJobId())
+                .status(result.getStatus())
+                .cancelledCount(result.getCancelledCount())
+                .completedCount(result.getCompletedCount())
+                .failedCount(result.getFailedCount())
                 .build();
     }
 
-    public static GraphExtractionResponses.VersionResponse toResponse(GraphVersionResult result) {
+    @NonNull
+    public static GraphExtractionResponses.VersionResponse toResponse(@NonNull GraphVersionResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return GraphExtractionResponses.VersionResponse.builder()
-                .versionId(result == null ? null : result.getVersionId())
-                .taskId(result == null ? null : result.getTaskId())
-                .candidateId(result == null ? null : result.getCandidateId())
-                .taskType(result == null ? null : result.getTaskType())
-                .sourceContentType(result == null ? null : result.getSourceContentType())
-                .sourceContentId(result == null ? null : result.getSourceContentId())
-                .versionNo(result == null ? null : result.getVersionNo())
-                .status(result == null ? null : result.getStatus())
-                .appliedAt(result == null ? null : result.getAppliedAt())
-                .refinementApplied(result == null ? null : result.getRefinementApplied())
-                .lastRefinementTaskId(result == null ? null : result.getLastRefinementTaskId())
-                .lastRefinementAppliedAt(result == null ? null : result.getLastRefinementAppliedAt())
+                .versionId(result.getVersionId())
+                .taskId(result.getTaskId())
+                .candidateId(result.getCandidateId())
+                .taskType(result.getTaskType())
+                .sourceContentType(result.getSourceContentType())
+                .sourceContentId(result.getSourceContentId())
+                .versionNo(result.getVersionNo())
+                .status(result.getStatus())
+                .appliedAt(result.getAppliedAt())
+                .refinementApplied(result.getRefinementApplied())
+                .lastRefinementTaskId(result.getLastRefinementTaskId())
+                .lastRefinementAppliedAt(result.getLastRefinementAppliedAt())
                 .build();
     }
 
-    public static GraphExtractionResponses.EntityResponse toResponse(KnowledgeEntityResult result) {
+    @NonNull
+    public static GraphExtractionResponses.EntityResponse toResponse(@NonNull KnowledgeEntityResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return GraphExtractionResponses.EntityResponse.builder()
-                .entityId(result == null ? null : result.getEntityId())
-                .entityKey(result == null ? null : result.getEntityKey())
-                .name(result == null ? null : result.getName())
-                .entityType(result == null ? null : result.getEntityType())
-                .description(result == null ? null : result.getDescription())
-                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
-                .latestVersionId(result == null ? null : result.getLatestVersionId())
-                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
-                .firstExtractedAt(result == null ? null : result.getFirstExtractedAt())
-                .lastExtractedAt(result == null ? null : result.getLastExtractedAt())
-                .confirmedAt(result == null ? null : result.getConfirmedAt())
+                .entityId(result.getEntityId())
+                .entityKey(result.getEntityKey())
+                .name(result.getName())
+                .entityType(result.getEntityType())
+                .description(result.getDescription())
+                .confirmationStatus(result.getConfirmationStatus())
+                .latestVersionId(result.getLatestVersionId())
+                .sourceRefsJson(result.getSourceRefsJson())
+                .firstExtractedAt(result.getFirstExtractedAt())
+                .lastExtractedAt(result.getLastExtractedAt())
+                .confirmedAt(result.getConfirmedAt())
                 .build();
     }
 
-    public static GraphExtractionResponses.RelationResponse toResponse(KnowledgeRelationResult result) {
+    @NonNull
+    public static GraphExtractionResponses.RelationResponse toResponse(@NonNull KnowledgeRelationResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return GraphExtractionResponses.RelationResponse.builder()
-                .relationId(result == null ? null : result.getRelationId())
-                .relationKey(result == null ? null : result.getRelationKey())
-                .sourceName(result == null ? null : result.getSourceName())
-                .sourceType(result == null ? null : result.getSourceType())
-                .targetName(result == null ? null : result.getTargetName())
-                .targetType(result == null ? null : result.getTargetType())
-                .relationType(result == null ? null : result.getRelationType())
-                .evidence(result == null ? null : result.getEvidence())
-                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
-                .latestVersionId(result == null ? null : result.getLatestVersionId())
-                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
-                .firstExtractedAt(result == null ? null : result.getFirstExtractedAt())
-                .lastExtractedAt(result == null ? null : result.getLastExtractedAt())
-                .confirmedAt(result == null ? null : result.getConfirmedAt())
+                .relationId(result.getRelationId())
+                .relationKey(result.getRelationKey())
+                .sourceName(result.getSourceName())
+                .sourceType(result.getSourceType())
+                .targetName(result.getTargetName())
+                .targetType(result.getTargetType())
+                .relationType(result.getRelationType())
+                .evidence(result.getEvidence())
+                .confirmationStatus(result.getConfirmationStatus())
+                .latestVersionId(result.getLatestVersionId())
+                .sourceRefsJson(result.getSourceRefsJson())
+                .firstExtractedAt(result.getFirstExtractedAt())
+                .lastExtractedAt(result.getLastExtractedAt())
+                .confirmedAt(result.getConfirmedAt())
                 .build();
     }
 
-    public static GraphExtractionResponses.LineageNodeResponse toResponse(KnowledgeLineageNodeResult result) {
+    @NonNull
+    public static GraphExtractionResponses.LineageNodeResponse toResponse(@NonNull KnowledgeLineageNodeResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return GraphExtractionResponses.LineageNodeResponse.builder()
-                .nodeId(result == null ? null : result.getNodeId())
-                .nodeKey(result == null ? null : result.getNodeKey())
-                .name(result == null ? null : result.getName())
-                .nodeType(result == null ? null : result.getNodeType())
-                .generation(result == null ? null : result.getGeneration())
-                .gender(result == null ? null : result.getGender())
-                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
-                .latestVersionId(result == null ? null : result.getLatestVersionId())
-                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
-                .firstExtractedAt(result == null ? null : result.getFirstExtractedAt())
-                .lastExtractedAt(result == null ? null : result.getLastExtractedAt())
-                .confirmedAt(result == null ? null : result.getConfirmedAt())
+                .nodeId(result.getNodeId())
+                .nodeKey(result.getNodeKey())
+                .name(result.getName())
+                .nodeType(result.getNodeType())
+                .generation(result.getGeneration())
+                .gender(result.getGender())
+                .confirmationStatus(result.getConfirmationStatus())
+                .latestVersionId(result.getLatestVersionId())
+                .sourceRefsJson(result.getSourceRefsJson())
+                .firstExtractedAt(result.getFirstExtractedAt())
+                .lastExtractedAt(result.getLastExtractedAt())
+                .confirmedAt(result.getConfirmedAt())
                 .build();
     }
 
-    public static GraphExtractionResponses.LineageRelationResponse toResponse(KnowledgeLineageRelationResult result) {
+    @NonNull
+    public static GraphExtractionResponses.LineageRelationResponse toResponse(
+            @NonNull KnowledgeLineageRelationResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return GraphExtractionResponses.LineageRelationResponse.builder()
-                .relationId(result == null ? null : result.getRelationId())
-                .relationKey(result == null ? null : result.getRelationKey())
-                .sourceName(result == null ? null : result.getSourceName())
-                .targetName(result == null ? null : result.getTargetName())
-                .relationType(result == null ? null : result.getRelationType())
-                .evidence(result == null ? null : result.getEvidence())
-                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
-                .latestVersionId(result == null ? null : result.getLatestVersionId())
-                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
-                .firstExtractedAt(result == null ? null : result.getFirstExtractedAt())
-                .lastExtractedAt(result == null ? null : result.getLastExtractedAt())
-                .confirmedAt(result == null ? null : result.getConfirmedAt())
+                .relationId(result.getRelationId())
+                .relationKey(result.getRelationKey())
+                .sourceName(result.getSourceName())
+                .targetName(result.getTargetName())
+                .relationType(result.getRelationType())
+                .evidence(result.getEvidence())
+                .confirmationStatus(result.getConfirmationStatus())
+                .latestVersionId(result.getLatestVersionId())
+                .sourceRefsJson(result.getSourceRefsJson())
+                .firstExtractedAt(result.getFirstExtractedAt())
+                .lastExtractedAt(result.getLastExtractedAt())
+                .confirmedAt(result.getConfirmedAt())
                 .build();
     }
 }

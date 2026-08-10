@@ -129,7 +129,7 @@ public class KnowledgeGraphExtractionController {
     })
     @HasPermission("knowledge:graph:edit")
     @SysLogger(value = "取消批量抽取任务")
-    @PostMapping("task/cancel-batch")
+    @PostMapping("task/cancel")
     public GraphExtractionResponses.BatchCancelResponse cancelBatchTask(
             @Valid @RequestBody GraphExtractionRequests.BatchCancelRequest request) {
         return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.cancelBatch(

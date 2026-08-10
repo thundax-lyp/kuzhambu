@@ -40,7 +40,6 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler.KnowledgeGraphExtractionInterfaceAssembler",
                         "com.thundax.kuzhambu.knowledge.interfaces.admin.lineage.assembler.KnowledgeLineageInterfaceAssembler",
                         "com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.assembler.KnowledgeGraphRefinementInterfaceAssembler",
                         "com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.assembler.KnowledgeQualityReportInterfaceAssembler",
@@ -55,21 +54,6 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
     private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS,
-                "admin.graph.controller.request.GraphExtractionRequests$BatchCancelRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$CreateRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$EntityIdRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$EntityPageRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$LineageNodeIdRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$LineageNodePageRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$LineageRelationIdRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$LineageRelationPageRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$PageTaskRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$RegenerateRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$RelationIdRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$RelationPageRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$TaskIdRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$VersionIdRequest",
-                "admin.graph.controller.request.GraphExtractionRequests$VersionPageRequest",
                 "admin.lineage.controller.request.LineageCanvasRequest",
                 "admin.refinement.controller.request.QualityReportRequests$DetailRequest",
                 "admin.refinement.controller.request.QualityReportRequests$GenerateRequest",
@@ -102,7 +86,6 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
 
     private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
         return List.of(
-                actionVerbAllowance("KnowledgeGraphExtractionController"),
                 actionVerbAllowance("KnowledgeGraphRefinementController"),
                 actionVerbAllowance("KnowledgeGraphWorkbenchController"),
                 actionVerbAllowance("KnowledgeLineageController"),
@@ -113,13 +96,6 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
-                "admin.graph.controller.response.GraphExtractionResponses$BatchCancelResponse",
-                "admin.graph.controller.response.GraphExtractionResponses$EntityResponse",
-                "admin.graph.controller.response.GraphExtractionResponses$LineageNodeResponse",
-                "admin.graph.controller.response.GraphExtractionResponses$LineageRelationResponse",
-                "admin.graph.controller.response.GraphExtractionResponses$RelationResponse",
-                "admin.graph.controller.response.GraphExtractionResponses$TaskResponse",
-                "admin.graph.controller.response.GraphExtractionResponses$VersionResponse",
                 "admin.lineage.controller.response.LineageCanvasResponse",
                 "admin.lineage.controller.response.LineageCanvasResponse$AvailableFiltersResponse",
                 "admin.lineage.controller.response.LineageCanvasResponse$EmptyResponse",

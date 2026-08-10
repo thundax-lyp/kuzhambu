@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +16,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class CreateRequest {
         @JsonProperty("taskType")
         private String taskType;
@@ -90,6 +92,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class PageTaskRequest extends PageRequest {
         @JsonProperty("taskType")
         private String taskType;
@@ -114,6 +117,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class TaskIdRequest {
         @JsonProperty("taskId")
         private Long taskId;
@@ -123,6 +127,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class RegenerateRequest {
         @JsonProperty("taskType")
         private String taskType;
@@ -147,6 +152,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class BatchCancelRequest {
         @JsonProperty("batchJobId")
         private Long batchJobId;
@@ -159,6 +165,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class VersionPageRequest extends PageRequest {
         @JsonProperty("taskType")
         private String taskType;
@@ -177,6 +184,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class VersionIdRequest {
         @JsonProperty("versionId")
         private Long versionId;
@@ -186,6 +194,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class EntityPageRequest extends PageRequest {
         @JsonProperty("versionId")
         private Long versionId;
@@ -204,6 +213,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class EntityIdRequest {
         @JsonProperty("entityId")
         private Long entityId;
@@ -213,6 +223,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class RelationPageRequest extends PageRequest {
         @JsonProperty("versionId")
         private Long versionId;
@@ -231,6 +242,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class RelationIdRequest {
         @JsonProperty("relationId")
         private Long relationId;
@@ -240,6 +252,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageNodePageRequest extends PageRequest {
         @JsonProperty("versionId")
         private Long versionId;
@@ -258,6 +271,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageNodeIdRequest {
         @JsonProperty("nodeId")
         private Long nodeId;
@@ -267,6 +281,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageRelationPageRequest extends PageRequest {
         @JsonProperty("versionId")
         private Long versionId;
@@ -285,6 +300,7 @@ public final class GraphExtractionRequests {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Schema
     public static class LineageRelationIdRequest {
         @JsonProperty("relationId")
         private Long relationId;
