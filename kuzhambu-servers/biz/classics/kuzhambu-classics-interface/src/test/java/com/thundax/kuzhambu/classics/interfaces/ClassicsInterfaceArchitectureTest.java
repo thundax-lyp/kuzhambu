@@ -62,10 +62,6 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
     private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS,
-                "admin.publication.controller.request.ClassicsPublicationActionRequest",
-                "admin.publication.controller.request.ClassicsPublicationBatchActionRequest",
-                "admin.publication.controller.request.ClassicsPublicationJobGetRequest",
-                "admin.publication.controller.request.ClassicsPublicationJobPageRequest",
                 "admin.sancai.controller.request.SancaiAssetRequest",
                 "admin.sancai.controller.request.SancaiCategoryRequest",
                 "admin.sancai.controller.request.SancaiContentRequest",
@@ -80,10 +76,6 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
                 "admin.common.response.ClassicsBatchOperationResponse",
-                "admin.publication.controller.response.ClassicsPublicationBatchItemResponse",
-                "admin.publication.controller.response.ClassicsPublicationBatchResponse",
-                "admin.publication.controller.response.ClassicsPublicationCreateResponse",
-                "admin.publication.controller.response.ClassicsPublicationJobResponse",
                 "admin.sancai.controller.response.SancaiAssetResponse",
                 "admin.sancai.controller.response.SancaiCategoryResponse",
                 "admin.sancai.controller.response.SancaiContentResponse",

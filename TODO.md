@@ -12,23 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `8 发布API模型注解`：8. 清理发布 API request/response 模型注解 allowlist
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-07-CLASSICS-SANCAI-PUBLICATION.md`
-    - 范围对象：
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/publication/controller/request/ClassicsPublicationActionRequest.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/publication/controller/request/ClassicsPublicationBatchActionRequest.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/publication/controller/request/ClassicsPublicationJobGetRequest.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/publication/controller/request/ClassicsPublicationJobPageRequest.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/publication/controller/response/ClassicsPublicationCreateResponse.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/publication/controller/response/ClassicsPublicationBatchResponse.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/publication/controller/response/ClassicsPublicationBatchItemResponse.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/publication/controller/response/ClassicsPublicationJobResponse.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/ClassicsInterfaceArchitectureTest.java`
-    - 处理动作：补齐发布 request/response 模型要求的注解并删除对应 annotation allowlist key。
-    - 验收点：发布字段名、HTTP 路径和接口契约不变；发布 API 模型注解 key 清零或仅保留非本任务范围项。
-    - 重要度：7/10
-
 - [ ] `9 三才Request与Assembler契约`：9. 清理三才 request 注解与 admin assembler 非空契约 allowlist
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-07-CLASSICS-SANCAI-PUBLICATION.md`
