@@ -28,31 +28,30 @@ public class PrincipalIdentityApplicationServiceImpl implements PrincipalIdentit
         if (query == null) {
             return null;
         }
-        if (query.getId() != null) {
-            return principalIdentityRepository.getById(query.getId());
+        if (query.id() != null) {
+            return principalIdentityRepository.getById(query.id());
         }
-        if (query.getIdentityType() != null && StringUtils.isNotBlank(query.getIdentityValue())) {
-            return principalIdentityRepository.getByIdentity(query.getIdentityType(), query.getIdentityValue());
+        if (query.identityType() != null && StringUtils.isNotBlank(query.identityValue())) {
+            return principalIdentityRepository.getByIdentity(query.identityType(), query.identityValue());
         }
-        if (query.getPrincipalKey() != null && query.getIdentityType() != null) {
-            return principalIdentityRepository.getByPrincipalKeyAndType(
-                    query.getPrincipalKey(), query.getIdentityType());
+        if (query.principalKey() != null && query.identityType() != null) {
+            return principalIdentityRepository.getByPrincipalKeyAndType(query.principalKey(), query.identityType());
         }
         return null;
     }
 
     @Override
     public List<PrincipalIdentity> list(PrincipalIdentityQuery query) {
-        return principalIdentityRepository.listByPrincipalKeyAndStatus(query.getPrincipalKey(), query.getStatus());
+        return principalIdentityRepository.listByPrincipalKeyAndStatus(query.principalKey(), query.status());
     }
 
     @Override
     public PrincipalIdentityId create(CreatePrincipalIdentityCommand command) {
         PrincipalIdentity principalIdentity = new PrincipalIdentity();
-        principalIdentity.setPrincipalKey(command.getPrincipalKey());
-        principalIdentity.setType(command.getType());
-        principalIdentity.setIdentityValue(command.getIdentityValue());
-        principalIdentity.setStatus(command.getStatus());
+        principalIdentity.setPrincipalKey(command.principalKey());
+        principalIdentity.setType(command.type());
+        principalIdentity.setIdentityValue(command.identityValue());
+        principalIdentity.setStatus(command.status());
         PrincipalIdentityId id = principalIdentityRepository.insert(principalIdentity);
         principalIdentity.setId(id);
         return id;
@@ -66,18 +65,18 @@ public class PrincipalIdentityApplicationServiceImpl implements PrincipalIdentit
     @Override
     public void changeStatus(ChangePrincipalIdentityStatusCommand command) {
         PrincipalIdentity principalIdentity = new PrincipalIdentity();
-        principalIdentity.setId(command.getId());
-        principalIdentity.setStatus(command.getStatus());
+        principalIdentity.setId(command.id());
+        principalIdentity.setStatus(command.status());
         principalIdentityRepository.updateStatus(principalIdentity);
     }
 
     private PrincipalIdentity principalIdentity(ChangePrincipalIdentityCommand command) {
         PrincipalIdentity principalIdentity = new PrincipalIdentity();
-        principalIdentity.setId(command.getId());
-        principalIdentity.setPrincipalKey(command.getPrincipalKey());
-        principalIdentity.setType(command.getType());
-        principalIdentity.setIdentityValue(command.getIdentityValue());
-        principalIdentity.setStatus(command.getStatus());
+        principalIdentity.setId(command.id());
+        principalIdentity.setPrincipalKey(command.principalKey());
+        principalIdentity.setType(command.type());
+        principalIdentity.setIdentityValue(command.identityValue());
+        principalIdentity.setStatus(command.status());
         return principalIdentity;
     }
 }

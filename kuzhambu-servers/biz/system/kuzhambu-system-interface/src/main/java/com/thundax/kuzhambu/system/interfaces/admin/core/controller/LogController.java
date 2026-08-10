@@ -103,10 +103,7 @@ public class LogController {
     }
 
     private PrincipalIdentityQuery identityQuery(PrincipalKey principalKey, PrincipalIdentityType identityType) {
-        PrincipalIdentityQuery query = new PrincipalIdentityQuery();
-        query.setPrincipalKey(principalKey);
-        query.setIdentityType(identityType);
-        return query;
+        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
     }
 
     private Department getDepartment(DepartmentId departmentId) {

@@ -4,19 +4,10 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityStat
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class PrincipalIdentityQuery {
-    private PrincipalIdentityId id;
-    private PrincipalIdentityType identityType;
-    private String identityValue;
-    private PrincipalKey principalKey;
-    private PrincipalIdentityStatus status;
-}
+public record PrincipalIdentityQuery(
+        PrincipalIdentityId id,
+        PrincipalIdentityType identityType,
+        String identityValue,
+        PrincipalKey principalKey,
+        PrincipalIdentityStatus status) {}

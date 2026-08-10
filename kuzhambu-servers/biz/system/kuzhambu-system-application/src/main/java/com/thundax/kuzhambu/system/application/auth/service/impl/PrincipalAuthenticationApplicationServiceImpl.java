@@ -103,10 +103,7 @@ public class PrincipalAuthenticationApplicationServiceImpl implements PrincipalA
     }
 
     private PrincipalIdentityQuery identityQuery(AuthenticateIdentityCommand command) {
-        PrincipalIdentityQuery query = new PrincipalIdentityQuery();
-        query.setIdentityType(command.identityType());
-        query.setIdentityValue(command.identityValue());
-        return query;
+        return new PrincipalIdentityQuery(null, command.identityType(), command.identityValue(), null, null);
     }
 
     private PrincipalCredentialQuery credentialQuery(

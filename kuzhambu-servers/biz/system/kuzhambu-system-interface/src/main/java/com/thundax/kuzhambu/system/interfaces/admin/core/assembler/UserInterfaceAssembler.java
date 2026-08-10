@@ -1,8 +1,14 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
+import com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
@@ -28,6 +34,34 @@ import org.springframework.lang.NonNull;
 
 public final class UserInterfaceAssembler {
     private UserInterfaceAssembler() {}
+
+    @NonNull
+    public static CreatePrincipalIdentityCommand toCreatePrincipalIdentityCommand(@NonNull PrincipalIdentity identity) {
+        return new CreatePrincipalIdentityCommand(
+                identity.getPrincipalKey(), identity.getType(), identity.getIdentityValue(), identity.getStatus());
+    }
+
+    @NonNull
+    public static ChangePrincipalIdentityCommand toChangePrincipalIdentityCommand(@NonNull PrincipalIdentity identity) {
+        return new ChangePrincipalIdentityCommand(
+                identity.getId(),
+                identity.getPrincipalKey(),
+                identity.getType(),
+                identity.getIdentityValue(),
+                identity.getStatus());
+    }
+
+    @NonNull
+    public static PrincipalIdentityQuery toPrincipalIdentityQuery(
+            PrincipalIdentityType identityType, String identityValue) {
+        return new PrincipalIdentityQuery(null, identityType, identityValue, null, null);
+    }
+
+    @NonNull
+    public static PrincipalIdentityQuery toPrincipalIdentityQuery(
+            PrincipalKey principalKey, PrincipalIdentityType identityType) {
+        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
+    }
 
     @NonNull
     public static UserResponse toResponse(

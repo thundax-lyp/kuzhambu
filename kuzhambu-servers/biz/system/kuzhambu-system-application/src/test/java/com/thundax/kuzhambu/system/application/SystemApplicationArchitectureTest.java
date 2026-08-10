@@ -95,8 +95,6 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.CurrentUserController#PreAuthSessionValueQuery:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.CurrentUserController#PrincipalIdentityQuery:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.CurrentUserController#RemoveCurrentUserAvatarCommand:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.DepartmentController#DepartmentQuery:1"),
@@ -173,13 +171,9 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#ChangePrincipalCredentialCommand:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#ChangePrincipalIdentityCommand:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#ChangeUserStatusCommand:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#CreatePrincipalCredentialCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#CreatePrincipalIdentityCommand:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#CurrentUserAvatarQuery:1"),
                 constructionViolation(
@@ -202,10 +196,6 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#PreAuthSessionValueQuery:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#PrincipalCredentialQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#PrincipalIdentityQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#PrincipalIdentityQuery:2"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#RemoveCurrentUserAvatarCommand:1"),
                 constructionViolation(

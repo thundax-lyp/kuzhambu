@@ -2,6 +2,9 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
@@ -19,6 +22,12 @@ public final class PersonalInterfaceAssembler {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private PersonalInterfaceAssembler() {}
+
+    @NonNull
+    public static PrincipalIdentityQuery toPrincipalIdentityQuery(
+            PrincipalKey principalKey, PrincipalIdentityType identityType) {
+        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
+    }
 
     @NonNull
     public static PersonalInfoResponse toInfoResponse(User entity, String loginName, String avatarUrl) {
