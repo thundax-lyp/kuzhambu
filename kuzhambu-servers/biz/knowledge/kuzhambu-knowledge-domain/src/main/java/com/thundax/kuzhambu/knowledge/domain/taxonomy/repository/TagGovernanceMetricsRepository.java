@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 
 public interface TagGovernanceMetricsRepository {
 
-    TagGovernanceMetrics getMetrics(Integer topLimit, Integer recentMonths);
+    TagGovernanceMetrics getByTopLimitAndRecentMonths(Integer topLimit, Integer recentMonths);
 
-    BigDecimal getTagCoverageRate();
+    BigDecimal getByTagCoverageRate();
 }

@@ -82,7 +82,7 @@ class TagGovernanceMetricsRepositoryImplTest {
         ref3.setTagId(1002L);
         when(contentRefMapper.selectList(org.mockito.ArgumentMatchers.any())).thenReturn(List.of(ref1, ref2, ref3));
 
-        TagGovernanceMetrics result = repository.getMetrics(10, 6);
+        TagGovernanceMetrics result = repository.getByTopLimitAndRecentMonths(10, 6);
 
         assertEquals("礼制", result.getTopTags().get(0).getTagName());
         assertEquals(2L, result.getTopTags().get(0).getContentRefCount());

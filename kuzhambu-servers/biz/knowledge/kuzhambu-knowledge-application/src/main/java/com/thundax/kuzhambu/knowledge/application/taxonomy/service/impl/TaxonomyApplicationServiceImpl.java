@@ -21,7 +21,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchDepre
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand.TagCandidateApplyItemCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyItem;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
@@ -483,8 +483,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Override
     public TagGovernanceMetricsResult getTagGovernanceMetrics(TagGovernanceMetricsQuery query) {
         TagGovernanceMetricsQuery effective = ensureCommand(query, "标签治理统计查询");
-        TagGovernanceMetrics metrics =
-                tagGovernanceMetricsRepository.getMetrics(effective.topLimit(), effective.recentMonths());
+        TagGovernanceMetrics metrics = tagGovernanceMetricsRepository.getByTopLimitAndRecentMonths(
+                effective.topLimit(), effective.recentMonths());
         return new TagGovernanceMetricsResult(
                 metrics.getTopTags().stream()
                         .map(item -> new TagGovernanceMetricsResult.TagUsageMetric(
@@ -509,7 +509,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         TagReviewQuery effectiveQuery = query == null ? new TagReviewQuery(null, null, null) : query;
         PageQuery effectivePage = normalize(page);
 
-        PageResult<Tag> pageResult = tagRepository.pagePending(effectivePage.getPageNo(), effectivePage.getPageSize());
+        PageResult<Tag> pageResult = tagRepository.listPending(effectivePage.getPageNo(), effectivePage.getPageSize());
 
         return PageResult.of(
                 pageResult.getPageNo(),
@@ -654,7 +654,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         TagCandidateApplyCommand effective = ensureCommand(command, "标签候选应用命令");
         Long candidateId = ensureId(effective.aiCandidateId(), "aiCandidateId");
         Long reviewedBy = ensureId(effective.reviewedBy(), "reviewedBy");
-        List<TagCandidateApplyItemCommand> selectedTags = effective.selectedTags();
+        List<TagCandidateApplyItem> selectedTags = effective.selectedTags();
         if (selectedTags == null || selectedTags.isEmpty()) {
             throw new BizException("selectedTags must not be empty");
         }
@@ -675,7 +675,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .capability(CAPABILITY_KNOWLEDGE_TAG_EXTRACT)
                         .build());
 
-        for (TagCandidateApplyItemCommand item : selectedTags) {
+        for (TagCandidateApplyItem item : selectedTags) {
             applySelectedTag(item, effective.reviewNote());
         }
         aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
@@ -722,8 +722,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         tagAliasRepository.deleteById(id);
     }
 
-    private void applySelectedTag(TagCandidateApplyItemCommand item, String reviewNote) {
-        TagCandidateApplyItemCommand effective = ensureCommand(item, "标签候选项");
+    private void applySelectedTag(TagCandidateApplyItem item, String reviewNote) {
+        TagCandidateApplyItem effective = ensureCommand(item, "标签候选项");
         String name = trimText(effective.name(), "name");
         TagId matchedTagId = parseTagId(effective.matchedExistingTagId());
         if (matchedTagId != null) {
@@ -771,7 +771,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         return payload;
     }
 
-    private Map<String, Object> candidateApplyItemPayload(TagCandidateApplyItemCommand item) {
+    private Map<String, Object> candidateApplyItemPayload(TagCandidateApplyItem item) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("name", item.name());
         payload.put("categoryId", item.categoryId());

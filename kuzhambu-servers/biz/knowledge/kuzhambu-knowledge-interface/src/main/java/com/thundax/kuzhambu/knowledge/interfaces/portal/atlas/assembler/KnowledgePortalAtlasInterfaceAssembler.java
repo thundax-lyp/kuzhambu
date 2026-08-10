@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.assembler;
 
+import com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalAtlasResult;
+import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.response.KnowledgePortalAtlasResponse;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +24,17 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
         response.setAvailableFilters(toAvailableFilters(result.getAvailableFilters()));
         response.setCanvasView(toCanvasView(result.getCanvasView()));
         return response;
+    }
+
+    public static KnowledgePortalAtlasQuery toAtlasQuery(KnowledgePortalAtlasRequest request) {
+        return new KnowledgePortalAtlasQuery(
+                request == null ? null : request.getLevel(),
+                request == null ? null : request.getCategoryCode(),
+                request == null ? null : request.getEntityId(),
+                request == null ? null : request.getKnowledgeBase(),
+                request == null ? null : request.getKeyword(),
+                request == null ? null : request.getTag(),
+                request == null ? null : request.getTimeRange());
     }
 
     private static List<KnowledgePortalAtlasResponse.BreadcrumbItemResponse> toBreadcrumbItems(

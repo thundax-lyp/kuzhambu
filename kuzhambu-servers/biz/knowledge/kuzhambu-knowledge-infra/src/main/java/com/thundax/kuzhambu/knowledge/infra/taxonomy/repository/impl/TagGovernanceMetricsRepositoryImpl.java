@@ -46,7 +46,7 @@ public class TagGovernanceMetricsRepositoryImpl implements TagGovernanceMetricsR
     }
 
     @Override
-    public TagGovernanceMetrics getMetrics(Integer topLimit, Integer recentMonths) {
+    public TagGovernanceMetrics getByTopLimitAndRecentMonths(Integer topLimit, Integer recentMonths) {
         int effectiveTopLimit = normalizePositive(topLimit, DEFAULT_TOP_LIMIT);
         int effectiveRecentMonths = normalizePositive(recentMonths, DEFAULT_RECENT_MONTHS);
 
@@ -64,7 +64,7 @@ public class TagGovernanceMetricsRepositoryImpl implements TagGovernanceMetricsR
     }
 
     @Override
-    public BigDecimal getTagCoverageRate() {
+    public BigDecimal getByTagCoverageRate() {
         List<Tag> activeTags = TaxonomyPersistenceAssembler.toTagDomainList(tagMapper.selectList(activeTagQuery()));
         if (activeTags.isEmpty()) {
             return BigDecimal.ZERO;

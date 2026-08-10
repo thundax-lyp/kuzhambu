@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchDepre
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand.TagCandidateApplyItemCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyItem;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
@@ -241,8 +241,8 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 request == null ? null : request.getReviewedBy());
     }
 
-    private static TagCandidateApplyItemCommand toCandidateApplyItemCommand(TagCandidateApplyItemRequest request) {
-        return new TagCandidateApplyItemCommand(
+    private static TagCandidateApplyItem toCandidateApplyItemCommand(TagCandidateApplyItemRequest request) {
+        return new TagCandidateApplyItem(
                 request == null ? null : request.getName(),
                 request == null ? null : request.getCategoryId(),
                 request == null ? null : request.getCategoryName(),

@@ -2,8 +2,6 @@ package com.thundax.kuzhambu.knowledge.application.facade.impl;
 
 import com.thundax.kuzhambu.knowledge.application.facade.assembler.KnowledgeFacadeAssembler;
 import com.thundax.kuzhambu.knowledge.application.report.service.KnowledgeReportApplicationService;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryEntityHintQuery;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.query.DiscoveryTagHintQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.KnowledgeTaxonomyReadApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
 import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
@@ -54,8 +52,8 @@ public class KnowledgeFacadeImpl implements KnowledgeFacade {
         if (request == null) {
             return null;
         }
-        return knowledgeFacadeAssembler.toTagHintResponse(
-                knowledgeTaxonomyReadApplicationService.getTagHint(new DiscoveryTagHintQuery(request.getTerm())));
+        return knowledgeFacadeAssembler.toTagHintResponse(knowledgeTaxonomyReadApplicationService.getTagHint(
+                knowledgeFacadeAssembler.toDiscoveryTagHintQuery(request)));
     }
 
     @Override
@@ -65,7 +63,7 @@ public class KnowledgeFacadeImpl implements KnowledgeFacade {
             return null;
         }
         return knowledgeFacadeAssembler.toEntityHintsResponse(knowledgeTaxonomyReadApplicationService.listEntityHints(
-                new DiscoveryEntityHintQuery(request.getTerm())));
+                knowledgeFacadeAssembler.toDiscoveryEntityHintQuery(request)));
     }
 
     @Override
