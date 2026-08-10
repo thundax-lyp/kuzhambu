@@ -79,8 +79,6 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.CurrentUserController#PreAuthSessionValueQuery:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.LogController#GetUserQuery:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.LogController#PrincipalIdentityQuery:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#PrincipalIdentityQuery:1"),
@@ -99,13 +97,7 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#RemoveCurrentUserAvatarCommand:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#RoleQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.service.impl.SysLogMessageServiceImpl#CreateLogCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.service.impl.SysLogMessageServiceImpl#DeleteLogCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.service.impl.SysLogMessageServiceImpl#LogQuery:1"));
+                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#RoleQuery:1"));
     }
 
     private static ArchitectureRuleAllowance constructionViolation(String ownerAndType) {

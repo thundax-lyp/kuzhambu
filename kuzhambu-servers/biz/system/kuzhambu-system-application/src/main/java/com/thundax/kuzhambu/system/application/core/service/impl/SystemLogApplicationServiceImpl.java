@@ -29,7 +29,7 @@ public class SystemLogApplicationServiceImpl implements SystemLogApplicationServ
 
     @Override
     public Log get(GetLogQuery query) {
-        LogId id = query == null ? null : query.getId();
+        LogId id = query == null ? null : query.id();
         if (id == null) {
             return null;
         }
@@ -39,27 +39,27 @@ public class SystemLogApplicationServiceImpl implements SystemLogApplicationServ
     @Override
     public List<Log> list(LogQuery query) {
         return dao.list(
-                query == null ? null : typeValue(query.getType()),
-                query == null ? null : query.getRemoteAddr(),
-                query == null ? null : query.getUserLoginName(),
-                query == null ? null : query.getUserName(),
-                query == null ? null : query.getTitle(),
-                query == null ? null : query.getRequestUri(),
-                query == null ? null : query.getBeginDate(),
-                query == null ? null : query.getEndDate());
+                query == null ? null : typeValue(query.type()),
+                query == null ? null : query.remoteAddr(),
+                query == null ? null : query.userLoginName(),
+                query == null ? null : query.userName(),
+                query == null ? null : query.title(),
+                query == null ? null : query.requestUri(),
+                query == null ? null : query.beginDate(),
+                query == null ? null : query.endDate());
     }
 
     @Override
     public PageResult<Log> page(LogQuery query, PageQuery page) {
         return dao.page(
-                query == null ? null : typeValue(query.getType()),
-                query == null ? null : query.getRemoteAddr(),
-                query == null ? null : query.getUserLoginName(),
-                query == null ? null : query.getUserName(),
-                query == null ? null : query.getTitle(),
-                query == null ? null : query.getRequestUri(),
-                query == null ? null : query.getBeginDate(),
-                query == null ? null : query.getEndDate(),
+                query == null ? null : typeValue(query.type()),
+                query == null ? null : query.remoteAddr(),
+                query == null ? null : query.userLoginName(),
+                query == null ? null : query.userName(),
+                query == null ? null : query.title(),
+                query == null ? null : query.requestUri(),
+                query == null ? null : query.beginDate(),
+                query == null ? null : query.endDate(),
                 page.getPageNo(),
                 page.getPageSize());
     }
@@ -75,14 +75,14 @@ public class SystemLogApplicationServiceImpl implements SystemLogApplicationServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int deleteByCondition(DeleteLogCommand command) {
-        LogQuery query = command == null ? null : command.getQuery();
+        LogQuery query = command == null ? null : command.query();
         return dao.batchDelete(
-                query == null ? null : typeValue(query.getType()),
-                query == null ? null : query.getRemoteAddr(),
-                query == null ? null : query.getTitle(),
-                query == null ? null : query.getRequestUri(),
-                query == null ? null : query.getBeginDate(),
-                query == null ? null : query.getEndDate());
+                query == null ? null : typeValue(query.type()),
+                query == null ? null : query.remoteAddr(),
+                query == null ? null : query.title(),
+                query == null ? null : query.requestUri(),
+                query == null ? null : query.beginDate(),
+                query == null ? null : query.endDate());
     }
 
     private String typeValue(LogType type) {
@@ -91,17 +91,17 @@ public class SystemLogApplicationServiceImpl implements SystemLogApplicationServ
 
     private Log toLog(CreateLogCommand command) {
         Log log = new Log();
-        log.setId(command.getId());
-        log.setUserId(command.getUserId());
-        log.setType(command.getType());
-        log.setLogDate(command.getLogDate());
-        log.setTitle(command.getTitle());
-        log.setRemoteAddr(command.getRemoteAddr());
-        log.setUserAgent(command.getUserAgent());
-        log.setMethod(command.getMethod());
-        log.setRequestUri(command.getRequestUri());
-        log.setRequestParams(command.getRequestParams());
-        log.setRemarks(command.getRemarks());
+        log.setId(command.id());
+        log.setUserId(command.userId());
+        log.setType(command.type());
+        log.setLogDate(command.logDate());
+        log.setTitle(command.title());
+        log.setRemoteAddr(command.remoteAddr());
+        log.setUserAgent(command.userAgent());
+        log.setMethod(command.method());
+        log.setRequestUri(command.requestUri());
+        log.setRequestParams(command.requestParams());
+        log.setRemarks(command.remarks());
         return log;
     }
 }

@@ -13,11 +13,7 @@ final class SystemApplicationCommandQueryRecordAllowances {
     private SystemApplicationCommandQueryRecordAllowances() {}
 
     static List<ArchitectureRuleAllowance> legacyAllowances() {
-        return List.of(
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.command.CreateLogCommand"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.query.GetLogQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.query.LogQuery"));
+        return List.of();
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {
