@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.system.interfaces.admin.auth.assembler;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticateIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticatePasswordCommand;
 import com.thundax.kuzhambu.system.application.auth.command.CreateAdminAccessTokenCommand;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCommand;
 import com.thundax.kuzhambu.system.application.auth.command.CreatePreAuthSessionCommand;
 import com.thundax.kuzhambu.system.application.auth.command.DeleteAdminAccessTokenCommand;
 import com.thundax.kuzhambu.system.application.auth.command.InvalidateAdminSessionCommand;
@@ -12,6 +13,7 @@ import com.thundax.kuzhambu.system.application.auth.command.RefreshPreAuthSessio
 import com.thundax.kuzhambu.system.application.auth.command.ReleasePreAuthSessionCommand;
 import com.thundax.kuzhambu.system.application.auth.command.UpsertPreAuthSessionValueCommand;
 import com.thundax.kuzhambu.system.application.auth.query.AdminAccessTokenQuery;
+import com.thundax.kuzhambu.system.application.auth.query.PermissionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueValidateQuery;
@@ -27,6 +29,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccess
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.AuthAccessTokenResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.AuthLoginFormResponse;
@@ -234,6 +237,38 @@ public final class AuthInterfaceAssembler {
     public static AdminAccessTokenQuery toAdminAccessTokenQuery(@NonNull PrincipalAccessTokenCode token) {
         Objects.requireNonNull(token, "token must not be null");
         return new AdminAccessTokenQuery(token);
+    }
+
+    @NonNull
+    public static CreatePermissionsCommand toCreatePermissionsCommand(
+            @NonNull PrincipalAccessTokenCode token, @NonNull UserId userId) {
+        Objects.requireNonNull(token, "token must not be null");
+        Objects.requireNonNull(userId, "userId must not be null");
+        return new CreatePermissionsCommand(token, userId);
+    }
+
+    @NonNull
+    public static CreatePermissionsCommand emptyCreatePermissionsCommand() {
+        return new CreatePermissionsCommand(null, null);
+    }
+
+    @NonNull
+    public static PermissionQuery toPermissionQuery(@NonNull PrincipalAccessTokenCode token) {
+        Objects.requireNonNull(token, "token must not be null");
+        return new PermissionQuery(token, null);
+    }
+
+    @NonNull
+    public static PermissionQuery toPermissionQuery(
+            @NonNull PrincipalAccessTokenCode token, @NonNull PermissionCode permission) {
+        Objects.requireNonNull(token, "token must not be null");
+        Objects.requireNonNull(permission, "permission must not be null");
+        return new PermissionQuery(token, permission);
+    }
+
+    @NonNull
+    public static PermissionQuery emptyPermissionQuery() {
+        return new PermissionQuery(null, null);
     }
 
     @NonNull
