@@ -162,7 +162,7 @@ public class CurrentUserController {
             currentUserService.changeAvatar(PersonalInterfaceAssembler.toChangeCurrentUserAvatarCommand(
                     currentUser,
                     request.getAvatar().getInputStream(),
-                    request.getAvatar().getOriginalFilename()));
+                    Optional.ofNullable(request.getAvatar().getOriginalFilename())));
         } catch (IOException e) {
             throw AdminResponseExceptions.system(e.getMessage());
         }
