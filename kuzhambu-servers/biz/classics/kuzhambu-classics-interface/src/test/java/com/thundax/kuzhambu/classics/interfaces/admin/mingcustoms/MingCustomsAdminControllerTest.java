@@ -99,6 +99,30 @@ class MingCustomsAdminControllerTest {
     }
 
     @Test
+    void getShouldRejectMissingEntryId() {
+        MingCustomsAdminController controller =
+                controller(mock(MingCustomsApplicationService.class), mock(ClassicsContentApplicationService.class));
+        MingCustomsRequest request = new MingCustomsRequest();
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> controller.get(request));
+
+        assertTrue(exception.getMessage().contains("id"));
+    }
+
+    @Test
+    void getShouldThrowBusinessErrorWhenEntryNotFound() {
+        MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
+        when(service.get(any())).thenReturn(null);
+        MingCustomsAdminController controller = controller(service, mock(ClassicsContentApplicationService.class));
+        MingCustomsRequest request = new MingCustomsRequest();
+        request.setId(500000000001L);
+
+        BizException exception = assertThrows(BizException.class, () -> controller.get(request));
+
+        assertEquals("明代习俗条目不存在", exception.getMessage());
+    }
+
+    @Test
     void tagCloudShouldReturnStableTagFieldsAndAttachOperatorPermissions() {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         when(service.listTagCloud(any())).thenReturn(List.of(new MingCustomsTagCloudItem(7001L, "祭祀", 3L)));

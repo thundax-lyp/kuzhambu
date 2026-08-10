@@ -12,18 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `0 PR233缺失资源遗留问题`：0. 处理 PR #233 明俗与王圻缺失资源遗留问题
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-07-CLASSICS-SANCAI-PUBLICATION.md`
-    - 范围对象：
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/mingcustoms/controller/MingCustomsAdminController.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/mingcustoms/MingCustomsAdminControllerTest.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/controller/WangqiDocumentAdminController.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/WangqiDocumentAdminControllerTest.java`
-    - 处理动作：在明俗和王圻 get 入口映射 response 前处理 service 返回 `null`，补缺失资源测试，并在修复提交后逐条回复 PR #233 两个原始 discussion。
-    - 验收点：缺失 `id` 和不存在资源不再触发 NPE/500；两个 controller 测试通过；`discussion_r3746699628` 与 `discussion_r3746699633` 已分别回复修复结果。
-    - 重要度：10/10
-
 - [ ] `1 三才基础CommandQueryRecord`：1. 清理三才基础 Command/Query record allowlist
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-07-CLASSICS-SANCAI-PUBLICATION.md`
