@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-content-api-model-annotations`：10 补齐内容 API 模型注解
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-06-CLASSICS-CONTENT.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/request/ClassicsContentRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/response/ClassicsContentResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/ClassicsInterfaceArchitectureTest.java`
-    - 处理动作：补齐内容 Request/Response required annotations 并删除对应 allowlist。
-    - 验收点：内容 API 模型注解 allowlist key 被删除且 interface 架构测试通过。
-    - 重要度：8/10
-
 - [ ] `classics-mingcustoms-api-model-annotations`：11 补齐明俗 API 模型注解
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-06-CLASSICS-CONTENT.md`

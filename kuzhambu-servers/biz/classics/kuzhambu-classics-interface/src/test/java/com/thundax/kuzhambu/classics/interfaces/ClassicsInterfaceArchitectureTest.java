@@ -62,11 +62,6 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
     private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS,
-                "admin.content.controller.request.ClassicsContentRequest",
-                "admin.content.controller.request.ClassicsContentRequest$AiCandidateApplyRequest",
-                "admin.content.controller.request.ClassicsContentRequest$AiCandidateBatchApplyRequest",
-                "admin.content.controller.request.ClassicsContentRequest$AiCandidateBatchRejectRequest",
-                "admin.content.controller.request.ClassicsContentRequest$AiCandidateRejectItemRequest",
                 "admin.mingcustoms.controller.request.MingCustomsRequest",
                 "admin.mingcustoms.controller.request.MingCustomsVersionRequest",
                 "admin.publication.controller.request.ClassicsPublicationActionRequest",
@@ -89,8 +84,6 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
                 "admin.common.response.ClassicsBatchOperationResponse",
-                "admin.content.controller.response.ClassicsContentResponse",
-                "admin.content.controller.response.ClassicsContentResponse$AiCandidateApplyResponse",
                 "admin.mingcustoms.controller.response.MingCustomsCategoriesResponse",
                 "admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse",
                 "admin.mingcustoms.controller.response.MingCustomsResponse",
