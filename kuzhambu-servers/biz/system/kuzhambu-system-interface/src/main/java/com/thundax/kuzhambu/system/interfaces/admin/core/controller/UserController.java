@@ -517,8 +517,7 @@ public class UserController {
     @PostMapping(value = "role/list")
     @WrappedApiResponse
     public List<UserRoleResponse> roleList() {
-        RoleQuery query = new RoleQuery();
-        query.setStatus(RoleStatus.ENABLED);
+        RoleQuery query = new RoleQuery(null, RoleStatus.ENABLED);
         return roleService.list(query).stream()
                 .map(role -> UserInterfaceAssembler.toRoleResponse(role))
                 .collect(Collectors.toList());

@@ -83,25 +83,11 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.LogController#PrincipalIdentityQuery:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#AssignRoleUsersCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#ChangeRoleStatusCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#GetRoleQuery:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#GetUserQuery:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#GetUserQuery:2"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#PrincipalIdentityQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#RemoveRoleCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#RoleQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#RoleQuery:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#RoleSortCommand:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#UserQuery:1"),
                 constructionViolation(

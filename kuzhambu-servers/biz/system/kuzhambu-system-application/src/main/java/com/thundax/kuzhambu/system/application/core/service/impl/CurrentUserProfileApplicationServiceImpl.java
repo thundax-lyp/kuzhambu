@@ -240,9 +240,7 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
     }
 
     private RoleQuery roleQuery(Role role) {
-        RoleQuery query = new RoleQuery();
-        query.setId(role.getId());
-        return query;
+        return new RoleQuery(role.getId(), null);
     }
 
     private List<Menu> sortedMenus(List<Menu> menus) {

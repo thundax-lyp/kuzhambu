@@ -10,26 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `06-role-backend-service`：清理 Role record 与后端构造边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-05-SYSTEM-CORE.md`
-    - 范围对象：
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/AssignRoleUsersCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/ChangeRoleInfoCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/ChangeRoleStatusCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/CreateRoleCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/RemoveRoleCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/RoleSortCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/GetRoleQuery.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/RoleQuery.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/RoleController.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/assembler/RoleInterfaceAssembler.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-interface/src/test/java/com/thundax/kuzhambu/system/interfaces/admin/SystemAdminManagementContractTest.java`
-        - `kuzhambu-apps/admin-web/src/pages/system/role/role-service.ts`
-    - 处理动作：转换 Role Command/Query 为 record，并将 controller 构造迁移到 assembler 后同步后端契约和前端 service。
-    - 验收点：Role 后端相关 allowlist 可删除，后端契约和 admin-web role service 一致。
-    - 重要度：9/10
-
 - [ ] `07-role-frontend-contract`：补齐 Role 前端契约与 E2E
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-05-SYSTEM-CORE.md`

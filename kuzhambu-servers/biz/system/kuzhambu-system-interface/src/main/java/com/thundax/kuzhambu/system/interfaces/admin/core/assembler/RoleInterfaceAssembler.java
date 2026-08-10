@@ -1,7 +1,12 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
+import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleInfoCommand;
+import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateRoleCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
+import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
@@ -15,8 +20,12 @@ import com.thundax.kuzhambu.system.domain.core.model.enums.RolePrivilege;
 import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
+import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleAssignUserRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleQueryRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleSaveRequest;
+import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleStatusRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.RoleDepartmentResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.RoleMenuResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.RoleResponse;
@@ -24,6 +33,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.Rol
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.RoleUserTreeNodeResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -112,35 +122,74 @@ public final class RoleInterfaceAssembler {
 
     @NonNull
     public static RoleQuery toQuery(@NonNull RoleQueryRequest request) {
-        RoleQuery query = new RoleQuery();
-        if (request.getEnable() != null) {
-            query.setStatus(request.getEnable() ? RoleStatus.ENABLED : RoleStatus.DISABLED);
-        }
-        return query;
+        Objects.requireNonNull(request, "request must not be null");
+        return new RoleQuery(
+                null,
+                request.getEnable() == null ? null : request.getEnable() ? RoleStatus.ENABLED : RoleStatus.DISABLED);
+    }
+
+    @NonNull
+    public static RoleQuery toIdQuery(@NonNull RoleId id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return new RoleQuery(id, null);
+    }
+
+    @NonNull
+    public static GetRoleQuery toGetQuery(@NonNull RoleId id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return new GetRoleQuery(id);
     }
 
     @NonNull
     public static CreateRoleCommand toCreateCommand(@NonNull RoleSaveRequest request) {
-        CreateRoleCommand command = new CreateRoleCommand();
-        command.setId(RoleIdCodec.toDomain(request.getId()));
-        command.setRemarks(request.getRemarks());
-        command.setName(request.getName());
-        command.setPrivilege(Boolean.TRUE.equals(request.getAdmin()) ? RolePrivilege.ADMIN : RolePrivilege.NORMAL);
-        command.setStatus(Boolean.TRUE.equals(request.getEnable()) ? RoleStatus.ENABLED : RoleStatus.DISABLED);
-        command.setMenuIdList(toMenuIds(request));
-        return command;
+        Objects.requireNonNull(request, "request must not be null");
+        return new CreateRoleCommand(
+                RoleIdCodec.toDomain(request.getId()),
+                request.getName(),
+                Boolean.TRUE.equals(request.getAdmin()) ? RolePrivilege.ADMIN : RolePrivilege.NORMAL,
+                Boolean.TRUE.equals(request.getEnable()) ? RoleStatus.ENABLED : RoleStatus.DISABLED,
+                request.getRemarks(),
+                toMenuIds(request));
     }
 
     @NonNull
     public static ChangeRoleInfoCommand toChangeInfoCommand(@NonNull RoleSaveRequest request) {
-        ChangeRoleInfoCommand command = new ChangeRoleInfoCommand();
-        command.setId(RoleIdCodec.toDomain(request.getId()));
-        command.setRemarks(request.getRemarks());
-        command.setName(request.getName());
-        command.setPrivilege(Boolean.TRUE.equals(request.getAdmin()) ? RolePrivilege.ADMIN : RolePrivilege.NORMAL);
-        command.setStatus(Boolean.TRUE.equals(request.getEnable()) ? RoleStatus.ENABLED : RoleStatus.DISABLED);
-        command.setMenuIdList(toMenuIds(request));
-        return command;
+        Objects.requireNonNull(request, "request must not be null");
+        return new ChangeRoleInfoCommand(
+                RoleIdCodec.toDomain(request.getId()),
+                request.getName(),
+                Boolean.TRUE.equals(request.getAdmin()) ? RolePrivilege.ADMIN : RolePrivilege.NORMAL,
+                Boolean.TRUE.equals(request.getEnable()) ? RoleStatus.ENABLED : RoleStatus.DISABLED,
+                request.getRemarks(),
+                toMenuIds(request));
+    }
+
+    @NonNull
+    public static ChangeRoleStatusCommand toChangeStatusCommand(
+            @NonNull Role entity, @NonNull RoleStatusRequest request) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(request, "request must not be null");
+        return new ChangeRoleStatusCommand(
+                entity.getId(), Boolean.TRUE.equals(request.getEnable()) ? RoleStatus.ENABLED : RoleStatus.DISABLED);
+    }
+
+    @NonNull
+    public static RoleSortCommand toSortCommand(@NonNull List<Long> orderedIds) {
+        Objects.requireNonNull(orderedIds, "orderedIds must not be null");
+        return new RoleSortCommand(
+                orderedIds.stream().map(RoleIdCodec::toDomain).collect(Collectors.toList()));
+    }
+
+    @NonNull
+    public static RemoveRoleCommand toRemoveCommand(@NonNull RoleId id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return new RemoveRoleCommand(id);
+    }
+
+    @NonNull
+    public static AssignRoleUsersCommand toAssignUsersCommand(@NonNull RoleAssignUserRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new AssignRoleUsersCommand(RoleIdCodec.toDomain(request.getRoleId()), toUserIds(request));
     }
 
     @NonNull
@@ -158,6 +207,14 @@ public final class RoleInterfaceAssembler {
                 ? new ArrayList<>()
                 : request.getMenuList().stream()
                         .map(menu -> MenuIdCodec.toDomain(menu.getId()))
+                        .collect(Collectors.toList());
+    }
+
+    private static List<UserId> toUserIds(RoleAssignUserRequest request) {
+        return request.getUsers() == null
+                ? new ArrayList<>()
+                : request.getUsers().stream()
+                        .map(user -> UserIdCodec.toDomain(user.getId()))
                         .collect(Collectors.toList());
     }
 
