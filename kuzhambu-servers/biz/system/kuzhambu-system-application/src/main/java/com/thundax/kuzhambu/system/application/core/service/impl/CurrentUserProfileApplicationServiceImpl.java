@@ -216,15 +216,14 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
     @Override
     public List<Menu> listAccessibleMenus(CurrentUserQuery query) {
         if (query != null && UserPrivilege.SUPER == query.privilege()) {
-            return sortedMenus(menuService.list(new MenuQuery()));
+            return sortedMenus(menuService.list(new MenuQuery(null, null, null, null, null, null)));
         }
 
         List<Role> roleList = userService.listUserRoles(userQuery(query.userId()));
         boolean isAdmin = query != null && UserPrivilege.ADMIN == query.privilege()
                 || roleList.stream().anyMatch(Role::isAdmin);
         if (isAdmin) {
-            MenuQuery menuQuery = new MenuQuery();
-            menuQuery.setMaxRank(query.rank());
+            MenuQuery menuQuery = new MenuQuery(null, null, null, null, null, query.rank());
             return sortedMenus(menuService.list(menuQuery));
         }
 
@@ -233,8 +232,7 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
                 .map(Menu::getId)
                 .distinct()
                 .collect(Collectors.toList());
-        MenuQuery menuQuery = new MenuQuery();
-        menuQuery.setIds(menuIds);
+        MenuQuery menuQuery = new MenuQuery(menuIds, null, null, null, null, null);
         List<Menu> menus = sortedMenus(menuService.list(menuQuery)).stream()
                 .filter(menu -> menu != null && query.rank().canAccess(menu.getRank()))
                 .collect(Collectors.toList());

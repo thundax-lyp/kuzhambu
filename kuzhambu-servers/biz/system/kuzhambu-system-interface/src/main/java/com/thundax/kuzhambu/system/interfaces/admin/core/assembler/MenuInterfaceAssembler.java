@@ -1,15 +1,22 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
+import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.application.core.command.ChangeMenuInfoCommand;
+import com.thundax.kuzhambu.system.application.core.command.ChangeMenuVisibilityCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateMenuCommand;
+import com.thundax.kuzhambu.system.application.core.command.MoveMenuCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveMenuCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.enums.MenuVisibility;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.MenuQueryRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.MenuSaveRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.MenuResponse;
+import java.util.Objects;
 import org.springframework.lang.NonNull;
 
 public final class MenuInterfaceAssembler {
@@ -48,12 +55,33 @@ public final class MenuInterfaceAssembler {
 
     @NonNull
     public static MenuQuery toQuery(@NonNull MenuQueryRequest request) {
-        MenuQuery query = new MenuQuery();
-        query.setParentId(MenuIdCodec.toDomain(request.getParentId()));
-        if (request.getDisplay() != null) {
-            query.setVisibility(request.getDisplay() ? MenuVisibility.VISIBLE : MenuVisibility.HIDDEN);
-        }
-        return query;
+        return new MenuQuery(
+                null,
+                null,
+                null,
+                MenuIdCodec.toDomain(request.getParentId()),
+                request.getDisplay() == null
+                        ? null
+                        : request.getDisplay() ? MenuVisibility.VISIBLE : MenuVisibility.HIDDEN,
+                null);
+    }
+
+    @NonNull
+    public static MenuQuery toListAllQuery() {
+        return new MenuQuery(null, null, null, null, null, null);
+    }
+
+    @NonNull
+    public static MenuQuery toChildRelationQuery(@NonNull Menu child, @NonNull Menu ancestor) {
+        Objects.requireNonNull(child, "child must not be null");
+        Objects.requireNonNull(ancestor, "ancestor must not be null");
+        return new MenuQuery(null, child.getId(), ancestor.getId(), null, null, null);
+    }
+
+    @NonNull
+    public static GetMenuQuery toGetQuery(@NonNull MenuId id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return new GetMenuQuery(id);
     }
 
     @NonNull
@@ -103,5 +131,27 @@ public final class MenuInterfaceAssembler {
                 entity.getUrl(),
                 entity.getTarget(),
                 entity.getRemarks());
+    }
+
+    @NonNull
+    public static ChangeMenuVisibilityCommand toChangeVisibilityCommand(@NonNull Menu entity, boolean display) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        return new ChangeMenuVisibilityCommand(
+                entity.getId(), display ? MenuVisibility.VISIBLE : MenuVisibility.HIDDEN);
+    }
+
+    @NonNull
+    public static RemoveMenuCommand toRemoveCommand(@NonNull MenuId id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return new RemoveMenuCommand(id);
+    }
+
+    @NonNull
+    public static MoveMenuCommand toMoveCommand(
+            @NonNull Menu from, @NonNull Menu to, @NonNull TreeNodeMoveType moveType) {
+        Objects.requireNonNull(from, "from must not be null");
+        Objects.requireNonNull(to, "to must not be null");
+        Objects.requireNonNull(moveType, "moveType must not be null");
+        return new MoveMenuCommand(from.getId(), to.getId(), moveType);
     }
 }

@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.Depa
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.DepartmentResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
@@ -59,6 +60,8 @@ public final class DepartmentInterfaceAssembler {
 
     @NonNull
     public static DepartmentQuery toChildRelationQuery(@NonNull Department child, @NonNull Department ancestor) {
+        Objects.requireNonNull(child, "child must not be null");
+        Objects.requireNonNull(ancestor, "ancestor must not be null");
         return new DepartmentQuery(child.getId(), ancestor.getId(), null, null, null);
     }
 
@@ -68,7 +71,8 @@ public final class DepartmentInterfaceAssembler {
     }
 
     @NonNull
-    public static GetDepartmentQuery toGetQuery(DepartmentId id) {
+    public static GetDepartmentQuery toGetQuery(@NonNull DepartmentId id) {
+        Objects.requireNonNull(id, "id must not be null");
         return new GetDepartmentQuery(id);
     }
 
@@ -100,17 +104,22 @@ public final class DepartmentInterfaceAssembler {
 
     @NonNull
     public static RemoveDepartmentCommand toRemoveCommand(@NonNull Department entity) {
+        Objects.requireNonNull(entity, "entity must not be null");
         return new RemoveDepartmentCommand(entity.getId());
     }
 
     @NonNull
     public static RemoveDepartmentCommand toRemoveCommand(@NonNull DepartmentId id) {
+        Objects.requireNonNull(id, "id must not be null");
         return new RemoveDepartmentCommand(id);
     }
 
     @NonNull
     public static MoveDepartmentCommand toMoveCommand(
             @NonNull Department from, @NonNull Department to, @NonNull TreeNodeMoveType moveType) {
+        Objects.requireNonNull(from, "from must not be null");
+        Objects.requireNonNull(to, "to must not be null");
+        Objects.requireNonNull(moveType, "moveType must not be null");
         return new MoveDepartmentCommand(from.getId(), to.getId(), moveType);
     }
 

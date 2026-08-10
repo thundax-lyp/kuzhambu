@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.Dict
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictSaveRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.DictResponse;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 
@@ -53,12 +54,14 @@ public final class DictInterfaceAssembler {
     }
 
     @NonNull
-    public static DictQuery toTypeQuery(String type) {
+    public static DictQuery toTypeQuery(@NonNull String type) {
+        Objects.requireNonNull(type, "type must not be null");
         return new DictQuery(type, null, null);
     }
 
     @NonNull
-    public static GetDictQuery toGetQuery(DictId id) {
+    public static GetDictQuery toGetQuery(@NonNull DictId id) {
+        Objects.requireNonNull(id, "id must not be null");
         return new GetDictQuery(id);
     }
 
@@ -78,17 +81,20 @@ public final class DictInterfaceAssembler {
     }
 
     @NonNull
-    public static RemoveDictCommand toRemoveCommand(DictId id) {
+    public static RemoveDictCommand toRemoveCommand(@NonNull DictId id) {
+        Objects.requireNonNull(id, "id must not be null");
         return new RemoveDictCommand(id);
     }
 
     @NonNull
     public static DictSortCommand toSortCommand(@NonNull List<Long> orderedIds) {
+        Objects.requireNonNull(orderedIds, "orderedIds must not be null");
         return new DictSortCommand(toIds(orderedIds));
     }
 
     @NonNull
     public static List<DictId> toIds(@NonNull List<Long> ids) {
+        Objects.requireNonNull(ids, "ids must not be null");
         return ids.stream().map(DictIdCodec::toDomain).toList();
     }
 

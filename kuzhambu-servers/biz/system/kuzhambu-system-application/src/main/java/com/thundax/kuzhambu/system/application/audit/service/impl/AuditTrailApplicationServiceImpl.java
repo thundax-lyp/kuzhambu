@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.system.application.audit.service.impl;
 
 import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
-import com.thundax.kuzhambu.common.audit.model.valueobject.AuditSnapshot;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -39,38 +38,6 @@ public class AuditTrailApplicationServiceImpl implements AuditTrailApplicationSe
             AuditMetaRepository auditMetaRepository, AuditLogRepository auditLogRepository) {
         this.auditMetaRepository = auditMetaRepository;
         this.auditLogRepository = auditLogRepository;
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public AuditLogId record(
-            AuditObjectRef objectRef,
-            AuditAction action,
-            String idempotencyKey,
-            AuditOperatorRef operatorRef,
-            String operatorName,
-            String source,
-            String requestId,
-            String traceId,
-            String remoteAddr,
-            String summary,
-            AuditSnapshot beforeSnapshot,
-            AuditSnapshot afterSnapshot,
-            boolean recordWhenUnchanged) {
-        return record(new CreateAuditLogCommand(
-                objectRef,
-                action,
-                idempotencyKey,
-                operatorRef,
-                operatorName,
-                source,
-                requestId,
-                traceId,
-                remoteAddr,
-                summary,
-                beforeSnapshot,
-                afterSnapshot,
-                recordWhenUnchanged));
     }
 
     @Override

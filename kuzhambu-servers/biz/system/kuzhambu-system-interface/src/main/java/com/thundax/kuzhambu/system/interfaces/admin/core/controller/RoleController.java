@@ -14,10 +14,8 @@ import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersComma
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
-import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
-import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
@@ -44,6 +42,7 @@ import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.MenuInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleAssignUserRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleIdRequest;
@@ -321,7 +320,7 @@ public class RoleController {
     @IgnoreSysLogger
     @PostMapping(value = "menu/tree")
     public List<RoleMenuResponse> menuTree() {
-        return menuService.list(new MenuQuery()).stream()
+        return menuService.list(MenuInterfaceAssembler.toListAllQuery()).stream()
                 .map(menu -> RoleInterfaceAssembler.toMenuResponse(menu))
                 .collect(Collectors.toList());
     }
@@ -486,7 +485,7 @@ public class RoleController {
                 throw AdminResponseExceptions.invalidParameter("menus.id");
 
             } else {
-                Menu bean = menuService.get(new GetMenuQuery(MenuIdCodec.toDomain(request.getId())));
+                Menu bean = menuService.get(MenuInterfaceAssembler.toGetQuery(MenuIdCodec.toDomain(request.getId())));
                 if (bean == null) {
                     throw AdminResponseExceptions.objectNotFound();
                 }

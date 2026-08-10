@@ -89,20 +89,15 @@ public class AuditLogAspect {
         AuditSnapshot beforeSnapshot = beforeSnapshotCaptured ? before : null;
         AuditSnapshot afterSnapshot = afterSnapshotCaptured ? after : snapshot(auditLog.type(), objectId);
 
-        auditService.record(
+        auditService.record(AuditLogInterfaceAssembler.toCreateCommand(
                 AuditObjectRef.of(auditLog.type(), objectId),
                 auditLog.action(),
-                null,
                 AuditOperatorRef.of(AuditOperatorResolver.operatorType(), AuditOperatorResolver.operatorId()),
                 AuditOperatorResolver.operatorName(),
-                null,
-                null,
-                null,
-                null,
                 auditLog.summary(),
                 beforeSnapshot,
                 afterSnapshot,
-                auditLog.recordWhenUnchanged());
+                auditLog.recordWhenUnchanged()));
     }
 
     private Method mostSpecificMethod(ProceedingJoinPoint joinPoint) {

@@ -59,16 +59,19 @@ public final class PersonalInterfaceAssembler {
 
     @NonNull
     public static ChangeCurrentUserPasswordCommand toChangeCurrentUserPasswordCommand(
-            @NonNull User currentUser, String oldPassword, String password) {
+            @NonNull User currentUser, @NonNull String oldPassword, @NonNull String password) {
         Objects.requireNonNull(currentUser, "currentUser must not be null");
+        Objects.requireNonNull(oldPassword, "oldPassword must not be null");
+        Objects.requireNonNull(password, "password must not be null");
         return new ChangeCurrentUserPasswordCommand(currentUser.getId(), oldPassword, password);
     }
 
     @NonNull
     public static ChangeCurrentUserAvatarCommand toChangeCurrentUserAvatarCommand(
-            @NonNull User currentUser, @NonNull InputStream inputStream, String originalFilename) {
+            @NonNull User currentUser, @NonNull InputStream inputStream, @NonNull String originalFilename) {
         Objects.requireNonNull(currentUser, "currentUser must not be null");
         Objects.requireNonNull(inputStream, "inputStream must not be null");
+        Objects.requireNonNull(originalFilename, "originalFilename must not be null");
         return new ChangeCurrentUserAvatarCommand(currentUser.getId(), inputStream, originalFilename);
     }
 
