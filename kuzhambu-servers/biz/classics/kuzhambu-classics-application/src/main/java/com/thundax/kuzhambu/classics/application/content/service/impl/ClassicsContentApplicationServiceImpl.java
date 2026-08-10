@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.classics.application.content.assembler.ClassicsConte
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentItemCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
@@ -427,32 +428,32 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (command == null) {
             throw new BizException("AI候选应用参数不能为空");
         }
-        if (command.getCandidateId() == null
-                || command.getContentType() == null
-                || command.getContentId() == null
-                || StringUtils.isBlank(command.getCapability())
-                || StringUtils.isBlank(command.getResultFormat())
-                || StringUtils.isBlank(command.getResultPayload())) {
+        if (command.candidateId() == null
+                || command.contentType() == null
+                || command.contentId() == null
+                || StringUtils.isBlank(command.capability())
+                || StringUtils.isBlank(command.resultFormat())
+                || StringUtils.isBlank(command.resultPayload())) {
             throw new BizException("AI候选应用参数不完整");
         }
 
-        ClassicsContentType contentType = command.getContentType();
-        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
+        ClassicsContentType contentType = command.contentType();
+        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.contentId());
         requireWritable(contentType, contentId);
 
         if (aiFacade == null) {
             throw new BizException("AI候选服务未就绪");
         }
         aiFacade.requirePendingCandidate(RequirePendingAiCandidateFacadeRequest.builder()
-                .candidateId(command.getCandidateId())
-                .contentType(command.getContentType().value())
-                .contentId(command.getContentId())
-                .objectId(command.getObjectId())
-                .capability(command.getCapability())
+                .candidateId(command.candidateId())
+                .contentType(command.contentType().value())
+                .contentId(command.contentId())
+                .objectId(command.objectId())
+                .capability(command.capability())
                 .build());
 
-        String capability = command.getCapability();
-        String changeSummary = resolveChangeSummary(capability, command.getChangeSummary());
+        String capability = command.capability();
+        String changeSummary = resolveChangeSummary(capability, command.changeSummary());
         Versionable content = null;
 
         if (contentType == ClassicsContentType.SANCAI_ENTRY) {
@@ -477,7 +478,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                                 : generatedAsset.getId().value(),
                         generatedAsset.getVersionNo());
             } else if (AI_CAPABILITY_CLASSICS_TRANSLATE.equals(capability)) {
-                entry.setTranslationText(aiCandidatePayloadParser.parseText(command.getResultPayload()));
+                entry.setTranslationText(aiCandidatePayloadParser.parseText(command.resultPayload()));
                 entry.setTranslationStatus(SancaiEntryTranslationStatus.READY);
                 touchContentUpdatedAt(ClassicsContentType.SANCAI_ENTRY, entry);
                 ensureUpdate(repository.updateSancaiEntryAiFields(entry), "更新三才内容失败");
@@ -537,19 +538,19 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsBatchOperationResult applyAiCandidates(AiCandidateBatchApplyContentCommand command) {
-        if (command == null || command.getItems() == null || command.getItems().isEmpty()) {
+        if (command == null || command.items() == null || command.items().isEmpty()) {
             throw new BizException("批量应用AI候选参数为空");
         }
 
         List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
         List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
 
-        for (AiCandidateApplyContentCommand item : command.getItems()) {
-            ClassicsContentType contentType = item == null ? null : item.getContentType();
-            Long contentId = item == null ? null : item.getContentId();
-            Long candidateId = item == null ? null : item.getCandidateId();
-            Long objectId = item == null ? null : item.getObjectId();
-            String capability = item == null ? null : item.getCapability();
+        for (AiCandidateApplyContentCommand item : command.items()) {
+            ClassicsContentType contentType = item == null ? null : item.contentType();
+            Long contentId = item == null ? null : item.contentId();
+            Long candidateId = item == null ? null : item.candidateId();
+            Long objectId = item == null ? null : item.objectId();
+            String capability = item == null ? null : item.capability();
 
             if (!hasEditPermission(contentType)) {
                 failures.add(ClassicsBatchOperationItemResult.failureForCandidate(
@@ -607,21 +608,21 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsBatchOperationResult rejectAiCandidates(AiCandidateBatchRejectContentCommand command) {
-        if (command == null || command.getItems() == null || command.getItems().isEmpty()) {
+        if (command == null || command.items() == null || command.items().isEmpty()) {
             throw new BizException("批量拒绝AI候选参数为空");
         }
 
         List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
         List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
-        String errorType = resolveRejectErrorType(command.getErrorType());
-        String errorMessage = resolveRejectErrorMessage(command.getErrorMessage());
+        String errorType = resolveRejectErrorType(command.errorType());
+        String errorMessage = resolveRejectErrorMessage(command.errorMessage());
 
-        for (AiCandidateBatchRejectContentCommand.Item item : command.getItems()) {
-            ClassicsContentType contentType = item == null ? null : item.getContentType();
-            Long contentId = item == null ? null : item.getContentId();
-            Long candidateId = item == null ? null : item.getCandidateId();
-            Long objectId = item == null ? null : item.getObjectId();
-            String capability = item == null ? null : item.getCapability();
+        for (AiCandidateBatchRejectContentItemCommand item : command.items()) {
+            ClassicsContentType contentType = item == null ? null : item.contentType();
+            Long contentId = item == null ? null : item.contentId();
+            Long candidateId = item == null ? null : item.candidateId();
+            Long objectId = item == null ? null : item.objectId();
+            String capability = item == null ? null : item.capability();
 
             if (!hasEditPermission(contentType)) {
                 failures.add(ClassicsBatchOperationItemResult.failureForCandidate(
@@ -686,27 +687,25 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private AiCandidateFacadeDto requirePendingAiCandidate(AiCandidateApplyContentCommand command) {
         return aiFacade.requirePendingCandidate(RequirePendingAiCandidateFacadeRequest.builder()
-                .candidateId(command.getCandidateId())
+                .candidateId(command.candidateId())
                 .contentType(
-                        command.getContentType() == null
+                        command.contentType() == null
                                 ? null
-                                : command.getContentType().value())
-                .contentId(command.getContentId())
-                .objectId(command.getObjectId())
-                .capability(command.getCapability())
+                                : command.contentType().value())
+                .contentId(command.contentId())
+                .objectId(command.objectId())
+                .capability(command.capability())
                 .build());
     }
 
-    private AiCandidateFacadeDto requirePendingAiCandidate(AiCandidateBatchRejectContentCommand.Item item) {
+    private AiCandidateFacadeDto requirePendingAiCandidate(AiCandidateBatchRejectContentItemCommand item) {
         return aiFacade.requirePendingCandidate(RequirePendingAiCandidateFacadeRequest.builder()
-                .candidateId(item.getCandidateId())
+                .candidateId(item.candidateId())
                 .contentType(
-                        item.getContentType() == null
-                                ? null
-                                : item.getContentType().value())
-                .contentId(item.getContentId())
-                .objectId(item.getObjectId())
-                .capability(item.getCapability())
+                        item.contentType() == null ? null : item.contentType().value())
+                .contentId(item.contentId())
+                .objectId(item.objectId())
+                .capability(item.capability())
                 .build());
     }
 
@@ -829,25 +828,25 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private SancaiVisualAsset requireSancaiVisualAsset(
             ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
-        if (command == null || command.getObjectId() == null) {
+        if (command == null || command.objectId() == null) {
             throw new BizException("三才视觉资产候选应用参数不完整");
         }
         if (sancaiAssetApplicationService == null) {
             throw new BizException("三才图片服务未就绪");
         }
-        SancaiVisualAsset visualAsset = findVisualAsset(contentId, command.getObjectId());
+        SancaiVisualAsset visualAsset = findVisualAsset(contentId, command.objectId());
         if (visualAsset == null) {
-            throw new BizException("三才视觉资产不存在: " + command.getObjectId());
+            throw new BizException("三才视觉资产不存在: " + command.objectId());
         }
         if (visualAsset.getId() == null) {
-            throw new BizException("三才视觉资产标识不存在: " + command.getObjectId());
+            throw new BizException("三才视觉资产标识不存在: " + command.objectId());
         }
         return visualAsset;
     }
 
     private String parseRequiredCandidateText(AiCandidateApplyContentCommand command, String capabilityLabel) {
         try {
-            return aiCandidatePayloadParser.parseText(command.getResultPayload());
+            return aiCandidatePayloadParser.parseText(command.resultPayload());
         } catch (BizException ex) {
             throw new BizException("AI候选" + capabilityLabel + "结果不可用: " + ex.getMessage());
         }
@@ -855,7 +854,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private Long parseGeneratedStorageObjectId(AiCandidateApplyContentCommand command) {
         try {
-            return aiCandidatePayloadParser.parseStorageObjectId(command.getResultPayload());
+            return aiCandidatePayloadParser.parseStorageObjectId(command.resultPayload());
         } catch (BizException ex) {
             throw new BizException("AI候选生图结果不可用: " + ex.getMessage());
         }
@@ -867,7 +866,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             String capability,
             AiCandidateApplyContentCommand command,
             String updateFailureMessage) {
-        String resultPayload = command == null ? null : command.getResultPayload();
+        String resultPayload = command == null ? null : command.resultPayload();
         String summary = resolveSummaryIfPresent(resultPayload);
         List<String> tags = aiCandidatePayloadParser.parseTagsIfPresent(resultPayload);
         List<AiCandidateQaPairPayload> qaPairs = aiCandidatePayloadParser.parseQaPairsIfPresent(resultPayload);
@@ -916,11 +915,11 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private boolean shouldAppendAiTags(AiCandidateApplyContentCommand command) {
-        return command != null && TAG_APPLY_MODE_APPEND.equalsIgnoreCase(command.getTagApplyMode());
+        return command != null && TAG_APPLY_MODE_APPEND.equalsIgnoreCase(command.tagApplyMode());
     }
 
     private boolean shouldCoverContentTags(AiCandidateApplyContentCommand command) {
-        return command != null && TAG_APPLY_MODE_COVER.equalsIgnoreCase(command.getTagApplyMode());
+        return command != null && TAG_APPLY_MODE_COVER.equalsIgnoreCase(command.tagApplyMode());
     }
 
     private String resolveSummaryIfPresent(String resultPayload) {
@@ -939,9 +938,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private void markAiCandidateApplied(AiCandidateApplyContentCommand command) {
         aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
-                .candidateId(command.getCandidateId())
-                .resultFormat(command.getResultFormat())
-                .resultPayload(command.getResultPayload())
+                .candidateId(command.candidateId())
+                .resultFormat(command.resultFormat())
+                .resultPayload(command.resultPayload())
                 .appliedAt(Instant.now())
                 .build());
     }

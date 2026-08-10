@@ -519,35 +519,34 @@ class ClassicsContentAdminControllerTest {
                     }
                     if ("applyAiCandidate".equals(method.getName())) {
                         AiCandidateApplyContentCommand command = (AiCandidateApplyContentCommand) args[0];
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(456L, command.getContentId());
-                        assertEquals("TEXT", command.getResultFormat());
-                        if ("summary".equals(command.getCapability())) {
-                            assertEquals(123L, command.getCandidateId());
-                            assertEquals("new summary", command.getResultPayload());
-                            assertEquals("AI 应用：摘要", command.getChangeSummary());
-                            assertEquals(901L, command.getObjectId());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(456L, command.contentId());
+                        assertEquals("TEXT", command.resultFormat());
+                        if ("summary".equals(command.capability())) {
+                            assertEquals(123L, command.candidateId());
+                            assertEquals("new summary", command.resultPayload());
+                            assertEquals("AI 应用：摘要", command.changeSummary());
+                            assertEquals(901L, command.objectId());
                             return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 789L, 3);
                         }
-                        if ("translate".equals(command.getCapability())) {
-                            assertEquals(124L, command.getCandidateId());
-                            assertEquals("new translation", command.getResultPayload());
-                            assertEquals("AI 应用：译文", command.getChangeSummary());
-                            assertEquals(902L, command.getObjectId());
+                        if ("translate".equals(command.capability())) {
+                            assertEquals(124L, command.candidateId());
+                            assertEquals("new translation", command.resultPayload());
+                            assertEquals("AI 应用：译文", command.changeSummary());
+                            assertEquals(902L, command.objectId());
                             return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 790L, 4);
                         }
-                        throw new UnsupportedOperationException(
-                                "unexpected apply capability: " + command.getCapability());
+                        throw new UnsupportedOperationException("unexpected apply capability: " + command.capability());
                     }
                     if ("applyAiCandidates".equals(method.getName())) {
                         AiCandidateBatchApplyContentCommand command = (AiCandidateBatchApplyContentCommand) args[0];
-                        assertEquals(2, command.getItems().size());
-                        assertEquals(111L, command.getItems().get(0).getCandidateId());
-                        assertEquals(4001L, command.getItems().get(0).getContentId());
-                        assertEquals("summary", command.getItems().get(0).getCapability());
-                        assertEquals(112L, command.getItems().get(1).getCandidateId());
-                        assertEquals(5001L, command.getItems().get(1).getContentId());
-                        assertEquals("tags", command.getItems().get(1).getCapability());
+                        assertEquals(2, command.items().size());
+                        assertEquals(111L, command.items().get(0).candidateId());
+                        assertEquals(4001L, command.items().get(0).contentId());
+                        assertEquals("summary", command.items().get(0).capability());
+                        assertEquals(112L, command.items().get(1).candidateId());
+                        assertEquals(5001L, command.items().get(1).contentId());
+                        assertEquals("tags", command.items().get(1).capability());
                         return ClassicsBatchOperationResult.of(
                                 List.of(
                                         ClassicsBatchOperationItemResult.successForCandidate(
@@ -558,18 +557,18 @@ class ClassicsContentAdminControllerTest {
                     }
                     if ("rejectAiCandidates".equals(method.getName())) {
                         AiCandidateBatchRejectContentCommand command = (AiCandidateBatchRejectContentCommand) args[0];
-                        assertEquals(null, command.getErrorType());
-                        assertEquals(null, command.getErrorMessage());
-                        assertEquals(2, command.getItems().size());
-                        assertEquals(113L, command.getItems().get(0).getCandidateId());
+                        assertEquals(null, command.errorType());
+                        assertEquals(null, command.errorMessage());
+                        assertEquals(2, command.items().size());
+                        assertEquals(113L, command.items().get(0).candidateId());
                         assertEquals(
                                 "SANCAI_ENTRY",
-                                command.getItems().get(0).getContentType().value());
-                        assertEquals("summary", command.getItems().get(0).getCapability());
-                        assertEquals(114L, command.getItems().get(1).getCandidateId());
+                                command.items().get(0).contentType().value());
+                        assertEquals("summary", command.items().get(0).capability());
+                        assertEquals(114L, command.items().get(1).candidateId());
                         assertEquals(
                                 "WANGQI_DOCUMENT",
-                                command.getItems().get(1).getContentType().value());
+                                command.items().get(1).contentType().value());
                         return ClassicsBatchOperationResult.of(
                                 List.of(
                                         ClassicsBatchOperationItemResult.successForCandidate(

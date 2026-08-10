@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.classics.application.content.assembler.ClassicsConte
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentItemCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
@@ -644,8 +645,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 ClassicsContentType.SANCAI_ENTRY,
                 11L,
                 AI_CAPABILITY_CLASSICS_TAGS,
-                "{\"tags\":[\"old-ai-tag\",\"new-ai-tag\"]}");
-        command.setTagApplyMode("APPEND");
+                "{\"tags\":[\"old-ai-tag\",\"new-ai-tag\"]}",
+                null,
+                "APPEND");
 
         service.applyAiCandidate(command);
 
@@ -676,8 +678,13 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> candidateApplied());
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command = applyCommand(
-                11L, ClassicsContentType.SANCAI_ENTRY, 11L, AI_CAPABILITY_CLASSICS_TAGS, "{\"tags\":[\"old-ai-tag\"]}");
-        command.setTagApplyMode("APPEND");
+                11L,
+                ClassicsContentType.SANCAI_ENTRY,
+                11L,
+                AI_CAPABILITY_CLASSICS_TAGS,
+                "{\"tags\":[\"old-ai-tag\"]}",
+                null,
+                "APPEND");
 
         service.applyAiCandidate(command);
 
@@ -709,8 +716,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 ClassicsContentType.SANCAI_ENTRY,
                 11L,
                 AI_CAPABILITY_CLASSICS_TAGS,
-                "{\"tags\":[\"new-one\",\"new-two\"]}");
-        command.setTagApplyMode("COVER");
+                "{\"tags\":[\"new-one\",\"new-two\"]}",
+                null,
+                "COVER");
 
         service.applyAiCandidate(command);
 
@@ -1144,14 +1152,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 mock(ClassicsPublicationWriteGuard.class));
     }
 
-    private static AiCandidateBatchRejectContentCommand.Item rejectItem(
+    private static AiCandidateBatchRejectContentItemCommand rejectItem(
             Long candidateId, ClassicsContentType contentType, Long contentId, String capability) {
-        AiCandidateBatchRejectContentCommand.Item item = new AiCandidateBatchRejectContentCommand.Item();
-        item.setCandidateId(candidateId);
-        item.setContentType(contentType);
-        item.setContentId(contentId);
-        item.setCapability(capability);
-        return item;
+        return new AiCandidateBatchRejectContentItemCommand(candidateId, contentType, contentId, null, capability);
     }
 
     private static SancaiVisualAsset visualAsset(Long objectId) {
@@ -1202,15 +1205,19 @@ class ClassicsContentApplicationServiceAiCandidateTest {
             String capability,
             String payload,
             Long objectId) {
-        AiCandidateApplyContentCommand command = new AiCandidateApplyContentCommand();
-        command.setCandidateId(candidateId);
-        command.setContentType(contentType);
-        command.setContentId(contentId);
-        command.setObjectId(objectId);
-        command.setCapability(capability);
-        command.setResultFormat("TEXT");
-        command.setResultPayload(payload);
-        return command;
+        return applyCommand(candidateId, contentType, contentId, capability, payload, objectId, null);
+    }
+
+    private static AiCandidateApplyContentCommand applyCommand(
+            Long candidateId,
+            ClassicsContentType contentType,
+            Long contentId,
+            String capability,
+            String payload,
+            Long objectId,
+            String tagApplyMode) {
+        return new AiCandidateApplyContentCommand(
+                candidateId, contentType, contentId, objectId, capability, "TEXT", payload, null, tagApplyMode);
     }
 
     private static AiCandidateFacadeDto pendingCandidate() {

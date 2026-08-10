@@ -15,12 +15,6 @@ final class ClassicsApplicationCommandQueryRecordAllowances {
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand"),

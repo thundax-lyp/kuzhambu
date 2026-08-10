@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.content.assembler;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentItemCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
@@ -199,18 +200,17 @@ public final class ClassicsContentInterfaceAssembler {
                 request.getErrorMessage());
     }
 
-    private static AiCandidateBatchRejectContentCommand.Item toAiCandidateBatchRejectItem(
+    private static AiCandidateBatchRejectContentItemCommand toAiCandidateBatchRejectItem(
             ClassicsContentRequest.AiCandidateRejectItemRequest request) {
         if (request == null) {
-            return null;
+            return new AiCandidateBatchRejectContentItemCommand(null, null, null, null, null);
         }
-        AiCandidateBatchRejectContentCommand.Item item = new AiCandidateBatchRejectContentCommand.Item();
-        item.setCandidateId(request.getCandidateId());
-        item.setContentType(type(request.getContentType()));
-        item.setContentId(request.getContentId());
-        item.setObjectId(request.getObjectId());
-        item.setCapability(request.getCapability());
-        return item;
+        return new AiCandidateBatchRejectContentItemCommand(
+                request.getCandidateId(),
+                type(request.getContentType()),
+                request.getContentId(),
+                request.getObjectId(),
+                request.getCapability());
     }
 
     private static ClassicsContentType type(String value) {
