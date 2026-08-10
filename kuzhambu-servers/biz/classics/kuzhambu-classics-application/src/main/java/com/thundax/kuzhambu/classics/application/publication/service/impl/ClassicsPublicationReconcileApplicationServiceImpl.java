@@ -33,7 +33,7 @@ public class ClassicsPublicationReconcileApplicationServiceImpl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean reconcileFailure(ClassicsPublicationJob job) {
-        ClassicsPublicationContent content = contentRepository.lockPublicationContent(
+        ClassicsPublicationContent content = contentRepository.getByPublicationContentForLock(
                 job.getContentType(), new ClassicsContentId(job.getContentId()));
         if (content == null) {
             return false;

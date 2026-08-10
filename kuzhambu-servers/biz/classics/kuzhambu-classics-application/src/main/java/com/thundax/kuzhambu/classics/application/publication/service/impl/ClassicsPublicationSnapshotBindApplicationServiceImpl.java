@@ -45,7 +45,8 @@ public class ClassicsPublicationSnapshotBindApplicationServiceImpl
     @Transactional(rollbackFor = Exception.class)
     public boolean bind(ClassicsPublicationJob job, ClassicsPublicationExecutionToken executionToken) {
         ClassicsContentId contentId = new ClassicsContentId(job.getContentId());
-        ClassicsPublicationContent state = contentRepository.lockPublicationContent(job.getContentType(), contentId);
+        ClassicsPublicationContent state =
+                contentRepository.getByPublicationContentForLock(job.getContentType(), contentId);
         if (state == null
                 || !job.getId().equals(state.getCurrentJobId())
                 || state.getTransitionStatus() != ClassicsPublicationTransitionStatus.PUBLISHING) {
@@ -82,9 +83,9 @@ public class ClassicsPublicationSnapshotBindApplicationServiceImpl
 
     private Versionable currentContent(ClassicsContentType contentType, ClassicsContentId contentId) {
         return switch (contentType) {
-            case SANCAI_ENTRY -> contentRepository.getSancaiEntryForAiApply(contentId);
-            case WANGQI_DOCUMENT -> contentRepository.getWangqiDocumentForAiApply(contentId);
-            case MING_CUSTOMS -> contentRepository.getMingCustomsEntryForAiApply(contentId);
+            case SANCAI_ENTRY -> contentRepository.getBySancaiEntryForAiApply(contentId);
+            case WANGQI_DOCUMENT -> contentRepository.getByWangqiDocumentForAiApply(contentId);
+            case MING_CUSTOMS -> contentRepository.getByMingCustomsEntryForAiApply(contentId);
         };
     }
 

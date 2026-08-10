@@ -131,7 +131,7 @@ public class SancaiEntryVersionRestorer {
                 .listTags(ClassicsContentType.SANCAI_ENTRY.value(), entry.contentId(), SortDirection.ASC)
                 .forEach(existingTag -> {
                     removeTagRefIfExists(existingTag);
-                    contentRepository.deleteTagById(
+                    contentRepository.deleteByTagId(
                             ClassicsContentType.SANCAI_ENTRY.value(), entry.contentId(), existingTag.getId());
                 });
         int priority = contentRepository.maxTagPriority(null, null) + 1;
@@ -146,7 +146,7 @@ public class SancaiEntryVersionRestorer {
         }
         contentRepository
                 .listQaPairs(ClassicsContentType.SANCAI_ENTRY.value(), entry.contentId(), SortDirection.ASC)
-                .forEach(pair -> contentRepository.deleteQaPairById(pair.getId()));
+                .forEach(pair -> contentRepository.deleteByQaPairId(pair.getId()));
         int priority = contentRepository.maxQaPairPriority() + 1;
         for (SancaiEntryVersionSnapshot.SancaiQaPairSnapshot qaSnapshot : snapshot.qaPairs()) {
             insertQaPairFromSnapshot(qaSnapshot, entry, priority++);

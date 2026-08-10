@@ -30,13 +30,13 @@ public interface ClassicsContentRepository {
 
     ClassicsContentTagId insertTag(ClassicsContentTag tag);
 
-    ClassicsContentTag getTagById(ClassicsContentTagId id);
+    ClassicsContentTag getByTagId(ClassicsContentTagId id);
 
     int updateTagPriority(ClassicsContentTag tag);
 
     int updateTag(ClassicsContentTag tag);
 
-    int deleteTagById(String contentType, ClassicsContentId contentId, ClassicsContentTagId id);
+    int deleteByTagId(String contentType, ClassicsContentId contentId, ClassicsContentTagId id);
 
     List<ClassicsContentQaPair> listQaPairs(
             String contentType, ClassicsContentId contentId, SortDirection sortDirection);
@@ -47,39 +47,40 @@ public interface ClassicsContentRepository {
 
     ClassicsContentQaPairId insertQaPair(ClassicsContentQaPair qaPair);
 
-    ClassicsContentQaPair getQaPairById(ClassicsContentQaPairId id);
+    ClassicsContentQaPair getByQaPairId(ClassicsContentQaPairId id);
 
     int updateQaPairPriority(ClassicsContentQaPair qaPair);
 
     int updateQaPair(ClassicsContentQaPair qaPair);
 
-    int deleteQaPairById(ClassicsContentQaPairId id);
+    int deleteByQaPairId(ClassicsContentQaPairId id);
 
     List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId);
 
-    default ClassicsContentVersion latestVersion(ClassicsContentType contentType, ClassicsContentId contentId) {
+    default ClassicsContentVersion getByLatestVersion(ClassicsContentType contentType, ClassicsContentId contentId) {
         List<ClassicsContentVersion> versions = listVersions(contentType.value(), contentId);
         return versions.isEmpty() ? null : versions.get(0);
     }
 
-    default int latestVersionNo(ClassicsContentType contentType, ClassicsContentId contentId) {
-        ClassicsContentVersion version = latestVersion(contentType, contentId);
+    default int getByLatestVersionNo(ClassicsContentType contentType, ClassicsContentId contentId) {
+        ClassicsContentVersion version = getByLatestVersion(contentType, contentId);
         return version == null ? 0 : version.getVersionNo();
     }
 
-    default void lockContentForVersion(ClassicsContentType contentType, ClassicsContentId contentId) {}
+    default void updateContentForVersionLock(ClassicsContentType contentType, ClassicsContentId contentId) {}
 
-    ClassicsPublicationContent lockPublicationContent(ClassicsContentType contentType, ClassicsContentId contentId);
+    ClassicsPublicationContent getByPublicationContentForLock(
+            ClassicsContentType contentType, ClassicsContentId contentId);
 
     int updatePublicationContentState(ClassicsPublicationContent expectedState, ClassicsPublicationContent targetState);
 
     ClassicsContentVersionId insertVersion(ClassicsContentVersion version);
 
-    ClassicsContentVersion getVersionById(ClassicsContentVersionId id);
+    ClassicsContentVersion getByVersionId(ClassicsContentVersionId id);
 
-    int deleteVersions(String contentType, ClassicsContentId contentId);
+    int deleteByVersions(String contentType, ClassicsContentId contentId);
 
-    SancaiEntry getSancaiEntryForAiApply(ClassicsContentId contentId);
+    SancaiEntry getBySancaiEntryForAiApply(ClassicsContentId contentId);
 
     int updateSancaiEntryAiFields(SancaiEntry entry);
 
@@ -87,7 +88,7 @@ public interface ClassicsContentRepository {
         return 0;
     }
 
-    WangqiDocument getWangqiDocumentForAiApply(ClassicsContentId contentId);
+    WangqiDocument getByWangqiDocumentForAiApply(ClassicsContentId contentId);
 
     int updateWangqiDocumentAiFields(WangqiDocument document);
 
@@ -95,7 +96,7 @@ public interface ClassicsContentRepository {
         return 0;
     }
 
-    MingCustomsEntry getMingCustomsEntryForAiApply(ClassicsContentId contentId);
+    MingCustomsEntry getByMingCustomsEntryForAiApply(ClassicsContentId contentId);
 
     int updateMingCustomsEntryAiFields(MingCustomsEntry entry);
 
@@ -103,33 +104,33 @@ public interface ClassicsContentRepository {
         return 0;
     }
 
-    int deleteAiTags(String contentType, ClassicsContentId contentId);
+    int deleteByAiTags(String contentType, ClassicsContentId contentId);
 
-    int deleteAiQaPairs(String contentType, ClassicsContentId contentId);
+    int deleteByAiQaPairs(String contentType, ClassicsContentId contentId);
 
     ClassicsContentExportJobId insertExportJob(ClassicsContentExportJob exportJob);
 
-    ClassicsContentExportJob getExportJobById(ClassicsContentExportJobId id);
+    ClassicsContentExportJob getByExportJobId(ClassicsContentExportJobId id);
 
     int updateExportJob(ClassicsContentExportJob exportJob);
 
-    int markExportJobCompleted(
+    int updateExportJobCompleted(
             ClassicsContentExportJobId id,
             StorageObjectId storageObjectId,
             Instant expiresAt,
             int itemCount,
             int assetCount);
 
-    int markExportJobFailed(ClassicsContentExportJobId id);
+    int updateExportJobFailed(ClassicsContentExportJobId id);
 
-    int markExportJobExpired(ClassicsContentExportJobId id);
+    int updateExportJobExpired(ClassicsContentExportJobId id);
 
-    int deleteExportJobById(ClassicsContentExportJobId id);
+    int deleteByExportJobId(ClassicsContentExportJobId id);
 
     default List<ClassicsContentExportJobId> listExpiredExportJobIds(Instant now, int limit) {
         return List.of();
     }
 
-    PageResult<ClassicsContentExportJob> pageExportJobs(
+    PageResult<ClassicsContentExportJob> page(
             String contentType, String exportKind, String status, int pageNo, int pageSize);
 }

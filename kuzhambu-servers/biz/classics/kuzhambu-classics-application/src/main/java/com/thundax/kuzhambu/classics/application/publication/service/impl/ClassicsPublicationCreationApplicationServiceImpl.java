@@ -40,7 +40,7 @@ public class ClassicsPublicationCreationApplicationServiceImpl
     public ClassicsPublicationCreateResult create(ClassicsPublicationCreateCommand command) {
         requireCommand(command);
         ClassicsPublicationContent content =
-                contentRepository.lockPublicationContent(command.contentType(), command.contentId());
+                contentRepository.getByPublicationContentForLock(command.contentType(), command.contentId());
         if (content == null) {
             throw conflict("CONTENT_NOT_FOUND");
         }

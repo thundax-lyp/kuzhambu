@@ -63,7 +63,8 @@ class ClassicsPublicationCreationApplicationServiceTest {
         oldJob.setFastGptDataIdsJson("[\"stale\"]");
         oldJob.setEsDocumentId("WANGQI_DOCUMENT:12");
         oldJob.setFastGptCollectionId("collection-12");
-        when(contentRepository.lockPublicationContent(CONTENT_TYPE, CONTENT_ID)).thenReturn(content);
+        when(contentRepository.getByPublicationContentForLock(CONTENT_TYPE, CONTENT_ID))
+                .thenReturn(content);
         when(jobRepository.lockByContent(CONTENT_TYPE, 12L)).thenReturn(oldJob);
         when(jobRepository.insert(any())).thenReturn(new ClassicsPublicationJobId(22L));
         when(contentRepository.updatePublicationContentState(any(), any())).thenReturn(1);
@@ -97,13 +98,13 @@ class ClassicsPublicationCreationApplicationServiceTest {
         assertEquals(new ClassicsPublicationJobId(22L), targetCaptor.getValue().getCurrentJobId());
 
         var ordered = inOrder(contentRepository, jobRepository);
-        ordered.verify(contentRepository).lockPublicationContent(CONTENT_TYPE, CONTENT_ID);
+        ordered.verify(contentRepository).getByPublicationContentForLock(CONTENT_TYPE, CONTENT_ID);
         ordered.verify(jobRepository).lockByContent(CONTENT_TYPE, 12L);
     }
 
     @Test
     void shouldRejectInvalidLifecycleBeforeCreatingJob() {
-        when(contentRepository.lockPublicationContent(CONTENT_TYPE, CONTENT_ID))
+        when(contentRepository.getByPublicationContentForLock(CONTENT_TYPE, CONTENT_ID))
                 .thenReturn(content(
                         ClassicsPublicationLifecycleStatus.PUBLISHED, ClassicsPublicationTransitionStatus.NONE));
         when(jobRepository.lockByContent(CONTENT_TYPE, 12L)).thenReturn(null);
@@ -119,7 +120,7 @@ class ClassicsPublicationCreationApplicationServiceTest {
 
     @Test
     void shouldRejectActiveCleanupBeforeReplacingTerminalJob() {
-        when(contentRepository.lockPublicationContent(CONTENT_TYPE, CONTENT_ID))
+        when(contentRepository.getByPublicationContentForLock(CONTENT_TYPE, CONTENT_ID))
                 .thenReturn(
                         content(ClassicsPublicationLifecycleStatus.OFFLINE, ClassicsPublicationTransitionStatus.NONE));
         ClassicsPublicationJob oldJob = oldJob(ClassicsPublicationJobResultStatus.FAILED);

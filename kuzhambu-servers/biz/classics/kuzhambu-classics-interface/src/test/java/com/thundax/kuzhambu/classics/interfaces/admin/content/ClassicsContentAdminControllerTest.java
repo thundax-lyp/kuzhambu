@@ -11,6 +11,8 @@ import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatc
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.query.ContentExportJobQuery;
+import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
@@ -479,10 +481,11 @@ class ClassicsContentAdminControllerTest {
                                 StorageObjectIdCodec.toDomain(7001L));
                     }
                     if ("pageExportJobs".equals(method.getName())) {
-                        assertEquals("SANCAI_ENTRY", args[0]);
-                        assertEquals("CONTENT_DATASET", args[1]);
-                        assertTrue(args[2] == null || "COMPLETED".equals(args[2]));
-                        PageQuery page = (PageQuery) args[3];
+                        ContentExportJobQuery query = (ContentExportJobQuery) args[0];
+                        assertEquals("SANCAI_ENTRY", query.contentType());
+                        assertEquals("CONTENT_DATASET", query.exportKind());
+                        assertTrue(query.status() == null || "COMPLETED".equals(query.status()));
+                        PageQuery page = (PageQuery) args[1];
                         assertEquals(1, page.getPageNo());
                         assertEquals(10, page.getPageSize());
                         return PageResult.of(
@@ -642,12 +645,9 @@ class ClassicsContentAdminControllerTest {
                         return null;
                     }
                     if ("listTags".equals(method.getName())) {
-                        assertEquals("SANCAI_ENTRY", args[0]);
-                        assertEquals(
-                                456L,
-                                ((com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId)
-                                                args[1])
-                                        .value());
+                        ContentObjectQuery query = (ContentObjectQuery) args[0];
+                        assertEquals("SANCAI_ENTRY", query.contentType());
+                        assertEquals(456L, query.contentId().value());
                         var tag = new com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag();
                         tag.setId(com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec.toDomain(
                                 3001L));

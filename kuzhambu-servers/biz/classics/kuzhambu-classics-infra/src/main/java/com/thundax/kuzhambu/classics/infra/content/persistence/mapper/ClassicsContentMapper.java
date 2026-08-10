@@ -20,7 +20,7 @@ public interface ClassicsContentMapper extends BaseMapper<ClassicsContentExportJ
                 asset_count = #{assetCount}
             where id = #{id}
             """)
-    int markExportJobCompleted(
+    int updateExportJobCompleted(
             @Param("id") Long id,
             @Param("status") String status,
             @Param("storageObjectId") Long storageObjectId,

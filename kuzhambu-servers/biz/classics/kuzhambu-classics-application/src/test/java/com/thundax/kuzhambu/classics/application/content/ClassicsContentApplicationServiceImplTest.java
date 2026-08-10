@@ -296,13 +296,13 @@ class ClassicsContentApplicationServiceImplTest {
         assertEquals(StorageObjectIdCodec.toDomain(7001L), result.getStorageObjectId());
         verify(repository).insertExportJob(any());
         verify(repository)
-                .markExportJobCompleted(
+                .updateExportJobCompleted(
                         eq(ClassicsContentExportJobIdCodec.toDomain(900000000001L)),
                         eq(StorageObjectIdCodec.toDomain(7001L)),
                         any(),
                         eq(2),
                         eq(0));
-        verify(repository, never()).markExportJobFailed(ClassicsContentExportJobIdCodec.toDomain(900000000001L));
+        verify(repository, never()).updateExportJobFailed(ClassicsContentExportJobIdCodec.toDomain(900000000001L));
         verify(workerRenderClient).renderClassicsExport(any());
         ArgumentCaptor<UploadStorageFacadeRequest> uploadCaptor =
                 ArgumentCaptor.forClass(UploadStorageFacadeRequest.class);
@@ -343,7 +343,7 @@ class ClassicsContentApplicationServiceImplTest {
 
         assertEquals(ClassicsContentExportJobIdCodec.toDomain(900000000007L), result.getJobId());
         assertEquals(ClassicsExportStatus.FAILED, result.getStatus());
-        verify(repository).markExportJobFailed(ClassicsContentExportJobIdCodec.toDomain(900000000007L));
+        verify(repository).updateExportJobFailed(ClassicsContentExportJobIdCodec.toDomain(900000000007L));
         verify(storageFacade, never()).upload(any(UploadStorageFacadeRequest.class));
     }
 
@@ -492,7 +492,7 @@ class ClassicsContentApplicationServiceImplTest {
         service.createExportJob(command);
 
         verify(repository)
-                .markExportJobCompleted(
+                .updateExportJobCompleted(
                         eq(ClassicsContentExportJobIdCodec.toDomain(900000000004L)),
                         eq(StorageObjectIdCodec.toDomain(7001L)),
                         any(),
@@ -519,7 +519,7 @@ class ClassicsContentApplicationServiceImplTest {
 
         assertEquals(ClassicsContentExportJobIdCodec.toDomain(900000000002L), result.getJobId());
         assertEquals(ClassicsExportStatus.FAILED, result.getStatus());
-        verify(repository).markExportJobFailed(ClassicsContentExportJobIdCodec.toDomain(900000000002L));
+        verify(repository).updateExportJobFailed(ClassicsContentExportJobIdCodec.toDomain(900000000002L));
     }
 
     @Test
@@ -610,7 +610,7 @@ class ClassicsContentApplicationServiceImplTest {
         reboundTag.setSource(ClassicsContentSource.MANUAL);
         reboundTag.setStatus(ClassicsContentTagStatus.ACTIVE);
         reboundTag.setPriority(5);
-        when(repository.getTagById(ClassicsContentTagIdCodec.toDomain(9001L))).thenReturn(existingTag);
+        when(repository.getByTagId(ClassicsContentTagIdCodec.toDomain(9001L))).thenReturn(existingTag);
         when(tagBindingSupport.bindManualTag(command, 5)).thenReturn(reboundTag);
 
         ClassicsContentTagId id = service.updateTag(command);
@@ -632,12 +632,12 @@ class ClassicsContentApplicationServiceImplTest {
         existingTag.setId(ClassicsContentTagIdCodec.toDomain(9001L));
         existingTag.setContentType(ClassicsContentType.SANCAI_ENTRY);
         existingTag.setContentId(ClassicsContentIdCodec.toDomain(100L));
-        when(repository.getTagById(ClassicsContentTagIdCodec.toDomain(9001L))).thenReturn(existingTag);
+        when(repository.getByTagId(ClassicsContentTagIdCodec.toDomain(9001L))).thenReturn(existingTag);
 
         service.deleteTag(ClassicsContentTagIdCodec.toDomain(9001L));
 
         verify(repository)
-                .deleteTagById(
+                .deleteByTagId(
                         "SANCAI_ENTRY",
                         ClassicsContentIdCodec.toDomain(100L),
                         ClassicsContentTagIdCodec.toDomain(9001L));
@@ -952,7 +952,7 @@ class ClassicsContentApplicationServiceImplTest {
         private ClassicsContentQaPair qaPairById;
 
         @Override
-        public ClassicsPublicationContent lockPublicationContent(
+        public ClassicsPublicationContent getByPublicationContentForLock(
                 ClassicsContentType contentType, ClassicsContentId contentId) {
             return null;
         }
@@ -998,7 +998,7 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public ClassicsContentTag getTagById(ClassicsContentTagId id) {
+        public ClassicsContentTag getByTagId(ClassicsContentTagId id) {
             return null;
         }
 
@@ -1013,7 +1013,7 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public int deleteTagById(String contentType, ClassicsContentId contentId, ClassicsContentTagId id) {
+        public int deleteByTagId(String contentType, ClassicsContentId contentId, ClassicsContentTagId id) {
             return 0;
         }
 
@@ -1039,7 +1039,7 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public ClassicsContentQaPair getQaPairById(ClassicsContentQaPairId id) {
+        public ClassicsContentQaPair getByQaPairId(ClassicsContentQaPairId id) {
             return qaPairById;
         }
 
@@ -1054,17 +1054,17 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public int deleteQaPairById(ClassicsContentQaPairId id) {
+        public int deleteByQaPairId(ClassicsContentQaPairId id) {
             return 0;
         }
 
         @Override
-        public ClassicsContentVersion getVersionById(ClassicsContentVersionId id) {
+        public ClassicsContentVersion getByVersionId(ClassicsContentVersionId id) {
             return versionById;
         }
 
         @Override
-        public int deleteVersions(String contentType, ClassicsContentId contentId) {
+        public int deleteByVersions(String contentType, ClassicsContentId contentId) {
             return 0;
         }
 
@@ -1074,7 +1074,7 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public ClassicsContentExportJob getExportJobById(ClassicsContentExportJobId id) {
+        public ClassicsContentExportJob getByExportJobId(ClassicsContentExportJobId id) {
             return null;
         }
 
@@ -1084,7 +1084,7 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public int markExportJobCompleted(
+        public int updateExportJobCompleted(
                 ClassicsContentExportJobId id,
                 StorageObjectId storageObjectId,
                 Instant expiresAt,
@@ -1094,22 +1094,22 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public int markExportJobFailed(ClassicsContentExportJobId id) {
+        public int updateExportJobFailed(ClassicsContentExportJobId id) {
             return 0;
         }
 
         @Override
-        public int markExportJobExpired(ClassicsContentExportJobId id) {
+        public int updateExportJobExpired(ClassicsContentExportJobId id) {
             return 0;
         }
 
         @Override
-        public int deleteExportJobById(ClassicsContentExportJobId id) {
+        public int deleteByExportJobId(ClassicsContentExportJobId id) {
             return 0;
         }
 
         @Override
-        public SancaiEntry getSancaiEntryForAiApply(ClassicsContentId contentId) {
+        public SancaiEntry getBySancaiEntryForAiApply(ClassicsContentId contentId) {
             return sancaiEntryForAiApply;
         }
 
@@ -1127,7 +1127,7 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public WangqiDocument getWangqiDocumentForAiApply(ClassicsContentId contentId) {
+        public WangqiDocument getByWangqiDocumentForAiApply(ClassicsContentId contentId) {
             return null;
         }
 
@@ -1137,7 +1137,7 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public MingCustomsEntry getMingCustomsEntryForAiApply(ClassicsContentId contentId) {
+        public MingCustomsEntry getByMingCustomsEntryForAiApply(ClassicsContentId contentId) {
             return mingCustomsEntryForAiApply;
         }
 
@@ -1153,17 +1153,17 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public int deleteAiTags(String contentType, ClassicsContentId contentId) {
+        public int deleteByAiTags(String contentType, ClassicsContentId contentId) {
             return 0;
         }
 
         @Override
-        public int deleteAiQaPairs(String contentType, ClassicsContentId contentId) {
+        public int deleteByAiQaPairs(String contentType, ClassicsContentId contentId) {
             return 0;
         }
 
         @Override
-        public PageResult<ClassicsContentExportJob> pageExportJobs(
+        public PageResult<ClassicsContentExportJob> page(
                 String contentType, String exportKind, String status, int pageNo, int pageSize) {
             return new PageResult<>();
         }

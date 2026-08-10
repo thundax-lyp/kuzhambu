@@ -78,9 +78,9 @@ public class ClassicsTagBindingSupport {
 
     private String resolveContentTitle(ClassicsContentType contentType, ClassicsContentId contentId) {
         return switch (contentType) {
-            case SANCAI_ENTRY -> titleOf(repository.getSancaiEntryForAiApply(contentId));
-            case WANGQI_DOCUMENT -> titleOf(repository.getWangqiDocumentForAiApply(contentId));
-            case MING_CUSTOMS -> titleOf(repository.getMingCustomsEntryForAiApply(contentId));
+            case SANCAI_ENTRY -> titleOf(repository.getBySancaiEntryForAiApply(contentId));
+            case WANGQI_DOCUMENT -> titleOf(repository.getByWangqiDocumentForAiApply(contentId));
+            case MING_CUSTOMS -> titleOf(repository.getByMingCustomsEntryForAiApply(contentId));
         };
     }
 

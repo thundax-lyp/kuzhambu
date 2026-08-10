@@ -119,7 +119,7 @@ public class WangqiDocumentVersionRestorer {
                 .listTags(ClassicsContentType.WANGQI_DOCUMENT.value(), document.contentId(), SortDirection.ASC)
                 .forEach(existingTag -> {
                     removeTagRefIfExists(existingTag);
-                    contentRepository.deleteTagById(
+                    contentRepository.deleteByTagId(
                             ClassicsContentType.WANGQI_DOCUMENT.value(), document.contentId(), existingTag.getId());
                 });
 
@@ -138,7 +138,7 @@ public class WangqiDocumentVersionRestorer {
         }
         contentRepository
                 .listQaPairs(ClassicsContentType.WANGQI_DOCUMENT.value(), document.contentId(), SortDirection.ASC)
-                .forEach(pair -> contentRepository.deleteQaPairById(pair.getId()));
+                .forEach(pair -> contentRepository.deleteByQaPairId(pair.getId()));
 
         if (snapshot == null || snapshot.qaPairs() == null) {
             return;
