@@ -10,17 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `01-pr232-legacy`：处理 GitHub PR #232 遗留问题
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-05-SYSTEM-CORE.md`
-    - 范围对象：
-        - `docs/00-governance/HOW-TO-ADMIN-LOGIN-SMOKE.md`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/AuditLogAspect.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/test/java/com/thundax/kuzhambu/system/application/SystemApplicationArchitectureTest.java`
-    - 处理动作：先按 PR #232 的 `discussion_r3746603229` 和 `discussion_r3746633916` 修复登录 smoke 路由与 audit command 构造边界。
-    - 验收点：旧 pre-auth 路由不再出现在登录 smoke guide；`AuditLogAspect` 不再通过 `CreateAuditLogCommand::new` 绕过 construction 规则。
-    - 重要度：10/10
-
 - [ ] `02-current-user-personal`：清理 CurrentUser / Personal record 与构造边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-05-SYSTEM-CORE.md`

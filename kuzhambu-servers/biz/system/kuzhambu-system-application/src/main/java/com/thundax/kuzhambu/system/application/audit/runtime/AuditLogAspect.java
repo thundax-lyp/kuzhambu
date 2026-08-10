@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.system.application.audit.runtime;
 import com.thundax.kuzhambu.common.audit.annotation.AuditLog;
 import com.thundax.kuzhambu.common.audit.model.valueobject.AuditSnapshot;
 import com.thundax.kuzhambu.common.core.id.Identifier;
-import com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand;
 import com.thundax.kuzhambu.system.application.audit.service.AuditTrailApplicationService;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
@@ -26,8 +25,6 @@ import org.springframework.stereotype.Component;
 public class AuditLogAspect {
 
     static final String SERVICE_METHOD_POINTCUT = "execution(public * com.thundax.kuzhambu..service..*.*(..))";
-
-    private static final AuditLogCommandFactory COMMAND_FACTORY = CreateAuditLogCommand::new;
 
     private final AuditTrailApplicationService auditService;
     private final com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoaderRegistry loaderRegistry;
@@ -92,7 +89,7 @@ public class AuditLogAspect {
         AuditSnapshot beforeSnapshot = beforeSnapshotCaptured ? before : null;
         AuditSnapshot afterSnapshot = afterSnapshotCaptured ? after : snapshot(auditLog.type(), objectId);
 
-        CreateAuditLogCommand command = COMMAND_FACTORY.create(
+        auditService.record(
                 AuditObjectRef.of(auditLog.type(), objectId),
                 auditLog.action(),
                 null,
@@ -106,7 +103,6 @@ public class AuditLogAspect {
                 beforeSnapshot,
                 afterSnapshot,
                 auditLog.recordWhenUnchanged());
-        auditService.record(command);
     }
 
     private Method mostSpecificMethod(ProceedingJoinPoint joinPoint) {
@@ -204,24 +200,5 @@ public class AuditLogAspect {
         }
         com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssembler assembler = assemblerRegistry.get(objectType);
         return assembler == null ? null : assembler.assemble(value);
-    }
-
-    @FunctionalInterface
-    private interface AuditLogCommandFactory {
-
-        CreateAuditLogCommand create(
-                AuditObjectRef objectRef,
-                com.thundax.kuzhambu.common.audit.model.enums.AuditAction action,
-                String idempotencyKey,
-                AuditOperatorRef operatorRef,
-                String operatorName,
-                String source,
-                String requestId,
-                String traceId,
-                String remoteAddr,
-                String summary,
-                AuditSnapshot beforeSnapshot,
-                AuditSnapshot afterSnapshot,
-                boolean recordWhenUnchanged);
     }
 }
