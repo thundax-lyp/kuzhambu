@@ -1832,13 +1832,13 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public RefinementTask findLatestDraft(
+        public RefinementTask getByLatestDraft(
                 String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId) {
             return null;
         }
 
         @Override
-        public RefinementTask findLatestAppliedByGraphVersionId(Long graphVersionId) {
+        public RefinementTask getByLatestAppliedGraphVersionId(Long graphVersionId) {
             return latestApplied != null && graphVersionId.equals(latestApplied.getGraphVersionId())
                     ? latestApplied
                     : null;

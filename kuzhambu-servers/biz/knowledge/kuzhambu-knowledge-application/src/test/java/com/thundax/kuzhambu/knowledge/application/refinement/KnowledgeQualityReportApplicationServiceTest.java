@@ -146,7 +146,7 @@ class KnowledgeQualityReportApplicationServiceTest {
                         null,
                         9L,
                         null)));
-        when(refinementTaskRepository.findLatestDraft("GRAPH", "SANCAI_ENTRY", 1001L, 71L))
+        when(refinementTaskRepository.getByLatestDraft("GRAPH", "SANCAI_ENTRY", 1001L, 71L))
                 .thenReturn(null);
 
         QualityReportDetailResult result = service.generateReport(new GenerateQualityReportCommand(71L, 1L));
@@ -252,12 +252,12 @@ class KnowledgeQualityReportApplicationServiceTest {
                 reportRepository);
         QualityReport report = report();
         report.setGeneratedAt(Instant.ofEpochMilli(1_719_187_200_000L));
-        when(reportRepository.getLatestPublished(71L)).thenReturn(report);
+        when(reportRepository.getByLatestPublished(71L)).thenReturn(report);
         when(reportRepository.getByReportId(1001L)).thenReturn(report);
         when(reportRepository.listIssuesByReportId(1001L)).thenReturn(List.of());
         when(reportRepository.listSourceDetailsByReportId(1001L)).thenReturn(List.of());
         when(annotationRepository.listByGraphVersionId(71L)).thenReturn(List.of());
-        when(refinementTaskRepository.findLatestAppliedByGraphVersionId(71L))
+        when(refinementTaskRepository.getByLatestAppliedGraphVersionId(71L))
                 .thenReturn(new RefinementTask(
                         null,
                         RefinementTaskIdCodec.toDomain(31L),

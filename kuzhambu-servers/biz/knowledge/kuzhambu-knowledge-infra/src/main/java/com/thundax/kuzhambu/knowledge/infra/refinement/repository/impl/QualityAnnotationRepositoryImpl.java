@@ -41,7 +41,7 @@ public class QualityAnnotationRepositoryImpl implements QualityAnnotationReposit
     }
 
     @Override
-    public void saveOrUpdate(QualityAnnotation annotation) {
+    public void save(QualityAnnotation annotation) {
         QualityAnnotationDO dataObject = QualityAnnotationPersistenceAssembler.toObject(annotation);
         if (dataObject.getAnnotationId() == null) {
             dataObject.setAnnotationId(dataObject.getId());

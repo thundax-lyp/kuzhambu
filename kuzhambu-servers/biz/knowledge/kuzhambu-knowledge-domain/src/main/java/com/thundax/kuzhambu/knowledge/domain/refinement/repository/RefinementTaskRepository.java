@@ -8,10 +8,10 @@ public interface RefinementTaskRepository {
 
     RefinementTask getByTaskId(RefinementTaskId taskId);
 
-    RefinementTask findLatestDraft(
+    RefinementTask getByLatestDraft(
             String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId);
 
-    default RefinementTask findLatestAppliedByGraphVersionId(Long graphVersionId) {
+    default RefinementTask getByLatestAppliedGraphVersionId(Long graphVersionId) {
         return null;
     }
 

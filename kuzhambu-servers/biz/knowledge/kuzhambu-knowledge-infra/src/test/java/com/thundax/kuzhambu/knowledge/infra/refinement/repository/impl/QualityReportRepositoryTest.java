@@ -105,13 +105,13 @@ class QualityReportRepositoryTest {
 
     @Test
     @SuppressWarnings({"rawtypes", "unchecked"})
-    void getLatestPublishedShouldFilterPublishedAndOrderByGeneratedAt() {
+    void getByLatestPublishedShouldFilterPublishedAndOrderByGeneratedAt() {
         QualityReportMapper reportMapper = mock(QualityReportMapper.class);
         QualityReportRepositoryImpl repository = new QualityReportRepositoryImpl(
                 reportMapper, mock(QualityReportIssueMapper.class), mock(QualityReportSourceDetailMapper.class));
         when(reportMapper.selectOne(any())).thenReturn(null);
 
-        repository.getLatestPublished(71L);
+        repository.getByLatestPublished(71L);
 
         ArgumentCaptor<QueryWrapper<QualityReportDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(reportMapper).selectOne(captor.capture());

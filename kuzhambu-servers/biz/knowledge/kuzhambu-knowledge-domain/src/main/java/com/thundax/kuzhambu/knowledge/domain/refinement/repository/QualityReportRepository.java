@@ -12,7 +12,7 @@ public interface QualityReportRepository {
 
     QualityReport getByReportId(Long reportId);
 
-    QualityReport getLatestPublished(Long graphVersionId);
+    QualityReport getByLatestPublished(Long graphVersionId);
 
     PageResult<QualityReport> page(
             Long graphVersionId,

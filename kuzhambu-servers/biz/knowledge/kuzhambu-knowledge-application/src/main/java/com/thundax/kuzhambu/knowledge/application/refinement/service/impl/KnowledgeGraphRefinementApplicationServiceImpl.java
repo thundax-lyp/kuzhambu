@@ -144,7 +144,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
         Long graphVersionId = command == null ? null : command.graphVersionId();
         Long openedBy = command == null ? null : command.openedBy();
         GraphVersion version = graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(graphVersionId));
-        RefinementTask existing = refinementTaskRepository.findLatestDraft(
+        RefinementTask existing = refinementTaskRepository.getByLatestDraft(
                 graphVersionTaskTypeValue(version),
                 version.getSourceContentType(),
                 GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId()),
@@ -382,7 +382,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 Instant.now(),
                 command.operatorId(),
                 Instant.now());
-        qualityAnnotationRepository.saveOrUpdate(annotation);
+        qualityAnnotationRepository.save(annotation);
         return new QualityAnnotationResult(
                 annotation.getAnnotationId(),
                 annotation.getObjectType(),

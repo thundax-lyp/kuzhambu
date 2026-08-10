@@ -1188,7 +1188,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         }
         RefinementTask lastAppliedRefinement = refinementTaskRepository == null
                 ? null
-                : refinementTaskRepository.findLatestAppliedByGraphVersionId(
+                : refinementTaskRepository.getByLatestAppliedGraphVersionId(
                         GraphVersionIdCodec.toValue(version.getId()));
         return new GraphVersionResult(
                 GraphVersionIdCodec.toValue(version.getId()),

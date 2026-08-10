@@ -77,7 +77,7 @@ class QualityAnnotationWriteTest {
     @Test
     void deleteAnnotationShouldRemoveStoredRecord() {
         FakeQualityAnnotationRepository annotationRepository = new FakeQualityAnnotationRepository();
-        annotationRepository.saveOrUpdate(new QualityAnnotation(
+        annotationRepository.save(new QualityAnnotation(
                 1L,
                 501L,
                 "RELATION",
@@ -130,7 +130,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public RefinementTask findLatestDraft(
+        public RefinementTask getByLatestDraft(
                 String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId) {
             return null;
         }
@@ -235,7 +235,7 @@ class QualityAnnotationWriteTest {
         }
 
         @Override
-        public void saveOrUpdate(QualityAnnotation annotation) {
+        public void save(QualityAnnotation annotation) {
             annotations.put(annotation.getAnnotationId(), annotation);
         }
 

@@ -157,7 +157,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public RefinementTask findLatestDraft(
+        public RefinementTask getByLatestDraft(
                 String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId) {
             return null;
         }
@@ -271,7 +271,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdate(QualityAnnotation annotation) {}
+        public void save(QualityAnnotation annotation) {}
 
         @Override
         public int deleteByAnnotationId(Long annotationId) {

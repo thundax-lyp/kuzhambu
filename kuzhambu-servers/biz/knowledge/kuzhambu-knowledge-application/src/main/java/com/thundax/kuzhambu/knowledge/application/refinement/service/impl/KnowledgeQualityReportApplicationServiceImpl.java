@@ -135,7 +135,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
         List<KnowledgeLineageNode> lineageNodes = lineageNodeRepository.listByVersionId(graphVersionId);
         List<KnowledgeLineageRelation> lineageRelations = lineageRelationRepository.listByVersionId(graphVersionId);
         List<QualityAnnotation> annotations = qualityAnnotationRepository.listByGraphVersionId(graphVersionId);
-        RefinementTask task = refinementTaskRepository.findLatestDraft(
+        RefinementTask task = refinementTaskRepository.getByLatestDraft(
                 graphVersionTaskTypeValue(version),
                 version.getSourceContentType(),
                 GraphExtractionSourceContentIdCodec.toValue(version.getSourceContentId()),
@@ -200,7 +200,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
     @Transactional(readOnly = true)
     public QualityReportDetailResult latest(LatestQualityReportQuery query) {
         Long graphVersionId = query == null ? null : query.graphVersionId();
-        QualityReport report = qualityReportRepository.getLatestPublished(graphVersionId);
+        QualityReport report = qualityReportRepository.getByLatestPublished(graphVersionId);
         return report == null ? emptyDetail() : detail(new QualityReportDetailQuery(report.getReportId()));
     }
 
@@ -481,7 +481,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
             return new ReportStaleInfo(Boolean.FALSE, null, null);
         }
         RefinementTask lastAppliedRefinement =
-                refinementTaskRepository.findLatestAppliedByGraphVersionId(report.getGraphVersionId());
+                refinementTaskRepository.getByLatestAppliedGraphVersionId(report.getGraphVersionId());
         if (lastAppliedRefinement == null || lastAppliedRefinement.getAppliedAt() == null) {
             return new ReportStaleInfo(Boolean.FALSE, null, null);
         }
