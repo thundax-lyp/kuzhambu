@@ -71,7 +71,7 @@ describe("auth and current user service request contracts", () => {
 
     it("sends auth session requests with backend request fields", async () => {
         await createLoginForm();
-        expectLastCall("/auth/session/pre-auth-session", undefined);
+        expectLastCall("/auth/session/pre-auth-session/request", undefined);
 
         await refreshCaptcha("login-token");
         expectLastCall("/auth/captcha/refresh", {

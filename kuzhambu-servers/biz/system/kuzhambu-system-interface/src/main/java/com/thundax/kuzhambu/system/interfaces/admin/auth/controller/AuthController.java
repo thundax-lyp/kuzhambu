@@ -35,6 +35,8 @@ import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.Aut
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.TokenVerifyResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthAccessTokenDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenQueryDTO;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.dto.AuthTokenRefreshDTO;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.support.AdminAuthHelper;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
 import io.swagger.annotations.ApiImplicitParams;
@@ -90,10 +92,13 @@ public class AuthController {
 
     @Operation(summary = "请求预认证会话")
     @ApiImplicitParams({})
-    @PostMapping(value = "pre-auth-session")
+    @PostMapping(value = "pre-auth-session/request")
     @SysLogger(value = "请求预认证会话")
-    public AuthLoginFormResponse preAuthSession() {
-        return AuthInterfaceAssembler.toLoginFormResponse(createPreAuthSession());
+    public AuthLoginFormResponse requestPreAuthSession() {
+        PreAuthSession session = createPreAuthSession();
+        return session == null
+                ? AuthInterfaceAssembler.emptyLoginFormResponse()
+                : AuthInterfaceAssembler.toLoginFormResponse(session);
     }
 
     @Operation(summary = "刷新预认证会话")
@@ -105,7 +110,10 @@ public class AuthController {
             throw AdminResponseExceptions.invalidParameter("refreshToken");
         }
 
-        return AuthInterfaceAssembler.toLoginFormResponse(refreshPreAuthSession(request.getRefreshToken()));
+        PreAuthSession session = refreshPreAuthSession(request.getRefreshToken());
+        return session == null
+                ? AuthInterfaceAssembler.emptyLoginFormResponse()
+                : AuthInterfaceAssembler.toLoginFormResponse(session);
     }
 
     @Operation(summary = "用户/密码登录")
@@ -161,7 +169,7 @@ public class AuthController {
 
     @Operation(summary = "短信登录")
     @ApiImplicitParams({})
-    @PostMapping(value = "login/sms")
+    @PostMapping(value = "sms/login")
     @SysLogger(value = "短信登录")
     public AuthAccessTokenResponse loginBySms(@Valid @RequestBody SmsLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
@@ -184,7 +192,7 @@ public class AuthController {
 
     @Operation(summary = "企业微信登录")
     @ApiImplicitParams({})
-    @PostMapping(value = "login/wecom")
+    @PostMapping(value = "wecom/login")
     @SysLogger(value = "企业微信登录")
     public AuthAccessTokenResponse loginByWecom(@Valid @RequestBody WecomLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
@@ -195,7 +203,7 @@ public class AuthController {
 
     @Operation(summary = "GitHub 登录")
     @ApiImplicitParams({})
-    @PostMapping(value = "login/github")
+    @PostMapping(value = "github/login")
     @SysLogger(value = "GitHub登录")
     public AuthAccessTokenResponse loginByGithub(@Valid @RequestBody GithubLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
@@ -226,11 +234,13 @@ public class AuthController {
 
     @Operation(summary = "校验 token")
     @ApiImplicitParams({})
-    @PostMapping(value = "token/verify")
+    @PostMapping(value = "token/get")
     @IgnoreSysLogger
-    public TokenVerifyResponse verifyToken(@Valid @RequestBody AuthTokenRequest request) {
-        return AuthInterfaceAssembler.toTokenVerifyResponse(
-                authService.getTokenInfo(AdminAuthHelper.tokenLookup(request.getToken())));
+    public TokenVerifyResponse getTokenVerification(@Valid @RequestBody AuthTokenRequest request) {
+        AuthTokenQueryDTO result = authService.getTokenInfo(AdminAuthHelper.tokenLookup(request.getToken()));
+        return result == null
+                ? AuthInterfaceAssembler.inactiveTokenVerifyResponse()
+                : AuthInterfaceAssembler.toTokenVerifyResponse(result);
     }
 
     @Operation(summary = "刷新 token")
@@ -238,9 +248,11 @@ public class AuthController {
     @PostMapping(value = "token/refresh")
     @IgnoreSysLogger
     public AuthAccessTokenResponse refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
-        return AuthInterfaceAssembler.toAccessTokenResponse(
-                authService.refreshAccessToken(AdminAuthHelper.refreshTokenOperation(
-                        request.getClientId(), request.getRefreshToken(), currentRequest())));
+        AuthTokenRefreshDTO result = authService.refreshAccessToken(AdminAuthHelper.refreshTokenOperation(
+                request.getClientId(), request.getRefreshToken(), currentRequest()));
+        return result == null || result.getAccessToken() == null
+                ? AuthInterfaceAssembler.emptyAccessTokenResponse()
+                : AuthInterfaceAssembler.toAccessTokenResponse(result);
     }
 
     private PreAuthSession createPreAuthSession() {
@@ -391,7 +403,10 @@ public class AuthController {
         var operation = AdminAuthHelper.accessTokenOperation(user.getId(), loginName, currentRequest);
         operation.setAuthenticationMethod(authenticationMethod);
         operation.setIdentityType(identityType);
-        return AuthInterfaceAssembler.toAccessTokenResponse(authService.createAccessToken(operation));
+        AuthAccessTokenDTO result = authService.createAccessToken(operation);
+        return result == null
+                ? AuthInterfaceAssembler.emptyAccessTokenResponse()
+                : AuthInterfaceAssembler.toAccessTokenResponse(result);
     }
 
     private HttpServletRequest currentRequest() {

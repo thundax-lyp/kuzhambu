@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ARCHUNIT-SYSTEM-AUTH-04-08`：收口 auth、captcha、audit controller 动词和 assembler 空返回
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-04-SYSTEM-AUTH-AUDIT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/audit/controller/AuditController.java`；`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/controller/AuthController.java`；`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/controller/CaptchaController.java`；`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/audit/assembler/AuditInterfaceAssembler.java`；`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/assembler/AuthInterfaceAssembler.java`；`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/test/java/com/thundax/kuzhambu/system/interfaces/SystemInterfaceArchitectureTest.java`
-    - 处理动作：将三个 controller 的 action verb 和两个 assembler 的空返回整改到规则允许形态。
-    - 验收点：RUNBOOK 中 `CONTROLLER_ACTION_VERB` 三个 key 和两个 assembler nullness class key 已删除，system interface 架构测试通过。
-    - 重要度：8/10
-
 - [ ] `ARCHUNIT-SYSTEM-AUTH-04-09`：清理 System 认证与审计 allowlist 清理现场
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`；`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-04-SYSTEM-AUTH-AUDIT.md`

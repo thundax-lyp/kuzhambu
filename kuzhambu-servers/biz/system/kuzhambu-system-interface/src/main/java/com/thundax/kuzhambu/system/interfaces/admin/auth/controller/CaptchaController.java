@@ -72,7 +72,7 @@ public class CaptchaController {
     @IgnoreSysLogger
     @PostJsonApiExempt(reason = "验证码图片需要浏览器直链读取")
     @GetMapping
-    public void captcha(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void getCaptcha(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String loginToken = request.getParameter("loginToken");
         if (StringUtils.isBlank(loginToken)) {
             writeResponse(response, "AUTH-00006", "invalidate login token");

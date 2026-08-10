@@ -12,7 +12,7 @@ public class IntegrationAuthClient {
     }
 
     public PreAuthSession createAdminPreAuthSession() {
-        return preAuthSession("/api/auth/session/pre-auth-session", null);
+        return preAuthSession("/api/auth/session/pre-auth-session/request", null);
     }
 
     public PreAuthSession refreshAdminPreAuthSession(String refreshToken) {
@@ -36,7 +36,7 @@ public class IntegrationAuthClient {
     }
 
     public PreAuthSession createFrontPreAuthSession() {
-        return preAuthSession("/api/auth/session/pre-auth-session", null);
+        return preAuthSession("/api/auth/session/pre-auth-session/request", null);
     }
 
     public PreAuthSession refreshFrontPreAuthSession(String refreshToken) {

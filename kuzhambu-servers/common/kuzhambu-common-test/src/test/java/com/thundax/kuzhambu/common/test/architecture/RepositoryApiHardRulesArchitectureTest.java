@@ -206,20 +206,6 @@ class RepositoryApiHardRulesArchitectureTest {
                 "method=avatarImage");
         addLegacyActionVerbAllowances(
                 allowances,
-                "kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/controller/AuthController.java",
-                "method=preAuthSession",
-                "method=preAuthSession path=pre-auth-session",
-                "method=loginBySms path=login/sms",
-                "method=loginByWecom path=login/wecom",
-                "method=loginByGithub path=login/github",
-                "method=verifyToken",
-                "method=verifyToken path=token/verify");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/controller/CaptchaController.java",
-                "method=captcha");
-        addLegacyActionVerbAllowances(
-                allowances,
                 "kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/audit/controller/AuditController.java",
                 "method=meta",
                 "method=meta path=meta",

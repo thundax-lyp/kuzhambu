@@ -82,14 +82,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         if (identityType == null) {
             identityType = PrincipalIdentityType.USER_ACCOUNT;
         }
-        AuthAccessTokenDTO result = toInterfaceResult(
-                adminTokenService.createAccessToken(AuthInterfaceAssembler.toCreateAdminAccessTokenCommand(
-                        operation.getUserId(),
-                        operation.getLoginName(),
-                        operation.getIp(),
-                        operation.getUserAgent(),
-                        authenticationMethod,
-                        identityType)));
+        AuthAccessTokenDTO result = toInterfaceResult(adminTokenService.createAccessToken(
+                AuthInterfaceAssembler.toCreateAdminAccessTokenCommand(operation, authenticationMethod, identityType)));
         if (result != null) {
             permissionService.createPermissions(result.getToken(), UserIdCodec.toStringValue(operation.getUserId()));
         }
@@ -104,7 +98,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     public int deleteAccessTokensByUserId(AdminAuthOperation operation) {
         return adminTokenService.deleteAccessTokensByUserId(
-                AuthInterfaceAssembler.toDeleteAdminAccessTokenCommand(null, operation.getUserId(), null, null));
+                AuthInterfaceAssembler.toDeleteAdminAccessTokensByUserIdCommand(operation));
     }
 
     @Override
@@ -120,10 +114,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     public void deleteAccessToken(AdminAuthOperation operation) {
         adminTokenService.deleteAccessToken(AuthInterfaceAssembler.toDeleteAdminAccessTokenCommand(
-                accessTokenCode(tokenValue(operation.getAccessToken())),
-                null,
-                operation.getIp(),
-                operation.getUserAgent()));
+                operation, accessTokenCode(tokenValue(operation.getAccessToken()))));
     }
 
     @Override
@@ -136,10 +127,9 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         try {
             AuthTokenRefreshDTO result = toInterfaceResult(
                     adminTokenService.refreshAccessToken(AuthInterfaceAssembler.toRefreshAdminAccessTokenCommand(
+                            operation,
                             PrincipalClientIdCodec.toDomain(operation.getClientId()),
-                            PrincipalRefreshTokenCode.ofNullable(blankToNull(operation.getRefreshToken())),
-                            operation.getIp(),
-                            operation.getUserAgent())));
+                            PrincipalRefreshTokenCode.ofNullable(blankToNull(operation.getRefreshToken())))));
             if (result != null && result.getAccessToken() != null) {
                 permissionService.createPermissions(
                         result.getAccessToken().getToken(),
@@ -153,14 +143,14 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public void invalidateSessionByToken(AdminAuthOperation operation) {
-        adminTokenService.invalidateSessionByToken(AuthInterfaceAssembler.toInvalidateAdminSessionCommand(
-                accessTokenCode(operation.getToken()), null, operation.getReason()));
+        adminTokenService.invalidateSessionByToken(AuthInterfaceAssembler.toInvalidateSessionByTokenCommand(
+                operation, accessTokenCode(operation.getToken())));
     }
 
     @Override
     public int invalidateSessionsByUserId(AdminAuthOperation operation) {
-        return adminTokenService.invalidateSessionsByUserId(AuthInterfaceAssembler.toInvalidateAdminSessionCommand(
-                null, operation.getUserId(), operation.getReason()));
+        return adminTokenService.invalidateSessionsByUserId(
+                AuthInterfaceAssembler.toInvalidateSessionsByUserIdCommand(operation));
     }
 
     @Override
@@ -186,13 +176,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public void recordLoginFailed(AdminAuthOperation operation) {
-        adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
-                null,
-                operation.getAuthenticationMethod(),
-                operation.getIdentityType(),
-                operation.getIp(),
-                operation.getUserAgent(),
-                operation.getReason()));
+        adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(operation));
     }
 
     @Override
@@ -214,25 +198,23 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                     plainPassword,
                     passwordPolicy()));
         } catch (InvalidPasswordException e) {
-            adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
-                    null,
+            writeLoginFailed(
                     PrincipalAuthenticationMethod.PASSWORD,
                     PrincipalIdentityType.USER_ACCOUNT,
                     ip,
                     userAgent,
-                    PrincipalLoginEvent.REASON_INVALID_CREDENTIAL));
+                    PrincipalLoginEvent.REASON_INVALID_CREDENTIAL);
             throw AdminResponseExceptions.invalidUsernamePassword();
         }
 
         User user = getUser(UserIdCodec.toDomain(identity.getPrincipalKey().getPrincipalId()));
         if (user == null) {
-            adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
-                    null,
+            writeLoginFailed(
                     PrincipalAuthenticationMethod.PASSWORD,
                     PrincipalIdentityType.USER_ACCOUNT,
                     ip,
                     userAgent,
-                    PrincipalLoginEvent.REASON_PRINCIPAL_NOT_FOUND));
+                    PrincipalLoginEvent.REASON_PRINCIPAL_NOT_FOUND);
             throw AdminResponseExceptions.invalidUsernamePassword();
         }
         if (!user.isEnable()) {
@@ -311,24 +293,14 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             identity = principalAuthService.authenticateIdentity(
                     AuthInterfaceAssembler.toAuthenticateIdentityCommand(identityType, identityValue));
         } catch (InvalidPasswordException e) {
-            adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
-                    null,
-                    authenticationMethod,
-                    identityType,
-                    ip,
-                    userAgent,
-                    PrincipalLoginEvent.REASON_IDENTITY_NOT_FOUND));
+            writeLoginFailed(
+                    authenticationMethod, identityType, ip, userAgent, PrincipalLoginEvent.REASON_IDENTITY_NOT_FOUND);
             throw AdminResponseExceptions.invalidUsernamePassword();
         }
         User user = getUser(UserIdCodec.toDomain(identity.getPrincipalKey().getPrincipalId()));
         if (user == null) {
-            adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
-                    null,
-                    authenticationMethod,
-                    identityType,
-                    ip,
-                    userAgent,
-                    PrincipalLoginEvent.REASON_PRINCIPAL_NOT_FOUND));
+            writeLoginFailed(
+                    authenticationMethod, identityType, ip, userAgent, PrincipalLoginEvent.REASON_PRINCIPAL_NOT_FOUND);
             throw AdminResponseExceptions.invalidUsernamePassword();
         }
         if (!user.isEnable()) {
@@ -351,8 +323,28 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             String ip,
             String userAgent,
             String reason) {
-        adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(
-                principalKey, authenticationMethod, identityType, ip, userAgent, reason));
+        AdminAuthOperation operation = new AdminAuthOperation();
+        operation.setAuthenticationMethod(authenticationMethod);
+        operation.setIdentityType(identityType);
+        operation.setIp(ip);
+        operation.setUserAgent(userAgent);
+        adminTokenService.recordLoginFailed(
+                AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(principalKey, operation, reason));
+    }
+
+    private void writeLoginFailed(
+            PrincipalAuthenticationMethod authenticationMethod,
+            PrincipalIdentityType identityType,
+            String ip,
+            String userAgent,
+            String reason) {
+        AdminAuthOperation operation = new AdminAuthOperation();
+        operation.setAuthenticationMethod(authenticationMethod);
+        operation.setIdentityType(identityType);
+        operation.setIp(ip);
+        operation.setUserAgent(userAgent);
+        operation.setReason(reason);
+        adminTokenService.recordLoginFailed(AuthInterfaceAssembler.toRecordPrincipalLoginFailureCommand(operation));
     }
 
     private User getUser(UserId userId) {

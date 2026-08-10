@@ -26,14 +26,14 @@ export const pageAuditLogs = (request: AuditLogPageQuery = {}) => {
 };
 
 export const getAuditLogDetail = (id: string) => {
-    return postJson<AuditLogDetailRecord, { id: string }>("/audit/log/detail", {
+    return postJson<AuditLogDetailRecord, { id: string }>("/audit/log/detail/get", {
         body: { id }
     });
 };
 
 export const getAuditOptions = () => {
     return postJson<Partial<OptionsRecord<AuditOptionKeys>>, Record<string, never>>(
-        "/audit/log/options",
+        "/audit/log/options/list",
         {
             body: {}
         }

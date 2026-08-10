@@ -18,7 +18,7 @@ export interface TokenRefreshCommand {
 }
 
 export const createLoginForm = () => {
-    return postJson<LoginFormRecord>("/auth/session/pre-auth-session");
+    return postJson<LoginFormRecord>("/auth/session/pre-auth-session/request");
 };
 
 export const refreshCaptcha = (loginToken: string) => {

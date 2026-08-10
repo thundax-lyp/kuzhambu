@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQue
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.CaptchaRefreshResponse;
+import java.util.Objects;
 import org.springframework.lang.NonNull;
 
 public final class CaptchaInterfaceAssembler {
@@ -13,17 +14,24 @@ public final class CaptchaInterfaceAssembler {
 
     @NonNull
     public static UpsertPreAuthSessionValueCommand toUpsertPreAuthSessionValueCommand(
-            PreAuthSessionId id, String name, String value, long expiredAt) {
+            @NonNull PreAuthSessionId id, @NonNull String name, @NonNull String value, long expiredAt) {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(name, "name must not be null");
+        Objects.requireNonNull(value, "value must not be null");
         return new UpsertPreAuthSessionValueCommand(id, name, value, expiredAt);
     }
 
     @NonNull
-    public static PreAuthSessionQuery toPreAuthSessionTokenQuery(String token) {
+    public static PreAuthSessionQuery toPreAuthSessionTokenQuery(@NonNull String token) {
+        Objects.requireNonNull(token, "token must not be null");
         return new PreAuthSessionQuery(null, PreAuthSessionToken.of(token), null);
     }
 
     @NonNull
-    public static PreAuthSessionValueQuery toPreAuthSessionValueQuery(PreAuthSessionId id, String name) {
+    public static PreAuthSessionValueQuery toPreAuthSessionValueQuery(
+            @NonNull PreAuthSessionId id, @NonNull String name) {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(name, "name must not be null");
         return new PreAuthSessionValueQuery(id, name);
     }
 

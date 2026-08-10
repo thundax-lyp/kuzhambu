@@ -34,17 +34,23 @@ import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.response.Au
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import org.springframework.lang.NonNull;
 
 public final class AuditInterfaceAssembler {
 
     private AuditInterfaceAssembler() {}
 
-    public static AuditMetaQuery toMetaQuery(AuditMetaRequest request) {
+    @NonNull
+    public static AuditMetaQuery toMetaQuery(@NonNull AuditMetaRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new AuditMetaQuery(AuditObjectRef.of(request.getObjectType(), request.getObjectId()));
     }
 
-    public static AuditLogQuery toLogQuery(AuditLogPageRequest request) {
+    @NonNull
+    public static AuditLogQuery toLogQuery(@NonNull AuditLogPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new AuditLogQuery(
                 AuditObjectRef.of(request.getObjectType(), request.getObjectId()),
                 request.getAction() == null ? null : AuditAction.from(request.getAction()),
@@ -57,24 +63,34 @@ public final class AuditInterfaceAssembler {
                 request.getEndDate());
     }
 
-    public static GetAuditLogQuery toGetLogQuery(AuditLogDetailRequest request) {
+    @NonNull
+    public static GetAuditLogQuery toGetLogQuery(@NonNull AuditLogDetailRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new GetAuditLogQuery(AuditLogIdCodec.toDomain(request.getId()));
     }
 
-    public static AuditLogQuery toLogQuery(AuditObjectPageRequest request) {
+    @NonNull
+    public static AuditLogQuery toLogQuery(@NonNull AuditObjectPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new AuditLogQuery(
                 AuditObjectRef.of(request.getObjectType(), request.getObjectId()), null, null, null, null, null, null);
     }
 
-    public static AuditLogQuery toObjectLogQuery(AuditMetaRequest request) {
+    @NonNull
+    public static AuditLogQuery toObjectLogQuery(@NonNull AuditMetaRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new AuditLogQuery(
                 AuditObjectRef.of(request.getObjectType(), request.getObjectId()), null, null, null, null, null, null);
     }
 
-    public static AuditMetaResponse toMetaResponse(AuditMeta entity) {
-        if (entity == null) {
-            return AuditMetaResponse.builder().build();
-        }
+    @NonNull
+    public static AuditMetaResponse emptyMetaResponse() {
+        return AuditMetaResponse.builder().build();
+    }
+
+    @NonNull
+    public static AuditMetaResponse toMetaResponse(@NonNull AuditMeta entity) {
+        Objects.requireNonNull(entity, "entity must not be null");
         return AuditMetaResponse.builder()
                 .id(AuditMetaIdCodec.toStringValue(entity.getId()))
                 .objectType(entity.getObjectType())
@@ -90,27 +106,36 @@ public final class AuditInterfaceAssembler {
                 .build();
     }
 
-    public static AuditLogResponse toLogResponse(AuditLog entity) {
-        return toLogResponse(entity, null);
+    @NonNull
+    public static AuditLogResponse toLogResponse(@NonNull AuditLog entity) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        return logResponseBuilder(entity, null).build();
     }
 
-    public static AuditLogResponse toLogResponse(AuditLog entity, AuditSnapshotAssemblerRegistry registry) {
-        if (entity == null) {
-            return AuditLogResponse.builder().changedFields(new ArrayList<>()).build();
-        }
+    @NonNull
+    public static AuditLogResponse toLogResponse(
+            @NonNull AuditLog entity, @NonNull AuditSnapshotAssemblerRegistry registry) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(registry, "registry must not be null");
         return logResponseBuilder(entity, registry).build();
     }
 
-    public static AuditLogDetailResponse toLogDetailResponse(AuditLog entity) {
-        return toLogDetailResponse(entity, null);
+    @NonNull
+    public static AuditLogDetailResponse emptyLogDetailResponse() {
+        return AuditLogDetailResponse.builder().changedFields(new ArrayList<>()).build();
     }
 
-    public static AuditLogDetailResponse toLogDetailResponse(AuditLog entity, AuditSnapshotAssemblerRegistry registry) {
-        if (entity == null) {
-            return AuditLogDetailResponse.builder()
-                    .changedFields(new ArrayList<>())
-                    .build();
-        }
+    @NonNull
+    public static AuditLogDetailResponse toLogDetailResponse(@NonNull AuditLog entity) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        return logDetailResponse(entity, null);
+    }
+
+    @NonNull
+    public static AuditLogDetailResponse toLogDetailResponse(
+            @NonNull AuditLog entity, @NonNull AuditSnapshotAssemblerRegistry registry) {
+        Objects.requireNonNull(entity, "entity must not be null");
+        Objects.requireNonNull(registry, "registry must not be null");
         return AuditLogDetailResponse.builder()
                 .id(AuditLogIdCodec.toStringValue(entity.getId()))
                 .objectType(entity.getObjectType())
@@ -141,24 +166,43 @@ public final class AuditInterfaceAssembler {
                 .build();
     }
 
-    public static AuditObjectOverviewResponse toOverviewResponse(AuditMeta meta, PageResult<AuditLog> latestLogs) {
-        return toOverviewResponse(meta, latestLogs, null);
-    }
-
+    @NonNull
     public static AuditObjectOverviewResponse toOverviewResponse(
-            AuditMeta meta, PageResult<AuditLog> latestLogs, AuditSnapshotAssemblerRegistry registry) {
+            @NonNull AuditMeta meta, @NonNull PageResult<AuditLog> latestLogs) {
+        Objects.requireNonNull(meta, "meta must not be null");
+        Objects.requireNonNull(latestLogs, "latestLogs must not be null");
         return AuditObjectOverviewResponse.builder()
                 .meta(toMetaResponse(meta))
-                .latestLogs(
-                        latestLogs == null || latestLogs.getRecords() == null
-                                ? null
-                                : latestLogs.getRecords().stream()
-                                        .map(log -> AuditInterfaceAssembler.toLogResponse(log, registry))
-                                        .collect(Collectors.toList()))
+                .latestLogs(toLatestLogResponses(latestLogs, null))
                 .build();
     }
 
-    public static AuditOptionsResponse toOptionsResponse(AuditSnapshotAssemblerRegistry registry) {
+    @NonNull
+    public static AuditObjectOverviewResponse emptyOverviewResponse(@NonNull PageResult<AuditLog> latestLogs) {
+        Objects.requireNonNull(latestLogs, "latestLogs must not be null");
+        return AuditObjectOverviewResponse.builder()
+                .meta(emptyMetaResponse())
+                .latestLogs(toLatestLogResponses(latestLogs, null))
+                .build();
+    }
+
+    @NonNull
+    public static AuditObjectOverviewResponse toOverviewResponse(
+            @NonNull AuditMeta meta,
+            @NonNull PageResult<AuditLog> latestLogs,
+            @NonNull AuditSnapshotAssemblerRegistry registry) {
+        Objects.requireNonNull(meta, "meta must not be null");
+        Objects.requireNonNull(latestLogs, "latestLogs must not be null");
+        Objects.requireNonNull(registry, "registry must not be null");
+        return AuditObjectOverviewResponse.builder()
+                .meta(toMetaResponse(meta))
+                .latestLogs(toLatestLogResponses(latestLogs, registry))
+                .build();
+    }
+
+    @NonNull
+    public static AuditOptionsResponse toOptionsResponse(@NonNull AuditSnapshotAssemblerRegistry registry) {
+        Objects.requireNonNull(registry, "registry must not be null");
         return AuditOptionsResponse.builder()
                 .objectTypes(objectTypeOptions(registry))
                 .actions(Arrays.stream(AuditAction.values())
@@ -179,9 +223,12 @@ public final class AuditInterfaceAssembler {
                 .collect(Collectors.toList());
     }
 
+    @NonNull
     public static List<AuditObjectFieldResponse> toFieldResponses(
-            AuditSnapshotAssemblerRegistry registry, String objectType) {
-        AuditSnapshotAssembler assembler = registry == null ? null : registry.get(objectType);
+            @NonNull AuditSnapshotAssemblerRegistry registry, @NonNull String objectType) {
+        Objects.requireNonNull(registry, "registry must not be null");
+        Objects.requireNonNull(objectType, "objectType must not be null");
+        AuditSnapshotAssembler assembler = registry.get(objectType);
         if (assembler == null || assembler.fields() == null) {
             return new ArrayList<>();
         }
@@ -215,6 +262,47 @@ public final class AuditInterfaceAssembler {
                 .summary(entity.getSummary())
                 .occurredAt(entity.getOccurredAt())
                 .changedFields(toChangedFieldResponses(entity.getChangedFields()));
+    }
+
+    private static AuditLogDetailResponse logDetailResponse(AuditLog entity, AuditSnapshotAssemblerRegistry registry) {
+        return AuditLogDetailResponse.builder()
+                .id(AuditLogIdCodec.toStringValue(entity.getId()))
+                .objectType(entity.getObjectType())
+                .objectTypeLabel(objectTypeLabel(entity.getObjectType(), registry))
+                .objectId(entity.getObjectId())
+                .objectDisplayName(displayName(entity))
+                .version(entity.getVersion())
+                .action(entity.getAction() == null ? null : entity.getAction().value())
+                .actionLabel(actionLabel(entity.getAction()))
+                .operatorType(
+                        entity.getOperatorType() == null
+                                ? null
+                                : entity.getOperatorType().value())
+                .operatorTypeLabel(operatorTypeLabel(entity.getOperatorType()))
+                .operatorId(entity.getOperatorId())
+                .operatorName(entity.getOperatorName())
+                .source(entity.getSource())
+                .requestId(entity.getRequestId())
+                .traceId(entity.getTraceId())
+                .remoteAddr(entity.getRemoteAddr())
+                .summary(entity.getSummary())
+                .occurredAt(entity.getOccurredAt())
+                .changedFields(toChangedFieldResponses(entity.getChangedFields()))
+                .idempotencyKey(entity.getIdempotencyKey())
+                .previousVersion(entity.getPreviousVersion())
+                .beforeSnapshot(toSnapshotResponse(entity.getBeforeSnapshot()))
+                .afterSnapshot(toSnapshotResponse(entity.getAfterSnapshot()))
+                .build();
+    }
+
+    private static List<AuditLogResponse> toLatestLogResponses(
+            PageResult<AuditLog> latestLogs, AuditSnapshotAssemblerRegistry registry) {
+        if (latestLogs.getRecords() == null) {
+            return new ArrayList<>();
+        }
+        return latestLogs.getRecords().stream()
+                .map(log -> logResponseBuilder(log, registry).build())
+                .collect(Collectors.toList());
     }
 
     private static AuditSnapshotResponse toSnapshotResponse(AuditSnapshot snapshot) {

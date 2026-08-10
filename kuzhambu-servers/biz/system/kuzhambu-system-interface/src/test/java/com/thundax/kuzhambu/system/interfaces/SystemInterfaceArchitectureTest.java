@@ -59,8 +59,6 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.system.interfaces.admin.audit.assembler.AuditInterfaceAssembler",
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.assembler.AuthInterfaceAssembler",
                         "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler",
                         "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler",
                         "com.thundax.kuzhambu.system.interfaces.admin.core.assembler.LogInterfaceAssembler",
@@ -81,9 +79,6 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
 
     private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
         return List.of(
-                actionVerbAllowance("AuditController"),
-                actionVerbAllowance("AuthController"),
-                actionVerbAllowance("CaptchaController"),
                 actionVerbAllowance("CurrentUserController"),
                 actionVerbAllowance("DepartmentController"),
                 actionVerbAllowance("MenuController"),
