@@ -212,7 +212,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
         if (categorySlot == null) {
             return buildOverviewAtlas();
         }
-        GraphVersion latestVersion = graphVersionRepository.findLatestAppliedByCategoryCode(categoryCode);
+        GraphVersion latestVersion = graphVersionRepository.getByLatestAppliedCategoryCode(categoryCode);
         if (latestVersion == null || latestVersion.getId() == null) {
             return buildEmptyCategoryAtlas(categorySlot);
         }

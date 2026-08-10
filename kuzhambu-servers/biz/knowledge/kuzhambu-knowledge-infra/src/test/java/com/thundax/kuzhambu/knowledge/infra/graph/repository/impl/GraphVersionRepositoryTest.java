@@ -76,7 +76,7 @@ class GraphVersionRepositoryTest {
         when(mapper.selectOne(any())).thenReturn(new GraphVersionDO());
         GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
 
-        repository.findLatest(
+        repository.getByLatestSource(
                 GraphExtractionTaskType.GRAPH, "SANCAI_ENTRY", GraphExtractionSourceContentIdCodec.toDomain(100L));
 
         ArgumentCaptor<QueryWrapper<GraphVersionDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
@@ -90,12 +90,12 @@ class GraphVersionRepositoryTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    void findLatestAppliedByCategoryCodeShouldQueryAppliedCategoryScope() {
+    void getByLatestAppliedCategoryCodeShouldQueryAppliedCategoryScope() {
         GraphVersionMapper mapper = mock(GraphVersionMapper.class);
         when(mapper.selectOne(any())).thenReturn(new GraphVersionDO());
         GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
 
-        repository.findLatestAppliedByCategoryCode("BIRDS");
+        repository.getByLatestAppliedCategoryCode("BIRDS");
 
         ArgumentCaptor<QueryWrapper<GraphVersionDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper, times(1)).selectOne(captor.capture());

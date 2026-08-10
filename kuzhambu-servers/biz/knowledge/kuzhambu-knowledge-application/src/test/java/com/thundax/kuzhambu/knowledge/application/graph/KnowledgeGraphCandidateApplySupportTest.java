@@ -294,7 +294,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         private final List<GraphVersion> versions = new ArrayList<>();
 
         @Override
-        public GraphVersion findLatest(
+        public GraphVersion getByLatestSource(
                 GraphExtractionTaskType taskType,
                 String sourceContentType,
                 GraphExtractionSourceContentId sourceContentId) {
@@ -379,7 +379,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {
+        public void batchSaveOrUpdate(List<KnowledgeEntity> entities) {
             saved.clear();
             saved.addAll(entities);
             for (KnowledgeEntity entity : entities) {
@@ -443,7 +443,7 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {
+        public void batchSaveOrUpdate(List<KnowledgeRelation> relations) {
             saved.clear();
             saved.addAll(relations);
             for (KnowledgeRelation relation : relations) {

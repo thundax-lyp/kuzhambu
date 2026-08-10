@@ -40,7 +40,7 @@ public class RefinementApplySupport {
 
     public void applyEntities(Long versionId, List<RefinementEntityDraft> drafts) {
         entityRepository.deleteByEntityKeys(entityKeys(drafts));
-        entityRepository.saveOrUpdateBatch(drafts.stream()
+        entityRepository.batchSaveOrUpdate(drafts.stream()
                 .filter(draft -> !"DELETED".equals(draft.getOperationType()))
                 .map(draft -> toEntity(versionId, draft))
                 .toList());
@@ -48,7 +48,7 @@ public class RefinementApplySupport {
 
     public void applyRelations(Long versionId, List<RefinementRelationDraft> drafts) {
         relationRepository.deleteByRelationKeys(relationKeys(drafts));
-        relationRepository.saveOrUpdateBatch(drafts.stream()
+        relationRepository.batchSaveOrUpdate(drafts.stream()
                 .filter(draft -> !"DELETED".equals(draft.getOperationType()))
                 .map(draft -> toRelation(versionId, draft))
                 .toList());

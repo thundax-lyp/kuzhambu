@@ -282,7 +282,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
         GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
         KnowledgeEntityRepository knowledgeEntityRepository = mock(KnowledgeEntityRepository.class);
         KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
-        when(graphVersionRepository.findLatestAppliedByCategoryCode("ANIMALS"))
+        when(graphVersionRepository.getByLatestAppliedCategoryCode("ANIMALS"))
                 .thenReturn(version(71L, 901L, "GRAPH", "SANCAI_ENTRY", 1001L, "ANIMALS", "鸟兽", 3, 1_700_000_000_000L));
         when(knowledgeEntityRepository.listByVersionId(GraphVersionIdCodec.toDomain(71L)))
                 .thenReturn(List.of(entity(3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L)));
@@ -335,8 +335,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
     @Test
     void getAtlasShouldKeepValidEmptyCategoryAtCategoryLevel() {
         GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
-        when(graphVersionRepository.findLatestAppliedByCategoryCode("ASTRONOMY"))
-                .thenReturn(null);
+        when(graphVersionRepository.getByLatestAppliedCategoryCode("ASTRONOMY")).thenReturn(null);
         KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
                 mock(TagRepository.class),
                 graphVersionRepository,

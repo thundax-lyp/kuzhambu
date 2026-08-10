@@ -1764,7 +1764,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         private final List<GraphVersion> versions = new ArrayList<>();
 
         @Override
-        public GraphVersion findLatest(
+        public GraphVersion getByLatestSource(
                 GraphExtractionTaskType taskType,
                 String sourceContentType,
                 GraphExtractionSourceContentId sourceContentId) {
@@ -1913,7 +1913,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {
+        public void batchSaveOrUpdate(List<KnowledgeEntity> entities) {
             this.entities.clear();
             this.entities.addAll(entities);
         }
@@ -1971,7 +1971,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {
+        public void batchSaveOrUpdate(List<KnowledgeRelation> relations) {
             this.relations.clear();
             this.relations.addAll(relations);
         }

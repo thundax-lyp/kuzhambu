@@ -281,7 +281,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
 
     private static final class NoopGraphVersionRepository implements GraphVersionRepository {
         @Override
-        public GraphVersion findLatest(
+        public GraphVersion getByLatestSource(
                 GraphExtractionTaskType taskType,
                 String sourceContentType,
                 GraphExtractionSourceContentId sourceContentId) {
@@ -343,7 +343,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {}
+        public void batchSaveOrUpdate(List<KnowledgeEntity> entities) {}
 
         @Override
         public int deleteByEntityKeys(Collection<String> entityKeys) {
@@ -379,7 +379,7 @@ class KnowledgeGraphRefinementRelationWriteTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {}
+        public void batchSaveOrUpdate(List<KnowledgeRelation> relations) {}
 
         @Override
         public int deleteByRelationKeys(Collection<String> relationKeys) {

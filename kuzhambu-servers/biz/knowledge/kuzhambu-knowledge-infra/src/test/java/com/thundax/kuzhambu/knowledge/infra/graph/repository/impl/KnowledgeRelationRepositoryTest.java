@@ -89,7 +89,7 @@ class KnowledgeRelationRepositoryTest {
     }
 
     @Test
-    void saveOrUpdateBatchShouldInsertWhenRelationDoesNotExist() {
+    void batchSaveOrUpdateShouldInsertWhenRelationDoesNotExist() {
         KnowledgeRelationMapper mapper = mock(KnowledgeRelationMapper.class);
         when(mapper.update(any(), any())).thenReturn(0);
         when(mapper.insert(any(KnowledgeRelationDO.class))).thenReturn(1);
@@ -108,7 +108,7 @@ class KnowledgeRelationRepositoryTest {
         relation.setFirstExtractedAt(Instant.now());
         relation.setLastExtractedAt(Instant.now());
 
-        repository.saveOrUpdateBatch(List.of(relation));
+        repository.batchSaveOrUpdate(List.of(relation));
 
         ArgumentCaptor<KnowledgeRelationDO> captor = ArgumentCaptor.forClass(KnowledgeRelationDO.class);
         verify(mapper).insert(captor.capture());

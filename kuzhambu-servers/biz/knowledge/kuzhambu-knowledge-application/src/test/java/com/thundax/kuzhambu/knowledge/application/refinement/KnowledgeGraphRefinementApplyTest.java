@@ -208,7 +208,7 @@ class KnowledgeGraphRefinementApplyTest {
 
     private static final class FakeGraphVersionRepository implements GraphVersionRepository {
         @Override
-        public GraphVersion findLatest(
+        public GraphVersion getByLatestSource(
                 GraphExtractionTaskType taskType,
                 String sourceContentType,
                 GraphExtractionSourceContentId sourceContentId) {
@@ -465,7 +465,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {
+        public void batchSaveOrUpdate(List<KnowledgeEntity> entities) {
             saved.clear();
             saved.addAll(entities);
         }
@@ -511,7 +511,7 @@ class KnowledgeGraphRefinementApplyTest {
         }
 
         @Override
-        public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {
+        public void batchSaveOrUpdate(List<KnowledgeRelation> relations) {
             saved.clear();
             saved.addAll(relations);
         }
