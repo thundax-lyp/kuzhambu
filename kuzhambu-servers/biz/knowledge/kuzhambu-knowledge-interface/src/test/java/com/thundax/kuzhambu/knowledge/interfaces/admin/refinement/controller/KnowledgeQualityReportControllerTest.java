@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -115,6 +117,24 @@ class KnowledgeQualityReportControllerTest {
         verify(service).latest(captor.capture());
         assertEquals(71L, captor.getValue().graphVersionId());
         assertEquals("KQR-71", response.getReport().getReportNo());
+    }
+
+    @Test
+    void latestShouldKeepEmptyReportDetailResponse() {
+        KnowledgeQualityReportApplicationService service = mock(KnowledgeQualityReportApplicationService.class);
+        KnowledgeQualityReportController controller = new KnowledgeQualityReportController(service);
+        QualityReportRequests.LatestRequest request = new QualityReportRequests.LatestRequest();
+        request.setGraphVersionId(71L);
+        when(service.latest(any()))
+                .thenReturn(new QualityReportDetailResult(null, List.of(), List.of(), List.of(), false, null, null));
+
+        var response = controller.latest(request);
+
+        ArgumentCaptor<LatestQualityReportQuery> captor = ArgumentCaptor.forClass(LatestQualityReportQuery.class);
+        verify(service).latest(captor.capture());
+        assertEquals(71L, captor.getValue().graphVersionId());
+        assertNull(response.getReport());
+        assertFalse(response.getStale());
     }
 
     @Test

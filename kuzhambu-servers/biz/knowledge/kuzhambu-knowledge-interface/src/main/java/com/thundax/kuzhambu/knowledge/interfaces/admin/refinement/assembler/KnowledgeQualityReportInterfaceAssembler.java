@@ -69,7 +69,7 @@ public final class KnowledgeQualityReportInterfaceAssembler {
     public static QualityReportResponses.DetailResponse toResponse(@NonNull QualityReportDetailResult result) {
         Objects.requireNonNull(result, "result must not be null");
         return QualityReportResponses.DetailResponse.builder()
-                .report(toResponse(result.getReport()))
+                .report(result.getReport() == null ? null : toResponse(result.getReport()))
                 .issues(mapIssues(result.getIssues()))
                 .sourceDetails(mapSourceDetails(result.getSourceDetails()))
                 .annotations(mapAnnotations(result.getAnnotations()))
