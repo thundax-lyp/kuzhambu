@@ -30,6 +30,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.CancelGraphExtra
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -485,8 +487,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<GraphExtractionTaskResult> page =
-                service.pageTasks("GRAPH", 1001L, "QUALITY_REPORT", null, null, null, new PageQuery(1, 10));
+        PageResult<GraphExtractionTaskResult> page = service.pageTasks(
+                new GraphExtractionTaskQuery("GRAPH", 1001L, "QUALITY_REPORT", null, null, null), new PageQuery(1, 10));
 
         assertEquals(1, page.getRecords().size());
         assertEquals("11", page.getRecords().get(0).getTaskId());
@@ -558,7 +560,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<GraphVersionResult> page = service.pageVersions("GRAPH", "APPLIED", "SANCAI_ENTRY", 1001L, null);
+        PageResult<GraphVersionResult> page =
+                service.pageVersions(new GraphVersionQuery("GRAPH", "APPLIED", "SANCAI_ENTRY", 1001L), null);
 
         assertEquals(1, page.getRecords().size());
         assertEquals(61L, page.getRecords().get(0).getVersionId());
@@ -593,7 +596,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        GraphVersionResult detail = service.getVersionDetail(71L);
+        GraphVersionResult detail = service.getVersionDetail(GraphVersionIdCodec.toDomain(71L));
 
         assertEquals(71L, detail.getVersionId());
         assertEquals("41", detail.getTaskId());
@@ -648,7 +651,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<GraphVersionResult> page = service.pageVersions("GRAPH", "APPLIED", "SANCAI_ENTRY", 1002L, null);
+        PageResult<GraphVersionResult> page =
+                service.pageVersions(new GraphVersionQuery("GRAPH", "APPLIED", "SANCAI_ENTRY", 1002L), null);
 
         GraphVersionResult result = page.getRecords().get(0);
         assertEquals(true, result.getRefinementApplied());

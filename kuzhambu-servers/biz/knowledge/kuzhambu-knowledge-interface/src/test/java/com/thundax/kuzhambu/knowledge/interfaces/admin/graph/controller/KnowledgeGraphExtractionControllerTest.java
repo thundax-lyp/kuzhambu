@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,6 +10,8 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.CancelGraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -19,6 +20,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageN
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import org.junit.jupiter.api.Test;
 
@@ -100,7 +102,7 @@ class KnowledgeGraphExtractionControllerTest {
         request.setTaskType("GRAPH");
         request.setBatchJobId(1001L);
         request.setTriggerSource("QUALITY_REPORT");
-        when(service.pageTasks(eq("GRAPH"), eq(1001L), eq("QUALITY_REPORT"), any(), any(), any(), any()))
+        when(service.pageTasks(any(GraphExtractionTaskQuery.class), any()))
                 .thenReturn(PageResult.of(
                         1,
                         10,
@@ -129,7 +131,12 @@ class KnowledgeGraphExtractionControllerTest {
 
         var response = controller.pageTasks(request);
 
-        verify(service).pageTasks(eq("GRAPH"), eq(1001L), eq("QUALITY_REPORT"), any(), any(), any(), any());
+        verify(service)
+                .pageTasks(
+                        argThat((GraphExtractionTaskQuery query) -> "GRAPH".equals(query.taskType())
+                                && Long.valueOf(1001L).equals(query.batchJobId())
+                                && "QUALITY_REPORT".equals(query.triggerSource())),
+                        any());
         assertEquals(1, response.getRecords().size());
         assertEquals(1001L, response.getRecords().get(0).getBatchJobId());
         assertEquals("QUALITY_REPORT", response.getRecords().get(0).getTriggerSource());
@@ -143,7 +150,7 @@ class KnowledgeGraphExtractionControllerTest {
         request.setPageNo(1);
         request.setPageSize(10);
         request.setTaskType("GRAPH");
-        when(service.pageVersions(any(), any(), any(), any(), any()))
+        when(service.pageVersions(any(GraphVersionQuery.class), any()))
                 .thenReturn(PageResult.of(
                         1,
                         10,
@@ -153,7 +160,7 @@ class KnowledgeGraphExtractionControllerTest {
 
         var response = controller.pageVersions(request);
 
-        verify(service).pageVersions(any(), any(), any(), any(), any());
+        verify(service).pageVersions(any(GraphVersionQuery.class), any());
         assertEquals(1, response.getRecords().size());
         assertEquals(71L, response.getRecords().get(0).getVersionId());
         assertEquals("31", response.getRecords().get(0).getTaskId());
@@ -165,12 +172,12 @@ class KnowledgeGraphExtractionControllerTest {
         KnowledgeGraphExtractionController controller = new KnowledgeGraphExtractionController(service);
         GraphExtractionRequests.VersionIdRequest request = new GraphExtractionRequests.VersionIdRequest();
         request.setVersionId(71L);
-        when(service.getVersionDetail(71L))
+        when(service.getVersionDetail(GraphVersionIdCodec.toDomain(71L)))
                 .thenReturn(new GraphVersionResult(71L, "31", 901L, "GRAPH", "SANCAI_ENTRY", 1001L, 2, "APPLIED", 1L));
 
         var response = controller.getVersionDetail(request);
 
-        verify(service).getVersionDetail(71L);
+        verify(service).getVersionDetail(GraphVersionIdCodec.toDomain(71L));
         assertEquals(71L, response.getVersionId());
         assertEquals("GRAPH", response.getTaskType());
     }

@@ -6,6 +6,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphE
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -14,7 +16,9 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageN
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
 import java.util.Objects;
@@ -125,6 +129,33 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
     }
 
     @NonNull
+    public static GraphExtractionTaskQuery toTaskPageQuery(@NonNull GraphExtractionRequests.PageTaskRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new GraphExtractionTaskQuery(
+                request.getTaskType(),
+                request.getBatchJobId(),
+                request.getTriggerSource(),
+                request.getStatus(),
+                request.getSourceContentType(),
+                request.getSourceContentId());
+    }
+
+    @NonNull
+    public static GraphVersionQuery toVersionPageQuery(@NonNull GraphExtractionRequests.VersionPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new GraphVersionQuery(
+                request.getTaskType(),
+                request.getStatus(),
+                request.getSourceContentType(),
+                request.getSourceContentId());
+    }
+
+    @NonNull
+    public static GraphVersionId toVersionId(@NonNull GraphExtractionRequests.VersionIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return GraphVersionIdCodec.toDomain(request.getVersionId());
+    }
+
     public static CancelGraphExtractionBatchCommand toCancelBatchCommand(
             @NonNull GraphExtractionRequests.BatchCancelRequest request) {
         Objects.requireNonNull(request, "request must not be null");

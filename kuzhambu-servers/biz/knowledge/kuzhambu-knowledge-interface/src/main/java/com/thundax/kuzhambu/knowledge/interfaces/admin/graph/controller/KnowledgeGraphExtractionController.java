@@ -80,12 +80,7 @@ public class KnowledgeGraphExtractionController {
             @Valid @RequestBody GraphExtractionRequests.PageTaskRequest request) {
         return PageResponseHelper.fromPageResult(
                 extractionService.pageTasks(
-                        request == null ? null : request.getTaskType(),
-                        request == null ? null : request.getBatchJobId(),
-                        request == null ? null : request.getTriggerSource(),
-                        request == null ? null : request.getStatus(),
-                        request == null ? null : request.getSourceContentType(),
-                        request == null ? null : request.getSourceContentId(),
+                        KnowledgeGraphExtractionInterfaceAssembler.toTaskPageQuery(request),
                         PageInterfaceAssembler.toPageQuery(request)),
                 KnowledgeGraphExtractionInterfaceAssembler::toResponse);
     }
@@ -173,10 +168,7 @@ public class KnowledgeGraphExtractionController {
             @Valid @RequestBody GraphExtractionRequests.VersionPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 extractionService.pageVersions(
-                        request == null ? null : request.getTaskType(),
-                        request == null ? null : request.getStatus(),
-                        request == null ? null : request.getSourceContentType(),
-                        request == null ? null : request.getSourceContentId(),
+                        KnowledgeGraphExtractionInterfaceAssembler.toVersionPageQuery(request),
                         PageInterfaceAssembler.toPageQuery(request)),
                 KnowledgeGraphExtractionInterfaceAssembler::toResponse);
     }
@@ -195,7 +187,7 @@ public class KnowledgeGraphExtractionController {
     public GraphExtractionResponses.VersionResponse getVersionDetail(
             @Valid @RequestBody GraphExtractionRequests.VersionIdRequest request) {
         return KnowledgeGraphExtractionInterfaceAssembler.toResponse(
-                extractionService.getVersionDetail(request == null ? null : request.getVersionId()));
+                extractionService.getVersionDetail(KnowledgeGraphExtractionInterfaceAssembler.toVersionId(request)));
     }
 
     @Operation(summary = "分页查询正式实体", description = "knowledge:graph:view")

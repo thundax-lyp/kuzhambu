@@ -8,6 +8,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphE
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -16,6 +18,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageN
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
 
 public interface KnowledgeGraphExtractionApplicationService {
 
@@ -27,23 +30,15 @@ public interface KnowledgeGraphExtractionApplicationService {
 
     GraphExtractionTaskResult regenerateTask(RegenerateGraphExtractionCommand command);
 
-    PageResult<GraphExtractionTaskResult> pageTasks(
-            String taskType,
-            Long batchJobId,
-            String triggerSource,
-            String status,
-            String sourceContentType,
-            Long sourceContentId,
-            PageQuery pageQuery);
+    PageResult<GraphExtractionTaskResult> pageTasks(GraphExtractionTaskQuery query, PageQuery pageQuery);
 
     GraphExtractionTaskResult getTaskDetail(GraphExtractionTaskId taskId);
 
     GraphExtractionBatchCancelResult cancelBatch(CancelGraphExtractionBatchCommand command);
 
-    PageResult<GraphVersionResult> pageVersions(
-            String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery);
+    PageResult<GraphVersionResult> pageVersions(GraphVersionQuery query, PageQuery pageQuery);
 
-    GraphVersionResult getVersionDetail(Long versionId);
+    GraphVersionResult getVersionDetail(GraphVersionId versionId);
 
     PageResult<KnowledgeEntityResult> pageEntities(
             Long versionId, String keyword, String entityType, String confirmationStatus, PageQuery pageQuery);

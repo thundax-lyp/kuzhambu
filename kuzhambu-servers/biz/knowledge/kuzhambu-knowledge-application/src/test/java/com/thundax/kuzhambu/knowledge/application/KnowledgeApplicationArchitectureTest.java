@@ -92,18 +92,10 @@ class KnowledgeApplicationArchitectureTest extends AbstractArchitectureTest {
                         + "KnowledgeGraphExtractionApplicationService.getRelationDetail(java.lang.Long)"),
                 rawParameters(
                         "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                                + "KnowledgeGraphExtractionApplicationService.pageTasks(java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, com.thundax.kuzhambu.common.core.page.PageQuery)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
                                 + "KnowledgeGraphExtractionApplicationService.pageLineageRelations(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),
                 rawParameters(
                         "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
                                 + "KnowledgeGraphExtractionApplicationService.pageLineageNodes(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                                + "KnowledgeGraphExtractionApplicationService.pageVersions(java.lang.String, java.lang.String, java.lang.String, java.lang.Long, com.thundax.kuzhambu.common.core.page.PageQuery)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                        + "KnowledgeGraphExtractionApplicationService.getVersionDetail(java.lang.Long)"),
                 rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.taxonomy.service."
                         + "KnowledgeTaxonomyReadApplicationService.getTagHint(java.lang.String)"),
                 rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.taxonomy.service."

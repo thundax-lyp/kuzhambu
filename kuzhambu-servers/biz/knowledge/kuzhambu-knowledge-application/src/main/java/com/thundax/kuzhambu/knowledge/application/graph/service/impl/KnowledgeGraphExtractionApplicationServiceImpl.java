@@ -26,6 +26,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtr
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.configure.KnowledgeGraphExtractionExecutorConfiguration;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -59,6 +61,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionTa
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
@@ -256,23 +259,16 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public PageResult<GraphExtractionTaskResult> pageTasks(
-            String taskType,
-            Long batchJobId,
-            String triggerSource,
-            String status,
-            String sourceContentType,
-            Long sourceContentId,
-            PageQuery pageQuery) {
+    public PageResult<GraphExtractionTaskResult> pageTasks(GraphExtractionTaskQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<GraphExtractionTask> taskPage = repository.page(
-                taskType,
-                GraphExtractionBatchJobIdCodec.toDomain(batchJobId),
-                triggerSource,
-                status,
-                sourceContentType,
-                GraphExtractionSourceContentIdCodec.toDomain(sourceContentId),
+                query == null ? null : query.taskType(),
+                GraphExtractionBatchJobIdCodec.toDomain(query == null ? null : query.batchJobId()),
+                query == null ? null : query.triggerSource(),
+                query == null ? null : query.status(),
+                query == null ? null : query.sourceContentType(),
+                GraphExtractionSourceContentIdCodec.toDomain(query == null ? null : query.sourceContentId()),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<GraphExtractionTaskResult> records =
@@ -383,15 +379,14 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public PageResult<GraphVersionResult> pageVersions(
-            String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery) {
+    public PageResult<GraphVersionResult> pageVersions(GraphVersionQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<GraphVersion> versionPage = graphVersionRepository.page(
-                GraphExtractionTaskType.from(taskType),
-                GraphVersionStatus.from(status),
-                sourceContentType,
-                GraphExtractionSourceContentIdCodec.toDomain(sourceContentId),
+                GraphExtractionTaskType.from(query == null ? null : query.taskType()),
+                GraphVersionStatus.from(query == null ? null : query.status()),
+                query == null ? null : query.sourceContentType(),
+                GraphExtractionSourceContentIdCodec.toDomain(query == null ? null : query.sourceContentId()),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -404,8 +399,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public GraphVersionResult getVersionDetail(Long versionId) {
-        GraphVersion version = graphVersionRepository.getByVersionId(GraphVersionIdCodec.toDomain(versionId));
+    public GraphVersionResult getVersionDetail(GraphVersionId versionId) {
+        GraphVersion version = graphVersionRepository.getByVersionId(versionId);
         if (version == null) {
             throw new BizException("Graph version not found: " + versionId);
         }

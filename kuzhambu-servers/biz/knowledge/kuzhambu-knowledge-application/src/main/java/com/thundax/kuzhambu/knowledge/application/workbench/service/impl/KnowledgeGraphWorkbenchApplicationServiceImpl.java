@@ -18,6 +18,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.ApplyGraphExtrac
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
@@ -413,12 +415,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
         int pageNo = 1;
         while (tasks.size() < contentIds.size()) {
             PageResult<GraphExtractionTaskResult> page = graphExtractionApplicationService.pageTasks(
-                    TASK_TYPE_GRAPH,
-                    null,
-                    null,
-                    null,
-                    sourceContentType,
-                    null,
+                    new GraphExtractionTaskQuery(TASK_TYPE_GRAPH, null, null, null, sourceContentType, null),
                     new PageQuery(pageNo, SNAPSHOT_PAGE_SIZE));
             List<GraphExtractionTaskResult> records = page == null ? List.of() : page.getRecords();
             if (records == null || records.isEmpty()) {
@@ -446,7 +443,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
         int pageNo = 1;
         while (versions.size() < contentIds.size()) {
             PageResult<GraphVersionResult> page = graphExtractionApplicationService.pageVersions(
-                    TASK_TYPE_GRAPH, null, sourceContentType, null, new PageQuery(pageNo, SNAPSHOT_PAGE_SIZE));
+                    new GraphVersionQuery(TASK_TYPE_GRAPH, null, sourceContentType, null),
+                    new PageQuery(pageNo, SNAPSHOT_PAGE_SIZE));
             List<GraphVersionResult> records = page == null ? List.of() : page.getRecords();
             if (records == null || records.isEmpty()) {
                 break;
@@ -470,7 +468,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
             return null;
         }
         PageResult<GraphExtractionTaskResult> page = graphExtractionApplicationService.pageTasks(
-                normalize(taskType), null, null, null, sourceContentType, sourceContentId, new PageQuery(1, 1));
+                new GraphExtractionTaskQuery(normalize(taskType), null, null, null, sourceContentType, sourceContentId),
+                new PageQuery(1, 1));
         return page.getRecords().isEmpty() ? null : page.getRecords().get(0);
     }
 
@@ -479,7 +478,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
             return null;
         }
         PageResult<GraphVersionResult> page = graphExtractionApplicationService.pageVersions(
-                normalize(taskType), null, sourceContentType, sourceContentId, new PageQuery(1, 1));
+                new GraphVersionQuery(normalize(taskType), null, sourceContentType, sourceContentId),
+                new PageQuery(1, 1));
         return page.getRecords().isEmpty() ? null : page.getRecords().get(0);
     }
 

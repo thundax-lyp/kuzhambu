@@ -30,6 +30,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.ApplyGraphExtrac
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
@@ -67,9 +69,16 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
         assertEquals("三才稿件二", sancaiNodes.get(1).getTitle());
         verify(fixtures.graphExtractionApplicationService, times(1))
                 .pageTasks(
-                        eq("GRAPH"), eq(null), eq(null), eq(null), eq("SANCAI_ENTRY"), eq(null), any(PageQuery.class));
+                        argThat((GraphExtractionTaskQuery query) -> "GRAPH".equals(query.taskType())
+                                && "SANCAI_ENTRY".equals(query.sourceContentType())
+                                && query.sourceContentId() == null),
+                        any(PageQuery.class));
         verify(fixtures.graphExtractionApplicationService, times(1))
-                .pageVersions(eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(null), any(PageQuery.class));
+                .pageVersions(
+                        argThat((GraphVersionQuery query) -> "GRAPH".equals(query.taskType())
+                                && "SANCAI_ENTRY".equals(query.sourceContentType())
+                                && query.sourceContentId() == null),
+                        any(PageQuery.class));
     }
 
     @Test
@@ -194,7 +203,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
     void getLatestCandidateShouldDefaultToGraphTaskType() {
         Fixtures fixtures = new Fixtures();
         when(fixtures.graphExtractionApplicationService.pageTasks(
-                        eq("GRAPH"), eq(null), eq(null), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                        any(GraphExtractionTaskQuery.class), any(PageQuery.class)))
                 .thenReturn(PageResult.of(1, 1, 1, java.util.List.of(taskResult("9001", "GRAPH", "SUCCEEDED"))));
         when(fixtures.aiFacade.getCandidate(any(GetAiCandidateFacadeRequest.class)))
                 .thenReturn(AiCandidateFacadeDto.builder()
@@ -219,11 +228,11 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
                         .content(Fixtures.content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"))
                         .build());
         when(fixtures.graphExtractionApplicationService.pageTasks(
-                        eq("GRAPH"), eq(null), eq(null), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                        any(GraphExtractionTaskQuery.class), any(PageQuery.class)))
                 .thenReturn(PageResult.of(
                         1, 1, 1, java.util.List.of(taskResult("9002", "GRAPH", "REQUESTED", 1_720_000_000_000L))));
         when(fixtures.graphExtractionApplicationService.pageVersions(
-                        eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                        any(GraphVersionQuery.class), any(PageQuery.class)))
                 .thenReturn(PageResult.of(
                         1,
                         1,
@@ -254,11 +263,11 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
                         .content(Fixtures.content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"))
                         .build());
         when(fixtures.graphExtractionApplicationService.pageTasks(
-                        eq("GRAPH"), eq(null), eq(null), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                        any(GraphExtractionTaskQuery.class), any(PageQuery.class)))
                 .thenReturn(PageResult.of(
                         1, 1, 1, java.util.List.of(taskResult("9002", "GRAPH", "REQUESTED", 1_710_000_000_000L))));
         when(fixtures.graphExtractionApplicationService.pageVersions(
-                        eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                        any(GraphVersionQuery.class), any(PageQuery.class)))
                 .thenReturn(PageResult.of(
                         1,
                         1,
@@ -289,11 +298,11 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
                         .content(Fixtures.content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"))
                         .build());
         when(fixtures.graphExtractionApplicationService.pageTasks(
-                        eq("GRAPH"), eq(null), eq(null), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                        any(GraphExtractionTaskQuery.class), any(PageQuery.class)))
                 .thenReturn(PageResult.of(
                         1, 1, 1, java.util.List.of(taskResult("9001", "GRAPH", "SUCCEEDED", 1_710_000_000_000L))));
         when(fixtures.graphExtractionApplicationService.pageVersions(
-                        eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                        any(GraphVersionQuery.class), any(PageQuery.class)))
                 .thenReturn(PageResult.of(
                         1,
                         1,
@@ -325,7 +334,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
                         any(ApplyGraphExtractionTaskCandidateCommand.class)))
                 .thenReturn(taskResult("9001", "GRAPH", "APPLIED"));
         when(fixtures.graphExtractionApplicationService.pageVersions(
-                        eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                        any(GraphVersionQuery.class), any(PageQuery.class)))
                 .thenReturn(PageResult.of(
                         1,
                         1,
@@ -449,9 +458,9 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
                     .thenReturn(ClassicsPublicContentsFacadeResponse.builder()
                             .contents(java.util.List.of(content("SANCAI_ENTRY", "11", "sancai", "三才分类", "三才卷目")))
                             .build());
-            when(graphExtractionApplicationService.pageTasks(any(), any(), any(), any(), any(), any(), any()))
+            when(graphExtractionApplicationService.pageTasks(any(GraphExtractionTaskQuery.class), any(PageQuery.class)))
                     .thenReturn(PageResult.of(1, 1, 0, java.util.List.of()));
-            when(graphExtractionApplicationService.pageVersions(any(), any(), any(), any(), any()))
+            when(graphExtractionApplicationService.pageVersions(any(GraphVersionQuery.class), any(PageQuery.class)))
                     .thenReturn(PageResult.of(1, 1, 0, java.util.List.of()));
         }
 
