@@ -490,18 +490,12 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
     }
 
     private PrincipalIdentityQuery identityQuery(PrincipalKey principalKey, PrincipalIdentityType identityType) {
-        PrincipalIdentityQuery query = new PrincipalIdentityQuery();
-        query.setPrincipalKey(principalKey);
-        query.setIdentityType(identityType);
-        return query;
+        return new PrincipalIdentityQuery(null, identityType, null, principalKey, null);
     }
 
     private PrincipalCredentialQuery credentialQuery(
             PrincipalIdentityId identityId, PrincipalCredentialType credentialType) {
-        PrincipalCredentialQuery query = new PrincipalCredentialQuery();
-        query.setIdentityId(identityId);
-        query.setCredentialType(credentialType);
-        return query;
+        return new PrincipalCredentialQuery(null, identityId, credentialType, null, null);
     }
 
     private User toUser(ChangeCurrentUserInfoCommand command) {

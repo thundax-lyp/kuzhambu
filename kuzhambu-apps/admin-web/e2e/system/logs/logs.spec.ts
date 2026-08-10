@@ -113,7 +113,7 @@ const mockAuditLogApis = async (page: Page) => {
     let pageRequest: Record<string, unknown> | undefined;
     let detailRequest: { id?: string } | undefined;
 
-    await page.route("**/kuzhambu-admin-api/api/audit/log/options", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/audit/log/options/list", async (route) => {
         optionsRequested += 1;
         await fulfillSuccess(route, {
             actions: [{ label: "新增", value: "CREATE" }],
@@ -156,7 +156,7 @@ const mockAuditLogApis = async (page: Page) => {
         });
     });
 
-    await page.route("**/kuzhambu-admin-api/api/audit/log/detail", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/audit/log/detail/get", async (route) => {
         const requestBody = route.request().postDataJSON();
         detailRequest = requestBody;
         await fulfillSuccess(route, {
@@ -265,7 +265,7 @@ test.describe("system and audit logs", () => {
         let auditPageRequestCount = 0;
         let detailRequestCount = 0;
         await mockShellApis(page, SYSTEM_LOG_VIEWER_PERMISSIONS);
-        await page.route("**/kuzhambu-admin-api/api/audit/log/options", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/audit/log/options/list", async (route) => {
             optionsRequestCount += 1;
             await route.fulfill({ status: 403, body: "forbidden" });
         });
@@ -273,7 +273,7 @@ test.describe("system and audit logs", () => {
             auditPageRequestCount += 1;
             await route.fulfill({ status: 403, body: "forbidden" });
         });
-        await page.route("**/kuzhambu-admin-api/api/audit/log/detail", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/audit/log/detail/get", async (route) => {
             detailRequestCount += 1;
             await route.fulfill({ status: 403, body: "forbidden" });
         });

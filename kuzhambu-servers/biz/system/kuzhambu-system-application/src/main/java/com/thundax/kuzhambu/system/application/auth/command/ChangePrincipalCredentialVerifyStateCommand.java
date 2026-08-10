@@ -3,19 +3,10 @@ package com.thundax.kuzhambu.system.application.auth.command;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalCredentialId;
 import java.time.Instant;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class ChangePrincipalCredentialVerifyStateCommand {
-    private PrincipalCredentialId id;
-    private PrincipalCredentialStatus status;
-    private int failedCount;
-    private Instant lockedUntil;
-    private Instant lastVerifiedAt;
-}
+public record ChangePrincipalCredentialVerifyStateCommand(
+        PrincipalCredentialId id,
+        PrincipalCredentialStatus status,
+        int failedCount,
+        Instant lockedUntil,
+        Instant lastVerifiedAt) {}

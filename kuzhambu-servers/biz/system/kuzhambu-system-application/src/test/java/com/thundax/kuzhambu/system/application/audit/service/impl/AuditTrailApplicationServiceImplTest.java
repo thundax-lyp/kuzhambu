@@ -38,10 +38,20 @@ class AuditTrailApplicationServiceImplTest {
         when(auditLogRepository.insert(any(AuditLog.class))).thenReturn(AuditLogIdCodec.toDomain(200L));
         when(auditMetaRepository.updateIfVersion(any(AuditMeta.class), eq(7L))).thenReturn(0);
 
-        CreateAuditLogCommand command = new CreateAuditLogCommand();
-        command.setObjectRef(AuditObjectRef.of("USER", "1"));
-        command.setAction(AuditAction.UPDATE);
-        command.setRecordWhenUnchanged(true);
+        CreateAuditLogCommand command = new CreateAuditLogCommand(
+                AuditObjectRef.of("USER", "1"),
+                AuditAction.UPDATE,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                true);
 
         assertThrows(BizException.class, () -> service.record(command));
         verify(auditMetaRepository).updateIfVersion(any(AuditMeta.class), eq(7L));

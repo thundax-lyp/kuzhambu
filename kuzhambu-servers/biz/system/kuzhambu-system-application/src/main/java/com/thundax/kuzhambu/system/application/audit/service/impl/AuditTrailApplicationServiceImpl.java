@@ -43,20 +43,20 @@ public class AuditTrailApplicationServiceImpl implements AuditTrailApplicationSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AuditLogId record(CreateAuditLogCommand command) {
-        AuditObjectRef objectRef = command == null ? null : command.getObjectRef();
+        AuditObjectRef objectRef = command == null ? null : command.objectRef();
         if (objectRef == null || !objectRef.isValid()) {
             return null;
         }
-        if (StringUtils.isNotBlank(command.getIdempotencyKey())) {
-            AuditLog existed = auditLogRepository.getByIdempotencyKey(command.getIdempotencyKey());
+        if (StringUtils.isNotBlank(command.idempotencyKey())) {
+            AuditLog existed = auditLogRepository.getByIdempotencyKey(command.idempotencyKey());
             if (existed != null) {
                 return existed.getId();
             }
         }
 
         List<AuditChangedField> changedFields =
-                AuditExpressionEvaluator.diff(command.getBeforeSnapshot(), command.getAfterSnapshot());
-        if (!command.isRecordWhenUnchanged() && changedFields.isEmpty()) {
+                AuditExpressionEvaluator.diff(command.beforeSnapshot(), command.afterSnapshot());
+        if (!command.recordWhenUnchanged() && changedFields.isEmpty()) {
             return null;
         }
 
@@ -64,27 +64,27 @@ public class AuditTrailApplicationServiceImpl implements AuditTrailApplicationSe
         long previousVersion = meta == null || meta.getVersion() == null ? 0L : meta.getVersion();
         Instant occurredAt = Instant.now();
         String idempotencyKey = StringUtils.defaultIfBlank(
-                command.getIdempotencyKey(),
-                objectRef.getObjectType() + ":" + objectRef.getObjectId() + ":" + command.getAction() + ":"
+                command.idempotencyKey(),
+                objectRef.getObjectType() + ":" + objectRef.getObjectId() + ":" + command.action() + ":"
                         + occurredAt.toEpochMilli());
-        AuditOperatorRef operatorRef = operatorRef(command.getOperatorRef());
+        AuditOperatorRef operatorRef = operatorRef(command.operatorRef());
 
         AuditLog log = new AuditLog();
         log.setMetaId(meta == null ? null : meta.getId());
         log.setObjectRef(objectRef);
         log.setPreviousVersion(previousVersion);
         log.setVersion(previousVersion + 1);
-        log.setAction(command.getAction() == null ? AuditAction.UPDATE : command.getAction());
+        log.setAction(command.action() == null ? AuditAction.UPDATE : command.action());
         log.setIdempotencyKey(idempotencyKey);
         log.setOperatorRef(operatorRef);
-        log.setOperatorName(command.getOperatorName());
-        log.setSource(StringUtils.defaultIfBlank(command.getSource(), "SERVICE"));
-        log.setRequestId(command.getRequestId());
-        log.setTraceId(command.getTraceId());
-        log.setRemoteAddr(command.getRemoteAddr());
-        log.setSummary(command.getSummary());
-        log.setBeforeSnapshot(command.getBeforeSnapshot());
-        log.setAfterSnapshot(command.getAfterSnapshot());
+        log.setOperatorName(command.operatorName());
+        log.setSource(StringUtils.defaultIfBlank(command.source(), "SERVICE"));
+        log.setRequestId(command.requestId());
+        log.setTraceId(command.traceId());
+        log.setRemoteAddr(command.remoteAddr());
+        log.setSummary(command.summary());
+        log.setBeforeSnapshot(command.beforeSnapshot());
+        log.setAfterSnapshot(command.afterSnapshot());
         log.setChangedFields(changedFields);
         log.setOccurredAt(occurredAt);
 
@@ -120,7 +120,7 @@ public class AuditTrailApplicationServiceImpl implements AuditTrailApplicationSe
 
     @Override
     public AuditLog getLog(GetAuditLogQuery query) {
-        AuditLogId id = query == null ? null : query.getId();
+        AuditLogId id = query == null ? null : query.id();
         if (id == null) {
             return null;
         }
@@ -132,34 +132,34 @@ public class AuditTrailApplicationServiceImpl implements AuditTrailApplicationSe
         if (query == null) {
             return null;
         }
-        return auditMetaRepository.getByObjectRef(query.getObjectRef());
+        return auditMetaRepository.getByObjectRef(query.objectRef());
     }
 
     @Override
     public List<AuditLog> list(AuditMetaQuery query) {
-        return auditLogRepository.listByObject(query == null ? null : query.getObjectRef());
+        return auditLogRepository.listByObject(query == null ? null : query.objectRef());
     }
 
     @Override
     public PageResult<AuditLog> page(AuditLogQuery query, PageQuery pageQuery) {
         return auditLogRepository.page(
                 objectRef(query),
-                query == null ? null : query.getAction(),
+                query == null ? null : query.action(),
                 operatorRef(query),
-                query == null ? null : query.getSource(),
-                query == null ? null : query.getRequestId(),
-                query == null ? null : query.getBeginDate(),
-                query == null ? null : query.getEndDate(),
+                query == null ? null : query.source(),
+                query == null ? null : query.requestId(),
+                query == null ? null : query.beginDate(),
+                query == null ? null : query.endDate(),
                 pageQuery.getPageNo(),
                 pageQuery.getPageSize());
     }
 
     private AuditObjectRef objectRef(AuditLogQuery query) {
-        return query == null ? null : query.getObjectRef();
+        return query == null ? null : query.objectRef();
     }
 
     private AuditOperatorRef operatorRef(AuditLogQuery query) {
-        return query == null ? null : query.getOperatorRef();
+        return query == null ? null : query.operatorRef();
     }
 
     private AuditOperatorRef operatorRef(AuditOperatorRef operatorRef) {

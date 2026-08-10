@@ -87,11 +87,11 @@ describe("audit log service request contracts", () => {
         expectLastCall("/audit/log/page", pageRequest);
 
         await auditLogService.getAuditLogDetail("audit-1");
-        expectLastCall("/audit/log/detail", {
+        expectLastCall("/audit/log/detail/get", {
             id: "audit-1"
         });
 
         await auditLogService.getAuditOptions();
-        expectLastCall("/audit/log/options", {});
+        expectLastCall("/audit/log/options/list", {});
     });
 });

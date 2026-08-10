@@ -47,17 +47,16 @@ public class PrincipalAuthenticationApplicationServiceImpl implements PrincipalA
 
     @Override
     public PrincipalIdentity authenticatePassword(AuthenticatePasswordCommand command) {
-        PrincipalIdentity identity = authenticateIdentity(
-                new AuthenticateIdentityCommand(command.getIdentityType(), command.getIdentityValue()));
+        PrincipalIdentity identity =
+                authenticateIdentity(new AuthenticateIdentityCommand(command.identityType(), command.identityValue()));
         PrincipalCredential credential =
-                principalCredentialService.get(credentialQuery(identity.getId(), command.getCredentialType()));
+                principalCredentialService.get(credentialQuery(identity.getId(), command.credentialType()));
         if (credential == null) {
             throw new InvalidPasswordException();
         }
-        PrincipalPasswordPolicyDTO passwordPolicy = command.getPasswordPolicy() == null
-                ? PrincipalPasswordPolicyDTO.disabled()
-                : command.getPasswordPolicy();
-        validateCredential(credential, command.getPlainPassword(), passwordPolicy);
+        PrincipalPasswordPolicyDTO passwordPolicy =
+                command.passwordPolicy() == null ? PrincipalPasswordPolicyDTO.disabled() : command.passwordPolicy();
+        validateCredential(credential, command.plainPassword(), passwordPolicy);
         return identity;
     }
 
@@ -104,18 +103,12 @@ public class PrincipalAuthenticationApplicationServiceImpl implements PrincipalA
     }
 
     private PrincipalIdentityQuery identityQuery(AuthenticateIdentityCommand command) {
-        PrincipalIdentityQuery query = new PrincipalIdentityQuery();
-        query.setIdentityType(command.getIdentityType());
-        query.setIdentityValue(command.getIdentityValue());
-        return query;
+        return new PrincipalIdentityQuery(null, command.identityType(), command.identityValue(), null, null);
     }
 
     private PrincipalCredentialQuery credentialQuery(
             PrincipalIdentityId identityId, PrincipalCredentialType credentialType) {
-        PrincipalCredentialQuery query = new PrincipalCredentialQuery();
-        query.setIdentityId(identityId);
-        query.setCredentialType(credentialType);
-        return query;
+        return new PrincipalCredentialQuery(null, identityId, credentialType, null, null);
     }
 
     private ChangePrincipalCredentialVerifyStateCommand verifyStateCommand(PrincipalCredential credential) {

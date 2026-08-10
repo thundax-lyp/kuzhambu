@@ -32,8 +32,8 @@ class SystemLogContractTest {
     void logRoutesShouldKeepAdminApiPaths() throws Exception {
         assertRequestMapping(AuditController.class, "/api/audit/log");
         assertPostMapping(AuditController.class, "page", "page", AuditLogPageRequest.class);
-        assertPostMapping(AuditController.class, "detail", "detail", AuditLogDetailRequest.class);
-        assertPostMapping(AuditController.class, "options", "options");
+        assertPostMapping(AuditController.class, "getDetail", "detail/get", AuditLogDetailRequest.class);
+        assertPostMapping(AuditController.class, "listOptions", "options/list");
 
         assertRequestMapping(LogController.class, "/api/sys/log");
         assertPostMapping(LogController.class, "page", "page", LogPageRequest.class);

@@ -15,66 +15,6 @@ final class SystemApplicationCommandQueryRecordAllowances {
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.audit.query.AuditLogQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.audit.query.AuditMetaQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.audit.query.GetAuditLogQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.AuthenticateIdentityCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.AuthenticatePasswordCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialStatusCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalCredentialVerifyStateCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalIdentityCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.ChangePrincipalIdentityStatusCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.CreateAdminAccessTokenCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.CreatePermissionsCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.CreatePreAuthSessionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalCredentialCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalIdentityCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.DeleteAdminAccessTokenCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.InvalidateAdminSessionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.PrincipalIdentityCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalCredentialFailureCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.RecordPrincipalLoginFailureCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.RefreshAdminAccessTokenCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.RefreshPreAuthSessionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.ReleasePreAuthSessionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.command.UpsertPreAuthSessionValueCommand"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.AdminAccessTokenQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.PermissionQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueValidateQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand"),

@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.system.interfaces.admin.audit.controller;
 
 import com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssemblerRegistry;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.page.PageRules;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
@@ -12,6 +13,8 @@ import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.system.application.audit.service.AuditTrailApplicationService;
+import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
+import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.assembler.AuditInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogDetailRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogPageRequest;
@@ -59,10 +62,12 @@ public class AuditController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    @PostMapping(value = "meta")
-    public AuditMetaResponse meta(@Valid @RequestBody AuditMetaRequest request) {
-        return AuditInterfaceAssembler.toMetaResponse(
-                auditService.getMeta(AuditInterfaceAssembler.toMetaQuery(request)));
+    @PostMapping(value = "meta/get")
+    public AuditMetaResponse getMeta(@Valid @RequestBody AuditMetaRequest request) {
+        AuditMeta meta = auditService.getMeta(AuditInterfaceAssembler.toMetaQuery(request));
+        return meta == null
+                ? AuditInterfaceAssembler.emptyMetaResponse()
+                : AuditInterfaceAssembler.toMetaResponse(meta);
     }
 
     @Operation(summary = "获取对象审计历史", description = "audit:view")
@@ -75,8 +80,8 @@ public class AuditController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    @PostMapping(value = "history")
-    public PageResponse<AuditLogResponse> history(@Valid @RequestBody AuditObjectPageRequest request) {
+    @PostMapping(value = "history/list")
+    public PageResponse<AuditLogResponse> listHistory(@Valid @RequestBody AuditObjectPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 auditService.page(
                         AuditInterfaceAssembler.toLogQuery(request), PageInterfaceAssembler.toPageQuery(request)),
@@ -93,10 +98,12 @@ public class AuditController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    @PostMapping(value = "detail")
-    public AuditLogDetailResponse detail(@Valid @RequestBody AuditLogDetailRequest request) {
-        return AuditInterfaceAssembler.toLogDetailResponse(
-                auditService.getLog(AuditInterfaceAssembler.toGetLogQuery(request)), auditSnapshotAssemblerRegistry);
+    @PostMapping(value = "detail/get")
+    public AuditLogDetailResponse getDetail(@Valid @RequestBody AuditLogDetailRequest request) {
+        AuditLog log = auditService.getLog(AuditInterfaceAssembler.toGetLogQuery(request));
+        return log == null
+                ? AuditInterfaceAssembler.emptyLogDetailResponse()
+                : AuditInterfaceAssembler.toLogDetailResponse(log, auditSnapshotAssemblerRegistry);
     }
 
     @Operation(summary = "获取对象审计概览", description = "audit:view")
@@ -109,14 +116,15 @@ public class AuditController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    @PostMapping(value = "object/overview")
-    public AuditObjectOverviewResponse objectOverview(@Valid @RequestBody AuditMetaRequest request) {
-        return AuditInterfaceAssembler.toOverviewResponse(
-                auditService.getMeta(AuditInterfaceAssembler.toMetaQuery(request)),
-                auditService.page(
-                        AuditInterfaceAssembler.toObjectLogQuery(request),
-                        new PageQuery(PageRules.firstPageIndex(), 5)),
-                auditSnapshotAssemblerRegistry);
+    @PostMapping(value = "object/get")
+    public AuditObjectOverviewResponse getObjectOverview(@Valid @RequestBody AuditMetaRequest request) {
+        AuditMeta meta = auditService.getMeta(AuditInterfaceAssembler.toMetaQuery(request));
+        PageResult<AuditLog> latestLogs = auditService.page(
+                AuditInterfaceAssembler.toObjectLogQuery(request), new PageQuery(PageRules.firstPageIndex(), 5));
+        if (meta == null) {
+            return AuditInterfaceAssembler.emptyOverviewResponse(latestLogs);
+        }
+        return AuditInterfaceAssembler.toOverviewResponse(meta, latestLogs, auditSnapshotAssemblerRegistry);
     }
 
     @Operation(summary = "获取对象审计分页", description = "audit:view")
@@ -130,7 +138,7 @@ public class AuditController {
                 dataTypeClass = String.class),
     })
     @PostMapping(value = "object/page")
-    public PageResponse<AuditLogResponse> objectPage(@Valid @RequestBody AuditObjectPageRequest request) {
+    public PageResponse<AuditLogResponse> pageObject(@Valid @RequestBody AuditObjectPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 auditService.page(
                         AuditInterfaceAssembler.toLogQuery(request), PageInterfaceAssembler.toPageQuery(request)),
@@ -165,8 +173,8 @@ public class AuditController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    @PostMapping(value = "options")
-    public AuditOptionsResponse options() {
+    @PostMapping(value = "options/list")
+    public AuditOptionsResponse listOptions() {
         return AuditInterfaceAssembler.toOptionsResponse(auditSnapshotAssemblerRegistry);
     }
 
@@ -180,8 +188,8 @@ public class AuditController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    @PostMapping(value = "fields")
-    public List<AuditObjectFieldResponse> fields(@Valid @RequestBody AuditObjectFieldRequest request) {
+    @PostMapping(value = "fields/list")
+    public List<AuditObjectFieldResponse> listFields(@Valid @RequestBody AuditObjectFieldRequest request) {
         return AuditInterfaceAssembler.toFieldResponses(auditSnapshotAssemblerRegistry, request.getObjectType());
     }
 }

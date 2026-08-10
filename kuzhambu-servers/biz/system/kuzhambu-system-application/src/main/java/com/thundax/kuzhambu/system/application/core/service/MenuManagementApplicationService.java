@@ -17,6 +17,10 @@ public interface MenuManagementApplicationService {
 
     Menu get(GetMenuQuery query);
 
+    default Menu get(MenuId id) {
+        return get(new GetMenuQuery(id));
+    }
+
     List<Menu> list(MenuQuery query);
 
     PageResult<Menu> page(MenuQuery query, PageQuery page);

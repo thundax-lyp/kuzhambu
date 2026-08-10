@@ -17,6 +17,10 @@ public interface UserManagementApplicationService {
 
     User get(GetUserQuery query);
 
+    default User get(UserId id) {
+        return get(new GetUserQuery(id));
+    }
+
     List<User> list(UserQuery query);
 
     PageResult<User> page(UserQuery query, PageQuery page);
