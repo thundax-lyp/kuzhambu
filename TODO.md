@@ -12,22 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `3 三才内容Portal构造位置`：3. 清理三才内容与 Portal 的 Command/Query 构造位置
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-07-CLASSICS-SANCAI-PUBLICATION.md`
-    - 范围对象：
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/support/SancaiEntryVersionRestorer.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/assembler/SancaiInterfaceAssembler.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiAdminController.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiContentAdminController.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/portal/sancai/assembler/SancaiPortalInterfaceAssembler.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/portal/sancai/controller/SancaiPortalController.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/ClassicsApplicationArchitectureTest.java`
-        - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/ClassicsInterfaceArchitectureTest.java`
-    - 处理动作：将三才 admin/portal controller 和版本恢复器中的 application Command/Query/PageQuery 构造迁移到合适转换边界。
-    - 验收点：三才 admin/portal controller 不再直接构造 application Command/Query/PageQuery；对应 construction allowlist key 已删除。
-    - 重要度：9/10
-
 - [ ] `4 三才ApplicationService方法形态`：4. 清理三才资产 ApplicationService 方法形态
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-07-CLASSICS-SANCAI-PUBLICATION.md`

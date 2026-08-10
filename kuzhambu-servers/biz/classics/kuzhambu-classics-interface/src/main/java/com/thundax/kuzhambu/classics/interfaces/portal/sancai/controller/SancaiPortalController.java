@@ -18,7 +18,6 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.respons
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.response.SancaiPortalEntryResponse;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.response.SancaiPortalVolumeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -99,9 +98,7 @@ public class SancaiPortalController {
         return PageResponseHelper.fromPageResult(
                 service.pagePortalReadyEntries(
                         SancaiPortalInterfaceAssembler.toPublicQuery(effectiveRequest),
-                        new PageQuery(
-                                SancaiPortalInterfaceAssembler.pageNo(effectiveRequest.getPageNo()),
-                                SancaiPortalInterfaceAssembler.pageSize(effectiveRequest.getPageSize()))),
+                        SancaiPortalInterfaceAssembler.toPageQuery(effectiveRequest)),
                 SancaiPortalInterfaceAssembler::toResponse);
     }
 

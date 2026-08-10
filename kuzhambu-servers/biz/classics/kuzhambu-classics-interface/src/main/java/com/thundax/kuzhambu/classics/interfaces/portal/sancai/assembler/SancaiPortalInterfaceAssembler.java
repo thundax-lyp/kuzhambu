@@ -22,6 +22,7 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.request
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.response.SancaiPortalCategoryResponse;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.response.SancaiPortalEntryResponse;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.response.SancaiPortalVolumeResponse;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
 import java.util.Objects;
@@ -51,6 +52,12 @@ public final class SancaiPortalInterfaceAssembler {
                 null,
                 null,
                 SortDirection.ASC);
+    }
+
+    public static PageQuery toPageQuery(SancaiPortalEntrySearchRequest request) {
+        SancaiPortalEntrySearchRequest effectiveRequest =
+                request == null ? new SancaiPortalEntrySearchRequest() : request;
+        return new PageQuery(pageNo(effectiveRequest.getPageNo()), pageSize(effectiveRequest.getPageSize()));
     }
 
     public static SancaiPortalCategoryResponse toResponse(SancaiCategory category) {

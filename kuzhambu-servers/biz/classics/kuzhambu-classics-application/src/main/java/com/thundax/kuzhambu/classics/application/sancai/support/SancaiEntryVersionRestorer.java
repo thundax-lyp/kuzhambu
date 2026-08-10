@@ -7,12 +7,12 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCo
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
+import com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationAssembler;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
-import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
@@ -158,22 +158,14 @@ public class SancaiEntryVersionRestorer {
         if (snapshot == null || (snapshot.tagId() == null && StringUtils.isBlank(snapshot.tagNameSnapshot()))) {
             return;
         }
-        ClassicsContentSource source = parseSource(snapshot.source());
-        ClassicsContentTagStatus status = parseTagStatus(snapshot.status());
-        ContentTagCommand command = new ContentTagCommand(
-                null,
-                ClassicsContentType.SANCAI_ENTRY,
-                entry.contentId().value(),
-                snapshot.tagId(),
-                snapshot.tagNameSnapshot(),
-                source,
-                status);
+        ContentTagCommand command = SancaiApplicationAssembler.toContentTagCommand(
+                snapshot, entry.contentId().value());
         ClassicsContentTag tag;
         if (tagBindingSupport == null || snapshot.tagId() != null) {
             tag = ClassicsContentApplicationAssembler.toTag(command);
             tag.setPriority(priority);
         } else {
-            tag = source == ClassicsContentSource.AI
+            tag = command.source() == ClassicsContentSource.AI
                     ? tagBindingSupport.bindAiTag(command, priority)
                     : tagBindingSupport.bindManualTag(command, priority);
         }
@@ -189,13 +181,8 @@ public class SancaiEntryVersionRestorer {
         if (snapshot == null || StringUtils.isBlank(snapshot.question()) || StringUtils.isBlank(snapshot.answer())) {
             return;
         }
-        ContentQaPairCommand command = new ContentQaPairCommand(
-                null,
-                ClassicsContentType.SANCAI_ENTRY,
-                entry.contentId().value(),
-                snapshot.question(),
-                snapshot.answer(),
-                parseSource(snapshot.source()));
+        ContentQaPairCommand command = SancaiApplicationAssembler.toContentQaPairCommand(
+                snapshot, entry.contentId().value());
         ClassicsContentQaPair qaPair = ClassicsContentApplicationAssembler.toQaPair(command);
         qaPair.setId(null);
         qaPair.setPriority(priority);
@@ -206,14 +193,6 @@ public class SancaiEntryVersionRestorer {
         if (tagBindingSupport != null) {
             tagBindingSupport.removeTagRef(tag);
         }
-    }
-
-    private static ClassicsContentSource parseSource(String value) {
-        return StringUtils.isBlank(value) ? ClassicsContentSource.MANUAL : ClassicsContentSource.valueOf(value);
-    }
-
-    private static ClassicsContentTagStatus parseTagStatus(String value) {
-        return StringUtils.isBlank(value) ? ClassicsContentTagStatus.ACTIVE : ClassicsContentTagStatus.valueOf(value);
     }
 
     private static Long longValue(JsonNode snapshot, String fieldName) {
