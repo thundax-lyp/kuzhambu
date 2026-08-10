@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacad
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.ApplyGraphExtractionTaskCandidateCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -178,7 +179,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
                 graphExtractionApplicationService.getTaskDetail(GraphExtractionTaskIdCodec.toDomain(taskId));
         ensureSancaiSource(detail == null ? null : detail.getSourceContentType());
         GraphExtractionTaskResult task = graphExtractionApplicationService.applyTaskCandidate(
-                GraphExtractionTaskIdCodec.toDomain(taskId), applyMode);
+                new ApplyGraphExtractionTaskCandidateCommand(GraphExtractionTaskIdCodec.toDomain(taskId), applyMode));
         GraphVersionResult version =
                 latestVersion(task.getTaskType(), task.getSourceContentType(), task.getSourceContentId());
         return CandidateApplyResult.builder()

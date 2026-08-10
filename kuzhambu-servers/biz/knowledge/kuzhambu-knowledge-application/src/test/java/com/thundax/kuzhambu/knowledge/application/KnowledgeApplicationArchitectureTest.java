@@ -80,11 +80,6 @@ class KnowledgeApplicationArchitectureTest extends AbstractArchitectureTest {
                         + "KnowledgeGraphExtractionApplicationService.getLineageRelationDetail(java.lang.Long)"),
                 rawParameters(
                         "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                                + "KnowledgeGraphExtractionApplicationService.regenerateTask(java.lang.String, com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId, java.lang.String, java.lang.Boolean, java.lang.Long)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                        + "KnowledgeGraphExtractionApplicationService.cancelBatch(java.lang.Long, java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
                                 + "KnowledgeGraphExtractionApplicationService.pageEntities(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),
                 rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
                         + "KnowledgeGraphExtractionApplicationService.getLineageNodeDetail(java.lang.Long)"),
@@ -101,9 +96,6 @@ class KnowledgeApplicationArchitectureTest extends AbstractArchitectureTest {
                 rawParameters(
                         "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
                                 + "KnowledgeGraphExtractionApplicationService.pageLineageRelations(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                                + "KnowledgeGraphExtractionApplicationService.applyTaskCandidate(com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId, java.lang.String)"),
                 rawParameters(
                         "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
                                 + "KnowledgeGraphExtractionApplicationService.pageLineageNodes(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),

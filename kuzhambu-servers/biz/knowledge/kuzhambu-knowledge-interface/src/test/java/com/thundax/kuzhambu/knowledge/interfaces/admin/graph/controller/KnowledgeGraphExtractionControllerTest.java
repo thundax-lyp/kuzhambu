@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.CancelGraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
@@ -30,12 +31,12 @@ class KnowledgeGraphExtractionControllerTest {
         GraphExtractionRequests.BatchCancelRequest request = new GraphExtractionRequests.BatchCancelRequest();
         request.setBatchJobId(1001L);
         request.setRequestedBy(99L);
-        when(service.cancelBatch(1001L, 99L))
+        when(service.cancelBatch(any(CancelGraphExtractionBatchCommand.class)))
                 .thenReturn(new GraphExtractionBatchCancelResult(1001L, "CANCELLED", 1, 1, 0));
 
         var response = controller.cancelBatchTask(request);
 
-        verify(service).cancelBatch(eq(1001L), eq(99L));
+        verify(service).cancelBatch(argThat(command -> command.batchJobId() == 1001L && command.requestedBy() == 99L));
         assertEquals(1001L, response.getBatchJobId());
         assertEquals("CANCELLED", response.getStatus());
         assertEquals(1, response.getCancelledCount());

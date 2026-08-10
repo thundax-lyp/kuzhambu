@@ -19,6 +19,8 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.ApplyGraphExtractionTaskCandidateCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.CancelGraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
@@ -285,23 +287,6 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public GraphExtractionTaskResult regenerateTask(
-            String taskType,
-            GraphExtractionTaskId sourceTaskId,
-            String selectionScopeJson,
-            Boolean replaceUnconfirmedOnly,
-            Long requestedBy) {
-        return regenerateTask(new RegenerateGraphExtractionCommand(
-                taskType,
-                sourceTaskId,
-                TRIGGER_SOURCE_REGENERATE,
-                selectionScopeJson,
-                replaceUnconfirmedOnly,
-                requestedBy));
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult regenerateTask(RegenerateGraphExtractionCommand command) {
         GraphExtractionTaskId sourceTaskId = command == null ? null : command.sourceTaskId();
         GraphExtractionTask sourceTask = repository.getByTaskId(sourceTaskId);
@@ -356,7 +341,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public GraphExtractionBatchCancelResult cancelBatch(Long batchJobId, Long requestedBy) {
+    public GraphExtractionBatchCancelResult cancelBatch(CancelGraphExtractionBatchCommand command) {
+        Long batchJobId = command == null ? null : command.batchJobId();
+        Long requestedBy = command == null ? null : command.requestedBy();
         if (batchJobId == null) {
             throw new BizException("Knowledge graph batchJobId is required");
         }
@@ -547,7 +534,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId, String applyMode) {
+    public GraphExtractionTaskResult applyTaskCandidate(ApplyGraphExtractionTaskCandidateCommand command) {
+        GraphExtractionTaskId taskId = command == null ? null : command.taskId();
+        String applyMode = command == null ? null : command.applyMode();
         GraphExtractionTask task = repository.getByTaskId(taskId);
         if (task == null) {
             throw new BizException("Graph extraction task not found: " + (taskId == null ? null : taskId.value()));

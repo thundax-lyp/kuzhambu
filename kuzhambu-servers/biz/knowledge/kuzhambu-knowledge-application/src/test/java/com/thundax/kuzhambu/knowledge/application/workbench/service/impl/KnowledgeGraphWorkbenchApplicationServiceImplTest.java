@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -25,6 +26,7 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeRe
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.ApplyGraphExtractionTaskCandidateCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -319,7 +321,8 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
         Fixtures fixtures = new Fixtures();
         when(fixtures.graphExtractionApplicationService.getTaskDetail(any()))
                 .thenReturn(taskResult("9001", "GRAPH", "SUCCEEDED"));
-        when(fixtures.graphExtractionApplicationService.applyTaskCandidate(any(), eq("APPEND")))
+        when(fixtures.graphExtractionApplicationService.applyTaskCandidate(
+                        any(ApplyGraphExtractionTaskCandidateCommand.class)))
                 .thenReturn(taskResult("9001", "GRAPH", "APPLIED"));
         when(fixtures.graphExtractionApplicationService.pageVersions(
                         eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
@@ -335,7 +338,9 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
         assertEquals(9001L, result.getTaskId());
         assertEquals(8001L, result.getGraphVersionId());
         assertEquals("APPLIED", result.getGraphStatus());
-        verify(fixtures.graphExtractionApplicationService).applyTaskCandidate(any(), eq("APPEND"));
+        verify(fixtures.graphExtractionApplicationService)
+                .applyTaskCandidate(argThat(
+                        (ApplyGraphExtractionTaskCandidateCommand command) -> "APPEND".equals(command.applyMode())));
     }
 
     @Test
@@ -346,7 +351,8 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
 
         assertThrows(BizException.class, () -> fixtures.service.applyCandidate(9004L));
 
-        verify(fixtures.graphExtractionApplicationService, never()).applyTaskCandidate(any(), any());
+        verify(fixtures.graphExtractionApplicationService, never())
+                .applyTaskCandidate(any(ApplyGraphExtractionTaskCandidateCommand.class));
     }
 
     private static GraphExtractionTaskResult taskResult(String taskId, String taskType, String status) {

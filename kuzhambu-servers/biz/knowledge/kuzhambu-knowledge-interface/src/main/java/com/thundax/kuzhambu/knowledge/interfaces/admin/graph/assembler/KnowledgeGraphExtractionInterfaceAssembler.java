@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler;
 
+import com.thundax.kuzhambu.knowledge.application.graph.command.ApplyGraphExtractionTaskCandidateCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.CancelGraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
@@ -15,6 +17,8 @@ import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCo
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class KnowledgeGraphExtractionInterfaceAssembler {
 
@@ -118,6 +122,20 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 request == null ? null : request.getSelectionScopeJson(),
                 request == null ? null : request.getReplaceUnconfirmedOnly(),
                 request == null ? null : request.getRequestedBy());
+    }
+
+    @NonNull
+    public static CancelGraphExtractionBatchCommand toCancelBatchCommand(
+            @NonNull GraphExtractionRequests.BatchCancelRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new CancelGraphExtractionBatchCommand(request.getBatchJobId(), request.getRequestedBy());
+    }
+
+    @NonNull
+    public static ApplyGraphExtractionTaskCandidateCommand toApplyTaskCandidateCommand(
+            @NonNull GraphExtractionRequests.TaskIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new ApplyGraphExtractionTaskCandidateCommand(toTaskId(request), null);
     }
 
     public static GraphExtractionResponses.TaskResponse toResponse(GraphExtractionTaskResult result) {

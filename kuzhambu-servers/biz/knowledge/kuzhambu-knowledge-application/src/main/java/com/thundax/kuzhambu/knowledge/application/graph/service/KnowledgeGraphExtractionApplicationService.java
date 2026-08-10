@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.knowledge.application.graph.service;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.ApplyGraphExtractionTaskCandidateCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.CancelGraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
@@ -23,13 +25,6 @@ public interface KnowledgeGraphExtractionApplicationService {
 
     GraphExtractionTaskResult requestLineageExtraction(RequestLineageExtractionCommand command);
 
-    GraphExtractionTaskResult regenerateTask(
-            String taskType,
-            GraphExtractionTaskId sourceTaskId,
-            String selectionScopeJson,
-            Boolean replaceUnconfirmedOnly,
-            Long requestedBy);
-
     GraphExtractionTaskResult regenerateTask(RegenerateGraphExtractionCommand command);
 
     PageResult<GraphExtractionTaskResult> pageTasks(
@@ -43,7 +38,7 @@ public interface KnowledgeGraphExtractionApplicationService {
 
     GraphExtractionTaskResult getTaskDetail(GraphExtractionTaskId taskId);
 
-    GraphExtractionBatchCancelResult cancelBatch(Long batchJobId, Long requestedBy);
+    GraphExtractionBatchCancelResult cancelBatch(CancelGraphExtractionBatchCommand command);
 
     PageResult<GraphVersionResult> pageVersions(
             String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery);
@@ -71,8 +66,8 @@ public interface KnowledgeGraphExtractionApplicationService {
     KnowledgeLineageRelationResult getLineageRelationDetail(Long relationId);
 
     default GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId) {
-        return applyTaskCandidate(taskId, null);
+        return applyTaskCandidate(new ApplyGraphExtractionTaskCandidateCommand(taskId, null));
     }
 
-    GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId, String applyMode);
+    GraphExtractionTaskResult applyTaskCandidate(ApplyGraphExtractionTaskCandidateCommand command);
 }

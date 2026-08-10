@@ -26,6 +26,7 @@ import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeRespon
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.CancelGraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -338,7 +339,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        GraphExtractionBatchCancelResult result = service.cancelBatch(1001L, 99L);
+        GraphExtractionBatchCancelResult result =
+                service.cancelBatch(new CancelGraphExtractionBatchCommand(1001L, 99L));
 
         assertEquals(Long.valueOf(1001L), result.getBatchJobId());
         assertEquals("CANCELLED", result.getStatus());
@@ -391,8 +393,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        GraphExtractionTaskResult result =
-                service.regenerateTask("RELATION", GraphExtractionTaskIdCodec.toDomain(88L), null, Boolean.FALSE, 99L);
+        GraphExtractionTaskResult result = service.regenerateTask(new RegenerateGraphExtractionCommand(
+                "RELATION", GraphExtractionTaskIdCodec.toDomain(88L), null, null, Boolean.FALSE, 99L));
 
         assertNotNull(result);
         assertEquals("REGENERATE", result.getTriggerSource());

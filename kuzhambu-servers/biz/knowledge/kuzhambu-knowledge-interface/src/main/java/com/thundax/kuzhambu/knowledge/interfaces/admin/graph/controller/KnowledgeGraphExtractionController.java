@@ -138,7 +138,7 @@ public class KnowledgeGraphExtractionController {
     public GraphExtractionResponses.BatchCancelResponse cancelBatchTask(
             @Valid @RequestBody GraphExtractionRequests.BatchCancelRequest request) {
         return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.cancelBatch(
-                request == null ? null : request.getBatchJobId(), request == null ? null : request.getRequestedBy()));
+                KnowledgeGraphExtractionInterfaceAssembler.toCancelBatchCommand(request)));
     }
 
     @Operation(summary = "应用抽取候选结果", description = "knowledge:graph:apply")
@@ -154,8 +154,8 @@ public class KnowledgeGraphExtractionController {
     @PostMapping("task/apply")
     public GraphExtractionResponses.TaskResponse applyTaskCandidate(
             @Valid @RequestBody GraphExtractionRequests.TaskIdRequest request) {
-        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(
-                extractionService.applyTaskCandidate(KnowledgeGraphExtractionInterfaceAssembler.toTaskId(request)));
+        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.applyTaskCandidate(
+                KnowledgeGraphExtractionInterfaceAssembler.toApplyTaskCandidateCommand(request)));
     }
 
     @Operation(summary = "分页查询图谱版本", description = "knowledge:graph:view")
