@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCo
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
-import com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationAssembler;
+import com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationFacadeAssembler;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -158,7 +158,7 @@ public class SancaiEntryVersionRestorer {
         if (snapshot == null || (snapshot.tagId() == null && StringUtils.isBlank(snapshot.tagNameSnapshot()))) {
             return;
         }
-        ContentTagCommand command = SancaiApplicationAssembler.toContentTagCommand(
+        ContentTagCommand command = SancaiApplicationFacadeAssembler.toContentTagCommand(
                 snapshot, entry.contentId().value());
         ClassicsContentTag tag;
         if (tagBindingSupport == null || snapshot.tagId() != null) {
@@ -181,7 +181,7 @@ public class SancaiEntryVersionRestorer {
         if (snapshot == null || StringUtils.isBlank(snapshot.question()) || StringUtils.isBlank(snapshot.answer())) {
             return;
         }
-        ContentQaPairCommand command = SancaiApplicationAssembler.toContentQaPairCommand(
+        ContentQaPairCommand command = SancaiApplicationFacadeAssembler.toContentQaPairCommand(
                 snapshot, entry.contentId().value());
         ClassicsContentQaPair qaPair = ClassicsContentApplicationAssembler.toQaPair(command);
         qaPair.setId(null);

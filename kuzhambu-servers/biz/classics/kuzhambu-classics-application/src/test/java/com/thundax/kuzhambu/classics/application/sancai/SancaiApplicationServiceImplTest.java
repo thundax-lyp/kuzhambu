@@ -237,8 +237,8 @@ class SancaiApplicationServiceImplTest {
     void pageEntriesShouldReturnEmptyWhenPermissionContextLacksSancaiView() {
         SancaiRepository repository = mock(SancaiRepository.class);
         SancaiApplicationServiceImpl service = service(repository, null);
-        SancaiEntryQuery query = new SancaiEntryQuery();
-        query.setOperatorPermissions(Set.of("classics:content:view"));
+        SancaiEntryQuery query = new SancaiEntryQuery(
+                null, null, null, null, null, null, null, null, SortDirection.ASC, Set.of("classics:content:view"));
 
         PageResult<SancaiEntry> result = service.pageEntries(query, new PageQuery(1, 20));
 
@@ -252,10 +252,7 @@ class SancaiApplicationServiceImplTest {
     void pageEntriesShouldForwardCategoryFilterToRepository() {
         SancaiRepository repository = mock(SancaiRepository.class);
         SancaiApplicationServiceImpl service = service(repository, null);
-        SancaiEntryQuery query = new SancaiEntryQuery();
-        query.setCategoryId(2L);
-        query.setVolumeId(101L);
-        query.setKeyword("天文");
+        SancaiEntryQuery query = new SancaiEntryQuery(2L, 101L, "天文", null, null, null, null, null, SortDirection.ASC);
 
         service.pageEntries(query, new PageQuery(1, 20));
 
@@ -318,10 +315,7 @@ class SancaiApplicationServiceImplTest {
                 .thenReturn(List.of(
                         existingEntry(1001L, SancaiEntryLifecycleStatus.DRAFT),
                         existingEntry(1002L, SancaiEntryLifecycleStatus.DRAFT)));
-        SancaiEntryQuery query = new SancaiEntryQuery();
-        query.setCategoryId(11L);
-        query.setVolumeId(21L);
-        query.setKeyword("天地");
+        SancaiEntryQuery query = new SancaiEntryQuery(11L, 21L, "天地", null, null, null, null, null, SortDirection.ASC);
 
         PageResult<SancaiEntry> result = service.pagePortalReadyEntries(query, new PageQuery(1, 20));
 

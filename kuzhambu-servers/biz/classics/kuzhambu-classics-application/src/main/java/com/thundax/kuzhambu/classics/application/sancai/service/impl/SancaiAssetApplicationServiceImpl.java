@@ -8,12 +8,20 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteGuard;
 import com.thundax.kuzhambu.classics.application.publication.support.ClassicsPublicationWriteOperation;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationAssembler;
+import com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageUseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetFusionCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetUseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetVersionCommand;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiImageContentQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiShowcaseQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiVisualAssetContentQuery;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiShowcaseJobResult;
@@ -195,7 +203,9 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     @Override
-    public SancaiEntryImageContent getImageContent(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+    public SancaiEntryImageContent getImageContent(SancaiImageContentQuery query) {
+        SancaiEntryId entryId = query == null ? null : query.entryId();
+        SancaiEntryImageId imageId = query == null ? null : query.imageId();
         SancaiEntryImage image = requireImage(entryId, imageId);
         OpenStorageFacadeRequest request = OpenStorageFacadeRequest.builder()
                 .storageObjectId(StorageObjectIdCodec.toValue(image.getStorageObjectId()))
@@ -215,15 +225,15 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     @Override
-    public ClassicsStoredContentResult getVisualAssetSourceContent(
-            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
-        return openVisualAssetContent(entryId, visualAssetId, true);
+    public ClassicsStoredContentResult getVisualAssetSourceContent(SancaiVisualAssetContentQuery query) {
+        return openVisualAssetContent(
+                query == null ? null : query.entryId(), query == null ? null : query.visualAssetId(), true);
     }
 
     @Override
-    public ClassicsStoredContentResult getVisualAssetGeneratedContent(
-            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
-        return openVisualAssetContent(entryId, visualAssetId, false);
+    public ClassicsStoredContentResult getVisualAssetGeneratedContent(SancaiVisualAssetContentQuery query) {
+        return openVisualAssetContent(
+                query == null ? null : query.entryId(), query == null ? null : query.visualAssetId(), false);
     }
 
     @Override
@@ -244,7 +254,9 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void useImage(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+    public void useImage(SancaiImageUseCommand command) {
+        SancaiEntryId entryId = command == null ? null : command.entryId();
+        SancaiEntryImageId imageId = command == null ? null : command.imageId();
         requireWritable(entryId);
         requireImage(entryId, imageId);
         repository.clearCurrentImagesByEntryId(entryId);
@@ -278,7 +290,8 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SancaiVisualAssetId updateVisualAsset(SancaiVisualAsset visualAsset) {
+    public SancaiVisualAssetId updateVisualAsset(SancaiVisualAssetCommand command) {
+        SancaiVisualAsset visualAsset = toVisualAsset(command);
         requireWritable(visualAsset == null ? null : visualAsset.getEntryId());
         validateVisualWeights(visualAsset);
         if (visualAsset.getId() == null) {
@@ -290,7 +303,9 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void useVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
+    public void useVisualAsset(SancaiVisualAssetUseCommand command) {
+        SancaiEntryId entryId = command == null ? null : command.entryId();
+        SancaiVisualAssetId visualAssetId = command == null ? null : command.visualAssetId();
         requireWritable(entryId);
         repository.updateCurrentVisualAsset(entryId, visualAssetId);
     }
@@ -302,8 +317,10 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void applyFusionDescription(
-            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, String fusionDescription) {
+    public void applyFusionDescription(SancaiVisualAssetFusionCommand command) {
+        SancaiEntryId entryId = command == null ? null : command.entryId();
+        SancaiVisualAssetId visualAssetId = command == null ? null : command.visualAssetId();
+        String fusionDescription = command == null ? null : command.fusionDescription();
         if (entryId == null || visualAssetId == null || StringUtils.isBlank(fusionDescription)) {
             throw new BizException("三才信息融合写回参数不完整");
         }
@@ -318,8 +335,11 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SancaiVisualAsset createGeneratedVisualAssetVersion(
-            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, StorageObjectId generatedImageStorageObjectId) {
+    public SancaiVisualAsset createGeneratedVisualAssetVersion(SancaiVisualAssetVersionCommand command) {
+        SancaiEntryId entryId = command == null ? null : command.entryId();
+        SancaiVisualAssetId visualAssetId = command == null ? null : command.visualAssetId();
+        StorageObjectId generatedImageStorageObjectId =
+                command == null ? null : command.generatedImageStorageObjectId();
         if (entryId == null || visualAssetId == null || generatedImageStorageObjectId == null) {
             throw new BizException("三才生图版本参数不完整");
         }
@@ -368,7 +388,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public SancaiShowcaseJobResult requestShowcaseJob(SancaiShowcaseCommand command) {
         validateShowcaseCommand(command);
-        SancaiShowcase showcase = SancaiApplicationAssembler.toShowcase(command);
+        SancaiShowcase showcase = SancaiApplicationFacadeAssembler.toShowcase(command);
         showcase.setStatus(SancaiShowcaseStatus.REQUESTED);
         showcase.setStorageObjectId(null);
         SancaiShowcaseId showcaseId = repository.insertShowcase(showcase);
@@ -470,26 +490,36 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     @Override
-    public PageResult<SancaiShowcase> pageShowcases(String status, PageQuery page) {
-        return repository.pageShowcases(status, page.getPageNo(), page.getPageSize());
-    }
-
-    @Override
-    public PageResult<SancaiShowcase> pageShowcases(
-            String keyword,
-            String status,
-            String visibilityRiskStatus,
-            Instant requestedAtStart,
-            Instant requestedAtEnd,
-            PageQuery page) {
+    public PageResult<SancaiShowcase> pageShowcases(SancaiShowcaseQuery query, PageQuery page) {
         return repository.pageShowcases(
-                keyword,
-                status,
-                visibilityRiskStatus,
-                requestedAtStart,
-                requestedAtEnd,
+                query == null ? null : query.keyword(),
+                query == null ? null : query.status(),
+                query == null ? null : query.visibilityRiskStatus(),
+                query == null ? null : query.requestedAtStart(),
+                query == null ? null : query.requestedAtEnd(),
                 page.getPageNo(),
                 page.getPageSize());
+    }
+
+    private static SancaiVisualAsset toVisualAsset(SancaiVisualAssetCommand command) {
+        if (command == null) {
+            return null;
+        }
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(command.id());
+        visualAsset.setEntryId(command.entryId());
+        visualAsset.setVersionNo(command.versionNo());
+        visualAsset.setStatus(command.status());
+        visualAsset.setSourceImageStorageObjectId(command.sourceImageStorageObjectId());
+        visualAsset.setGeneratedImageStorageObjectId(command.generatedImageStorageObjectId());
+        visualAsset.setCurrentUsed(command.currentUsed());
+        visualAsset.setTextWeight(command.textWeight());
+        visualAsset.setImageWeight(command.imageWeight());
+        visualAsset.setImageAnalysisMarkdown(command.imageAnalysisMarkdown());
+        visualAsset.setFusionDescription(command.fusionDescription());
+        visualAsset.setVisualDescription(command.visualDescription());
+        visualAsset.setGenerationParamsJson(command.generationParamsJson());
+        return visualAsset;
     }
 
     private WorkerRenderDtos.WorkerRenderRequest renderRequest(SancaiShowcaseId showcaseId, SancaiShowcase showcase) {

@@ -10,17 +10,18 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
 import java.time.Instant;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 
-public final class SancaiApplicationAssembler {
+public final class SancaiApplicationFacadeAssembler {
 
-    private SancaiApplicationAssembler() {}
+    private SancaiApplicationFacadeAssembler() {}
 
-    public static SancaiShowcase toShowcase(SancaiShowcaseCommand command) {
+    @NonNull
+    public static SancaiShowcase toShowcase(@NonNull SancaiShowcaseCommand command) {
+        Objects.requireNonNull(command, "command must not be null");
         SancaiShowcase showcase = new SancaiShowcase();
-        if (command == null) {
-            return showcase;
-        }
         showcase.setRequestedAt(command.requestedAt() == null ? Instant.now() : command.requestedAt());
         showcase.setStatus(command.status() == null ? SancaiShowcaseStatus.REQUESTED : command.status());
         showcase.setScopeJson(command.scopeJson());
@@ -30,8 +31,11 @@ public final class SancaiApplicationAssembler {
         return showcase;
     }
 
+    @NonNull
     public static ContentTagCommand toContentTagCommand(
-            SancaiEntryVersionSnapshot.SancaiTagSnapshot snapshot, Long contentId) {
+            @NonNull SancaiEntryVersionSnapshot.SancaiTagSnapshot snapshot, @NonNull Long contentId) {
+        Objects.requireNonNull(snapshot, "snapshot must not be null");
+        Objects.requireNonNull(contentId, "contentId must not be null");
         return new ContentTagCommand(
                 null,
                 ClassicsContentType.SANCAI_ENTRY,
@@ -42,8 +46,11 @@ public final class SancaiApplicationAssembler {
                 parseTagStatus(snapshot.status()));
     }
 
+    @NonNull
     public static ContentQaPairCommand toContentQaPairCommand(
-            SancaiEntryVersionSnapshot.SancaiQaPairSnapshot snapshot, Long contentId) {
+            @NonNull SancaiEntryVersionSnapshot.SancaiQaPairSnapshot snapshot, @NonNull Long contentId) {
+        Objects.requireNonNull(snapshot, "snapshot must not be null");
+        Objects.requireNonNull(contentId, "contentId must not be null");
         return new ContentQaPairCommand(
                 null,
                 ClassicsContentType.SANCAI_ENTRY,

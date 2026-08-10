@@ -5,7 +5,15 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftComma
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageUseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetFusionCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetUseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVisualAssetVersionCommand;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiImageContentQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiShowcaseQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiVisualAssetContentQuery;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiShowcaseJobResult;
@@ -21,7 +29,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowc
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import java.time.Instant;
 import java.util.List;
 
 public interface SancaiAssetApplicationService {
@@ -36,16 +43,15 @@ public interface SancaiAssetApplicationService {
 
     SancaiEntryImageResource uploadImage(SancaiEntryImageUploadCommand command);
 
-    SancaiEntryImageContent getImageContent(SancaiEntryId entryId, SancaiEntryImageId imageId);
+    SancaiEntryImageContent getImageContent(SancaiImageContentQuery query);
 
-    ClassicsStoredContentResult getVisualAssetSourceContent(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
+    ClassicsStoredContentResult getVisualAssetSourceContent(SancaiVisualAssetContentQuery query);
 
-    ClassicsStoredContentResult getVisualAssetGeneratedContent(
-            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
+    ClassicsStoredContentResult getVisualAssetGeneratedContent(SancaiVisualAssetContentQuery query);
 
     void sortImages(SancaiEntryImageSortCommand command);
 
-    void useImage(SancaiEntryId entryId, SancaiEntryImageId imageId);
+    void useImage(SancaiImageUseCommand command);
 
     void deleteImage(SancaiEntryImageId id);
 
@@ -53,15 +59,15 @@ public interface SancaiAssetApplicationService {
 
     /**
      * 保存视觉资产草稿字段，不隐式切换当前使用版本。
-     * 当前使用版本切换必须通过 {@link #useVisualAsset(SancaiEntryId, SancaiVisualAssetId)} 单独执行。
+     * 当前使用版本切换必须通过 {@link #useVisualAsset(SancaiVisualAssetUseCommand)} 单独执行。
      */
-    SancaiVisualAssetId updateVisualAsset(SancaiVisualAsset visualAsset);
+    SancaiVisualAssetId updateVisualAsset(SancaiVisualAssetCommand command);
 
     /**
      * 将条目的当前视觉资产切换到指定版本。
      * 该操作不修改视觉资产本身的描述字段，仅更新条目和视觉资产之间的当前使用关系。
      */
-    void useVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
+    void useVisualAsset(SancaiVisualAssetUseCommand command);
 
     /**
      * 返回条目下全部视觉资产版本，供管理端展示历史列表和当前使用状态。
@@ -71,13 +77,12 @@ public interface SancaiAssetApplicationService {
     /**
      * 将已确认的信息融合结果写回到目标视觉资产，仅更新 fusionDescription。
      */
-    void applyFusionDescription(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, String fusionDescription);
+    void applyFusionDescription(SancaiVisualAssetFusionCommand command);
 
     /**
      * 基于既有视觉资产生成新的生图版本，不隐式切换当前使用版本。
      */
-    SancaiVisualAsset createGeneratedVisualAssetVersion(
-            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, StorageObjectId generatedImageStorageObjectId);
+    SancaiVisualAsset createGeneratedVisualAssetVersion(SancaiVisualAssetVersionCommand command);
 
     SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command);
 
@@ -89,13 +94,5 @@ public interface SancaiAssetApplicationService {
 
     void deleteShowcase(SancaiShowcaseId showcaseId);
 
-    PageResult<SancaiShowcase> pageShowcases(String status, PageQuery page);
-
-    PageResult<SancaiShowcase> pageShowcases(
-            String keyword,
-            String status,
-            String visibilityRiskStatus,
-            Instant requestedAtStart,
-            Instant requestedAtEnd,
-            PageQuery page);
+    PageResult<SancaiShowcase> pageShowcases(SancaiShowcaseQuery query, PageQuery page);
 }

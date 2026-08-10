@@ -66,7 +66,11 @@ public final class SancaiInterfaceAssembler {
         return ClassicsContentInterfaceAssembler.toObjectQuery(contentType, contentId);
     }
 
-    public static SancaiEntryQuery toQuery(SancaiEntryPageRequest request, Set<String> operatorPermissions) {
+    @NonNull
+    public static SancaiEntryQuery toQuery(
+            @NonNull SancaiEntryPageRequest request, @NonNull Set<String> operatorPermissions) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(operatorPermissions, "operatorPermissions");
         return new SancaiEntryQuery(
                 request.getCategoryId(),
                 request.getVolumeId(),
@@ -106,7 +110,9 @@ public final class SancaiInterfaceAssembler {
                 operatorPermissions);
     }
 
-    public static ContentQaPairCommand toContentQaPairCommand(SancaiContentRequest request) {
+    @NonNull
+    public static ContentQaPairCommand toContentQaPairCommand(@NonNull SancaiContentRequest request) {
+        Objects.requireNonNull(request, "request");
         return new ContentQaPairCommand(
                 request.getId(),
                 ClassicsContentType.SANCAI_ENTRY,
@@ -118,12 +124,12 @@ public final class SancaiInterfaceAssembler {
                         : ClassicsContentSource.from(request.getSource()));
     }
 
-    public static ContentQaPairSortCommand toContentQaPairSortCommand(SancaiContentSortRequest request) {
+    @NonNull
+    public static ContentQaPairSortCommand toContentQaPairSortCommand(@NonNull SancaiContentSortRequest request) {
+        Objects.requireNonNull(request, "request");
         return new ContentQaPairSortCommand(RequestListHelper.map(
                 RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
                 ClassicsContentQaPairIdCodec::toDomain));
     }
 
@@ -141,30 +147,30 @@ public final class SancaiInterfaceAssembler {
                 null);
     }
 
-    public static SancaiCategorySortCommand toSortCommand(SancaiCategorySortRequest request) {
+    @NonNull
+    public static SancaiCategorySortCommand toSortCommand(@NonNull SancaiCategorySortRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiCategorySortCommand(RequestListHelper.map(
                 RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
                 SancaiCategoryIdCodec::toDomain));
     }
 
-    public static SancaiVolumeSortCommand toSortCommand(SancaiVolumeSortRequest request) {
+    @NonNull
+    public static SancaiVolumeSortCommand toSortCommand(@NonNull SancaiVolumeSortRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiVolumeSortCommand(RequestListHelper.map(
                 RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
                 SancaiVolumeIdCodec::toDomain));
     }
 
-    public static SancaiEntrySortCommand toSortCommand(SancaiEntrySortRequest request) {
+    @NonNull
+    public static SancaiEntrySortCommand toSortCommand(@NonNull SancaiEntrySortRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SancaiEntrySortCommand(RequestListHelper.map(
                 RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
                 SancaiEntryIdCodec::toDomain));
     }
 

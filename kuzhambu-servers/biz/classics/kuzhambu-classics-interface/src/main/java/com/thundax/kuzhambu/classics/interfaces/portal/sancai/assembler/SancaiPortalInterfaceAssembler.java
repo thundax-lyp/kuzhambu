@@ -2,11 +2,16 @@ package com.thundax.kuzhambu.classics.interfaces.portal.sancai.assembler;
 
 import com.thundax.kuzhambu.classics.application.content.query.ContentObjectQuery;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiImageContentQuery;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiVisualAssetContentQuery;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.KnowledgeTagId;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
@@ -54,10 +59,27 @@ public final class SancaiPortalInterfaceAssembler {
                 SortDirection.ASC);
     }
 
-    public static PageQuery toPageQuery(SancaiPortalEntrySearchRequest request) {
-        SancaiPortalEntrySearchRequest effectiveRequest =
-                request == null ? new SancaiPortalEntrySearchRequest() : request;
-        return new PageQuery(pageNo(effectiveRequest.getPageNo()), pageSize(effectiveRequest.getPageSize()));
+    @NonNull
+    public static PageQuery toPageQuery(@NonNull SancaiPortalEntrySearchRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new PageQuery(pageNo(request.getPageNo()), pageSize(request.getPageSize()));
+    }
+
+    @NonNull
+    public static SancaiImageContentQuery toImageContentQuery(@NonNull Long entryId, @NonNull Long imageId) {
+        Objects.requireNonNull(entryId, "entryId");
+        Objects.requireNonNull(imageId, "imageId");
+        return new SancaiImageContentQuery(
+                SancaiEntryIdCodec.toDomain(entryId), SancaiEntryImageIdCodec.toDomain(imageId));
+    }
+
+    @NonNull
+    public static SancaiVisualAssetContentQuery toVisualAssetContentQuery(
+            @NonNull Long entryId, @NonNull Long visualAssetId) {
+        Objects.requireNonNull(entryId, "entryId");
+        Objects.requireNonNull(visualAssetId, "visualAssetId");
+        return new SancaiVisualAssetContentQuery(
+                SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId));
     }
 
     public static SancaiPortalCategoryResponse toResponse(SancaiCategory category) {

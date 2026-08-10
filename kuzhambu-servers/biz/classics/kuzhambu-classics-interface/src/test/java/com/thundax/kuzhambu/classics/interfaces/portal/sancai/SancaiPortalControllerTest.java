@@ -103,8 +103,8 @@ class SancaiPortalControllerTest {
         var page = controller.pageEntries(request);
 
         assertEquals(1, page.getRecords().size());
-        assertEquals("天地", page.getRecords().get(0).title());
-        assertEquals("PUBLISHED", page.getRecords().get(0).lifecycleStatus());
+        assertEquals("天地", page.getRecords().get(0).getTitle());
+        assertEquals("PUBLISHED", page.getRecords().get(0).getLifecycleStatus());
     }
 
     @Test

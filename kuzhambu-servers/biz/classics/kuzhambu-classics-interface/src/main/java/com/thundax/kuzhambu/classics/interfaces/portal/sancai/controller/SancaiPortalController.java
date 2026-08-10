@@ -7,8 +7,6 @@ import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicatio
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
-import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
-import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
@@ -128,8 +126,8 @@ public class SancaiPortalController {
         requirePublicEntry(SancaiEntryIdCodec.toDomain(entryId));
         SancaiEntryImageContent imageContent;
         try {
-            imageContent = assetService.getImageContent(
-                    SancaiEntryIdCodec.toDomain(entryId), SancaiEntryImageIdCodec.toDomain(imageId));
+            imageContent =
+                    assetService.getImageContent(SancaiPortalInterfaceAssembler.toImageContentQuery(entryId, imageId));
         } catch (BizException exception) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -180,9 +178,9 @@ public class SancaiPortalController {
         try {
             content = sourceContent
                     ? assetService.getVisualAssetSourceContent(
-                            SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId))
+                            SancaiPortalInterfaceAssembler.toVisualAssetContentQuery(entryId, visualAssetId))
                     : assetService.getVisualAssetGeneratedContent(
-                            SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId));
+                            SancaiPortalInterfaceAssembler.toVisualAssetContentQuery(entryId, visualAssetId));
         } catch (BizException exception) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;

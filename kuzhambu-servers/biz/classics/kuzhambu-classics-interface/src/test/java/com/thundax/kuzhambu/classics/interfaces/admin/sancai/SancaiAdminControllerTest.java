@@ -128,8 +128,8 @@ class SancaiAdminControllerTest {
                 }
                 """,
                 SancaiEntryPageRequest.class);
-        assertEquals(2L, pageRequest.categoryId());
-        assertEquals(101L, pageRequest.volumeId());
+        assertEquals(2L, pageRequest.getCategoryId());
+        assertEquals(101L, pageRequest.getVolumeId());
         assertJsonFields(
                 pageRequest,
                 "pageNo",
@@ -153,7 +153,7 @@ class SancaiAdminControllerTest {
                 }
                 """,
                 SancaiCategoryRequest.class);
-        assertEquals(2L, categoryRequest.id());
+        assertEquals(2L, categoryRequest.getId());
         assertJsonFields(categoryRequest, "id", "title", "categoryType");
 
         SancaiVolumeRequest volumeRequest = OBJECT_MAPPER.readValue(
@@ -166,7 +166,7 @@ class SancaiAdminControllerTest {
                 }
                 """,
                 SancaiVolumeRequest.class);
-        assertEquals(101L, volumeRequest.id());
+        assertEquals(101L, volumeRequest.getId());
         assertJsonFields(volumeRequest, "id", "categoryId", "title", "volumeType");
 
         SancaiEntryRequest entryRequest = OBJECT_MAPPER.readValue(
@@ -186,7 +186,7 @@ class SancaiAdminControllerTest {
                 }
                 """,
                 SancaiEntryRequest.class);
-        assertEquals(3001L, entryRequest.id());
+        assertEquals(3001L, entryRequest.getId());
         assertJsonFields(
                 entryRequest,
                 "id",
@@ -209,8 +209,8 @@ class SancaiAdminControllerTest {
                 }
                 """,
                 SancaiEntryRequest.class);
-        assertEquals(3001L, lifecycleRequest.id());
-        assertEquals("OFFLINE", lifecycleRequest.lifecycleStatus());
+        assertEquals(3001L, lifecycleRequest.getId());
+        assertEquals("OFFLINE", lifecycleRequest.getLifecycleStatus());
         assertJsonFields(lifecycleRequest, "id", "lifecycleStatus");
 
         SancaiEntryVersionRequest versionRequest = OBJECT_MAPPER.readValue(
@@ -221,7 +221,7 @@ class SancaiAdminControllerTest {
                 }
                 """,
                 SancaiEntryVersionRequest.class);
-        assertEquals(3001L, versionRequest.id());
+        assertEquals(3001L, versionRequest.getId());
         assertEquals(9001L, versionRequest.getVersionId());
         assertJsonFields(versionRequest, "id", "versionId");
 
@@ -328,30 +328,30 @@ class SancaiAdminControllerTest {
 
         List<SancaiCategoryResponse> categories = controller.listCategories();
         assertEquals(1, categories.size());
-        assertEquals("天文", categories.get(0).title());
+        assertEquals("天文", categories.get(0).getTitle());
 
         SancaiCategoryRequest categoryRequest = new SancaiCategoryRequest();
         categoryRequest.setId(2L);
         categoryRequest.setTitle("天文");
         categoryRequest.setCategoryType("FORMAL");
-        assertEquals("天文", controller.getCategory(categoryRequest).title());
-        assertEquals(2L, controller.addCategory(categoryRequest).id());
-        assertEquals(2L, controller.updateCategory(categoryRequest).id());
+        assertEquals("天文", controller.getCategory(categoryRequest).getTitle());
+        assertEquals(2L, controller.addCategory(categoryRequest).getId());
+        assertEquals(2L, controller.updateCategory(categoryRequest).getId());
         controller.deleteCategory(categoryRequest);
 
         SancaiEntryPageRequest volumePageRequest = new SancaiEntryPageRequest();
         volumePageRequest.setCategoryId(2L);
         List<SancaiVolumeResponse> volumes = controller.listVolumes(volumePageRequest);
         assertEquals(1, volumes.size());
-        assertEquals(2L, volumes.get(0).categoryId());
+        assertEquals(2L, volumes.get(0).getCategoryId());
         SancaiVolumeRequest volumeRequest = new SancaiVolumeRequest();
         volumeRequest.setId(101L);
         volumeRequest.setCategoryId(2L);
         volumeRequest.setTitle("天文卷一");
         volumeRequest.setVolumeType("MAIN");
-        assertEquals("天文卷一", controller.getVolume(volumeRequest).title());
-        assertEquals(101L, controller.addVolume(volumeRequest).id());
-        assertEquals(101L, controller.updateVolume(volumeRequest).id());
+        assertEquals("天文卷一", controller.getVolume(volumeRequest).getTitle());
+        assertEquals(101L, controller.addVolume(volumeRequest).getId());
+        assertEquals(101L, controller.updateVolume(volumeRequest).getId());
         controller.deleteVolume(volumeRequest);
 
         SancaiEntryPageRequest pageRequest = new SancaiEntryPageRequest();
@@ -362,8 +362,8 @@ class SancaiAdminControllerTest {
         pageRequest.setPageNo(1);
         pageRequest.setPageSize(50);
         assertEquals(
-                "天地", controller.pageEntries(pageRequest).getRecords().get(0).title());
-        assertEquals("天地", controller.listEntries(pageRequest).get(0).title());
+                "天地", controller.pageEntries(pageRequest).getRecords().get(0).getTitle());
+        assertEquals("天地", controller.listEntries(pageRequest).get(0).getTitle());
 
         SancaiEntryRequest entryRequest = new SancaiEntryRequest();
         entryRequest.setId(3001L);
@@ -371,10 +371,10 @@ class SancaiAdminControllerTest {
         entryRequest.setTitle("天地");
         entryRequest.setLifecycleStatus("PUBLISHED");
         SancaiEntryResponse detail = controller.getEntry(entryRequest);
-        assertEquals("天地", detail.title());
+        assertEquals("天地", detail.getTitle());
         assertEquals("天文", detail.getTags().get(0).getTagNameSnapshot());
-        assertEquals(3001L, controller.addEntry(entryRequest).id());
-        assertEquals(3001L, controller.updateEntry(entryRequest).id());
+        assertEquals(3001L, controller.addEntry(entryRequest).getId());
+        assertEquals(3001L, controller.updateEntry(entryRequest).getId());
 
         SancaiEntryRequest lifecycleRequest = new SancaiEntryRequest();
         lifecycleRequest.setId(3001L);
@@ -393,7 +393,7 @@ class SancaiAdminControllerTest {
         entryRequest.setTitle("迁移条目");
         entryRequest.setLifecycleStatus("PUBLISHED");
 
-        assertEquals(3001L, controller.updateEntry(entryRequest).id());
+        assertEquals(3001L, controller.updateEntry(entryRequest).getId());
     }
 
     @Test
@@ -409,11 +409,11 @@ class SancaiAdminControllerTest {
         assertEquals("SANCAI_ENTRY", versions.get(0).getContentType());
 
         SancaiEntryVersionResponse version = controller.getEntryVersion(request);
-        assertEquals(9001L, version.id());
+        assertEquals(9001L, version.getId());
         assertEquals(3001L, version.getContentId());
 
         SancaiEntryVersionResponse restoredVersion = controller.resetEntryVersion(request);
-        assertEquals(9002L, restoredVersion.id());
+        assertEquals(9002L, restoredVersion.getId());
         assertEquals("HISTORY_RESTORED", restoredVersion.getChangeType());
     }
 

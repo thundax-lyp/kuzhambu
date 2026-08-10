@@ -58,7 +58,7 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
                         "com.thundax.kuzhambu.classics.application.facade.assembler.ClassicsFacadeAssembler",
-                        "com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationAssembler"));
+                        "com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationFacadeAssembler"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         SortableArchitectureRuleSupport.assertSortCommandsUseOrderedIdsOnly(Path.of("src/main/java"));
     }
@@ -97,36 +97,6 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
                 publicationWorkflow(
                         "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.publication.service."
                                 + "ClassicsPublicationExecutionApplicationService.start(com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationJobId, com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken, java.time.Instant, java.time.Instant)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.useImage(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.useVisualAsset(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.getImageContent(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.pageShowcases(java.lang.String, java.lang.String, java.lang.String, java.time.Instant, java.time.Instant, com.thundax.kuzhambu.common.core.page.PageQuery)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.applyFusionDescription(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId, java.lang.String)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.createGeneratedVisualAssetVersion(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId, com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.getVisualAssetSourceContent(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.updateVisualAsset(com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.pageShowcases(java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.sancai.service."
-                                + "SancaiAssetApplicationService.getVisualAssetGeneratedContent(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId, com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId)"),
                 rawParameters(
                         "METHOD_SHAPE:com.thundax.kuzhambu.classics.application.cleanup.service."
                                 + "ClassicsCleanupApplicationService.listTargets(java.lang.String, java.time.Instant, java.lang.Integer, java.lang.Integer)"),

@@ -5,7 +5,6 @@ import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageC
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
-import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
@@ -183,9 +182,9 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "切换当前图片")
     @PostMapping("images/current/change")
     public Boolean changeCurrentImage(@Valid @RequestBody SancaiAssetRequest request) {
-        service.useImage(
-                SancaiEntryIdCodec.toDomain(requireLong(request == null ? null : request.getEntryId(), "entryId")),
-                SancaiEntryImageIdCodec.toDomain(requireLong(request == null ? null : request.getId(), "id")));
+        requireLong(request == null ? null : request.getEntryId(), "entryId");
+        requireLong(request == null ? null : request.getId(), "id");
+        service.useImage(SancaiAssetInterfaceAssembler.toImageUseCommand(request));
         return true;
     }
 
@@ -225,8 +224,7 @@ public class SancaiAssetAdminController {
             throws IOException {
         SancaiEntryImageContent imageContent;
         try {
-            imageContent = service.getImageContent(
-                    SancaiEntryIdCodec.toDomain(entryId), SancaiEntryImageIdCodec.toDomain(imageId));
+            imageContent = service.getImageContent(SancaiAssetInterfaceAssembler.toImageContentQuery(entryId, imageId));
         } catch (BizException exception) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -317,7 +315,7 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "更新视觉资产")
     @PostMapping("visual-assets/update")
     public SancaiAssetResponse updateVisualAsset(@Valid @RequestBody SancaiAssetRequest request) {
-        Long visualAssetId = service.updateVisualAsset(SancaiAssetInterfaceAssembler.toVisualAsset(request))
+        Long visualAssetId = service.updateVisualAsset(SancaiAssetInterfaceAssembler.toVisualAssetCommand(request))
                 .value();
         return SancaiAssetResponse.builder()
                 .id(visualAssetId)
@@ -337,9 +335,7 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "切换当前视觉资产")
     @PostMapping("visual-assets/current/change")
     public Boolean changeCurrentVisualAsset(@Valid @RequestBody SancaiAssetRequest request) {
-        service.useVisualAsset(
-                SancaiEntryIdCodec.toDomain(request.getEntryId()),
-                SancaiVisualAssetIdCodec.toDomain(request.getVisualAssetId()));
+        service.useVisualAsset(SancaiAssetInterfaceAssembler.toVisualAssetUseCommand(request));
         return true;
     }
 
@@ -375,9 +371,9 @@ public class SancaiAssetAdminController {
         try {
             content = sourceContent
                     ? service.getVisualAssetSourceContent(
-                            SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId))
+                            SancaiAssetInterfaceAssembler.toVisualAssetContentQuery(entryId, visualAssetId))
                     : service.getVisualAssetGeneratedContent(
-                            SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId));
+                            SancaiAssetInterfaceAssembler.toVisualAssetContentQuery(entryId, visualAssetId));
         } catch (BizException exception) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
