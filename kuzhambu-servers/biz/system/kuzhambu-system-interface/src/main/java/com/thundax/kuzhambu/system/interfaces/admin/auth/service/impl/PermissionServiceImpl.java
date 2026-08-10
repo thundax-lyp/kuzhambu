@@ -23,7 +23,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public Set<String> createPermissions(String token, String userId) {
         return toStringSet(permissionApplicationService.createPermissions(
-                new CreatePermissionsCommand(accessTokenCode(token), UserIdCodec.toDomain(userId))));
+                CreatePermissionsCommand.of(accessTokenCode(token), UserIdCodec.toDomain(userId))));
     }
 
     @Override
@@ -34,11 +34,11 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public boolean isPermitted(String token, String permission) {
         return permissionApplicationService.isPermitted(
-                new PermissionQuery(accessTokenCode(token), PermissionCode.ofNullable(permission)));
+                PermissionQuery.of(accessTokenCode(token), PermissionCode.ofNullable(permission)));
     }
 
     private PermissionQuery permissionQuery(String token) {
-        return new PermissionQuery(accessTokenCode(token), null);
+        return PermissionQuery.of(accessTokenCode(token), null);
     }
 
     private PrincipalAccessTokenCode accessTokenCode(String token) {

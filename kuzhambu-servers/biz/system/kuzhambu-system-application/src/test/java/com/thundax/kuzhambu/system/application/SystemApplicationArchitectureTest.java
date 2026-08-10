@@ -75,12 +75,6 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#PrincipalIdentityQuery:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.PermissionServiceImpl#CreatePermissionsCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.PermissionServiceImpl#PermissionQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.PermissionServiceImpl#PermissionQuery:2"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.CurrentUserController#ChangeCurrentUserAvatarCommand:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.CurrentUserController#ChangeCurrentUserInfoCommand:1"),
