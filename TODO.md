@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `09-10 interface taxonomy assembler`：taxonomy interface assembler nullness 收口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-09-KNOWLEDGE-TAXONOMY-PORTAL.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/assembler/KnowledgeTaxonomyInterfaceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/KnowledgeInterfaceArchitectureTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/assembler/TaxonomyApplicationAssembler.java`
-    - 处理动作：补齐 taxonomy interface assembler 非空契约并删除对应 ArchUnit allowlist key。
-    - 验收点：`KnowledgeInterfaceArchitectureTest` 不再包含 `KnowledgeTaxonomyInterfaceAssembler` nullness allowlist。
-    - 重要度：8/10
-
 - [ ] `09-11 interface portal atlas home quality models`：Portal atlas/home/quality 模型注解收口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-09-KNOWLEDGE-TAXONOMY-PORTAL.md`

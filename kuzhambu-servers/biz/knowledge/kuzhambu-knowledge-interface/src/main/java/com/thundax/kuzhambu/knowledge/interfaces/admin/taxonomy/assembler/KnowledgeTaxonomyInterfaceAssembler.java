@@ -71,22 +71,26 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.respo
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagMergePreviewResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagResponse;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 
 public final class KnowledgeTaxonomyInterfaceAssembler {
 
     private KnowledgeTaxonomyInterfaceAssembler() {}
 
-    public static TagCategoryQuery toQuery(TagCategoryPageRequest request) {
+    @NonNull
+    public static TagCategoryQuery toQuery(@NonNull TagCategoryPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagCategoryQuery(
-                request == null ? null : request.getName(),
-                request == null || StringUtils.isBlank(request.getStatus())
-                        ? null
-                        : TagCategoryStatus.from(request.getStatus()),
-                resolveSortDirection(request == null ? null : request.getSortDirection()));
+                request.getName(),
+                StringUtils.isBlank(request.getStatus()) ? null : TagCategoryStatus.from(request.getStatus()),
+                resolveSortDirection(request.getSortDirection()));
     }
 
-    public static TagCategoryCreateCommand toCategoryCreateCommand(TagCategoryCreateRequest request) {
+    @NonNull
+    public static TagCategoryCreateCommand toCategoryCreateCommand(@NonNull TagCategoryCreateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagCategoryCreateCommand(
                 TagCategoryIdCodec.toDomain(request.getId()),
                 request.getName(),
@@ -94,33 +98,35 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 request.getStatus() == null ? TagCategoryStatus.ENABLED : TagCategoryStatus.from(request.getStatus()));
     }
 
-    public static TagCategoryUpdateCommand toCategoryUpdateCommand(TagCategoryUpdateRequest request) {
+    @NonNull
+    public static TagCategoryUpdateCommand toCategoryUpdateCommand(@NonNull TagCategoryUpdateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagCategoryUpdateCommand(
                 TagCategoryIdCodec.toDomain(request.getId()), request.getName(), request.getDescription());
     }
 
-    public static TagCategoryStatusCommand toCategoryStatusCommand(TagCategoryStatusRequest request) {
+    @NonNull
+    public static TagCategoryStatusCommand toCategoryStatusCommand(@NonNull TagCategoryStatusRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagCategoryStatusCommand(
                 TagCategoryIdCodec.toDomain(request.getId()), TagCategoryStatus.from(request.getStatus()));
     }
 
-    public static TagQuery toQuery(TagPageRequest request) {
+    @NonNull
+    public static TagQuery toQuery(@NonNull TagPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagQuery(
-                request == null ? null : request.getName(),
-                TagCategoryIdCodec.toDomain(request == null ? null : request.getCategoryId()),
-                request == null || StringUtils.isBlank(request.getStatus())
-                        ? null
-                        : TagStatus.from(request.getStatus()),
-                request == null || StringUtils.isBlank(request.getSource())
-                        ? null
-                        : TagSource.from(request.getSource()),
-                request == null || StringUtils.isBlank(request.getReviewStatus())
-                        ? null
-                        : TagReviewStatus.from(request.getReviewStatus()),
-                resolveSortDirection(request == null ? null : request.getSortDirection()));
+                request.getName(),
+                TagCategoryIdCodec.toDomain(request.getCategoryId()),
+                StringUtils.isBlank(request.getStatus()) ? null : TagStatus.from(request.getStatus()),
+                StringUtils.isBlank(request.getSource()) ? null : TagSource.from(request.getSource()),
+                StringUtils.isBlank(request.getReviewStatus()) ? null : TagReviewStatus.from(request.getReviewStatus()),
+                resolveSortDirection(request.getSortDirection()));
     }
 
-    public static TagCreateCommand toCreateCommand(TagCreateRequest request) {
+    @NonNull
+    public static TagCreateCommand toCreateCommand(@NonNull TagCreateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagCreateCommand(
                 TagIdCodec.toDomain(request.getId()),
                 request.getName(),
@@ -131,7 +137,9 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 request.getReviewedAt());
     }
 
-    public static TagUpdateCommand toUpdateCommand(TagUpdateRequest request) {
+    @NonNull
+    public static TagUpdateCommand toUpdateCommand(@NonNull TagUpdateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagUpdateCommand(
                 TagIdCodec.toDomain(request.getId()),
                 request.getName(),
@@ -139,91 +147,112 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 request.getDescription());
     }
 
-    public static TagStatusCommand toStatusCommand(TagStatusRequest request) {
+    @NonNull
+    public static TagStatusCommand toStatusCommand(@NonNull TagStatusRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagStatusCommand(TagIdCodec.toDomain(request.getId()), TagStatus.from(request.getStatus()));
     }
 
-    public static TagMergePreviewQuery toMergePreviewQuery(TagMergeRequest request) {
+    @NonNull
+    public static TagMergePreviewQuery toMergePreviewQuery(@NonNull TagMergeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagMergePreviewQuery(
                 TagIdCodec.toDomain(request.getSourceTagId()), TagIdCodec.toDomain(request.getTargetTagId()));
     }
 
-    public static TagMergeCommand toMergeCommand(TagMergeRequest request) {
+    @NonNull
+    public static TagMergeCommand toMergeCommand(@NonNull TagMergeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagMergeCommand(
                 TagIdCodec.toDomain(request.getSourceTagId()), TagIdCodec.toDomain(request.getTargetTagId()));
     }
 
-    public static TagBatchMergePreviewQuery toBatchMergePreviewQuery(TagBatchMergeRequest request) {
+    @NonNull
+    public static TagBatchMergePreviewQuery toBatchMergePreviewQuery(@NonNull TagBatchMergeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagBatchMergePreviewQuery(
-                toTagIds(request == null ? null : request.getSourceTagIds()),
-                TagIdCodec.toDomain(request == null ? null : request.getTargetTagId()));
+                toTagIds(request.getSourceTagIds()), TagIdCodec.toDomain(request.getTargetTagId()));
     }
 
-    public static TagBatchMergeCommand toBatchMergeCommand(TagBatchMergeRequest request) {
+    @NonNull
+    public static TagBatchMergeCommand toBatchMergeCommand(@NonNull TagBatchMergeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagBatchMergeCommand(
-                toTagIds(request == null ? null : request.getSourceTagIds()),
-                TagIdCodec.toDomain(request == null ? null : request.getTargetTagId()));
+                toTagIds(request.getSourceTagIds()), TagIdCodec.toDomain(request.getTargetTagId()));
     }
 
-    public static TagDeprecateCommand toDeprecateCommand(TagDeprecateRequest request) {
+    @NonNull
+    public static TagDeprecateCommand toDeprecateCommand(@NonNull TagDeprecateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagDeprecateCommand(TagIdCodec.toDomain(request.getId()));
     }
 
-    public static TagBatchDeprecateCommand toBatchDeprecateCommand(TagBatchDeprecateRequest request) {
-        return new TagBatchDeprecateCommand(toTagIds(request == null ? null : request.getTagIds()));
+    @NonNull
+    public static TagBatchDeprecateCommand toBatchDeprecateCommand(@NonNull TagBatchDeprecateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new TagBatchDeprecateCommand(toTagIds(request.getTagIds()));
     }
 
-    public static TagGovernanceMetricsQuery toMetricsQuery(TagGovernanceMetricsRequest request) {
-        return new TagGovernanceMetricsQuery(
-                request == null ? null : request.getTopLimit(), request == null ? null : request.getRecentMonths());
+    @NonNull
+    public static TagGovernanceMetricsQuery toMetricsQuery(@NonNull TagGovernanceMetricsRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new TagGovernanceMetricsQuery(request.getTopLimit(), request.getRecentMonths());
     }
 
-    public static TagReviewQuery toQuery(TagReviewPageRequest request) {
+    @NonNull
+    public static TagReviewQuery toQuery(@NonNull TagReviewPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagReviewQuery(
-                request == null ? null : request.getName(),
-                request == null || StringUtils.isBlank(request.getSource())
-                        ? null
-                        : TagSource.from(request.getSource()),
-                resolveSortDirection(request == null ? null : request.getSortDirection()));
+                request.getName(),
+                StringUtils.isBlank(request.getSource()) ? null : TagSource.from(request.getSource()),
+                resolveSortDirection(request.getSortDirection()));
     }
 
-    public static TagReviewCommand toReviewCommand(TagReviewRequest request) {
+    @NonNull
+    public static TagReviewCommand toReviewCommand(@NonNull TagReviewRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagReviewCommand(
                 TagIdCodec.toDomain(request.getId()), request.getDecision(), request.getReviewNote());
     }
 
-    public static TagBatchReviewCommand toBatchReviewCommand(TagBatchReviewRequest request) {
+    @NonNull
+    public static TagBatchReviewCommand toBatchReviewCommand(@NonNull TagBatchReviewRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagBatchReviewCommand(
-                toTagIds(request == null ? null : request.getTagIds()),
-                request == null ? null : request.getDecision(),
-                TagCategoryIdCodec.toDomain(request == null ? null : request.getCategoryId()),
-                request == null ? null : request.getReviewNote());
+                toTagIds(request.getTagIds()),
+                request.getDecision(),
+                TagCategoryIdCodec.toDomain(request.getCategoryId()),
+                request.getReviewNote());
     }
 
-    public static TagExtractionCommand toExtractionCommand(TagExtractionRequest request) {
+    @NonNull
+    public static TagExtractionCommand toExtractionCommand(@NonNull TagExtractionRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagExtractionCommand(
-                request == null ? null : request.getSourceContentType(),
-                request == null ? null : request.getSourceContentId(),
-                request == null ? null : request.getContentTitle(),
-                request == null ? null : request.getContentText(),
-                request == null ? null : request.getModelId(),
-                request == null ? null : request.getModelName(),
-                request == null ? null : request.getPromptVersionId(),
-                request == null ? null : request.getMaxTags(),
-                request == null ? null : request.getAllowNewTags(),
-                request == null ? null : request.getRequestedBy());
+                request.getSourceContentType(),
+                request.getSourceContentId(),
+                request.getContentTitle(),
+                request.getContentText(),
+                request.getModelId(),
+                request.getModelName(),
+                request.getPromptVersionId(),
+                request.getMaxTags(),
+                request.getAllowNewTags(),
+                request.getRequestedBy());
     }
 
-    public static TagCandidateApplyCommand toCandidateApplyCommand(TagCandidateApplyRequest request) {
+    @NonNull
+    public static TagCandidateApplyCommand toCandidateApplyCommand(@NonNull TagCandidateApplyRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagCandidateApplyCommand(
-                request == null ? null : request.getAiCandidateId(),
-                request == null || request.getSelectedTags() == null
+                request.getAiCandidateId(),
+                request.getSelectedTags() == null
                         ? null
                         : request.getSelectedTags().stream()
                                 .map(KnowledgeTaxonomyInterfaceAssembler::toCandidateApplyItemCommand)
                                 .toList(),
-                request == null ? null : request.getReviewNote(),
-                request == null ? null : request.getReviewedBy());
+                request.getReviewNote(),
+                request.getReviewedBy());
     }
 
     private static TagCandidateApplyItem toCandidateApplyItemCommand(TagCandidateApplyItemRequest request) {
@@ -236,7 +265,9 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 request == null ? null : request.getMatchedExistingTagId());
     }
 
-    public static TagAliasCreateCommand toAliasCreateCommand(TagAliasCreateRequest request) {
+    @NonNull
+    public static TagAliasCreateCommand toAliasCreateCommand(@NonNull TagAliasCreateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagAliasCreateCommand(
                 TagAliasIdCodec.toDomain(request.getId()),
                 TagIdCodec.toDomain(request.getTagId()),
@@ -244,46 +275,54 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 StringUtils.isBlank(request.getSource()) ? null : TagSource.from(request.getSource()));
     }
 
-    public static TagAliasRemoveCommand toAliasRemoveCommand(TagAliasRemoveRequest request) {
+    @NonNull
+    public static TagAliasRemoveCommand toAliasRemoveCommand(@NonNull TagAliasRemoveRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new TagAliasRemoveCommand(TagAliasIdCodec.toDomain(request.getId()));
     }
 
-    public static TagCategoryResponse toResponse(TagCategoryResult result) {
+    @NonNull
+    public static TagCategoryResponse toResponse(@NonNull TagCategoryResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagCategoryResponse.builder()
-                .id(result == null ? null : result.getId())
-                .name(result == null ? null : result.getName())
-                .description(result == null ? null : result.getDescription())
-                .status(result == null ? null : result.getStatus())
+                .id(result.getId())
+                .name(result.getName())
+                .description(result.getDescription())
+                .status(result.getStatus())
                 .build();
     }
 
-    public static TagResponse toResponse(TagResult result) {
+    @NonNull
+    public static TagResponse toResponse(@NonNull TagResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagResponse.builder()
-                .id(result == null ? null : result.getId())
-                .name(result == null ? null : result.getName())
-                .categoryId(result == null ? null : result.getCategoryId())
-                .categoryName(result == null ? null : result.getCategoryName())
-                .description(result == null ? null : result.getDescription())
-                .status(result == null ? null : result.getStatus())
-                .source(result == null ? null : result.getSource())
-                .reviewStatus(result == null ? null : result.getReviewStatus())
-                .contentRefCount(result == null ? null : result.getContentRefCount())
-                .createdAt(result == null ? null : result.getCreatedAt())
-                .reviewedAt(result == null ? null : result.getReviewedAt())
+                .id(result.getId())
+                .name(result.getName())
+                .categoryId(result.getCategoryId())
+                .categoryName(result.getCategoryName())
+                .description(result.getDescription())
+                .status(result.getStatus())
+                .source(result.getSource())
+                .reviewStatus(result.getReviewStatus())
+                .contentRefCount(result.getContentRefCount())
+                .createdAt(result.getCreatedAt())
+                .reviewedAt(result.getReviewedAt())
                 .build();
     }
 
-    public static TagDetailResponse toResponse(TagDetailResult result) {
+    @NonNull
+    public static TagDetailResponse toResponse(@NonNull TagDetailResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagDetailResponse.builder()
-                .tag(result == null || result.getTag() == null ? null : toResponse(result.getTag()))
+                .tag(result.getTag() == null ? null : toResponse(result.getTag()))
                 .aliases(
-                        result == null || result.getAliases() == null
+                        result.getAliases() == null
                                 ? null
                                 : result.getAliases().stream()
                                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
                                         .toList())
                 .contentRefs(
-                        result == null || result.getContentRefs() == null
+                        result.getContentRefs() == null
                                 ? null
                                 : result.getContentRefs().stream()
                                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
@@ -291,93 +330,103 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 .build();
     }
 
-    public static TagAliasResponse toResponse(TagAliasResult result) {
+    @NonNull
+    public static TagAliasResponse toResponse(@NonNull TagAliasResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagAliasResponse.builder()
-                .id(result == null ? null : result.getId())
-                .name(result == null ? null : result.getName())
-                .source(result == null ? null : result.getSource())
+                .id(result.getId())
+                .name(result.getName())
+                .source(result.getSource())
                 .build();
     }
 
-    public static TagContentRefResponse toResponse(TagContentRefResult result) {
+    @NonNull
+    public static TagContentRefResponse toResponse(@NonNull TagContentRefResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagContentRefResponse.builder()
-                .id(result == null ? null : result.getId())
-                .contentType(result == null ? null : result.getContentType())
-                .contentId(result == null ? null : result.getContentId())
-                .contentTitle(result == null ? null : result.getContentTitle())
-                .source(result == null ? null : result.getSource())
+                .id(result.getId())
+                .contentType(result.getContentType())
+                .contentId(result.getContentId())
+                .contentTitle(result.getContentTitle())
+                .source(result.getSource())
                 .build();
     }
 
-    public static TagMergePreviewResponse toResponse(TagMergePreviewResult result) {
+    @NonNull
+    public static TagMergePreviewResponse toResponse(@NonNull TagMergePreviewResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagMergePreviewResponse.builder()
-                .sourceTag(result == null ? null : toResponse(result.getSourceTag()))
-                .targetTag(result == null ? null : toResponse(result.getTargetTag()))
+                .sourceTag(result.getSourceTag() == null ? null : toResponse(result.getSourceTag()))
+                .targetTag(result.getTargetTag() == null ? null : toResponse(result.getTargetTag()))
                 .aliasesToMerge(
-                        result == null || result.getAliasesToMerge() == null
+                        result.getAliasesToMerge() == null
                                 ? null
                                 : result.getAliasesToMerge().stream()
                                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
                                         .toList())
                 .impactedContentRefs(
-                        result == null || result.getImpactedContentRefs() == null
+                        result.getImpactedContentRefs() == null
                                 ? null
                                 : result.getImpactedContentRefs().stream()
                                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
                                         .toList())
-                .pendingReviewCount(result == null ? null : result.getPendingReviewCount())
-                .governedRecordCount(result == null ? null : result.getGovernedRecordCount())
+                .pendingReviewCount(result.getPendingReviewCount())
+                .governedRecordCount(result.getGovernedRecordCount())
                 .build();
     }
 
-    public static TagBatchMergePreviewResponse toResponse(TagBatchMergePreviewResult result) {
+    @NonNull
+    public static TagBatchMergePreviewResponse toResponse(@NonNull TagBatchMergePreviewResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagBatchMergePreviewResponse.builder()
                 .sourceTags(
-                        result == null || result.getSourceTags() == null
+                        result.getSourceTags() == null
                                 ? null
                                 : result.getSourceTags().stream()
                                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
                                         .toList())
-                .targetTag(result == null ? null : toResponse(result.getTargetTag()))
+                .targetTag(result.getTargetTag() == null ? null : toResponse(result.getTargetTag()))
                 .aliasesToMerge(
-                        result == null || result.getAliasesToMerge() == null
+                        result.getAliasesToMerge() == null
                                 ? null
                                 : result.getAliasesToMerge().stream()
                                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
                                         .toList())
                 .impactedContentRefs(
-                        result == null || result.getImpactedContentRefs() == null
+                        result.getImpactedContentRefs() == null
                                 ? null
                                 : result.getImpactedContentRefs().stream()
                                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
                                         .toList())
-                .pendingReviewCount(result == null ? null : result.getPendingReviewCount())
-                .governedRecordCount(result == null ? null : result.getGovernedRecordCount())
+                .pendingReviewCount(result.getPendingReviewCount())
+                .governedRecordCount(result.getGovernedRecordCount())
                 .build();
     }
 
-    public static TagGovernanceMetricsResponse toResponse(TagGovernanceMetricsResult result) {
+    @NonNull
+    public static TagGovernanceMetricsResponse toResponse(@NonNull TagGovernanceMetricsResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagGovernanceMetricsResponse.builder()
                 .topTags(
-                        result == null || result.getTopTags() == null
+                        result.getTopTags() == null
                                 ? null
                                 : result.getTopTags().stream()
                                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
                                         .toList())
                 .categoryDistributions(
-                        result == null || result.getCategoryDistributions() == null
+                        result.getCategoryDistributions() == null
                                 ? null
                                 : result.getCategoryDistributions().stream()
                                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
                                         .toList())
                 .sourceRatios(
-                        result == null || result.getSourceRatios() == null
+                        result.getSourceRatios() == null
                                 ? null
                                 : result.getSourceRatios().stream()
                                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
                                         .toList())
                 .monthlyNewTags(
-                        result == null || result.getMonthlyNewTags() == null
+                        result.getMonthlyNewTags() == null
                                 ? null
                                 : result.getMonthlyNewTags().stream()
                                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
@@ -385,50 +434,57 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 .build();
     }
 
-    public static TagExtractionResponse toResponse(TagExtractionResult result) {
+    @NonNull
+    public static TagExtractionResponse toResponse(@NonNull TagExtractionResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagExtractionResponse.builder()
-                .aiCallId(result == null ? null : result.getAiCallId())
-                .aiCandidateId(result == null ? null : result.getAiCandidateId())
-                .status(result == null ? null : result.getStatus())
-                .resultFormat(result == null ? null : result.getResultFormat())
-                .resultPayload(result == null ? null : result.getResultPayload())
-                .errorType(result == null ? null : result.getErrorType())
-                .errorMessage(result == null ? null : result.getErrorMessage())
+                .aiCallId(result.getAiCallId())
+                .aiCandidateId(result.getAiCandidateId())
+                .status(result.getStatus())
+                .resultFormat(result.getResultFormat())
+                .resultPayload(result.getResultPayload())
+                .errorType(result.getErrorType())
+                .errorMessage(result.getErrorMessage())
                 .build();
     }
 
+    @NonNull
     public static TagGovernanceMetricsResponse.TagUsageMetric toResponse(
-            TagGovernanceMetricsResult.TagUsageMetric result) {
+            @NonNull TagGovernanceMetricsResult.TagUsageMetric result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagGovernanceMetricsResponse.TagUsageMetric.builder()
-                .tagName(result == null ? null : result.getTagName())
-                .contentRefCount(result == null ? null : result.getContentRefCount())
+                .tagName(result.getTagName())
+                .contentRefCount(result.getContentRefCount())
                 .build();
     }
 
+    @NonNull
     public static TagGovernanceMetricsResponse.CategoryDistributionMetric toResponse(
-            TagGovernanceMetricsResult.CategoryDistributionMetric result) {
+            @NonNull TagGovernanceMetricsResult.CategoryDistributionMetric result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagGovernanceMetricsResponse.CategoryDistributionMetric.builder()
-                .categoryName(result == null ? null : result.getCategoryName())
-                .tagCount(result == null ? null : result.getTagCount())
+                .categoryName(result.getCategoryName())
+                .tagCount(result.getTagCount())
                 .build();
     }
 
+    @NonNull
     public static TagGovernanceMetricsResponse.SourceRatioMetric toResponse(
-            TagGovernanceMetricsResult.SourceRatioMetric result) {
+            @NonNull TagGovernanceMetricsResult.SourceRatioMetric result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagGovernanceMetricsResponse.SourceRatioMetric.builder()
-                .source(
-                        result == null || result.getSource() == null
-                                ? null
-                                : result.getSource().value())
-                .tagCount(result == null ? null : result.getTagCount())
+                .source(result.getSource() == null ? null : result.getSource().value())
+                .tagCount(result.getTagCount())
                 .build();
     }
 
+    @NonNull
     public static TagGovernanceMetricsResponse.MonthlyNewTagMetric toResponse(
-            TagGovernanceMetricsResult.MonthlyNewTagMetric result) {
+            @NonNull TagGovernanceMetricsResult.MonthlyNewTagMetric result) {
+        Objects.requireNonNull(result, "result must not be null");
         return TagGovernanceMetricsResponse.MonthlyNewTagMetric.builder()
-                .month(result == null ? null : result.getMonth())
-                .tagCount(result == null ? null : result.getTagCount())
+                .month(result.getMonth())
+                .tagCount(result.getTagCount())
                 .build();
     }
 
