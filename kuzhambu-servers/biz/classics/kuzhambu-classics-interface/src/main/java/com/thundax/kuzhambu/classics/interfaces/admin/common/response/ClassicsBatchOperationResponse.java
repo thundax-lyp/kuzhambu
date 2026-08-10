@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
 import java.util.List;
 import lombok.Builder;
@@ -14,6 +15,7 @@ import lombok.Getter;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Schema(description = "古籍批量处理响应")
 public class ClassicsBatchOperationResponse implements Serializable {
     @JsonProperty("successCount")
     private Integer successCount;

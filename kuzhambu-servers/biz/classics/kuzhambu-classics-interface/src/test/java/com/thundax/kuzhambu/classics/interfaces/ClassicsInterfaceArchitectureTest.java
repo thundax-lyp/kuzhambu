@@ -62,9 +62,7 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
-        return modelAnnotationAllowances(
-                ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
-                "admin.common.response.ClassicsBatchOperationResponse");
+        return modelAnnotationAllowances(ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS);
     }
 
     private static List<ArchitectureRuleAllowance> modelAnnotationAllowances(String ruleName, String... classNames) {
