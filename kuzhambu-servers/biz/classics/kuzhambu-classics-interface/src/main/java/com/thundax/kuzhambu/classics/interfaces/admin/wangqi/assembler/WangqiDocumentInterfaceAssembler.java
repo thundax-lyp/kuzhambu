@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler;
 
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
@@ -17,10 +18,12 @@ import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentSourceFileResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentVersionResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
+import org.springframework.web.multipart.MultipartFile;
 
 public final class WangqiDocumentInterfaceAssembler {
     private WangqiDocumentInterfaceAssembler() {}
@@ -54,6 +57,15 @@ public final class WangqiDocumentInterfaceAssembler {
                 request.getContent(),
                 request.getDocumentTime(),
                 request.getStorageObjectId());
+    }
+
+    @NonNull
+    public static WangqiDocumentSourceFileCommand toSourceFileCommand(@NonNull Long id, @NonNull MultipartFile file)
+            throws IOException {
+        Objects.requireNonNull(id, "id");
+        Objects.requireNonNull(file, "file");
+        return new WangqiDocumentSourceFileCommand(
+                id, file.getInputStream(), file.getOriginalFilename(), file.getContentType(), file.getSize());
     }
 
     public static WangqiDocumentResponse toResponse(WangqiDocument entity) {

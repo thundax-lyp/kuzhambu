@@ -208,10 +208,6 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.SancaiPortalController#PageQuery:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.MingCustomsAdminController#MingCustomsKeywordSortCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.WangqiDocumentAdminController#WangqiDocumentSourceFileCommand:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiContentAdminController#ContentQaPairSortCommand:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiContentAdminController#ContentQaPairCommand:1"),
@@ -224,11 +220,7 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAssetAdminController#SancaiEntryImageUploadCommand:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAssetAdminController#SancaiEntryImageSortCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.content.controller.ClassicsContentAdminController#ContentTagSortCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.classics.interfaces.admin.content.controller.ClassicsContentAdminController#ContentQaPairSortCommand:1"));
+                        "com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAssetAdminController#SancaiEntryImageSortCommand:1"));
     }
 
     private static ArchitectureRuleAllowance constructionViolation(String ownerAndType) {

@@ -6,8 +6,12 @@ import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatc
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentItemCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -19,8 +23,12 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportKi
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportScopeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
+import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentQaPairSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentTagSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response.ClassicsContentResponse;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import java.util.Objects;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +58,24 @@ public final class ClassicsContentInterfaceAssembler {
                 request.getQuestion(),
                 request.getAnswer(),
                 source(request.getSource()));
+    }
+
+    @NonNull
+    public static ContentTagSortCommand toTagSortCommand(@NonNull ClassicsContentTagSortRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new ContentTagSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
+                ClassicsContentTagIdCodec::toDomain));
+    }
+
+    @NonNull
+    public static ContentQaPairSortCommand toQaPairSortCommand(@NonNull ClassicsContentQaPairSortRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new ContentQaPairSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
+                ClassicsContentQaPairIdCodec::toDomain));
     }
 
     public static ContentExportCommand toExportCommand(ClassicsContentRequest request) {

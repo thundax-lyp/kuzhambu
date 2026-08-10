@@ -2,21 +2,26 @@ package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler;
 
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
+import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsQuery;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsTagCloudItem;
+import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsKeywordSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsTagCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsVersionResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import java.util.Objects;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -74,6 +79,15 @@ public final class MingCustomsInterfaceAssembler {
 
     public static MingCustomsKeywordCommand toKeywordCommand(Long customId, MingCustomsRequest request) {
         return new MingCustomsKeywordCommand(MingCustomsEntryIdCodec.toDomain(customId), request.getKeyword());
+    }
+
+    @NonNull
+    public static MingCustomsKeywordSortCommand toKeywordSortCommand(@NonNull MingCustomsKeywordSortRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new MingCustomsKeywordSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request.getOrderedIds(), "orderedIds", AdminResponseExceptions::invalidParameter),
+                MingCustomsKeywordIdCodec::toDomain));
     }
 
     public static MingCustomsResponse toResponse(MingCustomsEntry entity) {

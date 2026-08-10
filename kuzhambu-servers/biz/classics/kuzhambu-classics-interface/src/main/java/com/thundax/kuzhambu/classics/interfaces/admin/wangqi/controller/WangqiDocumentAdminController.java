@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
-import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
@@ -183,12 +182,8 @@ public class WangqiDocumentAdminController {
     public WangqiDocumentSourceFileResponse uploadSourceFile(
             @PathVariable("id") Long id, @RequestParam("file") MultipartFile file) {
         try {
-            WangqiDocumentSourceFile result = service.changeSourceFile(new WangqiDocumentSourceFileCommand(
-                    id,
-                    file == null ? null : file.getInputStream(),
-                    file == null ? null : file.getOriginalFilename(),
-                    file == null ? null : file.getContentType(),
-                    file == null ? 0L : file.getSize()));
+            WangqiDocumentSourceFile result =
+                    service.changeSourceFile(WangqiDocumentInterfaceAssembler.toSourceFileCommand(id, file));
             return WangqiDocumentInterfaceAssembler.toSourceFileResponse(result);
         } catch (IOException exception) {
             throw new BizException("王圻原始文件上传失败：" + exception.getMessage());

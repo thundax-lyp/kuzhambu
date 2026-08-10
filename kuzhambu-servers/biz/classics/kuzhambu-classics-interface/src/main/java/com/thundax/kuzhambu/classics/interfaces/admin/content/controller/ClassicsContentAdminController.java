@@ -1,8 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.content.controller;
 
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
-import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
-import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
@@ -155,12 +153,7 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "标签排序")
     @PostMapping("tags/sort")
     public Boolean sortTags(@Valid @RequestBody ClassicsContentTagSortRequest request) {
-        service.sortTags(new ContentTagSortCommand(RequestListHelper.map(
-                RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
-                ClassicsContentTagIdCodec::toDomain)));
+        service.sortTags(ClassicsContentInterfaceAssembler.toTagSortCommand(request));
         return true;
     }
 
@@ -302,12 +295,7 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "问答排序")
     @PostMapping("qa-pairs/sort")
     public Boolean sortQaPairs(@Valid @RequestBody ClassicsContentQaPairSortRequest request) {
-        service.sortQaPairs(new ContentQaPairSortCommand(RequestListHelper.map(
-                RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
-                ClassicsContentQaPairIdCodec::toDomain)));
+        service.sortQaPairs(ClassicsContentInterfaceAssembler.toQaPairSortCommand(request));
         return true;
     }
 

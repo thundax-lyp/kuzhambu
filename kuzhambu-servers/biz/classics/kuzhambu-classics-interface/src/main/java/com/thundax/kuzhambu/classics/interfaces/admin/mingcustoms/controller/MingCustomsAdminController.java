@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
@@ -27,7 +26,6 @@ import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
-import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import io.swagger.annotations.ApiImplicitParam;
@@ -168,12 +166,7 @@ public class MingCustomsAdminController {
     @SysLogger(value = "关键词排序")
     @PostMapping("keywords/sort")
     public Boolean sortKeywords(@Valid @RequestBody MingCustomsKeywordSortRequest request) {
-        service.sortKeywords(new MingCustomsKeywordSortCommand(RequestListHelper.map(
-                RequestListHelper.presentUnique(
-                        request == null ? null : request.getOrderedIds(),
-                        "orderedIds",
-                        AdminResponseExceptions::invalidParameter),
-                MingCustomsKeywordIdCodec::toDomain)));
+        service.sortKeywords(MingCustomsInterfaceAssembler.toKeywordSortCommand(request));
         return true;
     }
 
