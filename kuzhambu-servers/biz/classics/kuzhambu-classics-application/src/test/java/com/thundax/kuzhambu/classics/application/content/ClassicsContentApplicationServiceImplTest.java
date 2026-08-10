@@ -273,12 +273,11 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        ContentExportCommand command = new ContentExportCommand();
-        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
-        command.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        command.setExportFormat(ClassicsExportFormat.HTML);
-        command.setScopeType(ClassicsExportScopeType.CATEGORY);
-        command.setScopeJson("{\"title\":\"export\"}");
+        ContentExportCommand command = exportCommand(
+                ClassicsContentType.SANCAI_ENTRY,
+                ClassicsExportFormat.HTML,
+                ClassicsExportScopeType.CATEGORY,
+                "{\"title\":\"export\"}");
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobIdCodec.toDomain(900000000001L));
         WorkerRenderDtos.WorkerRenderResponse response = renderSuccessResponse("export.zip");
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(response);
@@ -324,12 +323,11 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        ContentExportCommand command = new ContentExportCommand();
-        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
-        command.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        command.setExportFormat(ClassicsExportFormat.HTML);
-        command.setScopeType(ClassicsExportScopeType.CATEGORY);
-        command.setScopeJson("{\"title\":\"export\"}");
+        ContentExportCommand command = exportCommand(
+                ClassicsContentType.SANCAI_ENTRY,
+                ClassicsExportFormat.HTML,
+                ClassicsExportScopeType.CATEGORY,
+                "{\"title\":\"export\"}");
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobIdCodec.toDomain(900000000007L));
         WorkerRenderDtos.WorkerRenderResponse response = renderSuccessResponse("too-large.zip");
         response.getArtifact().setSizeBytes(50L * 1024L * 1024L + 1L);
@@ -349,9 +347,8 @@ class ClassicsContentApplicationServiceImplTest {
     void createExportJobShouldRejectPrivateScopeWithoutExportPermissionBeforeWriting() {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
-        ContentExportCommand command = new ContentExportCommand();
-        command.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        command.setVisibilityRiskStatus(SancaiVisibilityRiskStatus.PRIVATE_CONFIRMED);
+        ContentExportCommand command = exportCommand(
+                ClassicsContentType.SANCAI_ENTRY, null, null, null, SancaiVisibilityRiskStatus.PRIVATE_CONFIRMED, null);
         ClassicsContentApplicationServiceImpl service =
                 service(repository, null, null, null, workerRenderClient, null, null, null, null);
 
@@ -365,14 +362,13 @@ class ClassicsContentApplicationServiceImplTest {
     void createExportJobShouldAllowPrivateScopeWithContentViewAndExportPermission() {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
-        ContentExportCommand command = new ContentExportCommand();
-        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
-        command.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        command.setExportFormat(ClassicsExportFormat.HTML);
-        command.setScopeType(ClassicsExportScopeType.CATEGORY);
-        command.setScopeJson("{\"title\":\"private export\"}");
-        command.setVisibilityRiskStatus(SancaiVisibilityRiskStatus.PRIVATE_CONFIRMED);
-        command.setOperatorPermissions(Set.of("classics:sancai:view", "classics:content:export"));
+        ContentExportCommand command = exportCommand(
+                ClassicsContentType.SANCAI_ENTRY,
+                ClassicsExportFormat.HTML,
+                ClassicsExportScopeType.CATEGORY,
+                "{\"title\":\"private export\"}",
+                SancaiVisibilityRiskStatus.PRIVATE_CONFIRMED,
+                Set.of("classics:sancai:view", "classics:content:export"));
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobIdCodec.toDomain(900000000006L));
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderFailedResponse());
         ClassicsContentApplicationServiceImpl service =
@@ -391,12 +387,11 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        ContentExportCommand command = new ContentExportCommand();
-        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
-        command.setContentType(ClassicsContentType.WANGQI_DOCUMENT);
-        command.setExportFormat(ClassicsExportFormat.JSON);
-        command.setScopeType(ClassicsExportScopeType.SELECTED_ITEMS);
-        command.setScopeJson("{\"title\":\"王圻导出\",\"items\":[{\"id\":101,\"title\":\"文档一\",\"text\":\"正文一\"}]}");
+        ContentExportCommand command = exportCommand(
+                ClassicsContentType.WANGQI_DOCUMENT,
+                ClassicsExportFormat.JSON,
+                ClassicsExportScopeType.SELECTED_ITEMS,
+                "{\"title\":\"王圻导出\",\"items\":[{\"id\":101,\"title\":\"文档一\",\"text\":\"正文一\"}]}");
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobIdCodec.toDomain(900000000003L));
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderSuccessResponse("wangqi.json"));
         when(storageFacade.upload(any(UploadStorageFacadeRequest.class))).thenReturn(uploadResponse());
@@ -423,21 +418,20 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        ContentExportCommand command = new ContentExportCommand();
-        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
-        command.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        command.setExportFormat(ClassicsExportFormat.JSON);
-        command.setScopeType(ClassicsExportScopeType.SELECTED_ITEMS);
-        command.setScopeJson("{\"title\":\"三才导出\",\"items\":["
-                + "{\"id\":101,\"title\":\"条目一\",\"images\":["
-                + "{\"imageId\":12,\"storageObjectId\":702,\"imageType\":\"GENERATED\","
-                + "\"title\":\"生成图\",\"currentUsed\":false,\"priority\":2,"
-                + "\"originalFilename\":\"generated.png\",\"contentType\":\"image/png\",\"size\":20},"
-                + "{\"imageId\":11,\"storageObjectId\":701,\"imageType\":\"ORIGINAL\","
-                + "\"title\":\"原图\",\"currentUsed\":true,\"priority\":1}"
-                + "]},"
-                + "{\"id\":102,\"title\":\"条目二\"}"
-                + "]}");
+        ContentExportCommand command = exportCommand(
+                ClassicsContentType.SANCAI_ENTRY,
+                ClassicsExportFormat.JSON,
+                ClassicsExportScopeType.SELECTED_ITEMS,
+                "{\"title\":\"三才导出\",\"items\":["
+                        + "{\"id\":101,\"title\":\"条目一\",\"images\":["
+                        + "{\"imageId\":12,\"storageObjectId\":702,\"imageType\":\"GENERATED\","
+                        + "\"title\":\"生成图\",\"currentUsed\":false,\"priority\":2,"
+                        + "\"originalFilename\":\"generated.png\",\"contentType\":\"image/png\",\"size\":20},"
+                        + "{\"imageId\":11,\"storageObjectId\":701,\"imageType\":\"ORIGINAL\","
+                        + "\"title\":\"原图\",\"currentUsed\":true,\"priority\":1}"
+                        + "]},"
+                        + "{\"id\":102,\"title\":\"条目二\"}"
+                        + "]}");
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobIdCodec.toDomain(900000000005L));
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderSuccessResponse("sancai.json"));
         when(storageFacade.upload(any(UploadStorageFacadeRequest.class))).thenReturn(uploadResponse());
@@ -478,12 +472,11 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        ContentExportCommand command = new ContentExportCommand();
-        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
-        command.setContentType(ClassicsContentType.MING_CUSTOMS);
-        command.setExportFormat(ClassicsExportFormat.HTML);
-        command.setScopeType(ClassicsExportScopeType.SELECTED_ITEMS);
-        command.setScopeJson("{\"title\":\"明俗导出\",\"items\":[{\"id\":201,\"title\":\"习俗一\",\"text\":\"正文一\"}]}");
+        ContentExportCommand command = exportCommand(
+                ClassicsContentType.MING_CUSTOMS,
+                ClassicsExportFormat.HTML,
+                ClassicsExportScopeType.SELECTED_ITEMS,
+                "{\"title\":\"明俗导出\",\"items\":[{\"id\":201,\"title\":\"习俗一\",\"text\":\"正文一\"}]}");
         WorkerRenderDtos.WorkerRenderResponse response = renderSuccessResponse("ming.html");
         response.setSummary(null);
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobIdCodec.toDomain(900000000004L));
@@ -508,12 +501,11 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        ContentExportCommand command = new ContentExportCommand();
-        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
-        command.setContentType(ClassicsContentType.WANGQI_DOCUMENT);
-        command.setExportFormat(ClassicsExportFormat.HTML);
-        command.setScopeType(ClassicsExportScopeType.FILTER_RESULT);
-        command.setScopeJson("{\"title\":\"export\"}");
+        ContentExportCommand command = exportCommand(
+                ClassicsContentType.WANGQI_DOCUMENT,
+                ClassicsExportFormat.HTML,
+                ClassicsExportScopeType.FILTER_RESULT,
+                "{\"title\":\"export\"}");
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobIdCodec.toDomain(900000000002L));
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderFailedResponse());
         ClassicsContentApplicationServiceImpl service =
@@ -777,6 +769,39 @@ class ClassicsContentApplicationServiceImplTest {
 
     private static UploadStorageFacadeResponse uploadResponse() {
         return UploadStorageFacadeResponse.builder().storageObjectId(7001L).build();
+    }
+
+    private static ContentExportCommand exportCommand(
+            ClassicsContentType contentType,
+            ClassicsExportFormat exportFormat,
+            ClassicsExportScopeType scopeType,
+            String scopeJson) {
+        return exportCommand(contentType, exportFormat, scopeType, scopeJson, null, null);
+    }
+
+    private static ContentExportCommand exportCommand(
+            ClassicsContentType contentType,
+            ClassicsExportFormat exportFormat,
+            ClassicsExportScopeType scopeType,
+            String scopeJson,
+            SancaiVisibilityRiskStatus visibilityRiskStatus,
+            Set<String> operatorPermissions) {
+        return new ContentExportCommand(
+                ClassicsExportKind.CONTENT_DATASET,
+                contentType,
+                exportFormat,
+                scopeType,
+                scopeJson,
+                null,
+                null,
+                null,
+                null,
+                0,
+                0,
+                visibilityRiskStatus,
+                false,
+                null,
+                operatorPermissions);
     }
 
     private static ClassicsContentVersion existingVersion(Long id, int versionNo, Instant versionedAt) {

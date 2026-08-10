@@ -20,13 +20,13 @@ public final class ClassicsContentApplicationAssembler {
             return null;
         }
         ClassicsContentTag tag = new ClassicsContentTag();
-        tag.setId(ClassicsContentTagIdCodec.toDomain(command.getId()));
-        tag.setContentType(command.getContentType());
-        tag.setContentId(ClassicsContentIdCodec.toDomain(command.getContentId()));
-        tag.setTagId(KnowledgeTagIdCodec.toDomain(command.getTagId()));
-        tag.setTagNameSnapshot(command.getTagNameSnapshot());
-        tag.setSource(command.getSource());
-        tag.setStatus(command.getStatus());
+        tag.setId(ClassicsContentTagIdCodec.toDomain(command.id()));
+        tag.setContentType(command.contentType());
+        tag.setContentId(ClassicsContentIdCodec.toDomain(command.contentId()));
+        tag.setTagId(KnowledgeTagIdCodec.toDomain(command.tagId()));
+        tag.setTagNameSnapshot(command.tagNameSnapshot());
+        tag.setSource(command.source());
+        tag.setStatus(command.status());
         return tag;
     }
 
@@ -35,12 +35,12 @@ public final class ClassicsContentApplicationAssembler {
             return null;
         }
         ClassicsContentQaPair qaPair = new ClassicsContentQaPair();
-        qaPair.setId(ClassicsContentQaPairIdCodec.toDomain(command.getId()));
-        qaPair.setContentType(command.getContentType());
-        qaPair.setContentId(ClassicsContentIdCodec.toDomain(command.getContentId()));
-        qaPair.setQuestion(command.getQuestion());
-        qaPair.setAnswer(command.getAnswer());
-        qaPair.setSource(command.getSource());
+        qaPair.setId(ClassicsContentQaPairIdCodec.toDomain(command.id()));
+        qaPair.setContentType(command.contentType());
+        qaPair.setContentId(ClassicsContentIdCodec.toDomain(command.contentId()));
+        qaPair.setQuestion(command.question());
+        qaPair.setAnswer(command.answer());
+        qaPair.setSource(command.source());
         return qaPair;
     }
 
@@ -50,18 +50,18 @@ public final class ClassicsContentApplicationAssembler {
         }
         return new ClassicsContentExportJob(
                 null,
-                command.getExportKind(),
-                command.getContentType(),
-                command.getExportFormat(),
-                command.getScopeType(),
-                command.getScopeJson(),
-                command.getRequestedAt(),
-                command.getExpiresAt(),
-                command.getStatus(),
-                command.getStorageObjectId(),
-                command.getItemCount(),
-                command.getAssetCount(),
-                command.getVisibilityRiskStatus(),
-                command.isContentChanged());
+                command.exportKind(),
+                command.contentType(),
+                command.exportFormat(),
+                command.scopeType(),
+                command.scopeJson(),
+                command.requestedAt(),
+                command.expiresAt(),
+                command.status(),
+                command.storageObjectId(),
+                command.itemCount(),
+                command.assetCount(),
+                command.visibilityRiskStatus(),
+                command.contentChanged());
     }
 }

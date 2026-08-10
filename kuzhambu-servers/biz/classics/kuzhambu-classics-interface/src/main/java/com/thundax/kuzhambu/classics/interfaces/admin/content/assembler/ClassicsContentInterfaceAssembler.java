@@ -21,7 +21,10 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportSt
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response.ClassicsContentResponse;
+import java.util.Objects;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 
 public final class ClassicsContentInterfaceAssembler {
     private ClassicsContentInterfaceAssembler() {}
@@ -50,6 +53,14 @@ public final class ClassicsContentInterfaceAssembler {
     }
 
     public static ContentExportCommand toExportCommand(ClassicsContentRequest request) {
+        return toExportCommand(request, Set.of());
+    }
+
+    @NonNull
+    public static ContentExportCommand toExportCommand(
+            @NonNull ClassicsContentRequest request, @NonNull Set<String> operatorPermissions) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(operatorPermissions, "operatorPermissions");
         return new ContentExportCommand(
                 ClassicsExportKind.from(request.getExportKind()),
                 type(request.getContentType()),
@@ -63,7 +74,9 @@ public final class ClassicsContentInterfaceAssembler {
                 0,
                 0,
                 null,
-                false);
+                false,
+                null,
+                operatorPermissions);
     }
 
     public static ClassicsContentResponse toTagResponse(ClassicsContentTag tag) {

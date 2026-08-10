@@ -108,12 +108,12 @@ class SancaiContentAdminControllerTest {
                     }
                     if ("addQaPair".equals(method.getName()) || "updateQaPair".equals(method.getName())) {
                         ContentQaPairCommand command = (ContentQaPairCommand) args[0];
-                        assertEquals(9001L, command.getId());
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(3001L, command.getContentId());
-                        assertEquals("问", command.getQuestion());
-                        assertEquals("答", command.getAnswer());
-                        assertEquals(ClassicsContentSource.MANUAL, command.getSource());
+                        assertEquals(9001L, command.id());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(3001L, command.contentId());
+                        assertEquals("问", command.question());
+                        assertEquals("答", command.answer());
+                        assertEquals(ClassicsContentSource.MANUAL, command.source());
                         return ClassicsContentQaPairIdCodec.toDomain(9001L);
                     }
                     if ("deleteQaPair".equals(method.getName())) {
@@ -126,7 +126,7 @@ class SancaiContentAdminControllerTest {
                                 List.of(
                                         ClassicsContentQaPairIdCodec.toDomain(9001L),
                                         ClassicsContentQaPairIdCodec.toDomain(9002L)),
-                                command.getOrderedIds());
+                                command.orderedIds());
                         return null;
                     }
                     throw new UnsupportedOperationException(method.getName());

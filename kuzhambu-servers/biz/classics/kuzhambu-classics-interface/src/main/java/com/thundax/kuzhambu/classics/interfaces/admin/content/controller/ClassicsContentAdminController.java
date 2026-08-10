@@ -323,8 +323,8 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "创建导出任务")
     @PostMapping("exports/create")
     public ClassicsContentResponse createExport(@Valid @RequestBody ClassicsContentRequest request) {
-        ContentExportCommand command = ClassicsContentInterfaceAssembler.toExportCommand(request);
-        command.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
+        ContentExportCommand command =
+                ClassicsContentInterfaceAssembler.toExportCommand(request, KuzhambuContextHolder.currentAuthorities());
         ClassicsExportJobResult result = service.createExportJob(command);
         return ClassicsContentResponse.builder()
                 .id(

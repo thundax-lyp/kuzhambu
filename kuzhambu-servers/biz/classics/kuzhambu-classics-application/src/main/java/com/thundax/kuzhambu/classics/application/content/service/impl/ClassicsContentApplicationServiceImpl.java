@@ -196,7 +196,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortTags(ContentTagSortCommand command) {
-        List<ClassicsContentTagId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<ClassicsContentTagId> orderedIdList = command == null ? null : command.orderedIds();
         List<ClassicsContentTag> tags = repository.listTags(SortDirection.ASC);
         tags.stream()
                 .filter(Objects::nonNull)
@@ -217,15 +217,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId addTag(ContentTagCommand command) {
-        validateTagCommand(command, false);
-        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
-        ClassicsContentType contentType = command.getContentType();
+        command = validateTagCommand(command, false);
+        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.contentId());
+        ClassicsContentType contentType = command.contentType();
         requireWritable(contentType, contentId);
         int nextPriority = repository.maxTagPriority(null, null) + 1;
         ClassicsContentTag tag;
         if (tagBindingSupport == null) {
             tag = ClassicsContentApplicationAssembler.toTag(command);
-        } else if (command.getSource() == ClassicsContentSource.AI) {
+        } else if (command.source() == ClassicsContentSource.AI) {
             tag = tagBindingSupport.bindAiTag(command, nextPriority);
         } else {
             tag = tagBindingSupport.bindManualTag(command, nextPriority);
@@ -246,12 +246,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId updateTag(ContentTagCommand command) {
-        validateTagCommand(command, true);
-        ClassicsContentType contentType = command.getContentType();
-        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
+        command = validateTagCommand(command, true);
+        ClassicsContentType contentType = command.contentType();
+        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.contentId());
         requireWritable(contentType, contentId);
         ClassicsContentTag existing =
-                repository.getTagById(command == null ? null : ClassicsContentTagIdCodec.toDomain(command.getId()));
+                repository.getTagById(command == null ? null : ClassicsContentTagIdCodec.toDomain(command.id()));
         if (existing == null) {
             throw new BizException("古籍内容标签不存在");
         }
@@ -347,7 +347,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 .map(pair -> new ContentRef(pair.getContentType(), pair.getContentId()))
                 .distinct()
                 .forEach(ref -> requireWritable(ref.contentType(), ref.contentId()));
-        List<ClassicsContentQaPairId> orderedIdList = command == null ? null : command.getOrderedIds();
+        List<ClassicsContentQaPairId> orderedIdList = command == null ? null : command.orderedIds();
         SortablePrioritySwapSupport.sort(
                 orderedIdList,
                 currentQaPairs,
@@ -1076,12 +1076,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private ClassicsContentTagId insertTagWithoutVersion(ContentTagCommand command) {
-        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
+        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.contentId());
         int nextPriority = repository.maxTagPriority(null, null) + 1;
         ClassicsContentTag tag;
         if (tagBindingSupport == null) {
             tag = ClassicsContentApplicationAssembler.toTag(command);
-        } else if (command.getSource() == ClassicsContentSource.AI) {
+        } else if (command.source() == ClassicsContentSource.AI) {
             tag = tagBindingSupport.bindAiTag(command, nextPriority);
         } else {
             tag = tagBindingSupport.bindManualTag(command, nextPriority);
@@ -1459,29 +1459,28 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         removeStorageObjectIfUnreferenced(job.getStorageObjectId());
     }
 
-    private static void validateTagCommand(ContentTagCommand command, boolean requireId) {
+    private static ContentTagCommand validateTagCommand(ContentTagCommand command, boolean requireId) {
         if (command == null) {
             throw new BizException("古籍内容标签参数不能为空");
         }
-        if (requireId && command.getId() == null) {
+        if (requireId && command.id() == null) {
             throw new BizException("古籍内容标签 id 不能为空");
         }
         requireTagScope(
-                command.getContentType() == null
-                        ? null
-                        : command.getContentType().value(),
-                ClassicsContentIdCodec.toDomain(command.getContentId()));
-        String tagName = StringUtils.trimToNull(command.getTagNameSnapshot());
+                command.contentType() == null ? null : command.contentType().value(),
+                ClassicsContentIdCodec.toDomain(command.contentId()));
+        String tagName = StringUtils.trimToNull(command.tagNameSnapshot());
         if (tagName == null) {
             throw new BizException("古籍内容标签名称不能为空");
         }
-        command.setTagNameSnapshot(tagName);
-        if (command.getSource() == null) {
-            command.setSource(ClassicsContentSource.MANUAL);
-        }
-        if (command.getStatus() == null) {
-            command.setStatus(ClassicsContentTagStatus.ACTIVE);
-        }
+        return new ContentTagCommand(
+                command.id(),
+                command.contentType(),
+                command.contentId(),
+                command.tagId(),
+                tagName,
+                command.source() == null ? ClassicsContentSource.MANUAL : command.source(),
+                command.status() == null ? ClassicsContentTagStatus.ACTIVE : command.status());
     }
 
     private static void requireTagScope(String contentType, ClassicsContentId contentId) {
@@ -1910,12 +1909,11 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private static void requirePrivateExportPermission(ContentExportCommand command) {
-        if (command == null || !containsPrivateContent(command.getVisibilityRiskStatus())) {
+        if (command == null || !containsPrivateContent(command.visibilityRiskStatus())) {
             return;
         }
-        if (command.getContentType() == null
-                || !ClassicsContentPermissionSupport.canExport(
-                        command.getContentType(), command.getOperatorPermissions())) {
+        if (command.contentType() == null
+                || !ClassicsContentPermissionSupport.canExport(command.contentType(), command.operatorPermissions())) {
             throw permissionDenied();
         }
     }

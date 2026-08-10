@@ -40,7 +40,7 @@ public class ClassicsTagBindingSupport {
     private ClassicsContentTag bindTag(ContentTagCommand command, Integer priority, boolean aiTag) {
         ClassicsContentTag tag = ClassicsContentApplicationAssembler.toTag(command);
         KnowledgeResolveTagFacadeRequest request = KnowledgeResolveTagFacadeRequest.builder()
-                .tagName(command.getTagNameSnapshot())
+                .tagName(command.tagNameSnapshot())
                 .build();
         KnowledgeTagFacadeResponse knowledgeTag = aiTag
                 ? knowledgeFacade.resolveOrCreateAiTag(request)

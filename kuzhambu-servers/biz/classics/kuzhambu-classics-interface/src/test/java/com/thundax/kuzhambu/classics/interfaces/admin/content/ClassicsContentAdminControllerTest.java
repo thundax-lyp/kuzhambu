@@ -468,11 +468,11 @@ class ClassicsContentAdminControllerTest {
                 (proxy, method, args) -> {
                     if ("createExportJob".equals(method.getName())) {
                         ContentExportCommand command = (ContentExportCommand) args[0];
-                        assertEquals("SANCAI_ENTRY", command.getContentType().value());
-                        assertEquals(ClassicsExportKind.CONTENT_DATASET, command.getExportKind());
-                        assertEquals(ClassicsExportFormat.HTML, command.getExportFormat());
-                        assertEquals(ClassicsExportScopeType.CATEGORY, command.getScopeType());
-                        assertTrue(command.getOperatorPermissions() != null);
+                        assertEquals("SANCAI_ENTRY", command.contentType().value());
+                        assertEquals(ClassicsExportKind.CONTENT_DATASET, command.exportKind());
+                        assertEquals(ClassicsExportFormat.HTML, command.exportFormat());
+                        assertEquals(ClassicsExportScopeType.CATEGORY, command.scopeType());
+                        assertTrue(command.operatorPermissions() != null);
                         return new ClassicsExportJobResult(
                                 ClassicsContentExportJobIdCodec.toDomain(9001L),
                                 ClassicsExportStatus.COMPLETED,
@@ -580,25 +580,25 @@ class ClassicsContentAdminControllerTest {
                     if ("addTag".equals(method.getName())) {
                         var command =
                                 (com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand) args[0];
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(456L, command.getContentId());
-                        assertEquals(2001L, command.getTagId());
-                        assertEquals("礼制", command.getTagNameSnapshot());
-                        assertEquals("MANUAL", command.getSource().value());
-                        assertEquals("ACTIVE", command.getStatus().value());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(456L, command.contentId());
+                        assertEquals(2001L, command.tagId());
+                        assertEquals("礼制", command.tagNameSnapshot());
+                        assertEquals("MANUAL", command.source().value());
+                        assertEquals("ACTIVE", command.status().value());
                         return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec.toDomain(
                                 3001L);
                     }
                     if ("updateTag".equals(method.getName())) {
                         var command =
                                 (com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand) args[0];
-                        assertEquals(3001L, command.getId());
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(456L, command.getContentId());
-                        assertEquals(2002L, command.getTagId());
-                        assertEquals("祭祀", command.getTagNameSnapshot());
-                        assertEquals("MANUAL", command.getSource().value());
-                        assertEquals("ACTIVE", command.getStatus().value());
+                        assertEquals(3001L, command.id());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(456L, command.contentId());
+                        assertEquals(2002L, command.tagId());
+                        assertEquals("祭祀", command.tagNameSnapshot());
+                        assertEquals("MANUAL", command.source().value());
+                        assertEquals("ACTIVE", command.status().value());
                         return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec.toDomain(
                                 3001L);
                     }
@@ -613,22 +613,22 @@ class ClassicsContentAdminControllerTest {
                     if ("addQaPair".equals(method.getName())) {
                         var command = (com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand)
                                 args[0];
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(457L, command.getContentId());
-                        assertEquals("是什么", command.getQuestion());
-                        assertEquals("这是一个测试", command.getAnswer());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(457L, command.contentId());
+                        assertEquals("是什么", command.question());
+                        assertEquals("这是一个测试", command.answer());
                         return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec.toDomain(
                                 4001L);
                     }
                     if ("updateQaPair".equals(method.getName())) {
                         var command = (com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand)
                                 args[0];
-                        assertEquals(4001L, command.getId());
-                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
-                        assertEquals(457L, command.getContentId());
-                        assertEquals("为何", command.getQuestion());
-                        assertEquals("为了测试", command.getAnswer());
-                        assertEquals("MANUAL", command.getSource().value());
+                        assertEquals(4001L, command.id());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.contentType());
+                        assertEquals(457L, command.contentId());
+                        assertEquals("为何", command.question());
+                        assertEquals("为了测试", command.answer());
+                        assertEquals("MANUAL", command.source().value());
                         return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec.toDomain(
                                 4001L);
                     }
@@ -670,7 +670,7 @@ class ClassicsContentAdminControllerTest {
                         ContentTagSortCommand command = (ContentTagSortCommand) args[0];
                         assertEquals(
                                 List.of(2L, 1L),
-                                command.getOrderedIds().stream()
+                                command.orderedIds().stream()
                                         .map(id -> id.value())
                                         .toList());
                         return null;
