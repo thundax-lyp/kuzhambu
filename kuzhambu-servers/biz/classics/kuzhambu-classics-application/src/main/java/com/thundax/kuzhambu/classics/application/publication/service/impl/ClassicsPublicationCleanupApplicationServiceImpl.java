@@ -43,8 +43,9 @@ public class ClassicsPublicationCleanupApplicationServiceImpl implements Classic
     @Transactional(rollbackFor = Exception.class)
     public boolean qualify(ClassicsPublicationWorkflowCommand command) {
         ClassicsPublicationJob claimedJob = command.job();
-        ClassicsPublicationContent content = contentRepository.getByPublicationContentForLock(
-                claimedJob.getContentType(), new ClassicsContentId(claimedJob.getContentId()));
+        ClassicsContentId contentId = new ClassicsContentId(claimedJob.getContentId());
+        ClassicsPublicationContent content =
+                contentRepository.getByPublicationContentForLock(claimedJob.getContentType(), contentId);
         ClassicsPublicationJob current =
                 jobRepository.lockByContent(claimedJob.getContentType(), claimedJob.getContentId());
         boolean currentJob = current != null && claimedJob.getId().equals(current.getId());

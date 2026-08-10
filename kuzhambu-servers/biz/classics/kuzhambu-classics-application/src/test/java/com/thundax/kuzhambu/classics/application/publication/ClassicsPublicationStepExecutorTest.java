@@ -11,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.publication.assembler.ClassicsPublicationFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.publication.result.ClassicsPublicationPayload;
 import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationContentCommitApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.publication.service.impl.ClassicsPublicationSnapshotBindApplicationServiceImpl;
@@ -47,6 +48,7 @@ class ClassicsPublicationStepExecutorTest {
     private DiscoverySearchPublicationFacade searchFacade;
     private ClassicsPublicationFastGptGateway fastGptGateway;
     private ClassicsPublicationPayloadAssembler payloadAssembler;
+    private ClassicsPublicationFacadeAssembler facadeAssembler;
     private ClassicsPublicationStepExecutorImpl executor;
 
     @BeforeEach
@@ -56,6 +58,7 @@ class ClassicsPublicationStepExecutorTest {
         searchFacade = mock(DiscoverySearchPublicationFacade.class);
         fastGptGateway = mock(ClassicsPublicationFastGptGateway.class);
         payloadAssembler = mock(ClassicsPublicationPayloadAssembler.class);
+        facadeAssembler = mock(ClassicsPublicationFacadeAssembler.class);
         executor = new ClassicsPublicationStepExecutorImpl(
                 jobRepository,
                 contentRepository,
@@ -64,7 +67,8 @@ class ClassicsPublicationStepExecutorTest {
                 payloadAssembler,
                 Clock.fixed(NOW, ZoneOffset.UTC),
                 mock(ClassicsPublicationSnapshotBindApplicationServiceImpl.class),
-                mock(ClassicsPublicationContentCommitApplicationServiceImpl.class));
+                mock(ClassicsPublicationContentCommitApplicationServiceImpl.class),
+                facadeAssembler);
     }
 
     @Test

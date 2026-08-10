@@ -36,7 +36,8 @@ class ClassicsPublicationCleanupTransactionServiceTest {
         when(jobRepository.lockByContent(ClassicsContentType.SANCAI_ENTRY, 101L))
                 .thenReturn(job);
 
-        assertTrue(service.qualify(ClassicsPublicationWorkflowCommand.cleanup(job, "cleanup-token", true)));
+        assertTrue(service.qualify(new ClassicsPublicationWorkflowCommand(
+                job, null, null, "cleanup-token", null, null, null, null, true)));
 
         verify(jobRepository, never()).releaseEsCleanupClaim(job.getId(), "cleanup-token");
     }

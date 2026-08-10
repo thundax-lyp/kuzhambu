@@ -85,7 +85,8 @@ class ClassicsPublicationSnapshotBindApplicationServiceTest {
                         null))
                 .thenReturn(1);
 
-        assertTrue(service.bind(ClassicsPublicationWorkflowCommand.step(job, TOKEN)));
+        assertTrue(service.bind(
+                new ClassicsPublicationWorkflowCommand(job, null, TOKEN, null, null, null, null, null, false)));
 
         var ordered = inOrder(contentRepository, contentApplicationService, payloadAssembler, jobRepository);
         ordered.verify(contentRepository)
@@ -126,7 +127,9 @@ class ClassicsPublicationSnapshotBindApplicationServiceTest {
         when(payloadAssembler.assemble(job, version)).thenThrow(new IllegalStateException("SNAPSHOT_INVALID"));
 
         assertThrows(
-                IllegalStateException.class, () -> service.bind(ClassicsPublicationWorkflowCommand.step(job, TOKEN)));
+                IllegalStateException.class,
+                () -> service.bind(
+                        new ClassicsPublicationWorkflowCommand(job, null, TOKEN, null, null, null, null, null, false)));
 
         verify(jobRepository, never())
                 .advanceMilestone(any(), any(), any(), any(), any(), any(), any(), any(), any(), any());

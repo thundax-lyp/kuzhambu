@@ -43,7 +43,7 @@ public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApp
         String normalizedType = normalizeCleanupType(query == null ? null : query.cleanupType());
         Instant effectiveNow = query == null || query.requestedAt() == null ? Instant.now() : query.requestedAt();
         Integer retentionDays = query == null ? null : query.retentionDays();
-        int effectiveLimit = normalizeLimit(query == null ? null : query.limit());
+        int effectiveLimit = normalizeLimit(query == null ? null : query.maxTargets());
         if (targetType(normalizedType) == null) {
             return List.of();
         }

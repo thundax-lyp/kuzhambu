@@ -360,7 +360,7 @@ class ClassicsFacadeImplTest {
         when(cleanupApplicationService.listTargets(argThat(query -> "EXPIRED_SHARE".equals(query.cleanupType())
                         && requestedAt.equals(query.requestedAt())
                         && Integer.valueOf(90).equals(query.retentionDays())
-                        && Integer.valueOf(25).equals(query.limit()))))
+                        && Integer.valueOf(25).equals(query.maxTargets()))))
                 .thenReturn(List.of(
                         ClassicsCleanupApplicationService.CleanupTarget.builder()
                                 .targetType("share")

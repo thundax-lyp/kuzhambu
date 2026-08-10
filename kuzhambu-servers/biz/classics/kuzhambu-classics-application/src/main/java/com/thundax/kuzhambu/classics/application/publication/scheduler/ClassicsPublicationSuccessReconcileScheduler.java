@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.scheduler;
 
-import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
+import com.thundax.kuzhambu.classics.application.publication.assembler.ClassicsPublicationFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationReconcileApplicationService;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
@@ -14,16 +14,19 @@ public class ClassicsPublicationSuccessReconcileScheduler {
     private final ClassicsPublicationJobRepository jobRepository;
     private final ClassicsPublicationReconcileApplicationService transactionService;
     private final Clock clock;
+    private final ClassicsPublicationFacadeAssembler facadeAssembler;
 
     public ClassicsPublicationSuccessReconcileScheduler(
             ClassicsPublicationProperties properties,
             ClassicsPublicationJobRepository jobRepository,
             ClassicsPublicationReconcileApplicationService transactionService,
-            Clock clock) {
+            Clock clock,
+            ClassicsPublicationFacadeAssembler facadeAssembler) {
         this.properties = properties;
         this.jobRepository = jobRepository;
         this.transactionService = transactionService;
         this.clock = clock;
+        this.facadeAssembler = facadeAssembler;
     }
 
     @Scheduled(fixedDelayString = "${kuzhambu.classics.publication.success-reconcile-fixed-delay:30s}")
@@ -33,7 +36,7 @@ public class ClassicsPublicationSuccessReconcileScheduler {
         }
         jobRepository
                 .listSuccessReconcileCandidates(properties.getClaimLimit())
-                .forEach(job -> transactionService.succeed(
-                        ClassicsPublicationWorkflowCommand.reconcileSuccess(job, clock.instant())));
+                .forEach(job ->
+                        transactionService.succeed(facadeAssembler.toReconcileSucceedCommand(job, clock.instant())));
     }
 }

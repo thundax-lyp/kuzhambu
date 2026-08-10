@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.publication.controller.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobResultStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobStatus;
@@ -12,6 +14,8 @@ import lombok.Setter;
 @Schema(description = "古籍发布任务分页请求")
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ClassicsPublicationJobPageRequest extends PageRequest {
     @Schema(description = "发布任务类型")
     private ClassicsPublicationJobType jobType;

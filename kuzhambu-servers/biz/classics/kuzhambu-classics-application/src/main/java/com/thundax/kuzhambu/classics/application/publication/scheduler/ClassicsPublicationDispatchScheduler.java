@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.application.publication.scheduler;
 
-import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationWorkflowCommand;
+import com.thundax.kuzhambu.classics.application.publication.assembler.ClassicsPublicationFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationExecutorConfiguration;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationExecutionApplicationService;
@@ -30,6 +30,7 @@ public class ClassicsPublicationDispatchScheduler {
     private final ClassicsPublicationStepExecutor stepExecutor;
     private final ThreadPoolTaskExecutor taskExecutor;
     private final Clock clock;
+    private final ClassicsPublicationFacadeAssembler facadeAssembler;
 
     public ClassicsPublicationDispatchScheduler(
             ClassicsPublicationProperties properties,
@@ -37,13 +38,15 @@ public class ClassicsPublicationDispatchScheduler {
             ClassicsPublicationExecutionApplicationService transactionService,
             ClassicsPublicationStepExecutor stepExecutor,
             @Qualifier(ClassicsPublicationExecutorConfiguration.TASK_EXECUTOR) ThreadPoolTaskExecutor taskExecutor,
-            Clock clock) {
+            Clock clock,
+            ClassicsPublicationFacadeAssembler facadeAssembler) {
         this.properties = properties;
         this.jobRepository = jobRepository;
         this.transactionService = transactionService;
         this.stepExecutor = stepExecutor;
         this.taskExecutor = taskExecutor;
         this.clock = clock;
+        this.facadeAssembler = facadeAssembler;
     }
 
     @Scheduled(fixedDelayString = "${kuzhambu.classics.publication.dispatch-fixed-delay:5s}")
@@ -58,21 +61,21 @@ public class ClassicsPublicationDispatchScheduler {
     private void dispatch(ClassicsPublicationJob job, Instant now) {
         ClassicsPublicationExecutionToken token =
                 new ClassicsPublicationExecutionToken(UUID.randomUUID().toString());
-        if (!transactionService.claim(ClassicsPublicationWorkflowCommand.executionClaim(
+        if (!transactionService.claim(facadeAssembler.toExecutionClaimCommand(
                 job.getId(), token, now, now.plus(properties.getDispatchLease())))) {
             return;
         }
         try {
             taskExecutor.execute(() -> execute(job, token));
         } catch (TaskRejectedException exception) {
-            transactionService.releaseClaim(ClassicsPublicationWorkflowCommand.execution(job.getId(), token));
+            transactionService.releaseClaim(facadeAssembler.toExecutionReleaseCommand(job.getId(), token));
             LOGGER.warn("publication_dispatch_rejected jobId={}", job.getId());
         }
     }
 
     private void execute(ClassicsPublicationJob claimedJob, ClassicsPublicationExecutionToken token) {
         Instant startedAt = clock.instant();
-        ClassicsPublicationJob job = transactionService.start(ClassicsPublicationWorkflowCommand.executionStart(
+        ClassicsPublicationJob job = transactionService.start(facadeAssembler.toExecutionStartCommand(
                 claimedJob.getId(), token, startedAt, startedAt.plus(properties.getSliceLease())));
         if (job == null) {
             return;
@@ -102,9 +105,9 @@ public class ClassicsPublicationDispatchScheduler {
         String detail = failureDetail(job, exception, failedAt);
         boolean terminal = job.getAttemptCount() >= job.getMaxAttempts();
         boolean updated = terminal
-                ? transactionService.fail(ClassicsPublicationWorkflowCommand.executionFailure(
-                        job.getId(), token, failedAt, reason, detail))
-                : transactionService.retry(ClassicsPublicationWorkflowCommand.executionRetry(
+                ? transactionService.fail(
+                        facadeAssembler.toExecutionFailureCommand(job.getId(), token, failedAt, reason, detail))
+                : transactionService.retry(facadeAssembler.toExecutionRetryCommand(
                         job.getId(), token, failedAt.plus(properties.getRetryDelay()), reason, detail));
         LOGGER.warn(
                 "publication_slice_failed jobId={} milestone={} attempt={} terminal={} updated={} elapsedMs={} reason={}",

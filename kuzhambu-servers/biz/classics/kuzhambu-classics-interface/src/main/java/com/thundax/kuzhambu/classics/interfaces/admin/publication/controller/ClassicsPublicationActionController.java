@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.publication.controller;
 
-import com.thundax.kuzhambu.classics.application.publication.command.ClassicsPublicationBatchCreateCommand;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobType;
@@ -165,8 +164,7 @@ public class ClassicsPublicationActionController {
             ClassicsPublicationBatchActionRequest request,
             ClassicsContentType contentType,
             ClassicsPublicationJobType jobType) {
-        return ClassicsPublicationInterfaceAssembler.toBatchResponse(
-                publicationService.createBatch(new ClassicsPublicationBatchCreateCommand(
-                        ClassicsPublicationInterfaceAssembler.toCommands(request, contentType, jobType))));
+        return ClassicsPublicationInterfaceAssembler.toBatchResponse(publicationService.createBatch(
+                ClassicsPublicationInterfaceAssembler.toBatchCreateCommand(request, contentType, jobType)));
     }
 }

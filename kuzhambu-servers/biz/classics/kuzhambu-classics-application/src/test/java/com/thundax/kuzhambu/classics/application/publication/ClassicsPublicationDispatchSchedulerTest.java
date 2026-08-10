@@ -3,12 +3,14 @@ package com.thundax.kuzhambu.classics.application.publication;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.publication.assembler.ClassicsPublicationFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.publication.configure.ClassicsPublicationProperties;
 import com.thundax.kuzhambu.classics.application.publication.scheduler.ClassicsPublicationDispatchScheduler;
 import com.thundax.kuzhambu.classics.application.publication.service.ClassicsPublicationStepExecutor;
@@ -43,17 +45,43 @@ class ClassicsPublicationDispatchSchedulerTest {
         ClassicsPublicationJob job = mock(ClassicsPublicationJob.class);
         ClassicsPublicationJobId jobId = new ClassicsPublicationJobId(101L);
         when(job.getId()).thenReturn(jobId);
+        when(fixture.facadeAssembler.toExecutionClaimCommand(any(), any(), eq(NOW), eq(NOW.plusSeconds(30))))
+                .thenAnswer(invocation ->
+                        new com.thundax.kuzhambu.classics.application.publication.command
+                                .ClassicsPublicationWorkflowCommand(
+                                null,
+                                invocation.getArgument(0),
+                                invocation.getArgument(1),
+                                null,
+                                invocation.getArgument(2),
+                                invocation.getArgument(3),
+                                null,
+                                null,
+                                false));
+        when(fixture.facadeAssembler.toExecutionReleaseCommand(any(), any()))
+                .thenAnswer(invocation ->
+                        new com.thundax.kuzhambu.classics.application.publication.command
+                                .ClassicsPublicationWorkflowCommand(
+                                null,
+                                invocation.getArgument(0),
+                                invocation.getArgument(1),
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                false));
         when(fixture.jobRepository.listDispatchCandidates(NOW, 20)).thenReturn(List.of(job));
-        when(fixture.transactionService.claim(argThat(command -> jobId.equals(command.jobId())
-                        && NOW.equals(command.occurredAt())
-                        && NOW.plusSeconds(30).equals(command.expiresAt()))))
+        when(fixture.transactionService.claim(argThat(command -> command.jobId().equals(jobId)
+                        && command.occurredAt().equals(NOW)
+                        && command.expiresAt().equals(NOW.plusSeconds(30)))))
                 .thenReturn(true);
         doThrow(new TaskRejectedException("full")).when(fixture.taskExecutor).execute(any(Runnable.class));
 
         fixture.scheduler.dispatch();
 
         verify(fixture.transactionService)
-                .releaseClaim(argThat(command -> jobId.equals(command.jobId()) && command.executionToken() != null));
+                .releaseClaim(argThat(command -> command.jobId().equals(jobId)));
     }
 
     private static final class Fixture {
@@ -61,6 +89,8 @@ class ClassicsPublicationDispatchSchedulerTest {
         private final ClassicsPublicationExecutionApplicationServiceImpl transactionService =
                 mock(ClassicsPublicationExecutionApplicationServiceImpl.class);
         private final ThreadPoolTaskExecutor taskExecutor = mock(ThreadPoolTaskExecutor.class);
+        private final ClassicsPublicationFacadeAssembler facadeAssembler =
+                mock(ClassicsPublicationFacadeAssembler.class);
         private final ClassicsPublicationDispatchScheduler scheduler;
 
         private Fixture(boolean enabled) {
@@ -74,7 +104,8 @@ class ClassicsPublicationDispatchSchedulerTest {
                     transactionService,
                     stepExecutor,
                     taskExecutor,
-                    Clock.fixed(NOW, ZoneOffset.UTC));
+                    Clock.fixed(NOW, ZoneOffset.UTC),
+                    facadeAssembler);
         }
     }
 }

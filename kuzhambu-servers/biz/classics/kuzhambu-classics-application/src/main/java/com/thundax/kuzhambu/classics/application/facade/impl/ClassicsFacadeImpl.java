@@ -1,16 +1,11 @@
 package com.thundax.kuzhambu.classics.application.facade.impl;
 
-import com.thundax.kuzhambu.classics.application.cleanup.command.ClassicsCleanupExecuteCommand;
-import com.thundax.kuzhambu.classics.application.cleanup.query.ClassicsCleanupTargetsQuery;
 import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanupApplicationService;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.facade.assembler.ClassicsFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
-import com.thundax.kuzhambu.classics.application.report.query.ClassicsReportSummaryQuery;
 import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
-import com.thundax.kuzhambu.classics.application.search.query.ClassicsSearchContentQuery;
-import com.thundax.kuzhambu.classics.application.search.query.ClassicsWorkbenchContentQuery;
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
@@ -38,6 +33,7 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeRe
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,8 +82,7 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
             return null;
         }
         return classicsFacadeAssembler.toFacadeResponse(
-                classicsReportApplicationService.summary(new ClassicsReportSummaryQuery(
-                        request.getPeriodStart(), request.getPeriodEnd(), request.getBucketType())));
+                classicsReportApplicationService.summary(classicsFacadeAssembler.toReportSummaryQuery(request)));
     }
 
     @Override
@@ -104,8 +99,8 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
             return null;
         }
         return classicsFacadeAssembler.toPublicContentFacadeResponse(
-                classicsSearchContentApplicationService.getPublicContent(
-                        new ClassicsSearchContentQuery(request.getContentType(), request.getContentId())));
+                classicsSearchContentApplicationService.getPublicContent(classicsFacadeAssembler.toSearchContentQuery(
+                        request.getContentType(), request.getContentId())));
     }
 
     @Override
@@ -134,7 +129,7 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
     public ClassicsPublicContentsFacadeResponse listWorkbenchContents(String categoryCode, String volumeCode) {
         return classicsFacadeAssembler.toPublicContentsFacadeResponse(
                 classicsSearchContentApplicationService.listWorkbenchContents(
-                        new ClassicsWorkbenchContentQuery(categoryCode, volumeCode)));
+                        classicsFacadeAssembler.toWorkbenchContentQuery(categoryCode, volumeCode)));
     }
 
     @Override
@@ -145,7 +140,8 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         }
         return classicsFacadeAssembler.toPublicContentFacadeResponse(
                 classicsSearchContentApplicationService.getWorkbenchContent(
-                        new ClassicsSearchContentQuery(request.getContentType(), request.getContentId())));
+                        classicsFacadeAssembler.toSearchContentQuery(
+                                request.getContentType(), request.getContentId())));
     }
 
     @Override
@@ -214,18 +210,15 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
                     .targets(List.of())
                     .build();
         }
-        List<ClassicsCleanupTargetsFacadeResponse.Target> targets = classicsCleanupApplicationService
-                .listTargets(new ClassicsCleanupTargetsQuery(
-                        cleanupType,
-                        request == null ? null : request.getRequestedAt(),
-                        request == null ? null : request.getRetentionDays(),
-                        request == null ? null : request.getLimit()))
-                .stream()
-                .map(target -> ClassicsCleanupTargetsFacadeResponse.Target.builder()
-                        .targetType(target.getTargetType())
-                        .targetId(target.getTargetId())
-                        .build())
-                .toList();
+        List<ClassicsCleanupTargetsFacadeResponse.Target> targets =
+                classicsCleanupApplicationService
+                        .listTargets(classicsFacadeAssembler.toCleanupTargetsQuery(request))
+                        .stream()
+                        .map(target -> ClassicsCleanupTargetsFacadeResponse.Target.builder()
+                                .targetType(target.getTargetType())
+                                .targetId(target.getTargetId())
+                                .build())
+                        .toList();
         return ClassicsCleanupTargetsFacadeResponse.builder()
                 .cleanupType(cleanupType)
                 .supported(true)
@@ -247,8 +240,9 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
                     .build();
         }
         List<ClassicsCleanupExecutionFacadeResponse.ItemResult> itemResults = safeTargetIds(request).stream()
+                .filter(Objects::nonNull)
                 .map(targetId -> classicsCleanupApplicationService.executeTarget(
-                        new ClassicsCleanupExecuteCommand(cleanupType, targetId)))
+                        classicsFacadeAssembler.toCleanupExecuteCommand(cleanupType, targetId)))
                 .map(result -> ClassicsCleanupExecutionFacadeResponse.ItemResult.builder()
                         .targetType(result.getTargetType())
                         .targetId(result.getTargetId())
@@ -266,7 +260,7 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
     private ClassicsQaKnowledgeFacadeDto getSancaiQaKnowledge(
             String contentType, String contentId, ClassicsContentId domainContentId) {
         var sourceContent = classicsSearchContentApplicationService.getPublicContent(
-                new ClassicsSearchContentQuery(contentType, contentId));
+                classicsFacadeAssembler.toSearchContentQuery(contentType, contentId));
         if (sourceContent == null) {
             return null;
         }
@@ -278,13 +272,19 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(query);
         List<ClassicsContentQaPair> qaPairs = classicsContentApplicationService.listQaPairs(query);
         return classicsFacadeAssembler.toQaKnowledgeFacadeDto(
-                sourceContent, entry.getOriginalText(), entry.getTranslationText(), null, null, tags, qaPairs);
+                sourceContent,
+                nullableToEmpty(entry.getOriginalText()),
+                nullableToEmpty(entry.getTranslationText()),
+                "",
+                "",
+                safeList(tags),
+                safeList(qaPairs));
     }
 
     private ClassicsQaKnowledgeFacadeDto getSancaiWorkbenchQaKnowledge(
             String contentType, String contentId, ClassicsContentId domainContentId) {
         var sourceContent = classicsSearchContentApplicationService.getWorkbenchContent(
-                new ClassicsSearchContentQuery(contentType, contentId));
+                classicsFacadeAssembler.toSearchContentQuery(contentType, contentId));
         if (sourceContent == null) {
             return null;
         }
@@ -296,13 +296,19 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(query);
         List<ClassicsContentQaPair> qaPairs = classicsContentApplicationService.listQaPairs(query);
         return classicsFacadeAssembler.toQaKnowledgeFacadeDto(
-                sourceContent, entry.getOriginalText(), entry.getTranslationText(), null, null, tags, qaPairs);
+                sourceContent,
+                nullableToEmpty(entry.getOriginalText()),
+                nullableToEmpty(entry.getTranslationText()),
+                "",
+                "",
+                safeList(tags),
+                safeList(qaPairs));
     }
 
     private ClassicsQaKnowledgeFacadeDto getWangqiQaKnowledge(
             String contentType, String contentId, ClassicsContentId domainContentId) {
         var sourceContent = classicsSearchContentApplicationService.getPublicContent(
-                new ClassicsSearchContentQuery(contentType, contentId));
+                classicsFacadeAssembler.toSearchContentQuery(contentType, contentId));
         if (sourceContent == null) {
             return null;
         }
@@ -315,13 +321,13 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(query);
         List<ClassicsContentQaPair> qaPairs = classicsContentApplicationService.listQaPairs(query);
         return classicsFacadeAssembler.toQaKnowledgeFacadeDto(
-                sourceContent, null, null, document.getContent(), null, tags, qaPairs);
+                sourceContent, "", "", nullableToEmpty(document.getContent()), "", safeList(tags), safeList(qaPairs));
     }
 
     private ClassicsQaKnowledgeFacadeDto getMingCustomsQaKnowledge(
             String contentType, String contentId, ClassicsContentId domainContentId) {
         var sourceContent = classicsSearchContentApplicationService.getPublicContent(
-                new ClassicsSearchContentQuery(contentType, contentId));
+                classicsFacadeAssembler.toSearchContentQuery(contentType, contentId));
         if (sourceContent == null) {
             return null;
         }
@@ -334,7 +340,13 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(query);
         List<ClassicsContentQaPair> qaPairs = classicsContentApplicationService.listQaPairs(query);
         return classicsFacadeAssembler.toQaKnowledgeFacadeDto(
-                sourceContent, null, null, entry.getContent(), entry.getOriginalExcerpts(), tags, qaPairs);
+                sourceContent,
+                "",
+                "",
+                nullableToEmpty(entry.getContent()),
+                nullableToEmpty(entry.getOriginalExcerpts()),
+                safeList(tags),
+                safeList(qaPairs));
     }
 
     private Long parseContentId(String contentId) {
@@ -363,5 +375,13 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
 
     private static List<Long> safeTargetIds(ClassicsCleanupTargetsFacadeRequest request) {
         return request == null || request.getTargetIds() == null ? List.of() : request.getTargetIds();
+    }
+
+    private static <T> List<T> safeList(List<T> values) {
+        return values == null ? List.of() : values;
+    }
+
+    private static String nullableToEmpty(String value) {
+        return value == null ? "" : value;
     }
 }

@@ -16,7 +16,6 @@ import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPub
 import com.thundax.kuzhambu.classics.domain.publication.model.entity.ClassicsPublicationJob;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationJobStatus;
 import com.thundax.kuzhambu.classics.domain.publication.model.enums.ClassicsPublicationTransitionStatus;
-import com.thundax.kuzhambu.classics.domain.publication.model.valueobject.ClassicsPublicationExecutionToken;
 import com.thundax.kuzhambu.classics.domain.publication.repository.ClassicsPublicationJobRepository;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
@@ -46,7 +45,6 @@ public class ClassicsPublicationSnapshotBindApplicationServiceImpl
     @Transactional(rollbackFor = Exception.class)
     public boolean bind(ClassicsPublicationWorkflowCommand command) {
         ClassicsPublicationJob job = command.job();
-        ClassicsPublicationExecutionToken executionToken = command.executionToken();
         ClassicsContentId contentId = new ClassicsContentId(job.getContentId());
         ClassicsPublicationContent state =
                 contentRepository.getByPublicationContentForLock(job.getContentType(), contentId);
@@ -69,7 +67,7 @@ public class ClassicsPublicationSnapshotBindApplicationServiceImpl
         payloadAssembler.assemble(job, version);
         int advanced = jobRepository.advanceMilestone(
                 job.getId(),
-                executionToken,
+                command.executionToken(),
                 ClassicsPublicationJobStatus.QUEUED,
                 ClassicsPublicationJobStatus.SNAPSHOT_READY,
                 job.getContentVersionId(),

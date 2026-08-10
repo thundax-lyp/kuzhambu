@@ -122,7 +122,12 @@ public class SancaiAssetAdminController {
         try {
             return SancaiAssetInterfaceAssembler.toImageResourceResponse(
                     service.uploadImage(SancaiAssetInterfaceAssembler.toImageUploadCommand(
-                            entryId, file, title, imageType, currentUsed, replaceImageId)));
+                            entryId,
+                            file,
+                            title == null ? "" : title,
+                            imageType == null ? "" : imageType,
+                            currentUsed == null ? true : currentUsed,
+                            replaceImageId == null ? -1L : replaceImageId)));
         } catch (IOException exception) {
             throw new BizException("三才图片上传失败：" + exception.getMessage());
         }
