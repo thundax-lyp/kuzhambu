@@ -1,15 +1,17 @@
 package com.thundax.kuzhambu.knowledge.interfaces.portal.quality.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Builder
+@Schema(name = "KnowledgePortalQualityResponse", description = "质量门户响应")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class KnowledgePortalQualityResponse {
     private List<QualityStatResponse> qualityStats;
     private List<TrendSeriesResponse> trendSeries;
@@ -18,9 +20,10 @@ public class KnowledgePortalQualityResponse {
     private List<SourceDetailResponse> sourceDetails;
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "QualityStatResponse", description = "质量指标")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class QualityStatResponse {
         private String key;
         private String label;
@@ -31,9 +34,10 @@ public class KnowledgePortalQualityResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "TrendSeriesResponse", description = "趋势序列")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TrendSeriesResponse {
         private String seriesKey;
         private String seriesLabel;
@@ -41,18 +45,20 @@ public class KnowledgePortalQualityResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "TrendPointResponse", description = "趋势数据点")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TrendPointResponse {
         private String label;
         private Long value;
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "SourceBreakdownResponse", description = "来源明细")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SourceBreakdownResponse {
         private String sourceKey;
         private String sourceLabel;
@@ -61,9 +67,10 @@ public class KnowledgePortalQualityResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "FocusIssueResponse", description = "重点问题")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FocusIssueResponse {
         private String title;
         private String summary;
@@ -72,9 +79,10 @@ public class KnowledgePortalQualityResponse {
     }
 
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @Builder
+    @Schema(name = "SourceDetailResponse", description = "来源详情")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SourceDetailResponse {
         private String sourceType;
         private String sourceTitle;

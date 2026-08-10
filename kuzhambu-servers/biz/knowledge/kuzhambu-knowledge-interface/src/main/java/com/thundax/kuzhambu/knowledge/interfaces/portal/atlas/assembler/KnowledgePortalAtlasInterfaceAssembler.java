@@ -17,15 +17,15 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
         if (result == null) {
             return null;
         }
-        KnowledgePortalAtlasResponse response = new KnowledgePortalAtlasResponse();
-        response.setCurrentLevel(result.getCurrentLevel());
-        response.setBreadcrumbItems(toBreadcrumbItems(result.getBreadcrumbItems()));
-        response.setOverviewView(toOverviewView(result.getOverviewView()));
-        response.setCategoryView(toCategoryView(result.getCategoryView()));
-        response.setDetailView(toDetailView(result.getDetailView()));
-        response.setAvailableFilters(toAvailableFilters(result.getAvailableFilters()));
-        response.setCanvasView(toCanvasView(result.getCanvasView()));
-        return response;
+        return KnowledgePortalAtlasResponse.builder()
+                .currentLevel(result.getCurrentLevel())
+                .breadcrumbItems(toBreadcrumbItems(result.getBreadcrumbItems()))
+                .overviewView(toOverviewView(result.getOverviewView()))
+                .categoryView(toCategoryView(result.getCategoryView()))
+                .detailView(toDetailView(result.getDetailView()))
+                .availableFilters(toAvailableFilters(result.getAvailableFilters()))
+                .canvasView(toCanvasView(result.getCanvasView()))
+                .build();
     }
 
     @NonNull
@@ -47,8 +47,11 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
             return Collections.emptyList();
         }
         return items.stream()
-                .map(item -> new KnowledgePortalAtlasResponse.BreadcrumbItemResponse(
-                        item.getLevel(), item.getLabel(), item.getHref()))
+                .map(item -> KnowledgePortalAtlasResponse.BreadcrumbItemResponse.builder()
+                        .level(item.getLevel())
+                        .label(item.getLabel())
+                        .href(item.getHref())
+                        .build())
                 .toList();
     }
 
@@ -57,8 +60,11 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalAtlasResponse.OverviewViewResponse(
-                view.getSummaryTitle(), view.getSummarySubtitle(), toOverviewCategoryCards(view.getCategoryCards()));
+        return KnowledgePortalAtlasResponse.OverviewViewResponse.builder()
+                .summaryTitle(view.getSummaryTitle())
+                .summarySubtitle(view.getSummarySubtitle())
+                .categoryCards(toOverviewCategoryCards(view.getCategoryCards()))
+                .build();
     }
 
     private static List<KnowledgePortalAtlasResponse.OverviewCategoryCardResponse> toOverviewCategoryCards(
@@ -67,14 +73,15 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
             return Collections.emptyList();
         }
         return cards.stream()
-                .map(card -> new KnowledgePortalAtlasResponse.OverviewCategoryCardResponse(
-                        card.getCategoryCode(),
-                        card.getCategoryName(),
-                        card.getEntityCount(),
-                        card.getRelationCount(),
-                        card.getAppliedVersionCount(),
-                        card.getLatestVersionNo(),
-                        card.getEntryHref()))
+                .map(card -> KnowledgePortalAtlasResponse.OverviewCategoryCardResponse.builder()
+                        .categoryCode(card.getCategoryCode())
+                        .categoryName(card.getCategoryName())
+                        .entityCount(card.getEntityCount())
+                        .relationCount(card.getRelationCount())
+                        .appliedVersionCount(card.getAppliedVersionCount())
+                        .latestVersionNo(card.getLatestVersionNo())
+                        .entryHref(card.getEntryHref())
+                        .build())
                 .toList();
     }
 
@@ -83,14 +90,15 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalAtlasResponse.CategoryViewResponse(
-                view.getCategoryCode(),
-                view.getCategoryName(),
-                view.getLatestVersionId(),
-                view.getLatestVersionNo(),
-                toCategoryEntityHighlights(view.getEntityHighlights()),
-                toRelationGroups(view.getRelationGroups()),
-                toSourceReferences(view.getSourceReferences()));
+        return KnowledgePortalAtlasResponse.CategoryViewResponse.builder()
+                .categoryCode(view.getCategoryCode())
+                .categoryName(view.getCategoryName())
+                .latestVersionId(view.getLatestVersionId())
+                .latestVersionNo(view.getLatestVersionNo())
+                .entityHighlights(toCategoryEntityHighlights(view.getEntityHighlights()))
+                .relationGroups(toRelationGroups(view.getRelationGroups()))
+                .sourceReferences(toSourceReferences(view.getSourceReferences()))
+                .build();
     }
 
     private static List<KnowledgePortalAtlasResponse.CategoryEntityHighlightResponse> toCategoryEntityHighlights(
@@ -99,12 +107,13 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
             return Collections.emptyList();
         }
         return highlights.stream()
-                .map(item -> new KnowledgePortalAtlasResponse.CategoryEntityHighlightResponse(
-                        item.getEntityId(),
-                        item.getEntityName(),
-                        item.getEntityType(),
-                        item.getConfirmationStatus(),
-                        item.getEntryHref()))
+                .map(item -> KnowledgePortalAtlasResponse.CategoryEntityHighlightResponse.builder()
+                        .entityId(item.getEntityId())
+                        .entityName(item.getEntityName())
+                        .entityType(item.getEntityType())
+                        .confirmationStatus(item.getConfirmationStatus())
+                        .entryHref(item.getEntryHref())
+                        .build())
                 .toList();
     }
 
@@ -113,12 +122,13 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalAtlasResponse.DetailViewResponse(
-                toFocusNode(view.getFocusNode()),
-                toRelationGroups(view.getRelationGroups()),
-                toSourceReferences(view.getSourceReferences()),
-                toTimelineItems(view.getTimelineItems()),
-                toRelatedTags(view.getRelatedTags()));
+        return KnowledgePortalAtlasResponse.DetailViewResponse.builder()
+                .focusNode(toFocusNode(view.getFocusNode()))
+                .relationGroups(toRelationGroups(view.getRelationGroups()))
+                .sourceReferences(toSourceReferences(view.getSourceReferences()))
+                .timelineItems(toTimelineItems(view.getTimelineItems()))
+                .relatedTags(toRelatedTags(view.getRelatedTags()))
+                .build();
     }
 
     private static KnowledgePortalAtlasResponse.FocusNodeResponse toFocusNode(
@@ -126,14 +136,15 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
         if (node == null) {
             return null;
         }
-        return new KnowledgePortalAtlasResponse.FocusNodeResponse(
-                node.getId(),
-                node.getTitle(),
-                node.getType(),
-                node.getSummary(),
-                node.getStatus(),
-                node.getConfidence(),
-                node.getCoverImageUrl());
+        return KnowledgePortalAtlasResponse.FocusNodeResponse.builder()
+                .id(node.getId())
+                .title(node.getTitle())
+                .type(node.getType())
+                .summary(node.getSummary())
+                .status(node.getStatus())
+                .confidence(node.getConfidence())
+                .coverImageUrl(node.getCoverImageUrl())
+                .build();
     }
 
     private static List<KnowledgePortalAtlasResponse.RelationGroupResponse> toRelationGroups(
@@ -142,8 +153,11 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
             return Collections.emptyList();
         }
         return groups.stream()
-                .map(group -> new KnowledgePortalAtlasResponse.RelationGroupResponse(
-                        group.getGroupKey(), group.getGroupLabel(), toRelationItems(group.getRelations())))
+                .map(group -> KnowledgePortalAtlasResponse.RelationGroupResponse.builder()
+                        .groupKey(group.getGroupKey())
+                        .groupLabel(group.getGroupLabel())
+                        .relations(toRelationItems(group.getRelations()))
+                        .build())
                 .toList();
     }
 
@@ -153,14 +167,15 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
             return Collections.emptyList();
         }
         return relations.stream()
-                .map(relation -> new KnowledgePortalAtlasResponse.RelationItemResponse(
-                        relation.getSourceId(),
-                        relation.getSourceLabel(),
-                        relation.getRelationLabel(),
-                        relation.getTargetId(),
-                        relation.getTargetLabel(),
-                        relation.getRelationType(),
-                        relation.getWeight()))
+                .map(relation -> KnowledgePortalAtlasResponse.RelationItemResponse.builder()
+                        .sourceId(relation.getSourceId())
+                        .sourceLabel(relation.getSourceLabel())
+                        .relationLabel(relation.getRelationLabel())
+                        .targetId(relation.getTargetId())
+                        .targetLabel(relation.getTargetLabel())
+                        .relationType(relation.getRelationType())
+                        .weight(relation.getWeight())
+                        .build())
                 .toList();
     }
 
@@ -170,13 +185,14 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
             return Collections.emptyList();
         }
         return sourceReferences.stream()
-                .map(reference -> new KnowledgePortalAtlasResponse.SourceReferenceResponse(
-                        reference.getSourceId(),
-                        reference.getSourceTitle(),
-                        reference.getSourceType(),
-                        reference.getSnippet(),
-                        reference.getUpdatedAt(),
-                        reference.getHref()))
+                .map(reference -> KnowledgePortalAtlasResponse.SourceReferenceResponse.builder()
+                        .sourceId(reference.getSourceId())
+                        .sourceTitle(reference.getSourceTitle())
+                        .sourceType(reference.getSourceType())
+                        .snippet(reference.getSnippet())
+                        .updatedAt(reference.getUpdatedAt())
+                        .href(reference.getHref())
+                        .build())
                 .toList();
     }
 
@@ -186,8 +202,12 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
             return Collections.emptyList();
         }
         return relatedTags.stream()
-                .map(tag -> new KnowledgePortalAtlasResponse.RelatedTagResponse(
-                        tag.getTagId(), tag.getTagName(), tag.getTagCategory(), tag.getScore()))
+                .map(tag -> KnowledgePortalAtlasResponse.RelatedTagResponse.builder()
+                        .tagId(tag.getTagId())
+                        .tagName(tag.getTagName())
+                        .tagCategory(tag.getTagCategory())
+                        .score(tag.getScore())
+                        .build())
                 .toList();
     }
 
@@ -197,8 +217,12 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
             return Collections.emptyList();
         }
         return timelineItems.stream()
-                .map(item -> new KnowledgePortalAtlasResponse.TimelineItemResponse(
-                        item.getTimeLabel(), item.getTitle(), item.getDescription(), item.getHref()))
+                .map(item -> KnowledgePortalAtlasResponse.TimelineItemResponse.builder()
+                        .timeLabel(item.getTimeLabel())
+                        .title(item.getTitle())
+                        .description(item.getDescription())
+                        .href(item.getHref())
+                        .build())
                 .toList();
     }
 
@@ -207,12 +231,13 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
         if (filters == null) {
             return null;
         }
-        return new KnowledgePortalAtlasResponse.AvailableFiltersResponse(
-                filters.getKnowledgeBases(),
-                filters.getEntityTypes(),
-                filters.getRelationTypes(),
-                filters.getTagNames(),
-                filters.getTimeRanges());
+        return KnowledgePortalAtlasResponse.AvailableFiltersResponse.builder()
+                .knowledgeBases(filters.getKnowledgeBases())
+                .entityTypes(filters.getEntityTypes())
+                .relationTypes(filters.getRelationTypes())
+                .tagNames(filters.getTagNames())
+                .timeRanges(filters.getTimeRanges())
+                .build();
     }
 
     private static KnowledgePortalAtlasResponse.CanvasViewResponse toCanvasView(
@@ -220,16 +245,17 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalAtlasResponse.CanvasViewResponse(
-                view.getMode(),
-                view.getTitle(),
-                view.getDescription(),
-                view.getFocusNodeId(),
-                view.getEmpty(),
-                view.getEmptyTitle(),
-                view.getEmptyDescription(),
-                toCanvasNodes(view.getNodes()),
-                toCanvasEdges(view.getEdges()));
+        return KnowledgePortalAtlasResponse.CanvasViewResponse.builder()
+                .mode(view.getMode())
+                .title(view.getTitle())
+                .description(view.getDescription())
+                .focusNodeId(view.getFocusNodeId())
+                .empty(view.getEmpty())
+                .emptyTitle(view.getEmptyTitle())
+                .emptyDescription(view.getEmptyDescription())
+                .nodes(toCanvasNodes(view.getNodes()))
+                .edges(toCanvasEdges(view.getEdges()))
+                .build();
     }
 
     private static List<KnowledgePortalAtlasResponse.CanvasNodeResponse> toCanvasNodes(
@@ -238,20 +264,21 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
             return Collections.emptyList();
         }
         return nodes.stream()
-                .map(node -> new KnowledgePortalAtlasResponse.CanvasNodeResponse(
-                        node.getId(),
-                        node.getKind(),
-                        node.getLabel(),
-                        node.getSubtitle(),
-                        node.getMetricLabel(),
-                        node.getMetricValue(),
-                        node.getStatus(),
-                        node.getCategoryCode(),
-                        node.getEntityId(),
-                        node.getHref(),
-                        node.getWeight(),
-                        node.getX(),
-                        node.getY()))
+                .map(node -> KnowledgePortalAtlasResponse.CanvasNodeResponse.builder()
+                        .id(node.getId())
+                        .kind(node.getKind())
+                        .label(node.getLabel())
+                        .subtitle(node.getSubtitle())
+                        .metricLabel(node.getMetricLabel())
+                        .metricValue(node.getMetricValue())
+                        .status(node.getStatus())
+                        .categoryCode(node.getCategoryCode())
+                        .entityId(node.getEntityId())
+                        .href(node.getHref())
+                        .weight(node.getWeight())
+                        .x(node.getX())
+                        .y(node.getY())
+                        .build())
                 .toList();
     }
 
@@ -261,14 +288,15 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
             return Collections.emptyList();
         }
         return edges.stream()
-                .map(edge -> new KnowledgePortalAtlasResponse.CanvasEdgeResponse(
-                        edge.getId(),
-                        edge.getSource(),
-                        edge.getTarget(),
-                        edge.getLabel(),
-                        edge.getRelationType(),
-                        edge.getWeight(),
-                        edge.getDashed()))
+                .map(edge -> KnowledgePortalAtlasResponse.CanvasEdgeResponse.builder()
+                        .id(edge.getId())
+                        .source(edge.getSource())
+                        .target(edge.getTarget())
+                        .label(edge.getLabel())
+                        .relationType(edge.getRelationType())
+                        .weight(edge.getWeight())
+                        .dashed(edge.getDashed())
+                        .build())
                 .toList();
     }
 }

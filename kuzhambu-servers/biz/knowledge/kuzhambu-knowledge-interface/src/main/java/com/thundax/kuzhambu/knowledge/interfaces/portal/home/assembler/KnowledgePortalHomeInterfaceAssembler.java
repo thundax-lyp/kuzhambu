@@ -13,15 +13,15 @@ public final class KnowledgePortalHomeInterfaceAssembler {
         if (result == null) {
             return null;
         }
-        KnowledgePortalHomeResponse response = new KnowledgePortalHomeResponse();
-        response.setHeroTitle(result.getHeroTitle());
-        response.setHeroSubtitle(result.getHeroSubtitle());
-        response.setSearchPlaceholder(result.getSearchPlaceholder());
-        response.setStats(toStatResponses(result.getStats()));
-        response.setQuickLinks(toQuickLinkResponses(result.getQuickLinks()));
-        response.setRecentUpdates(toRecentUpdateResponses(result.getRecentUpdates()));
-        response.setFeatureCollections(toFeatureCollectionResponses(result.getFeatureCollections()));
-        return response;
+        return KnowledgePortalHomeResponse.builder()
+                .heroTitle(result.getHeroTitle())
+                .heroSubtitle(result.getHeroSubtitle())
+                .searchPlaceholder(result.getSearchPlaceholder())
+                .stats(toStatResponses(result.getStats()))
+                .quickLinks(toQuickLinkResponses(result.getQuickLinks()))
+                .recentUpdates(toRecentUpdateResponses(result.getRecentUpdates()))
+                .featureCollections(toFeatureCollectionResponses(result.getFeatureCollections()))
+                .build();
     }
 
     private static List<KnowledgePortalHomeResponse.PortalStatResponse> toStatResponses(
@@ -30,13 +30,14 @@ public final class KnowledgePortalHomeInterfaceAssembler {
             return Collections.emptyList();
         }
         return stats.stream()
-                .map(item -> new KnowledgePortalHomeResponse.PortalStatResponse(
-                        item.getKey(),
-                        item.getLabel(),
-                        item.getValue(),
-                        item.getDeltaText(),
-                        item.getTrend(),
-                        item.getIcon()))
+                .map(item -> KnowledgePortalHomeResponse.PortalStatResponse.builder()
+                        .key(item.getKey())
+                        .label(item.getLabel())
+                        .value(item.getValue())
+                        .deltaText(item.getDeltaText())
+                        .trend(item.getTrend())
+                        .icon(item.getIcon())
+                        .build())
                 .toList();
     }
 
@@ -46,8 +47,13 @@ public final class KnowledgePortalHomeInterfaceAssembler {
             return Collections.emptyList();
         }
         return quickLinks.stream()
-                .map(item -> new KnowledgePortalHomeResponse.PortalQuickLinkResponse(
-                        item.getKey(), item.getLabel(), item.getDescription(), item.getHref(), item.getType()))
+                .map(item -> KnowledgePortalHomeResponse.PortalQuickLinkResponse.builder()
+                        .key(item.getKey())
+                        .label(item.getLabel())
+                        .description(item.getDescription())
+                        .href(item.getHref())
+                        .type(item.getType())
+                        .build())
                 .toList();
     }
 
@@ -57,13 +63,14 @@ public final class KnowledgePortalHomeInterfaceAssembler {
             return Collections.emptyList();
         }
         return recentUpdates.stream()
-                .map(item -> new KnowledgePortalHomeResponse.PortalRecentUpdateResponse(
-                        item.getTitle(),
-                        item.getSubtitle(),
-                        item.getSummary(),
-                        item.getUpdatedAt(),
-                        item.getHref(),
-                        item.getCoverImageUrl()))
+                .map(item -> KnowledgePortalHomeResponse.PortalRecentUpdateResponse.builder()
+                        .title(item.getTitle())
+                        .subtitle(item.getSubtitle())
+                        .summary(item.getSummary())
+                        .updatedAt(item.getUpdatedAt())
+                        .href(item.getHref())
+                        .coverImageUrl(item.getCoverImageUrl())
+                        .build())
                 .toList();
     }
 
@@ -73,8 +80,13 @@ public final class KnowledgePortalHomeInterfaceAssembler {
             return Collections.emptyList();
         }
         return featureCollections.stream()
-                .map(item -> new KnowledgePortalHomeResponse.PortalFeatureCollectionResponse(
-                        item.getKey(), item.getLabel(), item.getDescription(), item.getHref(), item.getBadgeText()))
+                .map(item -> KnowledgePortalHomeResponse.PortalFeatureCollectionResponse.builder()
+                        .key(item.getKey())
+                        .label(item.getLabel())
+                        .description(item.getDescription())
+                        .href(item.getHref())
+                        .badgeText(item.getBadgeText())
+                        .build())
                 .toList();
     }
 }

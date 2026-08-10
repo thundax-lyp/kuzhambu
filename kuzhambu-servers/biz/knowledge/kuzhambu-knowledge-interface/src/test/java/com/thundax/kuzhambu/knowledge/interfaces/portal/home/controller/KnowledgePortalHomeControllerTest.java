@@ -28,24 +28,46 @@ class KnowledgePortalHomeControllerTest {
 
     @Test
     void responseJsonFieldsShouldRemainStable() throws Exception {
-        var response =
-                new com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response
-                        .KnowledgePortalHomeResponse(
-                        "古籍知识图谱门户",
-                        "说明",
-                        "搜索",
-                        List.of(new com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response
-                                .KnowledgePortalHomeResponse.PortalStatResponse(
-                                "tag-count", "主题标签", "12", "治理基线", "steady", "seal")),
-                        List.of(new com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response
-                                .KnowledgePortalHomeResponse.PortalQuickLinkResponse(
-                                "atlas", "图谱浏览", "描述", "/knowledge/atlas", "atlas")),
-                        List.of(new com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response
-                                .KnowledgePortalHomeResponse.PortalRecentUpdateResponse(
-                                "版本 2", "副标题", "摘要", 1L, "/knowledge/atlas", null)),
-                        List.of(new com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response
-                                .KnowledgePortalHomeResponse.PortalFeatureCollectionResponse(
-                                "quality-brief", "质量摘要", "描述", "/knowledge/quality", "质量洞察")));
+        var response = com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response
+                .KnowledgePortalHomeResponse.builder()
+                .heroTitle("古籍知识图谱门户")
+                .heroSubtitle("说明")
+                .searchPlaceholder("搜索")
+                .stats(List.of(com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response
+                        .KnowledgePortalHomeResponse.PortalStatResponse.builder()
+                        .key("tag-count")
+                        .label("主题标签")
+                        .value("12")
+                        .deltaText("治理基线")
+                        .trend("steady")
+                        .icon("seal")
+                        .build()))
+                .quickLinks(List.of(com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response
+                        .KnowledgePortalHomeResponse.PortalQuickLinkResponse.builder()
+                        .key("atlas")
+                        .label("图谱浏览")
+                        .description("描述")
+                        .href("/knowledge/atlas")
+                        .type("atlas")
+                        .build()))
+                .recentUpdates(List.of(com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response
+                        .KnowledgePortalHomeResponse.PortalRecentUpdateResponse.builder()
+                        .title("版本 2")
+                        .subtitle("副标题")
+                        .summary("摘要")
+                        .updatedAt(1L)
+                        .href("/knowledge/atlas")
+                        .coverImageUrl(null)
+                        .build()))
+                .featureCollections(List.of(com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response
+                        .KnowledgePortalHomeResponse.PortalFeatureCollectionResponse.builder()
+                        .key("quality-brief")
+                        .label("质量摘要")
+                        .description("描述")
+                        .href("/knowledge/quality")
+                        .badgeText("质量洞察")
+                        .build()))
+                .build();
         var node = OBJECT_MAPPER.valueToTree(response);
 
         assertTrue(node.has("heroTitle"));

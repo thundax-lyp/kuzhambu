@@ -45,18 +45,43 @@ class KnowledgePortalQualityControllerTest {
         assertTrue(queryNode.has("range"));
         assertTrue(queryNode.has("knowledgeBase"));
 
-        var response = new KnowledgePortalQualityResponse(
-                List.of(new KnowledgePortalQualityResponse.QualityStatResponse(
-                        "entity-confirmed-rate", "实体确认率", "50%", "ratio", "说明", "watch")),
-                List.of(new KnowledgePortalQualityResponse.TrendSeriesResponse(
-                        "monthly-new-tags",
-                        "月度新增标签",
-                        List.of(new KnowledgePortalQualityResponse.TrendPointResponse("2026-05", 3L)))),
-                List.of(new KnowledgePortalQualityResponse.SourceBreakdownResponse("MANUAL", "MANUAL", 8L, "描述")),
-                List.of(new KnowledgePortalQualityResponse.FocusIssueResponse(
-                        "存在待处理治理任务", "说明", "medium", "/knowledge/quality")),
-                List.of(new KnowledgePortalQualityResponse.SourceDetailResponse(
-                        "SANCAI_ENTRY", "三才图会", 1L, "APPLIED", "/knowledge/atlas")));
+        var response = KnowledgePortalQualityResponse.builder()
+                .qualityStats(List.of(KnowledgePortalQualityResponse.QualityStatResponse.builder()
+                        .key("entity-confirmed-rate")
+                        .label("实体确认率")
+                        .value("50%")
+                        .unit("ratio")
+                        .deltaText("说明")
+                        .statusTone("watch")
+                        .build()))
+                .trendSeries(List.of(KnowledgePortalQualityResponse.TrendSeriesResponse.builder()
+                        .seriesKey("monthly-new-tags")
+                        .seriesLabel("月度新增标签")
+                        .points(List.of(KnowledgePortalQualityResponse.TrendPointResponse.builder()
+                                .label("2026-05")
+                                .value(3L)
+                                .build()))
+                        .build()))
+                .sourceBreakdowns(List.of(KnowledgePortalQualityResponse.SourceBreakdownResponse.builder()
+                        .sourceKey("MANUAL")
+                        .sourceLabel("MANUAL")
+                        .value(8L)
+                        .description("描述")
+                        .build()))
+                .focusIssues(List.of(KnowledgePortalQualityResponse.FocusIssueResponse.builder()
+                        .title("存在待处理治理任务")
+                        .summary("说明")
+                        .severity("medium")
+                        .href("/knowledge/quality")
+                        .build()))
+                .sourceDetails(List.of(KnowledgePortalQualityResponse.SourceDetailResponse.builder()
+                        .sourceType("SANCAI_ENTRY")
+                        .sourceTitle("三才图会")
+                        .updatedAt(1L)
+                        .status("APPLIED")
+                        .href("/knowledge/atlas")
+                        .build()))
+                .build();
         var node = OBJECT_MAPPER.valueToTree(response);
         assertTrue(node.has("qualityStats"));
         assertTrue(node.has("trendSeries"));

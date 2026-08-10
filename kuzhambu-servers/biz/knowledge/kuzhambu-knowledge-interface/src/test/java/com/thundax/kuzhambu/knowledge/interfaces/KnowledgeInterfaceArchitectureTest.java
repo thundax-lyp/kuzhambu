@@ -48,11 +48,7 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {
-        return modelAnnotationAllowances(
-                ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS,
-                "portal.atlas.controller.request.KnowledgePortalAtlasRequest",
-                "portal.home.controller.request.KnowledgePortalHomeRequest",
-                "portal.quality.controller.request.KnowledgePortalQualityRequest");
+        return modelAnnotationAllowances(ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS);
     }
 
     private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
@@ -62,28 +58,6 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
         return modelAnnotationAllowances(
                 ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$AvailableFiltersResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$BreadcrumbItemResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$CanvasEdgeResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$CanvasNodeResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$CanvasViewResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$CategoryEntityHighlightResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$CategoryViewResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$DetailViewResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$FocusNodeResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$OverviewCategoryCardResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$OverviewViewResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$RelatedTagResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$RelationGroupResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$RelationItemResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$SourceReferenceResponse",
-                "portal.atlas.controller.response.KnowledgePortalAtlasResponse$TimelineItemResponse",
-                "portal.home.controller.response.KnowledgePortalHomeResponse",
-                "portal.home.controller.response.KnowledgePortalHomeResponse$PortalFeatureCollectionResponse",
-                "portal.home.controller.response.KnowledgePortalHomeResponse$PortalQuickLinkResponse",
-                "portal.home.controller.response.KnowledgePortalHomeResponse$PortalRecentUpdateResponse",
-                "portal.home.controller.response.KnowledgePortalHomeResponse$PortalStatResponse",
                 "portal.lineage.controller.response.KnowledgePortalLineageResponse",
                 "portal.lineage.controller.response.KnowledgePortalLineageResponse$AvailableFiltersResponse",
                 "portal.lineage.controller.response.KnowledgePortalLineageResponse$EmptyResponse",
@@ -91,14 +65,7 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
                 "portal.lineage.controller.response.KnowledgePortalLineageResponse$RelationResponse",
                 "portal.lineage.controller.response.KnowledgePortalLineageResponse$SourceRefResponse",
                 "portal.lineage.controller.response.KnowledgePortalLineageResponse$SummaryResponse",
-                "portal.lineage.controller.response.KnowledgePortalLineageResponse$VersionResponse",
-                "portal.quality.controller.response.KnowledgePortalQualityResponse",
-                "portal.quality.controller.response.KnowledgePortalQualityResponse$FocusIssueResponse",
-                "portal.quality.controller.response.KnowledgePortalQualityResponse$QualityStatResponse",
-                "portal.quality.controller.response.KnowledgePortalQualityResponse$SourceBreakdownResponse",
-                "portal.quality.controller.response.KnowledgePortalQualityResponse$SourceDetailResponse",
-                "portal.quality.controller.response.KnowledgePortalQualityResponse$TrendPointResponse",
-                "portal.quality.controller.response.KnowledgePortalQualityResponse$TrendSeriesResponse");
+                "portal.lineage.controller.response.KnowledgePortalLineageResponse$VersionResponse");
     }
 
     private static List<ArchitectureRuleAllowance> modelAnnotationAllowances(String ruleName, String... classNames) {

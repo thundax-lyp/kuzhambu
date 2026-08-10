@@ -13,13 +13,13 @@ public final class KnowledgePortalQualityInterfaceAssembler {
         if (result == null) {
             return null;
         }
-        KnowledgePortalQualityResponse response = new KnowledgePortalQualityResponse();
-        response.setQualityStats(toQualityStats(result.getQualityStats()));
-        response.setTrendSeries(toTrendSeries(result.getTrendSeries()));
-        response.setSourceBreakdowns(toSourceBreakdowns(result.getSourceBreakdowns()));
-        response.setFocusIssues(toFocusIssues(result.getFocusIssues()));
-        response.setSourceDetails(toSourceDetails(result.getSourceDetails()));
-        return response;
+        return KnowledgePortalQualityResponse.builder()
+                .qualityStats(toQualityStats(result.getQualityStats()))
+                .trendSeries(toTrendSeries(result.getTrendSeries()))
+                .sourceBreakdowns(toSourceBreakdowns(result.getSourceBreakdowns()))
+                .focusIssues(toFocusIssues(result.getFocusIssues()))
+                .sourceDetails(toSourceDetails(result.getSourceDetails()))
+                .build();
     }
 
     private static List<KnowledgePortalQualityResponse.QualityStatResponse> toQualityStats(
@@ -28,13 +28,14 @@ public final class KnowledgePortalQualityInterfaceAssembler {
             return Collections.emptyList();
         }
         return qualityStats.stream()
-                .map(item -> new KnowledgePortalQualityResponse.QualityStatResponse(
-                        item.getKey(),
-                        item.getLabel(),
-                        item.getValue(),
-                        item.getUnit(),
-                        item.getDeltaText(),
-                        item.getStatusTone()))
+                .map(item -> KnowledgePortalQualityResponse.QualityStatResponse.builder()
+                        .key(item.getKey())
+                        .label(item.getLabel())
+                        .value(item.getValue())
+                        .unit(item.getUnit())
+                        .deltaText(item.getDeltaText())
+                        .statusTone(item.getStatusTone())
+                        .build())
                 .toList();
     }
 
@@ -44,8 +45,11 @@ public final class KnowledgePortalQualityInterfaceAssembler {
             return Collections.emptyList();
         }
         return trendSeries.stream()
-                .map(series -> new KnowledgePortalQualityResponse.TrendSeriesResponse(
-                        series.getSeriesKey(), series.getSeriesLabel(), toTrendPoints(series.getPoints())))
+                .map(series -> KnowledgePortalQualityResponse.TrendSeriesResponse.builder()
+                        .seriesKey(series.getSeriesKey())
+                        .seriesLabel(series.getSeriesLabel())
+                        .points(toTrendPoints(series.getPoints()))
+                        .build())
                 .toList();
     }
 
@@ -55,7 +59,10 @@ public final class KnowledgePortalQualityInterfaceAssembler {
             return Collections.emptyList();
         }
         return points.stream()
-                .map(point -> new KnowledgePortalQualityResponse.TrendPointResponse(point.getLabel(), point.getValue()))
+                .map(point -> KnowledgePortalQualityResponse.TrendPointResponse.builder()
+                        .label(point.getLabel())
+                        .value(point.getValue())
+                        .build())
                 .toList();
     }
 
@@ -65,8 +72,12 @@ public final class KnowledgePortalQualityInterfaceAssembler {
             return Collections.emptyList();
         }
         return sourceBreakdowns.stream()
-                .map(item -> new KnowledgePortalQualityResponse.SourceBreakdownResponse(
-                        item.getSourceKey(), item.getSourceLabel(), item.getValue(), item.getDescription()))
+                .map(item -> KnowledgePortalQualityResponse.SourceBreakdownResponse.builder()
+                        .sourceKey(item.getSourceKey())
+                        .sourceLabel(item.getSourceLabel())
+                        .value(item.getValue())
+                        .description(item.getDescription())
+                        .build())
                 .toList();
     }
 
@@ -76,8 +87,12 @@ public final class KnowledgePortalQualityInterfaceAssembler {
             return Collections.emptyList();
         }
         return focusIssues.stream()
-                .map(item -> new KnowledgePortalQualityResponse.FocusIssueResponse(
-                        item.getTitle(), item.getSummary(), item.getSeverity(), item.getHref()))
+                .map(item -> KnowledgePortalQualityResponse.FocusIssueResponse.builder()
+                        .title(item.getTitle())
+                        .summary(item.getSummary())
+                        .severity(item.getSeverity())
+                        .href(item.getHref())
+                        .build())
                 .toList();
     }
 
@@ -87,12 +102,13 @@ public final class KnowledgePortalQualityInterfaceAssembler {
             return Collections.emptyList();
         }
         return sourceDetails.stream()
-                .map(item -> new KnowledgePortalQualityResponse.SourceDetailResponse(
-                        item.getSourceType(),
-                        item.getSourceTitle(),
-                        item.getUpdatedAt(),
-                        item.getStatus(),
-                        item.getHref()))
+                .map(item -> KnowledgePortalQualityResponse.SourceDetailResponse.builder()
+                        .sourceType(item.getSourceType())
+                        .sourceTitle(item.getSourceTitle())
+                        .updatedAt(item.getUpdatedAt())
+                        .status(item.getStatus())
+                        .href(item.getHref())
+                        .build())
                 .toList();
     }
 }
