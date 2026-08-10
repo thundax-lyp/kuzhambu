@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
+import com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.assembler.KnowledgePortalAtlasInterfaceAssembler;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.response.KnowledgePortalAtlasResponse;
@@ -29,8 +30,8 @@ public class KnowledgePortalAtlasController {
     @PostMapping("get")
     public KnowledgePortalAtlasResponse getAtlas(@Valid @RequestBody KnowledgePortalAtlasRequest request) {
         KnowledgePortalAtlasRequest effectiveRequest = request == null ? new KnowledgePortalAtlasRequest() : request;
-        return KnowledgePortalAtlasInterfaceAssembler.toResponse(knowledgePortalReadApplicationService.getAtlas(
-                new com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery(
+        return KnowledgePortalAtlasInterfaceAssembler.toResponse(
+                knowledgePortalReadApplicationService.getAtlas(new KnowledgePortalAtlasQuery(
                         effectiveRequest.getLevel(),
                         effectiveRequest.getCategoryCode(),
                         effectiveRequest.getEntityId(),

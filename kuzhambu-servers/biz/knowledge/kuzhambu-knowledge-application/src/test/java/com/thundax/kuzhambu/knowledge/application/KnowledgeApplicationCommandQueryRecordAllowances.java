@@ -5,20 +5,9 @@ import java.util.List;
 
 final class KnowledgeApplicationCommandQueryRecordAllowances {
 
-    private static final String DESCRIPTION =
-            "Legacy application Command/Query is still a Lombok class instead of a record.";
-    private static final String REMEDIATION =
-            "Convert the contract to a Java record, remove Lombok annotations/imports, update callers, then remove this allowance.";
-
     private KnowledgeApplicationCommandQueryRecordAllowances() {}
 
     static List<ArchitectureRuleAllowance> legacyAllowances() {
-        return List.of(
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery"));
-    }
-
-    private static ArchitectureRuleAllowance legacy(String key) {
-        return ArchitectureRuleAllowance.of(key, DESCRIPTION, REMEDIATION);
+        return List.of();
     }
 }
