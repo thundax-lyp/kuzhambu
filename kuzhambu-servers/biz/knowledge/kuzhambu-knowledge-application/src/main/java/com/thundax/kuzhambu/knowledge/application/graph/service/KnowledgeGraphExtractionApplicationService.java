@@ -10,6 +10,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageEx
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -19,6 +21,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageR
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.KnowledgeEntityId;
 
 public interface KnowledgeGraphExtractionApplicationService {
 
@@ -40,15 +43,13 @@ public interface KnowledgeGraphExtractionApplicationService {
 
     GraphVersionResult getVersionDetail(GraphVersionId versionId);
 
-    PageResult<KnowledgeEntityResult> pageEntities(
-            Long versionId, String keyword, String entityType, String confirmationStatus, PageQuery pageQuery);
+    PageResult<KnowledgeEntityResult> pageEntities(KnowledgeEntityQuery query, PageQuery pageQuery);
 
-    KnowledgeEntityResult getEntityDetail(Long entityId);
+    KnowledgeEntityResult getEntityDetail(KnowledgeEntityId entityId);
 
-    PageResult<KnowledgeRelationResult> pageRelations(
-            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery);
+    PageResult<KnowledgeRelationResult> pageRelations(KnowledgeRelationQuery query, PageQuery pageQuery);
 
-    KnowledgeRelationResult getRelationDetail(Long relationId);
+    KnowledgeRelationResult getRelationDetail(KnowledgeRelationQuery query);
 
     PageResult<KnowledgeLineageNodeResult> pageLineageNodes(
             Long versionId, String keyword, String nodeType, String confirmationStatus, PageQuery pageQuery);

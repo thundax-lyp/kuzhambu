@@ -205,10 +205,7 @@ public class KnowledgeGraphExtractionController {
             @Valid @RequestBody GraphExtractionRequests.EntityPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 extractionService.pageEntities(
-                        request == null ? null : request.getVersionId(),
-                        request == null ? null : request.getKeyword(),
-                        request == null ? null : request.getEntityType(),
-                        request == null ? null : request.getConfirmationStatus(),
+                        KnowledgeGraphExtractionInterfaceAssembler.toEntityQuery(request),
                         PageInterfaceAssembler.toPageQuery(request)),
                 KnowledgeGraphExtractionInterfaceAssembler::toResponse);
     }
@@ -227,7 +224,7 @@ public class KnowledgeGraphExtractionController {
     public GraphExtractionResponses.EntityResponse getEntityDetail(
             @Valid @RequestBody GraphExtractionRequests.EntityIdRequest request) {
         return KnowledgeGraphExtractionInterfaceAssembler.toResponse(
-                extractionService.getEntityDetail(request == null ? null : request.getEntityId()));
+                extractionService.getEntityDetail(KnowledgeGraphExtractionInterfaceAssembler.toEntityId(request)));
     }
 
     @Operation(summary = "分页查询正式关系", description = "knowledge:graph:view")
@@ -245,10 +242,7 @@ public class KnowledgeGraphExtractionController {
             @Valid @RequestBody GraphExtractionRequests.RelationPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 extractionService.pageRelations(
-                        request == null ? null : request.getVersionId(),
-                        request == null ? null : request.getKeyword(),
-                        request == null ? null : request.getRelationType(),
-                        request == null ? null : request.getConfirmationStatus(),
+                        KnowledgeGraphExtractionInterfaceAssembler.toRelationQuery(request),
                         PageInterfaceAssembler.toPageQuery(request)),
                 KnowledgeGraphExtractionInterfaceAssembler::toResponse);
     }
@@ -266,8 +260,8 @@ public class KnowledgeGraphExtractionController {
     @PostMapping("relation/get")
     public GraphExtractionResponses.RelationResponse getRelationDetail(
             @Valid @RequestBody GraphExtractionRequests.RelationIdRequest request) {
-        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(
-                extractionService.getRelationDetail(request == null ? null : request.getRelationId()));
+        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.getRelationDetail(
+                KnowledgeGraphExtractionInterfaceAssembler.toRelationQuery(request)));
     }
 
     @Operation(summary = "分页查询正式世系节点", description = "knowledge:graph:view")

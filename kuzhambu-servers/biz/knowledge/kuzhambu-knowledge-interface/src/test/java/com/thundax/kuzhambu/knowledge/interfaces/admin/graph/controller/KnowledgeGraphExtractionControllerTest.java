@@ -12,6 +12,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.CancelGraphExtra
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -21,6 +23,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageR
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import org.junit.jupiter.api.Test;
 
@@ -189,7 +192,7 @@ class KnowledgeGraphExtractionControllerTest {
         GraphExtractionRequests.EntityPageRequest request = new GraphExtractionRequests.EntityPageRequest();
         request.setVersionId(71L);
         request.setKeyword("黄帝");
-        when(service.pageEntities(any(), any(), any(), any(), any()))
+        when(service.pageEntities(any(KnowledgeEntityQuery.class), any()))
                 .thenReturn(PageResult.of(
                         1,
                         10,
@@ -199,7 +202,7 @@ class KnowledgeGraphExtractionControllerTest {
 
         var response = controller.pageEntities(request);
 
-        verify(service).pageEntities(any(), any(), any(), any(), any());
+        verify(service).pageEntities(any(KnowledgeEntityQuery.class), any());
         assertEquals("person:huangdi", response.getRecords().get(0).getEntityKey());
     }
 
@@ -209,13 +212,13 @@ class KnowledgeGraphExtractionControllerTest {
         KnowledgeGraphExtractionController controller = new KnowledgeGraphExtractionController(service);
         GraphExtractionRequests.EntityIdRequest request = new GraphExtractionRequests.EntityIdRequest();
         request.setEntityId(1001L);
-        when(service.getEntityDetail(1001L))
+        when(service.getEntityDetail(KnowledgeEntityIdCodec.toDomain(1001L)))
                 .thenReturn(new KnowledgeEntityResult(
                         1001L, "person:huangdi", "黄帝", "PERSON", "始祖", "CONFIRMED", 71L, "[]", 1L, 2L, 3L));
 
         var response = controller.getEntityDetail(request);
 
-        verify(service).getEntityDetail(1001L);
+        verify(service).getEntityDetail(KnowledgeEntityIdCodec.toDomain(1001L));
         assertEquals("黄帝", response.getName());
     }
 
@@ -225,7 +228,7 @@ class KnowledgeGraphExtractionControllerTest {
         KnowledgeGraphExtractionController controller = new KnowledgeGraphExtractionController(service);
         GraphExtractionRequests.RelationPageRequest request = new GraphExtractionRequests.RelationPageRequest();
         request.setVersionId(71L);
-        when(service.pageRelations(any(), any(), any(), any(), any()))
+        when(service.pageRelations(any(KnowledgeRelationQuery.class), any()))
                 .thenReturn(PageResult.of(
                         1,
                         10,
@@ -248,7 +251,7 @@ class KnowledgeGraphExtractionControllerTest {
 
         var response = controller.pageRelations(request);
 
-        verify(service).pageRelations(any(), any(), any(), any(), any());
+        verify(service).pageRelations(any(KnowledgeRelationQuery.class), any());
         assertEquals("ANCESTOR", response.getRecords().get(0).getRelationType());
     }
 
@@ -258,7 +261,7 @@ class KnowledgeGraphExtractionControllerTest {
         KnowledgeGraphExtractionController controller = new KnowledgeGraphExtractionController(service);
         GraphExtractionRequests.RelationIdRequest request = new GraphExtractionRequests.RelationIdRequest();
         request.setRelationId(2001L);
-        when(service.getRelationDetail(2001L))
+        when(service.getRelationDetail(any(KnowledgeRelationQuery.class)))
                 .thenReturn(new KnowledgeRelationResult(
                         2001L,
                         "person:huangdi->person:fuxi:ancestor",
@@ -277,7 +280,7 @@ class KnowledgeGraphExtractionControllerTest {
 
         var response = controller.getRelationDetail(request);
 
-        verify(service).getRelationDetail(2001L);
+        verify(service).getRelationDetail(argThat(query -> Long.valueOf(2001L).equals(query.relationId())));
         assertEquals("黄帝", response.getSourceName());
     }
 

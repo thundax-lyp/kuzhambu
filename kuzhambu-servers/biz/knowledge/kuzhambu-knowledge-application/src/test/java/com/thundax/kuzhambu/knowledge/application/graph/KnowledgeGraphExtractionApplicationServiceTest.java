@@ -32,6 +32,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtr
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -688,7 +690,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<KnowledgeEntityResult> page = service.pageEntities(71L, "黄帝", "PERSON", "CONFIRMED", null);
+        PageResult<KnowledgeEntityResult> page =
+                service.pageEntities(new KnowledgeEntityQuery(71L, "黄帝", "PERSON", "CONFIRMED"), null);
 
         assertEquals(1, page.getRecords().size());
         assertEquals(1001L, page.getRecords().get(0).getEntityId());
@@ -722,7 +725,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        KnowledgeEntityResult detail = service.getEntityDetail(1002L);
+        KnowledgeEntityResult detail = service.getEntityDetail(KnowledgeEntityIdCodec.toDomain(1002L));
 
         assertEquals(1002L, detail.getEntityId());
         assertEquals("person:fuxi", detail.getEntityKey());
@@ -756,7 +759,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<KnowledgeRelationResult> page = service.pageRelations(71L, "黄帝", "ANCESTOR", "CONFIRMED", null);
+        PageResult<KnowledgeRelationResult> page =
+                service.pageRelations(new KnowledgeRelationQuery(71L, "黄帝", "ANCESTOR", "CONFIRMED", null), null);
 
         assertEquals(1, page.getRecords().size());
         assertEquals(2001L, page.getRecords().get(0).getRelationId());
@@ -790,7 +794,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        KnowledgeRelationResult detail = service.getRelationDetail(2002L);
+        KnowledgeRelationResult detail =
+                service.getRelationDetail(new KnowledgeRelationQuery(null, null, null, null, 2002L));
 
         assertEquals(2002L, detail.getRelationId());
         assertEquals("伏羲", detail.getSourceName());

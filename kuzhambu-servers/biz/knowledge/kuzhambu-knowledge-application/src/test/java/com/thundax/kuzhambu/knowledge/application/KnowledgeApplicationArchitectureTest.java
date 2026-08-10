@@ -78,18 +78,8 @@ class KnowledgeApplicationArchitectureTest extends AbstractArchitectureTest {
                         + "KnowledgeGraphRefinementApplicationService.applyTask(java.lang.Long, java.lang.Long)"),
                 rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
                         + "KnowledgeGraphExtractionApplicationService.getLineageRelationDetail(java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                                + "KnowledgeGraphExtractionApplicationService.pageEntities(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),
                 rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
                         + "KnowledgeGraphExtractionApplicationService.getLineageNodeDetail(java.lang.Long)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                        + "KnowledgeGraphExtractionApplicationService.getEntityDetail(java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                                + "KnowledgeGraphExtractionApplicationService.pageRelations(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
-                        + "KnowledgeGraphExtractionApplicationService.getRelationDetail(java.lang.Long)"),
                 rawParameters(
                         "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.graph.service."
                                 + "KnowledgeGraphExtractionApplicationService.pageLineageRelations(java.lang.Long, java.lang.String, java.lang.String, java.lang.String, com.thundax.kuzhambu.common.core.page.PageQuery)"),

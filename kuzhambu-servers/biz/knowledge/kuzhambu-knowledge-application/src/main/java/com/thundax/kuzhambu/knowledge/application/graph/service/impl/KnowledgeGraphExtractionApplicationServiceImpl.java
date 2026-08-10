@@ -28,6 +28,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationE
 import com.thundax.kuzhambu.knowledge.application.graph.configure.KnowledgeGraphExtractionExecutorConfiguration;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -62,6 +64,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphVersionStatu
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.KnowledgeConfirmationStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.KnowledgeEntityId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
@@ -408,15 +411,14 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public PageResult<KnowledgeEntityResult> pageEntities(
-            Long versionId, String keyword, String entityType, String confirmationStatus, PageQuery pageQuery) {
+    public PageResult<KnowledgeEntityResult> pageEntities(KnowledgeEntityQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<KnowledgeEntity> entityPage = knowledgeEntityRepository.page(
-                GraphVersionIdCodec.toDomain(versionId),
-                keyword,
-                entityType,
-                KnowledgeConfirmationStatus.from(confirmationStatus),
+                GraphVersionIdCodec.toDomain(query == null ? null : query.versionId()),
+                query == null ? null : query.keyword(),
+                query == null ? null : query.entityType(),
+                KnowledgeConfirmationStatus.from(query == null ? null : query.confirmationStatus()),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -429,24 +431,23 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public KnowledgeEntityResult getEntityDetail(Long entityId) {
-        KnowledgeEntity entity = knowledgeEntityRepository.getByEntityId(KnowledgeEntityIdCodec.toDomain(entityId));
+    public KnowledgeEntityResult getEntityDetail(KnowledgeEntityId entityId) {
+        KnowledgeEntity entity = knowledgeEntityRepository.getByEntityId(entityId);
         if (entity == null) {
-            throw new BizException("Knowledge entity not found: " + entityId);
+            throw new BizException("Knowledge entity not found: " + KnowledgeEntityIdCodec.toValue(entityId));
         }
         return toKnowledgeEntityResult(entity);
     }
 
     @Override
-    public PageResult<KnowledgeRelationResult> pageRelations(
-            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery) {
+    public PageResult<KnowledgeRelationResult> pageRelations(KnowledgeRelationQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<KnowledgeRelation> relationPage = knowledgeRelationRepository.page(
-                versionId,
-                keyword,
-                relationType,
-                confirmationStatus,
+                query == null ? null : query.versionId(),
+                query == null ? null : query.keyword(),
+                query == null ? null : query.relationType(),
+                query == null ? null : query.confirmationStatus(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -459,7 +460,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public KnowledgeRelationResult getRelationDetail(Long relationId) {
+    public KnowledgeRelationResult getRelationDetail(KnowledgeRelationQuery query) {
+        Long relationId = query == null ? null : query.relationId();
         KnowledgeRelation relation = knowledgeRelationRepository.getByRelationId(relationId);
         if (relation == null) {
             throw new BizException("Knowledge relation not found: " + relationId);

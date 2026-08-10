@@ -8,6 +8,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageEx
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphVersionQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeEntityQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.KnowledgeRelationQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -17,8 +19,10 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageR
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphVersionIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.KnowledgeEntityIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphVersionId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.KnowledgeEntityId;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
 import java.util.Objects;
@@ -154,6 +158,36 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
     public static GraphVersionId toVersionId(@NonNull GraphExtractionRequests.VersionIdRequest request) {
         Objects.requireNonNull(request, "request must not be null");
         return GraphVersionIdCodec.toDomain(request.getVersionId());
+    }
+
+    @NonNull
+    public static KnowledgeEntityQuery toEntityQuery(@NonNull GraphExtractionRequests.EntityPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new KnowledgeEntityQuery(
+                request.getVersionId(), request.getKeyword(), request.getEntityType(), request.getConfirmationStatus());
+    }
+
+    @NonNull
+    public static KnowledgeEntityId toEntityId(@NonNull GraphExtractionRequests.EntityIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return KnowledgeEntityIdCodec.toDomain(request.getEntityId());
+    }
+
+    @NonNull
+    public static KnowledgeRelationQuery toRelationQuery(@NonNull GraphExtractionRequests.RelationPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new KnowledgeRelationQuery(
+                request.getVersionId(),
+                request.getKeyword(),
+                request.getRelationType(),
+                request.getConfirmationStatus(),
+                null);
+    }
+
+    @NonNull
+    public static KnowledgeRelationQuery toRelationQuery(@NonNull GraphExtractionRequests.RelationIdRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new KnowledgeRelationQuery(null, null, null, null, request.getRelationId());
     }
 
     public static CancelGraphExtractionBatchCommand toCancelBatchCommand(
