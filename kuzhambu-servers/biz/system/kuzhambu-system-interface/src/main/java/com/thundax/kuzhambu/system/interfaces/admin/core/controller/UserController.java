@@ -27,9 +27,7 @@ import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusComm
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
-import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
@@ -66,6 +64,7 @@ import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.UserInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserAvatarRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserCheckRequest;
@@ -500,7 +499,7 @@ public class UserController {
     @PostMapping(value = "department/tree")
     @WrappedApiResponse
     public List<UserDepartmentResponse> departmentTree() {
-        return departmentService.list(new DepartmentQuery()).stream()
+        return departmentService.list(DepartmentInterfaceAssembler.toListAllQuery()).stream()
                 .map(department -> UserInterfaceAssembler.toDepartmentResponse(department, this::getDepartment))
                 .collect(Collectors.toList());
     }
@@ -741,7 +740,7 @@ public class UserController {
     }
 
     private Department getDepartment(DepartmentId departmentId) {
-        return departmentService.get(new GetDepartmentQuery(departmentId));
+        return departmentService.get(DepartmentInterfaceAssembler.toGetQuery(departmentId));
     }
 
     private String getAccountLoginName(UserId userId) {

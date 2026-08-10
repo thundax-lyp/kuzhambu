@@ -10,26 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `03-department`：清理 Department record 与构造边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-05-SYSTEM-CORE.md`
-    - 范围对象：
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/ChangeDepartmentInfoCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/CreateDepartmentCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/MoveDepartmentCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/command/RemoveDepartmentCommand.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/DepartmentQuery.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/query/GetDepartmentQuery.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/DepartmentController.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/assembler/DepartmentInterfaceAssembler.java`
-        - `kuzhambu-servers/biz/system/kuzhambu-system-interface/src/test/java/com/thundax/kuzhambu/system/interfaces/admin/SystemAdminManagementContractTest.java`
-        - `kuzhambu-apps/admin-web/src/pages/system/department/department-service.ts`
-        - `kuzhambu-apps/admin-web/src/pages/system/department/department-service-contract.test.ts`
-        - `kuzhambu-apps/admin-web/e2e/system/management/management.spec.ts`
-    - 处理动作：转换 Department Command/Query 为 record，并将 controller 构造迁移到 assembler 后同步前后端契约。
-    - 验收点：Department 相关 allowlist 可删除，后端契约、admin-web service contract 和 management E2E 路径一致。
-    - 重要度：9/10
-
 - [ ] `04-dict`：清理 Dict record 与构造边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-05-SYSTEM-CORE.md`

@@ -1,8 +1,12 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
+import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.application.core.command.ChangeDepartmentInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateDepartmentCommand;
+import com.thundax.kuzhambu.system.application.core.command.MoveDepartmentCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
+import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
@@ -49,11 +53,23 @@ public final class DepartmentInterfaceAssembler {
 
     @NonNull
     public static DepartmentQuery toQuery(@NonNull DepartmentQueryRequest request) {
-        DepartmentQuery query = new DepartmentQuery();
-        query.setParentId(DepartmentIdCodec.toDomain(request.getParentId()));
-        query.setName(request.getName());
-        query.setRemarks(request.getRemarks());
-        return query;
+        return new DepartmentQuery(
+                null, null, DepartmentIdCodec.toDomain(request.getParentId()), request.getName(), request.getRemarks());
+    }
+
+    @NonNull
+    public static DepartmentQuery toChildRelationQuery(@NonNull Department child, @NonNull Department ancestor) {
+        return new DepartmentQuery(child.getId(), ancestor.getId(), null, null, null);
+    }
+
+    @NonNull
+    public static DepartmentQuery toListAllQuery() {
+        return new DepartmentQuery(null, null, null, null, null);
+    }
+
+    @NonNull
+    public static GetDepartmentQuery toGetQuery(DepartmentId id) {
+        return new GetDepartmentQuery(id);
     }
 
     @NonNull
@@ -80,6 +96,22 @@ public final class DepartmentInterfaceAssembler {
         Department entity = toDomain(new Department(), request);
         return new ChangeDepartmentInfoCommand(
                 entity.getId(), entity.getParentId(), entity.getName(), entity.getShortName(), entity.getRemarks());
+    }
+
+    @NonNull
+    public static RemoveDepartmentCommand toRemoveCommand(@NonNull Department entity) {
+        return new RemoveDepartmentCommand(entity.getId());
+    }
+
+    @NonNull
+    public static RemoveDepartmentCommand toRemoveCommand(@NonNull DepartmentId id) {
+        return new RemoveDepartmentCommand(id);
+    }
+
+    @NonNull
+    public static MoveDepartmentCommand toMoveCommand(
+            @NonNull Department from, @NonNull Department to, @NonNull TreeNodeMoveType moveType) {
+        return new MoveDepartmentCommand(from.getId(), to.getId(), moveType);
     }
 
     private static String namePath(Department department, Function<DepartmentId, Department> departmentLoader) {

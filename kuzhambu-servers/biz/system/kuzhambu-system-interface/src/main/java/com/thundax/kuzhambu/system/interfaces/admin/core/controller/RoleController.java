@@ -14,9 +14,7 @@ import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersComma
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveRoleCommand;
 import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
-import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetDepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetMenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
@@ -45,6 +43,7 @@ import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleAssignUserRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleIdRequest;
@@ -341,7 +340,7 @@ public class RoleController {
     public List<RoleUserTreeNodeResponse> userTree() {
         List<RoleUserTreeNodeResponse> list = new ArrayList<>();
 
-        list.addAll(departmentService.list(new DepartmentQuery()).stream()
+        list.addAll(departmentService.list(DepartmentInterfaceAssembler.toListAllQuery()).stream()
                 .map(department -> RoleInterfaceAssembler.toDepartmentTreeNode(
                         DEPARTMENT_ID_PREFIX + DepartmentIdCodec.toValue(department.getId()), department))
                 .collect(Collectors.toList()));
@@ -463,7 +462,7 @@ public class RoleController {
     }
 
     private Department getDepartment(DepartmentId departmentId) {
-        return departmentService.get(new GetDepartmentQuery(departmentId));
+        return departmentService.get(DepartmentInterfaceAssembler.toGetQuery(departmentId));
     }
 
     private RoleQuery roleQuery(String roleId) {
