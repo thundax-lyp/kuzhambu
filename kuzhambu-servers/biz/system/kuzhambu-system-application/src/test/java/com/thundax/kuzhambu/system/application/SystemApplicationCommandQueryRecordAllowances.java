@@ -14,18 +14,10 @@ final class SystemApplicationCommandQueryRecordAllowances {
 
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.command.CreateLogCommand"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.command.CreateUserCommand"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.command.DeleteLogCommand"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.query.GetLogQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.query.GetUserQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.query.LogQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.query.UserQuery"));
+                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.system.application.core.query.LogQuery"));
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {

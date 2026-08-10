@@ -47,7 +47,7 @@ public class UserManagementApplicationServiceImpl implements UserManagementAppli
     }
 
     public User get(GetUserQuery query) {
-        UserId id = query == null ? null : query.getId();
+        UserId id = query == null ? null : query.id();
         if (id == null) {
             return null;
         }
@@ -56,32 +56,32 @@ public class UserManagementApplicationServiceImpl implements UserManagementAppli
 
     public List<User> list(UserQuery query) {
         return dao.list(
-                query == null ? null : query.getDepartmentId(),
-                query == null ? null : query.getLoginName(),
-                query == null ? null : query.getName(),
-                query == null ? null : query.getStatus(),
-                query == null ? null : query.getPrivilege());
+                query == null ? null : query.departmentId(),
+                query == null ? null : query.loginName(),
+                query == null ? null : query.name(),
+                query == null ? null : query.status(),
+                query == null ? null : query.privilege());
     }
 
     public PageResult<User> page(UserQuery query, PageQuery page) {
         return dao.page(
-                query == null ? null : query.getDepartmentId(),
-                query == null ? null : query.getLoginName(),
-                query == null ? null : query.getName(),
-                query == null ? null : query.getStatus(),
-                query == null ? null : query.getPrivilege(),
+                query == null ? null : query.departmentId(),
+                query == null ? null : query.loginName(),
+                query == null ? null : query.name(),
+                query == null ? null : query.status(),
+                query == null ? null : query.privilege(),
                 page.getPageNo(),
                 page.getPageSize());
     }
 
     @Override
     public boolean existsEmail(UserQuery query) {
-        return query != null && dao.countByEmail(query.getEmail(), query.getExcludedId()) > 0;
+        return query != null && dao.countByEmail(query.email(), query.excludedId()) > 0;
     }
 
     @Override
     public boolean existsMobile(UserQuery query) {
-        return query != null && dao.countByMobile(query.getMobile(), query.getExcludedId()) > 0;
+        return query != null && dao.countByMobile(query.mobile(), query.excludedId()) > 0;
     }
 
     @Override
@@ -90,7 +90,7 @@ public class UserManagementApplicationServiceImpl implements UserManagementAppli
     public UserId create(CreateUserCommand command) {
         User user = toUser(command);
         user.setId(dao.insert(user));
-        rewriteUserRoles(user.getId(), command.getRoleIdList());
+        rewriteUserRoles(user.getId(), command.roleIdList());
         return user.getId();
     }
 
@@ -105,7 +105,7 @@ public class UserManagementApplicationServiceImpl implements UserManagementAppli
     public void changeInfo(ChangeUserInfoCommand command) {
         User user = toUser(command);
         dao.update(user);
-        rewriteUserRoles(user.getId(), command.getRoleIdList());
+        rewriteUserRoles(user.getId(), command.roleIdList());
     }
 
     private void rewriteUserRoles(UserId userId, List<RoleId> roleIdList) {
@@ -130,26 +130,11 @@ public class UserManagementApplicationServiceImpl implements UserManagementAppli
             recordWhenUnchanged = true)
     public int changeStatus(ChangeUserStatusCommand command) {
         User user = new User();
-        user.setId(command.getId());
-        user.setStatus(command.getStatus());
-        command.setAfterUser(auditAfterUser(command));
+        user.setId(command.id());
+        user.setStatus(command.status());
         int result = dao.updateStatus(user);
         notifyRoleCacheChanged();
         return result;
-    }
-
-    private User auditAfterUser(ChangeUserStatusCommand command) {
-        User user = new User();
-        User beforeUser = command.getBeforeUser();
-        if (beforeUser != null) {
-            user.setId(beforeUser.getId());
-            user.setName(beforeUser.getName());
-            user.setPrivilege(beforeUser.getPrivilege());
-        } else {
-            user.setId(command.getId());
-        }
-        user.setStatus(command.getStatus());
-        return user;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -159,7 +144,7 @@ public class UserManagementApplicationServiceImpl implements UserManagementAppli
             action = AuditAction.DELETE,
             summary = "删除后台用户")
     public int remove(RemoveUserCommand command) {
-        UserId id = command == null ? null : command.getId();
+        UserId id = command == null ? null : command.id();
         User user = get(new GetUserQuery(id));
         if (user == null) {
             return 0;
@@ -176,7 +161,7 @@ public class UserManagementApplicationServiceImpl implements UserManagementAppli
 
     @Override
     public List<Role> listUserRoles(UserQuery query) {
-        return dao.listUserRoles(query.getId()).stream().map(this::newRole).collect(Collectors.toList());
+        return dao.listUserRoles(query.id()).stream().map(this::newRole).collect(Collectors.toList());
     }
 
     private Role newRole(RoleId id) {
@@ -198,31 +183,31 @@ public class UserManagementApplicationServiceImpl implements UserManagementAppli
 
     private User toUser(CreateUserCommand command) {
         User user = new User();
-        user.setId(command.getId());
-        user.setDepartmentId(command.getDepartmentId());
-        user.setEmail(command.getEmail());
-        user.setMobile(command.getMobile());
-        user.setTel(command.getTel());
-        user.setName(command.getName());
-        user.setRank(command.getRank());
-        user.setPrivilege(command.getPrivilege());
-        user.setStatus(command.getStatus());
-        user.setRemarks(command.getRemarks());
+        user.setId(command.id());
+        user.setDepartmentId(command.departmentId());
+        user.setEmail(command.email());
+        user.setMobile(command.mobile());
+        user.setTel(command.tel());
+        user.setName(command.name());
+        user.setRank(command.rank());
+        user.setPrivilege(command.privilege());
+        user.setStatus(command.status());
+        user.setRemarks(command.remarks());
         return user;
     }
 
     private User toUser(ChangeUserInfoCommand command) {
         User user = new User();
-        user.setId(command.getId());
-        user.setDepartmentId(command.getDepartmentId());
-        user.setEmail(command.getEmail());
-        user.setMobile(command.getMobile());
-        user.setTel(command.getTel());
-        user.setName(command.getName());
-        user.setRank(command.getRank());
-        user.setPrivilege(command.getPrivilege());
-        user.setStatus(command.getStatus());
-        user.setRemarks(command.getRemarks());
+        user.setId(command.id());
+        user.setDepartmentId(command.departmentId());
+        user.setEmail(command.email());
+        user.setMobile(command.mobile());
+        user.setTel(command.tel());
+        user.setName(command.name());
+        user.setRank(command.rank());
+        user.setPrivilege(command.privilege());
+        user.setStatus(command.status());
+        user.setRemarks(command.remarks());
         return user;
     }
 }

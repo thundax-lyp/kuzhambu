@@ -83,19 +83,9 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.LogController#PrincipalIdentityQuery:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#GetUserQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#GetUserQuery:2"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#PrincipalIdentityQuery:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#UserQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.RoleController#UserQuery:2"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#ChangeCurrentUserAvatarCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#ChangeUserStatusCommand:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#CurrentUserAvatarQuery:1"),
                 constructionViolation(
@@ -103,23 +93,13 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#GetRoleQuery:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#GetUserQuery:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#PreAuthSessionQuery:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#PreAuthSessionValueQuery:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#RemoveCurrentUserAvatarCommand:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#RemoveUserCommand:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#RoleQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#UserQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#UserQuery:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.core.controller.UserController#UserQuery:3"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.core.service.impl.SysLogMessageServiceImpl#CreateLogCommand:1"),
                 constructionViolation(

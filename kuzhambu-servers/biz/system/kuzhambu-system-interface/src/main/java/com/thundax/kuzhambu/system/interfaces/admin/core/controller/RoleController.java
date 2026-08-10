@@ -10,8 +10,6 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
-import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
-import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.MenuManagementApplicationService;
@@ -32,11 +30,11 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
-import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.MenuInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler;
+import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.UserInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleAssignUserRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleIdRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleMenuRequest;
@@ -337,7 +335,7 @@ public class RoleController {
                         DEPARTMENT_ID_PREFIX + DepartmentIdCodec.toValue(department.getId()), department))
                 .collect(Collectors.toList()));
 
-        list.addAll(userService.list(new UserQuery()).stream()
+        list.addAll(userService.list(UserInterfaceAssembler.toListAllQuery()).stream()
                 .map(user -> RoleInterfaceAssembler.toUserTreeNode(
                         DEPARTMENT_ID_PREFIX,
                         user,
@@ -369,7 +367,7 @@ public class RoleController {
         return roleService
                 .listRoleUsers(RoleInterfaceAssembler.toIdQuery(RoleIdCodec.toDomain(request.getId())))
                 .stream()
-                .map(user -> toUserResponse(userService.get(new GetUserQuery(user.getId()))))
+                .map(user -> toUserResponse(userService.get(UserInterfaceAssembler.toGetQuery(user.getId()))))
                 .collect(Collectors.toList());
     }
 
@@ -427,21 +425,12 @@ public class RoleController {
         }
 
         for (RoleUserRequest userRequest : request.getUsers()) {
-            User userBean = userService.get(new GetUserQuery(UserIdCodec.toDomain(userRequest.getId())));
+            User userBean =
+                    userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(userRequest.getId())));
             if (userBean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
         }
-    }
-
-    private UserQuery userQuery(UserId userId) {
-        UserQuery query = new UserQuery();
-        query.setId(userId);
-        return query;
-    }
-
-    private UserQuery userQuery(Long userId) {
-        return userQuery(UserIdCodec.toDomain(userId));
     }
 
     private Department getDepartment(DepartmentId departmentId) {

@@ -7,7 +7,10 @@ import com.thundax.kuzhambu.system.application.auth.command.CreatePrincipalIdent
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand;
+import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
+import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
@@ -26,8 +29,10 @@ import com.thundax.kuzhambu.system.domain.core.model.enums.UserPrivilege;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserQueryRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserSaveRequest;
+import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserStatusRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.UserDepartmentResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.UserResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.UserRoleResponse;
@@ -184,15 +189,66 @@ public final class UserInterfaceAssembler {
 
     @NonNull
     public static UserQuery toQuery(@NonNull UserQueryRequest request) {
-        UserQuery query = new UserQuery();
-        query.setDepartmentId(DepartmentIdCodec.toDomain(request.getDepartmentId()));
-        query.setLoginName(emptyToNull(request.getLoginName()));
-        query.setName(emptyToNull(request.getName()));
-        if (request.getEnable() != null) {
-            query.setStatus(request.getEnable() ? UserStatus.ENABLED : UserStatus.DISABLED);
-        }
-        query.setOrderBy(emptyToNull(request.getOrderBy()));
-        return query;
+        return toQuery(request, DepartmentIdCodec.toDomain(request.getDepartmentId()));
+    }
+
+    @NonNull
+    public static UserQuery toQuery(@NonNull UserQueryRequest request, DepartmentId departmentId) {
+        return new UserQuery(
+                null,
+                departmentId,
+                emptyToNull(request.getLoginName()),
+                null,
+                null,
+                emptyToNull(request.getName()),
+                request.getEnable() == null ? null : request.getEnable() ? UserStatus.ENABLED : UserStatus.DISABLED,
+                null,
+                emptyToNull(request.getOrderBy()),
+                null);
+    }
+
+    @NonNull
+    public static UserQuery toListAllQuery() {
+        return new UserQuery(null, null, null, null, null, null, null, null, null, null);
+    }
+
+    @NonNull
+    public static UserQuery toUserRolesQuery(@NonNull UserId userId) {
+        Objects.requireNonNull(userId, "userId must not be null");
+        return new UserQuery(userId, null, null, null, null, null, null, null, null, null);
+    }
+
+    @NonNull
+    public static UserQuery toEmailQuery(String email, UserId excludedId) {
+        return new UserQuery(null, null, null, email, null, null, null, null, null, excludedId);
+    }
+
+    @NonNull
+    public static UserQuery toMobileQuery(String mobile, UserId excludedId) {
+        return new UserQuery(null, null, null, null, mobile, null, null, null, null, excludedId);
+    }
+
+    @NonNull
+    public static GetUserQuery toGetQuery(@NonNull UserId userId) {
+        Objects.requireNonNull(userId, "userId must not be null");
+        return new GetUserQuery(userId);
+    }
+
+    @NonNull
+    public static ChangeUserStatusCommand toChangeStatusCommand(
+            @NonNull User user, @NonNull UserStatusRequest request) {
+        Objects.requireNonNull(user, "user must not be null");
+        Objects.requireNonNull(request, "request must not be null");
+        return new ChangeUserStatusCommand(
+                user.getId(),
+                Boolean.TRUE.equals(request.getEnable()) ? UserStatus.ENABLED : UserStatus.DISABLED,
+                user);
+    }
+
+    @NonNull
+    public static RemoveUserCommand toRemoveCommand(@NonNull UserId userId) {
+        Objects.requireNonNull(userId, "userId must not be null");
+        return new RemoveUserCommand(userId);
     }
 
     @NonNull

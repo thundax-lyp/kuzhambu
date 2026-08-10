@@ -248,9 +248,7 @@ public class CurrentUserProfileApplicationServiceImpl implements CurrentUserProf
     }
 
     private UserQuery userQuery(UserId userId) {
-        UserQuery query = new UserQuery();
-        query.setId(userId);
-        return query;
+        return new UserQuery(userId, null, null, null, null, null, null, null, null, null);
     }
 
     private List<StorageObjectFacadeDto> listAvatarDtos(UserId userId) {

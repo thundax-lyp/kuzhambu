@@ -25,10 +25,8 @@ import com.thundax.kuzhambu.system.application.auth.utils.PasswordHelper;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
-import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserAvatarQuery;
 import com.thundax.kuzhambu.system.application.core.query.GetRoleQuery;
-import com.thundax.kuzhambu.system.application.core.query.GetUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
@@ -57,7 +55,6 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
-import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
@@ -165,7 +162,7 @@ public class UserController {
     @PostMapping(value = "get")
     @WrappedApiResponse
     public UserResponse get(@Valid @RequestBody UserIdRequest request) {
-        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
+        User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -269,7 +266,7 @@ public class UserController {
         String encryptedPassword = PasswordHelper.encrypt(request.getLoginPass());
 
         if (entity.getId() != null) {
-            User bean = userService.get(getUserQuery(entity.getId()));
+            User bean = userService.get(UserInterfaceAssembler.toGetQuery(entity.getId()));
             if (bean != null) {
                 throw AdminResponseExceptions.objectExists();
             }
@@ -311,7 +308,7 @@ public class UserController {
         }
         validateUniqueContact(request);
 
-        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
+        User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -350,7 +347,7 @@ public class UserController {
     @PostMapping(value = "avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @WrappedApiResponse
     public Boolean uploadAvatar(@RequestParam("id") String id, MultipartFile avatar) {
-        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(Long.valueOf(id))));
+        User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(Long.valueOf(id))));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -377,7 +374,7 @@ public class UserController {
     @PostMapping(value = "avatar/delete")
     @WrappedApiResponse
     public Boolean deleteAvatar(@Valid @RequestBody UserAvatarRequest request) {
-        User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
+        User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(request.getId())));
         if (bean == null) {
             throw AdminResponseExceptions.objectNotFound();
         }
@@ -418,15 +415,12 @@ public class UserController {
 
         List<ChangeUserStatusCommand> commandList = new ArrayList<>();
         for (UserStatusRequest request : RequestListHelper.present(list)) {
-            User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
+            User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
             validateEditableStatusUser(currentUser, bean);
-            commandList.add(new ChangeUserStatusCommand(
-                    bean.getId(),
-                    Boolean.TRUE.equals(request.getEnable()) ? UserStatus.ENABLED : UserStatus.DISABLED,
-                    bean));
+            commandList.add(UserInterfaceAssembler.toChangeStatusCommand(bean, request));
         }
         if (commandList.isEmpty()) {
             throw AdminResponseExceptions.invalidParameter("list");
@@ -454,7 +448,7 @@ public class UserController {
 
         List<UserId> idList = new ArrayList<>();
         for (UserIdRequest request : RequestListHelper.present(list)) {
-            User bean = userService.get(getUserQuery(UserIdCodec.toDomain(request.getId())));
+            User bean = userService.get(UserInterfaceAssembler.toGetQuery(UserIdCodec.toDomain(request.getId())));
             if (bean == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
@@ -465,7 +459,7 @@ public class UserController {
             throw AdminResponseExceptions.invalidParameter("list");
         }
 
-        idList.forEach(id -> userService.remove(new RemoveUserCommand(id)));
+        idList.forEach(id -> userService.remove(UserInterfaceAssembler.toRemoveCommand(id)));
 
         return true;
     }
@@ -566,18 +560,17 @@ public class UserController {
     }
 
     private UserQuery readQuery(UserQueryRequest request) {
-        UserQuery query = UserInterfaceAssembler.toQuery(request);
+        DepartmentId departmentId = null;
 
         if (request.getDepartmentId() != null) {
             Department department = getDepartment(DepartmentIdCodec.toDomain(request.getDepartmentId()));
             if (department == null) {
                 throw AdminResponseExceptions.objectNotFound();
             }
-
-            query.setDepartmentId(department.getId());
+            departmentId = department.getId();
         }
 
-        return query;
+        return UserInterfaceAssembler.toQuery(request, departmentId);
     }
 
     private void validateDepartment(UserDepartmentRequest request) {
@@ -633,18 +626,12 @@ public class UserController {
     private void validateUniqueContact(UserSaveRequest request) {
         UserId excludedId = UserIdCodec.toDomain(request.getId());
         if (StringUtils.isNotBlank(request.getEmail())) {
-            UserQuery query = new UserQuery();
-            query.setEmail(request.getEmail());
-            query.setExcludedId(excludedId);
-            if (userService.existsEmail(query)) {
+            if (userService.existsEmail(UserInterfaceAssembler.toEmailQuery(request.getEmail(), excludedId))) {
                 throw AdminResponseExceptions.invalidParameter("email");
             }
         }
         if (StringUtils.isNotBlank(request.getMobile())) {
-            UserQuery query = new UserQuery();
-            query.setMobile(request.getMobile());
-            query.setExcludedId(excludedId);
-            if (userService.existsMobile(query)) {
+            if (userService.existsMobile(UserInterfaceAssembler.toMobileQuery(request.getMobile(), excludedId))) {
                 throw AdminResponseExceptions.invalidParameter("mobile");
             }
         }
@@ -714,7 +701,7 @@ public class UserController {
     }
 
     private List<Role> loadUserRoles(User user) {
-        List<Role> userRoles = userService.listUserRoles(userQuery(user.getId()));
+        List<Role> userRoles = userService.listUserRoles(UserInterfaceAssembler.toUserRolesQuery(user.getId()));
         if (userRoles == null) {
             return new ArrayList<>();
         }
@@ -722,16 +709,6 @@ public class UserController {
                 .map(role -> role == null ? null : roleService.get(getRoleQuery(role.getId())))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-    }
-
-    private UserQuery userQuery(UserId userId) {
-        UserQuery query = new UserQuery();
-        query.setId(userId);
-        return query;
-    }
-
-    private GetUserQuery getUserQuery(UserId userId) {
-        return new GetUserQuery(userId);
     }
 
     private GetRoleQuery getRoleQuery(RoleId roleId) {
