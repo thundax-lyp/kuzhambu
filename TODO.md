@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `08-01 allowlist 基线`：确认 Knowledge 图谱、精修与世系 allowlist 清理基线
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-08-KNOWLEDGE-GRAPH-REFINEMENT.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/KnowledgeApplicationCommandQueryRecordAllowances.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/KnowledgeApplicationArchitectureTest.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/test/java/com/thundax/kuzhambu/knowledge/domain/KnowledgeDomainArchitectureTest.java`；`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/KnowledgeInterfaceArchitectureTest.java`
-    - 处理动作：逐项核对本 RUNBOOK 范围内 graph、refinement、lineage key，并确认 taxonomy、workbench、portal、report、facade key 不进入本轮处理。
-    - 验收点：四个 allowlist 文件中的本轮目标 key 与保留 key 已明确，后续任务只删除本轮目标 key。
-    - 重要度：10/10
-
 - [ ] `08-02 graph-lineage command-query record`：迁移 graph Command 与 lineage Query 为 Java record
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-08-KNOWLEDGE-GRAPH-REFINEMENT.md`
