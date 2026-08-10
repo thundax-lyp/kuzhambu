@@ -4,15 +4,16 @@ import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalQ
 import com.thundax.kuzhambu.knowledge.interfaces.portal.quality.controller.response.KnowledgePortalQualityResponse;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class KnowledgePortalQualityInterfaceAssembler {
 
     private KnowledgePortalQualityInterfaceAssembler() {}
 
-    public static KnowledgePortalQualityResponse toResponse(KnowledgePortalQualityResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static KnowledgePortalQualityResponse toResponse(@NonNull KnowledgePortalQualityResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return KnowledgePortalQualityResponse.builder()
                 .qualityStats(toQualityStats(result.getQualityStats()))
                 .trendSeries(toTrendSeries(result.getTrendSeries()))

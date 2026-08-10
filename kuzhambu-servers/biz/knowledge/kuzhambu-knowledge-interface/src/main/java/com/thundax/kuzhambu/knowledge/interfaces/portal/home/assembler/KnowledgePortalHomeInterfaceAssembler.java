@@ -4,15 +4,16 @@ import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalH
 import com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response.KnowledgePortalHomeResponse;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class KnowledgePortalHomeInterfaceAssembler {
 
     private KnowledgePortalHomeInterfaceAssembler() {}
 
-    public static KnowledgePortalHomeResponse toResponse(KnowledgePortalHomeResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static KnowledgePortalHomeResponse toResponse(@NonNull KnowledgePortalHomeResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return KnowledgePortalHomeResponse.builder()
                 .heroTitle(result.getHeroTitle())
                 .heroSubtitle(result.getHeroSubtitle())

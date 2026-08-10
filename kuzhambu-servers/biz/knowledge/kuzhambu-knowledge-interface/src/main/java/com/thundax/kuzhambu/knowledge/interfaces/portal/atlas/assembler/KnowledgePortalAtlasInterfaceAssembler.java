@@ -13,10 +13,9 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
 
     private KnowledgePortalAtlasInterfaceAssembler() {}
 
-    public static KnowledgePortalAtlasResponse toResponse(KnowledgePortalAtlasResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static KnowledgePortalAtlasResponse toResponse(@NonNull KnowledgePortalAtlasResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return KnowledgePortalAtlasResponse.builder()
                 .currentLevel(result.getCurrentLevel())
                 .breadcrumbItems(toBreadcrumbItems(result.getBreadcrumbItems()))

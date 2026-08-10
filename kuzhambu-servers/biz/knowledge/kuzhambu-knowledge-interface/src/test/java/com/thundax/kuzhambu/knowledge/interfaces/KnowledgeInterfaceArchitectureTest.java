@@ -40,11 +40,7 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")),
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.assembler.KnowledgeGraphWorkbenchInterfaceAssembler",
-                        "com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.assembler.KnowledgePortalAtlasInterfaceAssembler",
-                        "com.thundax.kuzhambu.knowledge.interfaces.portal.home.assembler.KnowledgePortalHomeInterfaceAssembler",
-                        "com.thundax.kuzhambu.knowledge.interfaces.portal.lineage.assembler.KnowledgePortalLineageInterfaceAssembler",
-                        "com.thundax.kuzhambu.knowledge.interfaces.portal.quality.assembler.KnowledgePortalQualityInterfaceAssembler"));
+                        "com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.assembler.KnowledgeGraphWorkbenchInterfaceAssembler"));
     }
 
     private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {
@@ -56,16 +52,7 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
-        return modelAnnotationAllowances(
-                ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS,
-                "portal.lineage.controller.response.KnowledgePortalLineageResponse",
-                "portal.lineage.controller.response.KnowledgePortalLineageResponse$AvailableFiltersResponse",
-                "portal.lineage.controller.response.KnowledgePortalLineageResponse$EmptyResponse",
-                "portal.lineage.controller.response.KnowledgePortalLineageResponse$NodeResponse",
-                "portal.lineage.controller.response.KnowledgePortalLineageResponse$RelationResponse",
-                "portal.lineage.controller.response.KnowledgePortalLineageResponse$SourceRefResponse",
-                "portal.lineage.controller.response.KnowledgePortalLineageResponse$SummaryResponse",
-                "portal.lineage.controller.response.KnowledgePortalLineageResponse$VersionResponse");
+        return modelAnnotationAllowances(ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS);
     }
 
     private static List<ArchitectureRuleAllowance> modelAnnotationAllowances(String ruleName, String... classNames) {

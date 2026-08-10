@@ -4,40 +4,44 @@ import com.thundax.kuzhambu.knowledge.application.lineage.query.LineageCanvasQue
 import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.lineage.controller.KnowledgePortalLineageController;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.lineage.controller.response.KnowledgePortalLineageResponse;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class KnowledgePortalLineageInterfaceAssembler {
 
     private KnowledgePortalLineageInterfaceAssembler() {}
 
-    public static LineageCanvasQuery toQuery(KnowledgePortalLineageController.Query request) {
+    @NonNull
+    public static LineageCanvasQuery toQuery(@NonNull KnowledgePortalLineageController.Query request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new LineageCanvasQuery(
-                request == null ? null : request.getVersionId(),
-                request == null ? null : request.getFocusNodeId(),
-                request == null ? null : request.getFocusRelationId(),
-                request == null ? null : request.getKeyword(),
-                request == null ? null : request.getNodeType(),
-                request == null ? null : request.getRelationType(),
-                request == null ? null : request.getConfirmationStatus(),
-                request == null ? null : request.getDepth());
+                request.getVersionId(),
+                request.getFocusNodeId(),
+                request.getFocusRelationId(),
+                request.getKeyword(),
+                request.getNodeType(),
+                request.getRelationType(),
+                request.getConfirmationStatus(),
+                request.getDepth());
     }
 
-    public static KnowledgePortalLineageResponse toResponse(LineageCanvasResult result) {
-        if (result == null) {
-            return new KnowledgePortalLineageResponse();
-        }
-        return new KnowledgePortalLineageResponse(
-                toVersionResponse(result.getVersion()),
-                toSummaryResponse(result.getSummary()),
-                result.getNodes().stream()
+    @NonNull
+    public static KnowledgePortalLineageResponse toResponse(@NonNull LineageCanvasResult result) {
+        Objects.requireNonNull(result, "result must not be null");
+        return KnowledgePortalLineageResponse.builder()
+                .version(toVersionResponse(result.getVersion()))
+                .summary(toSummaryResponse(result.getSummary()))
+                .nodes(result.getNodes().stream()
                         .map(KnowledgePortalLineageInterfaceAssembler::toNodeResponse)
-                        .toList(),
-                result.getRelations().stream()
+                        .toList())
+                .relations(result.getRelations().stream()
                         .map(KnowledgePortalLineageInterfaceAssembler::toRelationResponse)
-                        .toList(),
-                toNodeResponse(result.getSelectedNode()),
-                toRelationResponse(result.getSelectedRelation()),
-                toAvailableFiltersResponse(result.getAvailableFilters()),
-                toEmptyResponse(result.getEmpty()));
+                        .toList())
+                .selectedNode(toNodeResponse(result.getSelectedNode()))
+                .selectedRelation(toRelationResponse(result.getSelectedRelation()))
+                .availableFilters(toAvailableFiltersResponse(result.getAvailableFilters()))
+                .empty(toEmptyResponse(result.getEmpty()))
+                .build();
     }
 
     private static KnowledgePortalLineageResponse.VersionResponse toVersionResponse(
@@ -45,16 +49,17 @@ public final class KnowledgePortalLineageInterfaceAssembler {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalLineageResponse.VersionResponse(
-                view.getVersionId(),
-                view.getVersionNo(),
-                view.getTaskType(),
-                view.getStatus(),
-                view.getSourceContentType(),
-                view.getSourceContentId(),
-                view.getSourceCategoryCode(),
-                view.getSourceCategoryName(),
-                view.getAppliedAt());
+        return KnowledgePortalLineageResponse.VersionResponse.builder()
+                .versionId(view.getVersionId())
+                .versionNo(view.getVersionNo())
+                .taskType(view.getTaskType())
+                .status(view.getStatus())
+                .sourceContentType(view.getSourceContentType())
+                .sourceContentId(view.getSourceContentId())
+                .sourceCategoryCode(view.getSourceCategoryCode())
+                .sourceCategoryName(view.getSourceCategoryName())
+                .appliedAt(view.getAppliedAt())
+                .build();
     }
 
     private static KnowledgePortalLineageResponse.VersionResponse toVersionResponse(
@@ -62,16 +67,17 @@ public final class KnowledgePortalLineageInterfaceAssembler {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalLineageResponse.VersionResponse(
-                view.getVersionId(),
-                view.getVersionNo(),
-                view.getTaskType(),
-                view.getStatus(),
-                view.getSourceContentType(),
-                view.getSourceContentId(),
-                view.getSourceCategoryCode(),
-                view.getSourceCategoryName(),
-                view.getAppliedAt());
+        return KnowledgePortalLineageResponse.VersionResponse.builder()
+                .versionId(view.getVersionId())
+                .versionNo(view.getVersionNo())
+                .taskType(view.getTaskType())
+                .status(view.getStatus())
+                .sourceContentType(view.getSourceContentType())
+                .sourceContentId(view.getSourceContentId())
+                .sourceCategoryCode(view.getSourceCategoryCode())
+                .sourceCategoryName(view.getSourceCategoryName())
+                .appliedAt(view.getAppliedAt())
+                .build();
     }
 
     private static KnowledgePortalLineageResponse.SummaryResponse toSummaryResponse(
@@ -79,37 +85,39 @@ public final class KnowledgePortalLineageInterfaceAssembler {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalLineageResponse.SummaryResponse(
-                view.getNodeCount(),
-                view.getRelationCount(),
-                view.getConfirmedNodeCount(),
-                view.getConfirmedRelationCount(),
-                view.getFocusNodeId(),
-                view.getFocusRelationId());
+        return KnowledgePortalLineageResponse.SummaryResponse.builder()
+                .nodeCount(view.getNodeCount())
+                .relationCount(view.getRelationCount())
+                .confirmedNodeCount(view.getConfirmedNodeCount())
+                .confirmedRelationCount(view.getConfirmedRelationCount())
+                .focusNodeId(view.getFocusNodeId())
+                .focusRelationId(view.getFocusRelationId())
+                .build();
     }
 
     private static KnowledgePortalLineageResponse.NodeResponse toNodeResponse(LineageCanvasResult.NodeView view) {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalLineageResponse.NodeResponse(
-                view.getId(),
-                view.getNodeId(),
-                view.getNodeKey(),
-                view.getName(),
-                view.getNodeType(),
-                view.getGeneration(),
-                view.getGender(),
-                view.getConfirmationStatus(),
-                view.getConfidence(),
-                view.getSourceRefsJson(),
-                view.getSourceRefs().stream()
+        return KnowledgePortalLineageResponse.NodeResponse.builder()
+                .id(view.getId())
+                .nodeId(view.getNodeId())
+                .nodeKey(view.getNodeKey())
+                .name(view.getName())
+                .nodeType(view.getNodeType())
+                .generation(view.getGeneration())
+                .gender(view.getGender())
+                .confirmationStatus(view.getConfirmationStatus())
+                .confidence(view.getConfidence())
+                .sourceRefsJson(view.getSourceRefsJson())
+                .sourceRefs(view.getSourceRefs().stream()
                         .map(KnowledgePortalLineageInterfaceAssembler::toSourceRefResponse)
-                        .toList(),
-                view.getFirstExtractedAt(),
-                view.getLastExtractedAt(),
-                view.getX(),
-                view.getY());
+                        .toList())
+                .firstExtractedAt(view.getFirstExtractedAt())
+                .lastExtractedAt(view.getLastExtractedAt())
+                .x(view.getX())
+                .y(view.getY())
+                .build();
     }
 
     private static KnowledgePortalLineageResponse.RelationResponse toRelationResponse(
@@ -117,23 +125,24 @@ public final class KnowledgePortalLineageInterfaceAssembler {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalLineageResponse.RelationResponse(
-                view.getId(),
-                view.getRelationId(),
-                view.getSourceNodeId(),
-                view.getSourceNodeName(),
-                view.getTargetNodeId(),
-                view.getTargetNodeName(),
-                view.getRelationType(),
-                view.getRelationLabel(),
-                view.getConfirmationStatus(),
-                view.getConfidence(),
-                view.getSourceRefsJson(),
-                view.getSourceRefs().stream()
+        return KnowledgePortalLineageResponse.RelationResponse.builder()
+                .id(view.getId())
+                .relationId(view.getRelationId())
+                .sourceNodeId(view.getSourceNodeId())
+                .sourceNodeName(view.getSourceNodeName())
+                .targetNodeId(view.getTargetNodeId())
+                .targetNodeName(view.getTargetNodeName())
+                .relationType(view.getRelationType())
+                .relationLabel(view.getRelationLabel())
+                .confirmationStatus(view.getConfirmationStatus())
+                .confidence(view.getConfidence())
+                .sourceRefsJson(view.getSourceRefsJson())
+                .sourceRefs(view.getSourceRefs().stream()
                         .map(KnowledgePortalLineageInterfaceAssembler::toSourceRefResponse)
-                        .toList(),
-                view.getFirstExtractedAt(),
-                view.getLastExtractedAt());
+                        .toList())
+                .firstExtractedAt(view.getFirstExtractedAt())
+                .lastExtractedAt(view.getLastExtractedAt())
+                .build();
     }
 
     private static KnowledgePortalLineageResponse.SourceRefResponse toSourceRefResponse(
@@ -141,12 +150,13 @@ public final class KnowledgePortalLineageInterfaceAssembler {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalLineageResponse.SourceRefResponse(
-                view.getSourceContentType(),
-                view.getSourceContentId(),
-                view.getSourceTitle(),
-                view.getSnippet(),
-                view.getHref());
+        return KnowledgePortalLineageResponse.SourceRefResponse.builder()
+                .sourceContentType(view.getSourceContentType())
+                .sourceContentId(view.getSourceContentId())
+                .sourceTitle(view.getSourceTitle())
+                .snippet(view.getSnippet())
+                .href(view.getHref())
+                .build();
     }
 
     private static KnowledgePortalLineageResponse.AvailableFiltersResponse toAvailableFiltersResponse(
@@ -154,20 +164,26 @@ public final class KnowledgePortalLineageInterfaceAssembler {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalLineageResponse.AvailableFiltersResponse(
-                view.getVersions().stream()
+        return KnowledgePortalLineageResponse.AvailableFiltersResponse.builder()
+                .versions(view.getVersions().stream()
                         .map(KnowledgePortalLineageInterfaceAssembler::toVersionResponse)
-                        .toList(),
-                view.getNodeTypes(),
-                view.getRelationTypes(),
-                view.getConfirmationStatuses());
+                        .toList())
+                .nodeTypes(view.getNodeTypes())
+                .relationTypes(view.getRelationTypes())
+                .confirmationStatuses(view.getConfirmationStatuses())
+                .build();
     }
 
     private static KnowledgePortalLineageResponse.EmptyResponse toEmptyResponse(LineageCanvasResult.EmptyView view) {
         if (view == null) {
             return null;
         }
-        return new KnowledgePortalLineageResponse.EmptyResponse(
-                view.getReason(), view.getTitle(), view.getDescription(), view.getActionLabel(), view.getActionHref());
+        return KnowledgePortalLineageResponse.EmptyResponse.builder()
+                .reason(view.getReason())
+                .title(view.getTitle())
+                .description(view.getDescription())
+                .actionLabel(view.getActionLabel())
+                .actionHref(view.getActionHref())
+                .build();
     }
 }
